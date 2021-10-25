@@ -468,6 +468,58 @@ ifapi_json_TPMS_TAGGED_POLICY_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
+static char *field_TPMS_ACT_DATA_tab[] = {
+    "handle",
+    "timeout",
+    "attributes"
+};
+
+/** Deserialize a TPMS_ACT_DATA variable.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ *
+ */
+TSS2_RC
+ifapi_json_TPMS_ACT_DATA_deserialize(json_object *jso,
+        TPMS_ACT_DATA *out)
+{
+    json_object *jso2;
+    TSS2_RC r;
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    memset(out, 0, sizeof(TPMS_ACT_DATA));
+    ifapi_check_json_object_fields(jso, &field_TPMS_ACT_DATA_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_ACT_DATA_tab));
+    if (!ifapi_get_sub_object(jso, "handle", &jso2)) {
+        LOG_ERROR("Field \"handle\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_TPM2_HANDLE_deserialize(jso2, &out->handle);
+    return_if_error(r, "Bad value for field \"handle\".");
+
+    if (!ifapi_get_sub_object(jso, "timeout", &jso2)) {
+        LOG_ERROR("Field \"timeout\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_UINT32_deserialize(jso2, &out->timeout);
+    return_if_error(r, "Bad value for field \"timeout\".");
+
+    if (!ifapi_get_sub_object(jso, "attributes", &jso2)) {
+        LOG_ERROR("Field \"attributes\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_TPMA_ACT_deserialize(jso2, &out->attributes);
+    return_if_error(r, "Bad value for field \"attributes\".");
+
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+}
+
 /** Deserialize an array of BYTE structures.
  *
  * @param[in] max the maximal number of bytess to be deserialized.
@@ -1267,6 +1319,88 @@ ifapi_json_TPMA_LOCALITY_deserialize(json_object *jso, TPMA_LOCALITY *out)
     }
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
+}
+
+/** Deserialize a TPMA_ACT json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ */
+TSS2_RC
+ifapi_json_TPMA_ACT_deserialize(json_object *jso, TPMA_ACT *out) {
+    static const struct {TPMA_ACT in; char *name; } tab[] = {
+        {TPMA_ACT_SIGNALED, "signaled"},
+        {TPMA_ACT_PRESERVESIGNALED, "preserveSignaled"},
+    };
+
+    size_t n = sizeof(tab) / sizeof(tab[0]);
+    size_t i, j;
+
+    TPMI_YES_NO flag;
+    TSS2_RC r;
+
+    LOG_TRACE("call");
+    memset(out, 0, sizeof(TPMA_ACT));
+    json_type jso_type = json_object_get_type(jso);
+    if (jso_type == json_type_array) {
+        /* Cast (size_t) is necessary to support older version of libjson-c */
+        for (i = 0; i < (size_t)json_object_array_length(jso); i++) {
+            json_object *jso2 = json_object_array_get_idx(jso, i);
+            const char *token = strip_prefix(json_object_get_string(jso2),
+                                    "TPM_", "TPM2_", "TPMA_", "ACT_", NULL);
+            if (!token) {
+                LOG_ERROR("Bad object; expected array of strings.");
+                return TSS2_FAPI_RC_BAD_VALUE;
+            }
+            for (j = 0; j < n; j++) {
+                if (strcasecmp(tab[j].name, token) == 0) {
+                    *out |= tab[j].in;
+                    break;
+                }
+            }
+            if (j == n) {
+                LOG_ERROR("Unknown value: %s", json_object_get_string(jso2));
+                return TSS2_FAPI_RC_BAD_VALUE;
+            }
+        }
+    } else if (jso_type == json_type_object) {
+        json_object_object_foreach(jso, key, val) {
+            const char *token = strip_prefix(key,
+                                    "TPM_", "TPM2_", "TPMA_", "ACT_", NULL);
+            r = get_boolean_from_json(val, &flag);
+            return_if_error2(r, "Boolean value expected at key: %s", key);
+            for (j = 0; j < n; j++) {
+                if (strcasecmp(tab[j].name, token) == 0) {
+                    if (flag)
+                        *out |= tab[j].in;
+                    break;
+                }
+            }
+            if (j == n) {
+                LOG_ERROR("Unknown key: %s", key);
+                return TSS2_FAPI_RC_BAD_VALUE;
+            }
+        }
+    } else {
+        const char *token;
+        token = json_object_get_string(jso);
+        int64_t i64;
+        if (!get_number(token, &i64)) {
+            LOG_ERROR("Bad value");
+            return TSS2_FAPI_RC_BAD_VALUE;
+        }
+        *out = (TPMA_ACT) i64;
+        if ((int64_t)*out != i64) {
+            LOG_ERROR("Bad value");
+            return TSS2_FAPI_RC_BAD_VALUE;
+        }
+        return TSS2_RC_SUCCESS;
+    }
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+
 }
 
 /** Deserialize a TPMI_YES_NO json object.

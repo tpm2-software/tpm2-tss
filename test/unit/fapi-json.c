@@ -1134,6 +1134,26 @@ check_json_structs(void **state)
         "    }\n"
         "}";
     CHECK_JSON(TPMS_TAGGED_POLICY, test_json_TPMS_TAGGED_POLICY_sha256_src, test_json_TPMS_TAGGED_POLICY_sha256_expt);
+
+    const char *test_json_TPMS_ACT_DATA_src =
+        "{"
+        "    \"handle\":0,"
+        "    \"timeout\":23,"
+        "    \"attributes\":["
+        "      \"signaled\""
+        "    ],"
+        "}";
+
+    const char *test_json_TPMS_ACT_DATA_expt =
+        "{\n"
+        "    \"handle\":0,\n"
+        "    \"timeout\":23,\n"
+        "    \"attributes\":{"
+        "      \"signaled\":1,"
+        "      \"preserveSignaled\":0"
+        "    }"
+        "}";
+    CHECK_JSON(TPMS_ACT_DATA, test_json_TPMS_ACT_DATA_src, test_json_TPMS_ACT_DATA_expt);
 }
 
 static void
@@ -1182,6 +1202,36 @@ check_json_bits(void **state)
                       "\"0\"",
                       "{\"fixedTPM\":0,\"stClear\":0,\"fixedParent\":0,\"sensitiveDataOrigin\":0,\"userWithAuth\":0,"
                       "\"adminWithPolicy\":0,\"noDA\":0,\"encryptedDuplication\":0,\"restricted\":0,\"decrypt\":0,\"sign\":0}");
+    CHECK_JSON_SIMPLE(TPMA_ACT,
+                      "\"0\"",
+                      "{\"signaled\":0,\"preserveSignaled\":0}");
+    CHECK_JSON_SIMPLE(TPMA_ACT,
+                      "0",
+                      "{\"signaled\":0,\"preserveSignaled\":0}");
+    CHECK_JSON_SIMPLE(TPMA_ACT,
+                      "\"1\"",
+                      "{\"signaled\":1,\"preserveSignaled\":0}");
+    CHECK_JSON_SIMPLE(TPMA_ACT,
+                      "1",
+                      "{\"signaled\":1,\"preserveSignaled\":0}");
+    CHECK_JSON_SIMPLE(TPMA_ACT,
+                      "\"2\"",
+                      "{\"signaled\":0,\"preserveSignaled\":1}");
+    CHECK_JSON_SIMPLE(TPMA_ACT,
+                      "2",
+                      "{\"signaled\":0,\"preserveSignaled\":1}");
+    CHECK_JSON_SIMPLE(TPMA_ACT,
+                      "\"3\"",
+                      "{\"signaled\":1,\"preserveSignaled\":1}");
+    CHECK_JSON_SIMPLE(TPMA_ACT,
+                      "3",
+                      "{\"signaled\":1,\"preserveSignaled\":1}");
+    CHECK_JSON_SIMPLE(TPMA_ACT,
+                    "{\"signaled\":1,\"preserveSignaled\":0}",
+                    "{\"signaled\":1,\"preserveSignaled\":0}");
+    CHECK_JSON_SIMPLE(TPMA_ACT,
+                    "{\"signaled\":0,\"preserveSignaled\":1}",
+                    "{\"signaled\":0,\"preserveSignaled\":1}");
 
     const char *test_json_TPMA_NV_expected =\
                     "{"

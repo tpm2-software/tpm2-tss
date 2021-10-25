@@ -70,6 +70,9 @@ TSS2_RC
 ifapi_json_TPMA_LOCALITY_deserialize(json_object *jso, TPMA_LOCALITY *out);
 
 TSS2_RC
+ifapi_json_TPMA_ACT_deserialize(json_object *jso, TPMA_ACT *out);
+
+TSS2_RC
 ifapi_json_TPMI_YES_NO_deserialize(json_object *jso, TPMI_YES_NO *out);
 
 TSS2_RC
@@ -146,6 +149,10 @@ ifapi_json_TPMS_PCR_SELECTION_deserialize(json_object *jso,
 TSS2_RC
 ifapi_json_TPMS_TAGGED_POLICY_deserialize(json_object *jso,
         TPMS_TAGGED_POLICY *out);
+
+TSS2_RC
+ifapi_json_TPMS_ACT_DATA_deserialize(json_object *jso,
+        TPMS_ACT_DATA *out);
 
 TSS2_RC
 ifapi_json_TPMT_TK_CREATION_deserialize(json_object *jso,
