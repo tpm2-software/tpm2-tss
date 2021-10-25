@@ -466,7 +466,8 @@ typedef UINT32 TPM2_CAP;
 #define TPM2_CAP_PCR_PROPERTIES  ((TPM2_CAP) 0x00000007) /* TPM2_PT_PCR */
 #define TPM2_CAP_ECC_CURVES      ((TPM2_CAP) 0x00000008) /* TPM2_ECC_CURVE1 */
 #define TPM2_CAP_AUTH_POLICIES   ((TPM2_CAP) 0x00000009) /* TPM2_HANDLE */
-#define TPM2_CAP_LAST            ((TPM2_CAP) 0x00000009)
+#define TPM2_CAP_ACT             ((TPM2_CAP) 0x0000000A) /* TPM2_HANDLE */
+#define TPM2_CAP_LAST            ((TPM2_CAP) 0x0000000A)
 #define TPM2_CAP_VENDOR_PROPERTY ((TPM2_CAP) 0x00000100) /* manufacturer specific */
 
 /* Definition of UINT32 TPM2_PT Constants <INOUT S> */
@@ -791,8 +792,8 @@ typedef uint32_t TPMA_X509_KEY_USAGE;
 /* Definition of UINT32 TPMA_ACT Bits */
 typedef uint32_t TPMA_ACT;
 
-#define TPMA_ACT_SIGNALED         ((TPMA_ACT) 0x00000000) /* SET 1 The ACT has signaled. CLEAR 0 The ACT has not signaled */
-#define TPMA_ACT_PRESERVESIGNALED ((TPMA_ACT) 0x00000001) /* SET 1 The ACT signaled bit is preserved over a power cycle. CLEAR 0 The ACT signaled bit is not preserved over a power cycle */
+#define TPMA_ACT_SIGNALED         ((TPMA_ACT) 0x00000001) /* SET 1 The ACT has signaled. CLEAR 0 The ACT has not signaled */
+#define TPMA_ACT_PRESERVESIGNALED ((TPMA_ACT) 0x00000002) /* SET 1 The ACT signaled bit is preserved over a power cycle. CLEAR 0 The ACT signaled bit is not preserved over a power cycle */
 #define TPMA_ACT_RESERVED_MASK    ((TPMA_ACT) 0xFFFFFFFC) /* shall be zero */
 
 /* Definition of BYTE TPMI_YES_NO Type */
@@ -1198,6 +1199,7 @@ union TPMU_CAPABILITIES {
     TPML_TAGGED_PCR_PROPERTY pcrProperties;
     TPML_ECC_CURVE eccCurves;
     TPML_TAGGED_POLICY authPolicies;
+    TPML_ACT_DATA actData;
     TPML_INTEL_PTT_PROPERTY intelPttProperty;
 };
 

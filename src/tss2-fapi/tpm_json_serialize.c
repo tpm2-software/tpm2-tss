@@ -183,6 +183,38 @@ ifapi_json_TPMS_TAGGED_POLICY_serialize(const TPMS_TAGGED_POLICY *in, json_objec
     return TSS2_RC_SUCCESS;
 }
 
+/** Serialize a TPMS_ACT_DATA structure to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_ACT_DATA.
+ */
+TSS2_RC
+ifapi_json_TPMS_ACT_DATA_serialize(const TPMS_ACT_DATA *in, json_object **jso)
+{
+    TSS2_RC r;
+    if (*jso == NULL)
+        *jso = json_object_new_object();
+    json_object *jso2 = NULL;
+    r = ifapi_json_TPM2_HANDLE_serialize(in->handle, &jso2);
+    return_if_error(r, "Serialize act data");
+
+    json_object_object_add(*jso, "handle", jso2);
+    jso2 = NULL;
+    r = ifapi_json_UINT32_serialize(in->timeout, &jso2);
+    return_if_error(r, "Serialize act data");
+
+    json_object_object_add(*jso, "timeout", jso2);
+    jso2 = NULL;
+    r = ifapi_json_TPMA_ACT_serialize(in->attributes, &jso2);
+    return_if_error(r, "Serialize act data");
+
+    json_object_object_add(*jso, "attributes", jso2);
+    return TSS2_RC_SUCCESS;
+}
+
 /** Serialize a base_type UINT16 to json.
  *
  * @param[in] in value to be serialized.
@@ -638,6 +670,7 @@ ifapi_json_TPM2_CAP_serialize(const TPM2_CAP in, json_object **jso)
         { TPM2_CAP_PCR_PROPERTIES, "PCR_PROPERTIES" },
         { TPM2_CAP_ECC_CURVES, "ECC_CURVES" },
         { TPM2_CAP_AUTH_POLICIES, "AUTH_POLICIES" },
+        { TPM2_CAP_ACT, "ACT"},
         { TPM2_CAP_LAST, "LAST" },
         { TPM2_CAP_VENDOR_PROPERTY, "VENDOR_PROPERTY" },
     };
@@ -990,6 +1023,44 @@ ifapi_json_TPMA_CC_serialize(const TPMA_CC in, json_object **jso)
 
     json_object_object_add(*jso, "Res", jso_bit_idx);
 
+    return TSS2_RC_SUCCESS;
+}
+
+/** Serialize a TPMA_ACT to json.
+ *
+ * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMA_ACT.
+ */
+TSS2_RC
+ifapi_json_TPMA_ACT_serialize(const TPMA_ACT in, json_object **jso)
+{
+    static const struct {TPMA_ACT in; char *name; } tab[] = {
+        {TPMA_ACT_SIGNALED, "signaled"},
+        {TPMA_ACT_PRESERVESIGNALED, "preserveSignaled"},
+    };
+    UINT32 input;
+    input = (UINT32) in;
+    json_object *jso_bit;
+
+    if (*jso == NULL) {
+        *jso = json_object_new_object();
+        return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    }
+
+    for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
+        if (tab[i].in & input)
+            jso_bit = json_object_new_int(1);
+        else
+            jso_bit = json_object_new_int(0);
+        return_if_null(jso_bit, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+
+        json_object_object_add(*jso, tab[i].name, jso_bit);
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -1860,6 +1931,39 @@ ifapi_json_TPML_TAGGED_POLICY_serialize(const TPML_TAGGED_POLICY *in, json_objec
     return TSS2_RC_SUCCESS;
 }
 
+/** Serialize value of type TPML_ACT_DATA to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPML_ACT_DATA.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPML_ACT_DATA_serialize(const TPML_ACT_DATA *in, json_object **jso)
+{
+    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC r;
+    if (in->count > TPM2_MAX_ACT_DATA) {
+        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_ACT_DATA)",
+            (size_t)in->count, (size_t)TPM2_MAX_ACT_DATA);
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    *jso = json_object_new_array();
+    return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+
+    for (size_t i=0; i < in->count; i++) {
+        json_object *jso2 = NULL;
+        r = ifapi_json_TPMS_ACT_DATA_serialize(&in->actData[i], &jso2);
+        return_if_error(r, "Serialize TPMS_ACT_DATA");
+
+        json_object_array_add(*jso, jso2);
+    }
+    return TSS2_RC_SUCCESS;
+}
+
 /**  Serialize a TPMU_CAPABILITIES to json.
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
@@ -1895,6 +1999,8 @@ ifapi_json_TPMU_CAPABILITIES_serialize(const TPMU_CAPABILITIES *in, UINT32 selec
             return ifapi_json_TPML_ECC_CURVE_serialize(&in->eccCurves, jso);
         case TPM2_CAP_AUTH_POLICIES:
             return ifapi_json_TPML_TAGGED_POLICY_serialize(&in->authPolicies, jso);
+        case TPM2_CAP_ACT:
+            return ifapi_json_TPML_ACT_DATA_serialize(&in->actData, jso);
         default:
             LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
             return TSS2_FAPI_RC_BAD_VALUE;

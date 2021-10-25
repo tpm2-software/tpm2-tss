@@ -218,6 +218,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-event-sequence-complete.int \
     test/integration/esys-evict-control-serialization.int \
     test/integration/esys-get-capability.int \
+    test/integration/esys-get-capability-act.int \
     test/integration/esys-get-random.int \
     test/integration/esys-hash.int \
     test/integration/esys-hashsequencestart.int \
@@ -1188,6 +1189,13 @@ test_integration_esys_get_capability_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_get_capability_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_get_capability_int_SOURCES = \
     test/integration/esys-get-capability.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_get_capability_act_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_get_capability_act_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_get_capability_act_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_get_capability_act_int_SOURCES = \
+    test/integration/esys-get-capability-act.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_get_random_int_CFLAGS  = $(TESTS_CFLAGS)
