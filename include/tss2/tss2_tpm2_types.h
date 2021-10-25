@@ -465,7 +465,8 @@ typedef UINT32 TPM2_CAP;
 #define TPM2_CAP_TPM_PROPERTIES  ((TPM2_CAP) 0x00000006) /* TPM2_PT */
 #define TPM2_CAP_PCR_PROPERTIES  ((TPM2_CAP) 0x00000007) /* TPM2_PT_PCR */
 #define TPM2_CAP_ECC_CURVES      ((TPM2_CAP) 0x00000008) /* TPM2_ECC_CURVE1 */
-#define TPM2_CAP_LAST            ((TPM2_CAP) 0x00000008)
+#define TPM2_CAP_AUTH_POLICIES   ((TPM2_CAP) 0x00000009) /* TPM2_HANDLE */
+#define TPM2_CAP_LAST            ((TPM2_CAP) 0x00000009)
 #define TPM2_CAP_VENDOR_PROPERTY ((TPM2_CAP) 0x00000100) /* manufacturer specific */
 
 /* Definition of UINT32 TPM2_PT Constants <INOUT S> */
@@ -1196,6 +1197,7 @@ union TPMU_CAPABILITIES {
     TPML_TAGGED_TPM_PROPERTY tpmProperties;
     TPML_TAGGED_PCR_PROPERTY pcrProperties;
     TPML_ECC_CURVE eccCurves;
+    TPML_TAGGED_POLICY authPolicies;
     TPML_INTEL_PTT_PROPERTY intelPttProperty;
 };
 
