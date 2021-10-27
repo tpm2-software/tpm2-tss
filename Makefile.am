@@ -216,7 +216,6 @@ EXTRA_DIST += \
     src/tss2-tcti/tcti-tbs.c \
     src/tss2-tcti/tcti-tbs.h \
     src/tss2-tcti/tss2-tcti-tbs.vcxproj \
-    src/tss2-tcti/tss2-tcti-tbs.vcxproj.filters \
     tpm2-tss.sln
 
 # tss2-dlopen wrappers
@@ -330,8 +329,7 @@ lib_LTLIBRARIES += $(libtss2_tcti_mssim)
 pkgconfig_DATA += lib/tss2-tcti-mssim.pc
 EXTRA_DIST += lib/tss2-tcti-mssim.map \
               lib/tss2-tcti-mssim.def \
-              src/tss2-tcti/tss2-tcti-mssim.vcxproj \
-              src/tss2-tcti/tss2-tcti-mssim.vcxproj.filters
+              src/tss2-tcti/tss2-tcti-mssim.vcxproj
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-mssim.map
@@ -455,8 +453,7 @@ src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-dl.c src/tss2-tct
 endif
 EXTRA_DIST += lib/tss2-esys.map \
               lib/tss2-esys.def \
-              src/tss2-esys/tss2-esys.vcxproj \
-              src/tss2-esys/tss2-esys.vcxproj.filters
+              src/tss2-esys/tss2-esys.vcxproj
 endif #ESYS
 
 ### TCG TSS error decoding spec library ###
