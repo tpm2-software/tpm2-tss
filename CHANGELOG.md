@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## next
+### Added
+  - Added authPolicy field to the TPMU_CAPABILITIES union.
+  - Added actData field to the TPMU_CAPABILITIES union.
+  - Added TPM2_CAP_AUTH_POLICIES
+  - Added TPM2_CAP_ACT constants.
+  - Added updates to the marshalling and unmarshalling of the
+    TPMU_CAPABILITIES union.
+  - Added updated to the FAPI serializations and deserializations of the
+    TPMU_CAPABILITIES union and associated types.
+
 ## [3.1.0] - 2021-05-17
 ### Fixed
 - Fixed possible access outside the array in ifapi_calculate_tree.
