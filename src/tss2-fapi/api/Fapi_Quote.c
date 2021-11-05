@@ -394,6 +394,7 @@ Fapi_Quote_Finish(
             /* Flush the key used for the quote. */
             r = Esys_FlushContext_Async(context->esys, command->handle);
             goto_if_error(r, "Error: FlushContext", error_cleanup);
+            command->handle = ESYS_TR_NONE;
 
             fallthrough;
 
