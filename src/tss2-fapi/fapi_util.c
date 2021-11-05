@@ -362,6 +362,52 @@ ifapi_get_object_path(IFAPI_OBJECT *object)
     return NULL;
 }
 
+/** Set authorization value for a primary key to be created.
+ *
+ * The callback which provides the auth value must be defined.
+ *
+ * @param[in,out] context The FAPI_CONTEXT.
+ * @param[in]     object The auth value will be assigned to this object.
+ * @param[in,out] inSensitive The sensitive data to store the auth value.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for getting
+ *         the auth value is not defined.
+ */
+TSS2_RC
+ifapi_set_auth_primary(
+    FAPI_CONTEXT *context,
+    IFAPI_OBJECT *object,
+    TPMS_SENSITIVE_CREATE *inSensitive)
+{
+    TSS2_RC r;
+    const char *auth = NULL;
+    const char *obj_path;
+
+    memset(inSensitive, 0, sizeof(TPMS_SENSITIVE_CREATE));
+
+    if (!object->misc.key.with_auth) {
+        return TSS2_RC_SUCCESS;
+    }
+
+    obj_path = ifapi_get_object_path(object);
+
+    /* Check whether callback is defined. */
+    if (context->callbacks.auth) {
+        r = context->callbacks.auth(obj_path, object->misc.key.description,
+                                    &auth, context->callbacks.authData);
+        return_if_error(r, "AuthCallback");
+        if (auth != NULL) {
+            inSensitive->userAuth.size = strlen(auth);
+            memcpy(&inSensitive->userAuth.buffer[0], auth,
+                   inSensitive->userAuth.size);
+        }
+        return TSS2_RC_SUCCESS;
+    }
+    SAFE_FREE(auth);
+    return_error( TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN, "Authorization callback not defined.");
+}
+
 /** Set authorization value for a FAPI object.
  *
  * The callback which provides the auth value must be defined.
@@ -848,7 +894,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
     IFAPI_KEY *pkey = &context->createPrimary.pkey_object.misc.key;
     TPMS_CAPABILITY_DATA **capabilityData = &context->createPrimary.capabilityData;
     TPMI_YES_NO moreData;
-    ESYS_TR auth_session;
+    ESYS_TR auth_session = ESYS_TR_NONE; /* Initialized due to scanbuild */
 
     LOG_TRACE("call");
 
@@ -923,12 +969,23 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         memset(&context->createPrimary.inSensitive, 0, sizeof(TPM2B_SENSITIVE_CREATE));
         memset(&context->createPrimary.outsideInfo, 0, sizeof(TPM2B_DATA));
         memset(&context->createPrimary.creationPCR, 0, sizeof(TPML_PCR_SELECTION));
+        fallthrough;
+
+    statecase(context->primary_state, PRIMARY_GET_AUTH_VALUE);
+        /* Get the auth value to be stored in inSensitive */
+        r = ifapi_set_auth_primary(context, pkey_object,
+                                   &context->createPrimary.inSensitive.sensitive);
+        return_try_again(r);
+        goto_if_error_reset_state(r, "Get auth value for primary", error_cleanup);
 
         /* Prepare primary creation. */
+        TPM2B_PUBLIC public = pkey->public;
+        memset(&public.publicArea.unique, 0, sizeof(TPMU_PUBLIC_ID));
+
         r = Esys_CreatePrimary_Async(context->esys, hierarchy->handle,
                                      auth_session, ESYS_TR_NONE, ESYS_TR_NONE,
                                      &context->createPrimary.inSensitive,
-                                     &pkey->public,
+                                     &public,
                                      &context->createPrimary.outsideInfo,
                                      &context->createPrimary.creationPCR);
         return_if_error(r, "CreatePrimary");
@@ -1918,7 +1975,6 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
         } else {
             LOG_TRACE("success");
             ifapi_cleanup_ifapi_object(context->loadKey.key_object);
-            ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
             return TSS2_RC_SUCCESS;
         }
         break;
