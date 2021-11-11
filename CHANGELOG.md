@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## next
+### Changed or Fixed
+ - Fixed creation of primary keys with policies: #2175.
+
 ## [3.1.0] - 2021-05-17
 ### Fixed
 - Fixed possible access outside the array in ifapi_calculate_tree.
