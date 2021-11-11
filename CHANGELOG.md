@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## next
+### Fixed
+  - 32 Bit builds of the integration tests.
+  - Primary key creation, in some cases the unique field was not cleared before calling create primary.
+  - Primary keys was used for signing the object were cleared after loading. So access e.g. to the certificate did not work.
+  - Primary keys created with Fapi_Create with an auth value, the auth_value was not used in inSensitive to recreate the
+    primary key. Now the auth value callback is used to initialize inSensitive.
+
 ### Added
   - Added authPolicy field to the TPMU_CAPABILITIES union.
   - Added actData field to the TPMU_CAPABILITIES union.
