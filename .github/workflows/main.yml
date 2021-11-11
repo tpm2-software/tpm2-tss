@@ -22,6 +22,30 @@ jobs:
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
+  multi-arch:
+    runs-on: ubuntu-latest
+    if: "!contains(github.ref, 'coverity_scan')"
+    strategy:
+      matrix:
+        docker_image: ["ubuntu-20.04.arm32v7"]
+    steps:
+      - name: Setup QEMU
+        run: |
+          sudo apt-get update
+          sudo apt-get install qemu binfmt-support qemu-user-static
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Launch Container
+        env:
+          DOCKER_IMAGE: ${{ matrix.docker_image }}
+          CC: gcc
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          ./.ci/ci.run
+      - name: failure
+        if: ${{ failure() }}
+        run: cat $(find ../ -name test-suite.log) || true
   scanbuild:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
