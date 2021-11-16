@@ -17,8 +17,7 @@ jobs:
           DOCKER_IMAGE: ${{ matrix.docker_image }}
           CC: ${{ matrix.compiler }}
           BASE_REF: ${{ github.base_ref }}
-        run: |
-          ./.ci/ci.run
+        run: ./.ci/ci.run
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
@@ -107,7 +106,7 @@ jobs:
       - name: Launch Container
         env:
           REPO_BRANCH: ${{ github.ref }}
-          REPO_SLUG: ${{ github.repository }}
+          REPO_NAME: ${{ github.repository }}
           ENABLE_COVERITY: true
           DOCKER_IMAGE: ubuntu-18.04
           CC: gcc
