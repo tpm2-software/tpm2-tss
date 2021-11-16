@@ -5,13 +5,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## next
 ### Fixed
+  - Fixed file descriptor leak when tcti initialization failed.
   - 32 Bit builds of the integration tests.
   - Primary key creation, in some cases the unique field was not cleared before calling create primary.
   - Primary keys was used for signing the object were cleared after loading. So access e.g. to the certificate did not work.
   - Primary keys created with Fapi_Create with an auth value, the auth_value was not used in inSensitive to recreate the
     primary key. Now the auth value callback is used to initialize inSensitive.
+  - The not possible usage of policies for primary keys generated with Fapi_CreatePrimary has been fixed.
+  - An infinite loop when parsing erroneous JSON was fixed in FAPI.
+  - A buffer overflow in ESAPI xor parameter obfuscation was fixed.
+  - Certificates could be read only once in one application The setting the init
+    state of the state automaton for getting certificates was fixed.
+  - A double free when executing policy action was fixed.
+  - A leak in Fapi_Quote was fixed.
+  - The  wrong file locking in FAPI IO was fixed.
 
 ### Added
+  - Added Support SM2, SM3 and SM4.
   - Added authPolicy field to the TPMU_CAPABILITIES union.
   - Added actData field to the TPMU_CAPABILITIES union.
   - Added TPM2_CAP_AUTH_POLICIES
