@@ -13,3 +13,10 @@ with the interface and protocol exposed by the daemon hosting the TPM2
 reference implementation. The interface exposed by this library is defined
 in the \*(lqTSS System Level API and TPM Command Transmission Interface
 Specification\*(rq specification.
+.SH NOTES
+It is best not to use the CUSE interface when setting up swtpm, but rather
+to use the vtpm module proxy:
+.EX
+modprobe tpm_vtpm_proxy
+swtpm chardev --vtpm-proxy --tpmstate dir=... --tpm2 ...
+.EE
