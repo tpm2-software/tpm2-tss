@@ -19,9 +19,11 @@
 #define TCTI_SWTPM_CONF_MAX (_HOST_NAME_MAX + 16)
 #define TCTI_SWTPM_DEFAULT_HOST "localhost"
 #define TCTI_SWTPM_DEFAULT_PORT 2321
+#define TCTI_SWTPM_DEFAULT_PATH NULL
 #define SWTPM_CONF_DEFAULT_INIT { \
     .host = TCTI_SWTPM_DEFAULT_HOST, \
     .port = TCTI_SWTPM_DEFAULT_PORT, \
+    .path = TCTI_SWTPM_DEFAULT_PATH, \
 }
 
 #define TCTI_SWTPM_MAGIC 0x496E66696E656F6EULL
@@ -36,6 +38,8 @@
 typedef struct {
     char *host;
     uint16_t port;
+    /* if path is NULL, we use host/port */
+    char *path;
 } swtpm_conf_t;
 
 typedef struct {

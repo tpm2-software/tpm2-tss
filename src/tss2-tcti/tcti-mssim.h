@@ -19,9 +19,11 @@
 #define TCTI_MSSIM_CONF_MAX (_HOST_NAME_MAX + 16)
 #define TCTI_MSSIM_DEFAULT_HOST "localhost"
 #define TCTI_MSSIM_DEFAULT_PORT 2321
+#define TCTI_MSSIM_DEFAULT_PATH NULL
 #define MSSIM_CONF_DEFAULT_INIT { \
     .host = TCTI_MSSIM_DEFAULT_HOST, \
     .port = TCTI_MSSIM_DEFAULT_PORT, \
+    .path = TCTI_MSSIM_DEFAULT_PATH, \
 }
 
 #define TCTI_MSSIM_MAGIC 0xf05b04cd9f02728dULL
@@ -29,6 +31,8 @@
 typedef struct {
     char *host;
     uint16_t port;
+    /* if path is NULL, we use host/port */
+    char *path;
 } mssim_conf_t;
 
 typedef struct {
