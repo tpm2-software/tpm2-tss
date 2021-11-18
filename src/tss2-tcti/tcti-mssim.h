@@ -29,6 +29,8 @@
 typedef struct {
     char *host;
     uint16_t port;
+    /* if path is NULL, we use host/port */
+    char *path;
 } mssim_conf_t;
 
 typedef struct {

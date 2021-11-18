@@ -513,12 +513,17 @@ mssim_kv_callback (const key_value_t *key_value,
     LOG_DEBUG ("key: %s / value: %s\n", key_value->key, key_value->value);
     if (strcmp (key_value->key, "host") == 0) {
         mssim_conf->host = key_value->value;
+        mssim_conf->path = NULL;
         return TSS2_RC_SUCCESS;
     } else if (strcmp (key_value->key, "port") == 0) {
         mssim_conf->port = string_to_port (key_value->value);
         if (mssim_conf->port == 0) {
             return TSS2_TCTI_RC_BAD_VALUE;
         }
+        return TSS2_RC_SUCCESS;
+    } else if (strcmp (key_value->key, "path") == 0) {
+        mssim_conf->path = key_value->value;
+        mssim_conf->host = NULL;
         return TSS2_RC_SUCCESS;
     } else {
         return TSS2_TCTI_RC_BAD_VALUE;
@@ -601,9 +606,15 @@ Tss2_Tcti_Mssim_Init (
     tcti_mssim->tpm_sock = -1;
     tcti_mssim->platform_sock = -1;
 
-    rc = socket_connect (mssim_conf.host,
-                         mssim_conf.port,
-                         &tcti_mssim->tpm_sock);
+    if (mssim_conf.path)
+        rc = socket_connect_unix (mssim_conf.path,
+                                  0,
+                                  &tcti_mssim->tpm_sock);
+    else
+        rc = socket_connect (mssim_conf.host,
+                             mssim_conf.port,
+                             0,
+                             &tcti_mssim->tpm_sock);
     if (rc != TSS2_RC_SUCCESS) {
         goto fail_out;
     }
@@ -613,9 +624,15 @@ Tss2_Tcti_Mssim_Init (
         goto fail_out;
     }
 
-    rc = socket_connect (mssim_conf.host,
-                         mssim_conf.port + 1,
-                         &tcti_mssim->platform_sock);
+    if (mssim_conf.path)
+        rc = socket_connect_unix (mssim_conf.path,
+                                  1,
+                                  &tcti_mssim->platform_sock);
+    else
+        rc = socket_connect (mssim_conf.host,
+                             mssim_conf.port,
+                             1,
+                             &tcti_mssim->platform_sock);
     if (rc != TSS2_RC_SUCCESS) {
         goto fail_out;
     }

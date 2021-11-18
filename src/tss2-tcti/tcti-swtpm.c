@@ -135,9 +135,15 @@ TSS2_RC tcti_control_command (
     uint8_t resp_buf[SWTPM_CTRL_RESP_MAX_LEN] = { 0 };
     size_t resp_buf_len = sizeof(uint32_t);
 
-    rc = socket_connect (tcti_swtpm->swtpm_conf.host,
-                         tcti_swtpm->swtpm_conf.port + 1,
-                         &tcti_swtpm->ctrl_sock);
+    if (tcti_swtpm->swtpm_conf.path)
+        rc = socket_connect_unix (tcti_swtpm->swtpm_conf.path,
+                                  1,
+                                  &tcti_swtpm->ctrl_sock);
+    else
+        rc = socket_connect (tcti_swtpm->swtpm_conf.host,
+                             tcti_swtpm->swtpm_conf.port,
+                             1,
+                             &tcti_swtpm->ctrl_sock);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR ("Failed to connect to control socket.");
         rc = TSS2_TCTI_RC_IO_ERROR;
@@ -274,9 +280,15 @@ tcti_swtpm_transmit (
     LOG_DEBUG ("Sending command with TPM_CC 0x%" PRIx32 " and size %" PRIu32,
                header.code, header.size);
 
-    rc = socket_connect (tcti_swtpm->swtpm_conf.host,
-                         tcti_swtpm->swtpm_conf.port,
-                         &tcti_swtpm->tpm_sock);
+    if (tcti_swtpm->swtpm_conf.path)
+        rc = socket_connect_unix (tcti_swtpm->swtpm_conf.path,
+                                  0,
+                                  &tcti_swtpm->tpm_sock);
+    else
+        rc = socket_connect (tcti_swtpm->swtpm_conf.host,
+                             tcti_swtpm->swtpm_conf.port,
+                             0,
+                             &tcti_swtpm->tpm_sock);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -496,12 +508,18 @@ swtpm_kv_callback (const key_value_t *key_value,
     LOG_DEBUG ("key: %s / value: %s\n", key_value->key, key_value->value);
     if (strcmp (key_value->key, "host") == 0) {
         swtpm_conf->host = key_value->value;
+        swtpm_conf->path = NULL;
         return TSS2_RC_SUCCESS;
     } else if (strcmp (key_value->key, "port") == 0) {
         swtpm_conf->port = string_to_port (key_value->value);
         if (swtpm_conf->port == 0) {
             return TSS2_TCTI_RC_BAD_VALUE;
         }
+        return TSS2_RC_SUCCESS;
+    } else if (strcmp (key_value->key, "path") == 0) {
+        swtpm_conf->path = key_value->value;
+        swtpm_conf->host = NULL;
+        swtpm_conf->port = 0;
         return TSS2_RC_SUCCESS;
     } else {
         return TSS2_TCTI_RC_BAD_VALUE;
@@ -583,9 +601,15 @@ Tss2_Tcti_Swtpm_Init (
     tcti_swtpm->ctrl_sock = -1;
 
     /* sanity check */
-    rc = socket_connect (tcti_swtpm->swtpm_conf.host,
-                         tcti_swtpm->swtpm_conf.port,
-                         &tcti_swtpm->tpm_sock);
+    if (tcti_swtpm->swtpm_conf.path)
+        rc = socket_connect_unix (tcti_swtpm->swtpm_conf.path,
+                                  0,
+                                  &tcti_swtpm->tpm_sock);
+    else
+        rc = socket_connect (tcti_swtpm->swtpm_conf.host,
+                             tcti_swtpm->swtpm_conf.port,
+                             0,
+                             &tcti_swtpm->tpm_sock);
     socket_close (&tcti_swtpm->tpm_sock);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR ("Cannot connect to swtpm TPM socket");
