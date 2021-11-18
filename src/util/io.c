@@ -28,6 +28,12 @@
 #include "util/log.h"
 
 #define MAX_PORT_STR_LEN    sizeof("65535")
+
+/* sockaddr_un::sun_path is documented as char[108], but it seems safer to let
+ * the compiler (or rather, the headers) derive this for us. (Cast to int to
+ * avoid signed/unsigned comparison warnings.) */
+#define MAX_SADDR_UN_PATH  (int)sizeof(((struct sockaddr_un *)0)->sun_path)
+
 /*
  * The 'read_all' function attempts to read all of the 'size' bytes requested
  * from the 'fd' provided into the buffer 'data'. This function will continue
@@ -181,6 +187,7 @@ TSS2_RC
 socket_connect (
     const char *hostname,
     uint16_t port,
+    int control,
     SOCKET *sock)
 {
     static const struct addrinfo hints = { .ai_socktype = SOCK_STREAM,
@@ -207,6 +214,9 @@ socket_connect (
     if (hostname == NULL || sock == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
+
+    if (control)
+        port++;
 
     ret = snprintf(port_str, sizeof(port_str), "%u", port);
     if (ret < 0)
@@ -257,6 +267,46 @@ socket_connect (
     }
 
     return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC
+socket_connect_unix (
+    const char *path,
+    int control,
+    SOCKET *sock)
+{
+#ifdef _WIN32
+    return TSS2_TCTI_RC_BAD_REFERENCE;
+#else
+    struct sockaddr_un saddr;
+
+    if (path == NULL)
+        return TSS2_TCTI_RC_BAD_REFERENCE;
+
+    saddr.sun_family = AF_UNIX;
+
+    if (snprintf(saddr.sun_path, MAX_SADDR_UN_PATH,
+                 control ? "%s.ctrl" : "%s", path) >= MAX_SADDR_UN_PATH) {
+        LOG_ERROR ("Socket %s%s is too long for AF_UNIX",
+                   path, control ? ".ctrl" : "");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+
+    *sock = socket (AF_UNIX, SOCK_STREAM, 0);
+
+    if (*sock == INVALID_SOCKET) {
+        LOG_WARNING ("Failed to create AF_UNIX socket");
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+
+    LOG_DEBUG ("Attempting UNIX connection to %s", saddr.sun_path);
+    if (connect (*sock, (struct sockaddr *)&saddr, sizeof(saddr)) == SOCKET_ERROR) {
+        LOG_WARNING ("Failed to connect to %s", saddr.sun_path);
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+
+    return TSS2_RC_SUCCESS;
+#endif
 }
 
 TSS2_RC
