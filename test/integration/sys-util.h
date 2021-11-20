@@ -160,7 +160,7 @@ encrypt_cfb (
 
 /*
  * This is a helper function for digest calculation.
- * alg can be TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384,
+ * alg can be TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SM3_256,
  * and TPM2_ALG_SHA512
  */
 TSS2_RC
@@ -172,7 +172,7 @@ hash (
 
 /*
  * This is a helper function for calculating HMAC.
- * alg can be TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384,
+ * alg can be TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SM3_256,
  * and TPM2_ALG_SHA512
  */
 TSS2_RC

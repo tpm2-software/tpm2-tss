@@ -123,6 +123,10 @@ get_ossl_hash_md(TPM2_ALG_ID hashAlg)
         return EVP_sha384();
     case TPM2_ALG_SHA512:
         return EVP_sha512();
+#if HAVE_EVP_SM3
+    case TPM2_ALG_SM3_256:
+        return EVP_sm3();
+#endif
     default:
         return NULL;
     }
@@ -140,6 +144,8 @@ get_ossl_hash_md(TPM2_ALG_ID hashAlg)
         return "SHA384";
     case TPM2_ALG_SHA512:
         return "SHA512";
+    case TPM2_ALG_SM3_256:
+        return "SM3";
     default:
         return NULL;
     }
@@ -941,6 +947,12 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
         curveId = NID_secp521r1;
         key_size = 66;
         break;
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+    case TPM2_ECC_SM2_P256:
+        curveId = NID_sm2;
+        key_size = 32;
+        break;
+#endif
     default:
         return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED,
                      "ECC curve not implemented.");

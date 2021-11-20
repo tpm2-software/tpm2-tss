@@ -3671,11 +3671,16 @@ ifapi_get_sig_scheme(
     TPMI_ALG_HASH hash_alg;
     TSS2_RC r;
 
-    if (padding) {
-        /* Get hash algorithm from digest size */
-        r = ifapi_get_hash_alg_for_size(digest->size, &hash_alg);
-        return_if_error2(r, "Invalid digest size.");
+    /* Get hash algorithm from digest size */
+    r = ifapi_get_hash_alg_for_size(digest->size, &hash_alg);
+    return_if_error2(r, "Invalid digest size");
 
+    if (digest->size == TPM2_SM3_256_DIGEST_SIZE &&
+        object->misc.key.signing_scheme.details.any.hashAlg == TPM2_ALG_SM3_256) {
+        hash_alg = TPM2_ALG_SM3_256;
+    }
+
+    if (padding) {
         /* Use scheme object from context */
         if (strcasecmp("RSA_SSA", padding) == 0) {
             context->Key_Sign.scheme.scheme = TPM2_ALG_RSASSA;
@@ -3690,10 +3695,6 @@ ifapi_get_sig_scheme(
     } else {
         /* Use scheme defined for object */
         *sig_scheme = object->misc.key.signing_scheme;
-        /* Get hash algorithm from digest size */
-        r = ifapi_get_hash_alg_for_size(digest->size, &hash_alg);
-        return_if_error2(r, "Invalid digest size.");
-
         sig_scheme->details.any.hashAlg = hash_alg;
         return TSS2_RC_SUCCESS;
     }

@@ -1150,7 +1150,7 @@ TSS2_RC
 ifapi_json_TPMI_ALG_HASH_serialize(const TPMI_ALG_HASH in, json_object **jso)
 {
     CHECK_IN_LIST(TPMI_ALG_HASH, in, TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384,
-                      TPM2_ALG_SHA512, TPM2_ALG_NULL);
+                      TPM2_ALG_SHA512, TPM2_ALG_SM3_256, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -1166,7 +1166,7 @@ TSS2_RC
 ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(const TPMI_ALG_SYM_OBJECT in,
         json_object **jso)
 {
-    CHECK_IN_LIST(TPMI_ALG_SYM_OBJECT, in, TPM2_ALG_AES, TPM2_ALG_NULL);
+    CHECK_IN_LIST(TPMI_ALG_SYM_OBJECT, in, TPM2_ALG_AES, TPM2_ALG_SM4, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -1271,6 +1271,10 @@ ifapi_json_TPMU_HA_serialize(const TPMU_HA *in, UINT32 selector,
     case TPM2_ALG_SHA512:
         size = TPM2_SHA512_DIGEST_SIZE;
         buffer = &in->sha512[0];
+        break;
+    case TPM2_ALG_SM3_256:
+        size = TPM2_SM3_256_DIGEST_SIZE;
+        buffer = &in->sm3_256[0];
         break;
     default:
         LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
@@ -2452,6 +2456,23 @@ ifapi_json_TPMS_ATTEST_serialize(const TPMS_ATTEST *in, json_object **jso)
     return TSS2_RC_SUCCESS;
 }
 
+/** Serialize value of type TPMI_SM4_KEY_BITS to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMI_SM4_KEY_BITS.
+ *
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMI_SM4_KEY_BITS_serialize(const TPMI_SM4_KEY_BITS in, json_object **jso)
+{
+    CHECK_IN_LIST(UINT16, in, 128);
+    return ifapi_json_UINT16_serialize(in, jso);
+}
+
 /** Serialize value of type TPMI_AES_KEY_BITS to json.
  *
  * @param[in] in value to be serialized.
@@ -2468,7 +2489,6 @@ ifapi_json_TPMI_AES_KEY_BITS_serialize(const TPMI_AES_KEY_BITS in, json_object *
     CHECK_IN_LIST(UINT16, in, 128, 192, 256);
     return ifapi_json_UINT16_serialize(in, jso);
 }
-
 /**  Serialize a TPMU_SYM_KEY_BITS to json.
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
@@ -2486,6 +2506,8 @@ ifapi_json_TPMU_SYM_KEY_BITS_serialize(const TPMU_SYM_KEY_BITS *in, UINT32 selec
     switch (selector) {
         case TPM2_ALG_AES:
             return ifapi_json_TPMI_AES_KEY_BITS_serialize(in->aes, jso);
+        case TPM2_ALG_SM4:
+            return ifapi_json_TPMI_SM4_KEY_BITS_serialize(in->sm4, jso);
         case TPM2_ALG_XOR:
             return ifapi_json_TPMI_ALG_HASH_serialize(in->exclusiveOr, jso);
         default:
@@ -2509,6 +2531,7 @@ TSS2_RC
 ifapi_json_TPMU_SYM_MODE_serialize(const TPMU_SYM_MODE *in, UINT32 selector, json_object **jso)
 {
     switch (selector) {
+        case TPM2_ALG_SM4:
         case TPM2_ALG_AES:
             return ifapi_json_TPMI_ALG_SYM_MODE_serialize(in->aes, jso);
         default:

@@ -1490,7 +1490,7 @@ TSS2_RC
 ifapi_json_TPMI_ALG_HASH_deserialize(json_object *jso, TPMI_ALG_HASH *out)
 {
     SUBTYPE_FILTER(TPMI_ALG_HASH, TPM2_ALG_ID,
-        TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA512, TPM2_ALG_NULL);
+        TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384, TPM2_ALG_SHA512, TPM2_ALG_SM3_256, TPM2_ALG_NULL);
 }
 
 /** Deserialize a  TPMI_ALG_SYM json object.
@@ -1504,7 +1504,7 @@ TSS2_RC
 ifapi_json_TPMI_ALG_SYM_deserialize(json_object *jso, TPMI_ALG_SYM *out)
 {
     SUBTYPE_FILTER(TPMI_ALG_SYM, TPM2_ALG_ID,
-        TPM2_ALG_AES, TPM2_ALG_XOR, TPM2_ALG_NULL);
+        TPM2_ALG_AES, TPM2_ALG_SM4, TPM2_ALG_XOR, TPM2_ALG_NULL);
 }
 
 /** Deserialize a TPMI_ALG_SYM_OBJECT json object.
@@ -1519,7 +1519,7 @@ ifapi_json_TPMI_ALG_SYM_OBJECT_deserialize(json_object *jso,
         TPMI_ALG_SYM_OBJECT *out)
 {
     SUBTYPE_FILTER(TPMI_ALG_SYM_OBJECT, TPM2_ALG_ID,
-        TPM2_ALG_AES, TPM2_ALG_NULL);
+        TPM2_ALG_AES, TPM2_ALG_SM4, TPM2_ALG_NULL);
 }
 
 /** Deserialize a TPMI_ALG_SYM_MODE json object.
@@ -1620,6 +1620,10 @@ ifapi_json_TPMU_HA_deserialize(
     case TPM2_ALG_SHA512:
         hash_size = TPM2_SHA512_DIGEST_SIZE;
         buffer = &out->sha512[0];
+        break;
+    case TPM2_ALG_SM3_256:
+        hash_size = TPM2_SM3_256_DIGEST_SIZE;
+        buffer = &out->sm3_256[0];
         break;
     case TPM2_ALG_NULL: {
             return TSS2_RC_SUCCESS;
@@ -2565,6 +2569,17 @@ ifapi_json_TPMI_AES_KEY_BITS_deserialize(json_object *jso, TPMI_AES_KEY_BITS *ou
         128, 192, 256);
 }
 
+/** Deserialize a TPMI_SM4_KEY_BITS json object.
+ *
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ */
+TSS2_RC
+ifapi_json_TPMI_SM4_KEY_BITS_deserialize(json_object *jso, TPMI_SM4_KEY_BITS *out)
+{
+    SUBTYPE_FILTER(TPMI_SM4_KEY_BITS, UINT16, 128);
+}
+
 /** Deserialize a TPMU_SYM_KEY_BITS json object.
  *
  * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
@@ -2586,7 +2601,8 @@ ifapi_json_TPMU_SYM_KEY_BITS_deserialize(
         return ifapi_json_TPMI_AES_KEY_BITS_deserialize(jso, &out->aes);
     case TPM2_ALG_XOR:
         return ifapi_json_TPMI_ALG_HASH_deserialize(jso, &out->exclusiveOr);
-
+    case TPM2_ALG_SM4:
+        return ifapi_json_TPMI_SM4_KEY_BITS_deserialize(jso, &out->sm4);
     case TPM2_ALG_NULL: {
             return TSS2_RC_SUCCESS;
         }
@@ -2613,6 +2629,7 @@ ifapi_json_TPMU_SYM_MODE_deserialize(
 {
     LOG_TRACE("call");
     switch (selector) {
+    case TPM2_ALG_SM4:
     case TPM2_ALG_AES:
         return ifapi_json_TPMI_ALG_SYM_MODE_deserialize(jso, &out->aes);
 
