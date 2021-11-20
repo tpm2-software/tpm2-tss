@@ -113,7 +113,6 @@
         } \
         if (i >=  n) { \
             json_object_put(jso1); \
-            json_object_put(jso2); \
             LOG_ERROR("Mismatch" ); \
             goto LABEL; \
         } \
