@@ -2016,6 +2016,9 @@ ifapi_calculate_pcr_digest(
     case TPM2_ALG_ECDSA:
         pcr_digest_hash_alg = quote_info->sig_scheme.details.ecdsa.hashAlg;
         break;
+    case TPM2_ALG_SM2:
+        pcr_digest_hash_alg = quote_info->sig_scheme.details.sm2.hashAlg;
+        break;
     default:
         LOG_ERROR("Unknown sig scheme");
         return TSS2_FAPI_RC_BAD_VALUE;

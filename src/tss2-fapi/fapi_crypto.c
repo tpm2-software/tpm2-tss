@@ -254,6 +254,10 @@ get_ossl_hash_md(TPM2_ALG_ID hashAlgorithm)
         return EVP_sha384();
     case TPM2_ALG_SHA512:
         return EVP_sha512();
+#if HAVE_EVP_SM3
+    case TPM2_ALG_SM3_256:
+        return EVP_sm3();
+#endif
     default:
         return NULL;
     }
@@ -281,6 +285,8 @@ get_hash_md(TPM2_ALG_ID hashAlgorithm)
         return "SHA384";
     case TPM2_ALG_SHA512:
         return "SHA512";
+    case TPM2_ALG_SM3_256:
+        return "SM3";
     default:
         return NULL;
     }
@@ -540,6 +546,11 @@ ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
     case TPM2_ECC_NIST_P521:
         curveId = NID_secp521r1;
         break;
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+    case TPM2_ECC_SM2_P256:
+        curveId = NID_sm2;
+        break;
+#endif
     default:
         return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "ECC curve not implemented.");
@@ -815,61 +826,17 @@ ifapi_der_sig_to_tpm(
  * for RSA signature verification
  */
 static const int rsaPadding[N_PADDING] = { RSA_PKCS1_PADDING, RSA_PKCS1_PSS_PADDING };
-
-/**
- * Verifies an RSA signature given as a binary byte buffer.
- *
- * @param[in] publicKey The public key with which the signature is to be
- *            verified
- * @param[in] signature A byte buffer holding the signature to verify
- * @param[in] signatureSize The size of signature in bytes
- * @param[in] digest The digest of the signature to verify
- * @param[in] digestSize The size of digest in bytes. Required to determine the
- *            hash algorithm
- *
- * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if publicKey, signature or digest is NULL
- * @retval TSS2_FAPI_RC_BAD_VALUE if no hash algorithm that matches digestSize
- *         could be found
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED if the signature could not
- *         be verified
- */
 static TSS2_RC
-rsa_verify_signature(
+rsa_evp_verify_signature(
     EVP_PKEY *publicKey,
     const uint8_t *signature,
     size_t signatureSize,
+    const EVP_MD *mdType,
     const uint8_t *digest,
     size_t digestSize)
 {
-    /* Check for NULL parameters */
-    return_if_null(publicKey, "publicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(signature, "signature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(digest, "digest is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-
     TSS2_RC r;
-    const EVP_MD *mdType;
     EVP_PKEY_CTX *ctx = NULL;
-
-    /* The hash algorithm of the signature is determined by the digest length */
-    switch (digestSize) {
-    case TPM2_SHA1_DIGEST_SIZE:
-        mdType = EVP_sha1();
-        break;
-    case TPM2_SHA256_DIGEST_SIZE:
-        mdType = EVP_sha256();
-        break;
-    case TPM2_SHA384_DIGEST_SIZE:
-        mdType = EVP_sha384();
-        break;
-    case TPM2_SHA512_DIGEST_SIZE:
-        mdType = EVP_sha512();
-        break;
-    default:
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid digest size", cleanup);
-    }
-
     /* Try all possible padding schemes for verification */
     for (int i = 0; i < N_PADDING; i++) {
         ctx = EVP_PKEY_CTX_new(publicKey, NULL);
@@ -905,6 +872,69 @@ rsa_verify_signature(
 cleanup:
     if (ctx)
         EVP_PKEY_CTX_free(ctx);
+    return r;
+}
+
+/**
+ * Verifies an RSA signature given as a binary byte buffer.
+ *
+ * @param[in] publicKey The public key with which the signature is to be
+ *            verified
+ * @param[in] signature A byte buffer holding the signature to verify
+ * @param[in] signatureSize The size of signature in bytes
+ * @param[in] digest The digest of the signature to verify
+ * @param[in] digestSize The size of digest in bytes. Required to determine the
+ *            hash algorithm
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if publicKey, signature or digest is NULL
+ * @retval TSS2_FAPI_RC_BAD_VALUE if no hash algorithm that matches digestSize
+ *         could be found
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED if the signature could not
+ *         be verified
+ */
+static TSS2_RC
+rsa_verify_signature(
+    EVP_PKEY *publicKey,
+    const uint8_t *signature,
+    size_t signatureSize,
+    const uint8_t *digest,
+    size_t digestSize)
+{
+    /* Check for NULL parameters */
+    return_if_null(publicKey, "publicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(signature, "signature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(digest, "digest is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC r;
+    const EVP_MD *mdType;
+
+    /* The hash algorithm of the signature is determined by the digest length */
+    switch (digestSize) {
+    case TPM2_SHA1_DIGEST_SIZE:
+        mdType = EVP_sha1();
+        break;
+    case TPM2_SHA256_DIGEST_SIZE:
+        mdType = EVP_sha256();
+        break;
+    case TPM2_SHA384_DIGEST_SIZE:
+        mdType = EVP_sha384();
+        break;
+    case TPM2_SHA512_DIGEST_SIZE:
+        mdType = EVP_sha512();
+        break;
+    default:
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid digest size");
+    }
+
+    r = rsa_evp_verify_signature(publicKey, signature, signatureSize, mdType, digest, digestSize);
+#if HAVE_EVP_SM3
+    if (r == TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED) {
+    /* retry sm3 if digestSize is 32 bytes */
+        r = rsa_evp_verify_signature(publicKey, signature, signatureSize, EVP_sm3(), digest, digestSize);
+    }
+#endif
     return r;
 }
 
@@ -1127,6 +1157,11 @@ get_ecc_tpm2b_public_from_evp(
     case NID_secp521r1:
         tpmCurveId = TPM2_ECC_NIST_P521;
         break;
+#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+    case NID_sm2:
+        tpmCurveId = TPM2_ECC_SM2_P256;
+        break;
+#endif
     default:
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
                    "Curve %x not implemented", cleanup, curveId);
