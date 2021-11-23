@@ -16,7 +16,6 @@
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
 #include "fapi_int.h"
-#include "fapi_policy.h"
 
 TSS2_RC
 get_policy_digest_idx(
