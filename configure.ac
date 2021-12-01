@@ -487,15 +487,17 @@ AC_CHECK_PROG(systemd_sysusers, systemd-sysusers, yes)
 AM_CONDITIONAL(SYSD_SYSUSERS, test "x$systemd_sysusers" = "xyes")
 AC_CHECK_PROG(systemd_tmpfiles, systemd-tmpfiles, yes)
 AM_CONDITIONAL(SYSD_TMPFILES, test "x$systemd_tmpfiles" = "xyes")
+
 # Check all tools used by make install
 AS_IF([test "$HOSTOS" = "Linux"],
-      [ERROR_IF_NO_PROG([groupadd])
-       ERROR_IF_NO_PROG([useradd])
-       ERROR_IF_NO_PROG([id])
-       ERROR_IF_NO_PROG([chown])
-       ERROR_IF_NO_PROG([chmod])
-       ERROR_IF_NO_PROG([mkdir])
-       ERROR_IF_NO_PROG([setfacl])])
+    [ AC_CHECK_PROG(useradd, useradd, yes)
+      AC_CHECK_PROG(groupadd, groupadd, yes)
+      AC_CHECK_PROG(adduser, adduser, yes)
+      AC_CHECK_PROG(addgroup, addgroup, yes)
+      AS_IF([test "x$addgroup" != "xyes" && test "x$groupadd" != "xyes" ],
+         [AC_MSG_ERROR([addgroup or groupadd are needed.])])
+      AS_IF([test "x$adduser" != "xyes" && test "x$useradd" != "xyes" ],
+         [AC_MSG_ERROR([adduser or useradd are needed.])])])
 
 AC_SUBST([PATH])
 
