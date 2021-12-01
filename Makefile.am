@@ -636,8 +636,21 @@ define make_parent_dir
 endef
 
 define make_tss_user_and_group
-    (id -g tss 2>/dev/null || groupadd -r tss) && \
-    (id -u tss 2>/dev/null || useradd -r -g tss tss)
+    if type -p groupadd > /dev/null; then \
+        id -g tss 2>/dev/null || groupadd --system tss; \
+    else \
+        id -g tss 2>/dev/null || \
+        addgroup --system tss; \
+    fi && \
+    if type -p useradd > /dev/null; then \
+        id -u tss 2>/dev/null || \
+        useradd --system --home-dir / --shell `type -p nologin` \
+                         --no-create-home -g tss tss; \
+    else \
+        id -u tss 2>/dev/null || \
+        adduser --system --home / --shell `type -p nologin` \
+                --no-create-home --ingroup tss tss; \
+    fi
 endef
 
 define make_tss_dir
