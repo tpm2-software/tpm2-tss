@@ -635,10 +635,17 @@ define make_parent_dir
     if [ ! -d $(dir $1) ]; then mkdir -p $(dir $1); fi
 endef
 
+#if BUSYBOX
+define make_tss_user_and_group
+    (id -g tss 2>/dev/null || addgroup -S tss) && \
+    (id -u tss 2>/dev/null || adduser -S -G tss tss)
+endef
+#else
 define make_tss_user_and_group
     (id -g tss 2>/dev/null || groupadd -r tss) && \
     (id -u tss 2>/dev/null || useradd -r -g tss tss)
 endef
+#endif #BUSYBOX
 
 define make_tss_dir
     ($(call make_parent_dir,$1))

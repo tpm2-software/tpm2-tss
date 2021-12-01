@@ -488,10 +488,16 @@ AM_CONDITIONAL(SYSD_SYSUSERS, test "x$systemd_sysusers" = "xyes")
 AC_CHECK_PROG(systemd_tmpfiles, systemd-tmpfiles, yes)
 AM_CONDITIONAL(SYSD_TMPFILES, test "x$systemd_tmpfiles" = "xyes")
 # Check all tools used by make install
+
+AC_CHECK_PROG(busybox,busybox,yes)
+AS_IF([test x"$busybox" == x"yes"],
+    [ AS_IF([test "$HOSTOS" = "Linux"],
+        [AC_DEFINE([BUSYBOX], [1], [System with busybox])
+         ERROR_IF_NO_PROG([groupadd])
+         ERROR_IF_NO_PROG([useradd])])])
+
 AS_IF([test "$HOSTOS" = "Linux"],
-      [ERROR_IF_NO_PROG([groupadd])
-       ERROR_IF_NO_PROG([useradd])
-       ERROR_IF_NO_PROG([id])
+      [ERROR_IF_NO_PROG([id])
        ERROR_IF_NO_PROG([chown])
        ERROR_IF_NO_PROG([chmod])
        ERROR_IF_NO_PROG([mkdir])
