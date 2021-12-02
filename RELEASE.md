@@ -1,6 +1,11 @@
 # Release Process:
 This document describes the general process that maintainers must follow when making a release of the `tpm2-tss` libraries.
 
+# Milestones
+All releases should have a milestone used to track the release. If the release version is not known, as covered in [Version Numbers](#Version Numbers),
+then an "x" may be used for the unknown number, or the generic term "next" may be used. The description field of the milestone will be used to record
+the CHANGELOG for that release. See [CHANGELOG Update](#CHANGELOG Update) for details.
+
 # Version Numbers
 Our releases will follow the semantic versioning scheme.
 You can find a thorough description of this scheme here: [http://semver.org/](http://semver.org/)
@@ -27,6 +32,10 @@ We append an incremental digit `X` in case more than one release candidate is ne
 Before a release is made the `coverity_scan` branch must be updated to the point in git history where the release will be made from.
 This branch must be pushed to github which will cause the CI infrastructure to run an automated coverity scan.
 The results of this scan must be dispositioned by the maintainers before the release is made.
+
+# CHANGELOG Update
+Before tagging the repository with the release version, the maintainer MUST update the CHANGELOG file with the contents from the description field
+from the corresponding release milestone and update any missing version string details in the CHANGELOG and milestone entry.
 
 # Git Tags
 When a release is made a tag is created in the git repo identifying the release by the [version string](#Version String).
