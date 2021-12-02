@@ -173,6 +173,10 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, signature, signatureSize);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
+    /* We need to reset the passwords again, in order to not brick physical TPMs */
+    r = Fapi_ChangeAuth(context, "/HS", NULL);
+    goto_if_error(r, "Error Fapi_ChangeAuth", error);
+
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
