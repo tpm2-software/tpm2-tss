@@ -1593,7 +1593,7 @@ ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
      * As we don't want the TPM to be called for these operations, we have
      * to initialize own library context with the default provider. */
     mycontext->libctx = OSSL_LIB_CTX_new();
-    return_if_null(mycontext->libctx, "Out of memory", TSS2_FAPI_RC_MEMORY);
+    goto_if_null(mycontext->libctx, "Out of memory", TSS2_FAPI_RC_MEMORY, cleanup);
 
     if (!(mycontext->osslHashAlgorithm =
             EVP_MD_fetch(mycontext->libctx, get_hash_md(hashAlgorithm), NULL))) {
