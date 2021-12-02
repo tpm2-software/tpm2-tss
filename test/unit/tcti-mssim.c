@@ -32,84 +32,108 @@
 TSS2_RC
 mssim_kv_callback (const key_value_t *key_value,
                    void *user_data);
+
 /*
- * This tests our ability to handle conf strings that have a port
- * component. In this case the 'conf_str_to_host_port' function
- * should set the 'port' parameter and so we check to be sure it's
- * set.
+ * In the tests below where 'host' is set (implying TCP and excluding unix domain
+ * sockets), we ensure that 'path' comes back NULL. Similarly, when 'path' is
+ * set (implying unix domain sockets), we ensure that 'host' is NULL.
+ */
+#define NO_HOST_VALUE "no.host.xyz"
+#define NO_PORT_VALUE 646
+#define NO_PATH_VALUE "/bad/path"
+
+/*
+ * This tests our ability to handle conf strings that have a port component. In
+ * this case the 'conf_str_to_host_port' function should set the 'host' and
+ * 'port' parameters and so we check to be sure they're set. (And that 'path'
+ * is unset.)
  */
 static void
 conf_str_to_host_port_success_test (void **state)
 {
     TSS2_RC rc;
     char conf[] = "host=127.0.0.1,port=2321";
-    mssim_conf_t mssim_conf = { 0 };
+    char unusedpath[] = NO_PATH_VALUE;
+    mssim_conf_t mssim_conf = {
+        .path = unusedpath
+    };
 
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (mssim_conf.port, 2321);
     assert_string_equal (mssim_conf.host, "127.0.0.1");
+    assert_null (mssim_conf.path);
 }
 
 /*
  * This tests our ability to handle conf strings that don't have the port
  * component of the URI. In this case the 'conf_str_to_host_port' function
  * should not touch the 'port' parameter and so we check to be sure it's
- * unchanged.
+ * unchanged. (And that 'path' is unset.)
  */
-#define NO_PORT_VALUE 646
 static void
 conf_str_to_host_port_no_port_test (void **state)
 {
     TSS2_RC rc;
     char conf[] = "host=127.0.0.1";
+    char unusedpath[] = NO_PATH_VALUE;
     mssim_conf_t mssim_conf = {
         .host = "foo",
         .port = NO_PORT_VALUE,
+        .path = unusedpath
     };
 
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_string_equal (mssim_conf.host, "127.0.0.1");
     assert_int_equal (mssim_conf.port, NO_PORT_VALUE);
+    assert_null (mssim_conf.path);
 }
 
 /*
  * This tests our ability to handle conf strings that have an IPv6 address
  * and port component. In this case the 'conf_str_to_host_port' function
  * should set the 'hostname' parameter and so we check to be sure it's
- * set without the [] brackets.
+ * set without the [] brackets. (And that 'path' is unset.)
  */
 static void
 conf_str_to_host_ipv6_port_success_test (void **state)
 {
     TSS2_RC rc;
     char conf[] = "host=::1,port=2321";
-    mssim_conf_t mssim_conf = { 0 };
+    char unusedpath[] = NO_PATH_VALUE;
+    mssim_conf_t mssim_conf = {
+        .path = unusedpath
+    };
 
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (mssim_conf.port, 2321);
     assert_string_equal (mssim_conf.host, "::1");
+    assert_null (mssim_conf.path);
 }
 
 /*
  * This tests our ability to handle conf strings that have an IPv6 address
  * but no port component. In this case the 'conf_str_to_host_port' function
  * should not touch the 'port' parameter and so we check to be sure it's
- * unchanged.
+ * unchanged. (And that 'path' is unset.)
  */
 static void
 conf_str_to_host_ipv6_port_no_port_test (void **state)
 {
     TSS2_RC rc;
     char conf[] = "host=::1";
-    mssim_conf_t mssim_conf = { .port = NO_PORT_VALUE };
+    mssim_conf_t mssim_conf = {
+        .port = NO_PORT_VALUE,
+        .path = NO_PATH_VALUE
+    };
 
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (mssim_conf.port, NO_PORT_VALUE);
     assert_string_equal (mssim_conf.host, "::1");
+    assert_null (mssim_conf.path);
 }
 
 /*
@@ -135,6 +159,28 @@ conf_str_to_host_port_invalid_port_0_test (void **state)
 
     rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
+
+/*
+ * This tests our ability to handle conf strings that have a path
+ * component. In this case the 'conf_str_to_host_port' function
+ * should set the 'path' parameter and so we check to be sure it's
+ * set. (And that 'host' is unset.)
+ */
+static void
+conf_str_to_path_success_test (void **state)
+{
+    TSS2_RC rc;
+    char conf[] = "path=/some/path";
+    char unusedhost[] = NO_HOST_VALUE;
+    mssim_conf_t mssim_conf = {
+        .host = unusedhost
+    };
+
+    rc = parse_key_value_string (conf, mssim_kv_callback, &mssim_conf);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_string_equal (mssim_conf.path, "/some/path");
+    assert_null (mssim_conf.host);
 }
 
 /* When passed all NULL values ensure that we get back the expected RC. */
@@ -264,6 +310,17 @@ tcti_socket_setup (void **state)
     printf ("%s: done\n", __func__);
     return 0;
 }
+#ifndef _WIN32
+/* variant of tcti_socket_setup() for unix domain sockets. */
+static int
+tcti_socket_setup_unix (void **state)
+{
+    printf ("%s: before tcti_socket_init_from_conf\n", __func__);
+    *state = tcti_socket_init_from_conf ("path=/notarealdirectory/notarealfile");
+    printf ("%s: done\n", __func__);
+    return 0;
+}
+#endif
 static void
 tcti_socket_init_null_conf_test (void **state)
 {
@@ -515,6 +572,7 @@ main (int   argc,
         cmocka_unit_test (conf_str_to_host_ipv6_port_no_port_test),
         cmocka_unit_test (conf_str_to_host_port_invalid_port_large_test),
         cmocka_unit_test (conf_str_to_host_port_invalid_port_0_test),
+        cmocka_unit_test (conf_str_to_path_success_test),
         cmocka_unit_test (tcti_socket_init_all_null_test),
         cmocka_unit_test (tcti_socket_init_size_test),
         cmocka_unit_test (tcti_socket_init_null_conf_test),
@@ -538,7 +596,12 @@ main (int   argc,
                                          tcti_socket_teardown),
         cmocka_unit_test_setup_teardown (tcti_socket_transmit_success_test,
                                   tcti_socket_setup,
-                                  tcti_socket_teardown)
+                                  tcti_socket_teardown),
+#ifndef _WIN32
+        cmocka_unit_test_setup_teardown (tcti_socket_receive_success_test,
+                                  tcti_socket_setup_unix,
+                                  tcti_socket_teardown),
+#endif
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
 }
