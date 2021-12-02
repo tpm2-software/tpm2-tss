@@ -118,13 +118,16 @@ socket_connect_test (void **state)
 {
     TSS2_RC rc;
     SOCKET sock;
+    int ctrl;
 
-    will_return (__wrap_socket, 0);
-    will_return (__wrap_socket, 1);
-    will_return (__wrap_connect, 0);
-    will_return (__wrap_connect, 1);
-    rc = socket_connect ("127.0.0.1", 666, 0, &sock);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    for (ctrl = 0; ctrl < 2; ctrl++) {
+        will_return (__wrap_socket, 0);
+        will_return (__wrap_socket, 1);
+        will_return (__wrap_connect, 0);
+        will_return (__wrap_connect, 1);
+        rc = socket_connect ("127.0.0.1", 666, ctrl, &sock);
+        assert_int_equal (rc, TSS2_RC_SUCCESS);
+    }
 }
 static void
 socket_connect_socket_fail_test (void **state)
@@ -157,13 +160,16 @@ socket_ipv6_connect_test (void **state)
 {
     TSS2_RC rc;
     SOCKET sock;
+    int ctrl;
 
-    will_return (__wrap_socket, 0);
-    will_return (__wrap_socket, 1);
-    will_return (__wrap_connect, 0);
-    will_return (__wrap_connect, 1);
-    rc = socket_connect ("::1", 666, 0, &sock);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    for (ctrl = 0; ctrl < 2; ctrl++) {
+        will_return (__wrap_socket, 0);
+        will_return (__wrap_socket, 1);
+        will_return (__wrap_connect, 0);
+        will_return (__wrap_connect, 1);
+        rc = socket_connect ("::1", 666, ctrl, &sock);
+        assert_int_equal (rc, TSS2_RC_SUCCESS);
+    }
 }
 static void
 socket_ipv6_connect_socket_fail_test (void **state)
@@ -190,6 +196,59 @@ socket_ipv6_connect_connect_fail_test (void **state)
     assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
 }
 
+#ifdef _WIN32
+static void
+socket_connect_unix_win32_fail_test (void **state)
+{
+    TSS2_RC rc;
+    SOCKET sock;
+
+    rc = socket_connect_unix ("/some/path", 0, &sock);
+    assert_int_equal (rc, TSS2_RC_BAD_REFERENCE);
+}
+#else
+static void
+socket_connect_unix_test (void **state)
+{
+    TSS2_RC rc;
+    SOCKET sock;
+    int ctrl;
+
+    for (ctrl = 0; ctrl < 2; ctrl++) {
+        will_return (__wrap_socket, 0);
+        will_return (__wrap_socket, 1);
+        will_return (__wrap_connect, 0);
+        will_return (__wrap_connect, 1);
+        rc = socket_connect_unix ("/some/path", ctrl, &sock);
+        assert_int_equal (rc, TSS2_RC_SUCCESS);
+    }
+}
+static void
+socket_connect_unix_socket_fail_test (void **state)
+{
+    TSS2_RC rc;
+    SOCKET sock;
+
+    will_return (__wrap_socket, EINVAL);
+    will_return (__wrap_socket, -1);
+    rc = socket_connect_unix ("/some/path", 0, &sock);
+    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+}
+static void
+socket_connect_unix_connect_fail_test (void **state)
+{
+    TSS2_RC rc;
+    SOCKET sock;
+
+    will_return (__wrap_socket, 0);
+    will_return (__wrap_socket, 1);
+    will_return (__wrap_connect, ENOTSOCK);
+    will_return (__wrap_connect, -1);
+    rc = socket_connect_unix ("/some/path", 0, &sock);
+    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+}
+#endif
+
 static void
 socket_connect_null_test (void **state)
 {
@@ -215,6 +274,9 @@ main (int   argc,
         cmocka_unit_test (socket_ipv6_connect_test),
         cmocka_unit_test (socket_ipv6_connect_socket_fail_test),
         cmocka_unit_test (socket_ipv6_connect_connect_fail_test),
+        cmocka_unit_test (socket_connect_unix_test),
+        cmocka_unit_test (socket_connect_unix_socket_fail_test),
+        cmocka_unit_test (socket_connect_unix_connect_fail_test),
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
 }
