@@ -21,7 +21,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
   - The  wrong file locking in FAPI IO was fixed.
 
 ### Added
-  - Added Support SM2, SM3 and SM4.
+  - Added support for SM2, SM3 and SM4.
+  - Added support for OpenSSL 3.0.0.
   - Added authPolicy field to the TPMU_CAPABILITIES union.
   - Added actData field to the TPMU_CAPABILITIES union.
   - Added TPM2_CAP_AUTH_POLICIES
@@ -30,6 +31,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
     TPMU_CAPABILITIES union.
   - Added updated to the FAPI serializations and deserializations of the
     TPMU_CAPABILITIES union and associated types.
+
+### Removed
+  - Removed support for OpenSSL < 1.1.0.
 
 ## [3.1.0] - 2021-05-17
 ### Fixed
