@@ -1166,7 +1166,7 @@ TSS2_RC
 ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(const TPMI_ALG_SYM_OBJECT in,
         json_object **jso)
 {
-    CHECK_IN_LIST(TPMI_ALG_SYM_OBJECT, in, TPM2_ALG_AES, TPM2_ALG_SM4, TPM2_ALG_NULL);
+    CHECK_IN_LIST(TPMI_ALG_SYM_OBJECT, in, TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_SM4, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -2473,6 +2473,23 @@ ifapi_json_TPMI_SM4_KEY_BITS_serialize(const TPMI_SM4_KEY_BITS in, json_object *
     return ifapi_json_UINT16_serialize(in, jso);
 }
 
+/** Serialize value of type TPMI_CAMELLIA_KEY_BITS to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMI_CAMELLIA_KEY_BITS.
+ *
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMI_CAMELLIA_KEY_BITS_serialize(const TPMI_CAMELLIA_KEY_BITS in, json_object **jso)
+{
+    CHECK_IN_LIST(UINT16, in, 128, 192, 256);
+    return ifapi_json_UINT16_serialize(in, jso);
+}
+
 /** Serialize value of type TPMI_AES_KEY_BITS to json.
  *
  * @param[in] in value to be serialized.
@@ -2508,6 +2525,8 @@ ifapi_json_TPMU_SYM_KEY_BITS_serialize(const TPMU_SYM_KEY_BITS *in, UINT32 selec
             return ifapi_json_TPMI_AES_KEY_BITS_serialize(in->aes, jso);
         case TPM2_ALG_SM4:
             return ifapi_json_TPMI_SM4_KEY_BITS_serialize(in->sm4, jso);
+        case TPM2_ALG_CAMELLIA:
+            return ifapi_json_TPMI_CAMELLIA_KEY_BITS_serialize(in->camellia, jso);
         case TPM2_ALG_XOR:
             return ifapi_json_TPMI_ALG_HASH_serialize(in->exclusiveOr, jso);
         default:
@@ -2531,6 +2550,7 @@ TSS2_RC
 ifapi_json_TPMU_SYM_MODE_serialize(const TPMU_SYM_MODE *in, UINT32 selector, json_object **jso)
 {
     switch (selector) {
+        case TPM2_ALG_CAMELLIA:
         case TPM2_ALG_SM4:
         case TPM2_ALG_AES:
             return ifapi_json_TPMI_ALG_SYM_MODE_serialize(in->aes, jso);
