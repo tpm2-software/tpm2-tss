@@ -1504,7 +1504,7 @@ TSS2_RC
 ifapi_json_TPMI_ALG_SYM_deserialize(json_object *jso, TPMI_ALG_SYM *out)
 {
     SUBTYPE_FILTER(TPMI_ALG_SYM, TPM2_ALG_ID,
-        TPM2_ALG_AES, TPM2_ALG_SM4, TPM2_ALG_XOR, TPM2_ALG_NULL);
+        TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_SM4, TPM2_ALG_XOR, TPM2_ALG_NULL);
 }
 
 /** Deserialize a TPMI_ALG_SYM_OBJECT json object.
@@ -1519,7 +1519,7 @@ ifapi_json_TPMI_ALG_SYM_OBJECT_deserialize(json_object *jso,
         TPMI_ALG_SYM_OBJECT *out)
 {
     SUBTYPE_FILTER(TPMI_ALG_SYM_OBJECT, TPM2_ALG_ID,
-        TPM2_ALG_AES, TPM2_ALG_SM4, TPM2_ALG_NULL);
+        TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_SM4, TPM2_ALG_NULL);
 }
 
 /** Deserialize a TPMI_ALG_SYM_MODE json object.
@@ -2569,6 +2569,18 @@ ifapi_json_TPMI_AES_KEY_BITS_deserialize(json_object *jso, TPMI_AES_KEY_BITS *ou
         128, 192, 256);
 }
 
+/** Deserialize a TPMI_CAMELLIA_KEY_BITS json object.
+ *
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ */
+TSS2_RC
+ifapi_json_TPMI_CAMELLIA_KEY_BITS_deserialize(json_object *jso, TPMI_CAMELLIA_KEY_BITS *out)
+{
+    SUBTYPE_FILTER(TPMI_CAMELLIA_KEY_BITS, UINT16,
+        128, 192, 256);
+}
+
 /** Deserialize a TPMI_SM4_KEY_BITS json object.
  *
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
@@ -2603,6 +2615,8 @@ ifapi_json_TPMU_SYM_KEY_BITS_deserialize(
         return ifapi_json_TPMI_ALG_HASH_deserialize(jso, &out->exclusiveOr);
     case TPM2_ALG_SM4:
         return ifapi_json_TPMI_SM4_KEY_BITS_deserialize(jso, &out->sm4);
+    case TPM2_ALG_CAMELLIA:
+        return ifapi_json_TPMI_CAMELLIA_KEY_BITS_deserialize(jso, &out->camellia);
     case TPM2_ALG_NULL: {
             return TSS2_RC_SUCCESS;
         }
@@ -2631,6 +2645,7 @@ ifapi_json_TPMU_SYM_MODE_deserialize(
     switch (selector) {
     case TPM2_ALG_SM4:
     case TPM2_ALG_AES:
+    case TPM2_ALG_CAMELLIA:
         return ifapi_json_TPMI_ALG_SYM_MODE_deserialize(jso, &out->aes);
 
     case TPM2_ALG_NULL: {
