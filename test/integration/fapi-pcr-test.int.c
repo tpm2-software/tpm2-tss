@@ -183,10 +183,12 @@ test_fapi_pcr_test(FAPI_CONTEXT *context)
     ASSERT(log != NULL);
     ASSERT(strlen(log) > ASSERT_SIZE);
 
-    for (i = 0; i < ( sizeof(log_exp) / sizeof(log_exp[0]) ); i++)
+    size_t number_of_test_values = sizeof(log_exp) / sizeof(log_exp[0]);
+
+    for (i = 0; i < number_of_test_values; i++)
         if (strcmp(log_exp[i], log) == 0)
             break;
-    if (i >= 3) {
+    if (i >= number_of_test_values) {
         LOG_ERROR("Log mismatch. Received: %s", log);
         goto error;
     }
