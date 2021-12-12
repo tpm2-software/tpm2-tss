@@ -6,7 +6,9 @@
 
 #include "tss2_esys.h"
 
+
 #include "esys_iutil.h"
+#include "test-esys.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -35,6 +37,12 @@ test_esys_get_capability_act(ESYS_CONTEXT * esys_context)
                            ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                            capability, property, propertyCount,
                            &moreData, &capabilityData);
+
+    /* Check whether capability is available. */
+    if ((r & ~TPM2_RC_N_MASK) == (TPM2_RC_P | TPM2_RC_VALUE)) {
+        SAFE_FREE(capabilityData);
+        return EXIT_SKIP;
+    }
 
     goto_if_error(r, "Error esys get capability", error);
 
