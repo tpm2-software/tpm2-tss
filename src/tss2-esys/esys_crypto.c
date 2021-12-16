@@ -499,7 +499,7 @@ iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
     size_t data_size_bits = data_size * 8;
     size_t rest_size = data_size;
     BYTE *kdfa_byte_ptr;
-    BYTE *data_start = data;
+    BYTE *data_start MAYBE_UNUSED = data;
 
     if (key == NULL || data == NULL) {
         LOG_ERROR("Bad reference");
