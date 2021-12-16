@@ -912,12 +912,21 @@ struct TPMS_EMPTY {
     BYTE empty[1]; /* a structure with no member */
 };
 
-/* Definition of TPMS_ALGORITHM_DESCRIPTION Structure <OUT> */
-typedef struct TPMS_ALGORITHM_DESCRIPTION TPMS_ALGORITHM_DESCRIPTION;
+/* This is DEPRECATED as it's an unused structure included by accident and never used
+ * by a TPM 2.0 device as either an input or output structure.
+ * Definition of TPMS_ALGORITHM_DESCRIPTION Structure <OUT>
+ */
+#if defined(INTERNALBUILD)
+    #define DEPRECATED
+#else
+    #define DEPRECATED __attribute__((deprecated))
+#endif
+
+typedef struct TPMS_ALGORITHM_DESCRIPTION TPMS_ALGORITHM_DESCRIPTION DEPRECATED;
 struct TPMS_ALGORITHM_DESCRIPTION {
     TPM2_ALG_ID alg;            /* an algorithm */
     TPMA_ALGORITHM  attributes; /* the attributes of the algorithm */
-};
+} DEPRECATED;
 
 /* Definition of TPMU_HA Union <INOUT S> */
 typedef union TPMU_HA TPMU_HA;

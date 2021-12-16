@@ -753,14 +753,16 @@ Tss2_MU_TPMS_ALGORITHM_DESCRIPTION_Marshal(
     TPMS_ALGORITHM_DESCRIPTION  const *src,
     uint8_t         buffer[],
     size_t          buffer_size,
-    size_t         *offset);
+    size_t         *offset)
+	__attribute__((deprecated));
 
 TSS2_RC
 Tss2_MU_TPMS_ALGORITHM_DESCRIPTION_Unmarshal(
     uint8_t const   buffer[],
     size_t          buffer_size,
     size_t         *offset,
-    TPMS_ALGORITHM_DESCRIPTION *dest);
+    TPMS_ALGORITHM_DESCRIPTION *dest)
+    __attribute__((deprecated));
 
 TSS2_RC
 Tss2_MU_TPMS_TAGGED_PROPERTY_Marshal(
