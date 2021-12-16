@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
       - name: Launch Container
         env:
           DOCKER_IMAGE: ${{ matrix.docker_image }}
@@ -27,6 +29,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
       - name: Launch Container
         env:
           CC: clang
@@ -42,6 +46,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
       - name: Launch Container
         env:
           CC: gcc
@@ -57,6 +63,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
       - name: Launch Container
         env:
           CC: gcc
@@ -72,6 +80,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
       - name: Launch Container
         env:
           CC: gcc
@@ -87,6 +97,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
       - name: Launch Container
         env:
           DOCKER_IMAGE: fedora-32
@@ -103,6 +115,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
       - name: Launch Container
         env:
           REPO_BRANCH: ${{ github.ref }}
