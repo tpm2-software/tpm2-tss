@@ -644,10 +644,10 @@ tcti_libtpms_cb_nvram_init(void)
 
 TPM_RESULT
 tcti_libtpms_cb_nvram_loaddata(
-    unsigned char **data,
-    uint32_t *length,
-    uint32_t tpm_number,
-    const char *name)
+    unsigned char **data MAYBE_UNUSED,
+    uint32_t *length MAYBE_UNUSED,
+    uint32_t tpm_number MAYBE_UNUSED,
+    const char *name MAYBE_UNUSED)
 {
     LOG_TRACE("tcti-libtpms callback nvram_loaddata() called: "
               "data=0x%" PRIxPTR ", "
@@ -661,10 +661,10 @@ tcti_libtpms_cb_nvram_loaddata(
 
 TPM_RESULT
 tcti_libtpms_cb_nvram_storedata(
-    const unsigned char *data,
-    uint32_t length,
-    uint32_t tpm_number,
-    const char *name)
+    const unsigned char *data MAYBE_UNUSED,
+    uint32_t length MAYBE_UNUSED,
+    uint32_t tpm_number MAYBE_UNUSED,
+    const char *name MAYBE_UNUSED)
 {
     LOG_TRACE("tcti-libtpms callback nvram_storedata() called: "
               "data=0x%" PRIxPTR ", "
@@ -678,9 +678,9 @@ tcti_libtpms_cb_nvram_storedata(
 
 TPM_RESULT
 tcti_libtpms_cb_nvram_deletename(
-    uint32_t tpm_number,
-    const char *name,
-    TPM_BOOL must_exist)
+    uint32_t tpm_number MAYBE_UNUSED,
+    const char *name MAYBE_UNUSED,
+    TPM_BOOL must_exist MAYBE_UNUSED)
 {
     LOG_TRACE("tcti-libtpms callback nvram_deletename() called: "
               "tpm_number=%" PRIu32 ", "
@@ -704,7 +704,7 @@ tcti_libtpms_cb_io_init(void)
 TPM_RESULT
 tcti_libtpms_cb_io_getlocality(
     TPM_MODIFIER_INDICATOR *locality_modifer,
-    uint32_t tpm_number)
+    uint32_t tpm_number MAYBE_UNUSED)
 {
     TSS2_TCTI_COMMON_CONTEXT *tcti_common;
 
@@ -729,8 +729,8 @@ tcti_libtpms_cb_io_getlocality(
 
 TPM_RESULT
 tcti_libtpms_cb_io_getphysicalpresence(
-    TPM_BOOL *physical_presence,
-    uint32_t tpm_number)
+    TPM_BOOL *physical_presence MAYBE_UNUSED,
+    uint32_t tpm_number MAYBE_UNUSED)
 {
     LOG_TRACE("tcti-libtpms callback io_getphysicalpresence() called: "
               "physical_presence=0x%" PRIxPTR ", "
