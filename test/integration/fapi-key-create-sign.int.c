@@ -250,6 +250,7 @@ error:
     SAFE_FREE(policy);
     SAFE_FREE(publicKey);
     SAFE_FREE(signature);
+    SAFE_FREE(certificate);
     return EXIT_FAILURE;
 }
 
