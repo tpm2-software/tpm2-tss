@@ -807,6 +807,10 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
     }
 
 error_cleanup:
+    SAFE_FREE(outPublic);
+    SAFE_FREE(creationData);
+    SAFE_FREE(creationHash);
+    SAFE_FREE(creationTicket);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     free_string_list(k_sub_path);
     SAFE_FREE(pkey->serialization.buffer);
