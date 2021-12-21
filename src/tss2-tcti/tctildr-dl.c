@@ -268,7 +268,7 @@ info_from_name (const char *name,
     rc = handle_from_name (name, data);
     if (rc != TSS2_RC_SUCCESS)
         return rc;
-    *info = (TSS2_TCTI_INFO*)info_from_handle (*data);
+    *info = info_from_handle (*data);
     if (*info == NULL) {
         tctildr_finalize_data (data);
         return TSS2_TCTI_RC_IO_ERROR;
