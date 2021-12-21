@@ -76,7 +76,6 @@ ifapi_io_read_async(
     flock.l_whence = SEEK_SET;
 
     if (fcntl(fileno(io->stream), F_SETLK, &flock) == -1) {
-        fclose(io->stream);
         LOG_ERROR("File \"%s\" could not be locked: %s",
                   filename, strerror(errno));
         fclose(io->stream);
