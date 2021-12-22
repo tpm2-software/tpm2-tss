@@ -624,7 +624,8 @@ typedef TPM2_HANDLE TPM2_RH;
 #define TPM2_RH_EK          ((TPM2_RH) 0x40000006) /* R */
 #define TPM2_RH_NULL        ((TPM2_RH) 0x40000007) /* K A P */
 #define TPM2_RH_UNASSIGNED  ((TPM2_RH) 0x40000008) /* R */
-#define TPM2_RS_PW          ((TPM2_RH) 0x40000009) /* S */
+#define TPM2_RH_PW          ((TPM2_RH) 0x40000009) /* S */
+#define TPM2_RS_PW          ((TPM2_RH) 0x40000009) /* S; This was a bug; to be deprecated*/
 #define TPM2_RH_LOCKOUT     ((TPM2_RH) 0x4000000A) /* A */
 #define TPM2_RH_ENDORSEMENT ((TPM2_RH) 0x4000000B) /* K A P */
 #define TPM2_RH_PLATFORM    ((TPM2_RH) 0x4000000C) /* K A P */
