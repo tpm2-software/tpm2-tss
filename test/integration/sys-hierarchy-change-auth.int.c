@@ -31,7 +31,7 @@ test_owner_auth (TSS2_SYS_CONTEXT *sys_context)
 
     TSS2L_SYS_AUTH_COMMAND sessionsData = {
         .count = 1,
-        .auths = {{.sessionHandle = TPM2_RS_PW,
+        .auths = {{.sessionHandle = TPM2_RH_PW,
             .sessionAttributes = 0x00,
             .nonce={.size=0},
             .hmac={.size=0}}}};
@@ -129,7 +129,7 @@ test_platform_auth (TSS2_SYS_CONTEXT *sys_context)
 
     TSS2L_SYS_AUTH_COMMAND sessionsData = {
         .count = 1,
-        .auths = {{.sessionHandle = TPM2_RS_PW,
+        .auths = {{.sessionHandle = TPM2_RH_PW,
             .sessionAttributes = 0x00,
             .nonce={.size=0},
             .hmac={.size=0}}}};

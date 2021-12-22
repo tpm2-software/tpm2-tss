@@ -34,7 +34,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     TSS2L_SYS_AUTH_COMMAND cmd_auth = {
         .count = 1,
         .auths = {{
-            .sessionHandle = TPM2_RS_PW,
+            .sessionHandle = TPM2_RH_PW,
         }},
     };
     TSS2L_SYS_AUTH_RESPONSE rsp_auth = { 0 };
@@ -90,7 +90,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     nv_public.nvPublic.authPolicy.size = 0;
     nv_public.nvPublic.dataSize = sizeof(TPMT_HA);
     cmd_auth.count = 1;
-    cmd_auth.auths[0].sessionHandle = TPM2_RS_PW;
+    cmd_auth.auths[0].sessionHandle = TPM2_RH_PW;
     cmd_auth.auths[0].hmac.size = 0;
 
     LOG_INFO("Calling NV_DefineSpace");
@@ -185,7 +185,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     public_template.size = offset;
     memcpy(public_template.buffer, public_buf, offset);
     cmd_auth.count = 1;
-    cmd_auth.auths[0].sessionHandle = TPM2_RS_PW;
+    cmd_auth.auths[0].sessionHandle = TPM2_RH_PW;
     cmd_auth.auths[0].hmac.size = TPM2_SHA256_DIGEST_SIZE;
 
     /* Create a symmetric encryption key using the password session */
@@ -217,7 +217,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     }
 
     /* Call encrypt using the key object using the password session */
-    LOG_INFO("Calling EncryptDecrypt using password session 0x%x", TPM2_RS_PW);
+    LOG_INFO("Calling EncryptDecrypt using password session 0x%x", TPM2_RH_PW);
     LOGBLOB_DEBUG(data_in.buffer, 32, "%s", "First 32 bytes of plain text:");
     rc = TSS2_RETRY_EXP(Tss2_Sys_EncryptDecrypt (sys_context,
                                                  object_handle,
@@ -285,7 +285,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     }
     LOG_INFO("EncryptDecrypt success!");
 
-    cmd_auth.auths[0].sessionHandle = TPM2_RS_PW;
+    cmd_auth.auths[0].sessionHandle = TPM2_RH_PW;
     cmd_auth.auths[0].hmac.size = 0;
 
     /* Kill the NV index - this should invalidate the policy */

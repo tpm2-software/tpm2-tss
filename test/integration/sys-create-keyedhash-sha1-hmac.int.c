@@ -37,7 +37,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     /* session parameters */
     /* command session info */
     TSS2L_SYS_AUTH_COMMAND  sessions_cmd         = {
-        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .auths = {{ .sessionHandle = TPM2_RH_PW }},
         .count = 1
     };
     /* response session info */

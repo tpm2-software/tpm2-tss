@@ -39,7 +39,7 @@ main (int argc, char *argv[])
     TSS2_RC rc;
     TSS2_SYS_CONTEXT *sys_context;
     TSS2L_SYS_AUTH_COMMAND auth_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .auths = {{ .sessionHandle = TPM2_RH_PW }},
         .count = 1
     };
     TPMI_RH_NV_INDEX nvIndex;

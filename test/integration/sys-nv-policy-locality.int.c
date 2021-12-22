@@ -104,7 +104,7 @@ setup_nv (TSS2_SYS_CONTEXT *sys_ctx)
         .count = 1,
         .auths= {
             {
-                .sessionHandle = TPM2_RS_PW,
+                .sessionHandle = TPM2_RH_PW,
             }
         }
     };
@@ -144,7 +144,7 @@ teardown_nv (TSS2_SYS_CONTEXT *sys_ctx)
         .count = 1,
         .auths = {
             {
-                .sessionHandle = TPM2_RS_PW,
+                .sessionHandle = TPM2_RH_PW,
             },
         },
     };
@@ -261,7 +261,7 @@ nv_read_test (TSS2_SYS_CONTEXT *sys_ctx)
         .count = 1,
         .auths = {
             {
-                .sessionHandle = TPM2_RS_PW,
+                .sessionHandle = TPM2_RH_PW,
             },
         },
     };
