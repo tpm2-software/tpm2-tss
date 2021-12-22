@@ -148,7 +148,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     LOGBLOB_DEBUG(policy_digest.buffer, policy_digest.size, "%s", "policy digest:");
 
     cmd_auth.count = 1;
-    cmd_auth.auths[0].sessionHandle = TPM2_RS_PW;
+    cmd_auth.auths[0].sessionHandle = TPM2_RH_PW;
     cmd_auth.auths[0].nonce.size = 0;
     cmd_auth.auths[0].hmac.size = 0;
 

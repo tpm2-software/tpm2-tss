@@ -30,7 +30,7 @@ main (int argc, char *argv[])
     TSS2_RC rc;
     TSS2_SYS_CONTEXT *sys_context;
     TSS2L_SYS_AUTH_COMMAND auth_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .auths = {{ .sessionHandle = TPM2_RH_PW }},
         .count = 1
     };
     TPM2B_SENSITIVE_CREATE in_sensitive = { 0 };

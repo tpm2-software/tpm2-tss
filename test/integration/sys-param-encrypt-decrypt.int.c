@@ -42,7 +42,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     TPM2B_NONCE nonce_caller;
     TPMT_SYM_DEF symmetric;
     TSS2L_SYS_AUTH_COMMAND req_auth = {
-        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .auths = {{ .sessionHandle = TPM2_RH_PW }},
         .count = 1
     };
     TSS2L_SYS_AUTH_RESPONSE resp_auth = {
@@ -104,7 +104,7 @@ retry:
 
     req_auth.count = 2;
     /* Set up auth session structure */
-    req_auth.auths[0].sessionHandle = TPM2_RS_PW;
+    req_auth.auths[0].sessionHandle = TPM2_RH_PW;
     req_auth.auths[0].nonce.size = 0;
     req_auth.auths[0].sessionAttributes = 0;
     req_auth.auths[0].hmac.size = nv_auth.size;
@@ -275,7 +275,7 @@ retry:
 
 clean:
     req_auth.count = 1;
-    req_auth.auths[0].sessionHandle = TPM2_RS_PW;
+    req_auth.auths[0].sessionHandle = TPM2_RH_PW;
 
     rc2 = Tss2_Sys_NV_UndefineSpace(sys_context, TPM2_RH_OWNER,
                                     nv_index, &req_auth, 0);

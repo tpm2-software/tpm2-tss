@@ -32,7 +32,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     TPM2B_NAME              qualified_name  = TPM2B_NAME_INIT;
     TPM2_HANDLE             object_handle   = 0;
     TSS2L_SYS_AUTH_COMMAND  auth_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .auths = {{ .sessionHandle = TPM2_RH_PW }},
         .count = 1
     };
     TSS2L_SYS_AUTH_RESPONSE auth_rsp = {

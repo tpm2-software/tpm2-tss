@@ -48,7 +48,7 @@ create_primary_rsa_2048_aes_128_cfb (
     /* session parameters */
     /* command session info */
     TSS2L_SYS_AUTH_COMMAND  sessions_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .auths = {{ .sessionHandle = TPM2_RH_PW }},
         .count = 1
     };
     /* response session info */
@@ -136,7 +136,7 @@ create_aes_128_cfb (
     /* session parameters */
     /* command session info */
     TSS2L_SYS_AUTH_COMMAND  sessions_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .auths = {{ .sessionHandle = TPM2_RH_PW }},
         .count = 1
     };
     /* response session info */
@@ -207,7 +207,7 @@ create_keyedhash_key (
     /* session parameters */
     /* command session info */
     TSS2L_SYS_AUTH_COMMAND  sessions_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .auths = {{ .sessionHandle = TPM2_RH_PW }},
         .count = 1
     };
     /* response session info */
@@ -260,7 +260,7 @@ tpm_encrypt_decrypt_cfb (
     /* command session info */
     /* command session info */
     TSS2L_SYS_AUTH_COMMAND  sessions_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .auths = {{ .sessionHandle = TPM2_RH_PW }},
         .count = 1
     };
     /* response session info */
@@ -317,7 +317,7 @@ tpm_encrypt_decrypt_2_cfb (
     /* command session info */
     /* command session info */
     TSS2L_SYS_AUTH_COMMAND  sessions_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RS_PW }},
+        .auths = {{ .sessionHandle = TPM2_RH_PW }},
         .count = 1
     };
     /* response session info */
@@ -728,7 +728,7 @@ DefineNvIndex (
         .count = 1,
         .auths = {
             {
-                .sessionHandle = TPM2_RS_PW,
+                .sessionHandle = TPM2_RH_PW,
                 .sessionAttributes = 0,
                 .nonce = { .size = 0 },
                 .hmac = { .size = 0 },

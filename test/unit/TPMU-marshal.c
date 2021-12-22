@@ -371,8 +371,8 @@ tpmu_name_marshal(void **state)
     TPMU_NAME name = {0};
     TPMT_HA ha = {0};
     uint8_t buf[256] = {0};
-    TPM2_HANDLE hdl = TPM2_RS_PW;
-    TPM2_HANDLE hdl_expected = HOST_TO_BE_32(TPM2_RS_PW);
+    TPM2_HANDLE hdl = TPM2_RH_PW;
+    TPM2_HANDLE hdl_expected = HOST_TO_BE_32(TPM2_RH_PW);
     TPM2_ALG_ID id_expected = HOST_TO_BE_16(TPM2_ALG_SHA1);
     size_t size = sizeof(hdl), offset = 0;
     const char digest[] = {0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x01, 0x02,

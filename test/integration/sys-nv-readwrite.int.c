@@ -31,7 +31,7 @@ const TSS2L_SYS_AUTH_COMMAND auth_cmd_null_pwd = {
     .count = 1,
     .auths = {
         {
-            .sessionHandle = TPM2_RS_PW,
+            .sessionHandle = TPM2_RH_PW,
         },
     },
 };

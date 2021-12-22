@@ -126,7 +126,7 @@ nv_rw_with_session (
                     .size = 1,
                     .buffer = { 0xa5, },
                 },
-                .sessionHandle = TPM2_RS_PW,
+                .sessionHandle = TPM2_RH_PW,
                 .sessionAttributes = TPMA_SESSION_CONTINUESESSION,
             }
         }
@@ -135,7 +135,7 @@ nv_rw_with_session (
         .count = 1,
         .auths = {
             {
-                .sessionHandle = TPM2_RS_PW,
+                .sessionHandle = TPM2_RH_PW,
             },
         },
     };
