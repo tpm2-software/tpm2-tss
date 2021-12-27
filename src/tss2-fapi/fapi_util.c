@@ -799,9 +799,7 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
             pkey->signing_scheme = context->profiles.default_profile.ecc_signing_scheme;
         context->createPrimary.pkey_object.handle = primaryHandle;
         SAFE_FREE(pkey->serialization.buffer);
-        ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
         return TSS2_RC_SUCCESS;
-
 
     statecasedefault(context->primary_state);
     }
@@ -2999,8 +2997,6 @@ ifapi_initialize_object(
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     ESYS_TR handle;
-    const char *path;
-    size_t pos = 0, pos2;
 
     switch (object->objectType) {
     case IFAPI_NV_OBJ:
@@ -3025,38 +3021,6 @@ ifapi_initialize_object(
         }
         object->authorization_state = AUTH_INIT;
         object->handle = handle;
-        break;
-
-    case IFAPI_HIERARCHY_OBJ:
-        path = object->rel_path;
-        if (path) {
-            /* Determine esys handle from pathname. */
-            if (strncmp("/", &path[0], 1) == 0)
-                pos += 1;
-            /* Skip profile if it does exist in path */
-            if (strncmp("P_", &path[pos], 2) == 0) {
-                char *  start = strchr(&path[pos], IFAPI_FILE_DELIM_CHAR);
-                if (start) {
-                    pos2 = (int)(start - &path[pos]);
-                    pos = pos2 + 2;
-                } else {
-                    return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid path.");
-                }
-            }
-
-            if (strcmp(&path[pos], "HS") == 0) {
-                object->handle = ESYS_TR_RH_OWNER;
-            } else if (strcmp(&path[pos], "HE") == 0) {
-                object->handle = ESYS_TR_RH_ENDORSEMENT;
-            } else if (strcmp(&path[pos], "LOCKOUT") == 0) {
-                object->handle = ESYS_TR_RH_LOCKOUT;
-            } else  if (strcmp(&path[pos], "HN") == 0) {
-                object->handle = ESYS_TR_RH_NULL;
-            } else {
-                return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid path.");
-            }
-        }
-        object->authorization_state = AUTH_INIT;
         break;
 
     default:
