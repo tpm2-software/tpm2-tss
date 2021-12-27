@@ -159,6 +159,8 @@ Fapi_Import_Async(
     IFAPI_OBJECT *object = &command->object;
     IFAPI_EXT_PUB_KEY * extPubKey = &object->misc.ext_pub_key;
     IFAPI_DUPLICATE * keyTree = &object->misc.key_tree;
+    command->private = NULL;
+    command->parent_path = NULL;
 
     if (context->state != _FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");

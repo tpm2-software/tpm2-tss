@@ -15,6 +15,7 @@
 #include "ifapi_json_deserialize.h"
 #include "fapi_policy.h"
 #include "ifapi_config.h"
+#include "ifapi_helpers.h"
 #define LOGMODULE fapijson
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -637,8 +638,6 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out)
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 
-    out->rel_path = NULL;
-
     r = ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_deserialize(jso2, &out->objectType);
     return_if_error(r, "BAD VALUE");
 
@@ -663,6 +662,9 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out)
     case IFAPI_HIERARCHY_OBJ:
         r = ifapi_json_IFAPI_HIERARCHY_deserialize(jso, &out->misc.hierarchy);
         return_if_error(r, "BAD VALUE");
+
+        r = ifapi_set_name_hierarchy_object(out);
+        return_if_error(r, "Bad hierarchy.");
 
         break;
     case IFAPI_KEY_OBJ:
