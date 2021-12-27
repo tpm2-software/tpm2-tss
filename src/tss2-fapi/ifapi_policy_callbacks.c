@@ -512,6 +512,7 @@ ifapi_policyeval_cbauth(
                 break;
             } else if (cb_ctx->object.objectType == IFAPI_HIERARCHY_OBJ) {
                 cb_ctx->cb_state = POL_CB_AUTHORIZE_OBJECT;
+                cb_ctx->auth_object_ptr = &cb_ctx->object;
                 next_case = true;
                 break;
             } else {
