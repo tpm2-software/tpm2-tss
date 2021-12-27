@@ -113,6 +113,9 @@ test_fapi_key_create_sign_password_provision(FAPI_CONTEXT *context)
     r = Fapi_Provision(context, NULL, PASSWORD, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
+    r = pcr_reset(context, 16);
+    goto_if_error(r, "Error pcr_reset", error);
+
     r = Fapi_SetAuthCB(context, auth_callback, NULL);
     goto_if_error(r, "Error SetPolicyAuthCallback", error);
 

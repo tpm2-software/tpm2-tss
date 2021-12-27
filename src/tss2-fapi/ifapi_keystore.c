@@ -628,10 +628,10 @@ ifapi_keystore_load_finish(
     goto_if_null2(jso, "Keystore is corrupted (Json error).", r, TSS2_FAPI_RC_GENERAL_FAILURE,
                   error_cleanup);
 
+    object->rel_path = keystore->rel_path;
     r = ifapi_json_IFAPI_OBJECT_deserialize(jso, object);
     goto_if_error(r, "Deserialize object.", error_cleanup);
 
-    object->rel_path = keystore->rel_path;
     SAFE_FREE(buffer);
     if (jso)
         json_object_put(jso);

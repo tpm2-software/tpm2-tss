@@ -47,6 +47,10 @@ ifapi_init_hierarchy_object(
     IFAPI_OBJECT *hierarchy,
     ESYS_TR esys_handle);
 
+TSS2_RC
+ifapi_set_name_hierarchy_object(
+    IFAPI_OBJECT *hierarchy);
+
 char *
 get_description(IFAPI_OBJECT *object);
 

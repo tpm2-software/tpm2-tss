@@ -231,6 +231,9 @@ test_fapi_export_policy(FAPI_CONTEXT *context)
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
+    r = pcr_reset(context, 16);
+    goto_if_error(r, "Error pcr_reset", error);
+
     for (i = 0; i < sizeof(policies) / sizeof(policies[0]); i++) {
         fprintf(stderr, "\nTest policy: %s\n",  policies[i].path);
         json_policy = read_policy(context, policies[i].path);
