@@ -59,6 +59,7 @@ typedef struct {
     TPM2B_DIGEST                             authPolicy;
     ESYS_TR                                  esysHandle;
     bool                                      authorized;   /**< Switch whether hiearchy is authorized. */
+    TPM2B_NAME                                     name;    /**< Name of the hierarchy */
 } IFAPI_HIERARCHY;
 
 /** Type for representing a FAPI NV object
