@@ -202,11 +202,14 @@ Fapi_VerifyQuote_Async(
     strdup_check(command->keyPath, publicKeyPath, r, error_cleanup);
     strdup_check(command->quoteInfo, quoteInfo, r, error_cleanup);
     strdup_check(command->logData, pcrLog, r, error_cleanup);
+    command->event_list = NULL;
 
     if (qualifyingData != NULL) {
         FAPI_COPY_DIGEST(&command->qualifyingData.buffer[0],
                 command->qualifyingData.size,
                 qualifyingData, qualifyingDataSize);
+    } else {
+        command->qualifyingData.size = 0;
     }
 
     /* Load the key for verification from the keystore. */
@@ -288,6 +291,16 @@ Fapi_VerifyQuote_Finish(
                                              attest2b.size,
                                              &command->fapi_quote_info.sig_scheme);
             goto_if_error(r, "Verify signature.", error_cleanup);
+
+            /* Check qualifying data */
+            if (command->qualifyingData.size != command->fapi_quote_info.attest.extraData.size ||
+                memcmp(&command->qualifyingData.buffer[0],
+                       &command->fapi_quote_info.attest.extraData.buffer[0],
+                       command->qualifyingData.size) != 0) {
+                context->state = _FAPI_STATE_INIT;
+                goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
+                           "Invalid qualifying data for quote", error_cleanup);
+            }
 
             /* If no logData was provided then the operation is done. */
             if (!command->logData) {
