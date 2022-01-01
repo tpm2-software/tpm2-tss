@@ -305,6 +305,17 @@ test_fapi_quote(FAPI_CONTEXT *context)
     ASSERT(cmp_strtokens(pathlist, check_pathlist, ":"));
     LOG_INFO("\nPathlist: %s\n", check_pathlist);
 
+    /* Invalidate qualifying data */
+    qualifyingData[0] = 0;
+
+    r = Fapi_VerifyQuote(context, "HS/SRK/mySignKey",
+                         qualifyingData, 20,  quoteInfo,
+                         signature, signatureSize, log);
+    if (r == TPM2_RC_SUCCESS) {
+        LOG_ERROR("Invalid qualifying data was not detected.");
+        goto error;
+    }
+
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
