@@ -395,7 +395,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(object);
     ifapi_cleanup_ifapi_object(key_object);
     SAFE_FREE(command->path);
-    SAFE_FREE(*data);
+    SAFE_FREE(command->data);
     SAFE_FREE(key_context);
     ifapi_session_clean(context);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
