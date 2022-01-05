@@ -4309,7 +4309,7 @@ ifapi_get_certificates(
         context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes = TPMA_NV_NO_DA;
 
         r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
-        return_if_error2(r, "Could not open hierarchy /HS");
+        goto_if_error_reset_state(r, "Could not open hierarchy /HS", error);
 
         fallthrough;
 
@@ -4333,7 +4333,7 @@ ifapi_get_certificates(
         context->session2 = ESYS_TR_NONE;
         context->nv_cmd.nv_read_state = NV_READ_INIT;
         memset(&context->nv_cmd.nv_object, 0, sizeof(IFAPI_OBJECT));
-        Esys_Free(context->cmd.Provision.nvPublic);
+        SAFE_FREE(context->cmd.Provision.nvPublic);
         fallthrough;
 
     statecase(context->get_cert_state, GET_CERT_READ_CERT);
@@ -4363,7 +4363,7 @@ ifapi_get_certificates(
     }
 
 error:
-    SAFE_FREE(context->cmd.Provision.capabilityData);
+    SAFE_FREE(context->cmd.Provision.nvPublic);
     SAFE_FREE(context->cmd.Provision.capabilityData);
     ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
     ifapi_free_object_list(*cert_list);
