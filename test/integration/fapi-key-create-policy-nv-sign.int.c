@@ -149,6 +149,7 @@ error:
     SAFE_FREE(publicKey);
     SAFE_FREE(certificate);
     SAFE_FREE(json_policy);
+    SAFE_FREE(pathList);
     return EXIT_FAILURE;
 }
 
