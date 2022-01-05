@@ -1206,6 +1206,7 @@ cleanup:
         r = TSS2_FAPI_RC_KEY_NOT_FOUND;
     }
     keystore->key_search.state = KSEARCH_INIT;
+    ifapi_cleanup_ifapi_object(&object);
     return r;
 }
 
