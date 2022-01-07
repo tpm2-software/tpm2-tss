@@ -154,10 +154,10 @@ AS_IF([test "x$enable_esys" = xyes],
 AC_SUBST([TSS2_ESYS_CFLAGS_CRYPTO])
 AC_SUBST([TSS2_ESYS_LDFLAGS_CRYPTO])
 
-AS_IF([test "x$enable_fapi" != xno -a "x$enable_esys" = "xno"],
+AS_IF([test "x$enable_fapi" != xno && test "x$enable_esys" = "xno"],
     [AC_MSG_ERROR([ESYS has to be enabled to compile FAPI.])])
 
-AS_IF([test "x$enable_fapi" != xno -a "x$with_crypto" != "xossl"],
+AS_IF([test "x$enable_fapi" != xno && test "x$with_crypto" != "xossl"],
     [AC_MSG_ERROR([FAPI has to be compiled with OpenSSL])])
 
 AS_IF([test "x$enable_fapi" = xyes ],
@@ -263,7 +263,7 @@ dnl ---------  Physical TPM device for testing -----------------------
 
 AC_ARG_WITH([device],
             [AS_HELP_STRING([--with-device=<device>],[TPM device for testing])],
-            [AS_IF([test \( -w "$with_device" \)  -a \( -r "$with_device" \)],
+            [AS_IF([test -w "$with_device" && test -r "$with_device"],
                    [AC_MSG_RESULT([success])
                     AX_NORMALIZE_PATH([with_device])
                     with_device_set=yes],
@@ -320,7 +320,7 @@ AS_IF([test "x$enable_integration" = "xyes"],
        ERROR_IF_NO_PROG([grep])
        ERROR_IF_NO_PROG([env])
        ERROR_IF_NO_PROG([rm])
-       AS_IF([test "x$with_crypto" != xossl -o "x$enable_esys" != xyes],
+       AS_IF([test "x$with_crypto" != xossl || test "x$enable_esys" != xyes],
            [PKG_CHECK_MODULES([CRYPTO],[libcrypto])])
        AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
 
