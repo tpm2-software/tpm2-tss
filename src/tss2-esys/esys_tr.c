@@ -65,15 +65,14 @@ Esys_TR_Serialize(ESYS_CONTEXT * esys_context,
  *
  * Deserialize the metadata of an ESYS_TR object from a byte buffer that was
  * stored on disk for later use by a different program or context.
- * An object can be serialized suing Esys_TR_Serialize.
+ * An object can be deserialized using Esys_TR_Deserialize.
  * @param esys_context [in,out] The ESYS_CONTEXT.
- * @param esys_handle [in] The ESYS_TR object to serialize.
- * @param buffer [out] The buffer containing the serialized metadata.
- *        (caller-callocated) Shall be freed using free().
- * @param buffer_size [out] The size of the buffer parameter.
+ * @param esys_handle [out] The ESYS_TR object to deserialize.
+ * @param buffer [in] The buffer containing the metadata of the ESYS_TR object.
+ * @param buffer_size [in] The size of the buffer parameter.
  * @retval TSS2_RC_SUCCESS on Success.
  * @retval TSS2_ESYS_RC_MEMORY if the object can not be allocated.
- * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if the buffer for unmarshaling.
+ * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if the buffer for unmarshalling.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
  * @retval TSS2_RCs produced by lower layers of the software stack.
  */
