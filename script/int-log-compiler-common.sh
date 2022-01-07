@@ -237,7 +237,7 @@ try_simulator_start ()
         ret_data=$?
         ${sock_tool} ${sock_tool_params} 2> /dev/null | grep "${PID}" | grep "${SIM_PORT_CMD}"
         ret_cmd=$?
-        if [ \( $ret_data -eq 0 \) -a \( $ret_cmd -eq 0 \) ]; then
+        if test $ret_data -eq 0 && test $ret_cmd -eq 0; then
             echo "Simulator with PID ${PID} bound to port ${SIM_PORT_DATA} and " \
                  "${SIM_PORT_CMD} successfully.";
             break
