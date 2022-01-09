@@ -157,8 +157,8 @@ Fapi_GetEsysBlob_Async(
     authObject->objectType = IFAPI_OBJ_NONE;
 
     /* Check whether TCTI and ESYS are initialized */
-    return_if_null(context->esys, "Command can't be executed in none TPM mode.",
-                   TSS2_FAPI_RC_NO_TPM);
+    goto_if_null(context->esys, "Command can't be executed in none TPM mode.",
+                   TSS2_FAPI_RC_NO_TPM, error_cleanup);
 
     /* If the async state automata of FAPI shall be tested, then we must not set
        the timeouts of ESYS to blocking mode.
@@ -167,12 +167,12 @@ Fapi_GetEsysBlob_Async(
        to block until a result is available. */
 #ifndef TEST_FAPI_ASYNC
     r = Esys_SetTimeout(context->esys, TSS2_TCTI_TIMEOUT_BLOCK);
-    return_if_error_reset_state(r, "Set Timeout to blocking");
+    goto_if_error_reset_state(r, "Set Timeout to blocking", error_cleanup);
 #endif /* TEST_FAPI_ASYNC */
 
     /* A TPM session will be created to enable object authorization */
     r = ifapi_session_init(context);
-    return_if_error(r, "Initialize GetEsysBlob");
+    goto_if_error(r, "Initialize GetEsysBlob", error_cleanup);
 
     context->state = GET_ESYS_BLOB_GET_FILE;
 
