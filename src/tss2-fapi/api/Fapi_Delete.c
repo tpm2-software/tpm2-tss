@@ -419,14 +419,14 @@ Fapi_Delete_Async(
         /* No session will be needed these files can be deleted without
            interaction with the TPM */
         r = ifapi_non_tpm_mode_init(context);
-        return_if_error(r, "Initialize Entity_Delete");
+        goto_if_error(r, "Initialize Entity_Delete", error_cleanup);
         context->session1 = ESYS_TR_NONE;
 
         context->state = ENTITY_DELETE_GET_FILE;
     } else {
         /* Check whether TCTI and ESYS are initialized */
-        return_if_null(context->esys, "Command can't be executed in none TPM mode.",
-                       TSS2_FAPI_RC_NO_TPM);
+        goto_if_null(context->esys, "Command can't be executed in none TPM mode.",
+                       TSS2_FAPI_RC_NO_TPM, error_cleanup);
 
         /* If the async state automata of FAPI shall be tested, then we must not set
            the timeouts of ESYS to blocking mode.
@@ -435,12 +435,12 @@ Fapi_Delete_Async(
            to block until a result is available. */
 #ifndef TEST_FAPI_ASYNC
         r = Esys_SetTimeout(context->esys, TSS2_TCTI_TIMEOUT_BLOCK);
-        return_if_error_reset_state(r, "Set Timeout to blocking");
+        goto_if_error_reset_state(r, "Set Timeout to blocking", error_cleanup);
 #endif /* TEST_FAPI_ASYNC */
 
         /* A TPM session will be created to enable object authorization */
         r = ifapi_session_init(context);
-        return_if_error(r, "Initialize Entity_Delete");
+        goto_if_error(r, "Initialize Entity_Delete", error_cleanup);
 
         r = ifapi_get_sessions_async(context,
                                  IFAPI_SESSION_GENEK | IFAPI_SESSION1,
