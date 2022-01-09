@@ -31,7 +31,7 @@
  * is the first element of the path in the file list.
  *
  * @param[in] path The part of the path without profile to be moved.
- * @param[in] profile_name The profile_name must be the firt part of
+ * @param[in] profile_name The profile_name must be the first part of
  *            the path to be moved.
  * @param[in,out] file_ary The path array.
  * @param[in] n The size of the array.
@@ -73,7 +73,7 @@ move_path_to_top(
 
 /** Search a path for a certain profile in the path list.
  *
- * @param[in] profile_name The profile_name must be the firt part of
+ * @param[in] profile_name The profile_name must be the first part of
  *            the path to be moved.
  * @param[in] path The part of the path without profile to be moved.
  * @param[in,out] file_ary The path array.
@@ -168,7 +168,7 @@ check_hierarchy(
  * @retval TSS2_FAPI_RC_BAD_PATH: if path can't be used for deleting.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
  *         internal operations or return parameters.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
@@ -357,7 +357,7 @@ Fapi_Delete(
  *         the function.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
 Fapi_Delete_Async(
