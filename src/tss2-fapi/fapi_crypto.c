@@ -254,7 +254,7 @@ get_ossl_hash_md(TPM2_ALG_ID hashAlgorithm)
         return EVP_sha384();
     case TPM2_ALG_SHA512:
         return EVP_sha512();
-#if HAVE_EVP_SM3
+#if HAVE_EVP_SM3 && !defined(OPENSSL_NO_SM3)
     case TPM2_ALG_SM3_256:
         return EVP_sm3();
 #endif
@@ -929,7 +929,7 @@ rsa_verify_signature(
     }
 
     r = rsa_evp_verify_signature(publicKey, signature, signatureSize, mdType, digest, digestSize);
-#if HAVE_EVP_SM3
+#if HAVE_EVP_SM3 && !defined(OPENSSL_NO_SM3)
     if (r == TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED) {
     /* retry sm3 if digestSize is 32 bytes */
         r = rsa_evp_verify_signature(publicKey, signature, signatureSize, EVP_sm3(), digest, digestSize);

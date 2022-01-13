@@ -123,7 +123,7 @@ get_ossl_hash_md(TPM2_ALG_ID hashAlg)
         return EVP_sha384();
     case TPM2_ALG_SHA512:
         return EVP_sha512();
-#if HAVE_EVP_SM3
+#if HAVE_EVP_SM3 && !defined(OPENSSL_NO_SM3)
     case TPM2_ALG_SM3_256:
         return EVP_sm3();
 #endif
