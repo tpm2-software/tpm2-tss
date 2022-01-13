@@ -1140,6 +1140,9 @@ keystore_search_obj(
     IFAPI_OBJECT object;
     size_t i;
 
+    /* Mark object "unread" */
+    object.objectType = IFAPI_OBJ_NONE;
+
     switch (keystore->key_search.state) {
     statecase(keystore->key_search.state, KSEARCH_INIT)
         r = ifapi_keystore_list_all(keystore,
