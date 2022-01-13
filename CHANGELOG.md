@@ -3,22 +3,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## next
+## [3.1.1-rc0] - 2021-01-13
 ### Changed or Fixed
-  - Fixed file descriptor leak when tcti initialization failed.
-  - Primary key creation, in some cases the unique field was not cleared before calling create primary.
-  - Primary keys was used for signing the object were cleared after loading. So access e.g. to the certificate did not work.
-  - Primary keys created with Fapi_Create with an auth value, the auth_value was not used in inSensitive to recreate the
-    primary key. Now the auth value callback is used to initialize inSensitive.
-  - The not possible usage of policies for primary keys generated with Fapi_CreatePrimary has been fixed.
-  - An infinite loop when parsing erroneous JSON was fixed in FAPI.
-  - A buffer overflow in ESAPI xor parameter obfuscation was fixed.
-  - Certificates could be read only once in one application The setting the init
-    state of the state automaton for getting certificates was fixed.
-  - A double free when executing policy action was fixed.
-  - A leak in Fapi_Quote was fixed.
-  - The  wrong file locking in FAPI IO was fixed.
-
+- Fixed file descriptor leak when tcti initialization failed.
+- Primary key creation, in some cases the unique field was not cleared before calling create primary.
+- Primary keys was used for signing the object were cleared after loading. So access e.g. to the certificate did not work.
+- Primary keys created with Fapi_Create with an auth value, the auth_value was not used in inSensitive to recreate the primary key. Now the auth value callback is used to initialize inSensitive.
+- The not possible usage of policies for primary keys generated with Fapi_CreatePrimary has been fixed.
+- An infinite loop when parsing erroneous JSON was fixed in FAPI.
+- A buffer overflow in ESAPI xor parameter obfuscation was fixed.
+- Certificates could be read only once in one application The setting the init state of the state automaton for getting certificates was fixed.
+- A double free when executing policy action was fixed.
+- A leak in Fapi_Quote was fixed.
+- The wrong file locking in FAPI IO was fixed.
+- One fapi integration test did change the auth value of the storage hierarchy.
+- Fix test of FAPI PCR
+- Fix leaks in error cases of integration tests
+- Fix segfault when ESYS_TR_NONE is passed to Esys_TR_GetName
+- Fix the authorization of hierarchy objects used in policy secret.
+- Fix check of qualifying data in Fapi_VerifyQuote.
+- Fix some leaks in FAPI error cases.
+- Fix usage of variable not initialized when fapi keystore is empty.
 
 ## [3.1.0] - 2021-05-17
 ### Fixed
