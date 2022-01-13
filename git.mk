@@ -379,8 +379,9 @@ $(srcdir)/.gitignore: Makefile.am $(top_srcdir)/git.mk $(top_srcdir)/configure.a
 	} | \
 	sed "s@^/`echo "$(srcdir)" | sed 's/\(.\)/[\1]/g'`/@/@" | \
 	sed 's@/[.]/@/@g' | \
-	LC_ALL=C sort | uniq > $@.tmp && \
-	mv $@.tmp $@;
+	LC_ALL=C sort | uniq > .gitignore.tmp && \
+	(mv .gitignore.tmp $@ || (echo "WARNING: Cannot create $@ file; skipping"; \
+	$(RM) .gitignore.tmp));
 
 all: $(srcdir)/.gitignore gitignore-recurse-maybe
 gitignore: $(srcdir)/.gitignore gitignore-recurse
