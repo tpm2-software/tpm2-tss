@@ -67,8 +67,6 @@ error_cleanup:
  *
  * @param[in] context The context storing information for re-entry after try again.
  * @param[in] policy The policy to be instantiated.
- * @param[in] callbacks The needed callback functions with the corresponding user data
- *           which will be passed to the callback.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval FAPI error codes on failure
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
@@ -76,13 +74,9 @@ error_cleanup:
 TSS2_RC
 ifapi_policyeval_instantiate_async(
     IFAPI_POLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
-    TPMS_POLICY *policy, /* in */
-    ifapi_policyeval_INST_CB *callbacks)
+    TPMS_POLICY *policy /* in */)
 {
     TSS2_RC r;
-
-    /* Store callbacks and their parameters in context */
-    context->callbacks = *callbacks;
 
     /* Compute list of all policy elements which have to be instantiated */
     if (context->policy_elements) {
