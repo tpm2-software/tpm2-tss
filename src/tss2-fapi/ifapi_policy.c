@@ -93,7 +93,7 @@ ifapi_calculate_tree_ex(
     statecase(context->state, POLICY_READ_FINISH);
         r = ifapi_policy_store_load_finish(pstore, io, policy);
         return_try_again(r);
-        return_if_error_reset_state(r, "read_finish failed");
+        goto_if_error(r, "read_finish failed", cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_INSTANTIATE_PREPARE);
