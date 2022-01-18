@@ -1643,7 +1643,7 @@ compute_policy_list(
  *                execution.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for branch selection is
- *         not defined. This callback will be needed of or policies have to be
+ *         not defined. This callback will be needed if or policies have to be
  *         executed.
  * @retval TSS2_FAPI_RC_BAD_VALUE If the computed branch index deliverd by the
  *         callback does not identify a branch.
