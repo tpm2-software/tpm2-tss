@@ -73,8 +73,7 @@ typedef struct {
 TSS2_RC
 ifapi_policyeval_instantiate_async(
     IFAPI_POLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
-    TPMS_POLICY *policy,                 /* in */
-    ifapi_policyeval_INST_CB *callbacks);
+    TPMS_POLICY *policy);                /* in */
 TSS2_RC
 
 ifapi_policyeval_instantiate_finish(

@@ -97,7 +97,7 @@ ifapi_calculate_tree_ex(
         fallthrough;
 
     statecase(context->state, POLICY_INSTANTIATE_PREPARE);
-        r = ifapi_policyeval_instantiate_async(&context->eval_ctx, policy, &context->eval_ctx.callbacks);
+        r = ifapi_policyeval_instantiate_async(&context->eval_ctx, policy);
         goto_if_error(r, "Instantiate policy.", cleanup);
         fallthrough;
 
