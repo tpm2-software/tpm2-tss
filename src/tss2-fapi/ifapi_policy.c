@@ -63,8 +63,10 @@
  *         or contains illegal characters.
  */
 TSS2_RC
-ifapi_calculate_tree(
-    FAPI_CONTEXT *context,
+ifapi_calculate_tree_ex(
+    IFAPI_POLICY_CTX *context,
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
     const char *policyPath,
     TPMS_POLICY *policy,
     TPMI_ALG_HASH hash_alg,
@@ -74,49 +76,36 @@ ifapi_calculate_tree(
     size_t i;
     TSS2_RC r = TSS2_RC_SUCCESS;
     bool already_computed = false;
-    IFAPI_POLICY_EVAL_INST_CTX *eval_ctx = NULL;
-    ifapi_policyeval_INST_CB *callbacks;
 
-    if (context->policy.state == POLICY_INIT && !policyPath)
+    if (context->state == POLICY_INIT && !policyPath)
         /* Skip policy reading */
-        context->policy.state = POLICY_INSTANTIATE_PREPARE;
+        context->state = POLICY_INSTANTIATE_PREPARE;
 
-    switch (context->policy.state) {
-    statecase(context->policy.state, POLICY_INIT);
+    switch (context->state) {
+    statecase(context->state, POLICY_INIT);
         fallthrough;
 
-    statecase(context->policy.state, POLICY_READ);
-        r = ifapi_policy_store_load_async(&context->pstore, &context->io, policyPath);
+    statecase(context->state, POLICY_READ);
+        r = ifapi_policy_store_load_async(pstore, io, policyPath);
         goto_if_error2(r, "Can't open: %s", cleanup, policyPath);
         fallthrough;
 
-    statecase(context->policy.state, POLICY_READ_FINISH);
-        r = ifapi_policy_store_load_finish(&context->pstore, &context->io, policy);
+    statecase(context->state, POLICY_READ_FINISH);
+        r = ifapi_policy_store_load_finish(pstore, io, policy);
         return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
         fallthrough;
 
-    statecase(context->policy.state, POLICY_INSTANTIATE_PREPARE);
-        eval_ctx = &context->policy.eval_ctx;
-        callbacks = &eval_ctx->callbacks;
-        callbacks->cbname = ifapi_get_object_name;
-        callbacks->cbname_userdata = context;
-        callbacks->cbpublic = ifapi_get_key_public;
-        callbacks->cbpublic_userdata = context;
-        callbacks->cbnvpublic = ifapi_get_nv_public;
-        callbacks->cbnvpublic_userdata = context;
-        callbacks->cbpcr = ifapi_read_pcr;
-        callbacks->cbpcr_userdata = context;
-
-        r = ifapi_policyeval_instantiate_async(eval_ctx, policy, callbacks);
+    statecase(context->state, POLICY_INSTANTIATE_PREPARE);
+        r = ifapi_policyeval_instantiate_async(&context->eval_ctx, policy, &context->eval_ctx.callbacks);
         goto_if_error(r, "Instantiate policy.", cleanup);
         fallthrough;
 
-    statecase(context->policy.state, POLICY_INSTANTIATE);
-        r = ifapi_policyeval_instantiate_finish(&context->policy.eval_ctx);
+    statecase(context->state, POLICY_INSTANTIATE);
+        r = ifapi_policyeval_instantiate_finish(&context->eval_ctx);
         FAPI_SYNC(r, "Instantiate policy.", cleanup);
-        ifapi_free_node_list(context->policy.eval_ctx.policy_elements);
-        context->policy.eval_ctx.policy_elements = NULL;
+        ifapi_free_node_list(context->eval_ctx.policy_elements);
+        context->eval_ctx.policy_elements = NULL;
 
         if (!(*hash_size = ifapi_hash_get_digest_size(hash_alg))) {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
@@ -150,11 +139,11 @@ ifapi_calculate_tree(
         goto_if_error(r, "Compute policy.", cleanup);
 
         break;
-    statecasedefault(context->policy.state);
+    statecasedefault(context->state);
     }
 cleanup:
-    ifapi_free_node_list(context->policy.eval_ctx.policy_elements);
-    context->policy.eval_ctx.policy_elements = NULL;
-    context->policy.state = POLICY_INIT;
+    ifapi_free_node_list(context->eval_ctx.policy_elements);
+    context->eval_ctx.policy_elements = NULL;
+    context->state = POLICY_INIT;
     return r;
 }

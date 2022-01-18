@@ -16,6 +16,7 @@
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
 #include "fapi_int.h"
+#include "ifapi_policy_callbacks.h"
 
 TSS2_RC
 get_policy_digest_idx(
@@ -30,13 +31,48 @@ ifapi_compute_policy_digest(
     TPMI_ALG_HASH hash_alg,
     TPM2B_DIGEST *pcr_digest);
 
+static inline void ifapi_policy_ctx_init(FAPI_CONTEXT *context) {
+
+    /* why are callbacks not set up in the eval_ctx before this?? */
+    ifapi_policyeval_INST_CB *callbacks = &context->policy.eval_ctx.callbacks;
+    callbacks->cbname = ifapi_get_object_name;
+    callbacks->cbname_userdata = context;
+    callbacks->cbpublic = ifapi_get_key_public;
+    callbacks->cbpublic_userdata = context;
+    callbacks->cbnvpublic = ifapi_get_nv_public;
+    callbacks->cbnvpublic_userdata = context;
+    callbacks->cbpcr = ifapi_read_pcr;
+    callbacks->cbpcr_userdata = context;
+}
+
 TSS2_RC
+ifapi_calculate_tree_ex(
+    IFAPI_POLICY_CTX *policyContext,
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    const char *policyPath,
+    TPMS_POLICY *policy,
+    TPMI_ALG_HASH hash_alg,
+    size_t *digest_idx,
+    size_t *hash_size);
+
+static inline TSS2_RC
 ifapi_calculate_tree(
     FAPI_CONTEXT *context,
     const char *policyPath,
     TPMS_POLICY *policy,
     TPMI_ALG_HASH hash_alg,
     size_t *digest_idx,
-    size_t *hash_size);
+    size_t *hash_size) {
+
+    return ifapi_calculate_tree_ex(&context->policy,
+            &context->pstore,
+            &context->io,
+            policyPath,
+            policy,
+            hash_alg,
+            digest_idx,
+            hash_size);
+}
 
 #endif /* IFAPI_POLICY_H */
