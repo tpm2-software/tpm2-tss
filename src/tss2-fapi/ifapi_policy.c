@@ -124,7 +124,7 @@ ifapi_calculate_tree_ex(
             break;
 
         if (i >= TPM2_NUM_PCR_BANKS) {
-            return_error(TSS2_FAPI_RC_BAD_VALUE, "Table overflow");
+            goto_if_error(TSS2_FAPI_RC_BAD_VALUE, "Table overflow", cleanup);
         }
         *digest_idx = i;
         policy->policyDigests.count += 1;
