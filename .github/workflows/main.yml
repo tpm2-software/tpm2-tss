@@ -2,7 +2,7 @@ name: CI
 on:
   [push, pull_request]
 jobs:
-  generic-build-test:
+  build-test:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
     strategy:
@@ -14,12 +14,14 @@ jobs:
         uses: actions/checkout@v2
         with:
             fetch-depth: 0
-      - name: Launch Container
-        env:
+      - name: Launch Action
+        uses:
+          tpm2-software/ci/runCI@main
+        with:
           DOCKER_IMAGE: ${{ matrix.docker_image }}
           CC: ${{ matrix.compiler }}
           BASE_REF: ${{ github.base_ref }}
-        run: ./.ci/ci.run
+          PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
@@ -31,12 +33,14 @@ jobs:
         uses: actions/checkout@v2
         with:
             fetch-depth: 0
-      - name: Launch Container
-        env:
+      - name: Launch Action
+        uses:
+          tpm2-software/ci/runCI@main
+        with:
           CC: clang
           DOCKER_IMAGE: fedora-32
           SCANBUILD: yes
-        run: ./.ci/ci.run
+          PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
@@ -48,12 +52,14 @@ jobs:
         uses: actions/checkout@v2
         with:
             fetch-depth: 0
-      - name: Launch Container
-        env:
+      - name: Launch Action
+        uses:
+          tpm2-software/ci/runCI@main
+        with:
           CC: gcc
           DOCKER_IMAGE: fedora-32
           TEST_TCTI_CONFIG: true
-        run: ./.ci/ci.run
+          PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
@@ -65,12 +71,14 @@ jobs:
         uses: actions/checkout@v2
         with:
             fetch-depth: 0
-      - name: Launch Container
-        env:
+      - name: Launch Action
+        uses:
+          tpm2-software/ci/runCI@main
+        with:
           CC: gcc
           DOCKER_IMAGE: ubuntu-20.04
           WITH_CRYPTO: mbed
-        run: ./.ci/ci.run
+          PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
@@ -82,12 +90,14 @@ jobs:
         uses: actions/checkout@v2
         with:
             fetch-depth: 0
-      - name: Launch Container
-        env:
+      - name: Launch Action
+        uses:
+          tpm2-software/ci/runCI@main
+        with:
           CC: gcc
           DOCKER_IMAGE: ubuntu-18.04
           ENABLE_COVERAGE: true
-        run: ./.ci/ci.run
+          PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
@@ -99,13 +109,15 @@ jobs:
         uses: actions/checkout@v2
         with:
             fetch-depth: 0
-      - name: Launch Container
-        env:
+      - name: Launch Action
+        uses:
+          tpm2-software/ci/runCI@main
+        with:
           DOCKER_IMAGE: fedora-32
           GEN_FUZZ: 1
           CXX: clang++
           CC: clang
-        run: ./.ci/ci.run
+          PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
@@ -117,8 +129,11 @@ jobs:
         uses: actions/checkout@v2
         with:
             fetch-depth: 0
-      - name: Launch Container
-        env:
+      - name: Launch Coverity Action
+        uses:
+          tpm2-software/ci/coverityScan@main
+        with:
+          PROJECT_NAME: ${{ github.event.repository.name }}
           REPO_BRANCH: ${{ github.ref }}
           REPO_NAME: ${{ github.repository }}
           ENABLE_COVERITY: true
@@ -126,7 +141,6 @@ jobs:
           CC: gcc
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           COVERITY_SUBMISSION_EMAIL: tadeusz.struk@intel.com
-        run: ./.ci/ci.run
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
