@@ -147,15 +147,24 @@ ifapi_policy_store_load_async(
     LOG_TRACE("Load policy: %s", path);
 
     /* First it will be checked whether the only valid characters occur in the path. */
-    r = ifapi_check_valid_path(path);
-    return_if_error(r, "Invalid path.");
+    if (pstore) {
+        r = ifapi_check_valid_path(path);
+        return_if_error(r, "Invalid path.");
+    }
 
     /* Free old input buffer if buffer exists */
     SAFE_FREE(io->char_rbuffer);
 
     /* Convert relative path to absolute path in keystore */
-    r = policy_rel_path_to_abs_path(pstore, path, &abs_path);
-    goto_if_error2(r, "Object %s not found.", cleanup, path);
+    if (pstore) {
+        r = policy_rel_path_to_abs_path(pstore, path, &abs_path);
+        goto_if_error2(r, "Object %s not found.", cleanup, path);
+    } else {
+        abs_path = strdup(path);
+        if (!abs_path) {
+            return TSS2_FAPI_RC_MEMORY;
+        }
+    }
 
     /* Prepare read operation */
     r = ifapi_io_read_async(io, abs_path);
