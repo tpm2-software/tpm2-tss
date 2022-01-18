@@ -23,6 +23,7 @@
 #include "fapi_int.h"
 #include "fapi_util.h"
 #include "ifapi_json_deserialize.h"
+#include "ifapi_policy.h"
 #define LOGMODULE fapi
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -132,6 +133,8 @@ Fapi_Initialize_Async(
     goto_if_error(r, "Could not initialize FAPI context", cleanup_return);
 
     memset(&(*context)->cmd.Initialize, 0, sizeof(IFAPI_INITIALIZE));
+
+    ifapi_policy_ctx_init(*context);
 
     /* Initialize the context state for this operation. */
     (*context)->state = INITIALIZE_READ;
