@@ -1645,7 +1645,7 @@ compute_policy_list(
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for branch selection is
  *         not defined. This callback will be needed if or policies have to be
  *         executed.
- * @retval TSS2_FAPI_RC_BAD_VALUE If the computed branch index deliverd by the
+ * @retval TSS2_FAPI_RC_BAD_VALUE If the computed branch index delivered by the
  *         callback does not identify a branch.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
