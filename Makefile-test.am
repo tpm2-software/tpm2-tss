@@ -664,7 +664,7 @@ if FAPI
 
 test_unit_fapi_json_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_json_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_fapi_json_LDFLAGS = $(TESTS_LDFLAGS)  $(CURL_LIBS) -ljson-c
+test_unit_fapi_json_LDFLAGS = $(TESTS_LDFLAGS)  $(CURL_LIBS) $(JSONC_LIBS)
 test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi/ifapi_json_deserialize.c \
                               src/tss2-fapi/ifapi_json_serialize.c \
