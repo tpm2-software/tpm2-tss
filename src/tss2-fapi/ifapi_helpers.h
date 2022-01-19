@@ -181,12 +181,6 @@ ifapi_cmp_public_key(
     TPM2B_PUBLIC *key1,
     TPM2B_PUBLIC *key2);
 
-int
-ifapi_get_curl_buffer(
-    unsigned char * url,
-    unsigned char ** buffer,
-    size_t *cert_size);
-
 void
 ifapi_check_json_object_fields(
     json_object *jso,

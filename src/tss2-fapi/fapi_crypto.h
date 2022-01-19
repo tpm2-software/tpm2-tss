@@ -112,12 +112,6 @@ ifapi_get_signature_algorithm_from_pem(
     const char                  *pemKey);
 
 TSS2_RC
-ifapi_verify_ek_cert(
-    char* root_cert_pem,
-    char* intermed_cert_pem,
-    char* ek_cert_pem);
-
-TSS2_RC
 ifapi_get_tpm_key_fingerprint(
     const TPM2B_PUBLIC *tpmPublicKey,
     TPMI_ALG_HASH hashAlg,
