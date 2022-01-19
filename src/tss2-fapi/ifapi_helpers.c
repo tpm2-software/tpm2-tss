@@ -18,7 +18,6 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <dirent.h>
-#include <curl/curl.h>
 
 #include "tss2_mu.h"
 #include "fapi_util.h"
