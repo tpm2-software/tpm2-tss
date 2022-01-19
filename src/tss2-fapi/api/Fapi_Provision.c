@@ -21,6 +21,7 @@
 #include "fapi_int.h"
 #include "fapi_crypto.h"
 #include "fapi_policy.h"
+#include "ifapi_curl.h"
 #include "ifapi_get_intl_cert.h"
 #include "ifapi_helpers.h"
 
@@ -824,7 +825,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
         statecase(context->state, PROVISION_EK_CHECK_CERT);
             /* The EK certificate will be verified against the FAPI list of root certificates. */
-            r = ifapi_verify_ek_cert(command->root_crt, command->intermed_crt, command->pem_cert);
+            r = ifapi_curl_verify_ek_cert(command->root_crt, command->intermed_crt, command->pem_cert);
             SAFE_FREE(command->root_crt);
             SAFE_FREE(command->intermed_crt);
             goto_if_error2(r, "Verify EK certificate", error_cleanup);

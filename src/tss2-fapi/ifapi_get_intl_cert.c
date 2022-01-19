@@ -16,6 +16,7 @@
 #include <json-c/json.h>
 
 #include "fapi_crypto.h"
+#include "ifapi_curl.h"
 #include "ifapi_helpers.h"
 #include "tpm_json_deserialize.h"
 
