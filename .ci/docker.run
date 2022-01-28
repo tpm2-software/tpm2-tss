@@ -59,7 +59,7 @@ popd
 mkdir ./build
 pushd ./build
 
-if [ "$CC" == "gcc" ]; then
+if [ "$CC" == "gcc" && type -p lcov 2>/dev/null ]; then
   export CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-code-coverage";
 fi
 
