@@ -41,6 +41,7 @@
 #include "tss2_policy.h"
 #include "test/data/test-fapi-policies.h"
 #include "util/aux_util.h"
+#include "util/tss2_endian.h"
 
 #define TEST_LAYER        TSS2_RC_LAYER(0)
 #define TSS2_RC_TEST_FAIL ((TSS2_RC)(TEST_LAYER | \
@@ -645,6 +646,33 @@ static TSS2_RC policy_cb_pcr (
     return TSS2_RC_SUCCESS;
 }
 
+TSS2_RC auth_cb (
+    TPM2B_NAME *name,
+    ESYS_TR *object_handle,
+    ESYS_TR *auth_handle,
+    ESYS_TR *authSession,
+    void *userdata) {
+
+    /* this callback should call SetAuth for the objects? */
+    mycb_data *data = (mycb_data *)userdata;
+
+    TPM2_HANDLE endorsement = HOST_TO_BE_32(0x4000000Bu);
+    uint8_t *array = (uint8_t *)&endorsement;
+    /* endorsmenet hierarchy */
+    if (name->size == sizeof(endorsement) &&
+            !memcmp(name->name, array, sizeof(endorsement))) {
+        *object_handle = ESYS_TR_RH_ENDORSEMENT;
+        *auth_handle = ESYS_TR_RH_ENDORSEMENT;
+        *authSession = ESYS_TR_PASSWORD;
+        static const TPM2B_AUTH auth = { 0 };
+        return Esys_TR_SetAuth(data->esys_ctx,
+                *object_handle, &auth);
+    }
+
+    LOGBLOB_ERROR(name->name, name->size, "Unknown Object Name");
+    return TSS2_RC_TEST_NOT_SUPPORTED;
+}
+
 static TSS2_RC check_policy (
     const char *policy_path,
     ESYS_CONTEXT *esys_context,
@@ -691,7 +719,10 @@ static TSS2_RC check_policy (
         .cbpolsel_userdata = &userdata,
 
         .cbsign = sign_cb,
-        .cbsign_userdata = &userdata
+        .cbsign_userdata = &userdata,
+
+        .cbauth = auth_cb,
+        .cbauth_userdata = &userdata,
     };
 
     json = read_all(policy_path);
