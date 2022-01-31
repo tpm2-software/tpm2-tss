@@ -83,5 +83,8 @@ static policy_digests _test_fapi_policy_policies[] = {
     { .path = "/policy/pol_signed",
       .sha1 = "85bf0403e87d3c29c3daa5c87efb111cb717875d",
       .sha256 = "b1969529af7796c5b4f5e4781713f4525049f36cb12ec63f996dad1c4401c068" },
+    { .path = "/policy/pol_ek_high_range_sha256",
+      .sha1 = "23694f69a8f33f588a93879021a294f3ed73b361",
+      .sha256 = "ca3d0a99a2b93906f7a3342414efcfb3a385d44cd1fd459089d19b5071c0b7a0" },
 };
 #endif
