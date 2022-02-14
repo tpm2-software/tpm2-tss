@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [3.2.0-rc1] - 2022-02-14
+### Fixed
+- Fix buffer upcast leading to misalignment
+- Fix check whether SM3 is available
+- Update git.mk to support R/O src-dir
+
+### Added
+- Add additional IFX root CAs
+
 ## [3.2.0-rc0] - 2022-01-13
 ### Fixed
 - Fixed file descriptor leak when tcti initialization failed.
