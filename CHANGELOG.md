@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [3.0.5-rc1] - 2022-02-14
+### Fixed
+- Fix buffer upcast leading to misalignment
+
+### Added
+- Add additional IFX root CAs
+
 ## [3.0.5-rc0] - 2022-01-13
 ### Changed or Fixed
 - Fixed file descriptor leak when tcti initialization failed.
