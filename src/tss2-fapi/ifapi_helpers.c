@@ -2504,6 +2504,9 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
                           size_t *buffer_size) {
     int ret = -1;
     struct CurlBufferStruct curl_buffer = { .size = 0, .buffer = NULL };
+#ifdef CURLU_ALLOW_SPACE
+    CURLU *urlp = NULL;
+#endif
 
     CURLcode rc = curl_global_init(CURL_GLOBAL_DEFAULT);
     if (rc != CURLE_OK) {
@@ -2517,7 +2520,23 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
         goto out_global_cleanup;
     }
 
+#ifdef CURLU_ALLOW_SPACE
+    urlp = curl_url();
+    if (!urlp) {
+        LOG_ERROR("curl_url failed.");
+        goto out_easy_cleanup;
+    }
+    rc = curl_url_set(urlp, CURLUPART_URL, url, CURLU_ALLOW_SPACE | CURLU_URLENCODE);
+    if (rc != CURLE_OK) {
+        LOG_ERROR("curl_url_set for CURUPART_URL failed: %s",
+                  curl_easy_strerror(rc));
+        goto out_easy_cleanup;
+    }
+    rc = curl_easy_setopt(curl, CURLOPT_CURLU, urlp);
+#else
     rc = curl_easy_setopt(curl, CURLOPT_URL, url);
+#endif
+
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
                 curl_easy_strerror(rc));
@@ -2565,6 +2584,10 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
     ret = 0;
 
 out_easy_cleanup:
+#ifdef CURLU_ALLOW_SPACE
+    if (urlp)
+        curl_url_cleanup(urlp);
+#endif
     if (ret != 0)
         free(curl_buffer.buffer);
     curl_easy_cleanup(curl);
