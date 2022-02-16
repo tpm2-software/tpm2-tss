@@ -2526,10 +2526,11 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
         LOG_ERROR("curl_url failed.");
         goto out_easy_cleanup;
     }
-    rc = curl_url_set(urlp, CURLUPART_URL, url, CURLU_ALLOW_SPACE | CURLU_URLENCODE);
-    if (rc != CURLE_OK) {
+    CURLUcode url_rc;
+    url_rc = curl_url_set(urlp, CURLUPART_URL, (const char *)url, CURLU_ALLOW_SPACE | CURLU_URLENCODE);
+    if (url_rc) {
         LOG_ERROR("curl_url_set for CURUPART_URL failed: %s",
-                  curl_easy_strerror(rc));
+                  curl_url_strerror(url_rc));
         goto out_easy_cleanup;
     }
     rc = curl_easy_setopt(curl, CURLOPT_CURLU, urlp);
