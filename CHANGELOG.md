@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [3.2.0-rc3] - 2022-02-17
+### Fixed
+- FAPI: fix curl_url_set call
+
 ## [3.2.0-rc2] - 2022-02-16
 ### Fixed
 - FAPI: Fix usage of curl url (Should fix Ubuntu 22.04)
