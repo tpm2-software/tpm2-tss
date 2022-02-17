@@ -1589,11 +1589,9 @@ execute_policy_element(
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE,
                      "Policy not implemented");
         }
-    return r;
-error:
-    return r;
 
     /* All policies executed successfully */
+error:
     return r;
 }
 
