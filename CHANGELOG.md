@@ -3,25 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.2.0-rc3] - 2022-02-17
+## [3.2.0] - 2022-02-18
 ### Fixed
 - FAPI: fix curl_url_set call
-
-## [3.2.0-rc2] - 2022-02-16
-### Fixed
 - FAPI: Fix usage of curl url (Should fix Ubuntu 22.04)
-
-## [3.2.0-rc1] - 2022-02-14
-### Fixed
 - Fix buffer upcast leading to misalignment
 - Fix check whether SM3 is available
 - Update git.mk to support R/O src-dir
-
-### Added
-- Add additional IFX root CAs
-
-## [3.2.0-rc0] - 2022-01-13
-### Fixed
 - Fixed file descriptor leak when tcti initialization failed.
 - 32 Bit builds of the integration tests.
 - Primary key creation, in some cases the unique field was not cleared before calling create primary.
@@ -52,6 +40,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Fix usage of variable not initialized when fapi keystore is empty.
 
 ### Added
+- Add additional IFX root CAs
 - Added support for SM2, SM3 and SM4.
 - Added support for OpenSSL 3.0.0.
 - Added authPolicy field to the TPMU_CAPABILITIES union.
