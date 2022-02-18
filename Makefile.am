@@ -292,7 +292,6 @@ libtss2_tcti_device = src/tss2-tcti/libtss2-tcti-device.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_device.h
 lib_LTLIBRARIES += $(libtss2_tcti_device)
 pkgconfig_DATA += lib/tss2-tcti-device.pc
-EXTRA_DIST += lib/tss2-tcti-device.map
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-device.map
@@ -302,6 +301,7 @@ src_tss2_tcti_libtss2_tcti_device_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-device.c
 endif # ENABLE_TCTI_DEVICE
+EXTRA_DIST += lib/tss2-tcti-device.map
 
 # tcti library for swtpm
 if ENABLE_TCTI_SWTPM
@@ -309,7 +309,6 @@ libtss2_tcti_swtpm = src/tss2-tcti/libtss2-tcti-swtpm.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_swtpm.h
 lib_LTLIBRARIES += $(libtss2_tcti_swtpm)
 pkgconfig_DATA += lib/tss2-tcti-swtpm.pc
-EXTRA_DIST += lib/tss2-tcti-swtpm.map lib/tss2-tcti-swtpm.def src/tss2-tcti/tss2-tcti-swtpm.vcxproj
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_swtpm_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-swtpm.map
@@ -320,6 +319,7 @@ src_tss2_tcti_libtss2_tcti_swtpm_la_SOURCES  = \
     src/tss2-tcti/tcti-swtpm.c \
     src/tss2-tcti/tcti-swtpm.h
 endif # ENABLE_TCTI_SWTPM
+EXTRA_DIST += lib/tss2-tcti-swtpm.map lib/tss2-tcti-swtpm.def src/tss2-tcti/tss2-tcti-swtpm.vcxproj
 
 # tcti library for Microsoft TPM2 simulator
 if ENABLE_TCTI_MSSIM
@@ -327,9 +327,6 @@ libtss2_tcti_mssim = src/tss2-tcti/libtss2-tcti-mssim.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_mssim.h
 lib_LTLIBRARIES += $(libtss2_tcti_mssim)
 pkgconfig_DATA += lib/tss2-tcti-mssim.pc
-EXTRA_DIST += lib/tss2-tcti-mssim.map \
-              lib/tss2-tcti-mssim.def \
-              src/tss2-tcti/tss2-tcti-mssim.vcxproj
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-mssim.map
@@ -339,6 +336,9 @@ src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-mssim.c
 endif # ENABLE_TCTI_MSSIM
+EXTRA_DIST += lib/tss2-tcti-mssim.map \
+              lib/tss2-tcti-mssim.def \
+              src/tss2-tcti/tss2-tcti-mssim.vcxproj
 
 # tcti pcap library
 if ENABLE_TCTI_PCAP
@@ -346,7 +346,6 @@ libtss2_tcti_pcap = src/tss2-tcti/libtss2-tcti-pcap.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_pcap.h
 lib_LTLIBRARIES += $(libtss2_tcti_pcap)
 pkgconfig_DATA += lib/tss2-tcti-pcap.pc
-EXTRA_DIST += lib/tss2-tcti-pcap.map
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_pcap_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-pcap.map
@@ -357,6 +356,7 @@ src_tss2_tcti_libtss2_tcti_pcap_la_SOURCES  = \
     src/tss2-tcti/tcti-pcap-builder.c \
     src/tss2-tcti/tcti-pcap.c
 endif # ENABLE_TCTI_PCAP
+EXTRA_DIST += lib/tss2-tcti-pcap.map
 
 # tcti libtpms library
 if ENABLE_TCTI_LIBTPMS
@@ -364,7 +364,6 @@ libtss2_tcti_libtpms = src/tss2-tcti/libtss2-tcti-libtpms.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_libtpms.h
 lib_LTLIBRARIES += $(libtss2_tcti_libtpms)
 pkgconfig_DATA += lib/tss2-tcti-libtpms.pc
-EXTRA_DIST += lib/tss2-tcti-libtpms.map
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_libtpms_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-libtpms.map
@@ -375,6 +374,7 @@ src_tss2_tcti_libtss2_tcti_libtpms_la_SOURCES  = \
     src/tss2-tcti/tcti-libtpms.c \
     src/tss2-tcti/tcti-libtpms.h
 endif # ENABLE_TCTI_LIBTPMS
+EXTRA_DIST += lib/tss2-tcti-libtpms.map
 
 # tcti library for sub-process commands
 if ENABLE_TCTI_CMD
@@ -382,8 +382,6 @@ libtss2_tcti_cmd = src/tss2-tcti/libtss2-tcti-cmd.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_cmd.h
 lib_LTLIBRARIES += $(libtss2_tcti_cmd)
 pkgconfig_DATA += lib/tss2-tcti-cmd.pc
-EXTRA_DIST += lib/tss2-tcti-cmd.map \
-              lib/tss2-tcti-cmd.def
 
 if HAVE_LD_VERSION_SCRIPT
 if !UNIT
@@ -396,6 +394,8 @@ src_tss2_tcti_libtss2_tcti_cmd_la_SOURCES  = \
     src/tss2-tcti/tcti-cmd.c \
     src/tss2-tcti/tcti-cmd.h
 endif # ENABLE_TCTI_CMD
+EXTRA_DIST += lib/tss2-tcti-cmd.map \
+              lib/tss2-tcti-cmd.def
 
 ### TCG TSS SYS spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
@@ -474,16 +474,9 @@ if FAPI
 fapiconfdir = @sysconfdir@/tpm2-tss
 fapiconf_DATA = fapi-config.json
 
-EXTRA_DIST += dist/fapi-config.json.in
 CLEANFILES += fapi-config.json \
               man/man5/fapi-config.5 \
               man/man5/fapi-profile.5
-
-EXTRA_DIST += man/fapi-config.5.in \
-              man/fapi-profile.5.in \
-              man/man-postlude-fapi.troff \
-              doc/fapi-config.md \
-              doc/fapi-profile.md
 
 # We have to do this ourselves, in order to get absolute paths
 fapi-config.json: dist/fapi-config.json.in
@@ -501,7 +494,6 @@ fapi-config.json: dist/fapi-config.json.in
 sysusers_DATA = dist/sysusers.d/tpm2-tss.conf
 tmpfiles_DATA = tpm2-tss-fapi.conf
 
-EXTRA_DIST += dist/sysusers.d/tpm2-tss.conf dist/tmpfiles.d/tpm2-tss-fapi.conf.in
 CLEANFILES += tpm2-tss-fapi.conf
 
 # We have to do this ourselves, in order to get absolute paths
@@ -510,9 +502,6 @@ tpm2-tss-fapi.conf: dist/tmpfiles.d/tpm2-tss-fapi.conf.in
 		-e 's|[@]localstatedir@|$(localstatedir)|g' \
 		-e 's|[@]runstatedir@|$(runstatedir)|g' \
 		< "$<" > "$@"
-
-EXTRA_DIST += dist/fapi-profiles/P_RSA2048SHA256.json \
-              dist/fapi-profiles/P_ECCP256SHA256.json
 
 fapiprofilesdir = @sysconfdir@/tpm2-tss/fapi-profiles
 fapiprofiles_DATA = dist/fapi-profiles/P_RSA2048SHA256.json \
@@ -523,8 +512,18 @@ tss2_HEADERS += $(srcdir)/include/tss2/tss2_fapi.h
 lib_LTLIBRARIES += $(libtss2_fapi)
 pkgconfig_DATA += lib/tss2-fapi.pc
 EXTRA_DIST +=  \
+    dist/fapi-config.json.in \
+    dist/fapi-profiles/P_RSA2048SHA256.json \
+    dist/fapi-profiles/P_ECCP256SHA256.json \
+    dist/sysusers.d/tpm2-tss.conf \
+    dist/tmpfiles.d/tpm2-tss-fapi.conf.in \
+    doc/fapi-config.md \
+    doc/fapi-profile.md \
     lib/tss2-fapi.map \
     lib/tss2-fapi.def \
+    man/fapi-config.5.in \
+    man/fapi-profile.5.in \
+    man/man-postlude-fapi.troff \
     test/data/fapi/P_RSA_EK_persistent.json \
     test/data/fapi/P_RSA.json \
     test/data/fapi/P_RSA2.json \
