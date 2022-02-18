@@ -3,14 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.1.1-rc1] - 2021-02-14
-### Fixed
-- Fix buffer upcast leading to misalignment
-### Added
-- Add additional IFX root CAs
+## [3.1.1] - 2021-02-18
+This is the last release of the 3.1.x series
 
-## [3.1.1-rc0] - 2021-01-13
-### Changed or Fixed
+### Fixed
 - Fixed file descriptor leak when tcti initialization failed.
 - Primary key creation, in some cases the unique field was not cleared before calling create primary.
 - Primary keys was used for signing the object were cleared after loading. So access e.g. to the certificate did not work.
@@ -30,6 +26,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Fix check of qualifying data in Fapi_VerifyQuote.
 - Fix some leaks in FAPI error cases.
 - Fix usage of variable not initialized when fapi keystore is empty.
+
+### Added
+- Add additional IFX root CAs
 
 ## [3.1.0] - 2021-05-17
 ### Fixed
