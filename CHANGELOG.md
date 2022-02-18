@@ -3,15 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.0.5-rc1] - 2022-02-14
+## [3.0.5] - 2022-02-18
+This is the last release of the 3.1.x series
+
 ### Fixed
 - Fix buffer upcast leading to misalignment
-
-### Added
-- Add additional IFX root CAs
-
-## [3.0.5-rc0] - 2022-01-13
-### Changed or Fixed
 - Fixed file descriptor leak when tcti initialization failed.
 - Primary key creation, in some cases the unique field was not cleared before calling create primary.
 - Primary keys was used for signing the object were cleared after loading. So access e.g. to the certificate did not work.
@@ -32,6 +28,9 @@ primary key. Now the auth value callback is used to initialize inSensitive.
 - Fix check of qualifying data in Fapi_VerifyQuote.
 - Fix some leaks in FAPI error cases.
 - Fix usage of variable not initialized when fapi keystore is empty.
+
+### Added
+- Add additional IFX root CAs
 
 ## [3.0.4] - 2021-05-17
 ### Changed or Fixed
