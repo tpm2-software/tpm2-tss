@@ -79,7 +79,7 @@ TSS2_RC
 handle_from_name(const char *file,
                  void **handle)
 {
-    char file_xfrm [PATH_MAX] = { 0, };
+    char *file_xfrm = NULL;
     size_t size;
 
     if (handle == NULL) {
@@ -91,36 +91,45 @@ handle_from_name(const char *file,
     } else {
         LOG_DEBUG("Could not load TCTI file: \"%s\": %s", file, dlerror());
     }
+
+    file_xfrm = calloc(PATH_MAX, sizeof(char));
+    if (file_xfrm == NULL) {
+        return TSS2_TCTI_RC_MEMORY;
+    }
     /* 'name' alone didn't work, try libtss2-tcti-<name>.so.0 */
     size = snprintf(file_xfrm,
-                    sizeof (file_xfrm),
+                    PATH_MAX,
                     TCTI_NAME_TEMPLATE_0,
                     file);
-    if (size >= sizeof (file_xfrm)) {
+    if (size >= PATH_MAX) {
         LOG_ERROR("TCTI name truncated in transform.");
+        free(file_xfrm);
         return TSS2_TCTI_RC_BAD_VALUE;
     }
     *handle = dlopen(file_xfrm, RTLD_NOW);
     if (*handle != NULL) {
+        free(file_xfrm);
         return TSS2_RC_SUCCESS;
     } else {
         LOG_DEBUG("Could not load TCTI file \"%s\": %s", file, dlerror());
     }
     /* libtss2-tcti-<name>.so.0 didn't work, try libtss2-tcti-<name>.so */
     size = snprintf(file_xfrm,
-                    sizeof (file_xfrm),
+                    PATH_MAX,
                     TCTI_NAME_TEMPLATE,
                     file);
-    if (size >= sizeof (file_xfrm)) {
+    if (size >= PATH_MAX) {
         LOG_ERROR("TCTI name truncated in transform.");
+        free(file_xfrm);
         return TSS2_TCTI_RC_BAD_VALUE;
     }
     *handle = dlopen(file_xfrm, RTLD_NOW);
     if (*handle == NULL) {
         LOG_DEBUG("Failed to load TCTI for name \"%s\": %s", file, dlerror());
+        free(file_xfrm);
         return TSS2_TCTI_RC_NOT_SUPPORTED;
     }
-
+    free(file_xfrm);
     return TSS2_RC_SUCCESS;
 }
 TSS2_RC
