@@ -81,6 +81,7 @@ handle_from_name(const char *file,
 {
     char *file_xfrm = NULL;
     size_t size;
+    size_t len;
 
     if (handle == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
@@ -92,44 +93,50 @@ handle_from_name(const char *file,
         LOG_DEBUG("Could not load TCTI file: \"%s\": %s", file, dlerror());
     }
 
-    file_xfrm = calloc(PATH_MAX, sizeof(char));
+    len = snprintf(NULL, 0, TCTI_NAME_TEMPLATE_0, file);
+    if (len >= PATH_MAX) {
+        LOG_ERROR("TCTI name truncated in transform.");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+    file_xfrm = calloc(len + 1, sizeof(char));
     if (file_xfrm == NULL) {
         return TSS2_TCTI_RC_MEMORY;
     }
     /* 'name' alone didn't work, try libtss2-tcti-<name>.so.0 */
     size = snprintf(file_xfrm,
-                    PATH_MAX,
+                    len + 1,
                     TCTI_NAME_TEMPLATE_0,
                     file);
-    if (size >= PATH_MAX) {
+    if (size >= (len + 1)) {
         LOG_ERROR("TCTI name truncated in transform.");
-        free(file_xfrm);
+        SAFE_FREE(file_xfrm);
         return TSS2_TCTI_RC_BAD_VALUE;
     }
     *handle = dlopen(file_xfrm, RTLD_NOW);
     if (*handle != NULL) {
-        free(file_xfrm);
+        SAFE_FREE(file_xfrm);
         return TSS2_RC_SUCCESS;
     } else {
         LOG_DEBUG("Could not load TCTI file \"%s\": %s", file, dlerror());
     }
     /* libtss2-tcti-<name>.so.0 didn't work, try libtss2-tcti-<name>.so */
     size = snprintf(file_xfrm,
-                    PATH_MAX,
+                    len + 1,
                     TCTI_NAME_TEMPLATE,
                     file);
-    if (size >= PATH_MAX) {
+    if (size >= (len + 1)) {
         LOG_ERROR("TCTI name truncated in transform.");
-        free(file_xfrm);
+        SAFE_FREE(file_xfrm);
         return TSS2_TCTI_RC_BAD_VALUE;
     }
     *handle = dlopen(file_xfrm, RTLD_NOW);
     if (*handle == NULL) {
         LOG_DEBUG("Failed to load TCTI for name \"%s\": %s", file, dlerror());
-        free(file_xfrm);
+        SAFE_FREE(file_xfrm);
         return TSS2_TCTI_RC_NOT_SUPPORTED;
     }
-    free(file_xfrm);
+
+    SAFE_FREE(file_xfrm);
     return TSS2_RC_SUCCESS;
 }
 TSS2_RC
