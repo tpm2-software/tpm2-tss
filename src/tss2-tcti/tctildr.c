@@ -481,13 +481,7 @@ Tss2_TctiLdr_Initialize (const char *nameConf,
         goto out;
     rc = Tss2_TctiLdr_Initialize_Ex (name, conf, tctiContext);
 out:
-    if(name != NULL) {
-        free(name);
-        name = NULL;
-    }
-    if(conf != NULL) {
-        free(conf);
-        conf = NULL;
-    }
+    SAFE_FREE(name);
+    SAFE_FREE(conf);
     return rc;
 }
