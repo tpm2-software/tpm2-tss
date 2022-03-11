@@ -476,6 +476,10 @@ Tss2_TctiLdr_Initialize (const char *nameConf,
     }
     name = calloc(combined_length + 1, sizeof(char));
     conf = calloc(combined_length + 1, sizeof(char));
+    if (name == NULL || conf == NULL) {
+        rc = TSS2_TCTI_RC_MEMORY;
+        goto out;
+    }
     rc = tctildr_conf_parse (nameConf, name, conf);
     if (rc != TSS2_RC_SUCCESS)
         goto out;
