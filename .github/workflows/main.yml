@@ -7,7 +7,7 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     strategy:
       matrix:
-        docker_image: [ubuntu-18.04, ubuntu-20.04, fedora-32, opensuse-leap]
+        docker_image: [ubuntu-18.04, ubuntu-20.04, fedora-32, opensuse-leap, ubuntu-22.04]
         compiler: [gcc, clang]
     steps:
       - name: Check out repository
