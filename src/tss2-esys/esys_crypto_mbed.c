@@ -24,6 +24,12 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+#if MBEDTLS_VERSION_MAJOR > 2
+#define MBEDTLS_ACCESS(member) MBEDTLS_PRIVATE(member)
+#else
+#define MBEDTLS_ACCESS(member) member
+#endif
+
 /** Context to hold temporary values for iesys_crypto */
 typedef struct _IESYS_CRYPTO_CONTEXT {
     enum {
@@ -526,26 +532,33 @@ iesys_cryptmbed_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                            size_t * out_size, const char *label)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-
+    int hash_id = 0;
     mbedtls_rsa_context rsa_context;
 
     switch(pub_tpm_key->publicArea.nameAlg) {
         case TPM2_ALG_SHA1:
-            mbedtls_rsa_init(&rsa_context, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA1);
+            hash_id = MBEDTLS_MD_SHA1;
             break;
         case TPM2_ALG_SHA256:
-            mbedtls_rsa_init(&rsa_context, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
+            hash_id = MBEDTLS_MD_SHA256;
             break;
         case TPM2_ALG_SHA384:
-            mbedtls_rsa_init(&rsa_context, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA384);
+            hash_id = MBEDTLS_MD_SHA384;
             break;
         case TPM2_ALG_SHA512:
-            mbedtls_rsa_init(&rsa_context, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA512);
+            hash_id = MBEDTLS_MD_SHA512;
             break;
         default:
             return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED,
                          "Hash algorithm not supported");
     }
+
+#if MBEDTLS_VERSION_MAJOR > 2
+    mbedtls_rsa_init(&rsa_context);
+    mbedtls_rsa_set_padding(&rsa_context, MBEDTLS_RSA_PKCS_V21, hash_id);
+#else
+    mbedtls_rsa_init(&rsa_context, MBEDTLS_RSA_PKCS_V21, hash_id);
+#endif
 
     if (pub_tpm_key->publicArea.unique.rsa.size == 0) {
         goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
@@ -591,7 +604,9 @@ iesys_cryptmbed_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
             if (mbedtls_rsa_pkcs1_encrypt(&rsa_context,
                                           get_random,
                                           NULL,
+#if MBEDTLS_VERSION_MAJOR <= 2
                                           MBEDTLS_RSA_PUBLIC,
+#endif
                                           in_size,
                                           in_buffer,
                                           out_buffer) != 0) {
@@ -603,7 +618,9 @@ iesys_cryptmbed_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
             if (mbedtls_rsa_rsaes_oaep_encrypt(&rsa_context,
                                                get_random,
                                                NULL,
+#if MBEDTLS_VERSION_MAJOR <= 2
                                                MBEDTLS_RSA_PUBLIC,
+#endif
                                                (const UINT8*)label,
                                                strlen(label) + 1,
                                                in_size,
@@ -653,39 +670,46 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
                                size_t * out_size)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
+    mbedtls_ecp_group ecp_group;
+    mbedtls_mpi ecp_d;
+    mbedtls_ecp_point ecp_Q;
+    mbedtls_ecp_point ecp_Qp;
+    mbedtls_mpi ecp_z;
 
-    mbedtls_ecdh_context ecdh_context;
-
-    mbedtls_ecdh_init(&ecdh_context);
+    mbedtls_ecp_group_init(&ecp_group);
+    mbedtls_mpi_init(&ecp_d);
+    mbedtls_ecp_point_init(&ecp_Q);
+    mbedtls_ecp_point_init(&ecp_Qp);
+    mbedtls_mpi_init(&ecp_z);
 
     /* Load named curve */
     switch (key->publicArea.parameters.eccDetail.curveID) {
     case TPM2_ECC_NIST_P192:
-        if(mbedtls_ecp_group_load(&ecdh_context.grp, MBEDTLS_ECP_DP_SECP192R1) != 0) {
+        if(mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP192R1) != 0) {
             goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                        "ECP group load failed", cleanup);
         }
         break;
     case TPM2_ECC_NIST_P224:
-        if(mbedtls_ecp_group_load(&ecdh_context.grp, MBEDTLS_ECP_DP_SECP224R1) != 0) {
+        if(mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP224R1) != 0) {
             goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                        "ECP group load failed", cleanup);
         }
         break;
     case TPM2_ECC_NIST_P256:
-        if(mbedtls_ecp_group_load(&ecdh_context.grp, MBEDTLS_ECP_DP_SECP256R1) != 0) {
+        if(mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP256R1) != 0) {
             goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                        "ECP group load failed", cleanup);
         }
         break;
     case TPM2_ECC_NIST_P384:
-        if(mbedtls_ecp_group_load(&ecdh_context.grp, MBEDTLS_ECP_DP_SECP384R1) != 0) {
+        if(mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP384R1) != 0) {
              goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                         "ECP group load failed", cleanup);
         }
         break;
     case TPM2_ECC_NIST_P521:
-        if(mbedtls_ecp_group_load(&ecdh_context.grp, MBEDTLS_ECP_DP_SECP521R1) != 0) {
+        if(mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP521R1) != 0) {
             goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                        "ECP group load failed", cleanup);
         }
@@ -696,9 +720,9 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
     }
 
     /* Generate ephemeral key */
-    if (mbedtls_ecdh_gen_public(&ecdh_context.grp,
-                                &ecdh_context.d,
-                                &ecdh_context.Q,
+    if (mbedtls_ecdh_gen_public(&ecp_group,
+                                &ecp_d,
+                                &ecp_Q,
                                 get_random,
                                 NULL) != 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
@@ -714,24 +738,25 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
      * to anything but TPM2_MAX_ECC_KEY_BYTES. The easiest fix is
      * to shrink out_size to mpi_size.
      */
-    Q->x.size = mbedtls_mpi_size(&ecdh_context.Q.X);
+
+    Q->x.size = mbedtls_mpi_size(&ecp_Q.MBEDTLS_ACCESS(X));
     if (Q->x.size > TPM2_MAX_ECC_KEY_BYTES) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Write Q.x does not fit into byte buffer", cleanup);
     }
-    if (mbedtls_mpi_write_binary(&ecdh_context.Q.X,
+    if (mbedtls_mpi_write_binary(&ecp_Q.MBEDTLS_ACCESS(X),
                                  &Q->x.buffer[0],
                                  Q->x.size) != 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Write Q.x to byte buffer failed", cleanup);
     }
 
-    Q->y.size = mbedtls_mpi_size(&ecdh_context.Q.Y);
+    Q->y.size = mbedtls_mpi_size(&ecp_Q.MBEDTLS_ACCESS(Y));
     if (Q->y.size > TPM2_MAX_ECC_KEY_BYTES) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Write Q.y does not fit into byte buffer", cleanup);
     }
-    if (mbedtls_mpi_write_binary(&ecdh_context.Q.Y,
+    if (mbedtls_mpi_write_binary(&ecp_Q.MBEDTLS_ACCESS(Y),
                                  &Q->y.buffer[0],
                                  Q->y.size) != 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
@@ -739,20 +764,20 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
     }
 
     /* Initialise Qp.Z (Qp would be zero, or "at infinity", if Z == 0) */
-    if (mbedtls_mpi_lset(&ecdh_context.Qp.Z, 1) != 0)
+    if (mbedtls_mpi_lset(&ecp_Qp.MBEDTLS_ACCESS(Z), 1) != 0)
     {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Init of Qp.z to 1 failed", cleanup);
     }
 
     /* Read ephemeral pub key from TPM to Qp */
-    if (mbedtls_mpi_read_binary(&ecdh_context.Qp.X,
+    if (mbedtls_mpi_read_binary(&ecp_Qp.MBEDTLS_ACCESS(X),
                                 &key->publicArea.unique.ecc.x.buffer[0],
                                 key->publicArea.unique.ecc.x.size) != 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Read of Qp.x from byte buffer failed", cleanup);
     }
-    if (mbedtls_mpi_read_binary(&ecdh_context.Qp.Y,
+    if (mbedtls_mpi_read_binary(&ecp_Qp.MBEDTLS_ACCESS(Y),
                                 &key->publicArea.unique.ecc.y.buffer[0],
                                 key->publicArea.unique.ecc.y.size) != 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
@@ -760,17 +785,17 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
     }
 
     /* Validate TPM's pub key */
-    if (mbedtls_ecp_check_pubkey(&ecdh_context.grp,
-                                 &ecdh_context.Qp) != 0) {
+    if (mbedtls_ecp_check_pubkey(&ecp_group,
+                                 &ecp_Qp) != 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Point Qp is invalid", cleanup);
     }
 
     /* Calculate shared secret */
-    if (mbedtls_ecdh_compute_shared(&ecdh_context.grp,
-                                    &ecdh_context.z,
-                                    &ecdh_context.Qp,
-                                    &ecdh_context.d,
+    if (mbedtls_ecdh_compute_shared(&ecp_group,
+                                    &ecp_z,
+                                    &ecp_Qp,
+                                    &ecp_d,
                                     get_random,
                                     NULL) != 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
@@ -778,12 +803,12 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
     }
 
     /* Write shared secret to TPM ECC param Z */
-    Z->size = mbedtls_mpi_size(&ecdh_context.z);
+    Z->size = mbedtls_mpi_size(&ecp_z);
     if (Z->size > TPM2_MAX_ECC_KEY_BYTES) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Write Q.y does not fit into byte buffer", cleanup);
     }
-    if (mbedtls_mpi_write_binary(&ecdh_context.z,
+    if (mbedtls_mpi_write_binary(&ecp_z,
                                  &Z->buffer[0],
                                  Z->size) != 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
@@ -797,7 +822,11 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
     *out_size = offset;
 
 cleanup:
-    mbedtls_ecdh_free(&ecdh_context);
+    mbedtls_mpi_free(&ecp_z);
+    mbedtls_ecp_point_free(&ecp_Qp);
+    mbedtls_ecp_point_free(&ecp_Q);
+    mbedtls_mpi_free(&ecp_d);
+    mbedtls_ecp_group_free(&ecp_group);
     return r;
 }
 
