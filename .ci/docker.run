@@ -59,8 +59,8 @@ popd
 mkdir ./build
 pushd ./build
 
-if [ "$CC" == "gcc" ]; then
-  export CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-code-coverage";
+if [[ "$CC" == "gcc" && "$ENABLE_COVERAGE" == "true" ]]; then
+    export CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-code-coverage";
 fi
 
 if [ ldconfig -p 2>/dev/null| grep libasan > /dev/null && ldconfig -p 2>/dev/null| grep libubsan > /dev/null ]; then
