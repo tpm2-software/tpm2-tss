@@ -7,7 +7,7 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     strategy:
       matrix:
-        docker_image: [ubuntu-18.04, ubuntu-20.04, fedora-32, opensuse-leap, ubuntu-22.04]
+        docker_image: [ubuntu-18.04, ubuntu-20.04, fedora-32, opensuse-leap, ubuntu-22.04, alpine-3.15]
         compiler: [gcc, clang]
     steps:
       - name: Check out repository
@@ -66,6 +66,9 @@ jobs:
   test-mbedtls:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
+    strategy:
+      matrix:
+        docker_image: [ubuntu-20.04, ubuntu-22.04-mbedtls-3.1]
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
@@ -76,7 +79,7 @@ jobs:
           tpm2-software/ci/runCI@main
         with:
           CC: gcc
-          DOCKER_IMAGE: ubuntu-20.04
+          DOCKER_IMAGE: ${{ matrix.docker_image }}
           WITH_CRYPTO: mbed
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
