@@ -18,8 +18,7 @@
 
 #include "tcti-common.h"
 #include "util/io.h"
-
-#define ARRAY_LEN(x) (sizeof(x)/sizeof(x[0]))
+#include "util/aux_util.h"
 
 #define TCTI_LIBTPMS_MAGIC 0x49E299A554504D32ULL
 

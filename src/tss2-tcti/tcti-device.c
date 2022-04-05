@@ -53,10 +53,9 @@
 #include "tcti-common.h"
 #include "tcti-device.h"
 #include "util/io.h"
+#include "util/aux_util.h"
 #define LOGMODULE tcti
 #include "util/log.h"
-
-#define ARRAY_LEN(x) (sizeof(x)/sizeof(x[0]))
 
 static char *default_conf[] = {
 #ifdef __VXWORKS__

@@ -9,8 +9,6 @@
 #include "tss2_sys.h"
 #include "util/aux_util.h"
 
-#define ARRAY_LEN(x) (sizeof(x)/sizeof(x[0]))
-
 /**
  * The maximum size of a layer name.
  */

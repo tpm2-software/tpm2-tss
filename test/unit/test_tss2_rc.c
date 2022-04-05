@@ -13,8 +13,6 @@
 #include "tss2_rc.h"
 #include "util/aux_util.h"
 
-#define ARRAY_LEN(x) (sizeof(x)/sizeof(x[0]))
-
 #define TPM2_ERROR_TSS2_RC_LAYER_COUNT (TSS2_RC_LAYER_MASK >> TSS2_RC_LAYER_SHIFT)
 
 #define assert_string_prefix(str, prefix) \

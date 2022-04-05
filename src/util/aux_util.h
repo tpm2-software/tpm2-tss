@@ -17,6 +17,8 @@ extern "C" {
 
 #define SAFE_FREE(S) if((S) != NULL) {free((void*) (S)); (S)=NULL;}
 
+#define ARRAY_LEN(x) (sizeof(x)/sizeof(x[0]))
+
 #define TPM2_ERROR_FORMAT "%s%s (0x%08x)"
 #define TPM2_ERROR_TEXT(r) "Error", "Code", r
 #define SIZE_OF_ARY(ary) (sizeof(ary) / sizeof(ary[0]))
