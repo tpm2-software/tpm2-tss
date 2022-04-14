@@ -207,7 +207,8 @@ EXTRA_DIST += \
     LICENSE \
     MAINTAINERS \
     README.md \
-    RELEASE.md
+    RELEASE.md \
+    VERSION
 
 # Windows code / core build files
 EXTRA_DIST += \

@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+git describe --tags --always --dirty > VERSION
+
 # generate list of source files for use in Makefile.am
 # if you add new source files, you must run ./bootstrap again
 src_listvar () {
