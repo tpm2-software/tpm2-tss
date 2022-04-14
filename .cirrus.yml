@@ -5,7 +5,7 @@ task:
     ibmtpm_name: ibmtpm1637
   freebsd_instance:
     matrix:
-      image_family: freebsd-12-2
+      image_family: freebsd-13-0
   install_script:
     - pkg update -f
     - pkg upgrade -y
