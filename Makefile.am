@@ -671,20 +671,22 @@ define make_parent_dir
 endef
 
 define make_tss_user_and_group
-    if type -p groupadd > /dev/null; then \
-        id -g tss 2>/dev/null || groupadd --system tss; \
-    else \
-        id -g tss 2>/dev/null || \
-        addgroup --system tss; \
-    fi && \
-    if type -p useradd > /dev/null; then \
-        id -u tss 2>/dev/null || \
-        useradd --system --home-dir / --shell `type -p nologin` \
-                         --no-create-home -g tss tss; \
-    else \
-        id -u tss 2>/dev/null || \
-        adduser --system --home / --shell `type -p nologin` \
-                --no-create-home --ingroup tss tss; \
+    if test -z "${DESTDIR}"; then \
+        if type -p groupadd > /dev/null; then \
+            id -g tss 2>/dev/null || groupadd --system tss; \
+        else \
+            id -g tss 2>/dev/null || \
+            addgroup --system tss; \
+        fi && \
+        if type -p useradd > /dev/null; then \
+            id -u tss 2>/dev/null || \
+            useradd --system --home-dir / --shell `type -p nologin` \
+                             --no-create-home -g tss tss; \
+        else \
+            id -u tss 2>/dev/null || \
+            adduser --system --home / --shell `type -p nologin` \
+                    --no-create-home --ingroup tss tss; \
+        fi; \
     fi
 endef
 
@@ -704,8 +706,10 @@ define make_fapi_dirs
 endef
 
 define set_fapi_permissions
-    ($(call set_tss_permissions,$(DESTDIR)$(runstatedir)/tpm2-tss))
-    ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss))
+    if test -z "${DESTDIR}"; then \ e
+        ($(call set_tss_permissions,$(DESTDIR)$(runstatedir)/tpm2-tss)) && \
+        ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss)) \
+    fi
 endef
 
 define check_dir
@@ -713,8 +717,10 @@ define check_dir
 endef
 
 define check_fapi_dirs
-    ($(call check_dir,$(DESTDIR)$(runstatedir)/tpm2-tss/eventlog/))
-    ($(call check_dir,$(DESTDIR)$(localstatedir)/lib/tpm2-tss/system/keystore/))
+    if test -z "${DESTDIR}"; then \
+        ($(call check_dir,$(DESTDIR)$(runstatedir)/tpm2-tss/eventlog/)) && \
+        ($(call check_dir,$(DESTDIR)$(localstatedir)/lib/tpm2-tss/system/keystore/)) \
+    fi;
 endef
 
 ### Man Pages
@@ -762,21 +768,23 @@ EXTRA_DIST += dist/tpm-udev.rules
 install-dirs:
 if HOSTOS_LINUX
 if SYSD_SYSUSERS
-	@echo "systemd-sysusers $(DESTDIR)$(sysconfdir)/sysusers.d/tpm2-tss.conf"
-	@systemd-sysusers $(DESTDIR)$(sysconfdir)/sysusers.d/tpm2-tss.conf || echo "WARNING Failed to create the tss user and group"
+	@test -n "$(DESTDIR)" || echo "systemd-sysusers $(sysusersdir)/tpm2-tss.conf"
+	@test -n "$(DESTDIR)" || ( systemd-sysusers $(sysusersdir)/tpm2-tss.conf || echo "WARNING Failed to create the tss user and group" )
 else
 	@echo "call make_tss_user_and_group"
 	@$(call make_tss_user_and_group) || echo "WARNING Failed to create the tss user and group"
 endif
 if SYSD_TMPFILES
-	@echo "systemd-tmpfiles --create $(DESTDIR)$(sysconfdir)/tmpfiles.d/tpm2-tss-fapi.conf"
-	@systemd-tmpfiles --create $(DESTDIR)$(sysconfdir)/tmpfiles.d/tpm2-tss-fapi.conf|| echo "WARNING Failed to create the FAPI directories with the correct permissions"
+	@test -n "$(DESTDIR)" || echo "systemd-tmpfiles --create $(tmpfilesdir)/tpm2-tss-fapi.conf"
+	@test -n "$(DESTDIR)" || ( systemd-tmpfiles --create $(tmpfilesdir)/tpm2-tss-fapi.conf|| echo "WARNING Failed to create the FAPI directories with the correct permissions" )
+	@test -z "$(DESTDIR)" || echo "(call make_fapi_dirs)"
+	@test -z "$(DESTDIR)" || $(call make_fapi_dirs)
 else
 	@echo "(call make_fapi_dirs) && (call set_fapi_permissions)"
 	@-$(call make_fapi_dirs) && $(call set_fapi_permissions) || echo "WARNING Failed to create the FAPI directories with the correct permissions"
 endif
-	@echo "call check_fapi_dirs"
-	@$(call check_fapi_dirs)
+	@test -n "$(DESTDIR)" || echo "call check_fapi_dirs"
+	@test -n "$(DESTDIR)" || $(call check_fapi_dirs)
 endif
 
 install-data-hook: install-dirs

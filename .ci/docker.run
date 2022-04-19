@@ -80,7 +80,7 @@ else
 fi
 
 if [ "$SCANBUILD" == "yes" ]; then
-  scan-build --status-bugs make -j distcheck
+  scan-build --status-bugs make -j
 elif [ "$CC" == "clang" ]; then
   make -j distcheck
 else
