@@ -372,7 +372,7 @@ Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
  * @retval TSS2_RC_SUCCESS on Success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext is NULL.
  * @retval TSS2_ESYS_RC_BAD_TR if the ESYS_TR object is unknown to the
- *         ESYS_CONTEXT.
+ *         ESYS_CONTEXT or it equals ESYS_TR_NONE.
  */
 TSS2_RC
 Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
@@ -383,6 +383,9 @@ Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     TPMI_ALG_HASH name_alg = TPM2_ALG_NULL;
 
     _ESYS_ASSERT_NON_NULL(esys_context);
+    if (esys_handle == ESYS_TR_NONE) {
+      return_error(TSS2_ESYS_RC_BAD_TR, "esys_handle can't be ESYS_TR_NONE.");
+    }
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     if (r != TPM2_RC_SUCCESS)
         return r;
