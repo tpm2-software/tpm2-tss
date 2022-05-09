@@ -2,9 +2,8 @@
 All non security bugs should be filed on the Issues tracker:
 https://github.com/tpm2-software/tpm2-tss/issues
 
-Security sensitive bugs should be emailed to a maintainer directly, or to Intel
-via the guidelines here:
-https://security-center.intel.com/VulnerabilityHandlingGuidelines.aspx
+Security sensitive bugs should be handled per the instructions in the
+[SECURITY](SECURITY.md) file.
 
 # Guideline for submitting changes:
 All changes to the source code must follow the coding standard used in the
