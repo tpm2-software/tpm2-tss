@@ -32,6 +32,7 @@ typedef struct {
     UINT8_ARY                             serialization;    /**< None */
     UINT8_ARY                                   private;    /**< None */
     char                                *policyInstance;    /**<  Keys policy */
+    TPM2B_DIGEST                            creationHash;   /**< Hash create by Create or CreatePrimary */
     TPM2B_CREATION_DATA                    creationData;    /**< None */
     TPMT_TK_CREATION                     creationTicket;    /**< None */
     char                                   *description;    /**< Human readable description of key */

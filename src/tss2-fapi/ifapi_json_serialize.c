@@ -149,6 +149,14 @@ ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
 
         json_object_object_add(*jso, "creationData", jso2);
     }
+    /* Creation Hash is not available for imported keys */
+    if (in->creationHash.size) {
+        jso2 = NULL;
+        r = ifapi_json_TPM2B_DIGEST_serialize(&in->creationHash, &jso2);
+        return_if_error(r, "Serialize TPM2B_DIGEST");
+
+        json_object_object_add(*jso, "creationHash", jso2);
+    }
     /* Creation Ticket is not available for imported keys */
     if (in->creationTicket.tag) {
         jso2 = NULL;
