@@ -783,6 +783,7 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
         pkey->public = *outPublic;
         pkey->policyInstance = NULL;
         pkey->creationData = *creationData;
+        pkey->creationHash = *creationHash;
         pkey->creationTicket = *creationTicket;
         pkey->description = NULL;
         pkey->certificate = NULL;
@@ -3417,6 +3418,7 @@ ifapi_key_create(
                                                  &outPrivate->buffer[0], outPrivate->size);
         object->misc.key.policyInstance = NULL;
         object->misc.key.creationData = *creationData;
+        object->misc.key.creationHash = *creationHash;
         object->misc.key.creationTicket = *creationTicket;
         object->misc.key.description = NULL;
         object->misc.key.certificate = NULL;
@@ -4671,6 +4673,7 @@ ifapi_create_primary(
         object->misc.key.private.buffer = NULL;
         object->misc.key.policyInstance = NULL;
         object->misc.key.creationData = *creationData;
+        object->misc.key.creationHash = *creationHash;
         object->misc.key.creationTicket = *creationTicket;
         object->misc.key.description = NULL;
         object->misc.key.certificate = NULL;
