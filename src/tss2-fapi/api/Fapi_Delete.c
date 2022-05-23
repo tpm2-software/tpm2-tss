@@ -599,7 +599,7 @@ Fapi_Delete_Finish(
 
                 r = ifapi_initialize_object(context->esys, authObject);
                 goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
-                authObject->handle = ESYS_TR_RH_OWNER;
+                authObject->public.handle = ESYS_TR_RH_OWNER;
             }
             fallthrough;
 
@@ -612,7 +612,7 @@ Fapi_Delete_Finish(
             /* Delete the NV index. */
             r = Esys_NV_UndefineSpace_Async(context->esys,
                                             command->auth_index,
-                                            object->handle,
+                                            object->public.handle,
                                             auth_session,
                                             ESYS_TR_NONE,
                                             ESYS_TR_NONE);
@@ -637,7 +637,7 @@ Fapi_Delete_Finish(
                 r = ifapi_initialize_object(context->esys, authObject);
                 goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
 
-                authObject->handle = ESYS_TR_RH_OWNER;
+                authObject->public.handle = ESYS_TR_RH_OWNER;
             }
             fallthrough;
 
@@ -656,7 +656,7 @@ Fapi_Delete_Finish(
 
                     /* Delete the persistent handle from the TPM. */
                     r = Esys_EvictControl_Async(context->esys, ESYS_TR_RH_OWNER,
-                                                object->handle,
+                                                object->public.handle,
                                                 auth_session,
                                                 ESYS_TR_NONE, ESYS_TR_NONE,
                                             object->misc.key.persistent_handle);

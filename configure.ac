@@ -15,7 +15,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setti
 
 AC_CONFIG_HEADERS([config.h])
 
-AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-tcti-libtpms.pc lib/tss2-tcti-pcap.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc lib/tss2-tcti-cmd.pc])
+AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-tcti-pcap.pc lib/tss2-tcti-libtpms.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc lib/tss2-tcti-cmd.pc lib/tss2-policy.pc])
 
 # propagate configure arguments to distcheck
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
@@ -124,6 +124,14 @@ AS_IF([test "x$enable_fapi_async_tests" = "xyes"],
 AS_IF([test "x$enable_fapi_async_tests" = "xyes"],
     [AC_MSG_WARN("FAPI compiled with asynchronous spinning testing. NOT FOR PRODUCTION!")])
 
+AC_ARG_ENABLE([policy],
+            [AS_HELP_STRING([--enable-policy],
+                            [build the tss2-policy library (default is yes)])],
+            [enable_policy=$enableval],
+            [enable_policy=yes])
+
+AM_CONDITIONAL(POLICY, test "x$enable_policy" = "xyes")
+
 AC_ARG_WITH([crypto],
             [AS_HELP_STRING([--with-crypto={ossl,mbed}],
                             [sets the ESYS crypto backend (default is OpenSSL)])],,
@@ -160,7 +168,10 @@ AS_IF([test "x$enable_fapi" != xno && test "x$enable_esys" = "xno"],
 AS_IF([test "x$enable_fapi" != xno && test "x$with_crypto" != "xossl"],
     [AC_MSG_ERROR([FAPI has to be compiled with OpenSSL])])
 
-AS_IF([test "x$enable_fapi" = xyes ],
+AS_IF([test "x$enable_policy" != xno && test "x$with_crypto" != "xossl"],
+    [AC_MSG_ERROR([libpolicy has to be compiled with OpenSSL])])
+
+AS_IF([test "x$enable_fapi" = xyes -o "x$enable_policy" = xyes ],
       [PKG_CHECK_MODULES([JSONC], [json-c])])
 
 AS_IF([test "x$enable_fapi" = xyes ],
@@ -549,6 +560,7 @@ AC_MSG_RESULT([
     $PACKAGE_NAME $VERSION
     esys:               $enable_esys
     fapi:               $enable_fapi
+    policy:             $enable_policy
     tctidefaultmodule:  $with_tctidefaultmodule
     tctidefaultconfig:  $with_tctidefaultconfig
     unit:               $enable_unit

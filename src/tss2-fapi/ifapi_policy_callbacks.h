@@ -58,9 +58,9 @@ ifapi_get_nv_public(
 
 TSS2_RC
 ifapi_read_pcr(
-    TPMS_PCR_SELECT *pcr_select,
-    TPML_PCR_SELECTION *pcr_selection,
-    TPML_PCRVALUES **pcr_values,
+    TSS2_POLICY_PCR_SELECTION *pcr_selection,
+    TPML_PCR_SELECTION *out_pcr_selection,
+    TPML_DIGEST *out_pcr_digests,
     void *ctx);
 
 TSS2_RC
@@ -73,7 +73,9 @@ ifapi_policyeval_cbauth(
 
 TSS2_RC
 ifapi_branch_selection(
-    TPML_POLICYBRANCHES *branches,
+    TSS2_OBJECT *auth_object,
+    const char *branch_names[8],
+    size_t branch_count,
     size_t *branch_idx,
     void *userdata);
 

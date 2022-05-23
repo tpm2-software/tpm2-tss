@@ -469,7 +469,7 @@ Fapi_ChangeAuth_Finish(
 
             /* Change the NV index's AuthValue. */
             r = Esys_NV_ChangeAuth_Async(context->esys,
-                    command->object.handle,
+                    command->object.public.handle,
                     auth_session,
                     ESYS_TR_NONE,
                     ESYS_TR_NONE,
@@ -508,7 +508,7 @@ Fapi_ChangeAuth_Finish(
             r = ifapi_initialize_object(context->esys, &command->object);
             goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
-            command->object.handle
+            command->object.public.handle
                 = command->hierarchy_handle;
 
             fallthrough;

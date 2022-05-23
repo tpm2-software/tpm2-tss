@@ -4,8 +4,9 @@
 # All rights reserved.
 
 TESTS_CFLAGS = $(AM_CFLAGS) $(CRYPTO_CFLAGS) -I$(srcdir)/include -I$(srcdir)/src/tss2-mu \
-    -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys  -I$(srcdir)/src/tss2-fapi \
-    -Wno-unused-parameter -Wno-missing-field-initializers
+    -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys -I$(srcdir)/src/tss2-fapi \
+    -I$(srcdir)/test/data -Wno-unused-parameter -Wno-missing-field-initializers \
+    -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 TESTS_LDADD = $(check_LTLIBRARIES) $(lib_LTLIBRARIES) \
     $(CRYPTO_LIBS) $(libutil)
 
@@ -307,7 +308,6 @@ endif #ESYS
 
 if FAPI
 TESTS_LDADD += $(JSONC_LIBS)
-TESTS_CFLAGS +=  -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 FAPI_TESTS_INTEGRATION = \
     test/integration/dlopen-fapi-get-random.fint \
     test/integration/fapi-check-wrong-paths.fint \
@@ -778,6 +778,16 @@ test_unit_fapi_get_intl_cert_SOURCES = test/unit/fapi-get-intl-cert.c \
                                        src/tss2-fapi/ifapi_io.c
 
 endif # FAPI
+
+if POLICY
+TESTS_UNIT += test/unit/tss2_policy
+
+test_unit_tss2_policy_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tss2_policy_LDADD   = $(CMOCKA_LIBS) $(libtss2_policy) $(libtss2_esys)
+test_unit_tss2_policy_SOURCES = test/unit/tss2_policy.c src/util/log.c \
+    test/data/test-fapi-policies.h
+endif # POLICY
+
 endif # UNIT
 
 if ENABLE_INTEGRATION
@@ -2176,6 +2186,23 @@ test_integration_fapi_quote_destructive_fint_SOURCES = \
 
 
 endif #FAPI
+
+# Need policy and esys enabled to run this test
+if POLICY
+if ESYS
+
+TESTS_INTEGRATION += test/integration/policy-execute.int
+
+test_integration_policy_execute_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_policy_execute_int_LDADD   = $(TESTS_LDADD)
+test_integration_policy_execute_int_LDFLAGS   = $(TESTS_LDFLAGS)
+test_integration_policy_execute_int_SOURCES = \
+    test/integration/policy-execute.int.c \
+    test/integration/main-esys.c src/util/log.c \
+    test/integration/test-esys.h test/data/test-fapi-policies.h
+endif # ESYS
+endif # POLICY
+
 endif #ENABLE_INTEGRATION
 
 check-device:

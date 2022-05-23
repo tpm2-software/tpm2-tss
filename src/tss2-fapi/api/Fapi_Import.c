@@ -459,7 +459,7 @@ Fapi_Import_Finish(
 
             if (!context->loadKey.auth_object.misc.key.persistent_handle) {
                 /* Prepare Flushing of key used for authorization */
-                r = Esys_FlushContext_Async(context->esys, context->loadKey.auth_object.handle);
+                r = Esys_FlushContext_Async(context->esys, context->loadKey.auth_object.public.handle);
                 goto_if_error(r, "Flush parent", error_cleanup);
             }
             fallthrough;
@@ -532,7 +532,7 @@ Fapi_Import_Finish(
             TPMT_SYM_DEF_OBJECT symmetric;
             symmetric.algorithm = TPM2_ALG_NULL;
             r = Esys_Import_Async(context->esys,
-                  command->parent_object->handle,
+                  command->parent_object->public.handle,
                   session,
                   ESYS_TR_NONE, ESYS_TR_NONE,
                   NULL, &keyTree->public,
@@ -562,7 +562,7 @@ Fapi_Import_Finish(
 
         statecase(context->state, IMPORT_KEY_WAIT_FOR_FLUSH);
             if (!command->parent_object->misc.key.persistent_handle) {
-                r = ifapi_flush_object(context, command->parent_object->handle);
+                r = ifapi_flush_object(context, command->parent_object->public.handle);
                 return_try_again(r);
                 ifapi_cleanup_ifapi_object(command->parent_object);
                 goto_if_error(r, "Flush key", error_cleanup);

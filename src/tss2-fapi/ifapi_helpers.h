@@ -187,4 +187,14 @@ ifapi_check_json_object_fields(
     char** field_tab,
     size_t size_of_tab);
 
+TSS2_RC ifapi_pcr_selection_to_pcrvalues(
+        TPML_PCR_SELECTION *pcr_selection,
+        TPML_DIGEST *pcr_digests,
+        TPML_PCRVALUES **out);
+
+void
+ifapi_helper_init_policy_pcr_selections(
+        TSS2_POLICY_PCR_SELECTION *s,
+        TPMT_POLICYELEMENT *pol_element);
+
 #endif /* IFAPI_HELPERS_H */

@@ -242,7 +242,7 @@ Fapi_Unseal_Finish(
             goto_if_error(r, "Authorize sealed object.", error_cleanup);
 
             /* Perform the unseal operation with the TPM. */
-            r = Esys_Unseal_Async(context->esys, command->object->handle,
+            r = Esys_Unseal_Async(context->esys, command->object->public.handle,
                     auth_session,
                     ESYS_TR_NONE, ESYS_TR_NONE);
             goto_if_error(r, "Error esys Unseal ", error_cleanup);
@@ -256,7 +256,7 @@ Fapi_Unseal_Finish(
 
             /* Flush the used key from the TPM. */
             if (!command->object->misc.key.persistent_handle) {
-                r = Esys_FlushContext_Async(context->esys, command->object->handle);
+                r = Esys_FlushContext_Async(context->esys, command->object->public.handle);
                 goto_if_error(r, "Error Esys Flush ", error_cleanup);
             }
 

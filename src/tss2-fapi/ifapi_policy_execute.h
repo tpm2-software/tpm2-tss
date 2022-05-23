@@ -47,69 +47,6 @@ struct policy_object_node {
     struct policy_object_node *next;   /**< Pointer to next element */
 };
 
-typedef TSS2_RC (*ifapi_policyexec_cbauth) (
-    TPM2B_NAME *name,
-    ESYS_TR *object_handle,
-    ESYS_TR *auth_handle,
-    ESYS_TR *authSession,
-    void *userdata);
-
-typedef TSS2_RC (*ifapi_policyexec_cbdup) (
-    TPM2B_NAME *name,
-    void *userdata);
-
-typedef TSS2_RC (*ifapi_policyexec_cbpolsel) (
-    TPML_POLICYBRANCHES *branches,
-    size_t *branch_idx,
-    void *userdata);
-
-typedef TSS2_RC (*ifapi_policyexec_cbsign) (
-    char *key_pem,
-    char *public_key_hint,
-    TPMI_ALG_HASH key_pem_hash_alg,
-    uint8_t *buffer,
-    size_t buffer_size,
-    const uint8_t **signature,
-    size_t *signature_size,
-    void *userdata);
-
-typedef TSS2_RC (*ifapi_policyexec_cbauthpol) (
-    TPMT_PUBLIC *key_public,
-    TPMI_ALG_HASH hash_alg,
-    TPM2B_DIGEST *digest,
-    TPM2B_NONCE *policyRef,
-    TPMT_SIGNATURE *signature,
-    void *userdata);
-
-typedef TSS2_RC (*ifapi_policyexec_cbauthnv) (
-    TPM2B_NV_PUBLIC *nv_public,
-    TPMI_ALG_HASH hash_alg,
-    void *userdata);
-
-typedef TSS2_RC (*ifapi_policyexec_cbaction) (
-    const char *action,
-    void *userdata);
-
-typedef struct {
-    ifapi_policyexec_cbauth               cbauth; /**< Callback to authorize an object
-                                                       retrieved by name in keystore */
-    void                        *cbauth_userdata;
-    ifapi_policyexec_cbpolsel           cbpolsel; /**< Callback for selection of policy
-                                                       branch */
-    void                      *cbpolsel_userdata;
-    ifapi_policyexec_cbsign               cbsign; /**< Callback for policy sign */
-    void                        *cbsign_userdata;
-    ifapi_policyexec_cbauthpol         cbauthpol; /**< Callback for policy authorize */
-    void                     *cbauthpol_userdata;
-    ifapi_policyexec_cbauthnv           cbauthnv; /**< Callback for policy authorize nv */
-    void                      *cbauthnv_userdata;
-    ifapi_policyexec_cbdup                 cbdup; /**< Callback for policy duplication
-                                                       select */
-    void                         *cbdup_userdata;
-    ifapi_policyexec_cbaction           cbaction; /**< Callback for policy action */
-    void                      *cbaction_userdata;
-} ifapi_policyeval_EXEC_CB;
-
 /** The states for policy execution */
 enum IFAPI_STATE_POLICY_EXCECUTE {
     POLICY_EXECUTE_INIT = 0,
@@ -152,7 +89,7 @@ struct IFAPI_POLICY_EXEC_CTX {
     char *pem_key;                   /**< Pem key recreated during policy execution */
     struct POLICY_LIST *policy_list;
                                     /**< List of policies for authorization selection */
-    ifapi_policyeval_EXEC_CB callbacks;
+    TSS2_POLICY_EXEC_CALLBACKS callbacks;
                                     /**< callbacks used for execution of sub
                                          policies and actions which require access
                                          to the FAPI context. */
@@ -167,6 +104,7 @@ ifapi_policyeval_execute_prepare(
 TSS2_RC
 ifapi_policyeval_execute(
     ESYS_CONTEXT *esys_ctx,
-    IFAPI_POLICY_EXEC_CTX *current_policy);
+    IFAPI_POLICY_EXEC_CTX *current_policy,
+    bool do_flush);
 
 #endif /* FAPI_POLICY_EXECUTE_H */

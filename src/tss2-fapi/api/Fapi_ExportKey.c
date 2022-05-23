@@ -388,7 +388,7 @@ Fapi_ExportKey_Finish(
             /* Duplicate the key; i.e. re-encrypt the private key with
                the public key of the new parent. */
             r = Esys_Duplicate_Async(context->esys,
-                                     command->key_object->handle,
+                                     command->key_object->public.handle,
                                      command->handle_ext_key,
                                      auth_session,
                                      ESYS_TR_NONE, ESYS_TR_NONE,
@@ -422,7 +422,7 @@ Fapi_ExportKey_Finish(
 
         statecase(context->state, EXPORT_KEY_WAIT_FOR_FLUSH1);
             /* Flush the key to be exported from the TPM. */
-            r = ifapi_flush_object(context, command->key_object->handle);
+            r = ifapi_flush_object(context, command->key_object->public.handle);
             return_try_again(r);
             goto_if_error(r, "Flush key", cleanup);
 

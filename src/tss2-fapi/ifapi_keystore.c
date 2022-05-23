@@ -1656,7 +1656,7 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {
 
     dest->objectType = src->objectType;
     dest->system = src->system;
-    dest->handle = src->handle;
+    dest->public.handle = src->public.handle;
     dest->authorization_state = src->authorization_state;
 
     return r;
@@ -1702,7 +1702,7 @@ ifapi_copy_ifapi_hierarchy_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src)
 
     dest->objectType = src->objectType;
     dest->system = src->system;
-    dest->handle = src->handle;
+    dest->public.handle = src->public.handle;
     dest->authorization_state = src->authorization_state;
 
     return r;

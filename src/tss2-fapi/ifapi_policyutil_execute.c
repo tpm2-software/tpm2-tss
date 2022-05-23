@@ -288,7 +288,8 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
 
         statecase(pol_util_ctx->state, POLICY_UTIL_EXEC_POLICY);
             r = ifapi_policyeval_execute(context->esys,
-                                         pol_util_ctx->pol_exec_ctx);
+                                         pol_util_ctx->pol_exec_ctx,
+                                         true);
             if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
                 context->policy.util_current_policy = pol_util_ctx->prev;
                 return TSS2_FAPI_RC_TRY_AGAIN;

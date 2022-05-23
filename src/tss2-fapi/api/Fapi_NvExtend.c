@@ -293,8 +293,8 @@ Fapi_NvExtend_Finish(
         goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
         /* Store object info in context */
-        nvIndex = command->nv_object.handle;
-        command->esys_handle = context->nv_cmd.nv_object.handle;
+        nvIndex = command->nv_object.public.handle;
+        command->esys_handle = context->nv_cmd.nv_object.public.handle;
         command->nv_obj = object->misc.nv;
 
         /* Determine the kind of authorization to be used. */
