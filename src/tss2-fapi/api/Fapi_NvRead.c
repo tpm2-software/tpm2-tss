@@ -261,7 +261,7 @@ Fapi_NvRead_Finish(
         r = ifapi_initialize_object(context->esys, object);
         goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
-        command->esys_handle = object->handle;
+        command->esys_handle = object->public.handle;
         command->nv_obj = object->misc.nv;
         command->size = object->misc.nv.public.nvPublic.dataSize;
         command->numBytes = object->misc.nv.public.nvPublic.dataSize;
@@ -275,7 +275,7 @@ Fapi_NvRead_Finish(
                 ifapi_init_hierarchy_object(authObject, ESYS_TR_RH_OWNER);
                 authIndex = ESYS_TR_RH_OWNER;
             } else {
-                authIndex = object->handle;
+                authIndex = object->public.handle;
             }
             *authObject = *object;
         }

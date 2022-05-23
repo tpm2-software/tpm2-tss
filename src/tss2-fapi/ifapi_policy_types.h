@@ -193,21 +193,6 @@ typedef struct {
     char                                        *action;    /**< The FAPI will return a string representation of the JSON sub */
 } TPMS_POLICYACTION;
 
-/** Policy type TPMS_PCRVALUE
- */
-typedef struct {
-    UINT32                                          pcr;    /**< None */
-    TPM2_ALG_ID                                 hashAlg;    /**< None */
-    TPMU_HA                                      digest;    /**< None */
-} TPMS_PCRVALUE;
-
-/** Policy type TPML_PCRVALUES
- */
-typedef struct TPML_PCRVALUES {
-    UINT32                                        count;    /**< None */
-    TPMS_PCRVALUE                                pcrs[];    /**< Array of pcr values */
-} TPML_PCRVALUES;
-
 /** Policy type TPMS_POLICYPCR
  */
 typedef struct {

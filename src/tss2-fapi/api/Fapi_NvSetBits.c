@@ -259,8 +259,8 @@ Fapi_NvSetBits_Finish(
         r = ifapi_initialize_object(context->esys, object);
         goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
-        nvIndex = command->nv_object.handle;
-        command->esys_handle = object->handle;
+        nvIndex = command->nv_object.public.handle;
+        command->esys_handle = object->public.handle;
         command->nv_obj = object->misc.nv;
 
         /* Determine auth object */

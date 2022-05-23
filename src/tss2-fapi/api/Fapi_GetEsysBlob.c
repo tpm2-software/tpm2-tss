@@ -284,7 +284,7 @@ Fapi_GetEsysBlob_Finish(
             fallthrough;
 
         statecase(context->state, GET_ESYS_BLOB_SERIALIZE);
-            r = Esys_TR_Serialize(context->esys, object->handle, data, length);
+            r = Esys_TR_Serialize(context->esys, object->public.handle, data, length);
             goto_if_error(r, "Serialize object", error_cleanup);
 
             context->state = _FAPI_STATE_INIT;
@@ -309,7 +309,7 @@ Fapi_GetEsysBlob_Finish(
             command->type = FAPI_ESYSBLOB_CONTEXTLOAD;
 
             /* Prepare the saving of the context. */
-            r = Esys_ContextSave_Async(context->esys, key_object->handle);
+            r = Esys_ContextSave_Async(context->esys, key_object->public.handle);
             goto_if_error(r, "Error esys context save", error_cleanup);
 
             fallthrough;
@@ -340,7 +340,7 @@ Fapi_GetEsysBlob_Finish(
 
             /* Flush current object used for blob computation. */
             if (!key_object->misc.key.persistent_handle) {
-                r = Esys_FlushContext_Async(context->esys, key_object->handle);
+                r = Esys_FlushContext_Async(context->esys, key_object->public.handle);
                 goto_if_error(r, "Flush Context", error_cleanup);
             }
 

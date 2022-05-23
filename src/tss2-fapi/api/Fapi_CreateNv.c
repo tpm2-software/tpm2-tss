@@ -328,7 +328,7 @@ Fapi_CreateNv_Finish(
             r = ifapi_initialize_object(context->esys, &nvCmd->auth_object);
             goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
-            nvCmd->auth_object.handle
+            nvCmd->auth_object.public.handle
                 = miscNv->hierarchy;
 
             /* Check if a policy is set for the NV index to be created. */
@@ -419,7 +419,7 @@ Fapi_CreateNv_Finish(
 
             /* Create the NV Index. */
             r = Esys_NV_DefineSpace_Async(context->esys,
-                                          hierarchy->handle,
+                                          hierarchy->public.handle,
                                           auth_session,
                                           ESYS_TR_NONE,
                                           ESYS_TR_NONE,
@@ -435,7 +435,7 @@ Fapi_CreateNv_Finish(
             goto_if_error_reset_state(r, "FAPI CreateWithTemplate_Finish", error_cleanup);
 
             /* Store whether the NV index requires a password. */
-            nvCmd->nv_object.handle = nvHandle;
+            nvCmd->nv_object.public.handle = nvHandle;
             if (nvCmd->auth.size > 0)
                 miscNv->with_auth = TPM2_YES;
             else

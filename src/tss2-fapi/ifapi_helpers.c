@@ -933,7 +933,7 @@ set_name_hierarchy_object(IFAPI_OBJECT *object)
 {
     TPM2_HANDLE handle = 0;
     size_t offset = 0;
-    switch (object->handle) {
+    switch (object->public.handle) {
     case ESYS_TR_RH_NULL:
         handle = TPM2_RH_NULL;
         break;
@@ -977,7 +977,7 @@ ifapi_init_hierarchy_object(
     memset(hierarchy, 0, sizeof(IFAPI_OBJECT));
     hierarchy->system = TPM2_YES;
     hierarchy->objectType = IFAPI_HIERARCHY_OBJ;
-    hierarchy->handle = esys_handle;
+    hierarchy->public.handle = esys_handle;
     hierarchy->misc.hierarchy.esysHandle = esys_handle;
     set_name_hierarchy_object(hierarchy);
 }
@@ -1011,16 +1011,16 @@ ifapi_set_name_hierarchy_object(IFAPI_OBJECT *object)
             }
         }
         if (strcmp(&path[pos], "HS") == 0) {
-            object->handle = ESYS_TR_RH_OWNER;
+            object->public.handle = ESYS_TR_RH_OWNER;
             object->misc.hierarchy.esysHandle = ESYS_TR_RH_OWNER;
         } else if (strcmp(&path[pos], "HE") == 0) {
-            object->handle = ESYS_TR_RH_ENDORSEMENT;
+            object->public.handle = ESYS_TR_RH_ENDORSEMENT;
             object->misc.hierarchy.esysHandle = ESYS_TR_RH_ENDORSEMENT;
         } else if (strcmp(&path[pos], "LOCKOUT") == 0) {
-            object->handle = ESYS_TR_RH_LOCKOUT;
+            object->public.handle = ESYS_TR_RH_LOCKOUT;
             object->misc.hierarchy.esysHandle = ESYS_TR_RH_LOCKOUT;
         } else  if (strcmp(&path[pos], "HN") == 0) {
-            object->handle = ESYS_TR_RH_NULL;
+            object->public.handle = ESYS_TR_RH_NULL;
             object->misc.hierarchy.esysHandle = ESYS_TR_RH_NULL;
         }
     }
@@ -2490,5 +2490,62 @@ ifapi_check_json_object_fields(
                 LOG_WARNING("Invalid field: %s", key);
             }
         }
+    }
+}
+
+TSS2_RC ifapi_pcr_selection_to_pcrvalues(
+        TPML_PCR_SELECTION *pcr_selection,
+        TPML_DIGEST *pcr_digests,
+        TPML_PCRVALUES **out) {
+
+    /* Count pcrs */
+    UINT32 i = 0, pcr = 0, n_pcrs = 0, i_pcr = 0;
+    for (i = 0; i < pcr_selection->count; i++) {
+        for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
+            uint8_t byte_idx = pcr / 8;
+            uint8_t flag = 1 << (pcr % 8);
+            /* Check whether PCR is used. */
+            if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx])
+                n_pcrs += 1;
+        }
+    }
+
+
+    TPML_PCRVALUES *pcr_values = calloc(1, sizeof(TPML_PCRVALUES) + n_pcrs* sizeof(TPMS_PCRVALUE));
+    return_if_null(pcr_values, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    /* Initialize digest list with pcr values from TPM */
+    i_pcr = 0;
+    pcr_values->count = pcr_digests->count;
+    for (i = 0; i < pcr_selection->count; i++) {
+        for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
+            uint8_t byte_idx = pcr / 8;
+            uint8_t flag = 1 << (pcr % 8);
+            /* Check whether PCR is used. */
+            if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
+                pcr_values->pcrs[i_pcr].pcr = pcr;
+                pcr_values->pcrs[i_pcr].hashAlg = pcr_selection->pcrSelections[i].hash;
+                memcpy(&pcr_values->pcrs[i_pcr].digest,
+                       &pcr_digests->digests[i_pcr].buffer[0],
+                       pcr_digests->digests[i_pcr].size);
+                i_pcr += 1;
+            }
+        }
+    }
+
+    *out = pcr_values;
+
+    return TSS2_RC_SUCCESS;
+}
+
+void ifapi_helper_init_policy_pcr_selections (TSS2_POLICY_PCR_SELECTION *s,
+        TPMT_POLICYELEMENT *pol_element)
+{
+    if (pol_element->element.PolicyPCR.currentPCRs.sizeofSelect > 0) {
+        s->type = TSS2_POLICY_PCR_SELECTOR_PCR_SELECT;
+        s->selections.pcr_select = pol_element->element.PolicyPCR.currentPCRs;
+    } else {
+        s->type = TSS2_POLICY_PCR_SELECTOR_PCR_SELECTION;
+        s->selections.pcr_selection =
+                pol_element->element.PolicyPCR.currentPCRandBanks;
     }
 }

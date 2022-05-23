@@ -279,10 +279,10 @@ cleanup:
 
 /** Read values of PCR registers and clear selection.
  *
- * @param[in,out] pcr_select The registers to be read (bank selection from profile).
- * @param[in,out] pcr_selection The registers to be read (with bank selection).
- * @param[out] pcr_values The callee-allocated public structure.
- * @param[in,out] ctx The context to access io and keystore module and to store
+ * @param[in] pcr_selection The registers to be read (with bank selection).
+ * @param[out] out_pcr_selection The registers that were read (with bank selection).
+ * @param[out] out_pcr_values The PCR values.
+ * @param[in] ctx The FAPI_CONTEXT to access io and keystore module and to store
  *                the io state.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the input parameters had inappropriate values.
@@ -292,29 +292,29 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  */
-TSS2_RC
-ifapi_read_pcr(
-    TPMS_PCR_SELECT *pcr_select,
-    TPML_PCR_SELECTION *pcr_selection,
-    TPML_PCRVALUES **pcr_values,
-    void *ctx)
-{
+TSS2_RC ifapi_read_pcr(
+    TSS2_POLICY_PCR_SELECTION *pcr_selection,
+    TPML_PCR_SELECTION *out_pcr_selection,
+    TPML_DIGEST *out_pcr_digests,
+    void *ctx) {
+
     TSS2_RC r = TSS2_RC_SUCCESS;
     FAPI_CONTEXT *context = ctx;
     UINT32 update_counter;
     TPML_PCR_SELECTION *out_selection = NULL;
     TPML_PCR_SELECTION *profile_selection;
     TPML_DIGEST *pcr_digests = NULL;
-    size_t i, pcr, n_pcrs = 0, i_pcr;
+    size_t i, pcr;
+
+    TPML_PCR_SELECTION in_pcr_selection = { 0 };
 
     switch (context->io_state) {
     statecase(context->io_state, IO_INIT)
-        if (pcr_select->sizeofSelect) {
-            if (pcr_selection->count) {
-                /* If pcr_select is used pcr_selection can't be initialized */
-                return_error(TSS2_FAPI_RC_BAD_VALUE,
-                             "Policy PCR: pcr_selection can't be used if pcr_selection is used.");
-            }
+
+        /* Raw selector without bank specifier, figure out bank and copy
+         * the raw selector over to the input selector */
+        if (pcr_selection->type == TSS2_POLICY_PCR_SELECTOR_PCR_SELECT) {
+
             /* Determine hash alg */
             profile_selection = &context->profiles.default_profile.pcr_selection;
             for (i = 0; i < profile_selection->count; i++) {
@@ -322,28 +322,31 @@ ifapi_read_pcr(
                     uint8_t byte_idx = pcr / 8;
                     uint8_t flag = 1 << (pcr % 8);
                     /* Check whether PCR is used. */
-                    if (flag & profile_selection->pcrSelections[i].pcrSelect[byte_idx] &&
-                        flag & pcr_select->pcrSelect[byte_idx]) {
-                        pcr_selection->pcrSelections[0].hash = profile_selection->pcrSelections[i].hash;
+                    if ((flag & profile_selection->pcrSelections[i].pcrSelect[byte_idx]) &&
+                        (flag & pcr_selection->selections.pcr_select.pcrSelect[byte_idx])) {
+                        in_pcr_selection.pcrSelections[0].hash = profile_selection->pcrSelections[i].hash;
                     }
                 }
             }
-            if (!pcr_selection->pcrSelections[0].hash) {
+            if (!in_pcr_selection.pcrSelections[0].hash) {
                 /* hash for current pcr_select can't be determined */
                 return_error(TSS2_FAPI_RC_BAD_VALUE,
                              "Policy PCR: pcr_select does not match profile.");
             }
             /* Only one bank will be used. The hash alg from profile will be used */
-            pcr_selection->count = 1;
-            pcr_selection->pcrSelections[0].sizeofSelect = pcr_select->sizeofSelect;
-            for (i = 0; i < pcr_select->sizeofSelect; i++)
-                pcr_selection->pcrSelections[0].pcrSelect[i] = pcr_select->pcrSelect[i];
+            in_pcr_selection.count = 1;
+            in_pcr_selection.pcrSelections[0].sizeofSelect = pcr_selection->selections.pcr_select.sizeofSelect;
+            for (i = 0; i < pcr_selection->selections.pcr_select.sizeofSelect; i++)
+                in_pcr_selection.pcrSelections[0].pcrSelect[i] = pcr_selection->selections.pcr_select.pcrSelect[i];
+        } else {
+            /* we have specified selection with bank, so just copy it. */
+            in_pcr_selection = pcr_selection->selections.pcr_selection;
         }
 
         /* Prepare the PCR Reading. */
         r = Esys_PCR_Read_Async(context->esys,
                                 ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                pcr_selection);
+                                &in_pcr_selection);
         return_if_error(r, "PCR Read");
         fallthrough;
 
@@ -356,41 +359,11 @@ ifapi_read_pcr(
 
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
             return TSS2_FAPI_RC_TRY_AGAIN;
+        goto_if_error2(r, "PCR_Read_Finish", cleanup);
 
-        return_if_error(r, "PCR_Read_Finish");
-
-        /* Count pcrs */
-        for (i = 0; i < out_selection->count; i++) {
-            for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
-                uint8_t byte_idx = pcr / 8;
-                uint8_t flag = 1 << (pcr % 8);
-                /* Check whether PCR is used. */
-                if (flag & out_selection->pcrSelections[i].pcrSelect[byte_idx])
-                    n_pcrs += 1;
-            }
-        }
-
-        *pcr_values = calloc(1, sizeof(TPML_PCRVALUES) + n_pcrs* sizeof(TPMS_PCRVALUE));
-        goto_if_null2(*pcr_values, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        /* Initialize digest list with pcr values from TPM */
-        i_pcr = 0;
-        (*pcr_values)->count = pcr_digests->count;
-        for (i = 0; i < out_selection->count; i++) {
-            for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
-                uint8_t byte_idx = pcr / 8;
-                uint8_t flag = 1 << (pcr % 8);
-                /* Check whether PCR is used. */
-                if (flag & out_selection->pcrSelections[i].pcrSelect[byte_idx]) {
-                    (*pcr_values)->pcrs[i_pcr].pcr = pcr;
-                    (*pcr_values)->pcrs[i_pcr].hashAlg = out_selection->pcrSelections[i].hash;
-                    memcpy(&(*pcr_values)->pcrs[i_pcr].digest,
-                           &pcr_digests->digests[i_pcr].buffer[0],
-                           pcr_digests->digests[i_pcr].size);
-                    i_pcr += 1;
-                }
-            }
-        }
+        /* copy to caller */
+        *out_pcr_selection = *out_selection;
+        *out_pcr_digests = *pcr_digests;
 
         context->io_state = IO_INIT;
         break;
@@ -496,11 +469,11 @@ ifapi_policyeval_cbauth(
             if (cb_ctx->object.objectType == IFAPI_NV_OBJ) {
                 /* NV Authorization */
 
-                cb_ctx->nv_index = cb_ctx->object.handle;
+                cb_ctx->nv_index = cb_ctx->object.public.handle;
 
                 /* Determine the object used for authorization. */
                 get_nv_auth_object(&cb_ctx->object,
-                                   cb_ctx->object.handle,
+                                   cb_ctx->object.public.handle,
                                    &cb_ctx->auth_object,
                                    &cb_ctx->auth_index);
 
@@ -516,7 +489,7 @@ ifapi_policyeval_cbauth(
                 next_case = true;
                 break;
             } else {
-                cb_ctx->key_handle = cb_ctx->object.handle;
+                cb_ctx->key_handle = cb_ctx->object.public.handle;
                 cb_ctx->cb_state = POL_CB_LOAD_KEY;
             }
             fallthrough;
@@ -544,11 +517,11 @@ ifapi_policyeval_cbauth(
         statecasedefault(cb_ctx->cb_state);
         }
     } while (next_case);
-    *object_handle = cb_ctx->object.handle;
+    *object_handle = cb_ctx->object.public.handle;
     if (cb_ctx->object.objectType == IFAPI_NV_OBJ)
         *auth_handle = cb_ctx->auth_index;
     else
-        *auth_handle = cb_ctx->object.handle;
+        *auth_handle = cb_ctx->object.public.handle;
 
     if (current_policy->policySessionSav != ESYS_TR_NONE)
         fapi_ctx->policy.session = current_policy->policySessionSav;
@@ -578,42 +551,32 @@ cleanup:
  */
 TSS2_RC
 ifapi_branch_selection(
-    TPML_POLICYBRANCHES *branches,
+    TSS2_OBJECT *auth_object,
+    const char *branch_names[8],
+    size_t branch_count,
     size_t *branch_idx,
     void *userdata)
 {
     TSS2_RC r;
     FAPI_CONTEXT *fapi_ctx = userdata;
-    size_t i;
-    const char *names[8];
-    IFAPI_OBJECT *auth_object;
     const char* object_path;
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    if (!fapi_ctx->callbacks.branch) {
-        return_error(TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN,
-                     "No branch selection callback");
-    }
-    for (i = 0; i < branches->count; i++)
-        names[i] = branches->authorizations[i].name;
-
     /* Determine path of object to be authenticated. */
-    auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
     return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    object_path = ifapi_get_object_path(auth_object);
+    return_if_null(fapi_ctx->callbacks.branch, "No branch selection callback", TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN);
+
+    object_path = ifapi_get_object_path(TSS2_OBJECT_TO_IFAPI_OBJECT(auth_object));
 
     r = fapi_ctx->callbacks.branch(object_path, "PolicyOR",
-                                   &names[0],
-                                   branches->count,
+                                   &branch_names[0],
+                                   branch_count,
                                    branch_idx,
                                    fapi_ctx->callbacks.branchData);
     return_if_error(r, "policyBranchSelectionCallback");
 
-    if (*branch_idx >= branches->count) {
-        return_error2(TSS2_FAPI_RC_AUTHORIZATION_FAILED, "Invalid branch number.");
-    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -1383,7 +1346,7 @@ ifapi_exec_auth_nv_policy(
             r = ifapi_initialize_object(esys_ctx, &cb_ctx->object);
             goto_if_error(r, "Initialize NV object", cleanup);
 
-            current_policy->nv_index = cb_ctx->object.handle;
+            current_policy->nv_index = cb_ctx->object.public.handle;
             ifapi_cleanup_ifapi_object(&cb_ctx->object);
             get_nv_auth_object(&cb_ctx->object,
                                current_policy->nv_index,

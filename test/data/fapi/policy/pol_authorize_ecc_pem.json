@@ -5,8 +5,8 @@
             "type": "POLICYAUTHORIZE",
             "policyRef": [ 1, 2, 3, 4, 5 ],
 			"keyPEM": "-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEGrFjxBLlFFiZOvemP50H4xCQpL3b
-yeJqGISIHmNSPpTGS9K5kGoKw3gdR2DXsO97RkIZbpHKiA41PJ2KnXDS1Q==
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEwl7xkJ8nywaYBzTzfr/Or0Phg2XY
+ufUHcIYJvC+x8NjOoPTFcE8CKGup6+Q7LOq21S9YmnXrt8xLiHBIxM7YOQ==
 -----END PUBLIC KEY-----"
 		}
     ]

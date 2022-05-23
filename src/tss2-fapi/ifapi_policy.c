@@ -147,3 +147,95 @@ cleanup:
     context->state = POLICY_INIT;
     return r;
 }
+
+/** Execute a policy tree
+ *
+ * @param state: The policy state.
+ * @param context: The policy execution context.
+ * @param eval_ctx The policy evaluation context.
+ * @param pstore: The policy store, may be NULL and then policy path
+ *      is treated as a regular path.
+ * @param io: The FAPI IO Context used for async IO.
+ * @param policyPath: Relative policy path if pstore is not NULL else an absolute
+ *   or relative path to a policy file.
+ * @param policy: Policy structure.
+ * @param esys_ctx: The ESAPI context used to execute policy commands on.
+ * @param hash_alg: The hash alg for policy computations.
+ * @param do_flush: True to flush the policy session on error, false to not flush.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for branch selection is
+ *         not defined. This callback will be needed if or policies have to be
+ *         executed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If the computed branch index deliverd by the
+ *         callback does not identify a branch or If wrong values are detected during execution.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurs reading the policy file.
+ * @retval TSS2_FAPI_RC_BAD_TEMPLATE In a invalid policy is loaded during execution.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ *         is not set.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
+TSS2_RC
+ifapi_execute_tree_ex(
+    enum IFAPI_STATE_POLICY *state,
+    IFAPI_POLICY_EXEC_CTX *context,
+    IFAPI_POLICY_EVAL_INST_CTX *eval_ctx,
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    const char *policyPath,
+    TPMS_POLICY *policy,
+    ESYS_CONTEXT *esys_ctx,
+    TPMI_ALG_HASH hash_alg,
+    bool do_flush)
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+
+    if (*state == POLICY_INIT && !policyPath) {
+        /* Skip policy reading */
+        *state = POLICY_EXECUTE_PREPARE;
+    }
+
+    switch (*state) {
+    statecase(*state, POLICY_INIT);
+        fallthrough;
+
+    statecase(*state, POLICY_READ);
+        r = ifapi_policy_store_load_async(pstore, io, policyPath);
+        goto_if_error2(r, "Can't open: %s", cleanup, policyPath);
+        fallthrough;
+
+    statecase(*state, POLICY_READ_FINISH);
+        r = ifapi_policy_store_load_finish(pstore, io, policy);
+        return_try_again(r);
+        goto_if_error(r, "read_finish failed", cleanup);
+        fallthrough;
+
+     statecase(*state, POLICY_EXECUTE_PREPARE);
+        /* No mention of return try again in doc string */
+        r = ifapi_policyeval_execute_prepare(
+            context,
+            hash_alg,
+            policy);
+        goto_if_error(r, "execute policy prepare.", cleanup);
+        fallthrough;
+    statecase(*state, POLICY_EXECUTE);
+        r = ifapi_policyeval_execute(
+            esys_ctx,
+            context,
+            do_flush);
+        return_try_again(r);
+        goto_if_error(r, "execute policy.", cleanup);
+
+        break;
+    statecasedefault(*state);
+    }
+
+cleanup:
+    ifapi_free_node_list(eval_ctx->policy_elements);
+    eval_ctx->policy_elements = NULL;
+    *state = POLICY_INIT;
+    return r;
+}

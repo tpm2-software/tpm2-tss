@@ -107,6 +107,7 @@ extern "C" {
         r_max = r; \
     }
 
+#define rc_layer(r) (r & TSS2_RC_LAYER_MASK)
 #define base_rc(r) (r & ~TSS2_RC_LAYER_MASK)
 #define number_rc(r) (r & ~TPM2_RC_N_MASK)
 

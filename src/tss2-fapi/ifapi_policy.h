@@ -33,8 +33,7 @@ ifapi_compute_policy_digest(
 
 static inline void ifapi_policy_ctx_init(FAPI_CONTEXT *context) {
 
-    /* why are callbacks not set up in the eval_ctx before this?? */
-    ifapi_policyeval_INST_CB *callbacks = &context->policy.eval_ctx.callbacks;
+    TSS2_POLICY_CALC_CALLBACKS *callbacks = &context->policy.eval_ctx.callbacks;
     callbacks->cbname = ifapi_get_object_name;
     callbacks->cbname_userdata = context;
     callbacks->cbpublic = ifapi_get_key_public;
@@ -55,6 +54,19 @@ ifapi_calculate_tree_ex(
     TPMI_ALG_HASH hash_alg,
     size_t *digest_idx,
     size_t *hash_size);
+
+TSS2_RC
+ifapi_execute_tree_ex(
+    enum IFAPI_STATE_POLICY *state,
+    IFAPI_POLICY_EXEC_CTX *context,
+    IFAPI_POLICY_EVAL_INST_CTX *eval_ctx,
+    IFAPI_POLICY_STORE *pstore,
+    IFAPI_IO *io,
+    const char *policyPath,
+    TPMS_POLICY *policy,
+    ESYS_CONTEXT *esys_ctx,
+    TPMI_ALG_HASH hash_alg,
+    bool do_flush);
 
 static inline TSS2_RC
 ifapi_calculate_tree(
