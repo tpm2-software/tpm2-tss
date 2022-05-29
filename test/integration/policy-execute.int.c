@@ -70,8 +70,11 @@ static char *read_all(const char *path) {
         return NULL;
     }
 
-    fread(buffer, fsize, 1, f);
+    size_t count_read = fread(buffer, fsize, 1, f);
     fclose(f);
+    if (count_read != 1) {
+        return NULL;
+    }
 
     return buffer;
 }
