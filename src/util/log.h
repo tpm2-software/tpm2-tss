@@ -31,16 +31,6 @@ typedef enum {
     LOGLEVEL_UNDEFINED = LOGL_UNDEF
 } log_level;
 
-static const char *log_strings[] COMPILER_ATTR(unused) = {
-    "none",
-    "(unused)",
-    "ERROR",
-    "WARNING",
-    "info",
-    "debug",
-    "trace"
-};
-
 #define xstr(s) str(s)
 #define str(s) #s
 
