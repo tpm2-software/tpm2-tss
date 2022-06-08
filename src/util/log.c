@@ -21,6 +21,8 @@
 #define unlikely(x)     (x)
 #endif
 
+#if MAXLOGLEVEL != LOGL_NONE
+
 static const char *log_strings[] = {
     "none",
     "(unused)",
@@ -254,3 +256,4 @@ getLogLevel(const char *module, log_level logdefault)
     }
     return loglevel;
 }
+#endif
