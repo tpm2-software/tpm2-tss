@@ -402,34 +402,4 @@ TSS2_RC ValidateTPML_PCR_SELECTION(const TPML_PCR_SELECTION *pcr_selection)
 
     return TSS2_RC_SUCCESS;
 }
-
-#else
-bool IsAlgorithmWeak(TPM2_ALG_ID algorithm, TPM2_KEY_SIZE key_size)
-{
-    UNUSED(algorithm);
-    UNUSED(key_size);
-
-    return false;
-}
-
-TSS2_RC ValidateNV_Public(const TPM2B_NV_PUBLIC *nv_public_info)
-{
-    UNUSED(nv_public_info);
-
-    return TSS2_RC_SUCCESS;
-}
-
-TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *pub)
-{
-    UNUSED(pub);
-
-    return TSS2_RC_SUCCESS;
-}
-
-TSS2_RC ValidateTPML_PCR_SELECTION(const TPML_PCR_SELECTION *pcr_selection)
-{
-    UNUSED(pcr_selection);
-
-    return TSS2_RC_SUCCESS;
-}
 #endif

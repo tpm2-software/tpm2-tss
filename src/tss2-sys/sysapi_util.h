@@ -105,10 +105,22 @@ TSS2_RC CommonPreparePrologue(
     TPM2_CC commandCode);
 
 TSS2_RC CommonPrepareEpilogue(_TSS2_SYS_CONTEXT_BLOB *ctx);
+
+#ifdef DISABLE_WEAK_CRYPTO
 bool IsAlgorithmWeak(TPM2_ALG_ID algorith, TPM2_KEY_SIZE key_size);
 TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *pub);
 TSS2_RC ValidateNV_Public(const TPM2B_NV_PUBLIC *nv_public_info);
 TSS2_RC ValidateTPML_PCR_SELECTION(const TPML_PCR_SELECTION *pcr_selection);
+#else
+/*
+ * static inline is not portable, so make these empty defines to reduce generating functions
+ * and thus binary size for them.
+ */
+#define IsAlgorithmWeak(...) TSS2_RC_SUCCESS
+#define ValidatePublicTemplate(...) TSS2_RC_SUCCESS
+#define ValidateNV_Public(...) TSS2_RC_SUCCESS
+#define ValidateTPML_PCR_SELECTION(...) TSS2_RC_SUCCESS
+#endif
 
 #ifdef __cplusplus
 }
