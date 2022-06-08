@@ -415,8 +415,9 @@ endif # HAVE_LD_VERSION_SCRIPT
 # breaking the backwards compatibility of Tss2_Sys_ReadClock call.
 src_tss2_sys_libtss2_sys_la_LDFLAGS += -version-info 1:0:0
 
-src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu) $(libutil)
-src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC)
+src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu)
+src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC) \
+	src/util/log.c
 EXTRA_DIST += lib/tss2-sys.map lib/tss2-sys.def src/tss2-sys/tss2-sys.vcxproj
 
 ### TCG TSS ESYS spec library ###
