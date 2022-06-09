@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_CHANGEAUTH_PREPARE)
 TSS2_RC Tss2_Sys_NV_ChangeAuth_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex,
@@ -54,7 +59,9 @@ TSS2_RC Tss2_Sys_NV_ChangeAuth_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_CHANGEAUTH_COMPLETE)
 TSS2_RC Tss2_Sys_NV_ChangeAuth_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -65,7 +72,9 @@ TSS2_RC Tss2_Sys_NV_ChangeAuth_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_CHANGEAUTH)
 TSS2_RC Tss2_Sys_NV_ChangeAuth(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex,
@@ -86,3 +95,4 @@ TSS2_RC Tss2_Sys_NV_ChangeAuth(
 
     return Tss2_Sys_NV_ChangeAuth_Complete(sysContext);
 }
+#endif

@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CREATEPRIMARY_PREPARE)
 TSS2_RC Tss2_Sys_CreatePrimary_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY primaryHandle,
@@ -103,7 +108,9 @@ TSS2_RC Tss2_Sys_CreatePrimary_Prepare(
     rval = CommonPrepareEpilogue(ctx);
     return rval;
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CREATEPRIMARY_COMPLETE)
 TSS2_RC Tss2_Sys_CreatePrimary_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2_HANDLE *objectHandle,
@@ -161,7 +168,9 @@ TSS2_RC Tss2_Sys_CreatePrimary_Complete(
                                         &ctx->nextData, name);
     return rval;
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CREATEPRIMARY)
 TSS2_RC Tss2_Sys_CreatePrimary(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY primaryHandle,
@@ -200,3 +209,4 @@ TSS2_RC Tss2_Sys_CreatePrimary(
     return rval;
 
 }
+#endif

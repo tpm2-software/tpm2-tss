@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_INCREMENTALSELFTEST_PREPARE)
 TSS2_RC Tss2_Sys_IncrementalSelfTest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     const TPML_ALG *toTest)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_IncrementalSelfTest_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_INCREMENTALSELFTEST_COMPLETE)
 TSS2_RC Tss2_Sys_IncrementalSelfTest_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_ALG *toDoList)
@@ -57,7 +64,9 @@ TSS2_RC Tss2_Sys_IncrementalSelfTest_Complete(
                                       ctx->maxCmdSize,
                                       &ctx->nextData, toDoList);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_INCREMENTALSELFTEST)
 TSS2_RC Tss2_Sys_IncrementalSelfTest(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -81,3 +90,4 @@ TSS2_RC Tss2_Sys_IncrementalSelfTest(
 
     return Tss2_Sys_IncrementalSelfTest_Complete(sysContext, toDoList);
 }
+#endif

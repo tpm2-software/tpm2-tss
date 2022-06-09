@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_FIELDUPGRADESTART_PREPARE)
 TSS2_RC Tss2_Sys_FieldUpgradeStart_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authorization,
@@ -69,7 +74,9 @@ TSS2_RC Tss2_Sys_FieldUpgradeStart_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_FIELDUPGRADESTART_COMPLETE)
 TSS2_RC Tss2_Sys_FieldUpgradeStart_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -80,7 +87,9 @@ TSS2_RC Tss2_Sys_FieldUpgradeStart_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_FIELDUPGRADESTART)
 TSS2_RC Tss2_Sys_FieldUpgradeStart(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authorization,
@@ -108,3 +117,4 @@ TSS2_RC Tss2_Sys_FieldUpgradeStart(
 
     return Tss2_Sys_FieldUpgradeStart_Complete(sysContext);
 }
+#endif

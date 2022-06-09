@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_READCLOCK_PREPARE)
 TSS2_RC Tss2_Sys_ReadClock_Prepare(
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -31,7 +36,9 @@ TSS2_RC Tss2_Sys_ReadClock_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_READCLOCK_COMPLETE)
 TSS2_RC Tss2_Sys_ReadClock_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_TIME_INFO *currentTime)
@@ -51,7 +58,9 @@ TSS2_RC Tss2_Sys_ReadClock_Complete(
                                             &ctx->nextData,
                                             currentTime);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_READCLOCK)
 TSS2_RC Tss2_Sys_ReadClock(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -71,3 +80,4 @@ TSS2_RC Tss2_Sys_ReadClock(
 
     return Tss2_Sys_ReadClock_Complete(sysContext, currentTime);
 }
+#endif

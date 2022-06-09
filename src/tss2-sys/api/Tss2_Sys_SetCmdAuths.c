@@ -15,6 +15,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_SETCMDAUTHS)
 TSS2_RC Tss2_Sys_SetCmdAuths(
     TSS2_SYS_CONTEXT *sysContext,
     const TSS2L_SYS_AUTH_COMMAND *cmdAuthsArray)
@@ -92,3 +97,4 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     ctx->authsCount = cmdAuthsArray->count;
     return rval;
 }
+#endif

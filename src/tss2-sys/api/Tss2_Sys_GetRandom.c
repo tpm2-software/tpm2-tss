@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETRANDOM_PREPARE)
 TSS2_RC Tss2_Sys_GetRandom_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     UINT16 bytesRequested)
@@ -37,7 +42,9 @@ TSS2_RC Tss2_Sys_GetRandom_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETRANDOM_COMPLETE)
 TSS2_RC Tss2_Sys_GetRandom_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *randomBytes)
@@ -56,7 +63,9 @@ TSS2_RC Tss2_Sys_GetRandom_Complete(
                                           ctx->maxCmdSize,
                                           &ctx->nextData, randomBytes);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETRANDOM)
 TSS2_RC Tss2_Sys_GetRandom(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -77,3 +86,4 @@ TSS2_RC Tss2_Sys_GetRandom(
 
     return Tss2_Sys_GetRandom_Complete(sysContext, randomBytes);
 }
+#endif

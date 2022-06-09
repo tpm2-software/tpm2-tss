@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETCONTEXTSIZE)
 size_t Tss2_Sys_GetContextSize(size_t maxCommandSize)
 {
     if (maxCommandSize == 0) {
@@ -22,3 +27,4 @@ size_t Tss2_Sys_GetContextSize(size_t maxCommandSize)
                        maxCommandSize : sizeof(TPM20_Header_In));
     }
 }
+#endif

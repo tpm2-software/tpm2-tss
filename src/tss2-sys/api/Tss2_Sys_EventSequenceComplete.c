@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_EVENTSEQUENCECOMPLETE_PREPARE)
 TSS2_RC Tss2_Sys_EventSequenceComplete_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
@@ -61,7 +66,9 @@ TSS2_RC Tss2_Sys_EventSequenceComplete_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_EVENTSEQUENCECOMPLETE_COMPLETE)
 TSS2_RC Tss2_Sys_EventSequenceComplete_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_DIGEST_VALUES *results)
@@ -80,7 +87,9 @@ TSS2_RC Tss2_Sys_EventSequenceComplete_Complete(
                                                 ctx->maxCmdSize,
                                                 &ctx->nextData, results);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_EVENTSEQUENCECOMPLETE)
 TSS2_RC Tss2_Sys_EventSequenceComplete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
@@ -104,3 +113,4 @@ TSS2_RC Tss2_Sys_EventSequenceComplete(
 
     return Tss2_Sys_EventSequenceComplete_Complete(sysContext, results);
 }
+#endif

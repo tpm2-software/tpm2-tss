@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_STIRRANDOM_PREPARE)
 TSS2_RC Tss2_Sys_StirRandom_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     const TPM2B_SENSITIVE_DATA *inData)
@@ -47,7 +52,9 @@ TSS2_RC Tss2_Sys_StirRandom_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_STIRRANDOM_COMPLETE)
 TSS2_RC Tss2_Sys_StirRandom_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -58,7 +65,9 @@ TSS2_RC Tss2_Sys_StirRandom_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_STIRRANDOM)
 TSS2_RC Tss2_Sys_StirRandom(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -78,3 +87,4 @@ TSS2_RC Tss2_Sys_StirRandom(
 
     return Tss2_Sys_StirRandom_Complete(sysContext);
 }
+#endif

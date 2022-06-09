@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYGETDIGEST_PREPARE)
 TSS2_RC Tss2_Sys_PolicyGetDigest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_PolicyGetDigest_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYGETDIGEST_COMPLETE)
 TSS2_RC Tss2_Sys_PolicyGetDigest_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *policyDigest)
@@ -58,7 +65,9 @@ TSS2_RC Tss2_Sys_PolicyGetDigest_Complete(
                                           &ctx->nextData,
                                           policyDigest);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYGETDIGEST)
 TSS2_RC Tss2_Sys_PolicyGetDigest(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -79,3 +88,4 @@ TSS2_RC Tss2_Sys_PolicyGetDigest(
 
     return Tss2_Sys_PolicyGetDigest_Complete(sysContext, policyDigest);
 }
+#endif

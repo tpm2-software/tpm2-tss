@@ -13,8 +13,14 @@
 #include "sysapi_util.h"
 #include "util/aux_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_FINALIZE)
 void Tss2_Sys_Finalize(
     TSS2_SYS_CONTEXT *sysContext)
 {
     UNUSED(sysContext);
 }
+#endif

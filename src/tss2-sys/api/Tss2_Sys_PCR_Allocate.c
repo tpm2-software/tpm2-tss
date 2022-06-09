@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_ALLOCATE_PREPARE)
 TSS2_RC Tss2_Sys_PCR_Allocate_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
@@ -50,7 +55,9 @@ TSS2_RC Tss2_Sys_PCR_Allocate_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_ALLOCATE_COMPLETE)
 TSS2_RC Tss2_Sys_PCR_Allocate_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_YES_NO *allocationSuccess,
@@ -94,7 +101,9 @@ TSS2_RC Tss2_Sys_PCR_Allocate_Complete(
                                     &ctx->nextData,
                                     sizeAvailable);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_ALLOCATE)
 TSS2_RC Tss2_Sys_PCR_Allocate(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
@@ -123,3 +132,4 @@ TSS2_RC Tss2_Sys_PCR_Allocate(
     return Tss2_Sys_PCR_Allocate_Complete(sysContext, allocationSuccess, maxPCR,
                                           sizeNeeded, sizeAvailable);
 }
+#endif

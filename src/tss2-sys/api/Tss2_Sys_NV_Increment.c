@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_INCREMENT_PREPARE)
 TSS2_RC Tss2_Sys_NV_Increment_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
@@ -45,7 +50,9 @@ TSS2_RC Tss2_Sys_NV_Increment_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_INCREMENT_COMPLETE)
 TSS2_RC Tss2_Sys_NV_Increment_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -56,7 +63,9 @@ TSS2_RC Tss2_Sys_NV_Increment_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_INCREMENT)
 TSS2_RC Tss2_Sys_NV_Increment(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
@@ -77,3 +86,4 @@ TSS2_RC Tss2_Sys_NV_Increment(
 
     return Tss2_Sys_NV_Increment_Complete(sysContext);
 }
+#endif

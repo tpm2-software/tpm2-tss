@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETCPBUFFER)
 TSS2_RC Tss2_Sys_GetCpBuffer(
     TSS2_SYS_CONTEXT *sysContext,
     size_t *cpBufferUsedSize,
@@ -30,3 +35,4 @@ TSS2_RC Tss2_Sys_GetCpBuffer(
 
     return TSS2_RC_SUCCESS;
 }
+#endif

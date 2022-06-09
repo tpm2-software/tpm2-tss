@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYCOUNTERTIMER_PREPARE)
 TSS2_RC Tss2_Sys_PolicyCounterTimer_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -69,7 +74,9 @@ TSS2_RC Tss2_Sys_PolicyCounterTimer_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYCOUNTERTIMER_COMPLETE)
 TSS2_RC Tss2_Sys_PolicyCounterTimer_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -80,7 +87,9 @@ TSS2_RC Tss2_Sys_PolicyCounterTimer_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYCOUNTERTIMER)
 TSS2_RC Tss2_Sys_PolicyCounterTimer(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -104,3 +113,4 @@ TSS2_RC Tss2_Sys_PolicyCounterTimer(
 
     return Tss2_Sys_PolicyCounterTimer_Complete(sysContext);
 }
+#endif

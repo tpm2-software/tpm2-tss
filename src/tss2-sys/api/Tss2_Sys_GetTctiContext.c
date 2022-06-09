@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETTCTICONTEXT)
 TSS2_RC Tss2_Sys_GetTctiContext(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_TCTI_CONTEXT **tctiContext)
@@ -25,3 +30,4 @@ TSS2_RC Tss2_Sys_GetTctiContext(
 
     return TSS2_RC_SUCCESS;
 }
+#endif

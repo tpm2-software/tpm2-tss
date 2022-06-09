@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PP_COMMANDS_PREPARE)
 TSS2_RC Tss2_Sys_PP_Commands_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM auth,
@@ -52,7 +57,9 @@ TSS2_RC Tss2_Sys_PP_Commands_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PP_COMMANDS_COMPLETE)
 TSS2_RC Tss2_Sys_PP_Commands_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -63,7 +70,9 @@ TSS2_RC Tss2_Sys_PP_Commands_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PP_COMMANDS)
 TSS2_RC Tss2_Sys_PP_Commands(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM auth,
@@ -88,3 +97,4 @@ TSS2_RC Tss2_Sys_PP_Commands(
 
     return Tss2_Sys_PP_Commands_Complete(sysContext);
 }
+#endif

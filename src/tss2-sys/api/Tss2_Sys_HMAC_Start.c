@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_HMAC_START_PREPARE)
 TSS2_RC Tss2_Sys_HMAC_Start_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
@@ -65,7 +70,9 @@ TSS2_RC Tss2_Sys_HMAC_Start_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_HMAC_START_COMPLETE)
 TSS2_RC Tss2_Sys_HMAC_Start_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT *sequenceHandle)
@@ -85,7 +92,9 @@ TSS2_RC Tss2_Sys_HMAC_Start_Complete(
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_HMAC_START)
 TSS2_RC Tss2_Sys_HMAC_Start(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT handle,
@@ -108,3 +117,4 @@ TSS2_RC Tss2_Sys_HMAC_Start(
 
      return Tss2_Sys_HMAC_Start_Complete(sysContext, sequenceHandle);
 }
+#endif

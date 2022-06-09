@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYSECRET_PREPARE)
 TSS2_RC Tss2_Sys_PolicySecret_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_ENTITY authHandle,
@@ -93,7 +98,9 @@ TSS2_RC Tss2_Sys_PolicySecret_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYSECRET_COMPLETE)
 TSS2_RC Tss2_Sys_PolicySecret_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_TIMEOUT *timeout,
@@ -119,7 +126,9 @@ TSS2_RC Tss2_Sys_PolicySecret_Complete(
                                           ctx->maxCmdSize,
                                           &ctx->nextData, policyTicket);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYSECRET)
 TSS2_RC Tss2_Sys_PolicySecret(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_ENTITY authHandle,
@@ -147,3 +156,4 @@ TSS2_RC Tss2_Sys_PolicySecret(
 
     return Tss2_Sys_PolicySecret_Complete(sysContext, timeout, policyTicket);
 }
+#endif

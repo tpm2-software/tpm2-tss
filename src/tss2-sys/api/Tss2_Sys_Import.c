@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_IMPORT_PREPARE)
 TSS2_RC Tss2_Sys_Import_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
@@ -115,7 +120,9 @@ TSS2_RC Tss2_Sys_Import_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_IMPORT_COMPLETE)
 TSS2_RC Tss2_Sys_Import_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outPrivate)
@@ -135,7 +142,9 @@ TSS2_RC Tss2_Sys_Import_Complete(
                                            &ctx->nextData,
                                            outPrivate);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_IMPORT)
 TSS2_RC Tss2_Sys_Import(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
@@ -166,3 +175,4 @@ TSS2_RC Tss2_Sys_Import(
 
     return Tss2_Sys_Import_Complete(sysContext, outPrivate);
 }
+#endif

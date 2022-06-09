@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_RSA_DECRYPT_PREPARE)
 TSS2_RC Tss2_Sys_RSA_Decrypt_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
@@ -79,7 +84,9 @@ TSS2_RC Tss2_Sys_RSA_Decrypt_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_RSA_DECRYPT_COMPLETE)
 TSS2_RC Tss2_Sys_RSA_Decrypt_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PUBLIC_KEY_RSA *message)
@@ -98,7 +105,9 @@ TSS2_RC Tss2_Sys_RSA_Decrypt_Complete(
                                                   ctx->maxCmdSize,
                                                   &ctx->nextData, message);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_RSA_DECRYPT)
 TSS2_RC Tss2_Sys_RSA_Decrypt(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
@@ -126,3 +135,4 @@ TSS2_RC Tss2_Sys_RSA_Decrypt(
 
     return Tss2_Sys_RSA_Decrypt_Complete(sysContext, message);
 }
+#endif

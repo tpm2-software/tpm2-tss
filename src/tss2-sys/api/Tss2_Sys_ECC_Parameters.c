@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ECC_PARAMETERS_PREPARE)
 TSS2_RC Tss2_Sys_ECC_Parameters_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_ECC_CURVE curveID)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_ECC_Parameters_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ECC_PARAMETERS_COMPLETE)
 TSS2_RC Tss2_Sys_ECC_Parameters_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_ALGORITHM_DETAIL_ECC *parameters)
@@ -58,7 +65,9 @@ TSS2_RC Tss2_Sys_ECC_Parameters_Complete(
                                                        &ctx->nextData,
                                                        parameters);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ECC_PARAMETERS)
 TSS2_RC Tss2_Sys_ECC_Parameters(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -79,3 +88,4 @@ TSS2_RC Tss2_Sys_ECC_Parameters(
 
     return Tss2_Sys_ECC_Parameters_Complete(sysContext, parameters);
 }
+#endif

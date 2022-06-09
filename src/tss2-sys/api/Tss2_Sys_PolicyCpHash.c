@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYCPHASH_PREPARE)
 TSS2_RC Tss2_Sys_PolicyCpHash_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -54,7 +59,9 @@ TSS2_RC Tss2_Sys_PolicyCpHash_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYCPHASH_COMPLETE)
 TSS2_RC Tss2_Sys_PolicyCpHash_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -65,7 +72,9 @@ TSS2_RC Tss2_Sys_PolicyCpHash_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYCPHASH)
 TSS2_RC Tss2_Sys_PolicyCpHash(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -86,3 +95,4 @@ TSS2_RC Tss2_Sys_PolicyCpHash(
 
     return Tss2_Sys_PolicyCpHash_Complete(sysContext);
 }
+#endif

@@ -13,6 +13,11 @@
 #include "sysapi_util.h"
 #include "util/tss2_endian.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETENCRYPTPARAM)
 TSS2_RC Tss2_Sys_GetEncryptParam(
     TSS2_SYS_CONTEXT *sysContext,
     size_t *encryptParamSize,
@@ -45,3 +50,4 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
 
     return TSS2_RC_SUCCESS;
 }
+#endif

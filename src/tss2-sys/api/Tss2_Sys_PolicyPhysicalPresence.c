@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYPHYSICALPRESENCE_PREPARE)
 TSS2_RC Tss2_Sys_PolicyPhysicalPresence_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_PolicyPhysicalPresence_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYPHYSICALPRESENCE_COMPLETE)
 TSS2_RC Tss2_Sys_PolicyPhysicalPresence_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -49,7 +56,9 @@ TSS2_RC Tss2_Sys_PolicyPhysicalPresence_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYPHYSICALPRESENCE)
 TSS2_RC Tss2_Sys_PolicyPhysicalPresence(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -69,3 +78,4 @@ TSS2_RC Tss2_Sys_PolicyPhysicalPresence(
 
     return Tss2_Sys_PolicyPhysicalPresence_Complete(sysContext);
 }
+#endif

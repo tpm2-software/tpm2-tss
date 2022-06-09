@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_DICTIONARYATTACKLOCKRESET_PREPARE)
 TSS2_RC Tss2_Sys_DictionaryAttackLockReset_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_LOCKOUT lockHandle)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_DictionaryAttackLockReset_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_DICTIONARYATTACKLOCKRESET_COMPLETE)
 TSS2_RC Tss2_Sys_DictionaryAttackLockReset_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -49,7 +56,9 @@ TSS2_RC Tss2_Sys_DictionaryAttackLockReset_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_DICTIONARYATTACKLOCKRESET)
 TSS2_RC Tss2_Sys_DictionaryAttackLockReset(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_LOCKOUT lockHandle,
@@ -69,3 +78,4 @@ TSS2_RC Tss2_Sys_DictionaryAttackLockReset(
 
     return Tss2_Sys_DictionaryAttackLockReset_Complete(sysContext);
 }
+#endif

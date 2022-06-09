@@ -17,16 +17,20 @@
 #include "tss2_tpm2_types.h"
 #include "tss2_mu.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
 #include "sysapi_util.h"
 #define LOGMODULE sys
 #include "util/log.h"
 
-static const TSS2_ABI_VERSION CURRENT = TSS2_ABI_VERSION_CURRENT;
 #define CURRENT_CREATOR (CURRENT.tssCreator)
 #define CURRENT_FAMILY  (CURRENT.tssFamily)
 #define CURRENT_LEVEL   (CURRENT.tssLevel)
 #define CURRENT_VERSION (CURRENT.tssVersion)
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_INITIALIZE)
 TSS2_RC Tss2_Sys_Initialize(
     TSS2_SYS_CONTEXT *sysContext,
     size_t contextSize,
@@ -34,6 +38,8 @@ TSS2_RC Tss2_Sys_Initialize(
     TSS2_ABI_VERSION *abiVersion)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+
+    static const TSS2_ABI_VERSION CURRENT = TSS2_ABI_VERSION_CURRENT;
 
     if (!ctx || !tctiContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -68,3 +74,4 @@ TSS2_RC Tss2_Sys_Initialize(
 
     return TSS2_RC_SUCCESS;
 }
+#endif

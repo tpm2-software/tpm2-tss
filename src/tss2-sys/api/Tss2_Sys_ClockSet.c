@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CLOCKSET_PREPARE)
 TSS2_RC Tss2_Sys_ClockSet_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
@@ -44,7 +49,9 @@ TSS2_RC Tss2_Sys_ClockSet_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CLOCKSET_COMPLETE)
 TSS2_RC Tss2_Sys_ClockSet_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -55,7 +62,9 @@ TSS2_RC Tss2_Sys_ClockSet_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CLOCKSET)
 TSS2_RC Tss2_Sys_ClockSet(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
@@ -76,3 +85,4 @@ TSS2_RC Tss2_Sys_ClockSet(
 
     return Tss2_Sys_ClockSet_Complete(sysContext);
 }
+#endif

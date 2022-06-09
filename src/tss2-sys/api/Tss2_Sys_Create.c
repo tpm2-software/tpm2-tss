@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CREATE_PREPARE)
 TSS2_RC Tss2_Sys_Create_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
@@ -105,7 +110,9 @@ TSS2_RC Tss2_Sys_Create_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CREATE_COMPLETE)
 TSS2_RC Tss2_Sys_Create_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outPrivate,
@@ -157,7 +164,9 @@ TSS2_RC Tss2_Sys_Create_Complete(
                                           &ctx->nextData,
                                           creationTicket);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CREATE)
 TSS2_RC Tss2_Sys_Create(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT parentHandle,
@@ -191,3 +200,4 @@ TSS2_RC Tss2_Sys_Create(
     return Tss2_Sys_Create_Complete(sysContext, outPrivate, outPublic,
                                     creationData, creationHash, creationTicket);
 }
+#endif

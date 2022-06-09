@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_SETPRIMARYPOLICY_PREPARE)
 TSS2_RC Tss2_Sys_SetPrimaryPolicy_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY_AUTH authHandle,
@@ -65,7 +70,9 @@ TSS2_RC Tss2_Sys_SetPrimaryPolicy_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_SETPRIMARYPOLICY_COMPLETE)
 TSS2_RC Tss2_Sys_SetPrimaryPolicy_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -76,7 +83,9 @@ TSS2_RC Tss2_Sys_SetPrimaryPolicy_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_SETPRIMARYPOLICY)
 TSS2_RC Tss2_Sys_SetPrimaryPolicy(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_HIERARCHY_AUTH authHandle,
@@ -98,3 +107,4 @@ TSS2_RC Tss2_Sys_SetPrimaryPolicy(
 
     return Tss2_Sys_SetPrimaryPolicy_Complete(sysContext);
 }
+#endif

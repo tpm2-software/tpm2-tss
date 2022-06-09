@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_REWRAP_PREPARE)
 TSS2_RC Tss2_Sys_Rewrap_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT oldParent,
@@ -95,7 +100,9 @@ TSS2_RC Tss2_Sys_Rewrap_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_REWRAP_COMPLETE)
 TSS2_RC Tss2_Sys_Rewrap_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outDuplicate,
@@ -122,7 +129,9 @@ TSS2_RC Tss2_Sys_Rewrap_Complete(
                                                     &ctx->nextData,
                                                     outSymSeed);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_REWRAP)
 TSS2_RC Tss2_Sys_Rewrap(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT oldParent,
@@ -148,3 +157,4 @@ TSS2_RC Tss2_Sys_Rewrap(
 
     return Tss2_Sys_Rewrap_Complete(sysContext, outDuplicate, outSymSeed);
 }
+#endif

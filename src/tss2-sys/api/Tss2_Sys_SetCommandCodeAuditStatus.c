@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_SETCOMMANDCODEAUDITSTATUS_PREPARE)
 TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
@@ -62,7 +67,9 @@ TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_SETCOMMANDCODEAUDITSTATUS_COMPLETE)
 TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -73,7 +80,9 @@ TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_SETCOMMANDCODEAUDITSTATUS)
 TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
@@ -100,3 +109,4 @@ TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus(
 
     return Tss2_Sys_SetCommandCodeAuditStatus_Complete(sysContext);
 }
+#endif

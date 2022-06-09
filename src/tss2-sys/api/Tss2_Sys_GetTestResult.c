@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETTESTRESULT_PREPARE)
 TSS2_RC Tss2_Sys_GetTestResult_Prepare(
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -31,7 +36,9 @@ TSS2_RC Tss2_Sys_GetTestResult_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETTESTRESULT_COMPLETE)
 TSS2_RC Tss2_Sys_GetTestResult_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_BUFFER *outData,
@@ -59,7 +66,9 @@ TSS2_RC Tss2_Sys_GetTestResult_Complete(
                                     &ctx->nextData,
                                     testResult);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETTESTRESULT)
 TSS2_RC Tss2_Sys_GetTestResult(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -80,3 +89,4 @@ TSS2_RC Tss2_Sys_GetTestResult(
 
     return Tss2_Sys_GetTestResult_Complete(sysContext, outData, testResult);
 }
+#endif

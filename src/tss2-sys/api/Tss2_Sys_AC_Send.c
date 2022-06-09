@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_AC_SEND_PREPARE)
 TSS2_RC Tss2_Sys_AC_Send_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT sendObject,
@@ -68,7 +73,9 @@ TSS2_RC Tss2_Sys_AC_Send_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_AC_SEND_COMPLETE)
 TSS2_RC Tss2_Sys_AC_Send_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_AC_OUTPUT *acDataOut)
@@ -88,7 +95,9 @@ TSS2_RC Tss2_Sys_AC_Send_Complete(
                                             &ctx->nextData,
                                             acDataOut);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_AC_SEND)
 TSS2_RC Tss2_Sys_AC_Send(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT sendObject,
@@ -113,3 +122,4 @@ TSS2_RC Tss2_Sys_AC_Send(
 
     return Tss2_Sys_AC_Send_Complete(sysContext, acDataOut);
 }
+#endif

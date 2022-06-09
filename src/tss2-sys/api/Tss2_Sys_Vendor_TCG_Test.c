@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_VENDOR_TCG_TEST_PREPARE)
 TSS2_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     const TPM2B_DATA *inputData)
@@ -47,7 +52,9 @@ TSS2_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_VENDOR_TCG_TEST_COMPLETE)
 TSS2_RC Tss2_Sys_Vendor_TCG_Test_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DATA *outputData)
@@ -66,7 +73,9 @@ TSS2_RC Tss2_Sys_Vendor_TCG_Test_Complete(
                                         ctx->maxCmdSize,
                                         &ctx->nextData, outputData);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_VENDOR_TCG_TEST)
 TSS2_RC Tss2_Sys_Vendor_TCG_Test(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -87,3 +96,4 @@ TSS2_RC Tss2_Sys_Vendor_TCG_Test(
 
     return Tss2_Sys_Vendor_TCG_Test_Complete(sysContext, outputData);
 }
+#endif

@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETSESSIONAUDITDIGEST_PREPARE)
 TSS2_RC Tss2_Sys_GetSessionAuditDigest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_ENDORSEMENT privacyAdminHandle,
@@ -76,7 +81,9 @@ TSS2_RC Tss2_Sys_GetSessionAuditDigest_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETSESSIONAUDITDIGEST_COMPLETE)
 TSS2_RC Tss2_Sys_GetSessionAuditDigest_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ATTEST *auditInfo,
@@ -102,7 +109,9 @@ TSS2_RC Tss2_Sys_GetSessionAuditDigest_Complete(
                                             ctx->maxCmdSize,
                                             &ctx->nextData, signature);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETSESSIONAUDITDIGEST)
 TSS2_RC Tss2_Sys_GetSessionAuditDigest(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_ENDORSEMENT privacyAdminHandle,
@@ -134,3 +143,4 @@ TSS2_RC Tss2_Sys_GetSessionAuditDigest(
     return Tss2_Sys_GetSessionAuditDigest_Complete(sysContext, auditInfo,
                                                    signature);
 }
+#endif

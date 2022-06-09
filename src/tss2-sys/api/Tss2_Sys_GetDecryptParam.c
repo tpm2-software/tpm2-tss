@@ -13,6 +13,11 @@
 #include "sysapi_util.h"
 #include "util/tss2_endian.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETDECRYPTPARAM)
 TSS2_RC Tss2_Sys_GetDecryptParam(
     TSS2_SYS_CONTEXT *sysContext,
     size_t *decryptParamSize,
@@ -37,3 +42,4 @@ TSS2_RC Tss2_Sys_GetDecryptParam(
 
     return TSS2_RC_SUCCESS;
 }
+#endif

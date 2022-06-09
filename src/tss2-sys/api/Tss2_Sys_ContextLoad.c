@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CONTEXTLOAD_PREPARE)
 TSS2_RC Tss2_Sys_ContextLoad_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     const TPMS_CONTEXT *context)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_ContextLoad_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CONTEXTLOAD_COMPLETE)
 TSS2_RC Tss2_Sys_ContextLoad_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_CONTEXT *loadedHandle)
@@ -58,7 +65,9 @@ TSS2_RC Tss2_Sys_ContextLoad_Complete(
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CONTEXTLOAD)
 TSS2_RC Tss2_Sys_ContextLoad(
     TSS2_SYS_CONTEXT *sysContext,
     const TPMS_CONTEXT *context,
@@ -80,3 +89,4 @@ TSS2_RC Tss2_Sys_ContextLoad(
 
     return Tss2_Sys_ContextLoad_Complete(sysContext, loadedHandle);
 }
+#endif

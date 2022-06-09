@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_AC_GETCAPABILITY_PREPARE)
 TSS2_RC Tss2_Sys_AC_GetCapability_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_AC ac,
@@ -52,7 +57,9 @@ TSS2_RC Tss2_Sys_AC_GetCapability_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_AC_GETCAPABILITY_COMPLETE)
 TSS2_RC Tss2_Sys_AC_GetCapability_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_YES_NO *moreData,
@@ -80,7 +87,9 @@ TSS2_RC Tss2_Sys_AC_GetCapability_Complete(
                                                   &ctx->nextData,
                                                   capabilityData);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_AC_GETCAPABILITY)
 TSS2_RC Tss2_Sys_AC_GetCapability(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_AC ac,
@@ -105,3 +114,4 @@ TSS2_RC Tss2_Sys_AC_GetCapability(
     return Tss2_Sys_AC_GetCapability_Complete(sysContext, moreData,
                                               capabilityData);
 }
+#endif

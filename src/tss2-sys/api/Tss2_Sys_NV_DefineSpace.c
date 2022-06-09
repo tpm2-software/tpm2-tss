@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_DEFINESPACE_PREPARE)
 TSS2_RC Tss2_Sys_NV_DefineSpace_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION authHandle,
@@ -75,7 +80,9 @@ TSS2_RC Tss2_Sys_NV_DefineSpace_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_DEFINESPACE_COMPLETE)
 TSS2_RC Tss2_Sys_NV_DefineSpace_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -86,7 +93,9 @@ TSS2_RC Tss2_Sys_NV_DefineSpace_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_DEFINESPACE)
 TSS2_RC Tss2_Sys_NV_DefineSpace(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION authHandle,
@@ -108,3 +117,4 @@ TSS2_RC Tss2_Sys_NV_DefineSpace(
 
     return Tss2_Sys_NV_DefineSpace_Complete(sysContext);
 }
+#endif

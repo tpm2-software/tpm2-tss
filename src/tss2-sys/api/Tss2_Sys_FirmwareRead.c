@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_FIRMWAREREAD_PREPARE)
 TSS2_RC Tss2_Sys_FirmwareRead_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     UINT32 sequenceNumber)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_FirmwareRead_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_FIRMWAREREAD_COMPLETE)
 TSS2_RC Tss2_Sys_FirmwareRead_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_BUFFER *fuData)
@@ -57,7 +64,9 @@ TSS2_RC Tss2_Sys_FirmwareRead_Complete(
                                               ctx->maxCmdSize,
                                               &ctx->nextData, fuData);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_FIRMWAREREAD)
 TSS2_RC Tss2_Sys_FirmwareRead(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -78,3 +87,4 @@ TSS2_RC Tss2_Sys_FirmwareRead(
 
     return Tss2_Sys_FirmwareRead_Complete(sysContext, fuData);
 }
+#endif

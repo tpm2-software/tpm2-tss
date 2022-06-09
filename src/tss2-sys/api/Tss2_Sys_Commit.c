@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_COMMIT_PREPARE)
 TSS2_RC Tss2_Sys_Commit_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
@@ -86,7 +91,9 @@ TSS2_RC Tss2_Sys_Commit_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_COMMIT_COMPLETE)
 TSS2_RC Tss2_Sys_Commit_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ECC_POINT *K,
@@ -126,7 +133,9 @@ TSS2_RC Tss2_Sys_Commit_Complete(
                                     ctx->maxCmdSize,
                                     &ctx->nextData, counter);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_COMMIT)
 TSS2_RC Tss2_Sys_Commit(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
@@ -153,3 +162,4 @@ TSS2_RC Tss2_Sys_Commit(
 
     return Tss2_Sys_Commit_Complete(sysContext, K, L, E, counter);
 }
+#endif

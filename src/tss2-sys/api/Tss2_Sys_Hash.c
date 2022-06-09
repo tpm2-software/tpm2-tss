@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_HASH_PREPARE)
 TSS2_RC Tss2_Sys_Hash_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     const TPM2B_MAX_BUFFER *data,
@@ -65,7 +70,9 @@ TSS2_RC Tss2_Sys_Hash_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_HASH_COMPLETE)
 TSS2_RC Tss2_Sys_Hash_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *outHash,
@@ -93,7 +100,9 @@ TSS2_RC Tss2_Sys_Hash_Complete(
                                                &ctx->nextData,
                                                validation);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_HASH)
 TSS2_RC Tss2_Sys_Hash(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -117,3 +126,4 @@ TSS2_RC Tss2_Sys_Hash(
 
     return Tss2_Sys_Hash_Complete(sysContext, outHash, validation);
 }
+#endif

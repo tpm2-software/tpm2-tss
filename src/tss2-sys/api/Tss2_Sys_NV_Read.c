@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_READ_PREPARE)
 TSS2_RC Tss2_Sys_NV_Read_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
@@ -59,7 +64,9 @@ TSS2_RC Tss2_Sys_NV_Read_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_READ_COMPLETE)
 TSS2_RC Tss2_Sys_NV_Read_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_NV_BUFFER *data)
@@ -79,7 +86,9 @@ TSS2_RC Tss2_Sys_NV_Read_Complete(
                                                  &ctx->nextData,
                                                  data);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_READ)
 TSS2_RC Tss2_Sys_NV_Read(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
@@ -103,3 +112,4 @@ TSS2_RC Tss2_Sys_NV_Read(
 
     return Tss2_Sys_NV_Read_Complete(sysContext, data);
 }
+#endif

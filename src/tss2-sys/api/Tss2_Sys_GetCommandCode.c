@@ -14,6 +14,11 @@
 #include "sysapi_util.h"
 #include "util/tss2_endian.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETCOMMANDCODE)
 TSS2_RC Tss2_Sys_GetCommandCode(
     TSS2_SYS_CONTEXT *sysContext,
     UINT8 *commandCode)
@@ -31,3 +36,4 @@ TSS2_RC Tss2_Sys_GetCommandCode(
 
     return TSS2_RC_SUCCESS;
 }
+#endif

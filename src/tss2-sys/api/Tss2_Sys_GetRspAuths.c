@@ -15,6 +15,11 @@
 #include "sysapi_util.h"
 #include <string.h>
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_GETRSPAUTHS)
 TSS2_RC Tss2_Sys_GetRspAuths(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
@@ -86,3 +91,4 @@ TSS2_RC Tss2_Sys_GetRspAuths(
 
     return rval;
 }
+#endif

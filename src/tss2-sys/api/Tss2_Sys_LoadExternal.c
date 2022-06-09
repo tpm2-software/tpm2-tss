@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_LOADEXTERNAL_PREPARE)
 TSS2_RC Tss2_Sys_LoadExternal_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     const TPM2B_SENSITIVE *inPrivate,
@@ -77,7 +82,9 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_LOADEXTERNAL_COMPLETE)
 TSS2_RC Tss2_Sys_LoadExternal_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2_HANDLE *objectHandle,
@@ -104,7 +111,9 @@ TSS2_RC Tss2_Sys_LoadExternal_Complete(
                                         ctx->maxCmdSize,
                                         &ctx->nextData, name);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_LOADEXTERNAL)
 TSS2_RC Tss2_Sys_LoadExternal(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -128,3 +137,4 @@ TSS2_RC Tss2_Sys_LoadExternal(
 
     return Tss2_Sys_LoadExternal_Complete(sysContext, objectHandle, name);
 }
+#endif

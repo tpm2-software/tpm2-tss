@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ACTIVATECREDENTIAL_PREPARE)
 TSS2_RC Tss2_Sys_ActivateCredential_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT activateHandle,
@@ -80,7 +85,9 @@ TSS2_RC Tss2_Sys_ActivateCredential_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ACTIVATECREDENTIAL_COMPLETE)
 TSS2_RC Tss2_Sys_ActivateCredential_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *certInfo)
@@ -100,7 +107,9 @@ TSS2_RC Tss2_Sys_ActivateCredential_Complete(
                                           &ctx->nextData,
                                           certInfo);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ACTIVATECREDENTIAL)
 TSS2_RC Tss2_Sys_ActivateCredential(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT activateHandle,
@@ -126,3 +135,4 @@ TSS2_RC Tss2_Sys_ActivateCredential(
 
     return Tss2_Sys_ActivateCredential_Complete(sysContext, certInfo);
 }
+#endif

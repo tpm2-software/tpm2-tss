@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICY_AC_SENDSELECT_PREPARE)
 TSS2_RC Tss2_Sys_Policy_AC_SendSelect_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -92,7 +97,9 @@ TSS2_RC Tss2_Sys_Policy_AC_SendSelect_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICY_AC_SENDSELECT_COMPLETE)
 TSS2_RC Tss2_Sys_Policy_AC_SendSelect_Complete(
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -103,7 +110,9 @@ TSS2_RC Tss2_Sys_Policy_AC_SendSelect_Complete(
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICY_AC_SENDSELECT)
 TSS2_RC Tss2_Sys_Policy_AC_SendSelect(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -129,3 +138,4 @@ TSS2_RC Tss2_Sys_Policy_AC_SendSelect(
 
     return Tss2_Sys_Policy_AC_SendSelect_Complete(sysContext);
 }
+#endif

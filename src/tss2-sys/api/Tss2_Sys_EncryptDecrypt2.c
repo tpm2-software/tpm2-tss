@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ENCRYPTDECRYPT2_PREPARE)
 TSS2_RC Tss2_Sys_EncryptDecrypt2_Prepare (
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
@@ -89,7 +94,9 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2_Prepare (
 
     return CommonPrepareEpilogue (ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ENCRYPTDECRYPT2_COMPLETE)
 TSS2_RC Tss2_Sys_EncryptDecrypt2_Complete (
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_BUFFER *outData,
@@ -117,7 +124,9 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2_Complete (
                                        &ctx->nextData,
                                        ivOut);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ENCRYPTDECRYPT2)
 TSS2_RC Tss2_Sys_EncryptDecrypt2 (
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
@@ -148,3 +157,4 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2 (
 
     return Tss2_Sys_EncryptDecrypt2_Complete (sysContext, outData, ivOut);
 }
+#endif

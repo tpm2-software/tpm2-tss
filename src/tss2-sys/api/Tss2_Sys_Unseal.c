@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_UNSEAL_PREPARE)
 TSS2_RC Tss2_Sys_Unseal_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT itemHandle)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_Unseal_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_UNSEAL_COMPLETE)
 TSS2_RC Tss2_Sys_Unseal_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_SENSITIVE_DATA *outData)
@@ -58,7 +65,9 @@ TSS2_RC Tss2_Sys_Unseal_Complete(
                                                   &ctx->nextData,
                                                   outData);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_UNSEAL)
 TSS2_RC Tss2_Sys_Unseal(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT itemHandle,
@@ -79,3 +88,4 @@ TSS2_RC Tss2_Sys_Unseal(
 
     return Tss2_Sys_Unseal_Complete(sysContext, outData);
 }
+#endif

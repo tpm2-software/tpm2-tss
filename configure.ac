@@ -512,6 +512,21 @@ AS_IF([test "$HOSTOS" = "Linux" && test "x$systemd_sysusers" != "xyes"],
 
 AC_SUBST([PATH])
 
+AC_ARG_WITH([configurator],
+            AS_HELP_STRING([--with-configurator=<config yaml file>],
+                           [Enable configuring ESYS or SYS libraries to the exact functionality you need.]),
+            [configurator="$withval"])
+
+AM_CONDITIONAL(CONFIGURATOR, test -n "$configurator")
+AS_IF([test -n "$configurator"], [
+    AC_DEFINE([CONFIGURATOR], [1], [Use the configurator.h file])
+    AC_CHECK_PROG(cflow, cflow, yes)
+    AC_CHECK_PROG(ctags, ctags, yes)
+    AC_CHECK_PROG(python3, python3, yes)
+    AC_SUBST([CONFIGURATOR_PATH], [$configurator])
+])
+
+
 dnl --------- Doxy Gen -----------------------
 DX_DOXYGEN_FEATURE(ON)
 DX_DOT_FEATURE(OFF)
@@ -571,6 +586,7 @@ AC_MSG_RESULT([
     maxloglevel:        $with_maxloglevel
     doxygen:            $DX_FLAG_doc $enable_doxygen_doc
     crypto backend:     $with_crypto
+    configurator:       $configurator
     sysconfdir:         $sysconfdir
     localstatedir:      $localstatedir
     runstatedir:        $runstatedir

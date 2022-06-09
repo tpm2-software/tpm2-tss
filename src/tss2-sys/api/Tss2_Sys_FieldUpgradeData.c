@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_FIELDUPGRADEDATA_PREPARE)
 TSS2_RC Tss2_Sys_FieldUpgradeData_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_BUFFER const *fuData)
@@ -48,7 +53,9 @@ TSS2_RC Tss2_Sys_FieldUpgradeData_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_FIELDUPGRADEDATA_COMPLETE)
 TSS2_RC Tss2_Sys_FieldUpgradeData_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMT_HA *nextDigest,
@@ -76,7 +83,9 @@ TSS2_RC Tss2_Sys_FieldUpgradeData_Complete(
                                      &ctx->nextData,
                                      firstDigest);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_FIELDUPGRADEDATA)
 TSS2_RC Tss2_Sys_FieldUpgradeData(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -99,3 +108,4 @@ TSS2_RC Tss2_Sys_FieldUpgradeData(
     return Tss2_Sys_FieldUpgradeData_Complete(sysContext, nextDigest,
                                               firstDigest);
 }
+#endif

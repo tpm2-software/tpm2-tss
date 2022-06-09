@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_SHUTDOWN_PREPARE)
 TSS2_RC Tss2_Sys_Shutdown_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2_SU shutdownType)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_Shutdown_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_SHUTDOWN_COMPLETE)
 TSS2_RC Tss2_Sys_Shutdown_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -49,7 +56,9 @@ TSS2_RC Tss2_Sys_Shutdown_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_SHUTDOWN)
 TSS2_RC Tss2_Sys_Shutdown(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -69,3 +78,4 @@ TSS2_RC Tss2_Sys_Shutdown(
 
     return Tss2_Sys_Shutdown_Complete(sysContext);
 }
+#endif

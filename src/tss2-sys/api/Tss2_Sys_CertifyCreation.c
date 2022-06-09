@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CERTIFYCREATION_PREPARE)
 TSS2_RC Tss2_Sys_CertifyCreation_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
@@ -83,7 +88,9 @@ TSS2_RC Tss2_Sys_CertifyCreation_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CERTIFYCREATION_COMPLETE)
 TSS2_RC Tss2_Sys_CertifyCreation_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ATTEST *certifyInfo,
@@ -111,7 +118,9 @@ TSS2_RC Tss2_Sys_CertifyCreation_Complete(
                                             &ctx->nextData,
                                             signature);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CERTIFYCREATION)
 TSS2_RC Tss2_Sys_CertifyCreation(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT signHandle,
@@ -143,3 +152,4 @@ TSS2_RC Tss2_Sys_CertifyCreation(
 
     return Tss2_Sys_CertifyCreation_Complete(sysContext, certifyInfo, signature);
 }
+#endif

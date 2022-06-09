@@ -18,6 +18,11 @@
 #define LOGMODULE sys
 #include "util/log.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_EXECUTEASYNC)
 TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
@@ -44,7 +49,9 @@ TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
 
     return rval;
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_EXECUTEFINISH)
 TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
 {
     _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
@@ -160,7 +167,9 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
     ctx->previousStage = CMD_STAGE_RECEIVE_RESPONSE;
     return rval;
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_EXECUTE)
 TSS2_RC Tss2_Sys_Execute(TSS2_SYS_CONTEXT *sysContext)
 {
     TSS2_RC rval;
@@ -174,3 +183,4 @@ TSS2_RC Tss2_Sys_Execute(TSS2_SYS_CONTEXT *sysContext)
 
     return Tss2_Sys_ExecuteFinish(sysContext, TSS2_TCTI_TIMEOUT_BLOCK);
 }
+#endif

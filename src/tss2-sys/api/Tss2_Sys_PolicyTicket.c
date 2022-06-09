@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYTICKET_PREPARE)
 TSS2_RC Tss2_Sys_PolicyTicket_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -110,7 +115,9 @@ TSS2_RC Tss2_Sys_PolicyTicket_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYTICKET_COMPLETE)
 TSS2_RC Tss2_Sys_PolicyTicket_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -121,7 +128,9 @@ TSS2_RC Tss2_Sys_PolicyTicket_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_POLICYTICKET)
 TSS2_RC Tss2_Sys_PolicyTicket(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
@@ -150,3 +159,4 @@ TSS2_RC Tss2_Sys_PolicyTicket(
 
     return Tss2_Sys_PolicyTicket_Complete(sysContext);
 }
+#endif

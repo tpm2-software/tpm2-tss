@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ZGEN_2PHASE_PREPARE)
 TSS2_RC Tss2_Sys_ZGen_2Phase_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyA,
@@ -85,7 +90,9 @@ TSS2_RC Tss2_Sys_ZGen_2Phase_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ZGEN_2PHASE_COMPLETE)
 TSS2_RC Tss2_Sys_ZGen_2Phase_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ECC_POINT *outZ1,
@@ -111,7 +118,9 @@ TSS2_RC Tss2_Sys_ZGen_2Phase_Complete(
                                              ctx->maxCmdSize,
                                              &ctx->nextData, outZ2);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ZGEN_2PHASE)
 TSS2_RC Tss2_Sys_ZGen_2Phase(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyA,
@@ -138,3 +147,4 @@ TSS2_RC Tss2_Sys_ZGen_2Phase(
 
     return Tss2_Sys_ZGen_2Phase_Complete(sysContext, outZ1, outZ2);
 }
+#endif

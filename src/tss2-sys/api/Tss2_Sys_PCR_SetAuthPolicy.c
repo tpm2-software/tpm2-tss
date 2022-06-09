@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_SETAUTHPOLICY_PREPARE)
 TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
@@ -72,7 +77,9 @@ TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_SETAUTHPOLICY_COMPLETE)
 TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -83,7 +90,9 @@ TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_SETAUTHPOLICY)
 TSS2_RC Tss2_Sys_PCR_SetAuthPolicy(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PLATFORM authHandle,
@@ -106,3 +115,4 @@ TSS2_RC Tss2_Sys_PCR_SetAuthPolicy(
 
     return Tss2_Sys_PCR_SetAuthPolicy_Complete(sysContext);
 }
+#endif

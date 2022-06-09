@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_READLOCK_PREPARE)
 TSS2_RC Tss2_Sys_NV_ReadLock_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
@@ -45,7 +50,9 @@ TSS2_RC Tss2_Sys_NV_ReadLock_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_READLOCK_COMPLETE)
 TSS2_RC Tss2_Sys_NV_ReadLock_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -56,7 +63,9 @@ TSS2_RC Tss2_Sys_NV_ReadLock_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_READLOCK)
 TSS2_RC Tss2_Sys_NV_ReadLock(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_AUTH authHandle,
@@ -77,3 +86,4 @@ TSS2_RC Tss2_Sys_NV_ReadLock(
 
     return Tss2_Sys_NV_ReadLock_Complete(sysContext);
 }
+#endif

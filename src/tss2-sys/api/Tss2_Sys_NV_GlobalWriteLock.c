@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_GLOBALWRITELOCK_PREPARE)
 TSS2_RC Tss2_Sys_NV_GlobalWriteLock_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION authHandle)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_NV_GlobalWriteLock_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_GLOBALWRITELOCK_COMPLETE)
 TSS2_RC Tss2_Sys_NV_GlobalWriteLock_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -49,7 +56,9 @@ TSS2_RC Tss2_Sys_NV_GlobalWriteLock_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_NV_GLOBALWRITELOCK)
 TSS2_RC Tss2_Sys_NV_GlobalWriteLock(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION authHandle,
@@ -69,3 +78,4 @@ TSS2_RC Tss2_Sys_NV_GlobalWriteLock(
 
     return Tss2_Sys_NV_GlobalWriteLock_Complete(sysContext);
 }
+#endif

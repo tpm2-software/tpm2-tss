@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_RESET_PREPARE)
 TSS2_RC Tss2_Sys_PCR_Reset_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_PCR_Reset_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_RESET_COMPLETE)
 TSS2_RC Tss2_Sys_PCR_Reset_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -49,7 +56,9 @@ TSS2_RC Tss2_Sys_PCR_Reset_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_RESET)
 TSS2_RC Tss2_Sys_PCR_Reset(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
@@ -69,3 +78,4 @@ TSS2_RC Tss2_Sys_PCR_Reset(
 
     return Tss2_Sys_PCR_Reset_Complete(sysContext);
 }
+#endif

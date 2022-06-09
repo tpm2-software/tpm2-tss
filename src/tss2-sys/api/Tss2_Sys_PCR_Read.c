@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_READ_PREPARE)
 TSS2_RC Tss2_Sys_PCR_Read_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     const TPML_PCR_SELECTION *pcrSelectionIn)
@@ -39,7 +44,9 @@ TSS2_RC Tss2_Sys_PCR_Read_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_READ_COMPLETE)
 TSS2_RC Tss2_Sys_PCR_Read_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     UINT32 *pcrUpdateCounter,
@@ -74,7 +81,9 @@ TSS2_RC Tss2_Sys_PCR_Read_Complete(
                                          ctx->maxCmdSize,
                                          &ctx->nextData, pcrValues);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_PCR_READ)
 TSS2_RC Tss2_Sys_PCR_Read(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
@@ -101,3 +110,4 @@ TSS2_RC Tss2_Sys_PCR_Read(
     return Tss2_Sys_PCR_Read_Complete(sysContext, pcrUpdateCounter,
                                       pcrSelectionOut, pcrValues);
 }
+#endif

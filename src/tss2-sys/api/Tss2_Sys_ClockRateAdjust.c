@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CLOCKRATEADJUST_PREPARE)
 TSS2_RC Tss2_Sys_ClockRateAdjust_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
@@ -44,7 +49,9 @@ TSS2_RC Tss2_Sys_ClockRateAdjust_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CLOCKRATEADJUST_COMPLETE)
 TSS2_RC Tss2_Sys_ClockRateAdjust_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
@@ -55,7 +62,9 @@ TSS2_RC Tss2_Sys_ClockRateAdjust_Complete (
 
     return CommonComplete(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_CLOCKRATEADJUST)
 TSS2_RC Tss2_Sys_ClockRateAdjust(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_PROVISION auth,
@@ -76,3 +85,4 @@ TSS2_RC Tss2_Sys_ClockRateAdjust(
 
     return Tss2_Sys_ClockRateAdjust_Complete(sysContext);
 }
+#endif

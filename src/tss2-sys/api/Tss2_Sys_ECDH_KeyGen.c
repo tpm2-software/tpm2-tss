@@ -12,6 +12,11 @@
 #include "tss2_mu.h"
 #include "sysapi_util.h"
 
+#ifdef CONFIGURATOR
+#include "configurator.h"
+#endif
+
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ECDH_KEYGEN_PREPARE)
 TSS2_RC Tss2_Sys_ECDH_KeyGen_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle)
@@ -38,7 +43,9 @@ TSS2_RC Tss2_Sys_ECDH_KeyGen_Prepare(
 
     return CommonPrepareEpilogue(ctx);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ECDH_KEYGEN_COMPLETE)
 TSS2_RC Tss2_Sys_ECDH_KeyGen_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ECC_POINT *zPoint,
@@ -66,7 +73,9 @@ TSS2_RC Tss2_Sys_ECDH_KeyGen_Complete(
                                              &ctx->nextData,
                                              pubPoint);
 }
+#endif
 
+#if !defined(CONFIGURATOR) || defined(ENABLE_TSS2_SYS_ECDH_KEYGEN)
 TSS2_RC Tss2_Sys_ECDH_KeyGen(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle,
@@ -88,3 +97,4 @@ TSS2_RC Tss2_Sys_ECDH_KeyGen(
 
     return Tss2_Sys_ECDH_KeyGen_Complete(sysContext, zPoint, pubPoint);
 }
+#endif
