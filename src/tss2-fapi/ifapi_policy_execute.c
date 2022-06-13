@@ -260,6 +260,8 @@ execute_policy_duplicate(
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
+        return_if_null(cb->cbauth, "Policy Duplicate Callback Not Set",
+            TSS2_FAPI_RC_NULL_CALLBACK);
         r = cb->cbdup(&policy->objectName, cb->cbdup_userdata);
         return_if_error(r, "Get name for policy duplicate select.");
 
@@ -346,6 +348,8 @@ execute_policy_nv(
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
 
         /* Authorize NV object. */
+        return_if_null(cb->cbauth, "Policy Auth Callback Not Set",
+            TSS2_FAPI_RC_NULL_CALLBACK);
         r = cb->cbauth(&current_policy->name,
                        &current_policy->object_handle,
                        &current_policy->auth_handle,
@@ -461,6 +465,8 @@ execute_policy_signed(
         }
 
         /* Callback for signing the autorization hash. */
+        goto_if_null(cb->cbsign, "Policy Sign Callback Not Set",
+            TSS2_FAPI_RC_NOT_IMPLEMENTED, cleanup);
         r = cb->cbsign(current_policy->pem_key, policy->publicKeyHint,
                        policy->keyPEMhashAlg, current_policy->buffer,
                        current_policy->buffer_size,
@@ -599,7 +605,7 @@ execute_policy_authorize(
 
     size_t hash_size;
     if (!(hash_size = ifapi_hash_get_digest_size(hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+        goto_error(r, TSS2_FAPI_RC_NULL_CALLBACK,
                    "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hash_alg);
     }
@@ -609,6 +615,8 @@ execute_policy_authorize(
         current_policy->object_handle = ESYS_TR_NONE;
         /* Execute authorized policy. */
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
+        goto_if_null(cb->cbauthpol, "Authorize Policy Callback Not Set",
+            TSS2_FAPI_RC_NOT_IMPLEMENTED, cleanup);
         r = cb->cbauthpol(&policy->keyPublic, hash_alg, &policy->approvedPolicy,
                           &policy->policyRef,
                           &policy->signature, cb->cbauthpol_userdata);
@@ -762,7 +770,9 @@ execute_policy_authorize_nv(
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         /* Execute the policy stored in the NV object. */
-        r = cb->cbauthnv(&policy->nvPublic, hash_alg, cb->cbauthnv_userdata);
+        return_if_null(cb->cbauthnv, "Authorize NV Callback Not Set",
+                TSS2_FAPI_RC_NULL_CALLBACK);
+        r = cb->cbauthnv(&policy->nvPublic, hash_alg, cb->cbauthpol_userdata);
         try_again_or_error(r, "Execute policy authorize nv callback.");
 
         r = ifapi_nv_get_name(&policy->nvPublic, &current_policy->name);
@@ -771,6 +781,8 @@ execute_policy_authorize_nv(
 
     statecase(current_policy->state, POLICY_AUTH_CALLBACK)
         /* Authorize the NV object for policy execution. */
+        return_if_null(cb->cbauth, "Policy Auth Callback Not Set",
+                TSS2_FAPI_RC_NULL_CALLBACK);
         r = cb->cbauth(&current_policy->name,
                        &current_policy->object_handle,
                        &current_policy->auth_handle,
@@ -857,6 +869,8 @@ execute_policy_secret(
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
         /* Callback for the object authorization. */
+        return_if_null(cb->cbauth, "Policy Auth Callback Not Set",
+            TSS2_FAPI_RC_NULL_CALLBACK);
         r = cb->cbauth(&policy->objectName,
                        &current_policy->object_handle,
                        &current_policy->auth_handle,
@@ -1426,6 +1440,8 @@ execute_policy_action(
     statecase(current_policy->state, POLICY_EXECUTE_INIT);
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
 
+        return_if_null(cb->cbaction, "Policy Action Callback Not Set",
+            TSS2_FAPI_RC_NULL_CALLBACK);
         /* Execute the callback and try it again if the callback is not finished. */
         r = cb->cbaction(policy->action, cb->cbaction_userdata);
         try_again_or_error(r, "Execute policy action callback.");
@@ -1631,6 +1647,8 @@ compute_policy_list(
             for (j = 0; j < branches->count; j++)
                 branch_names[j] = branches->authorizations[j].name;
 
+            return_if_null(pol_ctx->callbacks.cbpolsel, "Policy Select Callback Not Set",
+                TSS2_FAPI_RC_NULL_CALLBACK);
             r = pol_ctx->callbacks.cbpolsel(
                     &auth_object->public,
                     branch_names,

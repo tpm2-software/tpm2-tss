@@ -333,4 +333,6 @@ typedef uint32_t TSS2_RC;
                                                         TSS2_BASE_RC_NOT_PROVISIONED))
 #define TSS2_FAPI_RC_ALREADY_PROVISIONED         ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
                                                         TSS2_BASE_RC_ALREADY_PROVISIONED))
+#define TSS2_FAPI_RC_NULL_CALLBACK               ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
+                                                      TSS2_BASE_RC_CALLBACK_NULL))
 #endif /* TSS2_COMMON_H */
