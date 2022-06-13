@@ -170,7 +170,7 @@ get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg,
  *                policy command.
  * @param[in,out] policy The PCR policy which will be executed. The policy
  *                digest will be added to the policy.
- * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ * @param[in]     current_hash_alg The hash algorithm which will be used for
  *                policy computation.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
@@ -184,7 +184,7 @@ get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg,
  *         the function.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 execute_policy_pcr(
@@ -235,7 +235,7 @@ execute_policy_pcr(
  *                policy command.
  * @param[in,out] policy The duplicate policy which will be executed. The policy
  *                digest will be added to the policy.
- * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ * @param[in]     current_hash_alg The hash algorithm which will be used for
  *                policy computation.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
@@ -299,7 +299,7 @@ execute_policy_duplicate(
  *                policy command.
  * @param[in,out] policy The NV policy which will be executed. The policy
  *                digest will be added to the policy.
- * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ * @param[in]     current_hash_alg The hash algorithm which will be used for
  *                policy computation.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
@@ -313,14 +313,14 @@ execute_policy_duplicate(
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occured while accessing the
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
@@ -391,7 +391,7 @@ execute_policy_nv(
  *                policy command.
  * @param[in,out] policy The policy to be signed which will be executed. The policy
  *                digest will be added to the policy.
- * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ * @param[in]     current_hash_alg The hash algorithm which will be used for
  *                policy computation.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
@@ -407,7 +407,7 @@ execute_policy_nv(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 execute_policy_signed(
@@ -548,7 +548,7 @@ cleanup:
  * The selected policy will be executed via a callback. For an example callback
  * implementation see ifapi_exec_auth_policy().
  *
- * For an example callback implementation to executie of an authorized policy
+ * For an example callback implementation to execute of an authorized policy
  * ifapi_exec_auth_policy()
  *
  * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
@@ -556,7 +556,7 @@ cleanup:
  * @param[in,out] policy The policy which defines the signing key and several
  *                additional parameters (nonce, policyRef ...). The policy
  *                digest will be added to the policy.
- * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ * @param[in]     current_hash_alg The hash algorithm which will be used for
  *                policy computation.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
@@ -567,7 +567,7 @@ cleanup:
  *         this function needs to be called again.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
@@ -581,7 +581,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occured while accessing the
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
@@ -741,14 +741,14 @@ cleanup:
  *         was not successful.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occured while accessing the
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
@@ -922,10 +922,10 @@ cleanup:
  *
  * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
  *                policy command.
- * @param[in,out] policy The policy which defines the values for the comparision
- *                with the TPM timers and the comparision operation.
+ * @param[in,out] policy The policy which defines the values for the comparison
+ *                with the TPM timers and the comparison operation.
  *                The policy digest will be added to the policy.
- * @param[in]     current_hash_alg The hash algorithm wich will be used for
+ * @param[in]     current_hash_alg The hash algorithm which will be used for
  *                policy computation.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
@@ -1116,7 +1116,7 @@ execute_policy_password(
  *
  * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
  *                policy command.
- * @param[in,out] policy The policy with the command code used fo limitting.
+ * @param[in,out] policy The policy with the command code used for limiting.
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
@@ -1461,7 +1461,7 @@ execute_policy_action(
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
@@ -1476,7 +1476,7 @@ execute_policy_action(
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occured while accessing the
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
@@ -1616,7 +1616,7 @@ error:
 
 /** Compute execution order for policies based on branch selection.
  *
- * To simplify asynncronous policy executiion a linked list of the policy structures
+ * To simplify asynchronous policy execution a linked list of the policy structures
  * needed for execution based on the result of the  branch selection callbacks
  * is computed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.

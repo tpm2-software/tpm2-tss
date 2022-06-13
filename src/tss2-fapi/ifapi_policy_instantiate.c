@@ -99,7 +99,7 @@ ifapi_policyeval_instantiate_async(
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 set_pem_key_param(
@@ -160,12 +160,12 @@ set_pem_key_param(
 
 /** Finalize  instantiation a policy template.
  *
- * All needed asyncroous callbacks will be executed for all policy elements offset
+ * All needed asynchronous callbacks will be executed for all policy elements offset
  * The policy.
  *
  * @param[in] context The context storing information for re-entry after try again.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the templayte is not complete for instantiation.
+ * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the template is not complete for instantiation.
  * @retval FAPI error codes on failure
  * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
