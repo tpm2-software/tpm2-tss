@@ -270,6 +270,8 @@ Tss2_PolicyExecute(
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
  * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during policy calculation.
+ * @retval TSS2_POLICY_RC_NULL_CALLBACK is a callback is NULL and needed for policy
+ *         calculation.
  */
 TSS2_RC
 Tss2_PolicyCalculate(

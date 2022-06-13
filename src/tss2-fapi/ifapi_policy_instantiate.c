@@ -155,7 +155,7 @@ set_pem_key_param(
 
 #define CHECK_CALLBACK(callback, name) \
     if (!callback) { \
-        return_error2(TSS2_FAPI_RC_BAD_VALUE, "Callback %s was NULL", name) \
+        return_error2(TSS2_FAPI_RC_NULL_CALLBACK, "Callback %s was NULL", name) \
     }
 
 /** Finalize  instantiation a policy template.
