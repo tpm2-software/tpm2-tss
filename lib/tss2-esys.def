@@ -318,6 +318,7 @@ EXPORTS
     Esys_SetCommandCodeAuditStatus
     Esys_SetCommandCodeAuditStatus_Async
     Esys_SetCommandCodeAuditStatus_Finish
+    Esys_SetCryptoCallbacks
     Esys_SetPrimaryPolicy
     Esys_SetPrimaryPolicy_Async
     Esys_SetPrimaryPolicy_Finish

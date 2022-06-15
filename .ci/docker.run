@@ -55,6 +55,11 @@ echo "ls -la ../ $(ls -la ../)"
 make -j$(nproc)
 popd
 
+if [ "$WITH_CRYPTO" == "none" ]; then
+    echo "Exiting without running tests becuase crypto backend is none"
+    exit 0
+fi
+
 # build with all tests enabled
 mkdir ./build
 pushd ./build

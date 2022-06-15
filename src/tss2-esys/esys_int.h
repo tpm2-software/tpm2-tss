@@ -7,6 +7,7 @@
 #define ESYS_INT_H
 
 #include <stdint.h>
+#include "esys_crypto.h"
 #include "esys_types.h"
 
 #ifdef __cplusplus
@@ -182,6 +183,9 @@ struct ESYS_CONTEXT {
                                       automatically loaded. */
     IESYS_SESSION *enc_session;  /**< Ptr to the enc param session.
                                       Used to restore session attributes */
+
+    ESYS_CRYPTO_CALLBACKS crypto_backend; /**< The backend function pointers to use
+                                              for crypto operations */
 };
 
 /** The number of authomatic resubmissions.

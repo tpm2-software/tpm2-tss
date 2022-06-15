@@ -85,6 +85,25 @@ jobs:
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
+  test-no-crypto-build:
+    runs-on: ubuntu-latest
+    if: "!contains(github.ref, 'coverity_scan')"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
+      - name: Launch Action
+        uses:
+          tpm2-software/ci/runCI@main
+        with:
+          CC: gcc
+          DOCKER_IMAGE: ubuntu-20.04
+          WITH_CRYPTO: none
+          PROJECT_NAME: ${{ github.event.repository.name }}
+      - name: failure
+        if: ${{ failure() }}
+        run: cat $(find ../ -name test-suite.log) || true
   test-coverage:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"

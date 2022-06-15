@@ -209,6 +209,7 @@ Esys_CreatePrimary_Async(
     store_input_parameters (esysContext, inSensitive);
     if (inPublic) {
         r = iesys_hash_long_auth_values(
+            &esysContext->crypto_backend,
             &esysContext->in.CreatePrimary.inSensitive->sensitive.userAuth,
              inPublic->publicArea.nameAlg);
         return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value.");
@@ -433,7 +434,7 @@ Esys_CreatePrimary_Finish(
 
 
     /* Check name and outPublic for consistency */
-    if (!iesys_compare_name(loutPublic, &name))
+    if (!iesys_compare_name(&esysContext->crypto_backend, loutPublic, &name))
         goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
             "in Public name not equal name in response", error_cleanup);
 

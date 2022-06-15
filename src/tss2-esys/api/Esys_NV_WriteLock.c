@@ -338,7 +338,7 @@ Esys_NV_WriteLock_Finish(
     /* Update name in meta data because of possibly changed attributes */
     if (nvIndexNode != NULL) {
         nvIndexNode->rsrc.misc.rsrc_nv_pub.nvPublic.attributes |=  TPMA_NV_WRITELOCKED;
-        r = iesys_nv_get_name(&nvIndexNode->rsrc.misc.rsrc_nv_pub,
+        r = iesys_nv_get_name(&esysContext->crypto_backend, &nvIndexNode->rsrc.misc.rsrc_nv_pub,
                               &nvIndexNode->rsrc.name);
         return_if_error(r, "Error get nvname")
     }

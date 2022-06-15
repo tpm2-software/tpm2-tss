@@ -204,6 +204,7 @@ Esys_CreateLoaded_Async(
         return_if_error(r, "Unmarshalling inPublic failed");
 
         r = iesys_hash_long_auth_values(
+            &esysContext->crypto_backend,
             &esysContext->in.CreateLoaded.inSensitive->sensitive.userAuth,
              publicArea.nameAlg);
         return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value.");
@@ -400,7 +401,7 @@ Esys_CreateLoaded_Finish(
     objectHandleNode->rsrc.misc.rsrc_key_pub = *loutPublic;
 
     /* Check name and outPublic for consistency */
-    if (!iesys_compare_name(&objectHandleNode->rsrc.misc.rsrc_key_pub, &name))
+    if (!iesys_compare_name(&esysContext->crypto_backend, &objectHandleNode->rsrc.misc.rsrc_key_pub, &name))
         goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
             "in Public name not equal name in response", error_cleanup);
 

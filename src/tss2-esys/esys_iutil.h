@@ -89,6 +89,7 @@ TPM2_HT iesys_get_handle_type(
 TSS2_RC iesys_finalize(ESYS_CONTEXT *context);
 
 bool iesys_compare_name(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
     TPM2B_PUBLIC *publicInfo,
     TPM2B_NAME *name);
 
@@ -139,6 +140,7 @@ void iesys_compute_session_value(
     const TPM2B_AUTH *auth_value);
 
 TSS2_RC iesys_compute_hmac(
+    ESYS_CONTEXT *esys_context,
     RSRC_NODE_T *session,
     HASH_TAB_ITEM cp_hash_tab[3],
     uint8_t cpHashNum,
@@ -157,10 +159,12 @@ TSS2_RC iesys_check_response(
     ESYS_CONTEXT * esys_context);
 
 TSS2_RC iesys_nv_get_name(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
     TPM2B_NV_PUBLIC *publicInfo,
     TPM2B_NAME *name);
 
 TSS2_RC iesys_get_name(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
     TPM2B_PUBLIC *publicInfo,
     TPM2B_NAME *name);
 
@@ -168,6 +172,7 @@ bool iesys_tpm_error(
     TSS2_RC r);
 
 TSS2_RC iesys_hash_long_auth_values(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
     TPM2B_AUTH *auth_value,
     TPMI_ALG_HASH hash_alg);
 

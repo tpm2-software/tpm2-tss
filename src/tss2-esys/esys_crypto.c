@@ -60,6 +60,226 @@ iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t * size)
     return TSS2_RC_SUCCESS;
 }
 
+TSS2_RC iesys_crypto_hash_update2b(ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB * context,
+    TPM2B *tpm2b)
+{
+    return iesys_crypto_hash_update(crypto_cb, context, tpm2b->buffer, tpm2b->size);
+}
+
+TSS2_RC iesys_crypto_hmac_update2b(ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B *tpm2b)
+{
+    return iesys_crypto_hmac_update(crypto_cb,
+        context, tpm2b->buffer, tpm2b->size);
+}
+
+TSS2_RC iesys_crypto_hmac_finish2b(ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B *tpm2b)
+{
+    TSS2_RC r;
+    size_t size = tpm2b->size;
+    r = iesys_crypto_hmac_finish(crypto_cb,
+        context, tpm2b->buffer, &size);
+    tpm2b->size = size;
+    return r;
+}
+
+#define DO_CALLBACK(callback, ...) \
+    do { \
+        if (!crypto_cb->callback) { \
+            LOG_ERROR("Crypto callback \""str(callback)"\" not set"); \
+            return TSS2_ESYS_RC_CALLBACK_NULL; \
+        } \
+        return crypto_cb->callback(__VA_ARGS__, crypto_cb->userdata); \
+    } while (0)
+
+TSS2_RC iesys_crypto_rsa_pk_encrypt(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    TPM2B_PUBLIC * pub_tpm_key,
+    size_t in_size,
+    BYTE * in_buffer,
+    size_t max_out_size,
+    BYTE * out_buffer,
+    size_t * out_size,
+    const char *label)
+{
+    DO_CALLBACK(rsa_pk_encrypt,
+            pub_tpm_key,
+            in_size,
+            in_buffer,
+            max_out_size,
+            out_buffer,
+            out_size,
+            label);
+}
+
+TSS2_RC iesys_crypto_hash_start(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB **context,
+    TPM2_ALG_ID hashAlg)
+{
+    DO_CALLBACK(hash_start,
+            context,
+            hashAlg);
+}
+
+TSS2_RC  iesys_crypto_hash_update(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB *context,
+    const uint8_t *buffer,
+    size_t size)
+{
+    DO_CALLBACK(hash_update,
+            context,
+            buffer,
+            size);
+}
+
+TSS2_RC iesys_crypto_hash_finish(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB ** context,
+    uint8_t *buffer,
+    size_t *size)
+{
+    DO_CALLBACK(hash_finish,
+            context,
+            buffer,
+            size);
+}
+
+TSS2_RC iesys_crypto_hash_abort(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB **context)
+{
+    if (!crypto_cb->hash_abort) { \
+        LOG_ERROR("Crypto callback \"hash_abort\" not set"); \
+        return TSS2_ESYS_RC_CALLBACK_NULL;
+    }
+
+    crypto_cb->hash_abort(context, crypto_cb->userdata);
+    return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC iesys_crypto_hmac_start(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB **context,
+   TPM2_ALG_ID hashAlg,
+   const uint8_t *key,
+   size_t size)
+{
+    DO_CALLBACK(hmac_start,
+            context,
+            hashAlg,
+            key,
+            size);
+}
+
+TSS2_RC iesys_crypto_hmac_update(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB * context,
+    const uint8_t *buffer,
+    size_t size)
+{
+    DO_CALLBACK(hmac_update,
+            context,
+            buffer,
+            size);
+}
+
+TSS2_RC iesys_crypto_hmac_finish(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB **context,
+    uint8_t *buffer,
+    size_t * size)
+{
+    DO_CALLBACK(hmac_finish,
+            context,
+            buffer,
+            size);
+}
+
+TSS2_RC iesys_crypto_hmac_abort(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    ESYS_CRYPTO_CONTEXT_BLOB **context)
+{
+    if (!crypto_cb->hmac_abort) { \
+        LOG_ERROR("Crypto callback \"hmac_abort\" not set"); \
+        return TSS2_ESYS_RC_CALLBACK_NULL;
+    }
+
+    crypto_cb->hmac_abort(context, crypto_cb->userdata);
+    return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC iesys_crypto_get_random2b(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    TPM2B_NONCE *nonce,
+    size_t num_bytes)
+{
+    DO_CALLBACK(get_random2b,
+            nonce,
+            num_bytes);
+}
+
+TSS2_RC iesys_crypto_get_ecdh_point(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    TPM2B_PUBLIC *key,
+    size_t max_out_size,
+    TPM2B_ECC_PARAMETER *Z,
+    TPMS_ECC_POINT *Q,
+    BYTE * out_buffer,
+    size_t * out_size)
+{
+    DO_CALLBACK(get_ecdh_point,
+            key,
+            max_out_size,
+            Z,
+            Q,
+            out_buffer,
+            out_size);
+}
+
+ TSS2_RC iesys_crypto_aes_encrypt(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    uint8_t *key,
+    TPM2_ALG_ID tpm_sym_alg,
+    TPMI_AES_KEY_BITS key_bits,
+    TPM2_ALG_ID tpm_mode,
+    uint8_t *buffer,
+    size_t buffer_size,
+    uint8_t *iv)
+ {
+     DO_CALLBACK(aes_encrypt,
+             key,
+             tpm_sym_alg,
+             key_bits,
+             tpm_mode,
+             buffer,
+             buffer_size,
+             iv);
+ }
+
+TSS2_RC iesys_crypto_aes_decrypt(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    uint8_t *key,
+    TPM2_ALG_ID tpm_sym_alg,
+    TPMI_AES_KEY_BITS key_bits,
+    TPM2_ALG_ID tpm_mode,
+    uint8_t *buffer,
+    size_t buffer_size,
+    uint8_t *iv)
+{
+    DO_CALLBACK(aes_decrypt,
+            key,
+            tpm_sym_alg,
+            key_bits,
+            tpm_mode,
+            buffer,
+            buffer_size,
+            iv);
+}
+
 /** Compute the command or response parameter hash.
  *
  * These hashes are needed for the computation of the HMAC used for the
@@ -78,9 +298,9 @@ iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t * size)
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
  */
-
 TSS2_RC
-iesys_crypto_pHash(TPM2_ALG_ID alg,
+iesys_crypto_pHash(ESYS_CRYPTO_CALLBACKS *crypto_cb,
+                   TPM2_ALG_ID alg,
                    const uint8_t rcBuffer[4],
                    const uint8_t ccBuffer[4],
                    const TPM2B_NAME * name1,
@@ -96,44 +316,50 @@ iesys_crypto_pHash(TPM2_ALG_ID alg,
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
-    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    ESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
 
-    TSS2_RC r = iesys_crypto_hash_start(&cryptoContext, alg);
+    TSS2_RC r;
+    r = iesys_crypto_hash_start(crypto_cb,
+            &cryptoContext, alg);
     return_if_error(r, "Error");
 
     if (rcBuffer != NULL) {
-        r = iesys_crypto_hash_update(cryptoContext, &rcBuffer[0], 4);
+        r = iesys_crypto_hash_update(crypto_cb,
+                cryptoContext, &rcBuffer[0], 4);
         goto_if_error(r, "Error", error);
     }
 
-    r = iesys_crypto_hash_update(cryptoContext, &ccBuffer[0], 4);
+    r = iesys_crypto_hash_update(crypto_cb,
+        cryptoContext, &ccBuffer[0], 4);
     goto_if_error(r, "Error", error);
 
     if (name1 != NULL) {
-        r = iesys_crypto_hash_update2b(cryptoContext, (TPM2B *) name1);
+        r = iesys_crypto_hash_update2b(crypto_cb, cryptoContext, (TPM2B *) name1);
         goto_if_error(r, "Error", error);
     }
 
     if (name2 != NULL) {
-        r = iesys_crypto_hash_update2b(cryptoContext, (TPM2B *) name2);
+        r = iesys_crypto_hash_update2b(crypto_cb, cryptoContext, (TPM2B *) name2);
         goto_if_error(r, "Error", error);
     }
 
     if (name3 != NULL) {
-        r = iesys_crypto_hash_update2b(cryptoContext, (TPM2B *) name3);
+        r = iesys_crypto_hash_update2b(crypto_cb, cryptoContext, (TPM2B *) name3);
         goto_if_error(r, "Error", error);
     }
 
-    r = iesys_crypto_hash_update(cryptoContext, pBuffer, pBuffer_size);
+    r = iesys_crypto_hash_update(crypto_cb,
+        cryptoContext, pBuffer, pBuffer_size);
     goto_if_error(r, "Error", error);
 
-    r = iesys_crypto_hash_finish(&cryptoContext, pHash, pHash_size);
+    r = iesys_crypto_hash_finish(crypto_cb,
+        &cryptoContext, pHash, pHash_size);
     goto_if_error(r, "Error", error);
 
     return r;
 
  error:
-    iesys_crypto_hash_abort(&cryptoContext);
+    iesys_crypto_hash_abort(crypto_cb, &cryptoContext);
     return r;
 }
 
@@ -158,7 +384,8 @@ iesys_crypto_pHash(TPM2_ALG_ID alg,
  * @retval TSS2_ESYS_RC_BAD_REFERENCE If a pointer is invalid.
  */
 TSS2_RC
-iesys_crypto_authHmac(TPM2_ALG_ID alg,
+iesys_crypto_authHmac(ESYS_CRYPTO_CALLBACKS *crypto_cb,
+                      TPM2_ALG_ID alg,
                       uint8_t * hmacKey, size_t hmacKeySize,
                       const uint8_t * pHash,
                       size_t pHash_size,
@@ -178,28 +405,28 @@ iesys_crypto_authHmac(TPM2_ALG_ID alg,
     uint8_t sessionAttribs[sizeof(sessionAttributes)];
     size_t sessionAttribs_size = 0;
 
-    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    ESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
 
     TSS2_RC r =
-        iesys_crypto_hmac_start(&cryptoContext, alg, hmacKey, hmacKeySize);
+        iesys_crypto_hmac_start(crypto_cb, &cryptoContext, alg, hmacKey, hmacKeySize);
     return_if_error(r, "Error");
 
-    r = iesys_crypto_hmac_update(cryptoContext, pHash, pHash_size);
+    r = iesys_crypto_hmac_update(crypto_cb, cryptoContext, pHash, pHash_size);
     goto_if_error(r, "Error", error);
 
-    r = iesys_crypto_hmac_update2b(cryptoContext, (TPM2B *) nonceNewer);
+    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *) nonceNewer);
     goto_if_error(r, "Error", error);
 
-    r = iesys_crypto_hmac_update2b(cryptoContext, (TPM2B *) nonceOlder);
+    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *) nonceOlder);
     goto_if_error(r, "Error", error);
 
     if (nonceDecrypt != NULL) {
-        r = iesys_crypto_hmac_update2b(cryptoContext, (TPM2B *) nonceDecrypt);
+        r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *) nonceDecrypt);
         goto_if_error(r, "Error", error);
     }
 
     if (nonceEncrypt != NULL) {
-        r = iesys_crypto_hmac_update2b(cryptoContext, (TPM2B *) nonceEncrypt);
+        iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *) nonceEncrypt);
         goto_if_error(r, "Error", error);
     }
 
@@ -209,17 +436,17 @@ iesys_crypto_authHmac(TPM2_ALG_ID alg,
                                      &sessionAttribs_size);
     goto_if_error(r, "Error", error);
 
-    r = iesys_crypto_hmac_update(cryptoContext, &sessionAttribs[0],
+    r = iesys_crypto_hmac_update(crypto_cb, cryptoContext, &sessionAttribs[0],
                                  sessionAttribs_size);
     goto_if_error(r, "Error", error);
 
-    r = iesys_crypto_hmac_finish2b(&cryptoContext, (TPM2B *) hmac);
+    r = iesys_crypto_hmac_finish2b(crypto_cb, &cryptoContext, (TPM2B *) hmac);
     goto_if_error(r, "Error", error);
 
     return r;
 
  error:
-    iesys_crypto_hmac_abort(&cryptoContext);
+    iesys_crypto_hash_abort(crypto_cb, &cryptoContext);
     return r;
 
 }
@@ -242,7 +469,8 @@ iesys_crypto_authHmac(TPM2_ALG_ID alg,
  * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
  */
 TSS2_RC
-iesys_crypto_KDFaHmac(TPM2_ALG_ID alg,
+iesys_crypto_KDFaHmac(ESYS_CRYPTO_CALLBACKS *crypto_cb,
+                      TPM2_ALG_ID alg,
                       uint8_t * hmacKey,
                       size_t hmacKeySize,
                       uint32_t counter,
@@ -260,44 +488,44 @@ iesys_crypto_KDFaHmac(TPM2_ALG_ID alg,
     uint8_t buffer32[sizeof(uint32_t)];
     size_t buffer32_size = 0;
 
-    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    ESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
 
     TSS2_RC r =
-        iesys_crypto_hmac_start(&cryptoContext, alg, hmacKey, hmacKeySize);
+            iesys_crypto_hmac_start(crypto_cb, &cryptoContext, alg, hmacKey, hmacKeySize);
     return_if_error(r, "Error");
 
     r = Tss2_MU_UINT32_Marshal(counter, &buffer32[0], sizeof(UINT32),
                                &buffer32_size);
     goto_if_error(r, "Marsahling", error);
-    r = iesys_crypto_hmac_update(cryptoContext, &buffer32[0], buffer32_size);
+    r = iesys_crypto_hmac_update(crypto_cb, cryptoContext, &buffer32[0], buffer32_size);
     goto_if_error(r, "HMAC-Update", error);
 
     if (label != NULL) {
         size_t lsize = strlen(label) + 1;
-        r = iesys_crypto_hmac_update(cryptoContext, (uint8_t *) label, lsize);
+        r = iesys_crypto_hmac_update(crypto_cb, cryptoContext, (uint8_t *) label, lsize);
         goto_if_error(r, "Error", error);
     }
 
-    r = iesys_crypto_hmac_update2b(cryptoContext, (TPM2B *) contextU);
+    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *) contextU);
     goto_if_error(r, "Error", error);
 
-    r = iesys_crypto_hmac_update2b(cryptoContext, (TPM2B *) contextV);
+    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *) contextV);
     goto_if_error(r, "Error", error);
 
     buffer32_size = 0;
     r = Tss2_MU_UINT32_Marshal(bitlength, &buffer32[0], sizeof(UINT32),
                                &buffer32_size);
     goto_if_error(r, "Marsahling", error);
-    r = iesys_crypto_hmac_update(cryptoContext, &buffer32[0], buffer32_size);
+    r = iesys_crypto_hmac_update(crypto_cb, cryptoContext, &buffer32[0], buffer32_size);
     goto_if_error(r, "Error", error);
 
-    r = iesys_crypto_hmac_finish(&cryptoContext, hmac, hmacSize);
+    r = iesys_crypto_hmac_finish(crypto_cb, &cryptoContext, hmac, hmacSize);
     goto_if_error(r, "Error", error);
 
     return r;
 
  error:
-    iesys_crypto_hmac_abort(&cryptoContext);
+    iesys_crypto_hmac_abort(crypto_cb, &cryptoContext);
     return r;
 }
 
@@ -323,7 +551,8 @@ iesys_crypto_KDFaHmac(TPM2_ALG_ID alg,
  * @retval TSS2_ESYS_RC_BAD_VALUE if hashAlg is unknown or unsupported.
  */
 TSS2_RC
-iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
+iesys_crypto_KDFa(ESYS_CRYPTO_CALLBACKS *crypto_cb,
+                  TPM2_ALG_ID hashAlg,
                   uint8_t * hmacKey,
                   size_t hmacKeySize,
                   const char *label,
@@ -361,7 +590,7 @@ iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
         //if(bytes < (INT32)hlen)
         //    hlen = bytes;
         counter++;
-        r = iesys_crypto_KDFaHmac(hashAlg, hmacKey,
+        r = iesys_crypto_KDFaHmac(crypto_cb, hashAlg, hmacKey,
                                   hmacKeySize, counter, label, contextU,
                                   contextV, bitLength, &subKey[0], &hlen);
         return_if_error(r, "Error");
@@ -389,7 +618,8 @@ iesys_crypto_KDFa(TPM2_ALG_ID hashAlg,
  * @retval TSS2_ESYS_RC_MEMORY Memory cannot be allocated.
  */
 TSS2_RC
-iesys_crypto_KDFe(TPM2_ALG_ID hashAlg,
+iesys_crypto_KDFe(ESYS_CRYPTO_CALLBACKS *crypto_cb,
+                  TPM2_ALG_ID hashAlg,
                   TPM2B_ECC_PARAMETER *Z,
                   const char *label,
                   TPM2B_ECC_PARAMETER *partyUInfo,
@@ -401,7 +631,7 @@ iesys_crypto_KDFe(TPM2_ALG_ID hashAlg,
     size_t hash_len;
     INT16 byte_size = (INT16)((bit_size +7) / 8);
     BYTE *stream = key;
-    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    ESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
     BYTE counter_buffer[4];
     UINT32 counter = 0;
     size_t offset;
@@ -424,37 +654,41 @@ iesys_crypto_KDFe(TPM2_ALG_ID hashAlg,
     for (; byte_size > 0; stream = &stream[hash_len], byte_size = byte_size - hash_len)
         {
             counter ++;
-            r = iesys_crypto_hash_start(&cryptoContext, hashAlg);
+            r = iesys_crypto_hash_start(crypto_cb,
+                &cryptoContext, hashAlg);
             return_if_error(r, "Error hash start");
 
             offset = 0;
             r = Tss2_MU_UINT32_Marshal(counter, &counter_buffer[0], 4, &offset);
             goto_if_error(r, "Error marshaling counter", error);
 
-            r = iesys_crypto_hash_update(cryptoContext, &counter_buffer[0], 4);
+            r = iesys_crypto_hash_update(crypto_cb,
+                    cryptoContext, &counter_buffer[0], 4);
             goto_if_error(r, "Error hash update", error);
 
             if (Z != NULL) {
-                r = iesys_crypto_hash_update2b(cryptoContext, (TPM2B *) Z);
+                r = iesys_crypto_hash_update2b(crypto_cb, cryptoContext, (TPM2B *) Z);
                 goto_if_error(r, "Error hash update2b", error);
             }
 
             if (label != NULL) {
                 size_t lsize = strlen(label) + 1;
-                r = iesys_crypto_hash_update(cryptoContext, (uint8_t *) label, lsize);
+                r = iesys_crypto_hash_update(crypto_cb,
+                    cryptoContext, (uint8_t *) label, lsize);
                 goto_if_error(r, "Error hash update", error);
             }
 
             if (partyUInfo != NULL) {
-                r = iesys_crypto_hash_update2b(cryptoContext, (TPM2B *) partyUInfo);
+                r = iesys_crypto_hash_update2b(crypto_cb, cryptoContext, (TPM2B *) partyUInfo);
                 goto_if_error(r, "Error hash update2b", error);
             }
 
             if (partyVInfo != NULL) {
-                r = iesys_crypto_hash_update2b(cryptoContext,  (TPM2B *) partyVInfo);
+                r = iesys_crypto_hash_update2b(crypto_cb, cryptoContext,  (TPM2B *) partyVInfo);
                goto_if_error(r, "Error hash update2b", error);
             }
-            r = iesys_crypto_hash_finish(&cryptoContext, (uint8_t *) stream, &hash_len);
+            r = iesys_crypto_hash_finish(crypto_cb,
+                &cryptoContext, (uint8_t *) stream, &hash_len);
             goto_if_error(r, "Error", error);
         }
     LOGBLOB_DEBUG(key, bit_size/8, "Result KDFe");
@@ -463,7 +697,7 @@ iesys_crypto_KDFe(TPM2_ALG_ID hashAlg,
     return r;
 
  error:
-    iesys_crypto_hmac_abort(&cryptoContext);
+    iesys_crypto_hmac_abort(crypto_cb, &cryptoContext);
     return r;
 }
 
@@ -484,7 +718,8 @@ iesys_crypto_KDFe(TPM2_ALG_ID hashAlg,
  * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
  */
 TSS2_RC
-iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
+iesys_xor_parameter_obfuscation(ESYS_CRYPTO_CALLBACKS *crypto_cb,
+                                TPM2_ALG_ID hash_alg,
                                 uint8_t *key,
                                 size_t key_size,
                                 TPM2B_NONCE * contextU,
@@ -509,7 +744,7 @@ iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
     r = iesys_crypto_hash_get_digest_size(hash_alg, &digest_size);
     return_if_error(r, "Hash alg not supported");
     while(rest_size > 0) {
-        r = iesys_crypto_KDFa(hash_alg, key, key_size, "XOR",
+        r = iesys_crypto_KDFa(crypto_cb, hash_alg, key, key_size, "XOR",
                               contextU, contextV, data_size_bits, &counter,
                               kdfa_result, TRUE);
         return_if_error(r, "iesys_crypto_KDFa failed");
@@ -525,15 +760,82 @@ iesys_xor_parameter_obfuscation(TPM2_ALG_ID hash_alg,
     return TSS2_RC_SUCCESS;
 }
 
+#define TEST_AND_SET_CALLBACK(crypto_cb, callbacks, fn) \
+    if (callbacks->fn) { \
+        crypto_cb->fn = callbacks->fn; \
+    } else { \
+        LOG_ERROR("Callback \"%s\" not set", xstr(fn)); \
+        return TSS2_ESYS_RC_CALLBACK_NULL; \
+    }
 
-/** Initialize crypto backend.
- *
- * Initialize internal tables of crypto backend.
- *
- * @retval TSS2_RC_SUCCESS ong success.
- * @retval TSS2_ESYS_RC_GENERAL_FAILURE if backend can't be initialized.
- */
 TSS2_RC
-iesys_initialize_crypto() {
-    return iesys_crypto_init();
+    ieys_set_crypto_callbacks(
+                            ESYS_CRYPTO_CALLBACKS *crypto_cb,
+                            ESYS_CRYPTO_CALLBACKS *user_cb)
+{
+    if (!user_cb) {
+        /*
+         * WARNING: Build time configured backends do not use the
+         * userdata pointer, thus if they EVER need a backend
+         * userdata pointer it must be saved and restored.
+         */
+        crypto_cb->userdata = NULL;
+        crypto_cb->aes_decrypt = _iesys_crypto_aes_decrypt;
+        crypto_cb->aes_encrypt = _iesys_crypto_aes_encrypt;
+        crypto_cb->get_ecdh_point = _iesys_crypto_get_ecdh_point;
+        crypto_cb->hash_abort = _iesys_crypto_hash_abort;
+        crypto_cb->hash_finish = _iesys_crypto_hash_finish;
+        crypto_cb->hash_start = _iesys_crypto_hash_start;
+        crypto_cb->hash_update = _iesys_crypto_hash_update;
+        crypto_cb->hmac_abort = _iesys_crypto_hmac_abort;
+        crypto_cb->hmac_finish = _iesys_crypto_hmac_finish;
+        crypto_cb->hmac_start = _iesys_crypto_hmac_start;
+        crypto_cb->hmac_update = _iesys_crypto_hmac_update;
+        crypto_cb->init = _iesys_crypto_init;
+        crypto_cb->get_random2b = _iesys_crypto_get_random2b;
+        crypto_cb->rsa_pk_encrypt = _iesys_crypto_rsa_pk_encrypt;
+
+    } else {
+
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, aes_decrypt);
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, aes_encrypt);
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, get_ecdh_point);
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, get_random2b);
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, rsa_pk_encrypt);
+
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, hash_abort);
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, hash_finish);
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, hash_start);
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, hash_update);
+
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, hmac_abort);
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, hmac_finish);
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, hmac_start);
+        TEST_AND_SET_CALLBACK(crypto_cb, user_cb, hmac_update);
+
+        /* init is the only optional function */
+        crypto_cb->init = user_cb->init;
+
+        crypto_cb->userdata = user_cb->userdata;
+    }
+
+    return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC
+    iesys_initialize_crypto_backend(
+                                    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+                                    ESYS_CRYPTO_CALLBACKS *user_cb)
+{
+    if (!crypto_cb) {
+        return TSS2_ESYS_RC_BAD_REFERENCE;
+    }
+
+    TSS2_RC rc = ieys_set_crypto_callbacks(crypto_cb, user_cb);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
+    }
+
+    return crypto_cb->init ?
+            crypto_cb->init(crypto_cb->userdata) : TSS2_RC_SUCCESS;
 }

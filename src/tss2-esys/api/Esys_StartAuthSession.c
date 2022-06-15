@@ -229,7 +229,8 @@ Esys_StartAuthSession_Async(
         r2 = iesys_crypto_hash_get_digest_size(authHash,&authHash_size);
         return_state_if_error(r2, _ESYS_STATE_INIT, "Error in hash_get_digest_size.");
 
-        r2 = iesys_crypto_random2b(&esysContext->in.StartAuthSession.nonceCallerData,
+        r2 = iesys_crypto_get_random2b(&esysContext->crypto_backend,
+                &esysContext->in.StartAuthSession.nonceCallerData,
                                    authHash_size);
         return_state_if_error(r2, _ESYS_STATE_INIT, "Error in crypto_random2b.");
         esysContext->in.StartAuthSession.nonceCaller
@@ -473,7 +474,7 @@ Esys_StartAuthSession_Finish(
                                            &bindNode->auth,
                                            &sessionHandleNode->rsrc.misc.rsrc_session.bound_entity);
             LOGBLOB_DEBUG(secret, secret_size, "ESYS Session Secret");
-            r = iesys_crypto_KDFa(esysContext->in.StartAuthSession.authHash, secret,
+            r = iesys_crypto_KDFa(&esysContext->crypto_backend, esysContext->in.StartAuthSession.authHash, secret,
                                   secret_size, "ATH",
                                   &lnonceTPM, esysContext->in.StartAuthSession.nonceCaller,
                                   authHash_size*8, NULL,

@@ -405,7 +405,8 @@ Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
         esys_object->auth = *authValue;
         /* Adapt auth value to hash for large auth values. */
         if (name_alg != TPM2_ALG_NULL) {
-            r = iesys_hash_long_auth_values(&esys_object->auth, name_alg);
+            r = iesys_hash_long_auth_values(&esys_context->crypto_backend,
+                    &esys_object->auth, name_alg);
             return_if_error(r, "Hashing overlength authValue failed.");
         }
     }
@@ -447,12 +448,14 @@ Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
         return TSS2_ESYS_RC_MEMORY;
     }
     if (esys_object->rsrc.rsrcType == IESYSC_KEY_RSRC) {
-        r = iesys_get_name(&esys_object->rsrc.misc.rsrc_key_pub, *name);
+        r = iesys_get_name(&esys_context->crypto_backend,
+                &esys_object->rsrc.misc.rsrc_key_pub, *name);
         goto_if_error(r, "Error get name", error_cleanup);
 
     } else {
         if (esys_object->rsrc.rsrcType == IESYSC_NV_RSRC) {
-            r = iesys_nv_get_name(&esys_object->rsrc.misc.rsrc_nv_pub, *name);
+            r = iesys_nv_get_name(&esys_context->crypto_backend,
+                    &esys_object->rsrc.misc.rsrc_nv_pub, *name);
             goto_if_error(r, "Error get name", error_cleanup);
 
         } else {

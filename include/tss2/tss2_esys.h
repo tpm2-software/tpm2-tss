@@ -66,6 +66,290 @@ typedef uint32_t ESYS_TR;
 
 typedef struct ESYS_CONTEXT ESYS_CONTEXT;
 
+typedef struct ESYS_CRYPTO_CONTEXT_BLOB ESYS_CRYPTO_CONTEXT_BLOB;
+
+/*
+ * Crypto Backend Support
+ */
+
+/** Provide the context for the computation of a hash digest.
+ *
+ * The context will be created and initialized according to the hash function.
+ * @param[out] context The created context (callee-allocated).
+ * @param[in] hashAlg The hash algorithm for the creation of the context.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_HASH_START_FNP)(
+        ESYS_CRYPTO_CONTEXT_BLOB ** context,
+        TPM2_ALG_ID hashAlg,
+        void *userdata);
+
+/** Update the digest value of a digest object from a byte buffer.
+ *
+ * The context of a digest object will be updated according to the hash
+ * algorithm of the context. <
+ * @param[in,out] context The context of the digest object which will be updated.
+ * @param[in] buffer The data for the update.
+ * @param[in] size The size of the data buffer.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_HASH_UPDATE_FNP)(
+        ESYS_CRYPTO_CONTEXT_BLOB * context,
+        const uint8_t *buffer,
+        size_t size,
+        void *userdata);
+
+/** Get the digest value of a digest object and close the context.
+ *
+ * The digest value will written to a passed buffer and the resources of the
+ * digest object are released.
+ * @param[in,out] context The context of the digest object to be released
+ * @param[out] buffer The buffer for the digest value (caller-allocated).
+ * @param[out] size The size of the digest.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_HASH_FINISH_FNP)(
+        ESYS_CRYPTO_CONTEXT_BLOB **context,
+        uint8_t *buffer,
+        size_t *size,
+        void *userdata);
+
+/** Release the resources of a digest object.
+ *
+ * The assigned resources will be released and the context will be set to NULL.
+ * @param[in,out] context The context of the digest object.
+ * @param[in/out] userdata information.
+ */
+typedef void
+    (*ESYS_CRYPTO_HASH_ABORT_FNP)(
+        ESYS_CRYPTO_CONTEXT_BLOB **context,
+        void *userdata);
+
+/** Provide the context an HMAC digest object from a byte buffer key.
+ *
+ * The context will be created and initialized according to the hash function
+ * and the used HMAC key.
+ * @param[out] context The created context (callee-allocated).
+ * @param[in] hashAlg The hash algorithm for the HMAC computation.
+ * @param[in] key The byte buffer of the HMAC key.
+ * @param[in] size The size of the HMAC key.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_HMAC_START_FNP)(
+        ESYS_CRYPTO_CONTEXT_BLOB **context,
+        TPM2_ALG_ID hashAlg,
+        const uint8_t *key,
+        size_t size,
+        void *userdata);
+
+/** Update and HMAC digest value from a byte buffer.
+ *
+ * The context of a digest object will be updated according to the hash
+ * algorithm and the key of the context.
+ * @param[in,out] context The context of the digest object which will be updated.
+ * @param[in] buffer The data for the update.
+ * @param[in] size The size of the data buffer.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_HMAC_UPDATE_FNP)(
+        ESYS_CRYPTO_CONTEXT_BLOB *context,
+        const uint8_t *buffer,
+        size_t size,
+        void *userdata);
+
+/** Write the HMAC digest value to a byte buffer and close the context.
+ *
+ * The digest value will written to a passed buffer and the resources of the
+ * HMAC object are released.
+ * @param[in,out] context The context of the HMAC object.
+ * @param[out] buffer The buffer for the digest value (caller-allocated).
+ * @param[out] size The size of the digest.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_HMAC_FINISH_FNP)(
+        ESYS_CRYPTO_CONTEXT_BLOB **context,
+        uint8_t *buffer,
+        size_t *size,
+        void *userdata);
+
+/** Release the resources of an HAMC object.
+ *
+ * The assigned resources will be released and the context will be set to NULL.
+ * @param[in,out] context The context of the HMAC object.
+ * @param[in/out] userdata information.
+ */
+typedef void
+    (*ESYS_CRYPTO_HMAC_ABORT_FNP)(
+        ESYS_CRYPTO_CONTEXT_BLOB **context,
+        void *userdata);
+
+/** Compute random TPM2B data.
+ *
+ * The random data will be generated and written to a passed TPM2B structure.
+ * @param[out] nonce The TPM2B structure for the random data (caller-allocated).
+ * @param[in] num_bytes The number of bytes to be generated.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval USER_DEFINED user defined errors on failure.
+ * @note: the TPM should not be used to obtain the random data
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_GET_RANDOM2B_FNP)(
+        TPM2B_NONCE *nonce,
+        size_t num_bytes,
+        void *userdata);
+
+/** Encryption of a buffer using a public (RSA) key.
+ *
+ * Encrypting a buffer using a public key is used for example during
+ * Esys_StartAuthSession in order to encrypt the salt value.
+ * @param[in] pub_tpm_key The key to be used for encryption.
+ * @param[in] in_size The size of the buffer to be encrypted.
+ * @param[in] in_buffer The data buffer to be encrypted.
+ * @param[in] max_out_size The maximum size for the output encrypted buffer.
+ * @param[out] out_buffer The encrypted buffer.
+ * @param[out] out_size The size of the encrypted output.
+ * @param[in] label The label used in the encryption scheme.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_GET_ECDH_POINT_FNP)(
+        TPM2B_PUBLIC *key,
+        size_t max_out_size,
+        TPM2B_ECC_PARAMETER *Z,
+        TPMS_ECC_POINT *Q,
+        BYTE *out_buffer,
+        size_t *out_size,
+        void *userdata);
+
+/** Encrypt data with AES.
+ *
+ * @param[in] key key used for AES.
+ * @param[in] tpm_sym_alg AES type in TSS2 notation (must be TPM2_ALG_AES).
+ * @param[in] key_bits Key size in bits.
+ * @param[in] tpm_mode Block cipher mode of opertion in TSS2 notation (CFB).
+ *            For parameter encryption only CFB can be used.
+ * @param[in,out] buffer Data to be encrypted. The encrypted date will be stored
+ *                in this buffer.
+ * @param[in] buffer_size size of data to be encrypted.
+ * @param[in] iv The initialization vector.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_AES_ENCRYPT_FNP)(
+        uint8_t *key,
+        TPM2_ALG_ID tpm_sym_alg,
+        TPMI_AES_KEY_BITS key_bits,
+        TPM2_ALG_ID tpm_mode,
+        uint8_t *buffer,
+        size_t buffer_size,
+        uint8_t *iv,
+        void *userdata);
+
+/** Decrypt data with AES.
+ *
+ * @param[in] key key used for AES.
+ * @param[in] tpm_sym_alg AES type in TSS2 notation (must be TPM2_ALG_AES).
+ * @param[in] key_bits Key size in bits.
+ * @param[in] tpm_mode Block cipher mode of opertion in TSS2 notation (CFB).
+ *            For parameter encryption only CFB can be used.
+ * @param[in,out] buffer Data to be decrypted. The decrypted date will be stored
+ *                in this buffer.
+ * @param[in] buffer_size size of data to be encrypted.
+ * @param[in] iv The initialization vector.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_AES_DECRYPT_FNP)(
+        uint8_t *key,
+        TPM2_ALG_ID tpm_sym_alg,
+        TPMI_AES_KEY_BITS key_bits,
+        TPM2_ALG_ID tpm_mode,
+        uint8_t *buffer,
+        size_t buffer_size,
+        uint8_t *iv,
+        void *userdata);
+
+/** Encryption of a buffer using a public (RSA) key.
+ *
+ * Encrypting a buffer using a public key is used for example during
+ * Esys_StartAuthSession in order to encrypt the salt value.
+ * @param[in] pub_tpm_key The key to be used for encryption.
+ * @param[in] in_size The size of the buffer to be encrypted.
+ * @param[in] in_buffer The data buffer to be encrypted.
+ * @param[in] max_out_size The maximum size for the output encrypted buffer.
+ * @param[out] out_buffer The encrypted buffer.
+ * @param[out] out_size The size of the encrypted output.
+ * @param[in] label The label used in the encryption scheme.
+ * @param[in/out] userdata information.
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC
+    (*ESYS_CRYPTO_PK_RSA_ENCRYPT_FNP)(
+        TPM2B_PUBLIC * pub_tpm_key,
+        size_t in_size,
+        BYTE *in_buffer,
+        size_t max_out_size,
+        BYTE *out_buffer,
+        size_t *out_size,
+        const char *label,
+        void *userdata);
+
+/** Initialize crypto backend.
+ *
+ * Initialize internal tables of crypto backend.
+ *
+ * @param[in/out] userdata Optional userdata pointer.
+ *
+ * @retval TSS2_RC_SUCCESS ong success.
+ * @retval USER_DEFINED user defined errors on failure.
+ */
+typedef TSS2_RC (*ESYS_CRYPTO_INIT_FNP)(void *userdata);
+
+typedef struct ESYS_CRYPTO_CALLBACKS ESYS_CRYPTO_CALLBACKS;
+struct ESYS_CRYPTO_CALLBACKS {
+    ESYS_CRYPTO_PK_RSA_ENCRYPT_FNP rsa_pk_encrypt;
+    ESYS_CRYPTO_HASH_START_FNP hash_start;
+    ESYS_CRYPTO_HASH_UPDATE_FNP hash_update;
+    ESYS_CRYPTO_HASH_FINISH_FNP hash_finish;
+    ESYS_CRYPTO_HASH_ABORT_FNP hash_abort;
+    ESYS_CRYPTO_HMAC_START_FNP hmac_start;
+    ESYS_CRYPTO_HMAC_UPDATE_FNP hmac_update;
+    ESYS_CRYPTO_HMAC_FINISH_FNP hmac_finish;
+    ESYS_CRYPTO_HMAC_ABORT_FNP hmac_abort;
+    ESYS_CRYPTO_GET_RANDOM2B_FNP get_random2b;
+    ESYS_CRYPTO_GET_ECDH_POINT_FNP get_ecdh_point;
+    ESYS_CRYPTO_AES_ENCRYPT_FNP aes_encrypt;
+    ESYS_CRYPTO_AES_DECRYPT_FNP aes_decrypt;
+    ESYS_CRYPTO_INIT_FNP init;
+    void *userdata;
+};
+
 /*
  * TPM 2.0 ESAPI Functions
  */
@@ -3301,6 +3585,11 @@ TSS2_RC
 Esys_GetSysContext(
     ESYS_CONTEXT *esys_context,
     TSS2_SYS_CONTEXT **sys_context);
+
+TSS2_RC
+Esys_SetCryptoCallbacks(
+    ESYS_CONTEXT *esysContext,
+    ESYS_CRYPTO_CALLBACKS *callbacks);
 
 #ifdef __cplusplus
 }
