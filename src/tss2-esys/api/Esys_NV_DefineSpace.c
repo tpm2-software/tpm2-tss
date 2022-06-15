@@ -201,7 +201,7 @@ Esys_NV_DefineSpace_Async(
     store_input_parameters(esysContext, auth, publicInfo);
 
     if (publicInfo) {
-        r = iesys_hash_long_auth_values(esysContext->in.NV.auth,
+        r = iesys_hash_long_auth_values(&esysContext->crypto_backend, esysContext->in.NV.auth,
                                         publicInfo->nvPublic.nameAlg);
         return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value.");
     }
@@ -369,7 +369,7 @@ Esys_NV_DefineSpace_Finish(
 
     /* Update the meta data of the ESYS_TR object */
     nvHandleNode->rsrc.rsrcType = IESYSC_NV_RSRC;
-    r = iesys_nv_get_name(esysContext->in.NV.publicInfo,
+    r = iesys_nv_get_name(&esysContext->crypto_backend, esysContext->in.NV.publicInfo,
                           &nvHandleNode->rsrc.name);
     if (r != TSS2_RC_SUCCESS) {
         LOG_ERROR("Error finish (ExecuteFinish) NV_DefineSpace: %" PRIx32, r);

@@ -239,7 +239,7 @@ iesys_compute_cp_hashtab(ESYS_CONTEXT * esys_context,
             /* If not, we compute it and append it to the list */
             if (!cpHashFound) {
                 cp_hash_tab[*cpHashNum].size = sizeof(TPMU_HA);
-                r = iesys_crypto_cpHash(session->rsrc.misc.rsrc_session.
+                r = iesys_crypto_cpHash(&esys_context->crypto_backend, session->rsrc.misc.rsrc_session.
                                         authHash, ccBuffer, name1, name2, name3,
                                         cpBuffer, cpBuffer_size,
                                         &cp_hash_tab[*cpHashNum].digest[0],
@@ -302,7 +302,7 @@ iesys_compute_rp_hashtab(ESYS_CONTEXT * esys_context,
         /* If not, we compute it and append it to the list */
         if (!rpHashFound) {
             rp_hash_tab[*rpHashNum].size = sizeof(TPMU_HA);
-            r = iesys_crypto_rpHash(session->rsrc.misc.rsrc_session.authHash,
+            r = iesys_crypto_rpHash(&esys_context->crypto_backend, session->rsrc.misc.rsrc_session.authHash,
                                     rcBuffer, ccBuffer, rpBuffer, rpBuffer_size,
                                     &rp_hash_tab[*rpHashNum].digest[0],
                                     &rp_hash_tab[*rpHashNum].size);
@@ -442,13 +442,13 @@ iesys_get_handle_type(TPM2_HANDLE handle)
  * @retval bool indicates whether the names are equal.
  */
 bool
-iesys_compare_name(TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
+iesys_compare_name(ESYS_CRYPTO_CALLBACKS *crypto_cb, TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     TPM2B_NAME public_info_name;
     if (publicInfo == NULL || name == NULL)
         return false;
-    r = iesys_get_name(publicInfo, &public_info_name);
+    r = iesys_get_name(crypto_cb, publicInfo, &public_info_name);
     if (r != TSS2_RC_SUCCESS) {
         LOG_DEBUG("name could not be computed.");
         return false;
@@ -507,13 +507,15 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
     switch (pub.publicArea.type) {
     case TPM2_ALG_RSA:
 
-        iesys_crypto_random2b((TPM2B_NONCE *) & esys_context->salt,
-                              keyHash_size);
+        r = iesys_crypto_get_random2b(&esys_context->crypto_backend,
+                (TPM2B_NONCE *) & esys_context->salt,
+                keyHash_size);
+        return_if_error(r, "During getrandom.");
 
         /* When encrypting salts, the encryption scheme of a key is ignored and
            TPM2_ALG_OAEP is always used. */
         pub.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_OAEP;
-        r = iesys_crypto_pk_encrypt(&pub,
+        r = iesys_crypto_rsa_pk_encrypt(&esys_context->crypto_backend, &pub,
                                     keyHash_size, &esys_context->salt.buffer[0],
                                     sizeof(TPMU_ENCRYPTED_SECRET),
                                     (BYTE *) &encryptedSalt->secret[0], &cSize,
@@ -523,15 +525,16 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT * esys_context,
         encryptedSalt->size = cSize;
         break;
     case TPM2_ALG_ECC:
-        r = iesys_crypto_get_ecdh_point(&pub, sizeof(TPMU_ENCRYPTED_SECRET),
-                                        &Z, &Q,
-                                        (BYTE *) &encryptedSalt->secret[0],
-                                        &cSize);
+        r = iesys_crypto_get_ecdh_point(&esys_context->crypto_backend,
+                &pub, sizeof(TPMU_ENCRYPTED_SECRET),
+                &Z, &Q,
+                (BYTE *) &encryptedSalt->secret[0],
+                &cSize);
         return_if_error(r, "During computation of ECC public key.");
         encryptedSalt->size = cSize;
 
         /* Compute salt from Z with KDFe */
-        r = iesys_crypto_KDFe(tpmKeyNode->rsrc.misc.
+        r = iesys_crypto_KDFe(&esys_context->crypto_backend, tpmKeyNode->rsrc.misc.
                               rsrc_key_pub.publicArea.nameAlg,
                               &Z, "SECRET", &Q.x,
                               &pub.publicArea.unique.ecc.x,
@@ -567,8 +570,9 @@ iesys_gen_caller_nonces(ESYS_CONTEXT * esys_context)
         if (session == NULL)
             continue;
 
-        r = iesys_crypto_random2b(&session->rsrc.misc.rsrc_session.nonceCaller,
-                                  session->rsrc.misc.rsrc_session.nonceCaller.size);
+        r = iesys_crypto_get_random2b(&esys_context->crypto_backend,
+                &session->rsrc.misc.rsrc_session.nonceCaller,
+                session->rsrc.misc.rsrc_session.nonceCaller.size);
         return_if_error(r, "Error: computing caller nonce (%x).");
     }
     return TSS2_RC_SUCCESS;
@@ -721,7 +725,7 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                     return_error(TSS2_ESYS_RC_BAD_VALUE,
                                  "Invalid symmetric mode (must be CFB)");
                 }
-                r = iesys_crypto_KDFa(rsrc_session->authHash,
+                r = iesys_crypto_KDFa(&esys_context->crypto_backend, rsrc_session->authHash,
                                       &rsrc_session->sessionValue[0],
                                       rsrc_session->sizeSessionValue, "CFB",
                                       &rsrc_session->nonceCaller,
@@ -731,17 +735,20 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                 return_if_error(r, "while computing KDFa");
 
                 size_t aes_off = ( symDef->keyBits.aes + 7) / 8;
-                r = iesys_crypto_sym_aes_encrypt(&symKey[0],
-                                                 symDef->algorithm,
-                                                 symDef->keyBits.aes,
-                                                 symDef->mode.aes,
-                                                 &encrypt_buffer[0], paramSize,
-                                                 &symKey[aes_off]);
+                r = iesys_crypto_aes_encrypt(
+                        &esys_context->crypto_backend,
+                        &symKey[0],
+                        symDef->algorithm,
+                        symDef->keyBits.aes,
+                        symDef->mode.aes,
+                        &encrypt_buffer[0], paramSize,
+                        &symKey[aes_off]);
                 return_if_error(r, "AES encryption not possible");
             }
             /* XOR obfuscation of parameter */
             else if (symDef->algorithm == TPM2_ALG_XOR) {
-                r = iesys_xor_parameter_obfuscation(rsrc_session->authHash,
+                r = iesys_xor_parameter_obfuscation(&esys_context->crypto_backend,
+                                                    rsrc_session->authHash,
                                                     &rsrc_session->sessionValue[0],
                                                     rsrc_session->sizeSessionValue,
                                                     &rsrc_session->nonceCaller,
@@ -815,7 +822,7 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context)
                       rsrc_session->sessionKey.size,
                       "IESYS encrypt session key");
 
-        r = iesys_crypto_KDFa(rsrc_session->authHash,
+        r = iesys_crypto_KDFa(&esys_context->crypto_backend, rsrc_session->authHash,
                               &rsrc_session->sessionValue[0],
                               rsrc_session->sizeSessionValue,
                               "CFB", &rsrc_session->nonceTPM,
@@ -830,19 +837,22 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context)
                       "IESYS encrypt KDFa key");
 
         size_t aes_off = ( symDef->keyBits.aes + 7) / 8;
-        r = iesys_crypto_sym_aes_decrypt(&symKey[0],
-                                     symDef->algorithm,
-                                     symDef->keyBits.aes,
-                                     symDef->mode.aes,
-                                     &plaintext[0], p2BSize,
-                                     &symKey[aes_off]);
+        r = iesys_crypto_aes_decrypt(
+            &esys_context->crypto_backend,
+            &symKey[0],
+            symDef->algorithm,
+            symDef->keyBits.aes,
+            symDef->mode.aes,
+            &plaintext[0], p2BSize,
+            &symKey[aes_off]);
         return_if_error(r, "Decryption error");
 
         r = Tss2_Sys_SetEncryptParam(esys_context->sys, p2BSize, &plaintext[0]);
         return_if_error(r, "Setting plaintext");
     } else if (symDef->algorithm == TPM2_ALG_XOR) {
         /* Parameter decryption with XOR obfuscation */
-        r = iesys_xor_parameter_obfuscation(rsrc_session->authHash,
+        r = iesys_xor_parameter_obfuscation(&esys_context->crypto_backend,
+                                            rsrc_session->authHash,
                                             &rsrc_session->sessionValue[0],
                                             rsrc_session->sizeSessionValue,
                                             &rsrc_session->nonceTPM,
@@ -915,7 +925,7 @@ iesys_check_rp_hmacs(ESYS_CONTEXT * esys_context,
         rsrc_session->nonceTPM = rspAuths->auths[i].nonce;
         rsrc_session->sessionAttributes =
             rspAuths->auths[i].sessionAttributes;
-        r = iesys_crypto_authHmac(rsrc_session->authHash,
+        r = iesys_crypto_authHmac(&esys_context->crypto_backend, rsrc_session->authHash,
                                   &rsrc_session->sessionValue[0],
                                   rsrc_session->sizeHmacValue,
                                   &rp_hash_tab[hi].digest[0],
@@ -1205,7 +1215,7 @@ check_session_feasibility(ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3,
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
-iesys_compute_hmac(RSRC_NODE_T * session,
+iesys_compute_hmac(ESYS_CONTEXT *esys_context, RSRC_NODE_T * session,
                    HASH_TAB_ITEM cp_hash_tab[3],
                    uint8_t cpHashNum,
                    TPM2B_NONCE * decryptNonce,
@@ -1232,7 +1242,7 @@ iesys_compute_hmac(RSRC_NODE_T * session,
         /* if other than first session is used for for parameter encryption
            the corresponding nonces have to be included into the hmac
            computation of the first session */
-        r = iesys_crypto_authHmac(rsrc_session->authHash,
+        r = iesys_crypto_authHmac(&esys_context->crypto_backend, rsrc_session->authHash,
                                   &rsrc_session->sessionValue[0],
                                   rsrc_session->sizeHmacValue,
                                   &cp_hash_tab[hi].digest[0],
@@ -1344,7 +1354,7 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
                 continue;
             }
         }
-        r = iesys_compute_hmac(esys_context->session_tab[session_idx],
+        r = iesys_compute_hmac(esys_context, esys_context->session_tab[session_idx],
                                &cp_hash_tab[0], cpHashNum,
                                (session_idx == 0
                                 && decryptNonceIdx > 0) ? decryptNonce : NULL,
@@ -1450,20 +1460,22 @@ iesys_check_response(ESYS_CONTEXT * esys_context)
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
-iesys_nv_get_name(TPM2B_NV_PUBLIC * publicInfo, TPM2B_NAME * name)
+iesys_nv_get_name(ESYS_CRYPTO_CALLBACKS *crypto_cb, TPM2B_NV_PUBLIC * publicInfo, TPM2B_NAME * name)
 {
     BYTE buffer[sizeof(TPMS_NV_PUBLIC)];
     size_t offset = 0;
     size_t size = sizeof(TPMU_NAME) - sizeof(TPMI_ALG_HASH);
     size_t len_alg_id = sizeof(TPMI_ALG_HASH);
-    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    ESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
 
     if (publicInfo->nvPublic.nameAlg == TPM2_ALG_NULL) {
         name->size = 0;
         return TSS2_RC_SUCCESS;
     }
     TSS2_RC r;
-    r = iesys_crypto_hash_start(&cryptoContext, publicInfo->nvPublic.nameAlg);
+    r = iesys_crypto_hash_start(
+        crypto_cb,
+        &cryptoContext, publicInfo->nvPublic.nameAlg);
     return_if_error(r, "Crypto hash start");
 
     r = Tss2_MU_TPMS_NV_PUBLIC_Marshal(&publicInfo->nvPublic,
@@ -1471,11 +1483,13 @@ iesys_nv_get_name(TPM2B_NV_PUBLIC * publicInfo, TPM2B_NAME * name)
                                        &offset);
     goto_if_error(r, "Marshaling TPMS_NV_PUBLIC", error_cleanup);
 
-    r = iesys_crypto_hash_update(cryptoContext, &buffer[0], offset);
+    r = iesys_crypto_hash_update(crypto_cb,
+            cryptoContext, &buffer[0], offset);
     goto_if_error(r, "crypto hash update", error_cleanup);
 
-    r = iesys_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id],
-                                     &size);
+    r = iesys_crypto_hash_finish(crypto_cb,
+            &cryptoContext, &name->name[len_alg_id],
+            &size);
     goto_if_error(r, "crypto hash finish", error_cleanup);
 
     offset = 0;
@@ -1488,8 +1502,13 @@ iesys_nv_get_name(TPM2B_NV_PUBLIC * publicInfo, TPM2B_NAME * name)
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
-    if (cryptoContext)
-        iesys_crypto_hash_abort(&cryptoContext);
+    if (cryptoContext) {
+        TSS2_RC tmp_rc = iesys_crypto_hash_abort(crypto_cb,
+                &cryptoContext);
+        if (tmp_rc != TSS2_RC_SUCCESS) {
+            r = tmp_rc;
+        }
+    }
     return r;
 }
 
@@ -1504,30 +1523,33 @@ error_cleanup:
  * or return codes of SAPI errors.
  */
 TSS2_RC
-iesys_get_name(TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
+iesys_get_name(ESYS_CRYPTO_CALLBACKS *crypto_cb, TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
 {
     BYTE buffer[sizeof(TPMT_PUBLIC)];
     size_t offset = 0;
     size_t len_alg_id = sizeof(TPMI_ALG_HASH);
     size_t size = sizeof(TPMU_NAME) - sizeof(TPMI_ALG_HASH);
-    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    ESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
 
     if (publicInfo->publicArea.nameAlg == TPM2_ALG_NULL) {
         name->size = 0;
         return TSS2_RC_SUCCESS;
     }
     TSS2_RC r;
-    r = iesys_crypto_hash_start(&cryptoContext, publicInfo->publicArea.nameAlg);
+    r = iesys_crypto_hash_start(crypto_cb,
+        &cryptoContext, publicInfo->publicArea.nameAlg);
     return_if_error(r, "crypto hash start");
 
     r = Tss2_MU_TPMT_PUBLIC_Marshal(&publicInfo->publicArea,
                                     &buffer[0], sizeof(TPMT_PUBLIC), &offset);
     goto_if_error(r, "Marshaling TPMT_PUBLIC", error_cleanup);
 
-    r = iesys_crypto_hash_update(cryptoContext, &buffer[0], offset);
+    r = iesys_crypto_hash_update(crypto_cb,
+        cryptoContext, &buffer[0], offset);
     goto_if_error(r, "crypto hash update", error_cleanup);
 
-    r = iesys_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id],
+    r = iesys_crypto_hash_finish(crypto_cb,
+            &cryptoContext, &name->name[len_alg_id],
                                      &size);
     goto_if_error(r, "crypto hash finish", error_cleanup);
 
@@ -1541,8 +1563,13 @@ iesys_get_name(TPM2B_PUBLIC * publicInfo, TPM2B_NAME * name)
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
-    if (cryptoContext)
-        iesys_crypto_hash_abort(&cryptoContext);
+    if (cryptoContext) {
+        TSS2_RC tmp_rc = iesys_crypto_hash_abort(crypto_cb,
+                &cryptoContext);
+        if (tmp_rc != TSS2_RC_SUCCESS) {
+            r = tmp_rc;
+        }
+    }
     return r;
 }
 
@@ -1579,11 +1606,12 @@ iesys_tpm_error(TSS2_RC r)
  */
 TSS2_RC
 iesys_hash_long_auth_values(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
     TPM2B_AUTH *auth_value,
     TPMI_ALG_HASH hash_alg)
 {
     TSS2_RC r;
-    IESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    ESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
     TPM2B_AUTH hash2b;
     size_t hash_size;
 
@@ -1592,15 +1620,17 @@ iesys_hash_long_auth_values(
 
     if (auth_value && auth_value->size > hash_size) {
         /* The auth value has to be adapted. */
-        r = iesys_crypto_hash_start(&cryptoContext, hash_alg);
+        r = iesys_crypto_hash_start(crypto_cb,
+                &cryptoContext, hash_alg);
         return_if_error(r, "crypto hash start");
 
-        r = iesys_crypto_hash_update(cryptoContext, &auth_value->buffer[0],
-                                     auth_value->size);
+        r = iesys_crypto_hash_update(crypto_cb,
+                cryptoContext, &auth_value->buffer[0],
+                auth_value->size);
         goto_if_error(r, "crypto hash update", error_cleanup);
 
-        r = iesys_crypto_hash_finish(&cryptoContext, &hash2b.buffer[0],
-                                     &hash_size);
+        r = iesys_crypto_hash_finish(crypto_cb,
+                &cryptoContext, &hash2b.buffer[0], &hash_size);
         goto_if_error(r, "crypto hash finish", error_cleanup);
 
         memcpy(&auth_value->buffer[0], &hash2b.buffer[0], hash_size);
@@ -1610,7 +1640,11 @@ iesys_hash_long_auth_values(
 
  error_cleanup:
     if (cryptoContext) {
-        iesys_crypto_hash_abort(&cryptoContext);
+        TSS2_RC tmp_rc = iesys_crypto_hash_abort(crypto_cb,
+                &cryptoContext);
+        if (tmp_rc != TSS2_RC_SUCCESS) {
+            r = tmp_rc;
+        }
     }
     return r;
 }

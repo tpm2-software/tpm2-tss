@@ -31,7 +31,7 @@
 #endif
 
 /** Context to hold temporary values for iesys_crypto */
-typedef struct _IESYS_CRYPTO_CONTEXT {
+typedef struct ESYS_CRYPTO_CONTEXT_BLOB {
     enum {
         IESYS_CRYPTMBED_TYPE_HASH = 1,
         IESYS_CRYPTMBED_TYPE_HMAC,
@@ -59,9 +59,12 @@ typedef struct _IESYS_CRYPTO_CONTEXT {
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptmbed_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
-                           TPM2_ALG_ID hashAlg)
+iesys_cryptmbed_hash_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
+                           TPM2_ALG_ID hashAlg,
+                           void *userdata)
 {
+    UNUSED(userdata);
+
     TSS2_RC r = TSS2_RC_SUCCESS;
     const mbedtls_md_info_t* md_info = NULL;
 
@@ -105,7 +108,7 @@ iesys_cryptmbed_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
 
     mycontext->type = IESYS_CRYPTMBED_TYPE_HASH;
 
-    *context = (IESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
+    *context = (ESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
 
     return TSS2_RC_SUCCESS;
 
@@ -126,9 +129,12 @@ iesys_cryptmbed_hash_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
  * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
  */
 TSS2_RC
-iesys_cryptmbed_hash_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
-                            const uint8_t * buffer, size_t size)
+iesys_cryptmbed_hash_update(ESYS_CRYPTO_CONTEXT_BLOB * context,
+                            const uint8_t * buffer, size_t size,
+                            void *userdata)
 {
+    UNUSED(userdata);
+
     if (context == NULL || buffer == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Null-Pointer passed");
     }
@@ -144,25 +150,6 @@ iesys_cryptmbed_hash_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
     return TSS2_RC_SUCCESS;
 }
 
-/** Update the digest value of a digest object from a TPM2B object.
- *
- * The context of a digest object will be updated according to the hash
- * algorithm of the context.
- * @param[in,out] context The context of the digest object which will be updated.
- * @param[in] b The TPM2B object for the update.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
- */
-TSS2_RC
-iesys_cryptmbed_hash_update2b(IESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B * b)
-{
-    if (context == NULL || b == NULL) {
-        return TSS2_ESYS_RC_BAD_REFERENCE;
-    }
-    TSS2_RC ret = iesys_cryptmbed_hash_update(context, &b->buffer[0], b->size);
-    return ret;
-}
-
 /** Get the digest value of a digest object and close the context.
  *
  * The digest value will written to a passed buffer and the resources of the
@@ -175,9 +162,11 @@ iesys_cryptmbed_hash_update2b(IESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B * b)
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptmbed_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
-                            uint8_t * buffer, size_t * size)
+iesys_cryptmbed_hash_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
+                            uint8_t * buffer, size_t * size,
+                            void *userdata)
 {
+    UNUSED(userdata);
 
     TSS2_RC r = TSS2_RC_SUCCESS;
 
@@ -214,8 +203,10 @@ iesys_cryptmbed_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
  * @param[in,out] context The context of the digest object.
  */
 void
-iesys_cryptmbed_hash_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
+iesys_cryptmbed_hash_abort(ESYS_CRYPTO_CONTEXT_BLOB ** context, void *userdata)
 {
+    UNUSED(userdata);
+
     if (context == NULL || *context == NULL) {
         return;
     }
@@ -247,10 +238,13 @@ iesys_cryptmbed_hash_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptmbed_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
+iesys_cryptmbed_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
                            TPM2_ALG_ID hashAlg,
-                           const uint8_t * key, size_t size)
+                           const uint8_t * key, size_t size,
+                           void *userdata)
 {
+    UNUSED(userdata);
+
     TSS2_RC r = TSS2_RC_SUCCESS;
     const mbedtls_md_info_t* md_info = NULL;
 
@@ -294,7 +288,7 @@ iesys_cryptmbed_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
 
     mycontext->type = IESYS_CRYPTMBED_TYPE_HMAC;
 
-    *context = (IESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
+    *context = (ESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
 
     return TSS2_RC_SUCCESS;
 
@@ -315,9 +309,12 @@ iesys_cryptmbed_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB ** context,
  * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
  */
 TSS2_RC
-iesys_cryptmbed_hmac_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
-                            const uint8_t * buffer, size_t size)
+iesys_cryptmbed_hmac_update(ESYS_CRYPTO_CONTEXT_BLOB * context,
+                            const uint8_t * buffer, size_t size,
+                            void *userdata)
 {
+    UNUSED(userdata);
+
     if (context == NULL || buffer == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Null-Pointer passed");
     }
@@ -333,25 +330,6 @@ iesys_cryptmbed_hmac_update(IESYS_CRYPTO_CONTEXT_BLOB * context,
     return TSS2_RC_SUCCESS;
 }
 
-/** Update and HMAC digest value from a TPM2B object.
- *
- * The context of a digest object will be updated according to the hash
- * algorithm and the key of the context.
- * @param[in,out] context The context of the digest object which will be updated.
- * @param[in] b The TPM2B object for the update.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
- */
-TSS2_RC
-iesys_cryptmbed_hmac_update2b(IESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B * b)
-{
-    if (context == NULL || b == NULL) {
-        return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Null-Pointer passed");
-    }
-    TSS2_RC ret = iesys_cryptmbed_hmac_update(context, &b->buffer[0], b->size);
-    return ret;
-}
-
 /** Write the HMAC digest value to a byte buffer and close the context.
  *
  * The digest value will written to a passed buffer and the resources of the
@@ -365,9 +343,11 @@ iesys_cryptmbed_hmac_update2b(IESYS_CRYPTO_CONTEXT_BLOB * context, TPM2B * b)
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptmbed_hmac_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
-                            uint8_t * buffer, size_t * size)
+iesys_cryptmbed_hmac_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
+                            uint8_t * buffer, size_t * size,
+                            void *userdata)
 {
+    UNUSED(userdata);
 
     TSS2_RC r = TSS2_RC_SUCCESS;
 
@@ -397,37 +377,16 @@ iesys_cryptmbed_hmac_finish(IESYS_CRYPTO_CONTEXT_BLOB ** context,
     return r;
 }
 
-/** Write the HMAC digest value to a TPM2B object and close the context.
- *
- * The digest value will written to a passed TPM2B object and the resources of
- * the HMAC object are released.
- * @param[in,out] context The context of the HMAC object.
- * @param[out] hmac The buffer for the digest value (caller-allocated).
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
- * @retval TSS2_ESYS_RC_BAD_SIZE if the size passed is lower than the HMAC length.
- * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
- */
-TSS2_RC
-iesys_cryptmbed_hmac_finish2b(IESYS_CRYPTO_CONTEXT_BLOB ** context, TPM2B * hmac)
-{
-    if (context == NULL || *context == NULL || hmac == NULL) {
-        return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Null-Pointer passed");
-    }
-    size_t s = hmac->size;
-    TSS2_RC ret = iesys_cryptmbed_hmac_finish(context, &hmac->buffer[0], &s);
-    hmac->size = s;
-    return ret;
-}
-
 /** Release the resources of an HAMC object.
  *
  * The assigned resources will be released and the context will be set to NULL.
  * @param[in,out] context The context of the HMAC object.
  */
 void
-iesys_cryptmbed_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB ** context)
+iesys_cryptmbed_hmac_abort(ESYS_CRYPTO_CONTEXT_BLOB ** context, void *userdata)
 {
+    UNUSED(userdata);
+
     if (context == NULL || *context == NULL) {
         return;
     }
@@ -492,10 +451,12 @@ cleanup:
  * NOTE: the TPM should not be used to obtain the random data
  */
 TSS2_RC
-iesys_cryptmbed_random2b(TPM2B_NONCE * nonce, size_t num_bytes)
+iesys_cryptmbed_random2b(TPM2B_NONCE * nonce, size_t num_bytes, void *userdata)
 {
+    UNUSED(userdata);
+
     if (num_bytes == 0) {
-        nonce->size = sizeof(TPMU_HA);
+        nonce->size = sizeof(nonce->buffer);
     } else {
         nonce->size = num_bytes;
     }
@@ -529,8 +490,12 @@ iesys_cryptmbed_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                            BYTE * in_buffer,
                            size_t max_out_size,
                            BYTE * out_buffer,
-                           size_t * out_size, const char *label)
+                           size_t * out_size,
+                           const char *label,
+                           void *userdata)
 {
+    UNUSED(userdata);
+
     TSS2_RC r = TSS2_RC_SUCCESS;
     int hash_id = 0;
     mbedtls_rsa_context rsa_context;
@@ -667,8 +632,11 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
                                TPM2B_ECC_PARAMETER *Z,
                                TPMS_ECC_POINT *Q,
                                BYTE * out_buffer,
-                               size_t * out_size)
+                               size_t * out_size,
+                               void *userdata)
 {
+    UNUSED(userdata);
+
     TSS2_RC r = TSS2_RC_SUCCESS;
     mbedtls_ecp_group ecp_group;
     mbedtls_mpi ecp_d;
@@ -852,8 +820,11 @@ iesys_cryptmbed_sym_aes_encrypt(uint8_t * key,
                                 TPM2_ALG_ID tpm_mode,
                                 uint8_t * buffer,
                                 size_t buffer_size,
-                                uint8_t * iv)
+                                uint8_t * iv,
+                                void *userdata)
 {
+    UNUSED(userdata);
+
     TSS2_RC r = TSS2_RC_SUCCESS;
     mbedtls_aes_context aes_ctx;
 
@@ -907,8 +878,11 @@ iesys_cryptmbed_sym_aes_decrypt(uint8_t * key,
                                 TPM2_ALG_ID tpm_mode,
                                 uint8_t * buffer,
                                 size_t buffer_size,
-                                uint8_t * iv)
+                                uint8_t * iv,
+                                void *userdata)
 {
+    UNUSED(userdata);
+
     TSS2_RC r = TSS2_RC_SUCCESS;
     mbedtls_aes_context aes_ctx;
 
@@ -944,4 +918,11 @@ iesys_cryptmbed_sym_aes_decrypt(uint8_t * key,
 cleanup:
     mbedtls_aes_free(&aes_ctx);
     return r;
+}
+
+TSS2_RC
+iesys_cryptmbed_init(void *userdata) {
+    UNUSED(userdata);
+
+    return TSS2_RC_SUCCESS;
 }

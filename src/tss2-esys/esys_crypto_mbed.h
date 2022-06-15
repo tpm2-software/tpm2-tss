@@ -15,79 +15,64 @@
 extern "C" {
 #endif
 
-typedef struct _IESYS_CRYPTO_CONTEXT IESYS_CRYPTO_CONTEXT_BLOB;
-
 TSS2_RC iesys_cryptmbed_hash_start(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    TPM2_ALG_ID hashAlg);
+    ESYS_CRYPTO_CONTEXT_BLOB **context,
+    TPM2_ALG_ID hashAlg,
+    void *userdata);
 
 TSS2_RC iesys_cryptmbed_hash_update(
-    IESYS_CRYPTO_CONTEXT_BLOB *context,
-    const uint8_t *buffer, size_t size);
-
-TSS2_RC iesys_cryptmbed_hash_update2b(
-    IESYS_CRYPTO_CONTEXT_BLOB *context,
-    TPM2B *b);
+    ESYS_CRYPTO_CONTEXT_BLOB *context,
+    const uint8_t *buffer, size_t size,
+    void *userdata);
 
 TSS2_RC iesys_cryptmbed_hash_finish(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
+    ESYS_CRYPTO_CONTEXT_BLOB **context,
     uint8_t *buffer,
-    size_t *size);
+    size_t *size,
+    void *userdata);
 
-TSS2_RC iesys_cryptmbed_hash_finish2b(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    TPM2B *b);
+void iesys_cryptmbed_hash_abort(
+    ESYS_CRYPTO_CONTEXT_BLOB **context,
+    void *userdata);
 
-void iesys_cryptmbed_hash_abort(IESYS_CRYPTO_CONTEXT_BLOB **context);
-
-#define iesys_crypto_pk_encrypt iesys_cryptmbed_pk_encrypt
-#define iesys_crypto_hash_start iesys_cryptmbed_hash_start
-#define iesys_crypto_hash_update iesys_cryptmbed_hash_update
-#define iesys_crypto_hash_update2b iesys_cryptmbed_hash_update2b
-#define iesys_crypto_hash_finish iesys_cryptmbed_hash_finish
-#define iesys_crypto_hash_finish2b iesys_cryptmbed_hash_finish2b
-#define iesys_crypto_hash_abort iesys_cryptmbed_hash_abort
+#define _iesys_crypto_rsa_pk_encrypt iesys_cryptmbed_pk_encrypt
+#define _iesys_crypto_hash_start iesys_cryptmbed_hash_start
+#define _iesys_crypto_hash_update iesys_cryptmbed_hash_update
+#define _iesys_crypto_hash_finish iesys_cryptmbed_hash_finish
+#define _iesys_crypto_hash_abort iesys_cryptmbed_hash_abort
 
 TSS2_RC iesys_cryptmbed_hmac_start(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
+    ESYS_CRYPTO_CONTEXT_BLOB **context,
     TPM2_ALG_ID hmacAlg,
     const uint8_t *key,
-    size_t size);
-
-TSS2_RC iesys_cryptmbed_hmac_start2b(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    TPM2_ALG_ID hmacAlg,
-    TPM2B *b);
+    size_t size,
+    void *userdata);
 
 TSS2_RC iesys_cryptmbed_hmac_update(
-    IESYS_CRYPTO_CONTEXT_BLOB *context,
+    ESYS_CRYPTO_CONTEXT_BLOB *context,
     const uint8_t *buffer,
-    size_t size);
-
-TSS2_RC iesys_cryptmbed_hmac_update2b(
-    IESYS_CRYPTO_CONTEXT_BLOB *context,
-    TPM2B *b);
+    size_t size,
+    void *userdata);
 
 TSS2_RC iesys_cryptmbed_hmac_finish(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
+    ESYS_CRYPTO_CONTEXT_BLOB **context,
     uint8_t *buffer,
-    size_t *size);
+    size_t *size,
+    void *userdata);
 
-TSS2_RC iesys_cryptmbed_hmac_finish2b(
-    IESYS_CRYPTO_CONTEXT_BLOB **context,
-    TPM2B *b);
+void iesys_cryptmbed_hmac_abort(
+    ESYS_CRYPTO_CONTEXT_BLOB **context,
+    void *userdata);
 
-void iesys_cryptmbed_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB **context);
+#define _iesys_crypto_hmac_start iesys_cryptmbed_hmac_start
+#define _iesys_crypto_hmac_update iesys_cryptmbed_hmac_update
+#define _iesys_crypto_hmac_finish iesys_cryptmbed_hmac_finish
+#define _iesys_crypto_hmac_abort iesys_cryptmbed_hmac_abort
 
-#define iesys_crypto_hmac_start iesys_cryptmbed_hmac_start
-#define iesys_crypto_hmac_start2b iesys_cryptmbed_hmac_start2b
-#define iesys_crypto_hmac_update iesys_cryptmbed_hmac_update
-#define iesys_crypto_hmac_update2b iesys_cryptmbed_hmac_update2b
-#define iesys_crypto_hmac_finish iesys_cryptmbed_hmac_finish
-#define iesys_crypto_hmac_finish2b iesys_cryptmbed_hmac_finish2b
-#define iesys_crypto_hmac_abort iesys_cryptmbed_hmac_abort
-
-TSS2_RC iesys_cryptmbed_random2b(TPM2B_NONCE *nonce, size_t num_bytes);
+TSS2_RC iesys_cryptmbed_random2b(
+    TPM2B_NONCE *nonce,
+    size_t num_bytes,
+    void *userdata);
 
 TSS2_RC iesys_cryptmbed_pk_encrypt(
     TPM2B_PUBLIC *key,
@@ -96,7 +81,8 @@ TSS2_RC iesys_cryptmbed_pk_encrypt(
     size_t max_out_size,
     BYTE *out_buffer,
     size_t *out_size,
-    const char *label);
+    const char *label,
+    void *userdata);
 
 
 TSS2_RC iesys_cryptmbed_sym_aes_encrypt(
@@ -106,7 +92,8 @@ TSS2_RC iesys_cryptmbed_sym_aes_encrypt(
     TPM2_ALG_ID tpm_mode,
     uint8_t *dst,
     size_t dst_size,
-    uint8_t *iv);
+    uint8_t *iv,
+    void *userdata);
 
 TSS2_RC iesys_cryptmbed_sym_aes_decrypt(
     uint8_t *key,
@@ -115,7 +102,8 @@ TSS2_RC iesys_cryptmbed_sym_aes_decrypt(
     TPM2_ALG_ID tpm_mode,
     uint8_t *dst,
     size_t dst_size,
-    uint8_t *iv);
+    uint8_t *iv,
+    void *userdata);
 
 TSS2_RC iesys_cryptmbed_get_ecdh_point(
     TPM2B_PUBLIC *key,
@@ -123,14 +111,17 @@ TSS2_RC iesys_cryptmbed_get_ecdh_point(
     TPM2B_ECC_PARAMETER *Z,
     TPMS_ECC_POINT *Q,
     BYTE * out_buffer,
-    size_t * out_size);
+    size_t * out_size,
+    void *userdata);
 
-#define iesys_crypto_random2b iesys_cryptmbed_random2b
-#define iesys_crypto_get_ecdh_point iesys_cryptmbed_get_ecdh_point
-#define iesys_crypto_sym_aes_encrypt iesys_cryptmbed_sym_aes_encrypt
-#define iesys_crypto_sym_aes_decrypt iesys_cryptmbed_sym_aes_decrypt
+TSS2_RC iesys_cryptmbed_init(void *userdata);
 
-#define iesys_crypto_init(...) TSS2_RC_SUCCESS;
+#define _iesys_crypto_get_random2b iesys_cryptmbed_random2b
+#define _iesys_crypto_get_ecdh_point iesys_cryptmbed_get_ecdh_point
+#define _iesys_crypto_aes_encrypt iesys_cryptmbed_sym_aes_encrypt
+#define _iesys_crypto_aes_decrypt iesys_cryptmbed_sym_aes_decrypt
+
+#define _iesys_crypto_init iesys_cryptmbed_init
 
 #ifdef __cplusplus
 } /* extern "C" */

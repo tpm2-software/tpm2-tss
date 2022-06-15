@@ -133,7 +133,7 @@ AC_ARG_ENABLE([policy],
 AM_CONDITIONAL(POLICY, test "x$enable_policy" = "xyes")
 
 AC_ARG_WITH([crypto],
-            [AS_HELP_STRING([--with-crypto={ossl,mbed}],
+            [AS_HELP_STRING([--with-crypto={ossl,mbed,none}],
                             [sets the ESYS crypto backend (default is OpenSSL)])],,
             [with_crypto=ossl])
 
@@ -158,6 +158,8 @@ AS_IF([test "x$enable_esys" = xyes],
            AC_DEFINE([MBED], [1], [mbedTLS cryptographic backend])
            TSS2_ESYS_CFLAGS_CRYPTO="$LIBMBED_CFLAGS"
            TSS2_ESYS_LDFLAGS_CRYPTO="-lmbedcrypto"
+       ], [test "x$with_crypto" = xnone], [
+           AC_MSG_NOTICE([No crypto backend selected! Users must set crypto functions!])
        ], [AC_MSG_ERROR([Bad value for --with-crypto $with_crypto])])])
 AC_SUBST([TSS2_ESYS_CFLAGS_CRYPTO])
 AC_SUBST([TSS2_ESYS_LDFLAGS_CRYPTO])

@@ -214,6 +214,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-create-session-auth.int \
     test/integration/esys-create-session-auth-long.int \
     test/integration/esys-create-session-auth-xor.int \
+    test/integration/esys-crypto.int \
     test/integration/esys-ecc-parameters.int \
     test/integration/esys-ecdh-zgen.int \
     test/integration/esys-event-sequence-complete.int \
@@ -1657,6 +1658,12 @@ test_integration_esys_tpm_clear_auth_int_SOURCES = \
     test/integration/esys-tpm-clear-auth.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
+test_integration_esys_crypto_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_crypto_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_crypto_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_crypto_int_SOURCES = \
+    test/integration/esys-crypto.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
 endif #ESYS
 
 test_integration_sys_policy_template_int_CFLAGS  = $(TESTS_CFLAGS)

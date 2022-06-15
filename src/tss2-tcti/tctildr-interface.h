@@ -8,6 +8,7 @@
 
 #include "tss2_tpm2_types.h"
 #include "tss2_tcti.h"
+#include "tss2_tctildr.h"
 
 TSS2_RC
 tctildr_get_tcti (const char *name,

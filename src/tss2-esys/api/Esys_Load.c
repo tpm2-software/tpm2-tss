@@ -350,7 +350,7 @@ Esys_Load_Finish(
 
 
     /* Check name and inPublic for consistency */
-    if (!iesys_compare_name(esysContext->in.Load.inPublic, &name)) {
+    if (!iesys_compare_name(&esysContext->crypto_backend, esysContext->in.Load.inPublic, &name)) {
         goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
                    "in Public name not equal name in response", error_cleanup);
     }

@@ -12,6 +12,7 @@
 #include "tss2_esys.h"
 #include "tss2_tctildr.h"
 
+#include "esys_crypto.h"
 #include "esys_iutil.h"
 #include "tss2-tcti/tctildr-interface.h"
 #define LOGMODULE esys
@@ -77,8 +78,11 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
        namespace for handles */
     (*esys_context)->esys_handle_cnt = ESYS_TR_MIN_OBJECT + (rand() % 6000000);
 
-    /* Initialize crypto backend. */
-    r = iesys_initialize_crypto();
+    /*
+     * setup crypto backend and initialize. Note: their is no userdata or callbacks
+     * here, so NULL NULL
+     */
+    r = iesys_initialize_crypto_backend(&(*esys_context)->crypto_backend, NULL);
     goto_if_error(r, "Initialize crypto backend.", cleanup_return);
 
     return TSS2_RC_SUCCESS;
@@ -235,6 +239,61 @@ Esys_GetSysContext(ESYS_CONTEXT *esys_context, TSS2_SYS_CONTEXT **sys_context)
         return TSS2_ESYS_RC_BAD_REFERENCE;
 
     *sys_context = esys_context->sys;
+
+    return TSS2_RC_SUCCESS;
+}
+
+/** Set Crypto Callbacks
+ *
+ * This is an advanced functionality that should be used with caution and by those
+ * who know exactly what they are doing. This function provides the ability to set
+ * and restore to the original state, the cryptographic callbacks that ESAPI
+ * uses internally. This is useful for custom builds where runtime configurable
+ * cryptography is beneficial over a configure time, --with-crypto=<ossl|mbed>
+ * backend.
+ *
+ * @param[in] esysContext The ESYS_CONTEXT.
+ * @param[in] callbacks The user define crypto callbacks or NULL for a reset to the
+ *   ./configure time state.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE is esysContext is NULL.
+ * @retval TSS2_TSS2_ESYS_RC_CALLBACK_NULL if a required callback pointer is NULL.
+ * @retval USER_DEFINED user defined errors if the user callback fails.
+ * @note If ./configure --with-crypto=none, ESAPI functions that need crypto will
+ * fail with TSS2_TSS2_ESYS_RC_CALLBACK_NULL until the application registers
+ * callbacks. Under the same scenario, It will also fail if the application resets
+ * the state back to the original state.
+ */
+TSS2_RC
+Esys_SetCryptoCallbacks(
+    ESYS_CONTEXT *esysContext,
+    ESYS_CRYPTO_CALLBACKS *callbacks)
+{
+    LOG_TRACE("context=%p, callbacks=%p",
+              esysContext, callbacks);
+
+    /* Check context, sequence correctness and set state to error for now */
+    if (esysContext == NULL) {
+        LOG_ERROR("esyscontext is NULL.");
+        return TSS2_ESYS_RC_BAD_REFERENCE;
+    }
+
+    return iesys_initialize_crypto_backend(&esysContext->crypto_backend, callbacks);
+}
+
+ESYS_TR
+Esys_GetCryptoCallbacks(
+    ESYS_CONTEXT *esysContext,
+    ESYS_CRYPTO_CALLBACKS *callbacks)
+{
+    LOG_TRACE("context=%p, callbacks=%p",
+              esysContext, callbacks);
+
+    if (esysContext == NULL || callbacks == NULL) {
+        LOG_ERROR("esyscontext or callbacks is NULL.");
+        return TSS2_ESYS_RC_BAD_REFERENCE;
+    }
+
+    *callbacks = esysContext->crypto_backend;
 
     return TSS2_RC_SUCCESS;
 }
