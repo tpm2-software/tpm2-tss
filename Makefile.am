@@ -369,7 +369,7 @@ pkgconfig_DATA += lib/tss2-tcti-libtpms.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_libtpms_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-libtpms.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_libtpms_la_LIBADD   = $(libtss2_tctildr) $(libutil)
+src_tss2_tcti_libtss2_tcti_libtpms_la_LIBADD   = $(libtss2_mu) $(libutil)
 src_tss2_tcti_libtss2_tcti_libtpms_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-libtpms.c \
