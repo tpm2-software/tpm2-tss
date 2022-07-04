@@ -762,7 +762,7 @@ execute_policy_authorize_nv(
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         /* Execute the policy stored in the NV object. */
-        r = cb->cbauthnv(&policy->nvPublic, hash_alg, cb->cbauthpol_userdata);
+        r = cb->cbauthnv(&policy->nvPublic, hash_alg, cb->cbauthnv_userdata);
         try_again_or_error(r, "Execute policy authorize nv callback.");
 
         r = ifapi_nv_get_name(&policy->nvPublic, &current_policy->name);
