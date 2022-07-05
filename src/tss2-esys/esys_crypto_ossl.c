@@ -392,7 +392,8 @@ iesys_cryptossl_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
                    "Error EVP_MD_CTX_create", cleanup);
     }
 
-#if OPENSSL_VERSION_NUMBER < 0x10101000L
+#if OPENSSL_VERSION_NUMBER < 0x10101000L || \
+    ( defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x3070000fL )
     if (!(hkey = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, NULL, key, size))) {
 #else
     /* this is preferred, but available since OpenSSL 1.1.1 only */
@@ -558,7 +559,9 @@ iesys_cryptossl_random2b(
     int rc;
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     const RAND_METHOD *rand_save = RAND_get_rand_method();
+#ifndef LIBRESSL_VERSION_NUMBER
     RAND_set_rand_method(RAND_OpenSSL());
+#endif
 #else
     OSSL_LIB_CTX *libctx = OSSL_LIB_CTX_new();
     if (!libctx)
@@ -615,8 +618,9 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
     RSA *rsa_key = NULL;
     const EVP_MD * hashAlg = NULL;
     const RAND_METHOD *rand_save = RAND_get_rand_method();
-
+#ifndef LIBRESSL_VERSION_NUMBER
     RAND_set_rand_method(RAND_OpenSSL());
+#endif
 #else
     OSSL_LIB_CTX *libctx = NULL;
     EVP_MD * hashAlg = NULL;

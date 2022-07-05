@@ -85,6 +85,27 @@ jobs:
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
+  test-libressl:
+    runs-on: ubuntu-latest
+    if: "!contains(github.ref, 'coverity_scan')"
+    strategy:
+      matrix:
+        docker_image: [fedora-34-libressl]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+        with:
+            fetch-depth: 0
+      - name: Launch Action
+        uses:
+          tpm2-software/ci/runCI@main
+        with:
+          CC: gcc
+          DOCKER_IMAGE: ${{ matrix.docker_image }}
+          PROJECT_NAME: ${{ github.event.repository.name }}
+      - name: failure
+        if: ${{ failure() }}
+        run: cat $(find ../ -name test-suite.log) || true
   test-no-crypto-build:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
