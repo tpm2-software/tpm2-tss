@@ -259,7 +259,7 @@ static const COMMAND_HANDLES commandArray[] =
     { TPM2_CC_FirmwareRead, 0, 0 },
     { TPM2_CC_ContextSave, 1, 0 },
     { TPM2_CC_ContextLoad, 0, 1 },
-    { TPM2_CC_FlushContext, 1, 0 },
+    { TPM2_CC_FlushContext, 0, 0 },
     { TPM2_CC_EvictControl, 2, 0 },
     { TPM2_CC_ReadClock, 0, 0 },
     { TPM2_CC_ClockSet, 1, 0 },
