@@ -311,10 +311,10 @@ ifapi_policyeval_instantiate_finish(
                 break;
             }
 
-            CHECK_TEMPLATE_PATH(pol_element->element.PolicyNV.nvPath, "PolicyNv");
             CHECK_CALLBACK(context->callbacks.cbnvpublic, "cbnvpublic");
             /* Object name will be added to policy. */
             r = context->callbacks.cbnvpublic(pol_element->element.PolicyNV.nvPath,
+                                              pol_element->element.PolicyNV.nvIndex,
                                               &pol_element->element.PolicyNV.nvPublic,
                                               context->callbacks.cbnvpublic_userdata);
             return_try_again(r);
@@ -365,7 +365,7 @@ ifapi_policyeval_instantiate_finish(
                                 "PolicyAuthorizeNv");
             CHECK_CALLBACK(context->callbacks.cbnvpublic, "cbnvpublic");
             /* Object name will be added to policy. */
-            r = context->callbacks.cbnvpublic(pol_element->element.PolicyAuthorizeNv.nvPath,
+            r = context->callbacks.cbnvpublic(pol_element->element.PolicyAuthorizeNv.nvPath, 0,
                                               &pol_element->element.PolicyAuthorizeNv.nvPublic,
                                               context->callbacks.cbnvpublic_userdata);
             return_try_again(r);
