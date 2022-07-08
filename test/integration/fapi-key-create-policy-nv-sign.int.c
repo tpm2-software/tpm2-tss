@@ -48,7 +48,11 @@ int
 test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
+#ifdef TPMIDX
     char *policy_name = "/policy/pol_nv";
+#else
+    char *policy_name = "/policy/pol_nv_tpm_idx";
+#endif
     char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_nv.json";;
     FILE *stream = NULL;
     char *json_policy = NULL;
@@ -56,6 +60,7 @@ test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
     char    *publicKey = NULL;
     char    *certificate = NULL;
     long policy_size;
+
     char *nvPathOrdinary = "/nv/Owner/myNV";
     uint8_t data_nv[NV_SIZE] = { 1, 2, 3, 4 };
     char *pathList = NULL;

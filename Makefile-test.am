@@ -387,7 +387,8 @@ FAPI_TESTS_INTEGRATION += \
     test/integration/fapi-provision-certificate.fint \
     test/integration/fapi-provision-fingerprint_ecc.fint \
     test/integration/fapi-provision-certificate_ecc.fint \
-    test/integration/fapi-quote-destructive.fint
+    test/integration/fapi-quote-destructive.fint \
+    test/integration/fapi-key-create-policy-nv-tpm-idx-sign.fint
 endif #!TESTDEVICE
 
 TESTS_INTEGRATION += $(FAPI_TESTS_INTEGRATION)
@@ -1885,6 +1886,14 @@ test_integration_fapi_key_create_policy_nv_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_nv_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_nv_sign_fint_SOURCES = \
+    test/integration/fapi-key-create-policy-nv-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_key_create_policy_nv_tpm_idx_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+    -DTPMIDX
+test_integration_fapi_key_create_policy_nv_tpm_idx_sign_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_policy_nv_tpm_idx_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_nv_tpm_idx_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
