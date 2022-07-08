@@ -53,6 +53,7 @@ ifapi_get_object_name(
 TSS2_RC
 ifapi_get_nv_public(
     const char *path,
+    TPMI_RH_NV_INDEX nv_index,
     TPM2B_NV_PUBLIC *nv_public,
     void *context);
 

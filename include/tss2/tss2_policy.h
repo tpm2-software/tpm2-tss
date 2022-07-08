@@ -88,6 +88,7 @@ typedef TSS2_RC (*TSS2_POLICY_CB_PCR) (
 
 typedef TSS2_RC (*TSS2_POLICY_CB_NVPUBLIC) (
     const char *path,
+    TPMI_RH_NV_INDEX nv_index,
     TPM2B_NV_PUBLIC *nv_public,
     void *userdata);   /* e.g. for ESAPI_CONTEXT */
 

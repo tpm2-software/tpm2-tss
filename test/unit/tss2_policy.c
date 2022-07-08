@@ -126,10 +126,12 @@ TSS2_RC policy_cb_pcr (
 
 TSS2_RC policy_cb_nvpublic (
     const char *path,
+    TPMI_RH_NV_INDEX nv_index,
     TPM2B_NV_PUBLIC *nv_public,
     void *userdata)
 {
     UNUSED(path);
+    UNUSED(nv_index);
     UNUSED(nv_public);
     UNUSED(userdata);
 
