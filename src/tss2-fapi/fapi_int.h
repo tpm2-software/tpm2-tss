@@ -145,6 +145,13 @@ enum IFAPI_CLEANUP_STATE {
     CLEANUP_SRK
 };
 
+/** The states for the FAPI's reading nv public*/
+enum IFAPI_READ_NV_PUBLIC_STATE {
+    READ_NV_PUBLIC_INIT = 0,
+    READ_NV_PUBLIC_GET_ESYS_TR,
+    READ_NV_PUBLIC_GET_PUBLIC
+};
+
 #define IFAPI_MAX_CAP_INFO 17
 
 typedef struct {
@@ -1137,6 +1144,7 @@ struct FAPI_CONTEXT {
     enum IFAPI_GET_CERT_STATE get_cert_state;
     enum _FAPI_FLUSH_STATE flush_object_state;  /**< The current state of a flush operation */
     enum IFAPI_CLEANUP_STATE cleanup_state;     /**< The state of cleanup after command execution */
+    enum IFAPI_READ_NV_PUBLIC_STATE read_nv_public_state;
     IFAPI_CONFIG config;             /**< The profile independent configuration data */
     UINT32 nv_buffer_max;            /**< The maximal size for transfer of nv buffer content */
     IFAPI_CMD_STATE cmd;             /**< The state information of the currently executed

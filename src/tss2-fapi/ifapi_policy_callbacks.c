@@ -210,7 +210,11 @@ cleanup:
 
 /** Get public data of a NV object from keystore.
  *
- * @param[in] path The relative path of the NV object.
+ * @param[in] path The relative path of the NV object. The path will
+              be used to get the public from the keystore if no nv_index is
+              passed.
+ * @param[in] nv_index The index of the NV object. The index will be used to
+ *            get the public data if nv_index > 0.
  * @param[out] nv_public The caller allocated public structure.
  * @param[in,out] ctx The context to access io and keystore module and to store
  *                the io state.
@@ -238,42 +242,79 @@ cleanup:
 TSS2_RC
 ifapi_get_nv_public(
     const char *path,
+    TPMI_RH_NV_INDEX nv_index,
     TPM2B_NV_PUBLIC *nv_public,
     void *ctx)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     IFAPI_OBJECT object;
     FAPI_CONTEXT *context = ctx;
+    TPM2B_NV_PUBLIC *nv_public_esys;
+    ESYS_TR esys_tr;
 
-    switch (context->io_state) {
-    statecase(context->io_state, IO_INIT)
-        /* Prepare the loading of the NV object. */
-        r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
-        return_if_error2(r, "Could not open: %s", path);
-        fallthrough;
+    if (nv_index) {
+        switch (context->read_nv_public_state) {
+            statecase(context->read_nv_public_state, READ_NV_PUBLIC_INIT)
+                r = Esys_TR_FromTPMPublic_Async(context->esys, nv_index, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+                goto_if_error(r, "Error: tr from public", cleanup);
+                fallthrough;
 
-    statecase(context->io_state, IO_ACTIVE)
-        /* Finalize or retry the reading and check the object type */
-        r = ifapi_keystore_load_finish(&context->keystore, &context->io,
-                                       &object);
-        return_try_again(r);
-        return_if_error(r, "read_finish failed");
+            statecase(context->read_nv_public_state, READ_NV_PUBLIC_GET_ESYS_TR)
+                r = Esys_TR_FromTPMPublic_Finish(context->esys, &esys_tr);
+                try_again_or_error_goto(r, "Error: tr from public finish", cleanup);
 
-        if (object.objectType != IFAPI_NV_OBJ) {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Object %s is not a key.",
-                       cleanup, path);
+                r = Esys_NV_ReadPublic_Async(context->esys, esys_tr,
+                                             ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+                goto_if_error(r, "Error: nv read public async", cleanup);
+                fallthrough;
+
+            statecase(context->read_nv_public_state, READ_NV_PUBLIC_GET_PUBLIC)
+                r = Esys_NV_ReadPublic_Finish(context->esys,
+                                              &nv_public_esys,
+                                              NULL);
+                try_again_or_error_goto(r, "Error: nv read public finish", cleanup);
+
+                *nv_public = *nv_public_esys;
+                SAFE_FREE(nv_public_esys);
+                context->io_state = IO_INIT;
+                break;
+
+            statecasedefault(context->state);
         }
 
-        *nv_public = object.misc.nv.public;
-        context->io_state = IO_INIT;
-        break;
+    } else {
+        switch (context->io_state) {
+            statecase(context->io_state, IO_INIT)
+                /* Prepare the loading of the NV object. */
+                r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
+                return_if_error2(r, "Could not open: %s", path);
+                fallthrough;
 
-    statecasedefault(context->state);
+            statecase(context->io_state, IO_ACTIVE)
+                /* Finalize or retry the reading and check the object type */
+                r = ifapi_keystore_load_finish(&context->keystore, &context->io,
+                                               &object);
+                return_try_again(r);
+                return_if_error(r, "read_finish failed");
+
+                if (object.objectType != IFAPI_NV_OBJ) {
+                    goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Object %s is not a key.",
+                               cleanup, path);
+                }
+
+                *nv_public = object.misc.nv.public;
+                context->io_state = IO_INIT;
+                break;
+
+            statecasedefault(context->state);
+        }
     }
 
 cleanup:
     context->io_state = IO_INIT;
-    ifapi_cleanup_ifapi_object(&object);
+    if (!nv_index) {
+        ifapi_cleanup_ifapi_object(&object);
+    }
     return r;
 }
 

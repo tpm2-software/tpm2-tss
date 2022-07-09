@@ -36,6 +36,7 @@ typedef TSS2_RC (*ifapi_policyeval_cbnvindex) (
 
 typedef TSS2_RC (*ifapi_policyeval_cbnvpublic) (
     const char *path,
+    TPMI_RH_NV_INDEX nv_index,
     TPM2B_NV_PUBLIC *nv_public,
     void *userdata);   /* e.g. for FAPI_CONTEXT */
 
