@@ -256,7 +256,7 @@ typedef uint32_t TSS2_RC;
 #define TSS2_ESYS_RC_RSP_AUTH_FAILED             ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                         TSS2_BASE_RC_RSP_AUTH_FAILED))
 #define TSS2_ESYS_RC_CALLBACK_NULL               ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
-                                                        TSS2_BASE_RC_RSP_AUTH_FAILED))
+                                                        TSS2_BASE_RC_CALLBACK_NULL))
 /* FAPI Error Codes */
 
 #define TSS2_FAPI_RC_GENERAL_FAILURE             ((TSS2_RC)(TSS2_FEATURE_RC_LAYER | \
