@@ -1022,16 +1022,11 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  \fn TSS2_RC iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t *size)
  \fn TSS2_RC iesys_cryptossl_hash_start(IESYS_CRYPTO_CONTEXT_BLOB **context, TPM2_ALG_ID hashAlg)
  \fn TSS2_RC iesys_cryptossl_hash_update(IESYS_CRYPTO_CONTEXT_BLOB *context, const uint8_t *buffer, size_t size)
- \fn TSS2_RC iesys_cryptossl_hash_update2b(IESYS_CRYPTO_CONTEXT_BLOB *context, TPM2B *b)
  \fn TSS2_RC iesys_cryptossl_hash_finish(IESYS_CRYPTO_CONTEXT_BLOB **context, uint8_t *buffer, size_t *size)
- \fn TSS2_RC iesys_cryptossl_hash_finish2b(IESYS_CRYPTO_CONTEXT_BLOB **context, TPM2B *b)
  void iesys_cryptossl_hash_abort(IESYS_CRYPTO_CONTEXT_BLOB **context)
  \fn TSS2_RC iesys_cryptossl_hmac_start(IESYS_CRYPTO_CONTEXT_BLOB **context, TPM2_ALG_ID hashAlg, const uint8_t *key, size_t size)
- \fn TSS2_RC iesys_cryptossl_hmac_start2b(IESYS_CRYPTO_CONTEXT_BLOB **context, TPM2_ALG_ID hmacAlg, TPM2B *b)
  \fn TSS2_RC iesys_cryptossl_hmac_update(IESYS_CRYPTO_CONTEXT_BLOB *context, const uint8_t *buffer, size_t size)
- \fn TSS2_RC iesys_cryptossl_hmac_update2b(IESYS_CRYPTO_CONTEXT_BLOB *context, TPM2B *b)
  \fn TSS2_RC iesys_cryptossl_hmac_finish(IESYS_CRYPTO_CONTEXT_BLOB **context, uint8_t *buffer, size_t *size)
- \fn TSS2_RC iesys_cryptossl_hmac_finish2b(IESYS_CRYPTO_CONTEXT_BLOB **context, TPM2B *b)
  \fn void iesys_cryptossl_hmac_abort(IESYS_CRYPTO_CONTEXT_BLOB **context)
  \fn TSS2_RC iesys_crypto_pHash(TPM2_ALG_ID alg, const uint8_t rcBuffer[4], const uint8_t ccBuffer[4], const TPM2B_NAME *name1, const TPM2B_NAME *name2, const TPM2B_NAME *name3, const uint8_t *pBuffer, size_t pBuffer_size, uint8_t *pHash, size_t *pHash_size)
  \fn TSS2_RC iesys_crypto_authHmac(TPM2_ALG_ID alg, uint8_t *hmacKey, size_t hmacKeySize, const uint8_t *pHash, size_t pHash_size, const TPM2B_NONCE *nonceNewer, const TPM2B_NONCE *nonceOlder, const TPM2B_NONCE *nonceDecrypt, const TPM2B_NONCE *nonceEncrypt, TPMA_SESSION sessionAttributes, TPM2B_AUTH *hmac)
@@ -1619,8 +1614,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn static TSS2_RC get_ecc_tpm2b_public_from_evp(
     EVP_PKEY *publicKey,
     TPM2B_PUBLIC *tpmPublic)
-\fn static ENGINE * get_engine()
-\fn static const EVP_MD * get_hash_md(TPM2_ALG_ID hashAlgorithm)
 \fn static const EVP_MD * get_ossl_hash_md(TPM2_ALG_ID hashAlgorithm)
 \fn static TSS2_RC get_rsa_tpm2b_public_from_evp(
     EVP_PKEY *publicKey,
@@ -1678,7 +1671,7 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
     const TPMT_SIGNATURE *tpmSignature,
     uint8_t **signature,
     size_t *signatureSize)
-\fn TSS2_RC ifapi_verify_ek_cert(
+\fn TSS2_RC ifapi_curl_verify_ek_cert(
     char* root_cert_pem,
     char* intermed_cert_pem,
     char* ek_cert_pem)
