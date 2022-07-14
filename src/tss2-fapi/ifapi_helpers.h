@@ -104,7 +104,7 @@ ifapi_get_name(
 
 TSS2_RC
 ifapi_nv_get_name(
-    TPM2B_NV_PUBLIC *publicInfo,
+    TPMS_NV_PUBLIC *publicInfo,
     TPM2B_NAME *name);
 
 TSS2_RC
