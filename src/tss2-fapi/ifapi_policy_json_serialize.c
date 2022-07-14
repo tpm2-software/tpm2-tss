@@ -327,9 +327,11 @@ ifapi_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
         json_object_object_add(*jso, "nvIndex", jso2);
     }
 
-    if (in->nvPublic.nvPublic.nvIndex) {
+    if (in->nvPublic.nvIndex) {
         jso2 = NULL;
-        r = ifapi_json_TPM2B_NV_PUBLIC_serialize(&in->nvPublic, &jso2);
+        TPM2B_NV_PUBLIC tmp = { 0 };
+        tmp.nvPublic = in->nvPublic;
+        r = ifapi_json_TPM2B_NV_PUBLIC_serialize(&tmp, &jso2);
         return_if_error(r, "Serialize TPM2B_NV_PUBLIC");
 
         json_object_object_add(*jso, "nvPublic", jso2);
@@ -848,10 +850,12 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in,
         json_object_object_add(*jso, "nvPath", jso2);
     }
     jso2 = NULL;
-    if (in->nvPublic.nvPublic.nvIndex > 0) {
+    if (in->nvPublic.nvIndex > 0) {
         cond_cnt++;
+        TPM2B_NV_PUBLIC tmp = { 0 };
+        tmp.nvPublic = in->nvPublic;
         /* Template already instantiated */
-        r = ifapi_json_TPM2B_NV_PUBLIC_serialize(&in->nvPublic, &jso2);
+        r = ifapi_json_TPM2B_NV_PUBLIC_serialize(&tmp, &jso2);
         return_if_error(r, "Serialize TPM2B_NV_PUBLIC");
 
         json_object_object_add(*jso, "nvPublic", jso2);

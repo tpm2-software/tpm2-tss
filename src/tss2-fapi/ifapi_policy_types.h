@@ -71,7 +71,7 @@ typedef struct {
 typedef struct {
     char                                        *nvPath;    /**< None */
     TPMI_RH_NV_INDEX                            nvIndex;    /**< None */
-    TPM2B_NV_PUBLIC                            nvPublic;    /**< None */
+    TPMS_NV_PUBLIC                             nvPublic;    /**< None */
     TPMI_RH_NV_AUTH                          authHandle;    /**< This is determined by FAPI at runtime. */
     TPM2B_OPERAND                              operandB;    /**< None */
     UINT16                                       offset;    /**< Default value is 0 */
@@ -181,7 +181,7 @@ typedef struct {
  */
 typedef struct {
     char                                        *nvPath;    /**< None */
-    TPM2B_NV_PUBLIC                            nvPublic;    /**< None */
+    TPMS_NV_PUBLIC                             nvPublic;    /**< None */
     TPM2B_DIGEST                                 policy;    /**< Policy Digest */
     TPMT_HA                                   nv_policy;    /**< Policy stored in NV ram */
     uint8_t                               *policy_buffer;

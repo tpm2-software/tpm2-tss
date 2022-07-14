@@ -1526,7 +1526,7 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
-ifapi_nv_get_name(TPM2B_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
+ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
 {
     BYTE buffer[sizeof(TPMS_NV_PUBLIC)];
     size_t offset = 0;
@@ -1534,18 +1534,18 @@ ifapi_nv_get_name(TPM2B_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
     size_t len_alg_id = sizeof(TPMI_ALG_HASH);
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
 
-    if (publicInfo->nvPublic.nameAlg == TPM2_ALG_NULL) {
+    if (publicInfo->nameAlg == TPM2_ALG_NULL) {
         name->size = 0;
         return TSS2_RC_SUCCESS;
     }
     TSS2_RC r;
 
     /* Initialize the hash computation with the nameAlg. */
-    r = ifapi_crypto_hash_start(&cryptoContext, publicInfo->nvPublic.nameAlg);
+    r = ifapi_crypto_hash_start(&cryptoContext, publicInfo->nameAlg);
     return_if_error(r, "Crypto hash start");
 
     /* Get the marshaled data of the public area. */
-    r = Tss2_MU_TPMS_NV_PUBLIC_Marshal(&publicInfo->nvPublic,
+    r = Tss2_MU_TPMS_NV_PUBLIC_Marshal(publicInfo,
                                        &buffer[0], sizeof(TPMS_NV_PUBLIC),
                                        &offset);
     if (r) {
@@ -1572,7 +1572,7 @@ ifapi_nv_get_name(TPM2B_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
 
     offset = 0;
     /* Store the nameAlg in the result. */
-    r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->nvPublic.nameAlg,
+    r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->nameAlg,
                                       &name->name[0], sizeof(TPMI_ALG_HASH),
                                       &offset);
     return_if_error(r, "Marshaling TPMI_ALG_HASH");
@@ -1609,7 +1609,7 @@ ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal)
         obj_name = &object->misc.key.name;
         break;
     case IFAPI_NV_OBJ:
-        r = ifapi_nv_get_name(&object->misc.nv.public, &nv_name);
+        r = ifapi_nv_get_name(&object->misc.nv.public.nvPublic, &nv_name);
         return_if_error(r, "Get NV name.");
 
         obj_name = &nv_name;

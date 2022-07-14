@@ -303,10 +303,10 @@ ifapi_policyeval_instantiate_finish(
             break;
 
         case POLICYNV:
-            if (pol_element->element.PolicyNV.nvPublic.nvPublic.nvIndex) {
+            if (pol_element->element.PolicyNV.nvPublic.nvIndex) {
                 /* nvIndex is already set in policy. Path will not be needed */
                 pol_element->element.PolicyNV.nvIndex
-                    = pol_element->element.PolicyNV.nvPublic.nvPublic.nvIndex;
+                    = pol_element->element.PolicyNV.nvPublic.nvIndex;
                 SAFE_FREE(pol_element->element.PolicyNV.nvPath);
                 break;
             }
@@ -321,7 +321,7 @@ ifapi_policyeval_instantiate_finish(
             return_if_error(r, "read_finish failed");
 
             pol_element->element.PolicyNV.nvIndex
-                = pol_element->element.PolicyNV.nvPublic.nvPublic.nvIndex;
+                = pol_element->element.PolicyNV.nvPublic.nvIndex;
 
             /* Clear NV path, only public data will be needed */
             SAFE_FREE(pol_element->element.PolicyNV.nvPath);
@@ -355,7 +355,7 @@ ifapi_policyeval_instantiate_finish(
             break;
 
         case POLICYAUTHORIZENV:
-            if (pol_element->element.PolicyAuthorizeNv.nvPublic.nvPublic.nvIndex) {
+            if (pol_element->element.PolicyAuthorizeNv.nvPublic.nvIndex) {
                 /* nvIndex is already set in policy. Path will not be needed */
                 SAFE_FREE(pol_element->element.PolicyAuthorizeNv.nvPath);
                 break;

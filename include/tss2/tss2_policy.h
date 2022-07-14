@@ -89,7 +89,7 @@ typedef TSS2_RC (*TSS2_POLICY_CB_PCR) (
 typedef TSS2_RC (*TSS2_POLICY_CB_NVPUBLIC) (
     const char *path,
     TPMI_RH_NV_INDEX nv_index,
-    TPM2B_NV_PUBLIC *nv_public,
+    TPMS_NV_PUBLIC *nv_public,
     void *userdata);   /* e.g. for ESAPI_CONTEXT */
 
 typedef struct TSS2_POLICY_CALC_CALLBACKS TSS2_POLICY_CALC_CALLBACKS;
@@ -137,7 +137,7 @@ typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLAUTH) (
     void *userdata);
 
 typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLAUTHNV) (
-    TPM2B_NV_PUBLIC *nv_public,
+    TPMS_NV_PUBLIC *nv_public,
     TPMI_ALG_HASH hash_alg,
     void *userdata);
 

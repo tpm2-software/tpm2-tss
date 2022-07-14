@@ -289,7 +289,7 @@ ifapi_calculate_policy_authorize_nv(
 
     /* Written flag has to be set for policy calculation, because during
        policy execution it will be set. */
-    policy->nvPublic.nvPublic.attributes |= TPMA_NV_WRITTEN;
+    policy->nvPublic.attributes |= TPMA_NV_WRITTEN;
 
     r = ifapi_nv_get_name(&policy->nvPublic, &nv_name);
     return_if_error(r, "Compute NV name");
@@ -1061,7 +1061,7 @@ ifapi_calculate_policy_nv(
 
     /* Written flag has to be set for policy calculation, because during
        policy execution it will be set. */
-    policy->nvPublic.nvPublic.attributes |= TPMA_NV_WRITTEN;
+    policy->nvPublic.attributes |= TPMA_NV_WRITTEN;
 
     /* Compute NV name from public info */
 

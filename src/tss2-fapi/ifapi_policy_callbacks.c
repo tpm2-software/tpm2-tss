@@ -190,7 +190,7 @@ ifapi_get_object_name(
                                (TPM2B_NAME *)name);
             break;
         case IFAPI_NV_OBJ:
-            r = ifapi_nv_get_name(&object.misc.nv.public, name);
+            r = ifapi_nv_get_name(&object.misc.nv.public.nvPublic, name);
             break;
         default:
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid object %s.",
@@ -243,7 +243,7 @@ TSS2_RC
 ifapi_get_nv_public(
     const char *path,
     TPMI_RH_NV_INDEX nv_index,
-    TPM2B_NV_PUBLIC *nv_public,
+    TPMS_NV_PUBLIC *nv_public,
     void *ctx)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -274,7 +274,7 @@ ifapi_get_nv_public(
                                               NULL);
                 try_again_or_error_goto(r, "Error: nv read public finish", cleanup);
 
-                *nv_public = *nv_public_esys;
+                *nv_public = nv_public_esys->nvPublic;
                 SAFE_FREE(nv_public_esys);
                 context->io_state = IO_INIT;
                 break;
@@ -302,7 +302,7 @@ ifapi_get_nv_public(
                                cleanup, path);
                 }
 
-                *nv_public = object.misc.nv.public;
+                *nv_public = object.misc.nv.public.nvPublic;
                 context->io_state = IO_INIT;
                 break;
 
@@ -1331,7 +1331,7 @@ cleanup:
  */
 TSS2_RC
 ifapi_exec_auth_nv_policy(
-    TPM2B_NV_PUBLIC *nv_public,
+    TPMS_NV_PUBLIC *nv_public,
     TPMI_ALG_HASH hash_alg,
     void *userdata)
 {
@@ -1366,9 +1366,14 @@ ifapi_exec_auth_nv_policy(
 
     switch (cb_ctx->cb_state) {
         statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT)
-            /* Search a NV object with a certain NV indext stored in nv_public. */
+            /*
+             * Search a NV object with a certain NV indext stored in nv_public.
+             * TODO Consider modifying internal APIs to use TPMS_NV_INDEX over TPM2B variant.
+             */
+            TPM2B_NV_PUBLIC tmp = { 0 };
+            tmp.nvPublic = *nv_public;
             r = ifapi_keystore_search_nv_obj(&fapi_ctx->keystore, &fapi_ctx->io,
-                                             nv_public, &nv_path);
+                                             &tmp, &nv_path);
             FAPI_SYNC(r, "Search Object", cleanup);
 
             r = ifapi_keystore_load_async(&fapi_ctx->keystore, &fapi_ctx->io, nv_path);

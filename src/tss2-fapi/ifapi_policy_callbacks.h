@@ -54,7 +54,7 @@ TSS2_RC
 ifapi_get_nv_public(
     const char *path,
     TPMI_RH_NV_INDEX nv_index,
-    TPM2B_NV_PUBLIC *nv_public,
+    TPMS_NV_PUBLIC *nv_public,
     void *context);
 
 TSS2_RC
@@ -102,7 +102,7 @@ ifapi_exec_auth_policy(
 
 TSS2_RC
 ifapi_exec_auth_nv_policy(
-    TPM2B_NV_PUBLIC *nv_public,
+    TPMS_NV_PUBLIC *nv_public,
     TPMI_ALG_HASH hash_alg,
     void *userdata);
 

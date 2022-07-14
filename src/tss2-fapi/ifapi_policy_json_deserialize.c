@@ -444,8 +444,10 @@ ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso,  TPMS_POLICYNV *out)
     if (!ifapi_get_sub_object(jso, "nvPublic", &jso2)) {
         memset(&out->nvPublic, 0, sizeof(TPM2B_NV_PUBLIC));
     } else {
-        r = ifapi_json_TPM2B_NV_PUBLIC_deserialize(jso2, &out->nvPublic);
+        TPM2B_NV_PUBLIC tmp = { 0 };
+        r = ifapi_json_TPM2B_NV_PUBLIC_deserialize(jso2, &tmp);
         return_if_error(r, "Bad value for field \"nvPublic\".");
+        out->nvPublic = tmp.nvPublic;
     }
 
     if (!ifapi_get_sub_object(jso, "operandB", &jso2)) {
@@ -1110,8 +1112,10 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
         memset(&out->nvPublic, 0, sizeof(TPM2B_NV_PUBLIC));
     } else {
         cond_cnt++;
-        r = ifapi_json_TPM2B_NV_PUBLIC_deserialize(jso2, &out->nvPublic);
+        TPM2B_NV_PUBLIC tmp = { 0 };
+        r = ifapi_json_TPM2B_NV_PUBLIC_deserialize(jso2, &tmp);
         return_if_error(r, "Bad value for field \"nvPublic\".");
+        out->nvPublic = tmp.nvPublic;
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
