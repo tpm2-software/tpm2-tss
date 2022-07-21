@@ -26,6 +26,7 @@
  *  - Esys_NV_DefineSpace() (M)
  *  - Esys_NV_ReadPublic() (M)
  *  - Esys_NV_UndefineSpace() (M)
+ *  - Esys_TR_FromTPMPublic() (M)
  *
  * @param[in,out] ectx The ESYS_CONTEXT.
  * @retval EXIT_FAILURE
@@ -57,6 +58,13 @@ test_esys_tr_fromTpmPublic_nv(ESYS_CONTEXT * ectx)
         }
     };
 
+    ESYS_TR session = ESYS_TR_NONE;
+    ESYS_TR session2 = ESYS_TR_NONE;
+    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
+        .keyBits = {.aes = 128},
+        .mode = {.aes = TPM2_ALG_CFB}
+    };
+
     r = Esys_NV_DefineSpace(ectx, ESYS_TR_RH_OWNER,
                             ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                             &auth, &publicInfo, &nvHandle);
@@ -70,8 +78,70 @@ test_esys_tr_fromTpmPublic_nv(ESYS_CONTEXT * ectx)
     r = Esys_TR_Close(ectx, &nvHandle);
     goto_if_error(r, "TR close on nv object", error_name1);
 
+    /* Reading public data for a TPM handle  without session */
     r = Esys_TR_FromTPMPublic(ectx, TPM2_NV_INDEX_FIRST,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              &nvHandle);
+    goto_if_error(r, "TR from TPM public", error_name1);
+
+    /* Reading public data for a TPM handle  without session for an existing
+       esys object. */
+    r = Esys_TR_FromTPMPublic(ectx, TPM2_NV_INDEX_FIRST,
+                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              &nvHandle);
+    goto_if_error(r, "TR from TPM public", error_name1);
+
+    r = Esys_TR_Close(ectx, &nvHandle);
+    goto_if_error(r, "TR close on nv object", error_name1);
+
+    /* Reading public data for a TPM handle with a HMAC session. */
+    r = Esys_StartAuthSession(ectx, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session);
+
+    goto_if_error(r, "Error: During initialization of session", error);
+
+    r = Esys_TRSess_SetAttributes(ectx, session, TPMA_SESSION_ENCRYPT,
+                                  TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_ENCRYPT);
+    goto_if_error(r, "TR_Sess_SetAttributes", error);
+
+    r = Esys_StartAuthSession(ectx, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session2);
+    goto_if_error(r, "Error: During initialization of session", error);
+
+    /* Create also a second session for reading the public data. */
+
+    r = Esys_TRSess_SetAttributes(ectx, session2, TPMA_SESSION_AUDIT,
+                                  TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_AUDIT);
+
+    goto_if_error(r, "TR_Sess_SetAttributes", error);
+
+    r = Esys_TR_FromTPMPublic(ectx, TPM2_NV_INDEX_FIRST,
+                              session, session2, ESYS_TR_NONE,
+                              &nvHandle);
+    goto_if_error(r, "TR from TPM public", error_name1);
+
+    /* Reading public data for a TPM handle with a HMAC session for an existing
+       esys object.  */
+    r = Esys_StartAuthSession(ectx, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              &session);
+
+    goto_if_error(r, "Error: During initialization of session", error);
+
+    r = Esys_TRSess_SetAttributes(ectx, session, TPMA_SESSION_ENCRYPT,
+                                  TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_ENCRYPT);
+    goto_if_error(r, "TR_Sess_SetAttributes", error);
+
+    r = Esys_TR_FromTPMPublic(ectx, TPM2_NV_INDEX_FIRST,
+                              session, ESYS_TR_NONE, ESYS_TR_NONE,
                               &nvHandle);
     goto_if_error(r, "TR from TPM public", error_name1);
 

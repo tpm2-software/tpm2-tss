@@ -182,6 +182,11 @@ struct ESYS_CONTEXT {
                                       automatically loaded. */
     IESYS_SESSION *enc_session;  /**< Ptr to the enc param session.
                                       Used to restore session attributes */
+    ESYS_TR sav_session1;        /**< Used to store session for cases where call
+                                      with ESYS_TR_NONE is needed to determine object
+                                      name */
+    ESYS_TR sav_session2;
+    ESYS_TR sav_session3;
 };
 
 /** The number of authomatic resubmissions.
