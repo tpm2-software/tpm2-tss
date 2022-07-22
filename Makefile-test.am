@@ -335,6 +335,8 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-key-create-policy-authorize-ecc-pem-sign.fint \
     test/integration/fapi-key-create-policy-authorize-sign-rsa.fint \
     test/integration/fapi-key-create-policy-authorize-nv-sign.fint \
+    test/integration/fapi-key-create-policy-authorize-nv-tpms-sign.fint \
+    test/integration/fapi-key-create-policy-authorize-nv-complex-tpm2b-sign.fint \
     test/integration/fapi-key-create-policy-secret-nv-sign.fint \
     test/integration/fapi-key-create-policy-pcr-sign.fint \
     test/integration/fapi-key-create-policy-signed.fint \
@@ -1849,6 +1851,22 @@ test_integration_fapi_key_create_policy_authorize_nv_sign_fint_CFLAGS  = $(TESTS
 test_integration_fapi_key_create_policy_authorize_nv_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_nv_sign_fint_SOURCES = \
+    test/integration/fapi-key-create-policy-authorize-nv-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_key_create_policy_authorize_nv_tpms_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+    -DPOLICY_AUTHORIZE_NV=\""/policy/pol_authorize_nv_tpms\""
+test_integration_fapi_key_create_policy_authorize_nv_tpms_sign_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_policy_authorize_nv_tpms_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_authorize_nv_tpms_sign_fint_SOURCES = \
+    test/integration/fapi-key-create-policy-authorize-nv-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_key_create_policy_authorize_nv_complex_tpm2b_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+    -DPOLICY_AUTHORIZE_NV=\""/policy/pol_authorize_nv_complex_tpm2b\""
+test_integration_fapi_key_create_policy_authorize_nv_complex_tpm2b_sign_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_policy_authorize_nv_complex_tpm2b_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_authorize_nv_complex_tpm2b_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
