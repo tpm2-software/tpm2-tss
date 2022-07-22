@@ -28,7 +28,7 @@
 #define TSS2_POLICY_RC_BUFFER_TOO_SMALL            ((TSS2_RC)(TSS2_POLICY_RC_LAYER | \
                                                         TSS2_BASE_RC_BAD_SIZE))
 #define TSS2_POLICY_RC_NULL_CALLBACK               ((TSS2_RC)(TSS2_POLICY_RC_LAYER | \
-                                                        TSS2_BASE_RC_NULL_CALLBACK))
+                                                        TSS2_BASE_RC_CALLBACK_NULL))
 
 typedef struct TSS2_POLICY_CTX TSS2_POLICY_CTX;
 
