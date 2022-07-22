@@ -88,6 +88,7 @@ TESTS_UNIT  = \
     test/unit/tctildr-nodl \
     test/unit/tctildr-tcti \
     test/unit/tctildr-getinfo \
+    test/unit/tcti-spi-helper \
     test/unit/dlopen-fail \
     test/unit/dlopen-UINT8-marshal \
     test/unit/dlopen-TPM2B-marshal \
@@ -470,6 +471,10 @@ test_unit_tcti_cmd_SOURCES = test/unit/tcti-cmd.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-cmd.c src/tss2-tcti/tcti-cmd.h test/unit/tcti-cmd-test.h
 endif
+
+test_unit_tcti_spi_helper_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_spi_helper_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
+test_unit_tcti_spi_helper_SOURCES = test/unit/tcti-spi-helper.c
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_LDADD = $(CMOCKA_LIBS) $(libutil)

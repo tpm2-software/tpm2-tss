@@ -398,6 +398,27 @@ endif # ENABLE_TCTI_CMD
 EXTRA_DIST += lib/tss2-tcti-cmd.map \
               lib/tss2-tcti-cmd.def
 
+# tcti library for spi connected tpms
+if ENABLE_TCTI_SPI_HELPER
+libtss2_tcti_spi_helper = src/tss2-tcti/libtss2-tcti-spi-helper.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spi_helper.h
+lib_LTLIBRARIES += $(libtss2_tcti_spi_helper)
+pkgconfig_DATA += lib/tss2-tcti-spi-helper.pc
+EXTRA_DIST += lib/tss2-tcti-spi-helper.map \
+              lib/tss2-tcti-spi-helper.def
+
+if HAVE_LD_VERSION_SCRIPT
+if !UNIT
+src_tss2_tcti_libtss2_tcti_spi_helper_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spi-helper.map
+endif # UNIT
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_spi_helper_la_LIBADD   = $(libutil) $(libtss2_mu)
+src_tss2_tcti_libtss2_tcti_spi_helper_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-spi-helper.c \
+    src/tss2-tcti/tcti-spi-helper.h
+endif # ENABLE_TCTI_SPI_HELPER
+
 ### TCG TSS SYS spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
