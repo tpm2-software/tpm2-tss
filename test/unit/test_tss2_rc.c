@@ -39,7 +39,7 @@ test_layers(void **state)
         "tcti:",
         "rmt",
         "rm",
-        "drvr",
+        "policy",
     };
 
     UINT8 layer;
