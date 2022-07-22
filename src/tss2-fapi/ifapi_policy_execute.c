@@ -260,7 +260,7 @@ execute_policy_duplicate(
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
-        return_if_null(cb->cbauth, "Policy Duplicate Callback Not Set",
+        return_if_null(cb->cbdup, "Policy Duplicate Callback Not Set",
             TSS2_FAPI_RC_NULL_CALLBACK);
         r = cb->cbdup(&policy->objectName, cb->cbdup_userdata);
         return_if_error(r, "Get name for policy duplicate select.");
