@@ -587,6 +587,8 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_authorize_ecc_pem.json \
     test/data/fapi/policy/pol_authorize_outer.json \
     test/data/fapi/policy/pol_authorize_nv.json \
+    test/data/fapi/policy/pol_authorize_nv_tpms.json \
+    test/data/fapi/policy/pol_authorize_nv_complex_tpm2b.json \
     test/data/fapi/policy/pol_secret.json \
     test/data/fapi/policy/pol_password.json \
     test/data/fapi/policy/pol_auth_value.json \

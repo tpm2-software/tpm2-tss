@@ -120,7 +120,7 @@ typedef struct {
     TPM2B_NAME                            newParentName;    /**< Automatically calculated */
     TPMI_YES_NO                           includeObject;    /**< Always NO */
     char                                 *newParentPath;    /**< None */
-    TPM2B_PUBLIC                        newParentPublic;    /**< None */
+    TPMT_PUBLIC                         newParentPublic;    /**< None */
 } TPMS_POLICYDUPLICATIONSELECT;
 
 /** Policy type TPMS_POLICYAUTHORIZATION

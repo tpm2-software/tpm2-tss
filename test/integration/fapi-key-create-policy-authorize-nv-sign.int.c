@@ -24,6 +24,7 @@
 #include "test-fapi.h"
 
 #define LOGMODULE test
+#define LOGDEFAULT LOGLEVEL_INFO
 #include "util/log.h"
 #include "util/aux_util.h"
 
@@ -113,12 +114,17 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
  */
+
+#ifndef POLICY_AUTHORIZE_NV
+#define POLICY_AUTHORIZE_NV "/policy/pol_authorize_nv"
+#endif
+
 int
 test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
     char *nvPathPolicy = "/nv/Owner/myNV";
-    char *policy_authorize_nv = "/policy/pol_authorize_nv";
+    char *policy_authorize_nv = POLICY_AUTHORIZE_NV;
     char *policy_pcr2 = "/policy/pol_pcr16_0";
     char *json_policy = NULL;
 
@@ -130,6 +136,8 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
         LOG_WARNING("Command PolicyAuthorizeNV not available.");
         return EXIT_SKIP;
     }
+
+    LOG_INFO("Policy File: %s", policy_authorize_nv);
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);

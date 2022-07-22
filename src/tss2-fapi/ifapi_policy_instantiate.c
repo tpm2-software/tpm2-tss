@@ -328,7 +328,7 @@ ifapi_policyeval_instantiate_finish(
             break;
 
         case POLICYDUPLICATIONSELECT:
-            if (pol_element->element.PolicyDuplicationSelect.newParentPublic.publicArea.type) {
+            if (pol_element->element.PolicyDuplicationSelect.newParentPublic.type) {
                 /* public data is already set in policy. Path will not be needed. */
                 SAFE_FREE(pol_element->element.PolicyDuplicationSelect.newParentPath);
                 break;
@@ -340,18 +340,20 @@ ifapi_policyeval_instantiate_finish(
             /* Public info will be added to policy. */
             r = context->callbacks.cbpublic(
                      pol_element->element.PolicyDuplicationSelect.newParentPath,
-                     &pol_element->element.PolicyDuplicationSelect.newParentPublic.publicArea,
+                     &pol_element->element.PolicyDuplicationSelect.newParentPublic,
                      context->callbacks.cbpublic_userdata);
             return_try_again(r);
             return_if_error(r, "read_finish failed");
 
             r = ifapi_get_name(
-                     &pol_element->element.PolicyDuplicationSelect.newParentPublic.publicArea,
+                     &pol_element->element.PolicyDuplicationSelect.newParentPublic,
                      &pol_element->element.PolicyDuplicationSelect.newParentName);
             return_if_error(r, "Compute key name");
 
-            /* Clear keypath, only public data will be needed */
+            /* Clear keypath, and newParentPublic only public data will be needed */
             SAFE_FREE(pol_element->element.PolicyDuplicationSelect.newParentPath);
+            pol_element->element.PolicyDuplicationSelect.newParentPublic.type = 0;
+
             break;
 
         case POLICYAUTHORIZENV:

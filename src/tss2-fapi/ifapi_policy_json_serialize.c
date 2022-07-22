@@ -602,9 +602,10 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const
         json_object_object_add(*jso, "newParentPath", jso2);
     }
 
-    if (in->newParentPublic.publicArea.type) {
+    if (in->newParentPublic.type) {
         jso2 = NULL;
-        r = ifapi_json_TPM2B_PUBLIC_serialize(&in->newParentPublic, &jso2);
+        cond_cnt++;
+        r = ifapi_json_TPMT_PUBLIC_serialize(&in->newParentPublic, &jso2);
         return_if_error(r, "Serialize TPM2B_PUBLIC");
 
         json_object_object_add(*jso, "newParentPublic", jso2);
@@ -852,10 +853,8 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in,
     jso2 = NULL;
     if (in->nvPublic.nvIndex > 0) {
         cond_cnt++;
-        TPM2B_NV_PUBLIC tmp = { 0 };
-        tmp.nvPublic = in->nvPublic;
         /* Template already instantiated */
-        r = ifapi_json_TPM2B_NV_PUBLIC_serialize(&tmp, &jso2);
+        r = ifapi_json_TPMS_NV_PUBLIC_serialize(&in->nvPublic, &jso2);
         return_if_error(r, "Serialize TPM2B_NV_PUBLIC");
 
         json_object_object_add(*jso, "nvPublic", jso2);
