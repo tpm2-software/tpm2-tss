@@ -850,7 +850,7 @@ static struct {
                                             /* The RM usually duplicates TPM responses */
                                             /* So just default the handler to tpm2. */
     ADD_HANDLER("rm", NULL),                /* layer 12 is the rm rc */
-    ADD_HANDLER("drvr", NULL),              /* layer 13 is the driver rc */
+    ADD_HANDLER("policy", tss_err_handler), /* layer 13 is the policy rc */
 };
 
 /**
