@@ -242,19 +242,23 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
         }
         goto_if_error(r, "Error NV_ReadPublic", error_cleanup);
 
+        bool is_nvname_mismatch = false;
         if (first_call) {
             objectHandleNode->rsrc.rsrcType = IESYSC_NV_RSRC;
             objectHandleNode->rsrc.name = *nvName;
             objectHandleNode->rsrc.misc.rsrc_nv_pub = *nvPublic;
-            SAFE_FREE(nvPublic);
-            SAFE_FREE(nvName);
         } else {
             if (objectHandleNode->rsrc.name.size != nvName->size ||
                 memcmp(&objectHandleNode->rsrc.name.name[0], &nvName->name[0], nvName->size) != 0) {
-                goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                           "Name mismatch between two calls of Esys_TR_FromTPMPublic",
-                           error_cleanup);
+                is_nvname_mismatch = true;
             }
+        }
+        SAFE_FREE(nvPublic);
+        SAFE_FREE(nvName);
+        if (is_nvname_mismatch) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                "Name mismatch between two calls of Esys_TR_FromTPMPublic",
+                error_cleanup);
         }
     }
     else if(objectHandleNode->rsrc.handle >> TPM2_HR_SHIFT == TPM2_HT_LOADED_SESSION
