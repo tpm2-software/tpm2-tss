@@ -284,7 +284,7 @@ tcti_mssim_get_poll_handles (
     *num_handles = 1;
     if (handles != NULL) {
 #ifdef _WIN32
-        *handles = tcti_mssim->tpm_sock;
+        *handles = (TSS2_TCTI_POLL_HANDLE)(tcti_mssim->tpm_sock);
 #else
         handles->fd = tcti_mssim->tpm_sock;
         handles->events = POLLIN | POLLOUT;
@@ -585,7 +585,7 @@ Tss2_Tcti_Mssim_Init (
                          TCTI_MSSIM_CONF_MAX);
             return TSS2_TCTI_RC_BAD_VALUE;
         }
-        conf_copy = strdup (conf);
+        conf_copy = _strdup (conf);
         if (conf_copy == NULL) {
             LOG_ERROR ("Failed to allocate buffer: %s", strerror (errno));
             rc = TSS2_TCTI_RC_GENERAL_FAILURE;
