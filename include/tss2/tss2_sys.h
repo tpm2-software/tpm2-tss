@@ -673,6 +673,25 @@ TSS2_RC Tss2_Sys_HMAC(
     TPM2B_DIGEST *outHMAC,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
 
+TSS2_RC Tss2_Sys_MAC_Prepare(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT handle,
+    const TPM2B_MAX_BUFFER *buffer,
+    TPMI_ALG_MAC_SCHEME inScheme);
+
+TSS2_RC Tss2_Sys_MAC_Complete(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPM2B_DIGEST *outMAC);
+
+TSS2_RC Tss2_Sys_MAC(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT handle,
+    const TSS2L_SYS_AUTH_COMMAND *cmdAuths,
+    const TPM2B_MAX_BUFFER *buffer,
+    TPMI_ALG_MAC_SCHEME inScheme,
+    TPM2B_DIGEST *outMAC,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuths);
+
 TSS2_RC Tss2_Sys_GetRandom_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     UINT16 bytesRequested);
@@ -717,6 +736,25 @@ TSS2_RC Tss2_Sys_HMAC_Start(
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     const TPM2B_AUTH *auth,
     TPMI_ALG_HASH hashAlg,
+    TPMI_DH_OBJECT *sequenceHandle,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
+
+TSS2_RC Tss2_Sys_MAC_Start_Prepare(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT handle,
+    const TPM2B_AUTH *auth,
+    TPMI_ALG_MAC_SCHEME inScheme);
+
+TSS2_RC Tss2_Sys_MAC_Start_Complete(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT *sequenceHandle);
+
+TSS2_RC Tss2_Sys_MAC_Start(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT handle,
+    const TSS2L_SYS_AUTH_COMMAND *cmdAuths,
+    const TPM2B_AUTH *auth,
+    TPMI_ALG_MAC_SCHEME inScheme,
     TPMI_DH_OBJECT *sequenceHandle,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
 

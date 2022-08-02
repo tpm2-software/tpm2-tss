@@ -1,5 +1,11 @@
 {
     global:
+        Esys_AC_GetCapability;
+        Esys_AC_GetCapability_Async;
+        Esys_AC_GetCapability_Finish;
+        Esys_AC_Send;
+        Esys_AC_Send_Async;
+        Esys_AC_Send_Finish;
         Esys_ActivateCredential;
         Esys_ActivateCredential_Async;
         Esys_ActivateCredential_Finish;
@@ -135,6 +141,12 @@
         Esys_HMAC_Start;
         Esys_HMAC_Start_Async;
         Esys_HMAC_Start_Finish;
+        Esys_MAC;
+        Esys_MAC_Async;
+        Esys_MAC_Finish;
+        Esys_MAC_Start;
+        Esys_MAC_Start_Async;
+        Esys_MAC_Start_Finish;
         Esys_Import;
         Esys_Import_Async;
         Esys_Import_Finish;
@@ -216,6 +228,9 @@
         Esys_PCR_SetAuthValue;
         Esys_PCR_SetAuthValue_Async;
         Esys_PCR_SetAuthValue_Finish;
+        Esys_Policy_AC_SendSelect;
+        Esys_Policy_AC_SendSelect_Async;
+        Esys_Policy_AC_SendSelect_Finish;
         Esys_PolicyAuthorize;
         Esys_PolicyAuthorize_Async;
         Esys_PolicyAuthorize_Finish;

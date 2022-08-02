@@ -184,11 +184,13 @@ typedef UINT32                                TPM2_CC;
 #define TPM2_CC_Create                        ((TPM2_CC) 0x00000153)
 #define TPM2_CC_ECDH_ZGen                     ((TPM2_CC) 0x00000154)
 #define TPM2_CC_HMAC                          ((TPM2_CC) 0x00000155)
+#define TPM2_CC_MAC                           ((TPM2_CC) 0x00000155)
 #define TPM2_CC_Import                        ((TPM2_CC) 0x00000156)
 #define TPM2_CC_Load                          ((TPM2_CC) 0x00000157)
 #define TPM2_CC_Quote                         ((TPM2_CC) 0x00000158)
 #define TPM2_CC_RSA_Decrypt                   ((TPM2_CC) 0x00000159)
 #define TPM2_CC_HMAC_Start                    ((TPM2_CC) 0x0000015b)
+#define TPM2_CC_MAC_Start                     ((TPM2_CC) 0x0000015b)
 #define TPM2_CC_SequenceUpdate                ((TPM2_CC) 0x0000015c)
 #define TPM2_CC_Sign                          ((TPM2_CC) 0x0000015d)
 #define TPM2_CC_Unseal                        ((TPM2_CC) 0x0000015e)
@@ -262,9 +264,9 @@ typedef UINT16 TPM2_KEY_BITS;           /* a key size in bits */
 typedef UINT32 TPM2_SPEC;
 #define TPM2_SPEC_FAMILY      ((TPM2_SPEC) 0x322E3000) /* ASCII 2.0 with null terminator */
 #define TPM2_SPEC_LEVEL       ((TPM2_SPEC) 00)         /* the level number for the specification */
-#define TPM2_SPEC_VERSION     ((TPM2_SPEC) 138)        /* the version number of the spec 001.38 * 100 */
-#define TPM2_SPEC_YEAR        ((TPM2_SPEC) 2016)       /* the year of the version */
-#define TPM2_SPEC_DAY_OF_YEAR ((TPM2_SPEC) 260)        /* the day of the year September 16 2016 */
+#define TPM2_SPEC_VERSION     ((TPM2_SPEC) 159)        /* the version number of the spec 001.26 * 100 */
+#define TPM2_SPEC_YEAR        ((TPM2_SPEC) 2019)       /* the year of the version */
+#define TPM2_SPEC_DAY_OF_YEAR ((TPM2_SPEC) 312)        /* the day of the year August 21 2015 */
 
 /* Definition of UINT32 TPM2_GENERATED Constants <O> */
 typedef UINT32 TPM2_GENERATED;
@@ -633,6 +635,20 @@ typedef TPM2_HANDLE TPM2_RH;
 #define TPM2_RH_AUTH_00     ((TPM2_RH) 0x40000010) /* A */
 #define TPM2_RH_AUTH_FF     ((TPM2_RH) 0x4000010F) /* A */
 #define TPM2_RH_ACT_0       ((TPM2_RH) 0x40000110) /* A P */
+#define TPM2_RH_ACT_1       ((TPM2_RH) 0x40000111)
+#define TPM2_RH_ACT_2       ((TPM2_RH) 0x40000112)
+#define TPM2_RH_ACT_3       ((TPM2_RH) 0x40000113)
+#define TPM2_RH_ACT_4       ((TPM2_RH) 0x40000114)
+#define TPM2_RH_ACT_5       ((TPM2_RH) 0x40000115)
+#define TPM2_RH_ACT_6       ((TPM2_RH) 0x40000116)
+#define TPM2_RH_ACT_7       ((TPM2_RH) 0x40000117)
+#define TPM2_RH_ACT_8       ((TPM2_RH) 0x40000118)
+#define TPM2_RH_ACT_9       ((TPM2_RH) 0x40000119)
+#define TPM2_RH_ACT_A       ((TPM2_RH) 0x4000011A)
+#define TPM2_RH_ACT_B       ((TPM2_RH) 0x4000011B)
+#define TPM2_RH_ACT_C       ((TPM2_RH) 0x4000011C)
+#define TPM2_RH_ACT_D       ((TPM2_RH) 0x4000011D)
+#define TPM2_RH_ACT_E       ((TPM2_RH) 0x4000011E)
 #define TPM2_RH_ACT_F       ((TPM2_RH) 0x4000011F) /* A P */
 #define TPM2_RH_LAST        ((TPM2_RH) 0x4000011F) /* R */
 
@@ -667,6 +683,9 @@ typedef TPM2_HANDLE TPM2_HC;
 #define TPM2_NV_INDEX_LAST        ((TPM2_HC) (TPM2_NV_INDEX_FIRST + 0x00FFFFFF)) /* last allowed NV Index */
 #define TPM2_PERMANENT_FIRST      ((TPM2_HC) TPM2_RH_FIRST)
 #define TPM2_PERMANENT_LAST       ((TPM2_HC) TPM2_RH_LAST)
+#define TPM2_HR_NV_AC             ((TPM2_HC) ((TPM2_HT_NV_INDEX << HR_SHIFT) + 0xD00000))
+#define TPM2_NV_AC_FIRST          ((TPM2_HC) (TPM2_HR_NV_AC + 0))
+#define TPM2_NV_AC_LAST           ((TPM2_HC) (TPM2_HR_NV_AC + 0x0000FFFF))
 
 /* Definition of UINT32 TPMA_ALGORITHM Bits */
 typedef uint32_t TPMA_ALGORITHM;
@@ -805,6 +824,9 @@ typedef BYTE TPMI_YES_NO;
 /* Definition of TPM2_HANDLE TPMI_DH_OBJECT Type */
 typedef TPM2_HANDLE TPMI_DH_OBJECT;
 
+/* Table 42 - Definition of (TPM2_HANDLE) TPMI_DH_PARENT Type */
+typedef TPM2_HANDLE TPMI_DH_PARENT;
+
 /* Definition of TPM2_HANDLE TPMI_DH_PERSISTENT Type */
 typedef TPM2_HANDLE TPMI_DH_PERSISTENT;
 
@@ -910,7 +932,7 @@ typedef TPM2_ALG_ID TPMI_ALG_CIPHER_MODE;
 /* Definition of TPMS_EMPTY Structure <INOUT> */
 typedef struct TPMS_EMPTY TPMS_EMPTY;
 struct TPMS_EMPTY {
-    BYTE empty[1]; /* a structure with no member */
+    UINT8 empty[1]; /* a structure with no member */
 };
 
 /* This is DEPRECATED as it's an unused structure included by accident and never used
@@ -923,15 +945,16 @@ struct TPMS_EMPTY {
     #define DEPRECATED __attribute__((deprecated))
 #endif
 
-typedef struct TPMS_ALGORITHM_DESCRIPTION TPMS_ALGORITHM_DESCRIPTION DEPRECATED;
+typedef struct TPMS_ALGORITHM_DESCRIPTION TPMS_ALGORITHM_DESCRIPTION;
 struct TPMS_ALGORITHM_DESCRIPTION {
     TPM2_ALG_ID alg;            /* an algorithm */
-    TPMA_ALGORITHM  attributes; /* the attributes of the algorithm */
+    TPMA_ALGORITHM attributes; /* the attributes of the algorithm */
 } DEPRECATED;
 
 /* Definition of TPMU_HA Union <INOUT S> */
 typedef union TPMU_HA TPMU_HA;
 union TPMU_HA {
+    BYTE sha [TPM2_SHA_DIGEST_SIZE]; /* TPM2_ALG_SHA */
     BYTE sha1[TPM2_SHA1_DIGEST_SIZE];
     BYTE sha256[TPM2_SHA256_DIGEST_SIZE];
     BYTE sha384[TPM2_SHA384_DIGEST_SIZE];
@@ -1363,6 +1386,7 @@ union TPMU_SYM_KEY_BITS {
     TPMI_CAMELLIA_KEY_BITS camellia;      /* all symmetric algorithms */
     TPM2_KEY_BITS sym;                    /* when selector may be any of the symmetric block ciphers */
     TPMI_ALG_HASH exclusiveOr;            /* overload for using xor. NOTE TPM2_ALG_NULL is not allowed */
+    TPMS_EMPTY null;                      /* TPM2_ALG_NULL */
 };
 
 /* Definition of TPMU_SYM_MODE Union */
@@ -1372,6 +1396,8 @@ union TPMU_SYM_MODE {
     TPMI_ALG_SYM_MODE sm4;
     TPMI_ALG_SYM_MODE camellia;
     TPMI_ALG_SYM_MODE sym;  /* when selector may be any of the symmetric block ciphers */
+    TPMS_EMPTY exclusiveOr; /* TPM2_ALG_XOR */
+    TPMS_EMPTY null;        /* TPM2_ALG_NULL */
 };
 
 /* Definition of TPMT_SYM_DEF Structure */
@@ -1403,11 +1429,39 @@ struct TPMS_SYMCIPHER_PARMS {
     TPMT_SYM_DEF_OBJECT sym;   /* a symmetric block cipher */
 };
 
+/* Definition of TPM2B_LABEL Structure */
+typedef struct TPM2B_LABEL TPM2B_LABEL;
+struct TPM2B_LABEL {
+    UINT16 size;
+    BYTE buffer[TPM2_LABEL_MAX_BUFFER];
+};
+
+/* Definition of TPMS_DERIVE Structure */
+typedef struct TPMS_DERIVE TPMS_DERIVE;
+struct TPMS_DERIVE {
+    TPM2B_LABEL label;
+    TPM2B_LABEL context;
+};
+
+/* Definition of TPM2B_DERIVE Structure */
+typedef struct TPM2B_DERIVE TPM2B_DERIVE;
+struct TPM2B_DERIVE {
+    UINT16 size;
+    BYTE buffer[sizeof(TPMS_DERIVE)];
+};
+
+/* Definition of TPMU_SENSITIVE_CREATE Union */
+typedef union TPMU_SENSITIVE_CREATE TPMU_SENSITIVE_CREATE;
+union TPMU_SENSITIVE_CREATE {
+    BYTE create[TPM2_MAX_SYM_DATA];
+    TPMS_DERIVE derive;
+};
+
 /* Definition of TPM2B_SENSITIVE_DATA Structure */
 typedef struct TPM2B_SENSITIVE_DATA TPM2B_SENSITIVE_DATA;
 struct TPM2B_SENSITIVE_DATA {
     UINT16 size;
-    BYTE buffer[TPM2_MAX_SYM_DATA];
+    BYTE buffer[sizeof(TPMU_SENSITIVE_CREATE)];
 };
 
 /* Definition of TPMS_SENSITIVE_CREATE Structure <IN> */
@@ -1455,6 +1509,7 @@ typedef union TPMU_SCHEME_KEYEDHASH TPMU_SCHEME_KEYEDHASH;
 union TPMU_SCHEME_KEYEDHASH {
     TPMS_SCHEME_HMAC hmac;       /* the signing scheme */
     TPMS_SCHEME_XOR exclusiveOr; /* the obfuscation scheme */
+    TPMS_EMPTY null;             /* TPM2_ALG_NULL */
 };
 
 /* Definition of TPMT_KEYEDHASH_SCHEME Structure */
@@ -1485,6 +1540,7 @@ union TPMU_SIG_SCHEME {
     TPMS_SIG_SCHEME_ECSCHNORR ecschnorr; /* all signing schemes including anonymous schemes */
     TPMS_SCHEME_HMAC hmac;               /* the HMAC scheme */
     TPMS_SCHEME_HASH any;                /* selector that allows access to digest for any signing scheme */
+    TPMS_EMPTY null;                     /* TPM2_ALG_NULL */
 };
 
 /* Definition of TPMT_SIG_SCHEME Structure */
@@ -1515,6 +1571,7 @@ union TPMU_KDF_SCHEME {
     TPMS_SCHEME_KDF1_SP800_56A kdf1_sp800_56a;
     TPMS_SCHEME_KDF2 kdf2;
     TPMS_SCHEME_KDF1_SP800_108 kdf1_sp800_108;
+    TPMS_EMPTY null;
 };
 
 /* Definition of TPMT_KDF_SCHEME Structure */
@@ -1541,6 +1598,7 @@ union TPMU_ASYM_SCHEME {
     TPMS_ENC_SCHEME_RSAES rsaes;         /* schemes with no hash */
     TPMS_ENC_SCHEME_OAEP oaep;           /* schemes with no hash */
     TPMS_SCHEME_HASH anySig;
+    TPMS_EMPTY null;                     /* TPM2_ALG_NULL */
 };
 
 /* Definition of TPMT_ASYM_SCHEME Structure <> */
@@ -1584,7 +1642,7 @@ typedef TPM2_KEY_BITS TPMI_RSA_KEY_BITS;
 typedef struct TPM2B_PRIVATE_KEY_RSA TPM2B_PRIVATE_KEY_RSA;
 struct TPM2B_PRIVATE_KEY_RSA {
     UINT16 size;
-    BYTE buffer[TPM2_MAX_RSA_KEY_BYTES/2];
+    BYTE buffer[TPM2_MAX_RSA_KEY_BYTES/2 * 5];
 };
 
 /* Definition of ECC TPM2B_ECC_PARAMETER Structure */
@@ -1673,6 +1731,7 @@ union TPMU_SIGNATURE {
     TPMS_SIGNATURE_ECSCHNORR ecschnorr; /* all asymmetric signatures */
     TPMT_HA hmac;                       /* HMAC signature required to be supported */
     TPMS_SCHEME_HASH any;               /* used to access the hash */
+    TPMS_EMPTY null;                    /* TPM2_ALG_NULL */
 };
 
 /* Definition of TPMT_SIGNATURE Structure */
@@ -1708,6 +1767,7 @@ union TPMU_PUBLIC_ID {
     TPM2B_DIGEST sym;
     TPM2B_PUBLIC_KEY_RSA rsa;
     TPMS_ECC_POINT ecc;
+    TPMS_DERIVE derive;
 };
 
 /* Definition of TPMS_KEYEDHASH_PARMS Structure */
@@ -1976,7 +2036,7 @@ typedef UINT32 TPM_AT;
 
 typedef UINT32 TPM_EA;
 
-#define TPM_AE_NONE  ((TPM_EA)0x00000000) /* In a command, a non-specific request for AC information. In a response, indicates that outputData is not meaningful */
+#define TPM_AE_NONE  ((UINT32)0x00000000) /* In a command, a non-specific request for AC information. In a response, indicates that outputData is not meaningful */
 
 /* Definition of TPMS_AC_OUTPUT Structure <OUT> */
 typedef struct TPMS_AC_OUTPUT TPMS_AC_OUTPUT;

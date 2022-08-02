@@ -84,6 +84,8 @@ typedef struct {
     TPM2B_AUTH authData;
 } HMAC_Start_IN;
 
+typedef HMAC_Start_IN MAC_Start_IN;
+
 typedef struct {
     ESYS_TR authHandle;
     TPM2B_AUTH *newAuth;
@@ -126,6 +128,7 @@ typedef union {
     CreateLoaded_IN CreateLoaded;
     EvictControl_IN EvictControl;
     HMAC_Start_IN HMAC_Start;
+    MAC_Start_IN MAC_Start;
     HierarchyChangeAuth_IN HierarchyChangeAuth;
     SequenceComplete_IN SequenceComplete;
     Policy_IN Policy;

@@ -253,6 +253,8 @@ typedef uint32_t TSS2_RC;
                                                         TSS2_BASE_RC_MULTIPLE_DECRYPT_SESSIONS))
 #define TSS2_ESYS_RC_MULTIPLE_ENCRYPT_SESSIONS   ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                         TSS2_BASE_RC_MULTIPLE_ENCRYPT_SESSIONS))
+#define TSS2_ESYS_RC_NOT_SUPPORTED               ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
+                                                        TSS2_BASE_RC_NOT_SUPPORTED))
 #define TSS2_ESYS_RC_RSP_AUTH_FAILED             ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
                                                         TSS2_BASE_RC_RSP_AUTH_FAILED))
 #define TSS2_ESYS_RC_CALLBACK_NULL               ((TSS2_RC)(TSS2_ESAPI_RC_LAYER | \
