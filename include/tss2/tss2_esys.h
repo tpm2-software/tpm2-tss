@@ -62,7 +62,26 @@ typedef uint32_t ESYS_TR;
 #define ESYS_TR_RH_AUTH(x) (ESYS_TR_RH_AUTH_FIRST + (ESYS_TR)(x))
 #define ESYS_TR_RH_ACT_FIRST  0x120U
 #define ESYS_TR_RH_ACT(x) (ESYS_TR_RH_ACT_FIRST + (ESYS_TR)(x))
-#define ESYS_TR_RH_ACT_LAST  0x12FU
+#define ESYS_TR_RH_ACT_0       ESYS_TR_RH_ACT_FIRST
+#define ESYS_TR_RH_ACT_1       0x121U
+#define ESYS_TR_RH_ACT_2       0x122U
+#define ESYS_TR_RH_ACT_3       0x123U
+#define ESYS_TR_RH_ACT_4       0x124U
+#define ESYS_TR_RH_ACT_5       0x125U
+#define ESYS_TR_RH_ACT_6       0x126U
+#define ESYS_TR_RH_ACT_7       0x127U
+#define ESYS_TR_RH_ACT_8       0x128U
+#define ESYS_TR_RH_ACT_9       0x129U
+#define ESYS_TR_RH_ACT_A       0x12AU
+#define ESYS_TR_RH_ACT_B       0x12BU
+#define ESYS_TR_RH_ACT_C       0x12CU
+#define ESYS_TR_RH_ACT_D       0x12DU
+#define ESYS_TR_RH_ACT_E       0x12EU
+#define ESYS_TR_RH_ACT_F       0x12FU
+#define ESYS_TR_RH_ACT_LAST    ESYS_TR_RH_ACT_F
+#define ESYS_TR_RH_AC_FIRST    0x140U
+#define ESYS_TR_RH_AC(x)       (ESYS_TR_RH_AC_FIRST + (ESYS_TR)(x))
+#define ESYS_TR_RH_AC_LAST     (ESYS_TR_RH_AC_FIRST  + 0xFFFFU)
 
 typedef struct ESYS_CONTEXT ESYS_CONTEXT;
 
@@ -806,6 +825,88 @@ TSS2_RC
 Esys_ACT_SetTimeout_Finish(
     ESYS_CONTEXT *esysContext);
 
+TSS2_RC
+Esys_AC_GetCapability_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR optionalSession1,
+    ESYS_TR optionalSession2,
+    ESYS_TR optionalSession3,
+    ESYS_TR ac,
+    TPM_AT capability,
+    UINT32 count);
+
+TSS2_RC
+Esys_AC_GetCapability_Finish(
+    ESYS_CONTEXT *esysContext,
+    TPMI_YES_NO *moreData,
+    TPML_AC_CAPABILITIES **capabilityData);
+
+TSS2_RC
+Esys_AC_GetCapability(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR optionalSession1,
+    ESYS_TR optionalSession2,
+    ESYS_TR optionalSession3,
+    ESYS_TR ac,
+    TPM_AT capability,
+    UINT32 count,
+    TPMI_YES_NO *moreData,
+    TPML_AC_CAPABILITIES **capabilityData);
+
+TSS2_RC
+Esys_AC_Send_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR sendObject,
+    ESYS_TR nvAuthHandle,
+    ESYS_TR optionalSession1,
+    ESYS_TR optionalSession2,
+    ESYS_TR optionalSession3,
+    ESYS_TR ac,
+    TPM2B_MAX_BUFFER *acDataIn);
+
+TSS2_RC
+Esys_AC_Send_Finish(
+    ESYS_CONTEXT *esysContext,
+    TPMS_AC_OUTPUT **acDataOut);
+
+TSS2_RC
+Esys_AC_Send(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR sendObject,
+    ESYS_TR nvAuthHandle,
+    ESYS_TR optionalSession1,
+    ESYS_TR optionalSession2,
+    ESYS_TR optionalSession3,
+    ESYS_TR ac,
+    TPM2B_MAX_BUFFER *acDataIn,
+    TPMS_AC_OUTPUT **acDataOut);
+
+TSS2_RC
+Esys_Policy_AC_SendSelect_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession1,
+    ESYS_TR optionalSession2,
+    ESYS_TR optionalSession3,
+    TPM2B_NAME *objectName,
+    TPM2B_NAME *authHandleName,
+    TPM2B_NAME *acName,
+    const TPMI_YES_NO includeObject);
+
+TSS2_RC
+Esys_Policy_AC_SendSelect_Finish(
+    ESYS_CONTEXT *esysContext);
+
+TSS2_RC
+Esys_Policy_AC_SendSelect(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR policySession1,
+    ESYS_TR optionalSession2,
+    ESYS_TR optionalSession3,
+    TPM2B_NAME *objectName,
+    TPM2B_NAME *authHandleName,
+    TPM2B_NAME *acName,
+    TPMI_YES_NO includeObject);
+
 /* Table 29 - TPM2_MakeCredential Command */
 
 TSS2_RC
@@ -1318,6 +1419,32 @@ Esys_HMAC_Finish(
     ESYS_CONTEXT *esysContext,
     TPM2B_DIGEST **outHMAC);
 
+TSS2_RC
+Esys_MAC_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR handle,
+    ESYS_TR handleSession1,
+    ESYS_TR optionalSession2,
+    ESYS_TR optionalSession3,
+    const TPM2B_MAX_BUFFER *buffer,
+    TPMI_ALG_MAC_SCHEME inScheme);
+
+TSS2_RC
+Esys_MAC_Finish(
+    ESYS_CONTEXT *esysContext,
+    TPM2B_DIGEST **outMAC);
+
+TSS2_RC
+Esys_MAC(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR handle,
+    ESYS_TR handleSession1,
+    ESYS_TR optionalSession2,
+    ESYS_TR optionalSession3,
+    const TPM2B_MAX_BUFFER *buffer,
+    TPMI_ALG_MAC_SCHEME inScheme,
+    TPM2B_DIGEST **outMAC);
+
 /* Table 66 - TPM2_GetRandom Command */
 
 TSS2_RC
@@ -1389,6 +1516,31 @@ Esys_HMAC_Start_Async(
 
 TSS2_RC
 Esys_HMAC_Start_Finish(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR *sequenceHandle);
+
+TSS2_RC
+Esys_MAC_Start(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR handle,
+    ESYS_TR handleSession1,
+    ESYS_TR optionalSession2,
+    ESYS_TR optionalSession3,
+    const TPM2B_AUTH *auth,
+    TPMI_ALG_MAC_SCHEME inScheme,
+    ESYS_TR *sequenceHandle);
+
+TSS2_RC
+Esys_MAC_Start_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR handle,
+    ESYS_TR handleSession1,
+    ESYS_TR optionalSession2,
+    ESYS_TR optionalSession3,
+    const TPM2B_AUTH *auth,
+    TPMI_ALG_MAC_SCHEME inScheme);
+
+TSS2_RC Esys_MAC_Start_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *sequenceHandle);
 

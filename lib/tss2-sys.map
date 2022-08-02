@@ -163,6 +163,12 @@
         Tss2_Sys_LoadExternal_Prepare;
         Tss2_Sys_LoadExternal_Complete;
         Tss2_Sys_LoadExternal;
+        Tss2_Sys_MAC_Prepare;
+        Tss2_Sys_MAC_Complete;
+        Tss2_Sys_MAC;
+        Tss2_Sys_MAC_Start_Prepare;
+        Tss2_Sys_MAC_Start_Complete;
+        Tss2_Sys_MAC_Start;
         Tss2_Sys_MakeCredential_Prepare;
         Tss2_Sys_MakeCredential_Complete;
         Tss2_Sys_MakeCredential;
