@@ -1162,7 +1162,7 @@ get_ecc_tpm2b_public_from_evp(
 #endif
     default:
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                   "Curve %x not implemented", cleanup, curveId);
+                   "Curve %i not implemented", cleanup, curveId);
     }
     tpmPublic->publicArea.parameters.eccDetail.curveID = tpmCurveId;
 
