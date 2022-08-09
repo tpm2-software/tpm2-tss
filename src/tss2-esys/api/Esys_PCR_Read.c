@@ -32,7 +32,6 @@
  * @param[in]  shandle3 Third session handle.
  * @param[in]  pcrSelectionIn The selection of PCR to read.
  * @param[out] pcrUpdateCounter The current value of the PCR update counter.
- *             (callee-allocated)
  * @param[out] pcrSelectionOut The PCR in the returned list.
  *             (callee-allocated)
  * @param[out] pcrValues The contents of the PCR indicated in pcrSelectOut->
@@ -207,7 +206,6 @@ Esys_PCR_Read_Async(
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[out] pcrUpdateCounter The current value of the PCR update counter.
- *             (callee-allocated)
  * @param[out] pcrSelectionOut The PCR in the returned list.
  *             (callee-allocated)
  * @param[out] pcrValues The contents of the PCR indicated in pcrSelectOut->

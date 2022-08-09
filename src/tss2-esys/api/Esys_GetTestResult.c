@@ -33,7 +33,6 @@
  * @param[out] outData Test result data.
  *             (callee-allocated)
  * @param[out] testResult .
- *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
  *         pointers or required output handle references are NULL.
@@ -193,7 +192,6 @@ Esys_GetTestResult_Async(
  * @param[out] outData Test result data.
  *             (callee-allocated)
  * @param[out] testResult .
- *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
  * @retval ESYS_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input

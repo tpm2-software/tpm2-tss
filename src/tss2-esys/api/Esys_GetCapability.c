@@ -36,7 +36,6 @@
  * @param[in]  propertyCount Number of properties of the indicated type to
  *             return.
  * @param[out] moreData Flag to indicate if there are more values of this type.
- *             (callee-allocated)
  * @param[out] capabilityData The capability data.
  *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS if the function call was a success.
@@ -216,7 +215,6 @@ Esys_GetCapability_Async(
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[out] moreData Flag to indicate if there are more values of this type.
- *             (callee-allocated)
  * @param[out] capabilityData The capability data.
  *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
