@@ -99,10 +99,9 @@ tcti_swtpm_down_cast (TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm)
  * @param[in]  cmd_code Control command code to send
  * @param[in]  cmd_sdu Control command payload to send (can be NULL)
  * @param[in]  cmd_sdu_len Length of the control command payload
- * @param[out] resp_code Response code received, callee-allocated (can be NULL)
- * @param[out] resp_sdu Payload of the response, callee-allocated (can be NULL)
- * @param[out] resp_sdu_len Length of the response's payload, callee-allocated
- *             (can be NULL)
+ * @param[out] resp_code Response code received (can be NULL)
+ * @param[out] resp_sdu Payload of the response (can be NULL)
+ * @param[out] resp_sdu_len Length of the response's payload (can be NULL)
  * @retval TSS2_RC_SUCCESS if the received response code is zero, a TCTI error
  *         code otherwise
  */

@@ -33,14 +33,10 @@
  * @param[in]  shandle3 Third session handle.
  * @param[in]  pcrAllocation The requested allocation.
  * @param[out] allocationSuccess YES if the allocation succeeded.
- *             (callee-allocated)
  * @param[out] maxPCR Maximum number of PCR that may be in a bank.
- *             (callee-allocated)
  * @param[out] sizeNeeded Number of octets required to satisfy the request.
- *             (callee-allocated)
  * @param[out] sizeAvailable Number of octets available. Computed before the
  *             allocation..
- *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
  *         pointers or required output handle references are NULL.
@@ -233,14 +229,10 @@ Esys_PCR_Allocate_Async(
  *
  * @param[in,out] esysContext The ESYS_CONTEXT.
  * @param[out] allocationSuccess YES if the allocation succeeded.
- *             (callee-allocated)
  * @param[out] maxPCR Maximum number of PCR that may be in a bank.
- *             (callee-allocated)
  * @param[out] sizeNeeded Number of octets required to satisfy the request.
- *             (callee-allocated)
  * @param[out] sizeAvailable Number of octets available. Computed before the
  *             allocation..
- *             (callee-allocated)
  * @retval TSS2_RC_SUCCESS on success
  * @retval ESYS_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
