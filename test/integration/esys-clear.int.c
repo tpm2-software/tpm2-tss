@@ -13,6 +13,7 @@
 #include "tss2_esys.h"
 
 #include "esys_iutil.h"
+#include "test-esys.h"
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
@@ -35,6 +36,7 @@ int
 test_esys_clear(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
+    int failure_return = EXIT_FAILURE;
 
 #ifdef TEST_SESSION
     ESYS_TR session = ESYS_TR_NONE;
@@ -72,6 +74,13 @@ test_esys_clear(ESYS_CONTEXT * esys_context)
                    ESYS_TR_NONE,
                    ESYS_TR_NONE
                    );
+    if (number_rc(r) == TPM2_RC_BAD_AUTH) {
+        /* Platform authorization not possible test will be skipped */
+        LOG_WARNING("Platform authorization not possible.");
+        failure_return = EXIT_SKIP;
+        goto error;
+    }
+
     goto_if_error(r, "Error: Clear", error);
 
 #ifdef TEST_SESSION
@@ -91,7 +100,7 @@ test_esys_clear(ESYS_CONTEXT * esys_context)
     }
 #endif
 
-    return EXIT_FAILURE;
+    return failure_return;
 }
 
 int
