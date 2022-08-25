@@ -209,7 +209,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
 \
     /* Update the size to the real value */ \
     if (buffer) { \
-        UINT16 t = HOST_TO_BE_16(buffer + local_offset - ptr - 2); \
+        UINT16 t = HOST_TO_BE_16((UINT16)(buffer + local_offset - ptr - 2)); \
         memcpy(ptr, &t, sizeof(t)); \
     } \
 \
