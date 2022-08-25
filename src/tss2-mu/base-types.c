@@ -64,13 +64,13 @@ Tss2_MU_##type##_Marshal ( \
         case 1: \
             break; \
         case 2: \
-            src = HOST_TO_BE_16(src); \
+            src = (type)HOST_TO_BE_16((UINT16)src); \
             break; \
         case 4: \
-            src = HOST_TO_BE_32(src); \
+            src = (type)HOST_TO_BE_32((UINT32)src); \
             break; \
         case 8: \
-            src = HOST_TO_BE_64(src); \
+            src = (type)HOST_TO_BE_64((UINT64)src); \
             break; \
 \
     } \
@@ -133,13 +133,13 @@ Tss2_MU_##type##_Unmarshal ( \
             *dest = (type)tmp; \
             break; \
         case 2: \
-            *dest = BE_TO_HOST_16(tmp); \
+            *dest = (type)BE_TO_HOST_16((UINT16)tmp); \
             break; \
         case 4: \
-            *dest = BE_TO_HOST_32(tmp); \
+            *dest = (type)BE_TO_HOST_32((UINT32)tmp); \
             break; \
         case 8: \
-            *dest = BE_TO_HOST_64(tmp); \
+            *dest = (type)BE_TO_HOST_64((UINT64)tmp); \
             break; \
 \
     } \
