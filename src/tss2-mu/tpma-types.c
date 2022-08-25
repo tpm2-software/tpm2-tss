@@ -60,13 +60,13 @@ TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \
         case 1: \
             break; \
         case 2: \
-            src = HOST_TO_BE_16(src); \
+            src = (type)HOST_TO_BE_16((UINT16)src); \
             break; \
         case 4: \
-            src = HOST_TO_BE_32(src); \
+            src = (type)HOST_TO_BE_32(src); \
             break; \
         case 8: \
-            src = HOST_TO_BE_64(src); \
+            src = (type)HOST_TO_BE_64(src); \
             break; \
 \
     } \
@@ -123,16 +123,16 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     switch (sizeof(tmp)) { \
         case 1: \
-            *dest = tmp; \
+            *dest = (type)tmp; \
             break; \
         case 2: \
-            *dest = BE_TO_HOST_16(tmp); \
+            *dest = (type)BE_TO_HOST_16((UINT16)tmp); \
             break; \
         case 4: \
-            *dest = BE_TO_HOST_32(tmp); \
+            *dest = (type)BE_TO_HOST_32(tmp); \
             break; \
         case 8: \
-            *dest = BE_TO_HOST_64(tmp); \
+            *dest = (type)BE_TO_HOST_64(tmp); \
             break; \
 \
     } \
