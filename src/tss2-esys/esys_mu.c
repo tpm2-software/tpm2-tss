@@ -179,10 +179,9 @@ iesys_MU_IESYSC_PARAM_ENCRYPT_check(
         || (*in == ENCRYPT)
         || (*in == NO_ENCRYPT)) {
         return TSS2_RC_SUCCESS;
-    } else {
-        return TSS2_SYS_RC_BAD_VALUE;
     }
-    return TSS2_RC_SUCCESS;
+
+    return TSS2_SYS_RC_BAD_VALUE;
 }
 /** Marshal a constant of type IESYSC_PARAM_DECRYPT into a byte buffer.
  *
