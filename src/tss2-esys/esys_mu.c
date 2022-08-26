@@ -101,33 +101,6 @@ iesys_MU_BYTE_array_Unmarshal(
     return TSS2_RC_SUCCESS;
 }
 
-
-/** Check, if a variable has a possible value of type IESYSC_RESOURCE_TYPE_CONSTANT.
- *
- * @param[in] in variable to check.
- * @retval TSS2_RC_SUCCESS on success.
- */
-TSS2_RC
-Tss2_MU_IESYSC_RESOURCE_TYPE_CONSTANT_check(
-    const IESYSC_RESOURCE_TYPE_CONSTANT *in)
-{
-    LOG_TRACE("called: in=%p", in);
-    if (in == NULL) {
-        LOG_ERROR("in==NULL");
-        return TSS2_SYS_RC_BAD_REFERENCE;
-    }
-    /* No Error-Messages, since this function may fail for a good reasons. */
-    if (FALSE
-        || (*in == IESYSC_KEY_RSRC)
-        || (*in == IESYSC_NV_RSRC)
-        || (*in == IESYSC_SESSION_RSRC)
-        || (*in == IESYSC_WITHOUT_MISC_RSRC)) {
-        return TSS2_RC_SUCCESS;
-    } else {
-        return TSS2_SYS_RC_BAD_VALUE;
-    }
-    return TSS2_RC_SUCCESS;
-}
 /** Marshal a constant of type IESYSC_PARAM_ENCRYPT into a byte buffer.
  *
  * @param[in] src constant to be marshaled.
