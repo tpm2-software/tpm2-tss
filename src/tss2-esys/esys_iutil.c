@@ -74,8 +74,6 @@ cmp_TPM2B_DIGEST(const TPM2B_DIGEST * in1, const TPM2B_DIGEST * in2)
 
     return cmp_BYTE_array((BYTE *) & in1->buffer, in1->size,
                           (BYTE *) & in2->buffer, in2->size);
-
-    return true;
 }
 
 /**
@@ -95,8 +93,6 @@ cmp_TPM2B_NAME(const TPM2B_NAME * in1, const TPM2B_NAME * in2)
 
     return cmp_BYTE_array((BYTE *) & in1->name, in1->size, (BYTE *) & in2->name,
                           in2->size);
-
-    return true;
 }
 
 /**
