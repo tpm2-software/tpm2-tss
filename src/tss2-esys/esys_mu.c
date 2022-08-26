@@ -261,10 +261,9 @@ iesys_MU_IESYSC_PARAM_DECRYPT_check(
         || (*in == DECRYPT)
         || (*in == NO_DECRYPT)) {
         return TSS2_RC_SUCCESS;
-    } else {
-        return TSS2_SYS_RC_BAD_VALUE;
     }
-    return TSS2_RC_SUCCESS;
+
+    return TSS2_SYS_RC_BAD_VALUE;
 }
 /** Marshal a constant of type IESYSC_TYPE_POLICY_AUTH into a byte buffer.
  *
