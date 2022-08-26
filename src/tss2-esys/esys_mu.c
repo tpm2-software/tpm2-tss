@@ -344,10 +344,9 @@ iesys_MU_IESYSC_TYPE_POLICY_AUTH_check(
         || (*in == POLICY_AUTH)
         || (*in == NO_POLICY_AUTH)) {
         return TSS2_RC_SUCCESS;
-    } else {
-        return TSS2_SYS_RC_BAD_VALUE;
     }
-    return TSS2_RC_SUCCESS;
+
+    return TSS2_SYS_RC_BAD_VALUE;
 }
 
 /** Marshal a IESYS_SESSION structure into a byte buffer.
