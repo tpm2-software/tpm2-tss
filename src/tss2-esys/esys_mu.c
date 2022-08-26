@@ -609,10 +609,9 @@ iesys_MU_IESYSC_RESOURCE_TYPE_check(
             || (*in == IESYSC_SESSION_RSRC)
             || (*in == IESYSC_WITHOUT_MISC_RSRC)) {
         return TSS2_RC_SUCCESS;
-    } else {
-        return TSS2_SYS_RC_BAD_VALUE;
     }
-    return TSS2_RC_SUCCESS;
+
+    return TSS2_SYS_RC_BAD_VALUE;
 }
 
 /** Marshal a IESYS_RSRC_UNION union into a byte buffer.
