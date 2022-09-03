@@ -906,6 +906,53 @@ test_unit_fapi_check_ima_log_SOURCES = test/unit/fapi-check-ima-log.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c
+
+test_unit_fapi_ima_fuzzing_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_ima_fuzzing_CXXFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_ima_fuzzing_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_ima_fuzzing_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
+
+test_unit_fapi_ima_fuzzing_SOURCES = test/unit/fapi-ima-fuzzing.c \
+                         src/tss2-fapi/ifapi_ima_eventlog.c \
+                         src/tss2-fapi/ifapi_json_deserialize.c \
+                         src/tss2-fapi/ifapi_json_serialize.c \
+                         src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                         src/tss2-fapi/ifapi_policy_json_serialize.c \
+                         src/tss2-fapi/tpm_json_deserialize.c \
+                         src/tss2-fapi/tpm_json_serialize.c \
+                         src/tss2-fapi/ifapi_json_eventlog_serialize.c \
+                         src/tss2-fapi/fapi_crypto.c \
+                         src/tss2-fapi/ifapi_eventlog.c \
+                         src/tss2-fapi/ifapi_helpers.c \
+                         src/tss2-fapi/ifapi_eventlog_system.c\
+                         src/tss2-fapi/ifapi_keystore.c  \
+                         src/tss2-fapi/ifapi_io.c
+
+noinst_PROGRAMS += test/unit/fapi-ima-fuzzing
+
+test_unit_fapi_system_fuzzing_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_system_fuzzing_CXXFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_system_fuzzing_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_system_fuzzing_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
+
+test_unit_fapi_system_fuzzing_SOURCES = test/unit/fapi-system-fuzzing.c \
+                          src/tss2-fapi/ifapi_json_eventlog_serialize.c \
+                          src/tss2-fapi/ifapi_ima_eventlog.c \
+                          src/tss2-fapi/ifapi_eventlog_system.c \
+                          src/tss2-fapi/ifapi_json_deserialize.c \
+                          src/tss2-fapi/ifapi_json_serialize.c \
+                          src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                          src/tss2-fapi/ifapi_policy_json_serialize.c \
+                          src/tss2-fapi/tpm_json_deserialize.c \
+                          src/tss2-fapi/tpm_json_serialize.c \
+                          src/tss2-fapi/fapi_crypto.c \
+                          src/tss2-fapi/ifapi_eventlog.c \
+                          src/tss2-fapi/ifapi_helpers.c\
+                          src/tss2-fapi/ifapi_keystore.c  \
+                          src/tss2-fapi/ifapi_io.c
+
+noinst_PROGRAMS += test/unit/fapi-system-fuzzing
+
 endif # FAPI
 
 if POLICY
