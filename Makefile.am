@@ -65,6 +65,9 @@ CODE_COVERAGE_DIRECTORY = $(top_builddir)/src $(top_builddir)/test
 # ax_valgrind_check
 @VALGRIND_CHECK_RULES@
 
+AM_DISTCHECK_CONFIGURE_FLAGS = \
+     --with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir)
+
 # ax_doxygen
 @DX_RULES@
 MOSTLYCLEANFILES += $(DX_CLEANFILES)
@@ -754,13 +757,23 @@ define set_tss_permissions
     (setfacl -m default:group:tss:rwx "$1")
 endef
 
+define systemd_start_service
+    if [[ `id -u` -eq 0 ]];then \
+        if [[ -e /sys/kernel/security/ima/binary_runtime_measurements  ||  \
+              -e /sys/kernel/security/tpm[0-9]/binary_bios_measurements ]]; then \
+	       systemctl enable tpm-event-logging.service && \
+           systemctl start tpm-event-logging.service; \
+        fi \
+    fi
+endef
+
 define make_fapi_dirs
     ($(call make_tss_dir,$(DESTDIR)$(runstatedir)/tpm2-tss/eventlog/) || true) && \
     ($(call make_tss_dir,$(DESTDIR)$(localstatedir)/lib/tpm2-tss/system/keystore/))
 endef
 
 define set_fapi_permissions
-    if test -z "${DESTDIR}"; then \ e
+    if test -z "${DESTDIR}"; then \
         ($(call set_tss_permissions,$(DESTDIR)$(runstatedir)/tpm2-tss)) && \
         ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss)) \
     fi
@@ -819,6 +832,10 @@ endif #FAPI
 
 EXTRA_DIST += dist/tpm-udev.rules
 
+if HAVE_SYSTEMD
+dist_systemdsystemunit_DATA = dist/tpm-event-logging.service
+endif
+
 install-dirs:
 if HOSTOS_LINUX
 if SYSD_SYSUSERS
@@ -839,6 +856,11 @@ else
 endif
 	@test -n "$(DESTDIR)" || echo "call check_fapi_dirs"
 	@test -n "$(DESTDIR)" || $(call check_fapi_dirs)
+endif
+
+if HAVE_SYSTEMD
+	@test -n "$(DESTDIR)" || echo "call systemd_start_service"
+	@test -n "$(DESTDIR)" || $(call systemd_start_service)
 endif
 
 install-data-hook: install-dirs
