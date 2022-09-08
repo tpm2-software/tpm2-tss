@@ -19,6 +19,12 @@
 
 static SESSION *sessions = NULL;
 
+typedef struct TPM2B_BIG_BUFFER TPM2B_BIG_BUFFER;
+struct TPM2B_BIG_BUFFER {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_DIGEST_BUFFER * 4];
+};
+
 SESSION *
 get_session(TPMI_SH_AUTH_SESSION hndl)
 {
@@ -73,14 +79,14 @@ start_auth_session(
         goto out;
 
     /* Generate the key used as input to the KDF. */
-    rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key,
+    rval = ConcatSizedByteBuffer((TPM2B *)&key, sizeof(key.secret),
             (TPM2B *)&session->authValueBind);
     if (rval != TPM2_RC_SUCCESS) {
         Tss2_Sys_FlushContext(tmp_context, session->sessionHandle);
         goto out;
     }
 
-    rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key,
+    rval = ConcatSizedByteBuffer((TPM2B *)&key, sizeof(key.secret),
             (TPM2B *)&session->salt);
     if (rval != TPM2_RC_SUCCESS) {
         Tss2_Sys_FlushContext(tmp_context, session->sessionHandle);
@@ -196,7 +202,8 @@ compute_command_hmac(
         CopySizedByteBuffer((TPM2B *)&hmac_key, (TPM2B *)&session->sessionKey);
 
         if (handles[i] != session->bind || handles[i] == TPM2_RH_NULL)
-            ConcatSizedByteBuffer(&hmac_key, (TPM2B *)&entity->entityAuth);
+            ConcatSizedByteBuffer((TPM2B *)&hmac_key, sizeof(hmac_key.buffer),
+                    (TPM2B *)&entity->entityAuth);
 
         rval = compute_session_auth(sysContext,
                 session,
@@ -248,7 +255,8 @@ TSS2_RC check_response_hmac(
         CopySizedByteBuffer((TPM2B *)&hmac_key, (TPM2B *)&session->sessionKey);
 
         if (handles[i] != session->bind)
-            ConcatSizedByteBuffer(&hmac_key, (TPM2B *)&entity->entityAuth);
+            ConcatSizedByteBuffer((TPM2B *)&hmac_key, sizeof(hmac_key.buffer),
+                    (TPM2B *)&entity->entityAuth);
 
         rval = compute_session_auth(sysContext,
                     session,
@@ -350,7 +358,7 @@ tpm_calc_phash(
     TSS2_TCTI_CONTEXT *tcti_context;
     UINT32 i;
     TPM2B_NAME name1, name2, name3;
-    TPM2B_MAX_BUFFER hashInput;
+    TPM2B_BIG_BUFFER hashInput;
     UINT8 *hashInputPtr;
     size_t parametersSize;
     const uint8_t *startParams;
@@ -400,15 +408,18 @@ tpm_calc_phash(
     *(UINT32 *)hashInputPtr = cmdCode;
     hashInput.size += 4;
 
-    rval = ConcatSizedByteBuffer(&hashInput, (TPM2B *)&name1);
+    rval = ConcatSizedByteBuffer((TPM2B *)&hashInput, sizeof(hashInput.buffer),
+            (TPM2B *)&name1);
     if (rval != TPM2_RC_SUCCESS)
         return rval;
 
-    rval = ConcatSizedByteBuffer(&hashInput, (TPM2B *)&name2);
+    rval = ConcatSizedByteBuffer((TPM2B *)&hashInput, sizeof(hashInput.buffer),
+            (TPM2B *)&name2);
     if (rval != TPM2_RC_SUCCESS)
         return rval;
 
-    rval = ConcatSizedByteBuffer(&hashInput, (TPM2B *)&name3);
+    rval = ConcatSizedByteBuffer((TPM2B *)&hashInput, sizeof(hashInput.buffer),
+            (TPM2B *)&name3);
     if (rval != TPM2_RC_SUCCESS)
         return rval;
 
@@ -540,7 +551,8 @@ KDFa(
             return rval;
         }
 
-        ConcatSizedByteBuffer(result_key, (TPM2B *)&digest);
+        ConcatSizedByteBuffer((TPM2B *)result_key, sizeof(result_key->buffer),
+            (TPM2B *)&digest);
     }
 
     /* Truncate the result to the desired size. */

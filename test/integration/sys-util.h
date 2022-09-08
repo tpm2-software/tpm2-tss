@@ -196,7 +196,8 @@ CompareSizedByteBuffer(
 
 TSS2_RC
 ConcatSizedByteBuffer(
-        TPM2B_MAX_BUFFER *result,
+        TPM2B *result,
+        size_t maxlen,
         TPM2B *buf);
 
 void

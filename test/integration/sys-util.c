@@ -623,10 +623,11 @@ out:
 
 TSS2_RC
 ConcatSizedByteBuffer(
-        TPM2B_MAX_BUFFER *result,
+        TPM2B *result,
+        size_t maxlen,
         TPM2B *buf)
 {
-    if (result->size + buf->size > TPM2_MAX_DIGEST_BUFFER)
+    if (result->size + buf->size > maxlen)
         return TSS2_SYS_RC_BAD_VALUE;
 
     memmove(result->buffer + result->size,
