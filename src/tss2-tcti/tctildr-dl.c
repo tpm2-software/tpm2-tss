@@ -10,7 +10,6 @@
 #endif
 
 #include <stdlib.h>
-#include <errno.h>
 #include <string.h>
 #include <inttypes.h>
 #include <dlfcn.h>

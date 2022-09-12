@@ -3,6 +3,7 @@
  * Copyright 2019, Intel Corporation
  */
 
+#include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <stdarg.h>
