@@ -4,6 +4,7 @@
 #include <config.h>
 #endif
 
+#include <errno.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdlib.h>

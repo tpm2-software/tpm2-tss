@@ -8,6 +8,7 @@
 #include <config.h>
 #endif
 
+#include <errno.h>
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdbool.h>

@@ -6,7 +6,6 @@
 #ifndef TCTI_COMMON_H
 #define TCTI_COMMON_H
 
-#include <errno.h>
 #include <stdbool.h>
 
 #include "tss2_tcti.h"
