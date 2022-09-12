@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <stddef.h>
+#include <stdlib.h>
 #if defined(__linux__)
 #include <linux/limits.h>
 #elif defined(_MSC_VER)
