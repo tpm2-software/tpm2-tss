@@ -2,6 +2,7 @@
     global:
         Tss2_RC_Decode;
         Tss2_RC_SetHandler;
+	Tss2_RC_DecodeInfo;
     local:
         *;
 };
