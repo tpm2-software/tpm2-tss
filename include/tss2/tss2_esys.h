@@ -190,7 +190,7 @@ typedef TSS2_RC
         size_t *size,
         void *userdata);
 
-/** Release the resources of an HAMC object.
+/** Release the resources of an HMAC object.
  *
  * The assigned resources will be released and the context will be set to NULL.
  * @param[in,out] context The context of the HMAC object.
@@ -217,17 +217,19 @@ typedef TSS2_RC
         size_t num_bytes,
         void *userdata);
 
-/** Encryption of a buffer using a public (RSA) key.
+/** Computation of an ephemeral ECC key and shared secret Z.
  *
- * Encrypting a buffer using a public key is used for example during
- * Esys_StartAuthSession in order to encrypt the salt value.
- * @param[in] pub_tpm_key The key to be used for encryption.
- * @param[in] in_size The size of the buffer to be encrypted.
- * @param[in] in_buffer The data buffer to be encrypted.
- * @param[in] max_out_size The maximum size for the output encrypted buffer.
- * @param[out] out_buffer The encrypted buffer.
- * @param[out] out_size The size of the encrypted output.
- * @param[in] label The label used in the encryption scheme.
+ * According to the description in TPM spec part 1 C 6.1 a shared secret
+ * between application and TPM is computed (ECDH). An ephemeral ECC key and a
+ * TPM key are used for the ECDH key exchange.
+ * @param[in] key The key to be used for ECDH key exchange.
+ * @param[in] max_out_size the max size for the output of the public key of the
+ *            computed ephemeral key.
+ * @param[out] Z The computed shared secret.
+ * @param[out] Q The public part of the ephemeral key in TPM format.
+ * @param[out] out_buffer The public part of the ephemeral key will be marshaled
+ *             to this buffer.
+ * @param[out] out_size The size of the marshaled output.
  * @param[in/out] userdata information.
  * @retval TSS2_RC_SUCCESS on success
  * @retval USER_DEFINED user defined errors on failure.
