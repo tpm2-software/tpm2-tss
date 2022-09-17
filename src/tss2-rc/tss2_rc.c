@@ -981,3 +981,40 @@ Tss2_RC_Decode(TSS2_RC rc)
 
     return buf;
 }
+
+/** Function to extract information from a response code.
+ *
+ * This function decodes the different bitfields in TSS2_RC.
+ *
+ * @param[in]  rc the response code to decode.
+ * @param[out] info the structure containing the decoded fields.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE if info is a NULL pointer.
+ */
+TSS2_RC
+Tss2_RC_DecodeInfo(TSS2_RC rc, TSS2_RC_INFO *info)
+{
+    UINT8 n;
+
+    if (!info) {
+        return TSS2_BASE_RC_BAD_REFERENCE;
+    }
+
+    info->layer = tss2_rc_layer_number_get(rc);
+
+    if (tss2_rc_layer_format_get(rc)) {
+        info->error = tpm2_rc_fmt1_error_get(rc) | TPM2_RC_FMT1;
+        n = tpm2_rc_fmt1_N_index_get(rc);
+        if (tpm2_rc_fmt1_P_get(rc)) {
+	    info->parameter = n;
+        } else if (tpm2_rc_fmt1_N_is_handle(rc)) {
+            info->handle = n;
+        } else {
+          info->session = n;
+        }
+    } else {
+        info->error = tpm2_error_get(rc);
+    }
+
+    return TSS2_RC_SUCCESS;
+}
