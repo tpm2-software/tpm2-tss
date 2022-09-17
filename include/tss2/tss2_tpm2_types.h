@@ -262,9 +262,9 @@ typedef UINT16 TPM2_KEY_BITS;           /* a key size in bits */
 typedef UINT32 TPM2_SPEC;
 #define TPM2_SPEC_FAMILY      ((TPM2_SPEC) 0x322E3000) /* ASCII 2.0 with null terminator */
 #define TPM2_SPEC_LEVEL       ((TPM2_SPEC) 00)         /* the level number for the specification */
-#define TPM2_SPEC_VERSION     ((TPM2_SPEC) 126)        /* the version number of the spec 001.26 * 100 */
-#define TPM2_SPEC_YEAR        ((TPM2_SPEC) 2015)       /* the year of the version */
-#define TPM2_SPEC_DAY_OF_YEAR ((TPM2_SPEC) 233)        /* the day of the year August 21 2015 */
+#define TPM2_SPEC_VERSION     ((TPM2_SPEC) 138)        /* the version number of the spec 001.38 * 100 */
+#define TPM2_SPEC_YEAR        ((TPM2_SPEC) 2016)       /* the year of the version */
+#define TPM2_SPEC_DAY_OF_YEAR ((TPM2_SPEC) 260)        /* the day of the year September 16 2016 */
 
 /* Definition of UINT32 TPM2_GENERATED Constants <O> */
 typedef UINT32 TPM2_GENERATED;
