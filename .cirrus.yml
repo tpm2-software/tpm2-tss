@@ -1,5 +1,6 @@
 task:
   env:
+    IGNORE_OSVERSION: yes
     CFLAGS: "-I/usr/local/include -I/usr/local/openssl/include"
     LDFLAGS: -L/usr/local/lib
     ibmtpm_name: ibmtpm1637
