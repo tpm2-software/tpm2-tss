@@ -615,6 +615,25 @@ check_HMAC(void **state)
 }
 
 void
+check_MAC(void **state)
+{
+    TSS2_RC r;
+
+    r = Esys_MAC(NULL,
+                  0,
+                  ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_MAC_Async(NULL,
+                        0,
+                        ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_MAC_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
 check_GetRandom(void **state)
 {
     TSS2_RC r;
@@ -663,6 +682,27 @@ check_HMAC_Start(void **state)
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_HMAC_Start_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_MAC_Start(void **state)
+{
+    TSS2_RC r;
+
+    r = Esys_MAC_Start(NULL,
+                        0,
+                        ESYS_TR_PASSWORD,
+                        ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_MAC_Start_Async(NULL,
+                              0,
+                              ESYS_TR_PASSWORD,
+                              ESYS_TR_NONE, ESYS_TR_NONE, NULL, 0);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_MAC_Start_Finish(NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
@@ -2292,6 +2332,57 @@ check_Vendor_TCG_Test(void **state)
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
+void
+check_AC_GetCapability(void **state)
+{
+    TSS2_RC r;
+
+    r = Esys_AC_GetCapability(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              0, 0, 0, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_AC_GetCapability_Async(NULL, ESYS_TR_NONE, ESYS_TR_NONE,
+                                    ESYS_TR_NONE, 0, 0, 0);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_AC_GetCapability_Finish(NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_AC_Send(void **state)
+{
+    TSS2_RC r;
+
+    r = Esys_AC_Send(NULL, ESYS_TR_NONE, ESYS_TR_NONE,  ESYS_TR_NONE,
+                     ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_AC_Send_Async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                           ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_AC_Send_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_Policy_AC_SendSelect(void **state)
+{
+    TSS2_RC r;
+
+    r = Esys_Policy_AC_SendSelect(NULL, ESYS_TR_NONE, ESYS_TR_NONE,
+                                  ESYS_TR_NONE, NULL, NULL, NULL, 0);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_Policy_AC_SendSelect_Async(NULL, ESYS_TR_NONE, ESYS_TR_NONE,
+                                        ESYS_TR_NONE, NULL, NULL, NULL, 0);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_Policy_AC_SendSelect_Finish(NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
 int
 main(void)
 {
@@ -2409,6 +2500,9 @@ main(void)
         cmocka_unit_test(check_NV_ChangeAuth),
         cmocka_unit_test(check_NV_Certify),
         cmocka_unit_test(check_Vendor_TCG_Test),
+        cmocka_unit_test(check_AC_GetCapability),
+        cmocka_unit_test(check_AC_Send),
+        cmocka_unit_test(check_Policy_AC_SendSelect)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

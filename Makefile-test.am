@@ -162,6 +162,9 @@ TESTS_UNIT += \
     test/unit/esys-tcti-rcs \
     test/unit/esys-tpm-rcs \
     test/unit/esys-getpollhandles \
+    test/unit/esys-ac-getcapability \
+    test/unit/esys-ac-send \
+    test/unit/esys-policy-ac-sendselect \
     test/unit/esys-nulltcti \
     test/unit/esys-crypto
 
@@ -212,6 +215,8 @@ TESTS_INTEGRATION += \
     test/integration/sys-policy-authorizeNV.int \
     test/integration/sys-param-encrypt-decrypt.int \
     test/integration/sys-read-clock.int \
+    test/integration/sys-mac.int \
+    test/integration/sys-hmac.int \
     test/tpmclient/tpmclient.int
 endif # !TESTDEVICE
 
@@ -261,6 +266,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-hashsequencestart-session.int \
     test/integration/esys-hierarchychangeauth.int \
     test/integration/esys-hmac.int \
+    test/integration/esys-mac.int \
     test/integration/esys-hmacsequencestart.int \
     test/integration/esys-hmacsequencestart-session.int \
     test/integration/esys-import.int \
@@ -687,6 +693,18 @@ test_unit_esys_getpollhandles_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_getpollhandles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_getpollhandles_LDFLAGS = $(TESTS_LDFLAGS)
 
+test_unit_esys_ac_getcapability_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_ac_getcapability_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_ac_getcapability_LDFLAGS = $(TESTS_LDFLAGS)
+
+test_unit_esys_ac_send_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_ac_send_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_ac_send_LDFLAGS = $(TESTS_LDFLAGS)
+
+test_unit_esys_policy_ac_sendselect_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_esys_policy_ac_sendselect_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_esys_policy_ac_sendselect_LDFLAGS = $(TESTS_LDFLAGS)
+
 test_unit_esys_nulltcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_nulltcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD) $(LIBADD_DL)
 test_unit_esys_nulltcti_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) \
@@ -1040,6 +1058,16 @@ test_integration_sys_stir_random_int_SOURCES = test/integration/sys-stir-random.
 test_integration_sys_get_random_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_sys_get_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_sys_get_random_int_SOURCES = test/integration/sys-get-random.int.c \
+    test/integration/main-sys.c
+
+test_integration_sys_mac_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_mac_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_mac_int_SOURCES = test/integration/sys-mac.int.c \
+    test/integration/main-sys.c
+
+test_integration_sys_hmac_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_hmac_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_hmac_int_SOURCES = test/integration/sys-hmac.int.c \
     test/integration/main-sys.c
 
 test_integration_sys_abi_version_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
@@ -1442,6 +1470,13 @@ test_integration_esys_hmac_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_hmac_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_hmac_int_SOURCES = \
     test/integration/esys-hmac.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_mac_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_mac_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_mac_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_mac_int_SOURCES = \
+    test/integration/esys-mac.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_hmacsequencestart_int_CFLAGS  = $(TESTS_CFLAGS)
