@@ -9,7 +9,6 @@
 #endif
 
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "tss2_esys.h"
 
@@ -18,17 +17,17 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
-/** This test is intended to test the ESYS command  Esys_HMAC with password
+/** This test is intended to test the ESYS command  Esys_MAC with password
  *  authentication.
  *
- * We create a symmetric HMAC key signing key which will be used
- * for signing. This key will be used to create the HMAC for a test
+ * We create a symmetric HAC key signing key which will be used
+ * for signing. This key will be used to create the MAC for a test
  * buffer.
  *
  * Tested ESYS commands:
  *  - Esys_CreatePrimary() (M)
  *  - Esys_FlushContext() (M)
- *  - Esys_HMAC() (O)
+ *  - Esys_MAC() (O)
  *
  * @param[in,out] esys_context The ESYS_CONTEXT.
  * @retval EXIT_FAILURE
@@ -36,7 +35,7 @@
  */
 
 int
-test_esys_hmac(ESYS_CONTEXT * esys_context)
+test_esys_mac(ESYS_CONTEXT * esys_context)
 {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
@@ -45,7 +44,7 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     TPM2B_CREATION_DATA *creationData = NULL;
     TPM2B_DIGEST *creationHash = NULL;
     TPMT_TK_CREATION *creationTicket = NULL;
-    TPM2B_DIGEST *outHMAC = NULL;
+    TPM2B_DIGEST *outMAC = NULL;
 
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
@@ -97,7 +96,7 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     TPM2B_MAX_BUFFER test_buffer = { .size = 20,
                                      .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
                                               1, 2, 3, 4, 5, 6, 7, 8, 9}} ;
-    r = Esys_HMAC(
+    r = Esys_MAC(
         esys_context,
         primaryHandle,
         ESYS_TR_PASSWORD,
@@ -105,18 +104,18 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         &test_buffer,
         TPM2_ALG_SHA256,
-        &outHMAC);
-    goto_if_error(r, "Error: HMAC", error);
+        &outMAC);
+    goto_if_error(r, "Error: MAC", error);
 
     TPM2B_DIGEST dig = { .size = 20,
-                                     .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-                                              1, 2, 3, 4, 5, 6, 7, 8, 9}} ;
+                         .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
+                                  1, 2, 3, 4, 5, 6, 7, 8, 9}} ;
     TPMT_TK_VERIFIED *validation = NULL;
     TPMT_SIGNATURE sig;
 
     sig.signature.hmac.hashAlg = TPM2_ALG_SHA256;
     sig.sigAlg = TPM2_ALG_HMAC;
-    memcpy(sig.signature.hmac.digest.sha256, outHMAC->buffer, outHMAC->size);
+    memcpy(sig.signature.hmac.digest.sha256, outMAC->buffer, outMAC->size);
 
     r = Esys_VerifySignature(esys_context, primaryHandle, ESYS_TR_NONE,
                              ESYS_TR_NONE, ESYS_TR_NONE, &dig, &sig,
@@ -130,7 +129,7 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     Esys_Free(creationData);
     Esys_Free(creationHash);
     Esys_Free(creationTicket);
-    Esys_Free(outHMAC);
+    Esys_Free(outMAC);
     return EXIT_SUCCESS;
 
  error:
@@ -145,11 +144,11 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     Esys_Free(creationData);
     Esys_Free(creationHash);
     Esys_Free(creationTicket);
-    Esys_Free(outHMAC);
+    Esys_Free(outMAC);
     return EXIT_FAILURE;
 }
 
 int
 test_invoke_esys(ESYS_CONTEXT * esys_context) {
-    return test_esys_hmac(esys_context);
+    return test_esys_mac(esys_context);
 }

@@ -611,6 +611,23 @@ check_HMAC(void **state)
 }
 
 void
+check_MAC(void **state)
+{
+    TSS2_RC r;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    enum _ESYS_STATE esys_states[3] = {
+        _ESYS_STATE_INIT,
+        _ESYS_STATE_INTERNALERROR
+    };
+    TPM2B_DIGEST *outMAC;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_MAC_Finish(esys_context, &outMAC);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
 check_GetRandom(void **state)
 {
     TSS2_RC r;
@@ -656,6 +673,23 @@ check_HMAC_Start(void **state)
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
         r = Esys_HMAC_Start_Finish(esys_context, &sequenceHandle_handle);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_MAC_Start(void **state)
+{
+    TSS2_RC r;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    enum _ESYS_STATE esys_states[3] = {
+        _ESYS_STATE_INIT,
+        _ESYS_STATE_INTERNALERROR
+    };
+    ESYS_TR sequenceHandle_handle;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_MAC_Start_Finish(esys_context, &sequenceHandle_handle);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2025,6 +2059,57 @@ check_Vendor_TCG_Test(void **state)
     }
 }
 
+void
+check_AC_GetCapability(void **state)
+{
+    TSS2_RC r;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    enum _ESYS_STATE esys_states[3] = {
+        _ESYS_STATE_INIT,
+        _ESYS_STATE_INTERNALERROR
+    };
+    TPML_AC_CAPABILITIES *capabilityData;
+    TPMI_YES_NO moreData;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_AC_GetCapability_Finish(esys_context, &moreData, &capabilityData);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_AC_Send(void **state)
+{
+    TSS2_RC r;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    enum _ESYS_STATE esys_states[3] = {
+        _ESYS_STATE_INIT,
+        _ESYS_STATE_INTERNALERROR
+    };
+    TPMS_AC_OUTPUT *acDataOut;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_AC_Send_Finish(esys_context, &acDataOut);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_Policy_AC_SendSelect(void **state)
+{
+    TSS2_RC r;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    enum _ESYS_STATE esys_states[3] = {
+        _ESYS_STATE_INIT,
+        _ESYS_STATE_INTERNALERROR
+    };
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_Policy_AC_SendSelect_Finish(esys_context);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
 int
 main(void)
 {
@@ -2255,6 +2340,12 @@ main(void)
                                         esys_unit_teardown),
         cmocka_unit_test_setup_teardown(check_Vendor_TCG_Test, esys_unit_setup,
                                         esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_AC_GetCapability, esys_unit_setup,
+                                        esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_AC_Send, esys_unit_setup,
+                                        esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_Policy_AC_SendSelect, esys_unit_setup,
+                                        esys_unit_teardown)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -500,7 +500,7 @@ test_MakeCredential(void **state)
 
     ESYS_TR handle_handle = ESYS_TR_NONE;
     TPM2B_DIGEST credential = DUMMY_2B_DATA(.buffer);
-    TPM2B_NAME objectName = DUMMY_2B_DATA(.name);;
+    TPM2B_NAME objectName = DUMMY_2B_DATA(.name);
     TPM2B_ID_OBJECT *credentialBlob;
     TPM2B_ENCRYPTED_SECRET *secret;
     r = Esys_MakeCredential(esys_context,
@@ -883,6 +883,28 @@ test_HMAC(void **state)
 }
 
 static void
+test_MAC(void **state)
+{
+    TSS2_RC r;
+    TSS2_TCTI_CONTEXT *tcti;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR handle_handle = DUMMY_TR_HANDLE_KEY;
+    TPM2B_MAX_BUFFER buffer = DUMMY_2B_DATA(.buffer);
+    TPMI_ALG_MAC_SCHEME hashAlg = TPM2_ALG_SHA1;
+    TPM2B_DIGEST *outMAC;
+    r = Esys_MAC(esys_context,
+                  handle_handle,
+                  ESYS_TR_PASSWORD,
+                  ESYS_TR_NONE, ESYS_TR_NONE, &buffer, hashAlg, &outMAC);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
+}
+
+static void
 test_GetRandom(void **state)
 {
     TSS2_RC r;
@@ -933,6 +955,29 @@ test_HMAC_Start(void **state)
     TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
     ESYS_TR sequenceHandle_handle;
     r = Esys_HMAC_Start(esys_context,
+                        handle_handle,
+                        ESYS_TR_PASSWORD,
+                        ESYS_TR_NONE,
+                        ESYS_TR_NONE, &auth, hashAlg, &sequenceHandle_handle);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
+}
+
+static void
+test_MAC_Start(void **state)
+{
+    TSS2_RC r;
+    TSS2_TCTI_CONTEXT *tcti;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR handle_handle = DUMMY_TR_HANDLE_KEY;
+    TPM2B_AUTH auth = DUMMY_2B_DATA(.buffer);
+    TPMI_ALG_MAC_SCHEME hashAlg = TPM2_ALG_SHA1;
+    ESYS_TR sequenceHandle_handle;
+    r = Esys_MAC_Start(esys_context,
                         handle_handle,
                         ESYS_TR_PASSWORD,
                         ESYS_TR_NONE,
@@ -2761,6 +2806,68 @@ test_Vendor_TCG_Test(void **state)
     assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
 }
 
+static void
+test_AC_GetCapability(void **state)
+{
+    TSS2_RC r;
+    TSS2_TCTI_CONTEXT *tcti;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR ac = 0;
+    UINT32 property = 0;
+    UINT32 propertyCount = 0;
+    TPML_AC_CAPABILITIES *capabilityData;
+    TPMI_YES_NO moreData;
+    r = Esys_AC_GetCapability(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, ac, property, propertyCount,
+                              &moreData, &capabilityData);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
+}
+
+static void
+test_AC_Send(void **state)
+{
+    TSS2_RC r;
+    TSS2_TCTI_CONTEXT *tcti;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR ac = 0;
+    TPMS_AC_OUTPUT *acDataOut;
+    TPM2B_MAX_BUFFER inputData = DUMMY_2B_DATA(.buffer);
+    r = Esys_AC_Send(esys_context, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE,
+                     ESYS_TR_NONE, ac, &inputData, &acDataOut);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
+}
+
+static void
+test_Policy_AC_SendSelect(void **state)
+{
+    TSS2_RC r;
+    TSS2_TCTI_CONTEXT *tcti;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    TPMI_YES_NO includeObject = 0;
+    TPM2B_NAME objectName = DUMMY_2B_DATA(.name);
+    TPM2B_NAME authHandleName = DUMMY_2B_DATA(.name);
+    TPM2B_NAME acName = DUMMY_2B_DATA(.name);
+    r = Esys_Policy_AC_SendSelect(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
+                                  ESYS_TR_NONE, &objectName, &authHandleName,
+                                  &acName, includeObject);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */ );
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -2795,9 +2902,11 @@ main(int argc, char *argv[])
         cmocka_unit_test_setup_teardown(test_EncryptDecrypt2, setup, teardown),
         cmocka_unit_test_setup_teardown(test_Hash, setup, teardown),
         cmocka_unit_test_setup_teardown(test_HMAC, setup, teardown),
+        cmocka_unit_test_setup_teardown(test_MAC, setup, teardown),
         cmocka_unit_test_setup_teardown(test_GetRandom, setup, teardown),
         cmocka_unit_test_setup_teardown(test_StirRandom, setup, teardown),
         cmocka_unit_test_setup_teardown(test_HMAC_Start, setup, teardown),
+        cmocka_unit_test_setup_teardown(test_MAC_Start, setup, teardown),
         cmocka_unit_test_setup_teardown(test_HashSequenceStart, setup,
                                         teardown),
         cmocka_unit_test_setup_teardown(test_SequenceUpdate, setup, teardown),
@@ -2896,6 +3005,9 @@ main(int argc, char *argv[])
         cmocka_unit_test_setup_teardown(test_NV_ChangeAuth, setup, teardown),
         cmocka_unit_test_setup_teardown(test_NV_Certify, setup, teardown),
         cmocka_unit_test_setup_teardown(test_Vendor_TCG_Test, setup, teardown),
+        cmocka_unit_test_setup_teardown(test_AC_GetCapability, setup, teardown),
+        cmocka_unit_test_setup_teardown(test_AC_Send, setup, teardown),
+        cmocka_unit_test_setup_teardown(test_Policy_AC_SendSelect, setup, teardown)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
