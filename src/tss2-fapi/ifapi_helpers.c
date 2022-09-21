@@ -70,6 +70,8 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
             template->system = TPM2_YES;
         } else if (strcasecmp(flag, "sign") == 0) {
             attributes |= TPMA_OBJECT_SIGN_ENCRYPT;
+        } else if (strcasecmp(flag, "user") == 0) {
+	    attributes |= TPMA_OBJECT_USERWITHAUTH;
         } else if (strcasecmp(flag, "decrypt") == 0) {
             attributes |= TPMA_OBJECT_DECRYPT;
         } else if (strcasecmp(flag, "restricted") == 0) {
