@@ -823,6 +823,32 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
             fallthrough;
 
+        statecase(context->state, PROVISION_PREPARE_READ_INT_CERT);
+	    const char *int_ca_file;
+
+            /* Prepare reading of intermediate certificate. */
+            int_ca_file = NULL;
+#ifdef SELF_GENERATED_CERTIFICATE
+#pragma message ( "*** Allow self generated certifcate ***" )
+            int_ca_file = getenv("FAPI_TEST_INT_CERT");
+#endif
+            if (!int_ca_file) {
+                context->state = PROVISION_EK_CHECK_CERT;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+            r = ifapi_io_read_async(&context->io, int_ca_file);
+            return_try_again(r);
+            goto_if_error2(r, "Reading certificate %s", error_cleanup, int_ca_file);
+
+	        fallthrough;
+
+        statecase(context->state, PROVISION_READ_INT_CERT);
+            r = ifapi_io_read_finish(&context->io, (uint8_t **) &command->intermed_crt, NULL);
+            return_try_again(r);
+            goto_if_error(r, "Reading intermediate certificate failed", error_cleanup);
+
+            fallthrough;
+
         statecase(context->state, PROVISION_EK_CHECK_CERT);
             /* The EK certificate will be verified against the FAPI list of root certificates. */
             r = ifapi_curl_verify_ek_cert(command->root_crt, command->intermed_crt, command->pem_cert);
