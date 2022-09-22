@@ -80,7 +80,7 @@ test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
     char          *publicKey = NULL;
     char          *path_list = NULL;
 
-    if (strcmp("P_ECC", fapi_profile) != 0)
+    if (strncmp("P_ECC", fapi_profile, 5) != 0)
         sigscheme = "RSA_PSS";
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
