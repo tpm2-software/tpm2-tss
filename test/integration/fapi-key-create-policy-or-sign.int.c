@@ -41,7 +41,7 @@ branch_callback(
     UNUSED(description);
     UNUSED(userData);
 
-    if (strcmp(objectPath, "P_ECC/HS/SRK/mySignKey") != 0) {
+    if (strcmp(objectPath, FAPI_PROFILE "/HS/SRK/mySignKey") != 0) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path");
     }
 

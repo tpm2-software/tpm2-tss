@@ -556,6 +556,12 @@ AM_COND_IF([ENABLE_TCTI_FUZZING], [
                     [AC_MSG_ERROR("Fuzzing TCTI can only be used with clang")])
             ], [])
 
+AC_ARG_WITH([default-test-fapi-profile],
+            [AS_HELP_STRING([--with-default-test-fapi-profile=PROFILE],
+                            [sets the default FAPI profile used in tests])],,
+            [with_default_test_fapi_profile=P_ECC])
+AC_DEFINE_UNQUOTED([DEFAULT_TEST_FAPI_PROFILE], ["$with_default_test_fapi_profile"], [Default FAPI profile used for testing])
+
 AC_OUTPUT
 
 AC_MSG_RESULT([
@@ -568,6 +574,7 @@ AC_MSG_RESULT([
     unit:               $enable_unit
     integration:        $enable_integration
     testing backend:    $integration_tcti
+    fapi test profile:  $with_default_test_fapi_profile
     fuzzing:            $with_fuzzing
     debug:              $enable_debug
     maxloglevel:        $with_maxloglevel
