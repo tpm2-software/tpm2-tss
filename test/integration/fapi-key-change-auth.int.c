@@ -22,7 +22,6 @@
 #define PASSWORD "abc"
 #define USER_DATA "my user data"
 #define DESCRIPTION "my description"
-#define FAPI_PROFILE fapi_profile
 #define OBJECT_PATH "HS/SRK/mySignKey"
 
 static TSS2_RC

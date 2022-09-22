@@ -24,9 +24,6 @@
 
 #define PASSWORD "abc"
 #define SIGN_TEMPLATE  "sign,noDa"
-#ifndef FAPI_PROFILE
-#define FAPI_PROFILE "P_ECC"
-#endif /* FAPI_PROFILE */
 
 static TSS2_RC
 auth_callback(

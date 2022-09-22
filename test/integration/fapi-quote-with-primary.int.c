@@ -25,9 +25,6 @@
 #include "util/aux_util.h"
 
 #define EVENT_SIZE 10
-#ifndef FAPI_PROFILE
-#define FAPI_PROFILE "P_ECC"
-#endif /* FAPI_PROFILE */
 
 /** Test the FAPI functions for quote commands.
  *

@@ -5,6 +5,9 @@
  *
  * All rights reserved.
  ***********************************************************************/
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <assert.h>
 #include <json-c/json.h>
 #include <json-c/json_util.h>
@@ -124,6 +127,10 @@
     if (rc == TSS2_RC_SUCCESS) {                                        \
         LOG_ERROR("Error %s (%x) in Line %i: \n", msg, __LINE__, rc);   \
         goto label; }
+
+#ifndef FAPI_PROFILE
+#define FAPI_PROFILE DEFAULT_TEST_FAPI_PROFILE
+#endif /* FAPI_PROFILE */
 
 /* This variable is set to the same value in order to allow usage in if-statements etc. */
 extern char *fapi_profile;

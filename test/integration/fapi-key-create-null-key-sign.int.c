@@ -140,7 +140,7 @@ test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
     Fapi_Finalize(&context);
-    int rc = init_fapi("P_ECC", &context);
+    int rc = init_fapi(fapi_profile, &context);
     if (rc)
         goto error;
 
