@@ -68,7 +68,7 @@ test_fapi_key_create_he_sign(FAPI_CONTEXT *context)
     char          *publicKey = NULL;
     char          *path_list = NULL;
 
-    if (strcmp("P_ECC", fapi_profile) != 0)
+    if (strncmp("P_ECC", fapi_profile, 5) != 0)
         sigscheme = "RSA_PSS";
 
     /* We need to reset the passwords again, in order to not brick physical TPMs */

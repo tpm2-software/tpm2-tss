@@ -112,7 +112,7 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     size_t         privatesize;
     json_object   *jso = NULL;
 
-    if (strcmp("P_ECC", fapi_profile) != 0)
+    if (strncmp("P_ECC", fapi_profile, 5) != 0)
         sigscheme = "RSA_PSS";
 
     /* We need to reset the passwords again, in order to not brick physical TPMs */
