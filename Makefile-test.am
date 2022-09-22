@@ -2204,7 +2204,7 @@ test_integration_fapi_second_provisioning_fint_SOURCES = \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_provisioning_error_fint_CFLAGS  = $(TESTS_CFLAGS) \
- -DFAPI_PROFILE=\"P_ECC_error\"
+ -DFAPI_PROFILE=\"P_ECC_error\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_provisioning_error_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provisioning_error_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_provisioning_error_fint_SOURCES = \
