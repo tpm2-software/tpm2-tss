@@ -77,6 +77,15 @@ test_fapi_platform_certificates(FAPI_CONTEXT *context)
     if(nv_already_defined){
         TPM2B_NV_PUBLIC *nvPublic = NULL;
         TPM2B_NAME *nvName = NULL;
+
+        r = Esys_TR_FromTPMPublic(context->esys,
+                                  MIN_PLATFORM_CERT_HANDLE,
+                                  ESYS_TR_NONE,
+                                  ESYS_TR_NONE,
+                                  ESYS_TR_NONE,
+                                  &nvHandle);
+        goto_if_error(r, "Error: TR from TPM public", error);
+
         r = Esys_NV_ReadPublic(context->esys,
                                nvHandle,
                                ESYS_TR_NONE,
