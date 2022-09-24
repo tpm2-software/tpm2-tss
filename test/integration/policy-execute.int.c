@@ -847,14 +847,26 @@ static int test_policy_execute (
                         "/policy/pol_cphash")) {
             TSS2_RC r = check_policy(abs_path, esys_context, TPM2_ALG_SHA1,
                     p->sha1, expected_fail);
-            goto_if_error(r, "Checking policy digest for sha1 failed", error);
+            if ((r == TPM2_RC_COMMAND_CODE) ||
+                (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+                (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
+                LOG_WARNING("Policy %s not supported by TPM.", p->path);
+            } else {
+                goto_if_error(r, "Checking policy digest for sha1 failed", error);
+            }
         }
         SAFE_FREE(global_signature);
 
         if (p->sha256) {
             TSS2_RC r = check_policy(abs_path, esys_context, TPM2_ALG_SHA256,
                     p->sha256, expected_fail);
-            goto_if_error(r, "Checking policy digest for sha256 failed", error);
+            if ((r == TPM2_RC_COMMAND_CODE) ||
+                (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+                (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
+                LOG_WARNING("Policy %s not supported by TPM.", p->path);
+            } else {
+                goto_if_error(r, "Checking policy digest for sha256 failed", error);
+            }
         }
         SAFE_FREE(global_signature);
     }
