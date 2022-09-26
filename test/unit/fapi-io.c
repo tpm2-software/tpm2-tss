@@ -38,7 +38,9 @@
 bool wrap_fcntl_test = false;
 bool wrap_malloc_test = false;
 bool wrap_read_test = false;
-FILE mock_stream; /**< stream will be used to activate wrapper.*/
+char _mock_stream; /**< stream will be used to activate wrapper.*/
+
+#define MOCK_STREAM ((FILE *)(&_mock_stream))
 
 /*
  * Wrapper functions for file system io.
@@ -74,7 +76,7 @@ __real_fclose(FILE *stream, ...);
 int
 __wrap_fclose(FILE *stream, ...)
 {
-    if (stream != &mock_stream) {
+    if (stream != MOCK_STREAM) {
         return __real_fclose(stream);
     }
     return mock_type(int);
@@ -86,7 +88,7 @@ __real_fseek(FILE *stream, long offset, int whence, ...);
 int
 __wrap_fseek(FILE *stream, long offset, int whence, ...)
 {
-    if (stream != &mock_stream) {
+    if (stream != MOCK_STREAM) {
         return __real_fseek(stream, offset, whence);
     }
     return mock_type(int);
@@ -98,7 +100,7 @@ __real_ftell(FILE *stream, ...);
 long
 __wrap_ftell(FILE *stream, ...)
 {
-    if (stream != &mock_stream) {
+    if (stream != MOCK_STREAM) {
         return __real_ftell(stream);
     }
     return mock_type(int);
@@ -135,7 +137,7 @@ __real_fileno(FILE *stream, ...);
 int
 __wrap_fileno(FILE *stream, ...)
 {
-    if (stream != &mock_stream) {
+    if (stream != MOCK_STREAM) {
         return __real_fileno(stream);
     }
     return 1;
@@ -179,7 +181,7 @@ check_io_read_async(void **state) {
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
     wrap_fcntl_test = true;
-    will_return(__wrap_fopen, &mock_stream);
+    will_return(__wrap_fopen, MOCK_STREAM);
     will_return(__wrap_fcntl, -1);
     will_return_always(__wrap_fclose, 0);
     errno = EAGAIN;
@@ -187,8 +189,8 @@ check_io_read_async(void **state) {
     r = ifapi_io_read_async(&io, "tss_unit_dummyf");
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
-    will_return(__wrap_fopen, &mock_stream);
-    will_return(__wrap_fopen, &mock_stream);
+    will_return(__wrap_fopen, MOCK_STREAM);
+    will_return(__wrap_fopen, MOCK_STREAM);
     will_return(__wrap_fcntl, 0);
     will_return(__wrap_fseek, 0);
     will_return(__wrap_ftell, 1);
@@ -202,8 +204,8 @@ check_io_read_async(void **state) {
 
     wrap_malloc_test = false;
 
-    will_return(__wrap_fopen, &mock_stream);
-    will_return(__wrap_fopen, &mock_stream);
+    will_return(__wrap_fopen, MOCK_STREAM);
+    will_return(__wrap_fopen, MOCK_STREAM);
     will_return(__wrap_fcntl, 0);
     will_return(__wrap_fseek, 0);
     will_return(__wrap_ftell, 1);
@@ -236,7 +238,7 @@ check_io_read_finish(void **state) {
     will_return_always(__wrap_fclose, 0);
     io.char_buffer = &io_char_buffer[0];
     io.buffer_length = 10;
-    io.stream = &mock_stream;
+    io.stream = MOCK_STREAM;
     errno = EAGAIN;
     r = ifapi_io_read_finish(&io, &buffer[0], &count);
     assert_int_equal(r, TSS2_FAPI_RC_TRY_AGAIN);
@@ -298,7 +300,7 @@ check_io_write_async(void **state) {
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
     wrap_fcntl_test = true;
-    will_return(__wrap_fopen, &mock_stream);
+    will_return(__wrap_fopen, MOCK_STREAM);
     will_return(__wrap_fcntl, -1);
 
     errno = EAGAIN;
@@ -306,7 +308,7 @@ check_io_write_async(void **state) {
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
     io.char_rbuffer = NULL;
-    will_return(__wrap_fopen, &mock_stream);
+    will_return(__wrap_fopen, MOCK_STREAM);
     will_return(__wrap_fcntl, 0);
     will_return(__wrap_fcntl, 0);
     will_return(__wrap_fcntl, -1);
@@ -345,7 +347,7 @@ check_io_write_finish(void **state) {
     will_return_always(__wrap_fclose, 0);
 
     wrap_write_test = true;
-    io.stream = &mock_stream;
+    io.stream = MOCK_STREAM;
     will_return(__wrap_write, -1);
     errno = EAGAIN;
     r = ifapi_io_write_finish(&io);
