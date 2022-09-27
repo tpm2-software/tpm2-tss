@@ -283,10 +283,11 @@ test_tcti(void **state)
 static void
 test_info_fmt0(void **state)
 {
-    TSS2_RC_INFO info = { 0, 0, 0, 0, 0 };
+    TSS2_RC_INFO info = { 1, 2, 3, 4, 5, 6 };
     TSS2_RC test_rc = TSS2_MU_RC_LAYER | TPM2_RC_SESSION_HANDLES;
     TSS2_RC r = Tss2_RC_DecodeInfo(test_rc, &info);
     assert_int_equal(info.layer, 9);
+    assert_int_equal(info.format, 0);
     assert_int_equal(info.error, TPM2_RC_SESSION_HANDLES);
     assert_int_equal(info.parameter, 0);
     assert_int_equal(info.handle, 0);
@@ -297,10 +298,11 @@ test_info_fmt0(void **state)
 static void
 test_info_fmt1_parameter(void **state)
 {
-    TSS2_RC_INFO info = { 0, 0, 0, 0, 0 };
+    TSS2_RC_INFO info;
     TSS2_RC test_rc = TSS2_SYS_RC_LAYER | TPM2_RC_ASYMMETRIC | TPM2_RC_P | TPM2_RC_1;
     TSS2_RC r = Tss2_RC_DecodeInfo(test_rc, &info);
     assert_int_equal(info.layer, 8);
+    assert_int_equal(info.format, 1);
     assert_int_equal(info.error, TPM2_RC_ASYMMETRIC);
     assert_int_equal(info.parameter, 1);
     assert_int_equal(info.handle, 0);
@@ -311,7 +313,7 @@ test_info_fmt1_parameter(void **state)
 static void
 test_info_fmt1_handle(void **state)
 {
-    TSS2_RC_INFO info = { 0, 0, 0, 0, 0 };
+    TSS2_RC_INFO info;
     TSS2_RC test_rc = TSS2_ESAPI_RC_LAYER | TPM2_RC_HANDLE | TPM2_RC_H | TPM2_RC_2;
     TSS2_RC r = Tss2_RC_DecodeInfo(test_rc, &info);
     assert_int_equal(info.layer, 7);
@@ -325,7 +327,7 @@ test_info_fmt1_handle(void **state)
 static void
 test_info_fmt1_session(void **state)
 {
-    TSS2_RC_INFO info = { 0, 0, 0, 0, 0 };
+    TSS2_RC_INFO info;
     TSS2_RC test_rc = TSS2_FEATURE_RC_LAYER | TPM2_RC_EXPIRED | TPM2_RC_S | TPM2_RC_3;
     TSS2_RC r = Tss2_RC_DecodeInfo(test_rc, &info);
     assert_int_equal(info.layer, 6);
