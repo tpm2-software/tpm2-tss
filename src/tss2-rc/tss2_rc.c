@@ -1000,9 +1000,12 @@ Tss2_RC_DecodeInfo(TSS2_RC rc, TSS2_RC_INFO *info)
         return TSS2_BASE_RC_BAD_REFERENCE;
     }
 
-    info->layer = tss2_rc_layer_number_get(rc);
+    memset(info, 0, sizeof(TSS2_RC_INFO));
 
-    if (tss2_rc_layer_format_get(rc)) {
+    info->layer = tss2_rc_layer_number_get(rc);
+    info->format = tss2_rc_layer_format_get(rc);
+
+    if (info->format) {
         info->error = tpm2_rc_fmt1_error_get(rc) | TPM2_RC_FMT1;
         n = tpm2_rc_fmt1_N_index_get(rc);
         if (tpm2_rc_fmt1_P_get(rc)) {
