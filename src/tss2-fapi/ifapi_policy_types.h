@@ -130,7 +130,7 @@ typedef struct {
     TPMT_PUBLIC                                     key;    /**< Selector of the algorithm used for the signature and the pub */
     TPM2B_NONCE                               policyRef;    /**< None */
     TPMT_SIGNATURE                            signature;    /**< None */
-    TPMI_ALG_HASH                         keyPEMhashAlg;
+    TPMI_ALG_HASH                               hashAlg;
     UINT8_ARY                              pemSignature;
     char                                        *keyPEM;
     TPMT_RSA_SCHEME                           rsaScheme;

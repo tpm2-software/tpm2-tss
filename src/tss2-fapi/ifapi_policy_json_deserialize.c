@@ -1382,17 +1382,21 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
         r = ifapi_json_char_deserialize(jso2, &out->keyPEM);
         return_if_error(r, "Bad value for field \"key\".");
         if (ifapi_get_sub_object(jso, "keyPEMhashAlg", &jso2)) {
-            r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->keyPEMhashAlg);
+            /* Allow value not defined in spec to achieve backward compatibility. */
+            r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hashAlg);
             return_if_error(r, "Bad value for field \"keyPEMhashAlg\".");
+        } else if (ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
+            r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hashAlg);
+            return_if_error(r, "Bad value for field \"hashAlg\".");
         } else {
-            out->keyPEMhashAlg = TPM2_ALG_SHA256;
+            out->hashAlg = TPM2_ALG_SHA256;
         }
         if (ifapi_get_sub_object(jso, "rsaScheme", &jso2)) {
             r = ifapi_json_TPMT_RSA_SCHEME_deserialize(jso2, &out->rsaScheme);
             return_if_error(r, "Bad value for field \"rsaScheme\".");
         } else {
             out->rsaScheme.scheme = TPM2_ALG_RSAPSS;
-            out->rsaScheme.details.rsapss.hashAlg = out->keyPEMhashAlg;
+            out->rsaScheme.details.rsapss.hashAlg = out->hashAlg;
         }
         if (!ifapi_get_sub_object(jso, "signature", &jso2)) {
             LOG_ERROR("Field \"signature\" not found.");

@@ -1082,10 +1082,10 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(
         json_object_object_add(*jso, "rsaScheme", jso2);
 
         jso2 = NULL;
-        r = ifapi_json_TPMI_ALG_HASH_serialize(in->keyPEMhashAlg, &jso2);
+        r = ifapi_json_TPMI_ALG_HASH_serialize(in->hashAlg, &jso2);
         return_if_error(r, "Serialize hash alg.");
 
-        json_object_object_add(*jso, "keyPEMhashAlg", jso2);
+        json_object_object_add(*jso, "hashAlg", jso2);
     } else {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid key type.");
     }
