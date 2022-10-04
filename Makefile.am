@@ -570,6 +570,7 @@ EXTRA_DIST +=  \
     test/data/fapi/P_RSA_sh_policy.json \
     test/data/fapi/P_RSA256.json \
     test/data/fapi/P_ECC.json \
+    test/data/fapi/P_ECC384.json \
     test/data/fapi/policy/pol_pcr16_0.json \
     test/data/fapi/policy/pol_pcr16_0_rsa_authorized.json \
     test/data/fapi/policy/pol_pcr16_0_ecc_authorized.json \
