@@ -777,7 +777,7 @@ equal_policy_authorization(
                     pem_public.publicArea.parameters.rsaDetail.scheme
                         = authorizations->authorizations[i].rsaScheme;
                 }
-                pem_public.publicArea.nameAlg = authorizations->authorizations[i].keyPEMhashAlg;
+                pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
 
                 /* Check public information if key and policyRef */
                 if (ifapi_TPMT_PUBLIC_cmp(public, &pem_public.publicArea) &&
@@ -1068,13 +1068,13 @@ get_policy_signature(
                 pem_public.publicArea.parameters.rsaDetail.scheme
                     = authorizations->authorizations[i].rsaScheme;
             }
-            pem_public.publicArea.nameAlg = authorizations->authorizations[i].keyPEMhashAlg;
+            pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
 
             if (ifapi_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)) {
                 r = ifapi_der_sig_to_tpm(&pem_public.publicArea,
                                          authorizations->authorizations[i].pemSignature.buffer,
                                          authorizations->authorizations[i].pemSignature.size,
-                                         authorizations->authorizations[i].keyPEMhashAlg,
+                                         authorizations->authorizations[i].hashAlg,
                                          signature);
 
                 return_if_error(r, "Invalid signature.");
