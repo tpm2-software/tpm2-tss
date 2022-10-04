@@ -110,7 +110,11 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
         "    {" \
         "      \"hashAlg\":\"SHA1\"," \
         "      \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\"" \
-        "    }" \
+        "    },"                                                        \
+        "    { " \
+        "         \"hashAlg\":\"SHA384\"," \
+        "         \"digest\":\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fcccedd5\"" \
+        "     }" \
         "  ]," \
         "  \"policy\":[" \
         "    {" \
@@ -123,7 +127,11 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
         "        {" \
         "          \"hashAlg\":\"SHA1\"," \
         "          \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\"" \
-        "        }" \
+        "        },"                                                    \
+        "    { " \
+        "         \"hashAlg\":\"SHA384\"," \
+        "         \"digest\":\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fcccedd5\"" \
+        "     }" \
         "      ]," \
         "      \"pcrs\":[" \
         "        {" \
