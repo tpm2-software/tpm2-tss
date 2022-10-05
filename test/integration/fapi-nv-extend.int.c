@@ -90,9 +90,17 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     ASSERT(log != NULL);
     LOG_INFO("\nTEST_JSON\nLog:\n%s\nEND_JSON", log);
     char *fields_log1[] =  { "0", "digests", "0", "digest" };
-    CHECK_JSON_FIELDS(log, fields_log1,
-                      "dcb1ac4a5de370cad091c13f13aee2f936c278fa05d264653c0c1321852a35e8",
-                      error);
+
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+        CHECK_JSON_FIELDS(log, fields_log1,
+                          "c8ffec7d7d70c61b16adaab88925a1759b94cf6b50669b04aef1a8427fabb131eafbf9a21e3b8bddd9c5d5e7",
+                          error);
+    } else {
+        CHECK_JSON_FIELDS(log, fields_log1,
+                          "dcb1ac4a5de370cad091c13f13aee2f936c278fa05d264653c0c1321852a35e8",
+                          error);
+    }
+
     ASSERT(strlen(log) > ASSERT_SIZE);
 
     fprintf(stderr, "\nLog:\n%s\n", log);
@@ -111,9 +119,16 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     ASSERT(strlen(log) > ASSERT_SIZE);
     LOG_INFO("\nTEST_JSON\nLog:\n%s\nEND_JSON", log);
     char *fields_log2[] =  { "1", "digests", "0", "digest" };
-    CHECK_JSON_FIELDS(log, fields_log2,
-                      "dcb1ac4a5de370cad091c13f13aee2f936c278fa05d264653c0c1321852a35e8",
-                      error);
+
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+        CHECK_JSON_FIELDS(log, fields_log2,
+                          "c8ffec7d7d70c61b16adaab88925a1759b94cf6b50669b04aef1a8427fabb131eafbf9a21e3b8bddd9c5d5e7",
+                          error);
+    } else {
+        CHECK_JSON_FIELDS(log, fields_log2,
+                          "dcb1ac4a5de370cad091c13f13aee2f936c278fa05d264653c0c1321852a35e8",
+                          error);
+    }
 
     fprintf(stderr, "\nLog:\n%s\n", log);
 

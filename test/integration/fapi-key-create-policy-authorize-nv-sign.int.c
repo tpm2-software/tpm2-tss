@@ -73,7 +73,7 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
     char *json_policy = NULL;
     char policy_file[1024];
 
-    if (snprintf(&policy_file[0], 1023, TOP_SOURCEDIR "/test/data/fapi/%s.json", policy_name) < 0)
+    if (snprintf(&policy_file[0], 1023, TOP_SOURCEDIR "/test/data/fapi%s.json", policy_name) < 0)
         return NULL;
 
     stream = fopen(policy_file, "r");
@@ -119,22 +119,36 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
 #define POLICY_AUTHORIZE_NV "/policy/pol_authorize_nv"
 #endif
 
+
 int
 test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
+
 {
     TSS2_RC r;
     char *nvPathPolicy = "/nv/Owner/myNV";
-    char *policy_authorize_nv = POLICY_AUTHORIZE_NV;
+    char *policy_authorize_nv;
+    char extended_name[1024];
     char *policy_pcr2 = "/policy/pol_pcr16_0";
     char *json_policy = NULL;
 
     uint8_t *signature = NULL;
     char    *publicKey = NULL;
     char    *certificate = NULL;
+    size_t  policy_nv_auth_size;
 
     if (check_tpm_cmd(context, TPM2_CC_PolicyAuthorizeNV) != TPM2_RC_SUCCESS) {
         LOG_WARNING("Command PolicyAuthorizeNV not available.");
         return EXIT_SKIP;
+    }
+
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+        if (snprintf(&extended_name[0], 1023, "%s_sha384", POLICY_AUTHORIZE_NV) < 0) {
+            LOG_ERROR("snprint failed");
+            return EXIT_FAILURE;
+        }
+        policy_authorize_nv = &extended_name[0];
+    } else {
+        policy_authorize_nv = POLICY_AUTHORIZE_NV;
     }
 
     LOG_INFO("Policy File: %s", policy_authorize_nv);
@@ -142,8 +156,17 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
+     if (strcmp(FAPI_PROFILE, "P_ECC") == 0) {
+        policy_nv_auth_size = 34;
+    } else if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+        policy_nv_auth_size = 50;
+    } else {
+        LOG_ERROR("No appropriate policy file exists!");
+        return EXIT_FAILURE;
+    }
+
     /* Create NV object for storing the policy */
-    r = Fapi_CreateNv(context, nvPathPolicy, "noda", 34, "", "");
+    r = Fapi_CreateNv(context, nvPathPolicy, "noda", policy_nv_auth_size, "", "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
 
     r = pcr_reset(context, 16);

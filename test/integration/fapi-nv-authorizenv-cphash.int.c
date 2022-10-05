@@ -81,19 +81,30 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     uint8_t data[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     char *policy1_name = "/policy/pol_authorize_nv";
     char *policy1_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize_nv.json";
-    char *policy2_name = "/policy/pol_cphash";
-    char *policy2_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_cphash.json";
+    char *policy2_name;
+    char *policy2_file;
+    size_t policy_nv_auth_size;
     FILE *stream = NULL;
     char json[1024];
     char *policy = NULL;
 
     if (check_tpm_cmd(context, TPM2_CC_PolicyAuthorizeNV) != TPM2_RC_SUCCESS) {
         LOG_WARNING("Command PolicyAuthorizeNV not available.");
-        return EXIT_SKIP;
+        goto error;
     }
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
+
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+        policy2_name = "/policy/pol_cphash_sha384";
+        policy2_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_cphash_sha384.json";
+        policy_nv_auth_size = 50;
+    } else {
+        policy2_name = "/policy/pol_cphash";
+        policy2_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_cphash.json";
+        policy_nv_auth_size = 34;
+    }
 
     memset(&json[0], 0, sizeof(json));
     stream = fopen(policy1_file, "r");
@@ -121,7 +132,7 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
 
     /* Start the test */
 
-    r = Fapi_CreateNv(context, "/nv/Owner/myNV", "", 34, "", "");
+    r = Fapi_CreateNv(context, "/nv/Owner/myNV", "", policy_nv_auth_size, "", "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
 
     r = Fapi_CreateNv(context, "/nv/Owner/myNV2", "", sizeof(data), policy1_name, "");
@@ -137,6 +148,7 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     r = Fapi_WriteAuthorizeNv(context, "/nv/Owner/myNV", policy2_name);
     goto_if_error(r, "Error Fapi_WriteAuthorizeNv", error);
 
+    LOG_ERROR("XXXX Write");
     r = Fapi_NvWrite(context, "/nv/Owner/myNV2", &data[0], sizeof(data));
     goto_if_error(r, "Error Fapi_NvWrite", error);
 
@@ -156,7 +168,9 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
-    SAFE_FREE(policy);
+    if (policy) {
+        SAFE_FREE(policy);
+    }
     Fapi_Delete(context, "/");
     return EXIT_FAILURE;
 }
