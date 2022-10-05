@@ -604,7 +604,14 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_action.json \
     test/data/fapi/policy/pol_cphash.json \
     test/data/fapi/policy/pol_or_read_write_secret.json \
-    test/data/fapi/policy/pol_ek_high_range_sha256.json
+    test/data/fapi/policy/pol_ek_high_range_sha256.json \
+    test/data/fapi/P_ECC_sh_eh_policy_sha384.json \
+	test/data/fapi/policy/pol_authorize_ecc_pem_sha384.json \
+	test/data/fapi/policy/pol_authorize_nv_complex_tpm2b_sha384.json \
+	test/data/fapi/policy/pol_authorize_nv_tpms_sha384.json \
+	test/data/fapi/policy/pol_authorize_nv_sha384.json \
+	test/data/fapi/policy/pol_cphash_sha384.json \
+	test/data/fapi/policy/pol_pcr16_0_ecc_authorized_sha384.json
 
 src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_esys) \
     $(libutil) $(libtss2_tctildr)

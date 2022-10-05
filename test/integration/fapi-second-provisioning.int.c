@@ -129,7 +129,13 @@ test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_Delete", error);
 
     Fapi_Finalize(&context);
-    rc = init_fapi("P_ECC_sh_eh_policy", &context);
+
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+        rc = init_fapi("P_ECC_sh_eh_policy_sha384", &context);
+    } else {
+         rc = init_fapi("P_ECC_sh_eh_policy", &context);
+    }
+
     if (rc)
         goto error;
 
@@ -139,7 +145,14 @@ test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_Provision", error);
 
     Fapi_Finalize(&context);
-    rc = init_fapi("P_ECC", &context);
+    if (strcmp(FAPI_PROFILE, "P_ECC") == 0) {
+        rc = init_fapi("P_ECC", &context);
+    } else if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+        rc = init_fapi("P_ECC384", &context);
+    } else {
+        LOG_ERROR("Profile %s not supported for this test!", FAPI_PROFILE);
+    }
+
     if (rc)
         goto error;
 
