@@ -53,6 +53,8 @@
 #define TSS2_RC_TEST_MEMORY ((TSS2_RC)(TEST_LAYER | \
                             TSS2_BASE_RC_MEMORY))
 
+#define PCR_8 8
+
 static uint8_t *global_signature = NULL;
 
 static char *read_all(const char *path) {
@@ -833,6 +835,49 @@ static int test_policy_execute (
              *   - error: tpm:parameter(1):value is out of range or is not correct for the context
              */
             expected_fail = 0x000001c4;
+        }
+
+        if (strcmp(_test_fapi_policy_policies[i].path,
+                "/policy/pol_pcr8_0") == 0) {
+            TPML_PCR_SELECTION  pcr_selection;
+            TSS2_RC rc;
+            int j;
+            TPML_DIGEST *pcr_values = NULL;
+            bool skip = false;
+
+            /*
+             * Skip the test if PCR 8 is non-zero - means we're testing against
+             * a real device and the PCR has been extended.
+             */
+
+            pcr_selection.count = 1;
+            pcr_selection.pcrSelections[0].hash = TPM2_ALG_SHA256;
+            pcr_selection.pcrSelections[0].sizeofSelect = 3;
+            pcr_selection.pcrSelections[0].pcrSelect[0] = 0;
+            pcr_selection.pcrSelections[0].pcrSelect[1] = 0;
+            pcr_selection.pcrSelections[0].pcrSelect[2] = 0;
+            pcr_selection.pcrSelections[0].pcrSelect[PCR_8 / 8] = 1 << (PCR_8 % 8);
+
+            rc = Esys_PCR_Read(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
+                               ESYS_TR_NONE, &pcr_selection, NULL, NULL,
+                               &pcr_values);
+            if (rc != TSS2_RC_SUCCESS) {
+                LOG_ERROR("PCR_Read FAILED! Response Code : 0x%x", rc);
+                goto error;
+            }
+
+            for (j = 0; j < pcr_values->digests[0].size; j++) {
+                if (pcr_values->digests[0].buffer[j] != 0) {
+                    LOG_WARNING("PCR 8 cannot be tested");
+                    skip = true;
+                    break;
+                }
+            }
+
+            free(pcr_values);
+
+            if (skip)
+                continue;
         }
 
         /*
