@@ -479,7 +479,7 @@ ifapi_io_dirfiles(
     size_t *numfiles)
 {
     char **paths;
-    int numentries;
+    int numentries = 0;
     struct dirent **namelist;
     size_t numpaths = 0;
     check_not_null(dirname);
@@ -514,9 +514,18 @@ ifapi_io_dirfiles(
     *files = paths;
     *numfiles = numpaths;
 
+    for (int i = 0; i < numentries; i++) {
+        free(namelist[i]);
+    }
+    free(namelist);
+
     return TSS2_RC_SUCCESS;
 
 error_oom:
+    for (int i = 0; i < numentries; i++) {
+        free(namelist[i]);
+    }
+    free(namelist);
     LOG_ERROR("Out of memory");
     for (size_t i = 0; i < numpaths; i++)
         free(paths[i]);
