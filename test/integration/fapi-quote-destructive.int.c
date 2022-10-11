@@ -111,6 +111,9 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     ASSERT(pathlist != NULL);
     ASSERT(strlen(pathlist) > ASSERT_SIZE);
 
+    r = pcr_reset(context, 16);
+    goto_if_error(r, "Error pcr_reset", error);
+
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
