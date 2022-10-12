@@ -250,7 +250,7 @@ ifapi_profiles_get(
     size_t len;
 
     /* if no name or nor profile prefix is given, use the default profile */
-    if (!name || strncmp(name, "P_", 2) != 0 || strncmp(name, "/P_", 2) != 0) {
+    if (!name || !(strncmp(name, "P_", 2) == 0 || strncmp(name, "/P_", 3) == 0)) {
         *profile = &profiles->default_profile;
         return TSS2_RC_SUCCESS;
     }
