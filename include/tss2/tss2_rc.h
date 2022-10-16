@@ -29,6 +29,8 @@ struct TSS2_RC_INFO {
 
 TSS2_RC Tss2_RC_DecodeInfo(TSS2_RC, TSS2_RC_INFO *info);
 
+const char *Tss2_RC_DecodeInfoError(TSS2_RC_INFO *info);
+
 #ifdef __cplusplus
 }
 #endif

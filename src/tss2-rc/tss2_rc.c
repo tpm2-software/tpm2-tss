@@ -193,8 +193,8 @@ tpm2_rc_fmt0_S_get(TSS2_RC rc)
  */
 #define ADD_NULL_HANDLER ADD_HANDLER("\0", NULL)
 
-static const char *
-tpm2_err_handler_fmt1(TPM2_RC rc)
+const char *
+tss2_fmt1_err_strs_get(TSS2_RC error)
 {
     /*
      * format 1 error codes start at 1, so
@@ -288,45 +288,15 @@ tpm2_err_handler_fmt1(TPM2_RC rc)
         "point is not on the required curve",
     };
 
-    static __thread char buf[TSS2_ERR_LAYER_ERROR_STR_MAX + 1];
-
-    clearbuf(buf);
-
-    /* Print whether or not the error is caused by a bad
-     * handle or parameter. On the case of a Handle (P == 0)
-     * then the N field top bit will be set. Un-set this bit
-     * to get the handle index by subtracting 8 as N is a 4
-     * bit field.
-     *
-     * the lower 3 bits of N indicate index, and the high bit
-     * indicates
-     */
-    UINT8 index = tpm2_rc_fmt1_N_index_get(rc);
-
-    bool is_handle = tpm2_rc_fmt1_N_is_handle(rc);
-    const char *m = tpm2_rc_fmt1_P_get(rc) ? "parameter" :
-                    is_handle ? "handle" : "session";
-    catbuf(buf, "%s", m);
-
-    if (index) {
-        catbuf(buf, "(%u):", index);
-    } else {
-        catbuf(buf, "%s", "(unk):");
+    if (error < ARRAY_LEN(fmt1_err_strs)) {
+        return fmt1_err_strs[error];
     }
 
-    UINT8 errnum = tpm2_rc_fmt1_error_get(rc);
-    if (errnum < ARRAY_LEN(fmt1_err_strs)) {
-        m = fmt1_err_strs[errnum];
-        catbuf(buf, "%s", m);
-    } else {
-        catbuf(buf, "unknown error num: 0x%X", errnum);
-    }
-
-    return buf;
+    return NULL;
 }
 
-static const char *
-tpm2_err_handler_fmt0(TSS2_RC rc)
+const char *
+tss2_fmt0_err_strs_get(TSS2_RC rc)
 {
     /*
      * format 0 error codes start at 1, so
@@ -623,6 +593,60 @@ tpm2_err_handler_fmt0(TSS2_RC rc)
         "the sensitive area did not unmarshal correctly after decryption",
     };
 
+    UINT8 errnum = tpm2_rc_fmt0_error_get(rc);
+    /* is it a warning (version 2 error string) or is it a 1.2 error? */
+    size_t len = tpm2_rc_fmt0_S_get(rc) ? ARRAY_LEN(fmt0_warn_strs) : ARRAY_LEN(fmt0_err_strs);
+    const char **selection = tpm2_rc_fmt0_S_get(rc) ? fmt0_warn_strs : fmt0_err_strs;
+    if (errnum >= len) {
+        return NULL;
+    }
+
+    return selection[errnum];
+}
+
+static const char *
+tpm2_err_handler_fmt1(TPM2_RC rc)
+{
+    static __thread char buf[TSS2_ERR_LAYER_ERROR_STR_MAX + 1];
+
+    clearbuf(buf);
+
+    /* Print whether or not the error is caused by a bad
+     * handle or parameter. On the case of a Handle (P == 0)
+     * then the N field top bit will be set. Un-set this bit
+     * to get the handle index by subtracting 8 as N is a 4
+     * bit field.
+     *
+     * the lower 3 bits of N indicate index, and the high bit
+     * indicates
+     */
+    UINT8 index = tpm2_rc_fmt1_N_index_get(rc);
+
+    bool is_handle = tpm2_rc_fmt1_N_is_handle(rc);
+    const char *m = tpm2_rc_fmt1_P_get(rc) ? "parameter" :
+                    is_handle ? "handle" : "session";
+    catbuf(buf, "%s", m);
+
+    if (index) {
+        catbuf(buf, "(%u):", index);
+    } else {
+        catbuf(buf, "%s", "(unk):");
+    }
+
+    UINT8 errnum = tpm2_rc_fmt1_error_get(rc);
+    m = tss2_fmt1_err_strs_get(errnum);
+    if (m) {
+        catbuf(buf, "%s", m);
+    } else {
+        catbuf(buf, "unknown error num: 0x%X", errnum);
+    }
+
+    return buf;
+}
+
+static const char *
+tpm2_err_handler_fmt0(TSS2_RC rc)
+{
     static __thread char buf[TSS2_ERR_LAYER_ERROR_STR_MAX + 1];
 
     clearbuf(buf);
@@ -640,17 +664,7 @@ tpm2_err_handler_fmt0(TSS2_RC rc)
             return buf;
         }
 
-        /* is it a warning (version 2 error string) or is it a 1.2 error? */
-        size_t len =
-                tpm2_rc_fmt0_S_get(rc) ?
-                        ARRAY_LEN(fmt0_warn_strs) : ARRAY_LEN(fmt0_err_strs);
-        const char **selection =
-                tpm2_rc_fmt0_S_get(rc) ? fmt0_warn_strs : fmt0_err_strs;
-        if (errnum >= len) {
-            return NULL;
-        }
-
-        const char *m = selection[errnum];
+        const char *m = tss2_fmt0_err_strs_get(rc);
         if (!m) {
             return NULL;
         }
@@ -1020,4 +1034,39 @@ Tss2_RC_DecodeInfo(TSS2_RC rc, TSS2_RC_INFO *info)
     }
 
     return TSS2_RC_SUCCESS;
+}
+
+/** Function to get a human readable error from a TSS2_RC_INFO
+ *
+ * This function returns the human readable eror for the underlying
+ * error, ignoring the layer, parameters, handles and sessions.
+ *
+ * @param[int] info the structure containing the decoded fields.
+ * @retval A human understandable error description string.
+ * @retval NULL if info is a NULL pointer.
+ */
+const char *
+Tss2_RC_DecodeInfoError(TSS2_RC_INFO *info)
+{
+    static __thread char buf[TSS2_ERR_LAYER_ERROR_STR_MAX + 1];
+    const char *m = NULL;
+
+    if (!info) {
+        return NULL;
+    }
+    clearbuf(buf);
+
+    if (info->format) {
+        m = tss2_fmt1_err_strs_get(info->error ^ TPM2_RC_FMT1);
+    } else {
+        m = tss2_fmt0_err_strs_get(info->error ^ TPM2_RC_VER1);
+    }
+
+    if (m) {
+        catbuf(buf, "%s", m);
+    } else {
+        catbuf(buf, "0x%X", info->error);
+    }
+
+    return buf;
 }

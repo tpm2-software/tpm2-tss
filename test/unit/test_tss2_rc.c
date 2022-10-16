@@ -345,6 +345,68 @@ test_info_null(void **state)
     assert_int_equal(r, TSS2_BASE_RC_BAD_REFERENCE);
 }
 
+static void
+test_info_str_fmt1(void **state)
+{
+    TSS2_RC_INFO info = {
+        .error = TPM2_RC_EXPIRED,
+        .format = 1,
+    };
+    const char *m = Tss2_RC_DecodeInfoError(&info);
+    assert_string_equal(m, "the policy has expired");
+}
+
+static void
+test_info_str_fmt1_ff(void **state)
+{
+    TSS2_RC_INFO info = {
+        .error = 0xFF,
+        .format = 1,
+    };
+    const char *m = Tss2_RC_DecodeInfoError(&info);
+    assert_string_equal(m, "0xFF");
+}
+
+static void
+test_info_str_fmt0_err(void **state)
+{
+    TSS2_RC_INFO info = {
+        .error = TPM2_RC_COMMAND_CODE,
+        .format = 0,
+    };
+    const char *m = Tss2_RC_DecodeInfoError(&info);
+    assert_string_equal(m, "command code not supported");
+}
+
+static void
+test_info_str_fmt0_warn(void **state)
+{
+    TSS2_RC_INFO info = {
+        .error = TPM2_RC_TESTING,
+        .format = 0,
+    };
+    const char *m = Tss2_RC_DecodeInfoError(&info);
+    assert_string_equal(m, "TPM is performing selftests");
+}
+
+static void
+test_info_str_fmt0_ff(void **state)
+{
+    TSS2_RC_INFO info = {
+        .error = 0xFF,
+        .format = 0,
+    };
+    const char *m = Tss2_RC_DecodeInfoError(&info);
+    assert_string_equal(m, "0xFF");
+}
+
+static void
+test_info_str_null(void **state)
+{
+    const char *m = Tss2_RC_DecodeInfoError(NULL);
+    assert_null(m);
+}
+
 /* link required symbol, but tpm2_tool.c declares it AND main, which
  * we have a main below for cmocka tests.
  */
@@ -381,6 +443,12 @@ main(int argc, char* argv[])
             cmocka_unit_test(test_info_fmt1_handle),
             cmocka_unit_test(test_info_fmt1_session),
             cmocka_unit_test(test_info_null),
+            cmocka_unit_test(test_info_str_fmt1),
+            cmocka_unit_test(test_info_str_fmt1_ff),
+            cmocka_unit_test(test_info_str_fmt0_err),
+            cmocka_unit_test(test_info_str_fmt0_warn),
+            cmocka_unit_test(test_info_str_fmt0_ff),
+            cmocka_unit_test(test_info_str_null),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
