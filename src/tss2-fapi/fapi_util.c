@@ -606,10 +606,12 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
 {
     TSS2_RC r;
     TPMS_POLICY *policy;
+    IFAPI_KEY *pkey = &context->createPrimary.pkey_object.misc.key;
 
     r = TSS2_RC_SUCCESS;
 
     if (ktype == TSS2_EK) {
+        pkey->ek_profile = TPM2_YES;
         /* Values set according to EK credential profile. */
         if (context->cmd.Provision.public_templ.public.publicArea.type == TPM2_ALG_RSA) {
             if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
@@ -942,8 +944,9 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         fallthrough;
 
     statecase(context->primary_state, PRIMARY_READ_HIERARCHY);
-        /* The hierarchy object ussed for auth_session will be loaded from key store. */
-        if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
+        /* The hierarchy object used for auth_session will be loaded from key store. */
+        if (pkey->creationTicket.hierarchy == TPM2_RH_EK ||
+            (pkey->ek_profile && pkey->creationTicket.hierarchy == TPM2_RH_ENDORSEMENT)) {
             r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HE");
             return_if_error2(r, "Could not open hierarchy /HE");
         } else if (pkey->creationTicket.hierarchy == TPM2_RH_NULL) {
@@ -964,6 +967,9 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
 
         if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
+            hierarchy->public.handle = ESYS_TR_RH_ENDORSEMENT;
+        } else if (pkey->creationTicket.hierarchy == TPM2_RH_ENDORSEMENT &&
+                   pkey->ek_profile) {
             hierarchy->public.handle = ESYS_TR_RH_ENDORSEMENT;
         } else if (pkey->creationTicket.hierarchy == TPM2_RH_NULL) {
             hierarchy->public.handle = ESYS_TR_RH_NULL;
@@ -991,7 +997,27 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
 
         /* Prepare primary creation. */
         TPM2B_PUBLIC public = pkey->public;
+
         memset(&public.publicArea.unique, 0, sizeof(TPMU_PUBLIC_ID));
+
+        if (hierarchy->public.handle == ESYS_TR_RH_ENDORSEMENT &&
+            pkey->ek_profile) {
+            /* Values set according to EK credential profile. */
+            if (public.publicArea.type == TPM2_ALG_RSA) {
+                if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
+                    public.publicArea.unique.rsa.size = 0;
+                else
+                    public.publicArea.unique.rsa.size = 256;
+            } else if (public.publicArea.type == TPM2_ALG_ECC) {
+                if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH)) {
+                    public.publicArea.unique.ecc.x.size = 0;
+                    public.publicArea.unique.ecc.y.size = 0;
+                } else {
+                    public.publicArea.unique.ecc.x.size = 32;
+                   public.publicArea.unique.ecc.y.size = 32;
+                }
+            }
+        }
 
         r = Esys_CreatePrimary_Async(context->esys, hierarchy->public.handle,
                                      auth_session, ESYS_TR_NONE, ESYS_TR_NONE,

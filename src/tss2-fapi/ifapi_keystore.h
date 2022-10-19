@@ -43,6 +43,8 @@ typedef struct {
     TPMI_YES_NO                               with_auth;    /**< Authorization provided during creation */
     UINT32                                  reset_count;    /**< The TPM reset count during key creation */
     TPMI_YES_NO                       delete_prohibited;    /**< Persistent object should not be deleted.  */
+    TPMI_YES_NO                              ek_profile;    /**< Has to be set if EK is created according
+                                                                 to EK credential profile: */
 } IFAPI_KEY;
 
 /** Type for representing a external public key
