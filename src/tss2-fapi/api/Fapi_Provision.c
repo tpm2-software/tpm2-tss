@@ -21,7 +21,6 @@
 #include "fapi_int.h"
 #include "fapi_crypto.h"
 #include "fapi_policy.h"
-#include "ifapi_curl.h"
 #include "ifapi_get_intl_cert.h"
 #include "ifapi_helpers.h"
 
@@ -605,8 +604,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             fallthrough;
 
         statecase(context->state, PROVISION_PREPARE_EK_EVICT);
-            r = Esys_EvictControl_Async(context->esys, hierarchy_hs->public.handle,
-                     pkeyObject->public.handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+            r = Esys_EvictControl_Async(context->esys, hierarchy_hs->handle,
+                     pkeyObject->handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
                      ESYS_TR_NONE, pkey->persistent_handle);
 
             goto_if_error(r, "Error Esys EvictControl", error_cleanup);
@@ -842,7 +841,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
         statecase(context->state, PROVISION_EK_CHECK_CERT);
             /* The EK certificate will be verified against the FAPI list of root certificates. */
-            r = ifapi_curl_verify_ek_cert(command->root_crt, command->intermed_crt, command->pem_cert);
+            r = ifapi_verify_ek_cert(command->root_crt, command->intermed_crt, command->pem_cert);
             SAFE_FREE(command->root_crt);
             SAFE_FREE(command->intermed_crt);
             goto_if_error2(r, "Verify EK certificate", error_cleanup);
@@ -1148,7 +1147,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 && hierarchy_hs->misc.hierarchy.with_auth == TPM2_NO) {
                 hierarchy_hs->misc.hierarchy.with_auth = TPM2_YES;
                 /* Public handle was changed to 0xfff in the error case. */
-                pkeyObject->public.handle = ek_handle;
+                pkeyObject->handle = ek_handle;
                 context->state = PROVISION_AUTHORIZE_HS_FOR_EK_EVICT;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
