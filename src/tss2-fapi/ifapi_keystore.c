@@ -1486,6 +1486,8 @@ ifapi_copy_ifapi_key(IFAPI_KEY * dest, const IFAPI_KEY * src) {
     dest->signing_scheme = src->signing_scheme;
     dest->name = src->name;
     dest->with_auth = src->with_auth;
+    dest->delete_prohibited = src->delete_prohibited;
+    dest->ek_profile = src->ek_profile;
 
     return r;
 
