@@ -357,6 +357,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
     ESYS_TR auth_session;
     TPM2B_NAME *srk_name = NULL, *srk_name_persistent = NULL;
     ESYS_TR srk_persistent_handle;
+    ESYS_TR ek_handle = ESYS_TR_NONE;
 
 
     switch (context->state) {
@@ -583,18 +584,33 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
             /* Check whether a persistent EK handle was defined in profile. */
             if (command->public_templ.persistent_handle) {
-
                 pkey->persistent_handle = command->public_templ.persistent_handle;
 
-                /* Prepare making the EK permanent. */
-                r = Esys_EvictControl_Async(context->esys, hierarchy_hs->public.handle,
-                        pkeyObject->public.handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
-                        ESYS_TR_NONE, pkey->persistent_handle);
-                goto_if_error(r, "Error Esys EvictControl", error_cleanup);
-                context->state = PROVISION_WAIT_FOR_EK_PERSISTENT;
+                if (hierarchy_hs->misc.hierarchy.with_auth == TPM2_YES ||
+                    hierarchy_hs->misc.hierarchy.authPolicy.size) {
+                    context->state = PROVISION_AUTHORIZE_HS_FOR_EK_EVICT;
+                    auth_session = ESYS_TR_PASSWORD;
+                } else {
+                    context->state = PROVISION_PREPARE_EK_EVICT;
+                }
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
+            context->state = PROVISION_INIT_GET_CAP2;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+
+        statecase(context->state, PROVISION_AUTHORIZE_HS_FOR_EK_EVICT);
+            r = ifapi_authorize_object(context, hierarchy_hs, &auth_session);
+            FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
             fallthrough;
+
+        statecase(context->state, PROVISION_PREPARE_EK_EVICT);
+            r = Esys_EvictControl_Async(context->esys, hierarchy_hs->public.handle,
+                     pkeyObject->public.handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                     ESYS_TR_NONE, pkey->persistent_handle);
+
+            goto_if_error(r, "Error Esys EvictControl", error_cleanup);
+            context->state = PROVISION_WAIT_FOR_EK_PERSISTENT;
+            return TSS2_FAPI_RC_TRY_AGAIN;
 
         statecase(context->state, PROVISION_INIT_GET_CAP2);
             if (context->config.ek_cert_less == TPM2_YES) {
@@ -1149,24 +1165,19 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return TSS2_FAPI_RC_TRY_AGAIN;
 
         statecase(context->state, PROVISION_WAIT_FOR_EK_PERSISTENT);
+            ek_handle = pkeyObject->public.handle;
             r = Esys_EvictControl_Finish(context->esys, &pkeyObject->public.handle);
             return_try_again(r);
 
-            /* Retry with authorization callback after trial with null auth */
-            if (number_rc(r) == TPM2_RC_BAD_AUTH &&
-                hierarchy_hs->misc.hierarchy.with_auth == TPM2_NO) {
-                char* description;
-                r = ifapi_get_description(hierarchy_hs, &description);
-                return_if_error(r, "Get description");
-
-                r = ifapi_set_auth(context, hierarchy_hs, "CreatePrimary");
-                SAFE_FREE(description);
-                goto_if_error_reset_state(r, "Create EK", error_cleanup);
-
+            if (number_rc(r) == TPM2_RC_BAD_AUTH
+                && hierarchy_hs->misc.hierarchy.with_auth == TPM2_NO) {
                 hierarchy_hs->misc.hierarchy.with_auth = TPM2_YES;
-                context->state =  PROVISION_WAIT_FOR_SRK_PERSISTENT;
+                /* Public handle was changed to 0xfff in the error case. */
+                pkeyObject->public.handle = ek_handle;
+                context->state = PROVISION_AUTHORIZE_HS_FOR_EK_EVICT;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
+
             goto_if_error(r, "Evict control failed", error_cleanup);
 
             command->ek_tpm_handle = pkeyObject->misc.key.persistent_handle;
