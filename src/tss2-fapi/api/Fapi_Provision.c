@@ -1126,8 +1126,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
              * Adaption of the lockout hierarchy to the passed parameters
              * and the current profile.
              */
-            if (!command->authValueLockout ||
-                strcmp(command->authValueLockout, "") == 0) {
+            if (!command->authValueLockout) {
                 context->state = PROVISION_LOCKOUT_CHANGE_POLICY;
                 /* Auth value of lockout hierarchy will not be changed. */
                 return TSS2_FAPI_RC_TRY_AGAIN;
