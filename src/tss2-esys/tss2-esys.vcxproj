@@ -118,8 +118,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\util\log.c" />
-    <ClCompile Include="api\Esys_ActivateCredential.c" />
+    <ClCompile Include="api\Esys_AC_GetCapability.c" />
+    <ClCompile Include="api\Esys_AC_Send.c" />
     <ClCompile Include="api\Esys_ACT_SetTimeout.c" />
+    <ClCompile Include="api\Esys_ActivateCredential.c" />
     <ClCompile Include="api\Esys_Certify.c" />
     <ClCompile Include="api\Esys_CertifyCreation.c" />
     <ClCompile Include="api\Esys_CertifyX509.c" />
@@ -167,6 +169,8 @@
     <ClCompile Include="api\Esys_Load.c" />
     <ClCompile Include="api\Esys_LoadExternal.c" />
     <ClCompile Include="api\Esys_MakeCredential.c" />
+    <ClCompile Include="api\Esys_MAC.c" />
+    <ClCompile Include="api\Esys_MAC_Start.c" />
     <ClCompile Include="api\Esys_NV_Certify.c" />
     <ClCompile Include="api\Esys_NV_ChangeAuth.c" />
     <ClCompile Include="api\Esys_NV_DefineSpace.c" />
@@ -189,6 +193,7 @@
     <ClCompile Include="api\Esys_PCR_Reset.c" />
     <ClCompile Include="api\Esys_PCR_SetAuthPolicy.c" />
     <ClCompile Include="api\Esys_PCR_SetAuthValue.c" />
+    <ClCompile Include="api\Esys_Policy_AC_SendSelect.c" />
     <ClCompile Include="api\Esys_PolicyAuthorize.c" />
     <ClCompile Include="api\Esys_PolicyAuthorizeNV.c" />
     <ClCompile Include="api\Esys_PolicyAuthValue.c" />

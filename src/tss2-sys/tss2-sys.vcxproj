@@ -99,6 +99,8 @@
     <ClCompile Include="api\Tss2_Sys_Load.c" />
     <ClCompile Include="api\Tss2_Sys_LoadExternal.c" />
     <ClCompile Include="api\Tss2_Sys_MakeCredential.c" />
+    <ClCompile Include="api\Tss2_Sys_MAC.c" />
+    <ClCompile Include="api\Tss2_Sys_MAC_Start.c" />
     <ClCompile Include="api\Tss2_Sys_NV_Certify.c" />
     <ClCompile Include="api\Tss2_Sys_NV_ChangeAuth.c" />
     <ClCompile Include="api\Tss2_Sys_NV_DefineSpace.c" />
