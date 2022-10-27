@@ -120,48 +120,48 @@ check_eventlog(const char *file, uint32_t *pcr_list, size_t pcr_list_size, int n
 static void
 check_bios_nuc(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/binary_measurements_nuc.bin", &pcr_list[0], 1, 2);
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/binary_measurements_nuc.bin", &pcr_list[0], 3, 4);
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/binary_measurements_nuc.bin", NULL, 0, 0);
+    check_eventlog("test/data/fapi/eventlog/binary_measurements_nuc.bin", &pcr_list[0], 1, 2);
+    check_eventlog("test/data/fapi/eventlog/binary_measurements_nuc.bin", &pcr_list[0], 3, 4);
+    check_eventlog("test/data/fapi/eventlog/binary_measurements_nuc.bin", NULL, 0, 0);
 }
 
 static void
 check_bios_pc_client(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/binary_measurements_pc_client.bin", &pcr_list[0], 1, 5);
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/binary_measurements_pc_client.bin", &pcr_list[0], 3, 17);
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/binary_measurements_pc_client.bin", NULL, 0, 0);
+    check_eventlog("test/data/fapi/eventlog/binary_measurements_pc_client.bin", &pcr_list[0], 1, 5);
+    check_eventlog("test/data/fapi/eventlog/binary_measurements_pc_client.bin", &pcr_list[0], 3, 17);
+    check_eventlog("test/data/fapi/eventlog/binary_measurements_pc_client.bin", NULL, 0, 0);
 }
 
 static void
 check_event_uefiservices(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/binary_measurements_nuc.bin", &pcr_list2[0], 1, 1);
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/event-uefiservices.bin", NULL, 0, 0);
+    check_eventlog("test/data/fapi/eventlog/binary_measurements_nuc.bin", &pcr_list2[0], 1, 1);
+    check_eventlog("test/data/fapi/eventlog/event-uefiservices.bin", NULL, 0, 0);
 }
 
 static void
 check_event_uefiaction(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/event-uefiaction.bin", NULL, 0, 0);
+    check_eventlog("test/data/fapi/eventlog/event-uefiaction.bin", NULL, 0, 0);
 }
 
 static void
 check_event_uefivar(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/event-uefivar.bin", NULL, 0, 0);
+    check_eventlog("test/data/fapi/eventlog/event-uefivar.bin", NULL, 0, 0);
 }
 
 static void
 check_event(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/event.bin", NULL, 0, 0);
+    check_eventlog("test/data/fapi/eventlog/event.bin", NULL, 0, 0);
 }
 
 static void
 check_specid_vendordata(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/specid-vendordata.bin", NULL, 0, 0);
+    check_eventlog("test/data/fapi/eventlog/specid-vendordata.bin", NULL, 0, 0);
 }
 
 int

@@ -240,19 +240,19 @@ static void check_invalidate_event(void **state)
 static void
 check_sml_ima_ng_sha1(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/sml-ima-ng-sha1.bin", sml_ima_ng_sha1, 6);
+    check_eventlog("test/data/fapi/eventlog/sml-ima-ng-sha1.bin", sml_ima_ng_sha1, 6);
 }
 
 static void
 check_sml_ima_sha1(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/sml-ima-sha1.bin", sml_ima_sha1, 12);
+    check_eventlog("test/data/fapi/eventlog/sml-ima-sha1.bin", sml_ima_sha1, 12);
 }
 
 static void
 check_sml_ima_sig_sha256(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/sml-ima-sig-sha256.bin", sml_ima_sig_sha256, 9);
+    check_eventlog("test/data/fapi/eventlog/sml-ima-sig-sha256.bin", sml_ima_sig_sha256, 9);
 }
 
 int
