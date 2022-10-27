@@ -340,7 +340,7 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 
 #if defined (FAPI_TEST_FIRMWARE_LOG_FILE)
     config_bak = config;
-    size = asprintf(&config, "%s%s", config_bak, "     \"firmware_log_file\": \"" TOP_SOURCEDIR "/" FAPI_TEST_FIRMWARE_LOG_FILE "\",\n");
+    size = asprintf(&config, "%s%s", config_bak, "     \"firmware_log_file\": \""  FAPI_TEST_FIRMWARE_LOG_FILE "\",\n");
     if (size < 0) {
         LOG_ERROR("Out of memory");
         ret = EXIT_ERROR;
@@ -350,7 +350,7 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 #endif
 #if defined (FAPI_TEST_IMA_LOG_FILE)
     config_bak = config;
-    size = asprintf(&config, "%s%s", config_bak, "     \"ima_log_file\": \"" TOP_SOURCEDIR "/" FAPI_TEST_IMA_LOG_FILE "\",\n");
+    size = asprintf(&config, "%s%s", config_bak, "     \"ima_log_file\": \"" FAPI_TEST_IMA_LOG_FILE "\",\n");
     if (size < 0) {
         LOG_ERROR("Out of memory");
         ret = EXIT_ERROR;

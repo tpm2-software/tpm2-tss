@@ -75,7 +75,7 @@ check_eventlog(const char *file)
 static void
 check_sml_ima_ng_sha1(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/sml-ima-ng-sha1.bin");
+    check_eventlog("test/data/fapi/eventlog/sml-ima-ng-sha1.bin");
 }
 
 /*
@@ -85,7 +85,7 @@ check_sml_ima_ng_sha1(void **state)
 static void
 check_sml_ima_sha1(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/sml-ima-sha1.bin");
+    check_eventlog("test/data/fapi/eventlog/sml-ima-sha1.bin");
 }
 
 /*
@@ -96,7 +96,7 @@ static void
 check_sml_ima_ng_sha1_invalidated(void **state)
 {
     // TOODO check ivalidated file
-    // check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.bin");
+    // check_eventlog("test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.bin");
 }
 
 /*
@@ -106,7 +106,7 @@ check_sml_ima_ng_sha1_invalidated(void **state)
 static void
 check_sml_ima_sha1_invalidated(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/sml-ima-sha1-invalidated.bin");
+    check_eventlog("test/data/fapi/eventlog/sml-ima-sha1-invalidated.bin");
 }
 
 
@@ -117,7 +117,7 @@ check_sml_ima_sha1_invalidated(void **state)
 static void
 check_sml_ima_sig_sha256(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/sml-ima-sig-sha256.bin");
+    check_eventlog("test/data/fapi/eventlog/sml-ima-sig-sha256.bin");
 }
 
 /*
@@ -127,7 +127,7 @@ check_sml_ima_sig_sha256(void **state)
 static void
 check_sml_ima_sig_sha256_invalidated(void **state)
 {
-    check_eventlog(TOP_SOURCEDIR "/test/data/fapi/eventlog/sml-ima-sig-sha256-invalidated.bin");
+    check_eventlog("test/data/fapi/eventlog/sml-ima-sig-sha256-invalidated.bin");
 }
 
 

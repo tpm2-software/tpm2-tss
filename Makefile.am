@@ -642,20 +642,20 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_authorize_nv_sha384.json \
     test/data/fapi/policy/pol_cphash_sha384.json \
     test/data/fapi/policy/pol_pcr16_0_ecc_authorized_sha384.json \
-    test/data/fapi/eventlog/binary_measurements_nuc.bin \
-    test/data/fapi/eventlog/binary_measurements_pc_client.bin \
-    test/data/fapi/eventlog/event.bin \
-    test/data/fapi/eventlog/event-uefiaction.bin \
-    test/data/fapi/eventlog/event-uefiservices.bin \
-    test/data/fapi/eventlog/event-uefivar.bin \
-    test/data/fapi/eventlog/specid-vendordata.bin \
-    test/data/fapi/eventlog/sml-ima-ng-sha1.bin \
-    test/data/fapi/eventlog/sml-ima-sha1.bin \
-    test/data/fapi/eventlog/sml-ima-sig-sha256.bin \
-    test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.bin \
-    test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.bin \
-    test/data/fapi/eventlog/sml-ima-sig-sha256-invalidated.bin \
-    test/data/fapi/eventlog/sml-ima-sha1-invalidated.bin
+    test/data/fapi/eventlog/binary_measurements_nuc.b64 \
+    test/data/fapi/eventlog/binary_measurements_pc_client.b64 \
+    test/data/fapi/eventlog/event.b64 \
+    test/data/fapi/eventlog/event-uefiaction.b64 \
+    test/data/fapi/eventlog/event-uefiservices.b64 \
+    test/data/fapi/eventlog/event-uefivar.b64 \
+    test/data/fapi/eventlog/specid-vendordata.b64 \
+    test/data/fapi/eventlog/sml-ima-ng-sha1.b64 \
+    test/data/fapi/eventlog/sml-ima-sha1.b64 \
+    test/data/fapi/eventlog/sml-ima-sig-sha256.b64 \
+    test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.b64 \
+    test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.b64 \
+    test/data/fapi/eventlog/sml-ima-sig-sha256-invalidated.b64 \
+    test/data/fapi/eventlog/sml-ima-sha1-invalidated.b64
 
 src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_esys) \
     $(libutil) $(libtss2_tctildr)

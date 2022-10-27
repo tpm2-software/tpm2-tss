@@ -76,6 +76,35 @@ test_helper_tpm_writeekcert_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_writeekcert_LDADD = $(TESTS_LDADD)
 endif #ENABLE_INTEGRATION
 
+### Rules to enerate binary test files for FAPI from b64 files.
+
+if FAPI
+FAPI_TEST_BINS = \
+    test/data/fapi/eventlog/binary_measurements_nuc.bin \
+    test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.bin \
+    test/data/fapi/eventlog/binary_measurements_pc_client.bin \
+    test/data/fapi/eventlog/sml-ima-sha1.bin \
+    test/data/fapi/eventlog/event.bin \
+    test/data/fapi/eventlog/sml-ima-sha1-invalidated.bin \
+    test/data/fapi/eventlog/event-uefiaction.bin \
+    test/data/fapi/eventlog/sml-ima-sig-sha256.bin \
+    test/data/fapi/eventlog/event-uefiservices.bin \
+    test/data/fapi/eventlog/sml-ima-sig-sha256-invalidated.bin \
+    test/data/fapi/eventlog/event-uefivar.bin \
+    test/data/fapi/eventlog/specid-vendordata.bin \
+    test/data/fapi/eventlog/sml-ima-ng-sha1.bin
+
+CLEANFILES += $(FAPI_TEST_BINS)
+endif #FAPI
+
+define make_bin
+    mkdir -p test/data/fapi/eventlog
+    openssl enc -d -base64 -in $2 -out $1
+endef
+
+$(FAPI_TEST_BINS) : %.bin : %.b64
+	$(AM_V_GEN)$(call make_bin,$@,$<)
+
 if UNIT
 TESTS_UNIT  = \
     test/unit/CommonPreparePrologue \
@@ -814,6 +843,9 @@ test_unit_fapi_get_intl_cert_SOURCES = test/unit/fapi-get-intl-cert.c \
                                        src/tss2-fapi/ifapi_helpers.c \
                                        src/tss2-fapi/ifapi_keystore.c  \
                                        src/tss2-fapi/ifapi_io.c
+
+EXTRA_test_unit_fapi_eventlog_DEPENDENCIES = $(FAPI_TEST_BINS)
+
 test_unit_fapi_eventlog_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_eventlog_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_eventlog_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
@@ -833,6 +865,7 @@ test_unit_fapi_eventlog_SOURCES = test/unit/fapi-eventlog.c \
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c
 
+EXTRA_test_unit_fapi_ima_eventlog_DEPENDENCIES = $(FAPI_TEST_BINS)
 
 test_unit_fapi_ima_eventlog_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_ima_eventlog_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
@@ -852,6 +885,9 @@ test_unit_fapi_ima_eventlog_SOURCES = test/unit/fapi-ima-eventlog.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c
+
+EXTRA_test_unit_fapi_check_ima_log_DEPENDENCIES = $(FAPI_TEST_BINS)
+
 test_unit_fapi_check_ima_log_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_check_ima_log_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_check_ima_log_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
@@ -2326,6 +2362,8 @@ test_integration_fapi_quote_destructive_eventlog_not_fint_SOURCES = \
     test/integration/fapi-quote-destructive-eventlog.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
+EXTRA_test_integration_fapi_quote_destructive_eventlog_fint_DEPENDENCIES = $(FAPI_TEST_BINS)
+
 test_integration_fapi_quote_destructive_eventlog_fint_CFLAGS  = $(TESTS_CFLAGS) \
   -DFAPI_PROFILE=\"P_ECC_system\" \
   -D FAPI_TEST_FIRMWARE_NUC \
@@ -2336,6 +2374,8 @@ test_integration_fapi_quote_destructive_eventlog_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_quote_destructive_eventlog_fint_SOURCES = \
     test/integration/fapi-quote-destructive-eventlog.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
+
+EXTRA_test_integration_fapi_quote_destructive_eventlog_pc_client_fint_DEPENDENCIES = $(FAPI_TEST_BINS)
 
 test_integration_fapi_quote_destructive_eventlog_pc_client_fint_CFLAGS  = $(TESTS_CFLAGS) \
   -DFAPI_PROFILE=\"P_ECC_system\" \
