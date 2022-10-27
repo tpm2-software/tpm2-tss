@@ -1,5 +1,5 @@
 .SH AUTHOR
-Philip Tricca <philip.b.tricca@intel.com>
+TPM2 Software Project <https://github.com/tpm2-software/tpm2-tss>
 .SH "SEE ALSO"
 .BR Tss2_Tcti_Device_Init (3),
 .BR Tss2_Tcti_Socket_Init (3),
