@@ -230,7 +230,12 @@ ifapi_policyeval_instantiate_finish(
                                             context->callbacks.cbpublic_userdata);
             return_try_again(r);
             return_if_error(r, "read_finish failed");
-            /* Clear keypath, only public data will be needed */
+
+            r = ifapi_get_name(&pol_element->element.PolicySigned.keyPublic,
+                               &pol_element->element.PolicySigned.publicKey);
+            return_if_error(r, "Compute name of key.");
+
+            /* Clear keypath, only public data and name will be needed */
             SAFE_FREE(pol_element->element.PolicySigned.keyPath);
 
             break;

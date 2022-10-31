@@ -169,6 +169,8 @@ static char *field_TPMS_POLICYSIGNED_tab[] = {
     "keypem",
     "publicKeyHint",
     "publickeyhint",
+    "publicKey",
+    "publickey",
     "keyPEMhashAlg",
     "keypemhashalg",
     "$schema",
@@ -247,6 +249,13 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
     } else {
         r = ifapi_json_char_deserialize(jso2, &out->publicKeyHint);
         return_if_error(r, "Bad value for field \"publicKeyHint\".");
+    }
+
+    if (!ifapi_get_sub_object(jso, "publicKey", &jso2)) {
+        memset(&out->publicKey, 0, sizeof(TPM2B_NAME));
+    } else {
+        r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->publicKey);
+        return_if_error(r, "Bad value for field \"publicKey\".");
     }
 
     if (!ifapi_get_sub_object(jso, "keyPEMhashAlg", &jso2)) {

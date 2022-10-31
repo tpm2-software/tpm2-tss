@@ -755,6 +755,41 @@ ifapi_ecc_der_sig_to_tpm(
     return TSS2_RC_SUCCESS;
 }
 
+/** Converts a HMAC byte buffer into the
+ * TPM format. It can then be verified by the TPM.
+ *
+ * @param[in]  byte buffer holding the HMAC
+ * @param[in]  signatureSize The size of signature in bytes
+ * @param[in]  Size The size of the verification key
+ * @param[in]  hashAlgorithm The TSS identifier of the hash algorithm to use
+ * @param[out] tpmSignature The signature in the TPM format
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if signature or tpmSignature is NULL
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
+ */
+static TSS2_RC
+ifapi_hmac_sig_to_tpm(
+    const unsigned char *signature,
+    size_t signatureSize,
+    TPMI_ALG_HASH hashAlgorithm,
+    TPMT_SIGNATURE *tpmSignature)
+{
+    /* Check for NULL parameters */
+    return_if_null(signature, "signature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(tpmSignature, "tpmSignature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    if (ifapi_hash_get_digest_size(hashAlgorithm) != signatureSize) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid HMAC size");
+    }
+
+    tpmSignature->sigAlg = TPM2_ALG_HMAC;
+    tpmSignature->signature.hmac.hashAlg = hashAlgorithm;
+    memcpy(&tpmSignature->signature.hmac.digest.sha1, signature, signatureSize);
+    return TSS2_RC_SUCCESS;
+}
+
 /** Convert signature from DER to TPM format.
  *
  * The signature in DER format is converted to TPM format to
@@ -808,7 +843,12 @@ ifapi_der_sig_to_tpm(
         return ifapi_ecc_der_sig_to_tpm(signature, signatureSize,
                                         tpmPublic->unique.ecc.x.size, hashAlgorithm,
                                         tpmSignature);
-    } else {
+    } else if (tpmPublic->type == TPM2_ALG_KEYEDHASH) {
+         return ifapi_hmac_sig_to_tpm(signature, signatureSize,
+                                      hashAlgorithm,
+                                      tpmSignature);
+
+    }else {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid key tpye.");
     }
     return TSS2_RC_SUCCESS;
@@ -2000,5 +2040,63 @@ cleanup:
     if (cryptoContext) {
         ifapi_crypto_hash_abort(&cryptoContext);
     }
+    return r;
+}
+
+
+/** Compute base64 string from binary data.
+ *
+ * @param[in] buffer The binary data.
+ * @param[in] buffer_size The size of the binary data.
+ * @param[out] b64_data The base64 encoded string.
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_base64encode(uint8_t *buffer, size_t buffer_size, char** b64_data) {
+    BIO *bio64 = NULL;
+    BIO *bio = NULL;
+    TSS2_RC r = TPM2_RC_SUCCESS;
+    BUF_MEM *b64_mem;
+    int b64_size;
+    int bytes_written;
+
+    return_if_null(buffer, "Buffer to be encoded is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(b64_data, "Pointer to store the result is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    /* Memory IO will be used for OSSL key conversion */
+    bio64 = BIO_new(BIO_f_base64());
+    goto_if_null2(bio64, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
+    bio = BIO_new(BIO_s_mem());
+    goto_if_null2(bio, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
+    bio = BIO_push(bio64, bio);
+
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+    bytes_written = BIO_write(bio, buffer, buffer_size);
+    if (bytes_written != (int)buffer_size) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid BIO_write",
+                   cleanup);
+    }
+
+    BIO_flush(bio);
+    BIO_get_mem_ptr(bio, &b64_mem);
+    goto_if_null2(b64_mem, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
+
+    b64_size = BIO_get_mem_data(bio, NULL);
+    *b64_data = malloc(b64_size + 1);
+    goto_if_null(*b64_data, "Out of memory.", TSS2_FAPI_RC_MEMORY,
+            cleanup);
+    memset(*b64_data, 0, b64_size + 1);
+    memcpy(*b64_data, (*b64_mem).data, b64_size);
+    BIO_free_all(bio);
+    return r;
+
+ cleanup:
+    if (bio)
+        BIO_free_all(bio);
+
     return r;
 }

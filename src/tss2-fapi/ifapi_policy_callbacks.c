@@ -583,6 +583,8 @@ ifapi_policyeval_cbauth(
             r = ifapi_authorize_object(fapi_ctx, cb_ctx->auth_object_ptr, authSession);
             return_try_again(r);
             fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
+            fapi_ctx->createPrimary = cb_ctx->create_primary_ctx;
+
             goto_if_error(r, "Authorize  object.", cleanup);
 
             cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
@@ -603,6 +605,145 @@ ifapi_policyeval_cbauth(
 
 cleanup:
     ifapi_cleanup_ifapi_object(&cb_ctx->object);
+    if (current_policy->policySessionSav
+        && current_policy->policySessionSav != ESYS_TR_NONE)
+        fapi_ctx->policy.session = current_policy->policySessionSav;
+    return r;
+}
+
+/** Callback for loading a key object used by policy.
+ *
+ * @param[in] name The name of the object to be loaded.
+ * @param[out] object_handle The ESYS handle of the used object.
+ * @param[in,out] userdata The Fapi context which will be used for keystore
+ *                access, and storing the policy execution state.
+ *                the io state.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context or policy is NULL.
+ * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet
+ *         complete. Call this function again later.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_FAPI_RC_PATH_NOT_FOUND If a policy was not found.
+ * @retval TSS2_FAPI_RC_KEY_NOT_FOUND If a key was not found.
+ * @retval TSS2_FAPI_RC_IO_ERROR If an IO error occurred during reading
+ *         a policy or a key.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an error in an used library
+ *         occurred.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ *         is not set.
+ * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
+ *         was not successful.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
+ *         or contains illegal characters.
+ * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
+ */
+TSS2_RC
+ifapi_policyeval_cbload_key(
+    TPM2B_NAME *name,
+    ESYS_TR *object_handle,
+    void *userdata)
+{
+    TSS2_RC r;
+    FAPI_CONTEXT *fapi_ctx = userdata;
+    IFAPI_POLICY_EXEC_CTX *current_policy;
+    IFAPI_POLICY_EXEC_CB_CTX *cb_ctx;
+
+    return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(fapi_ctx->policy.policyutil_stack, "Policy not initialized.",
+                   TSS2_FAPI_RC_BAD_REFERENCE);
+
+    if (fapi_ctx->policy.util_current_policy) {
+        /* Use the current policy in the policy stack. */
+        current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
+    } else {
+        /* Start with the bottom of the policy stack */
+        current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
+    }
+    cb_ctx = current_policy->app_data;
+
+    switch (cb_ctx->cb_state) {
+        statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT);
+            cb_ctx->flush_handle = false;
+            cb_ctx->auth_index = ESYS_TR_NONE;
+            /* Search object with name in keystore. */
+            r = ifapi_keystore_search_obj(&fapi_ctx->keystore, &fapi_ctx->io,
+                                          name,
+                                          &cb_ctx->object_path);
+            FAPI_SYNC(r, "Search Object", cleanup);
+
+            r = ifapi_keystore_load_async(&fapi_ctx->keystore, &fapi_ctx->io,
+                                          cb_ctx->object_path);
+            return_if_error2(r, "Could not open: %s", cb_ctx->object_path);
+            SAFE_FREE(cb_ctx->object_path);
+            fallthrough;
+
+        statecase(cb_ctx->cb_state, POL_CB_READ_OBJECT);
+            /* Get object from file */
+            r = ifapi_keystore_load_finish(&fapi_ctx->keystore, &fapi_ctx->io,
+                                           &cb_ctx->object);
+            return_try_again(r);
+            return_if_error(r, "read_finish failed");
+
+            r = ifapi_initialize_object(fapi_ctx->esys, &cb_ctx->object);
+            goto_if_error(r, "Initialize key", cleanup);
+
+            if (cb_ctx->object.objectType != IFAPI_KEY_OBJ) {
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "Key object expected", cleanup);
+            }
+            cb_ctx->key_handle = cb_ctx->object.public.handle;
+            if (cb_ctx->key_handle != ESYS_TR_NONE) {
+                break;
+            }
+            fallthrough;
+
+        statecase(cb_ctx->cb_state, POL_CB_LOAD_KEY);
+            /* Prepare new context for loadkey in policy and skip session creation. */
+            memset(&cb_ctx->load_ctx, 0, sizeof(IFAPI_LoadKey));
+            cb_ctx->load_ctx.prepare_state = PREPARE_LOAD_KEY_INIT_KEY;
+            memset(&cb_ctx->create_primary_ctx, 0, sizeof(IFAPI_CreatePrimary));
+            fallthrough;
+
+        statecase(cb_ctx->cb_state, POL_CB_LOAD_KEY_FINISH);
+            cb_ctx->load_ctx_sav = fapi_ctx->loadKey;
+            cb_ctx->create_primary_ctx_sav = fapi_ctx->createPrimary;
+            fapi_ctx->loadKey = cb_ctx->load_ctx;
+            fapi_ctx->createPrimary = cb_ctx->create_primary_ctx;
+            cb_ctx->auth_object_ptr = &cb_ctx->load_ctx.auth_object;
+            r = ifapi_load_key(fapi_ctx, ifapi_get_object_path(&cb_ctx->object),
+                               &cb_ctx->auth_object_ptr);
+            if (r == TSS2_RC_SUCCESS &&
+                !cb_ctx->load_ctx.auth_object.misc.key.persistent_handle) {
+                current_policy->flush_handle = true;
+            }
+            cb_ctx->load_ctx = fapi_ctx->loadKey;
+            cb_ctx->create_primary_ctx = fapi_ctx->createPrimary;
+            fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
+            fapi_ctx->createPrimary = cb_ctx->create_primary_ctx_sav;
+            FAPI_SYNC(r, "Fapi load key.", cleanup);
+
+            ifapi_cleanup_ifapi_object(&cb_ctx->object);
+            cb_ctx->object = *cb_ctx->auth_object_ptr;
+
+            *object_handle = cb_ctx->auth_object_ptr->public.handle;
+
+            cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
+            break;
+
+       statecasedefault(cb_ctx->cb_state);
+    }
+
+    if (current_policy->policySessionSav != ESYS_TR_NONE)
+        fapi_ctx->policy.session = current_policy->policySessionSav;
+
+cleanup:
+     ifapi_cleanup_ifapi_object(&cb_ctx->object);
     if (current_policy->policySessionSav
         && current_policy->policySessionSav != ESYS_TR_NONE)
         fapi_ctx->policy.session = current_policy->policySessionSav;
