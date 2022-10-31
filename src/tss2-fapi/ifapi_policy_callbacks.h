@@ -80,6 +80,12 @@ ifapi_policyeval_cbauth(
     void *userdata);
 
 TSS2_RC
+ifapi_policyeval_cbload_key(
+    TPM2B_NAME *name,
+    ESYS_TR *object_handle,
+    void *userdata);
+
+TSS2_RC
 ifapi_branch_selection(
     TSS2_OBJECT *auth_object,
     const char *branch_names[8],

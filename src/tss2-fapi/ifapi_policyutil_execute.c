@@ -55,6 +55,8 @@ new_policy(
     (*current_policy)->pol_exec_ctx = pol_exec_ctx;
     pol_exec_ctx->callbacks.cbauth = ifapi_policyeval_cbauth;
     pol_exec_ctx->callbacks.cbauth_userdata = context;
+    pol_exec_ctx->callbacks.cbload = ifapi_policyeval_cbload_key;
+    pol_exec_ctx->callbacks.cbload_userdata = context;
     pol_exec_ctx->callbacks.cbpolsel = ifapi_branch_selection;
     pol_exec_ctx->callbacks.cbpolsel_userdata = context;
     pol_exec_ctx->callbacks.cbsign = ifapi_sign_buffer;
@@ -259,7 +261,6 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
         context->policy.util_current_policy = pol_util_ctx;
     }
     LOG_TRACE("Util context: %p", pol_util_ctx);
-
     if (!pol_util_ctx) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "No policy util stack.");
     }

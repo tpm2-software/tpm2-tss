@@ -117,4 +117,10 @@ ifapi_get_tpm_key_fingerprint(
     TPMI_ALG_HASH hashAlg,
     TPM2B_DIGEST *fingerprint);
 
+TSS2_RC
+ifapi_base64encode(
+    uint8_t *buffer,
+    size_t buffer_size,
+    char** b64_data);
+
 #endif /* FAPI_CRYPTO_H */

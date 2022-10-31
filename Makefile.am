@@ -609,6 +609,7 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_nv_counter.json \
     test/data/fapi/policy/pol_nv_written.json \
     test/data/fapi/policy/pol_signed.json \
+    test/data/fapi/policy/pol_signed_keyedhash.json \
     test/data/fapi/policy/pol_signed_ecc.json \
     test/data/fapi/policy/pol_authorize.json \
     test/data/fapi/policy/pol_authorize_rsa_pem.json \

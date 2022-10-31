@@ -3353,8 +3353,16 @@ ifapi_key_create(
             context->cmd.Key_Create.public_templ.public.publicArea.type = TPM2_ALG_KEYEDHASH;
             context->cmd.Key_Create.public_templ.public.publicArea.nameAlg =
                     context->cmd.Key_Create.profile->nameAlg;
-            context->cmd.Key_Create.public_templ.public.publicArea.parameters.keyedHashDetail.scheme.scheme =
-            TPM2_ALG_NULL;
+            if (context->cmd.Key_Create.public_templ.public.publicArea.objectAttributes &
+                TPMA_OBJECT_SIGN_ENCRYPT) {
+                TPMS_KEYEDHASH_PARMS *details;
+                details = &context->cmd.Key_Create.public_templ.public.publicArea.parameters.keyedHashDetail;
+                details->scheme.scheme = TPM2_ALG_HMAC;
+                details->scheme.details.hmac.hashAlg =  context->cmd.Key_Create.profile->nameAlg;
+            } else {
+                context->cmd.Key_Create.public_templ.public.publicArea.parameters.keyedHashDetail.scheme.scheme =
+                    TPM2_ALG_NULL;
+            }
         } else {
             r = ifapi_merge_profile_into_template(context->cmd.Key_Create.profile,
                                                   &context->cmd.Key_Create.public_templ);

@@ -113,6 +113,11 @@ typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_AUTH) (
     ESYS_TR *authSession,
     void *userdata);
 
+typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_LOAD) (
+    TPM2B_NAME *name,
+    ESYS_TR *object_handle,
+    void *userdata);
+
 typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLSEL) (
     TSS2_OBJECT *auth_object,
     const char **branch_names,
@@ -154,9 +159,12 @@ typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLACTION) (
 typedef struct TSS2_POLICY_EXEC_CALLBACKS TSS2_POLICY_EXEC_CALLBACKS;
 
 struct TSS2_POLICY_EXEC_CALLBACKS {
-    TSS2_POLICY_CB_EXEC_AUTH               cbauth; /**< Callback to authorize an object
+    TSS2_POLICY_CB_EXEC_AUTH              cbauth; /**< Callback to authorize an object
                                                        retrieved by name in keystore */
     void                        *cbauth_userdata;
+    TSS2_POLICY_CB_EXEC_LOAD              cbload; /**< Callback to load a key
+                                                       retrieved by name in keystore */
+    void                        *cbload_userdata;
     TSS2_POLICY_CB_EXEC_POLSEL          cbpolsel; /**< Callback for selection of policy
                                                        branch */
     void                      *cbpolsel_userdata;

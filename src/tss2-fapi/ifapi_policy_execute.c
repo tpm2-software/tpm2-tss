@@ -419,11 +419,13 @@ execute_policy_signed(
     size_t offset = 0;
     size_t signature_size;
     const uint8_t *signature_ossl = NULL;
+    TSS2_POLICY_EXEC_CALLBACKS *cb;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT);
+        current_policy->flush_handle = false;
         current_policy->pem_key = NULL;
         current_policy->object_handle = ESYS_TR_NONE;
         current_policy->buffer_size = sizeof(INT32) + sizeof(TPM2B_NONCE)
@@ -448,19 +450,26 @@ execute_policy_signed(
                policy->policyRef.size);
         offset += policy->policyRef.size;
         current_policy->buffer_size = offset;
+
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_CALLBACK);
-        TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
+        cb = &current_policy->callbacks;
         int pem_key_size;
         TPM2B_PUBLIC tpm_public;
 
-        /* Recreate pem key from tpm public key */
-        if (!current_policy->pem_key) {
+        if (policy->keyPublic.type == TPM2_ALG_KEYEDHASH) {
+            LOG_TRACE("Keyedhash used for PoliySigned");
+            r = ifapi_base64encode(&policy->publicKey.name[0],
+                                   policy->publicKey.size,
+                                   &current_policy->pem_key);
+            return_if_error(r, "Encode key name do base64.");
+        } else if  (!current_policy->pem_key)  {
+            /* Recreate pem key from tpm public key */
             tpm_public.publicArea = policy->keyPublic;
             tpm_public.size = 0;
             r = ifapi_pub_pem_key_from_tpm(&tpm_public, &current_policy->pem_key,
-                                       &pem_key_size);
+                                           &pem_key_size);
             return_if_error(r, "Convert TPM public key into PEM key.");
         }
 
@@ -482,6 +491,11 @@ execute_policy_signed(
                                  &policy->signature_tpm);
         goto_if_error2(r, "Convert der signature into TPM format", cleanup);
 
+        if (policy->keyPublic.type == TPM2_ALG_KEYEDHASH) {
+            current_policy->state = POLICY_LOAD_KEYEDHASH;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
         TPM2B_PUBLIC inPublic;
         inPublic.size = 0;
         inPublic.publicArea = policy->keyPublic;
@@ -496,6 +510,8 @@ execute_policy_signed(
     statecase(current_policy->state, POLICY_LOAD_KEY);
         r = Esys_LoadExternal_Finish(esys_ctx, &current_policy->object_handle);
         try_again_or_error(r, "Load external key.");
+
+        current_policy->flush_handle = true;
 
         /* Prepare the policy execution. */
         r = Esys_PolicySigned_Async(esys_ctx,
@@ -526,12 +542,35 @@ execute_policy_signed(
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
+    statecase(current_policy->state, POLICY_LOAD_KEYEDHASH);
+        cb = &current_policy->callbacks;
+        r = cb->cbauth(&policy->publicKey,
+                       &current_policy->object_handle,
+                       &current_policy->auth_handle,
+                       &current_policy->auth_session,
+                       cb->cbauth_userdata);
+        return_try_again(r);
+        goto_if_error(r, "Authorize object callback.", cleanup);
+
+        /* Prepare the policy execution. */
+        r = Esys_PolicySigned_Async(esys_ctx,
+                                    current_policy->object_handle,
+                                    current_policy->session,
+                                    ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                    current_policy->nonceTPM,
+                                    &policy->cpHashA,
+                                    &policy->policyRef, 0, &policy->signature_tpm);
+        SAFE_FREE(current_policy->nonceTPM);
+        goto_if_error(r, "Execute PolicySigned.", cleanup);
+
+        current_policy->state = POLICY_EXECUTE_FINISH;
+        return TSS2_FAPI_RC_TRY_AGAIN;
+
     statecasedefault(current_policy->state);
     }
 cleanup:
     SAFE_FREE(current_policy->nonceTPM);
     SAFE_FREE(current_policy->pem_key);
-    SAFE_FREE(signature_ossl);
     SAFE_FREE(current_policy->buffer);
     SAFE_FREE(current_policy->pem_key);
     /* In error cases object might not have been flushed. */
