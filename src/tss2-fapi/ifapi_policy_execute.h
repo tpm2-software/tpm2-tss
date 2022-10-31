@@ -89,6 +89,7 @@ struct IFAPI_POLICY_EXEC_CTX {
     char *pem_key;                   /**< Pem key recreated during policy execution */
     struct POLICY_LIST *policy_list;
                                     /**< List of policies for authorization selection */
+    bool flush_handle;              /**< Handle to be flushed after policy execution */
     TSS2_POLICY_EXEC_CALLBACKS callbacks;
                                     /**< callbacks used for execution of sub
                                          policies and actions which require access
