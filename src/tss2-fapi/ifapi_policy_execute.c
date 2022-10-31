@@ -871,10 +871,11 @@ execute_policy_secret(
         /* Callback for the object authorization. */
         return_if_null(cb->cbauth, "Policy Auth Callback Not Set",
             TSS2_FAPI_RC_NULL_CALLBACK);
+        current_policy->flush_handle = false;
         r = cb->cbauth(&policy->objectName,
                        &current_policy->object_handle,
                        &current_policy->auth_handle,
-                   &current_policy->auth_session, cb->cbauth_userdata);
+                       &current_policy->auth_session, cb->cbauth_userdata);
         return_try_again(r);
         goto_if_error(r, "Authorize object callback.", cleanup);
         fallthrough;
@@ -904,6 +905,17 @@ execute_policy_secret(
                                      NULL);
         return_try_again(r);
         goto_if_error(r, "FAPI PolicyAuthorizeNV_Finish", error_cleanup);
+        if (!current_policy->flush_handle) {
+            current_policy->state = POLICY_EXECUTE_INIT;
+            return r;
+        }
+        r = Esys_FlushContext_Async(esys_ctx, current_policy->auth_handle);
+        goto_if_error(r, "FlushContext_Async", cleanup);
+        fallthrough;
+
+    statecase(current_policy->state, POLICY_FLUSH_KEY);
+        r = Esys_FlushContext_Finish(esys_ctx);
+        try_again_or_error(r, "Flush key finish.");
         current_policy->state = POLICY_EXECUTE_INIT;
         break;
 
@@ -914,6 +926,9 @@ cleanup:
     return r;
 
  error_cleanup:
+    if (current_policy->flush_handle) {
+         Esys_FlushContext(esys_ctx, current_policy->auth_handle);
+    }
     SAFE_FREE(current_policy->nonceTPM);
     return r;
 }

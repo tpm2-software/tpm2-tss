@@ -484,6 +484,7 @@ ifapi_policyeval_cbauth(
         next_case = false;
         switch (cb_ctx->cb_state) {
         statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT);
+            cb_ctx->flush_handle = false;
             cb_ctx->auth_index = ESYS_TR_NONE;
             /* Search object with name in keystore. */
             r = ifapi_keystore_search_obj(&fapi_ctx->keystore, &fapi_ctx->io,
@@ -531,19 +532,13 @@ ifapi_policyeval_cbauth(
                 break;
             } else {
                 cb_ctx->key_handle = cb_ctx->object.public.handle;
-                cb_ctx->cb_state = POL_CB_LOAD_KEY;
+                next_case = true;
+                if (cb_ctx->key_handle == ESYS_TR_NONE) {
+                    cb_ctx->cb_state = POL_CB_LOAD_KEY;
+                    next_case = true;
+                    break;
+                }
             }
-            fallthrough;
-
-        statecase(cb_ctx->cb_state, POL_CB_LOAD_KEY);
-            /* Key loading and authorization */
-            r = ifapi_load_key(fapi_ctx, cb_ctx->object_path,
-                               &cb_ctx->auth_object_ptr);
-            FAPI_SYNC(r, "Fapi load key.", cleanup);
-
-            cb_ctx->object = *cb_ctx->key_object_ptr;
-            SAFE_FREE(cb_ctx->key_object_ptr);
-            cb_ctx->auth_object_ptr = &cb_ctx->object;
             fallthrough;
 
         statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_OBJECT);
@@ -551,6 +546,37 @@ ifapi_policyeval_cbauth(
             return_try_again(r);
             goto_if_error(r, "Authorize  object.", cleanup);
 
+            cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
+            break;
+            /* FALLTHRU */
+
+        statecase(cb_ctx->cb_state, POL_CB_LOAD_KEY);
+            /* Key loading and authorization */
+            cb_ctx->auth_object_sav = fapi_ctx->loadKey.auth_object;
+            fapi_ctx->loadKey.auth_object = cb_ctx->auth_object;
+            r = ifapi_load_key(fapi_ctx, ifapi_get_object_path(&cb_ctx->object),
+                               &cb_ctx->auth_object_ptr);
+            if (r == TSS2_RC_SUCCESS &&
+                !cb_ctx->auth_object_ptr->misc.key.persistent_handle) {
+                current_policy->flush_handle = true;
+            }
+            cb_ctx->auth_object = fapi_ctx->loadKey.auth_object;
+            fapi_ctx->loadKey.auth_object = cb_ctx->auth_object_sav;
+            FAPI_SYNC(r, "Fapi load key.", cleanup);
+
+            ifapi_cleanup_ifapi_object(&cb_ctx->object);
+            cb_ctx->auth_object_ptr = &cb_ctx->auth_object;
+            cb_ctx->object = *cb_ctx->auth_object_ptr;
+            fallthrough;
+
+        statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_KEY);
+            cb_ctx->auth_object_sav = fapi_ctx->loadKey.auth_object;
+            fapi_ctx->loadKey.auth_object = cb_ctx->auth_object;
+            r = ifapi_authorize_object(fapi_ctx, cb_ctx->auth_object_ptr, authSession);
+            return_try_again(r);
+            goto_if_error(r, "Authorize  object.", cleanup);
+
+            fapi_ctx->loadKey.auth_object = cb_ctx->auth_object_sav;
             cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
             break;
             /* FALLTHRU */

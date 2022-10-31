@@ -16,7 +16,8 @@ enum IFAPI_STATE_POL_CB_EXCECUTE {
     POL_CB_NV_READ,
     POL_CB_READ_NV_POLICY,
     POL_CB_READ_OBJECT,
-    POL_CB_AUTHORIZE_OBJECT
+    POL_CB_AUTHORIZE_OBJECT,
+    POL_CB_AUTHORIZE_KEY
 };
 
 /** The context of the policy execution */
@@ -28,7 +29,9 @@ typedef struct {
     ESYS_TR key_handle;             /**< Handle of a used key */
     ESYS_TR nv_index;               /**< Index of nv object storing a policy */
     ESYS_TR auth_index;             /**< Index of authorization object */
+    ESYS_TR flush_handle;           /**< Handle which has to be flushed after policy execution */
     IFAPI_OBJECT auth_object;       /**< FAPI auth object needed for authorization */
+    IFAPI_OBJECT auth_object_sav;
     IFAPI_OBJECT *key_object_ptr;
     IFAPI_OBJECT *auth_object_ptr;
     IFAPI_NV_Cmds nv_cmd_state;
