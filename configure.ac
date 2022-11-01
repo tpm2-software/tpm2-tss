@@ -552,24 +552,6 @@ AS_IF([test "$HOSTOS" = "Linux" && test "x$systemd_sysusers" != "xyes"],
 
 AC_SUBST([PATH])
 
-# Determine systemd system unitdir
-AC_ARG_WITH([systemdsystemunitdir],
-     [AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [systemd])],,
-     [with_systemdsystemunitdir=auto])
-AS_IF([test "x$with_systemdsystemunitdir" = "xyes" -o "x$with_systemdsystemunitdir" = "xauto"],
-      [ def_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)
-        AS_IF([test "x$def_systemdsystemunitdir" = "x"],
-              [AS_IF([test "x$with_systemdsystemunitdir" = "xyes"],
-                    [AC_MSG_ERROR([systemd support requested but pkg-config unable to query systemd package])])
-                    with_systemdsystemunitdir=no],
-              [with_systemdsystemunitdir="$def_systemdsystemunitdir"])])
-
-AS_IF([test "x$with_systemdsystemunitdir" != "xno"],
-      [AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])])
-
-AM_CONDITIONAL([HAVE_SYSTEMD], [test "x$with_systemdsystemunitdir" != "xno"])
-
-
 dnl --------- Doxy Gen -----------------------
 DX_DOXYGEN_FEATURE(ON)
 DX_DOT_FEATURE(OFF)
@@ -622,27 +604,26 @@ AC_OUTPUT
 
 AC_MSG_RESULT([
     $PACKAGE_NAME $VERSION
-    esys:                 $enable_esys
-    fapi:                 $enable_fapi
-    policy:               $enable_policy
-    tctidefaultmodule:    $with_tctidefaultmodule
-    tctidefaultconfig:    $with_tctidefaultconfig
-    unit:                 $enable_unit
-    integration:          $enable_integration
-    testing backend:      $integration_tcti
-    fapi test profile:    $with_default_test_fapi_profile
-    fuzzing:              $with_fuzzing
-    debug:                $enable_debug
-    maxloglevel:          $with_maxloglevel
-    doxygen:              $DX_FLAG_doc $enable_doxygen_doc
-    crypto backend:       $with_crypto
-    sysconfdir:           $sysconfdir
-    localstatedir:        $localstatedir
-    runstatedir:          $runstatedir
-    sysusersdir:          $sysusersdir
-    tmpfilesdir:          $tmpfilesdir
-    userstatedir:         [\$HOME/]$with_userstatedir
-    sysmeasurements:      $sysmeasurements
-    imameasurements:      $imameasurements
-    systemdsystemunitdir: $with_systemdsystemunitdir
+    esys:               $enable_esys
+    fapi:               $enable_fapi
+    policy:             $enable_policy
+    tctidefaultmodule:  $with_tctidefaultmodule
+    tctidefaultconfig:  $with_tctidefaultconfig
+    unit:               $enable_unit
+    integration:        $enable_integration
+    testing backend:    $integration_tcti
+    fapi test profile:  $with_default_test_fapi_profile
+    fuzzing:            $with_fuzzing
+    debug:              $enable_debug
+    maxloglevel:        $with_maxloglevel
+    doxygen:            $DX_FLAG_doc $enable_doxygen_doc
+    crypto backend:     $with_crypto
+    sysconfdir:         $sysconfdir
+    localstatedir:      $localstatedir
+    runstatedir:        $runstatedir
+    sysusersdir:        $sysusersdir
+    tmpfilesdir:        $tmpfilesdir
+    userstatedir:       [\$HOME/]$with_userstatedir
+    sysmeasurements:    $sysmeasurements
+    imameasurements:    $imameasurements
 ])
