@@ -683,7 +683,7 @@ typedef TPM2_HANDLE TPM2_HC;
 #define TPM2_NV_INDEX_LAST        ((TPM2_HC) (TPM2_NV_INDEX_FIRST + 0x00FFFFFF)) /* last allowed NV Index */
 #define TPM2_PERMANENT_FIRST      ((TPM2_HC) TPM2_RH_FIRST)
 #define TPM2_PERMANENT_LAST       ((TPM2_HC) TPM2_RH_LAST)
-#define TPM2_HR_NV_AC             ((TPM2_HC) ((TPM2_HT_NV_INDEX << HR_SHIFT) + 0xD00000))
+#define TPM2_HR_NV_AC             ((TPM2_HC) ((TPM2_HT_NV_INDEX << TPM2_HR_SHIFT) + 0xD00000))
 #define TPM2_NV_AC_FIRST          ((TPM2_HC) (TPM2_HR_NV_AC + 0))
 #define TPM2_NV_AC_LAST           ((TPM2_HC) (TPM2_HR_NV_AC + 0x0000FFFF))
 
