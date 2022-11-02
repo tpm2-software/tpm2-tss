@@ -639,6 +639,10 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
         return TSS2_RC_SUCCESS;
     }
 
+    if (*size < sizeof (TSS2_TCTI_SPI_HELPER_CONTEXT)) {
+        return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
+    }
+
     // Init TCTI context
     TSS2_TCTI_MAGIC (tcti_context) = TCTI_SPI_HELPER_MAGIC;
     TSS2_TCTI_VERSION (tcti_context) = TCTI_VERSION;
