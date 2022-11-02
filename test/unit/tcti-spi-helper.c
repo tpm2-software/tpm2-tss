@@ -212,7 +212,7 @@ tcti_spi_no_wait_state_success_test (void **state)
     TSS2_TCTI_CONTEXT* tcti_ctx;
 
     // Get requested TCTI context size
-    rc = Tss2_Tcti_Spi_Helper_Init (NULL, &size, tcti_platform);
+    rc = Tss2_Tcti_Spi_Helper_Init (NULL, &size, &tcti_platform);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
     // Allocate TCTI context size
@@ -221,7 +221,7 @@ tcti_spi_no_wait_state_success_test (void **state)
 
     // Initialize TCTI context
     tcti_platform = create_tcti_spi_helper_platform (false);
-    rc = Tss2_Tcti_Spi_Helper_Init (tcti_ctx, &size, tcti_platform);
+    rc = Tss2_Tcti_Spi_Helper_Init (tcti_ctx, &size, &tcti_platform);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
     free (tcti_platform.user_data);
@@ -241,7 +241,7 @@ tcti_spi_with_wait_state_success_test (void **state)
     TSS2_TCTI_CONTEXT* tcti_ctx;
 
     // Get requested TCTI context size
-    rc = Tss2_Tcti_Spi_Helper_Init (NULL, &size, tcti_platform);
+    rc = Tss2_Tcti_Spi_Helper_Init (NULL, &size, &tcti_platform);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
     // Allocate TCTI context size
@@ -250,7 +250,7 @@ tcti_spi_with_wait_state_success_test (void **state)
 
     // Initialize TCTI context
     tcti_platform = create_tcti_spi_helper_platform (true);
-    rc = Tss2_Tcti_Spi_Helper_Init (tcti_ctx, &size, tcti_platform);
+    rc = Tss2_Tcti_Spi_Helper_Init (tcti_ctx, &size, &tcti_platform);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
     free (tcti_platform.user_data);

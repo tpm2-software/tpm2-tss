@@ -87,7 +87,7 @@ struct TSS2_TCTI_SPI_HELPER_PLATFORM {
 TSS2_RC Tss2_Tcti_Spi_Helper_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *size,
-    TSS2_TCTI_SPI_HELPER_PLATFORM platform_conf);
+    TSS2_TCTI_SPI_HELPER_PLATFORM *platform_conf);
 
 #ifdef __cplusplus
 }
