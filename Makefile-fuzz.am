@@ -7,7 +7,7 @@ FUZZ_LOG_COMPILER = $(srcdir)/script/fuzz-log-compiler.sh
 INCLUDE_DIRS += -I$(srcdir)/test/fuzz/tcti
 TESTS_LIBADD = $(lib_LTLIBRARIES) $(libtss2_mu) $(libtss2_sys) $(libutil)
 
-EXTRA_DIST += test/fuzz/main-sys.cpp
+EXTRA_DIST += test/fuzz/main-sys.c
 # tcti library used for fuzzing
 if ENABLE_TCTI_FUZZING
 libtss2_tcti_fuzzing = test/fuzz/tcti/libtss2-tcti-fuzzing.la
