@@ -17,12 +17,12 @@ endif # ENABLE_TCTI_FUZZING
 # Each fuzz target in Makefile-fuzz-generated.am is created from this template.
 MAKEFILE_FUZZ_TARGET = """
 noinst_PROGRAMS += test/fuzz/%s.fuzz
-test_fuzz_%s_fuzz_CPPFLAGS = $(FUZZ_CPPFLAGS)
+test_fuzz_%s_fuzz_CFLAGS = $(FUZZ_CFLAGS)
 test_fuzz_%s_fuzz_LDADD    = $(FUZZLDADD)
-nodist_test_fuzz_%s_fuzz_SOURCES  = test/fuzz/main-sys.cpp \\
-        test/fuzz/%s.fuzz.cpp
+nodist_test_fuzz_%s_fuzz_SOURCES  = test/fuzz/main-sys.c \\
+        test/fuzz/%s.fuzz.c
 
-DISTCLEANFILES += test/fuzz/%s.fuzz.cpp"""
+DISTCLEANFILES += test/fuzz/%s.fuzz.c"""
 # Common include definitions needed for fuzzing an SYS call
 SYS_TEMPLATE_HEADER = """/* SPDX-License-Identifier: BSD-2-Clause */
 /***********************************************************************
@@ -43,7 +43,6 @@ SYS_TEMPLATE_HEADER = """/* SPDX-License-Identifier: BSD-2-Clause */
 
 #include <setjmp.h>
 
-extern "C" {
 #include "tss2_mu.h"
 #include "tss2_sys.h"
 #include "tss2_tcti_device.h"
@@ -59,9 +58,7 @@ extern "C" {
 #include "context-util.h"
 #include "tss2-sys/sysapi_util.h"
 #include "tcti/tcti-fuzzing.h"
-}
 
-extern "C"
 int
 test_invoke (
         TSS2_SYS_CONTEXT *sysContext)"""
@@ -122,7 +119,7 @@ SYS_PREPARE_TEMPLATE_HAS_ARGS = (
 
 def gen_file(function):
     """
-    Generate a cpp file used as the fuzz target given the function definition
+    Generate a c file used as the fuzz target given the function definition
     from a header file.
     """
     # Parse the function name from the function definition
@@ -136,7 +133,7 @@ def gen_file(function):
         if not "TSS2_SYS_CONTEXT" in arg
     ]
     # Prepare and Complete functions require different methods of generation.
-    # Call the appropriate function to generate a cpp target specific to that
+    # Call the appropriate function to generate a c target specific to that
     # type of function.
     if "_Complete" in function_name:
         return gen_complete(function, function_name, args)
@@ -147,16 +144,16 @@ def gen_file(function):
 
 def gen_complete(function, function_name, args):
     """
-    Generate the cpp fuzz target for a SYS _Complete call
+    Generate the c fuzz target for a SYS _Complete call
     """
     if not args:
         # Fill in the no args template. Simple case.
         return function_name, SYS_COMPLETE_TEMPLATE_NO_ARGS % (function_name)
-    # Generate the cpp variable definitions.
+    # Generate the c variable definitions.
     arg_definitions = (";\n" + " " * 4).join(
         [arg.replace("*", "") for arg in args]
     ) + ";"
-    # Generate the cpp arguments. For arguments that are pointers find replace *
+    # Generate the c arguments. For arguments that are pointers find replace *
     # with & so that we pass a pointer to the definition which has been
     # allocated on the stack.
     arg_call = (",\n" + " " * 8).join(
@@ -171,16 +168,16 @@ def gen_complete(function, function_name, args):
 
 def gen_prepare(function, function_name, args):
     """
-    Generate the cpp fuzz target for a SYS _Prepare call
+    Generate the c fuzz target for a SYS _Prepare call
     """
     if not args:
         return function_name, None
-    # Generate the cpp variable definitions. Make sure to initialize to empty
-    # structs (works for initializing anything) or cpp compiler will complain.
+    # Generate the c variable definitions. Make sure to initialize to empty
+    # structs (works for initializing anything) or c compiler will complain.
     arg_definitions = (" = {0};\n" + " " * 4).join(
         [arg.replace("*", "").replace("const", "") for arg in args]
     ) + " = {0};"
-    # Generate the cpp arguments. For arguments that are pointers find replace *
+    # Generate the c arguments. For arguments that are pointers find replace *
     # with & so that we pass a pointer to the definition which has been
     # allocated on the stack.
     arg_call = (",\n" + " " * 8).join(
@@ -225,7 +222,7 @@ def functions_from_include(header):
 
 
 def gen_files(header):
-    # Generate a fuzz target cpp file from each function in the header file
+    # Generate a fuzz target c file from each function in the header file
     for current_function in functions_from_include(header):
         function_name, contents = gen_file(current_function)
         # Skip the yield if there is no fuzz target that can be generated
@@ -247,7 +244,7 @@ def main():
     functions = dict(gen_files(args.header))
     # Write the generated target to the file for its function name
     for function_name, contents in functions.items():
-        filepath = os.path.join("test", "fuzz", function_name + ".fuzz.cpp")
+        filepath = os.path.join("test", "fuzz", function_name + ".fuzz.c")
         with open(filepath, "w") as fuzzer_fd:
             fuzzer_fd.write(contents)
     # Fill in the Makefile-fuzz-generated.am template using the function names.

@@ -12,7 +12,6 @@
 #include <stdlib.h>
 
 #define LOGMODULE test
-extern "C" {
 #include "tss2_sys.h"
 #include "tss2_tcti.h"
 #include "util/log.h"
@@ -21,9 +20,7 @@ extern "C" {
 #include "context-util.h"
 #include "tss2-sys/sysapi_util.h"
 #include "tcti/tcti-fuzzing.h"
-}
 
-extern "C"
 int
 LLVMFuzzerTestOneInput (
         const uint8_t *Data,
