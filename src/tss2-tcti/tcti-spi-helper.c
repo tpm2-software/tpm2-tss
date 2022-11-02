@@ -623,11 +623,15 @@ TSS2_RC tcti_spi_helper_set_locality (TSS2_TCTI_CONTEXT* tcti_context, uint8_t l
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
-TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size, TSS2_TCTI_SPI_HELPER_PLATFORM platform_conf)
+TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size, TSS2_TCTI_SPI_HELPER_PLATFORM *platform_conf)
 {
     TSS2_RC rc;
     TSS2_TCTI_SPI_HELPER_CONTEXT* tcti_spi_helper;
     TSS2_TCTI_COMMON_CONTEXT* tcti_common;
+
+    if (!size || !platform_conf) {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
 
     // Check if context size is requested
     if (tcti_context == NULL) {
@@ -654,7 +658,7 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
     tcti_common->locality = 0;
 
     // Copy platform struct into context
-    tcti_spi_helper->platform = platform_conf;
+    tcti_spi_helper->platform = *platform_conf;
 
     // Probe TPM
     TSS2_TCTI_SPI_HELPER_CONTEXT* ctx = tcti_spi_helper;
