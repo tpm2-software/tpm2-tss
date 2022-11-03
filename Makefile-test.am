@@ -378,6 +378,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-key-create-policy-authorize-nv-tpms-sign.fint \
     test/integration/fapi-key-create-policy-authorize-nv-complex-tpm2b-sign.fint \
     test/integration/fapi-key-create-policy-secret-nv-sign.fint \
+    test/integration/fapi-key-create-policy-secret-key-sign.fint \
     test/integration/fapi-key-create-policy-pcr-sign.fint \
     test/integration/fapi-key-create-policy-signed.fint \
     test/integration/fapi-key-create-policy-signed-ecc.fint \
@@ -2084,6 +2085,13 @@ test_integration_fapi_key_create_policy_secret_nv_sign_fint_LDADD   = $(TESTS_LD
 test_integration_fapi_key_create_policy_secret_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_secret_nv_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-secret-nv-sign.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_key_create_policy_secret_key_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_secret_key_sign_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_key_create_policy_secret_key_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_key_create_policy_secret_key_sign_fint_SOURCES = \
+    test/integration/fapi-key-create-policy-secret-key-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_key_create_policy_pcr_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
