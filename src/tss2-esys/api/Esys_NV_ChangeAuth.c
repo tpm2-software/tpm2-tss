@@ -26,13 +26,11 @@ static void store_input_parameters (
     const TPM2B_AUTH *newAuth)
 {
     esysContext->in.NV.nvIndex = nvIndex;
-    if (newAuth == NULL) {
-        esysContext->in.NV.auth = NULL;
-    } else {
+    if (newAuth == NULL)
+        memset(&esysContext->in.NV.authData, 0,
+                sizeof(esysContext->in.NV.authData));
+    else
         esysContext->in.NV.authData = *newAuth;
-        esysContext->in.NV.auth =
-            &esysContext->in.NV.authData;
-    }
 }
 
 /** One-Call function for TPM2_NV_ChangeAuth
@@ -318,10 +316,7 @@ Esys_NV_ChangeAuth_Finish(
     r = esys_GetResourceObject(esysContext, nvIndex, &nvIndexNode);
     return_if_error(r, "get resource");
 
-    if (esysContext->in.NV.auth == NULL)
-        nvIndexNode->auth.size = 0;
-    else
-        nvIndexNode->auth = *esysContext->in.NV.auth;
+    nvIndexNode->auth = esysContext->in.NV.authData;
 
     iesys_compute_session_value(esysContext->session_tab[0],
                                 &nvIndexNode->rsrc.name, &nvIndexNode->auth);

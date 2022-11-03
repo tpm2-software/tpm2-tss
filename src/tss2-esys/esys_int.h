@@ -100,7 +100,6 @@ typedef struct {
 
 typedef struct {
     ESYS_TR nvIndex;
-    TPM2B_AUTH *auth;
     TPM2B_AUTH authData;
     TPM2B_NV_PUBLIC *publicInfo;
     TPM2B_NV_PUBLIC publicInfoData;
