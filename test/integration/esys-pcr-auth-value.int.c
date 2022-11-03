@@ -70,6 +70,20 @@ test_esys_pcr_auth_value(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error: PCR_SetAuthValue", error);
 
+    /* This should work as the authValue should be remembered, see
+     *   - https://github.com/tpm2-software/tpm2-tss/issues/2099
+     * for details.
+     */
+    r = Esys_PCR_SetAuthValue(
+        esys_context,
+        pcrHandle_handle,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE,
+        &auth
+        );
+    goto_if_error(r, "Error: PCR_SetAuthValue2", error);
+
     TPM2B_DIGEST authPolicy = {
         .size = 32,
         .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
