@@ -25,13 +25,12 @@ static void store_input_parameters (
     const TPM2B_AUTH *auth,
     const TPM2B_NV_PUBLIC *publicInfo)
 {
-    if (auth == NULL) {
-        esysContext->in.NV.auth = NULL;
-    } else {
+    if (auth == NULL)
+        memset(&esysContext->in.NV.authData, 0,
+                sizeof(esysContext->in.NV.authData));
+    else
         esysContext->in.NV.authData = *auth;
-        esysContext->in.NV.auth =
-            &esysContext->in.NV.authData;
-    }
+
     if (publicInfo == NULL) {
         esysContext->in.NV.publicInfo = NULL;
     } else {
@@ -201,7 +200,8 @@ Esys_NV_DefineSpace_Async(
     store_input_parameters(esysContext, auth, publicInfo);
 
     if (publicInfo) {
-        r = iesys_hash_long_auth_values(&esysContext->crypto_backend, esysContext->in.NV.auth,
+        r = iesys_hash_long_auth_values(&esysContext->crypto_backend,
+                                        &esysContext->in.NV.authData,
                                         publicInfo->nvPublic.nameAlg);
         return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value.");
     }
@@ -214,7 +214,8 @@ Esys_NV_DefineSpace_Async(
     r = Tss2_Sys_NV_DefineSpace_Prepare(esysContext->sys,
                                         (authHandleNode == NULL) ? TPM2_RH_NULL
                                         : authHandleNode->rsrc.handle,
-                                        esysContext->in.NV.auth, publicInfo);
+                                        &esysContext->in.NV.authData,
+                                        publicInfo);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -380,10 +381,7 @@ Esys_NV_DefineSpace_Finish(
         esysContext->in.NV.publicInfo->nvPublic.nvIndex;
     nvHandleNode->rsrc.misc.rsrc_nv_pub =
         *esysContext->in.NV.publicInfo;
-    if (esysContext->in.NV.auth == NULL)
-        nvHandleNode->auth.size = 0;
-    else
-        nvHandleNode->auth = *esysContext->in.NV.auth;
+    nvHandleNode->auth = esysContext->in.NV.authData;
 
     esysContext->state = _ESYS_STATE_INIT;
 
