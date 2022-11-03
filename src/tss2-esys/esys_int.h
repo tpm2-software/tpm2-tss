@@ -88,8 +88,7 @@ typedef HMAC_Start_IN MAC_Start_IN;
 
 typedef struct {
     ESYS_TR authHandle;
-    TPM2B_AUTH *newAuth;
-    TPM2B_AUTH newAuthData;
+    TPM2B_AUTH newAuth;
 } HierarchyChangeAuth_IN;
 
 typedef struct {

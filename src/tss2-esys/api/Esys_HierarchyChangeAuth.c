@@ -26,13 +26,11 @@ static void store_input_parameters (
     const TPM2B_AUTH *newAuth)
 {
     esysContext->in.HierarchyChangeAuth.authHandle = authHandle;
-    if (newAuth == NULL) {
-        esysContext->in.HierarchyChangeAuth.newAuth = NULL;
-    } else {
-        esysContext->in.HierarchyChangeAuth.newAuthData = *newAuth;
-        esysContext->in.HierarchyChangeAuth.newAuth =
-            &esysContext->in.HierarchyChangeAuth.newAuthData;
-    }
+    if (newAuth == NULL)
+        memset(&esysContext->in.HierarchyChangeAuth.newAuth, 0,
+                sizeof(esysContext->in.HierarchyChangeAuth.newAuth));
+    else
+        esysContext->in.HierarchyChangeAuth.newAuth = *newAuth;
 }
 
 /** One-Call function for TPM2_HierarchyChangeAuth
@@ -322,10 +320,7 @@ Esys_HierarchyChangeAuth_Finish(
     r = esys_GetResourceObject(esysContext, authHandle, &authHandleNode);
     return_if_error(r, "get resource");
 
-    if (esysContext->in.HierarchyChangeAuth.newAuth == NULL)
-        authHandleNode->auth.size = 0;
-    else
-        authHandleNode->auth = *esysContext->in.HierarchyChangeAuth.newAuth;
+    authHandleNode->auth = esysContext->in.HierarchyChangeAuth.newAuth;
     iesys_compute_session_value(esysContext->session_tab[0],
                                 &authHandleNode->rsrc.name, &authHandleNode->auth);
 
