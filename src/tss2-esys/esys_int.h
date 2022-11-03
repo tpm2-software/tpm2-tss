@@ -80,7 +80,6 @@ typedef struct {
 } EvictControl_IN;
 
 typedef struct {
-    TPM2B_AUTH *auth;
     TPM2B_AUTH authData;
 } HMAC_Start_IN;
 

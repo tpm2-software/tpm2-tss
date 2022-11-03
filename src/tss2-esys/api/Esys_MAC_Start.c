@@ -24,13 +24,11 @@ static void store_input_parameters (
     ESYS_CONTEXT *esysContext,
     const TPM2B_AUTH *auth)
 {
-    if (auth == NULL) {
-        esysContext->in.MAC_Start.auth = NULL;
-    } else {
+    if (auth == NULL)
+        memset(&esysContext->in.MAC_Start.authData, 0,
+                sizeof(esysContext->in.MAC_Start.authData));
+    else
         esysContext->in.MAC_Start.authData = *auth;
-        esysContext->in.MAC_Start.auth =
-            &esysContext->in.MAC_Start.authData;
-    }
 }
 
 /** One-Call function for TPM2_MAC_Start
@@ -350,11 +348,10 @@ TSS2_RC Esys_MAC_Start_Finish(
 
     /*  The name of a sequence object is an empty buffer */
     sequenceHandleNode->rsrc.name.size = 0;
-    /* Store the auth value parameter in the object meta data if passed */
-    if (esysContext->in.MAC_Start.auth == NULL)
-        sequenceHandleNode->auth.size = 0;
-    else
-        sequenceHandleNode->auth = *esysContext->in.MAC_Start.auth;
+
+    /* Store the auth value parameter in the object meta data */
+    sequenceHandleNode->auth = esysContext->in.HMAC_Start.authData;
+
     esysContext->state = _ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
