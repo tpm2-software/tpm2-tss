@@ -285,7 +285,7 @@ Fapi_Sign_Finish(
             r = ifapi_load_key(context, command->keyPath,
                                &command->key_object);
             return_try_again(r);
-            goto_if_error(r, "Fapi load key.", error_cleanup);
+            goto_if_error(r, "Fapi load key.", cleanup);
 
             fallthrough;
 
@@ -325,15 +325,17 @@ Fapi_Sign_Finish(
         statecasedefault(context->state);
     }
 
-error_cleanup:
+ error_cleanup:
+    ifapi_cleanup_ifapi_object(command->key_object);
+    ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
+    ifapi_cleanup_ifapi_object(context->loadKey.key_object);
+
+ cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->tpm_signature);
     SAFE_FREE(command->keyPath);
     SAFE_FREE(command->padding);
     ifapi_session_clean(context);
-    ifapi_cleanup_ifapi_object(command->key_object);
-    ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
-    ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     LOG_TRACE("finished");
     return r;

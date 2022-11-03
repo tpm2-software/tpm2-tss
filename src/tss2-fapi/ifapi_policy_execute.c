@@ -887,6 +887,17 @@ execute_policy_secret(
                                      NULL);
         return_try_again(r);
         goto_if_error(r, "FAPI PolicyAuthorizeNV_Finish", error_cleanup);
+        if (!current_policy->flush_handle) {
+            current_policy->state = POLICY_EXECUTE_INIT;
+            return r;
+        }
+        r = Esys_FlushContext_Async(esys_ctx, current_policy->auth_handle);
+        goto_if_error(r, "FlushContext_Async", cleanup);
+        fallthrough;
+
+    statecase(current_policy->state, POLICY_FLUSH_KEY);
+        r = Esys_FlushContext_Finish(esys_ctx);
+        try_again_or_error(r, "Flush key finish.");
         current_policy->state = POLICY_EXECUTE_INIT;
         break;
 
@@ -897,6 +908,9 @@ cleanup:
     return r;
 
  error_cleanup:
+    if (current_policy->flush_handle) {
+         Esys_FlushContext(esys_ctx, current_policy->auth_handle);
+    }
     SAFE_FREE(current_policy->nonceTPM);
     return r;
 }

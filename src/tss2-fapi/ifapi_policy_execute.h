@@ -120,7 +120,8 @@ enum IFAPI_STATE_POLICY_EXCECUTE {
     POLICY_VERIFY,
     POLICY_AUTH_CALLBACK,
     POLICY_AUTH_SENT,
-    POLICY_EXEC_ESYS
+    POLICY_EXEC_ESYS,
+    POLICY_LOAD_SYM_KEY
 };
 
 typedef struct IFAPI_POLICY_CALLBACK_CTX IFAPI_POLICY_CALLBACK_CTX;
@@ -152,6 +153,7 @@ struct IFAPI_POLICY_EXEC_CTX {
     char *pem_key;                   /**< Pem key recreated during policy execution */
     struct POLICY_LIST *policy_list;
                                     /**< List of policies for authorization selection */
+    bool flush_handle;              /**< Handle to be flushed after policy execution */
     ifapi_policyeval_EXEC_CB callbacks;
                                     /**< callbacks used for execution of sub
                                          policies and actions which require access

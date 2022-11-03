@@ -492,7 +492,6 @@ ifapi_policyeval_cbauth(
     FAPI_CONTEXT *fapi_ctx = userdata;
     IFAPI_POLICY_EXEC_CTX *current_policy;
     IFAPI_POLICY_EXEC_CB_CTX *cb_ctx;
-    bool next_case;
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(fapi_ctx->policy.policyutil_stack, "Policy not initialized.",
@@ -507,84 +506,118 @@ ifapi_policyeval_cbauth(
     }
     cb_ctx = current_policy->app_data;
 
-    do {
-        next_case = false;
-        switch (cb_ctx->cb_state) {
+    switch (cb_ctx->cb_state) {
         statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT);
-            cb_ctx->auth_index = ESYS_TR_NONE;
-            /* Search object with name in keystore. */
-            r = ifapi_keystore_search_obj(&fapi_ctx->keystore, &fapi_ctx->io,
-                                          name,
-                                          &cb_ctx->object_path);
-            FAPI_SYNC(r, "Search Object", cleanup);
+        cb_ctx->flush_handle = false;
+        cb_ctx->auth_index = ESYS_TR_NONE;
+        /* Search object with name in keystore. */
+        r = ifapi_keystore_search_obj(&fapi_ctx->keystore, &fapi_ctx->io,
+                                      name,
+                                      &cb_ctx->object_path);
+        FAPI_SYNC(r, "Search Object", cleanup);
 
-            r = ifapi_keystore_load_async(&fapi_ctx->keystore, &fapi_ctx->io,
-                                          cb_ctx->object_path);
-            return_if_error2(r, "Could not open: %s", cb_ctx->object_path);
-            SAFE_FREE(cb_ctx->object_path);
-            fallthrough;
+        r = ifapi_keystore_load_async(&fapi_ctx->keystore, &fapi_ctx->io,
+                                      cb_ctx->object_path);
+        return_if_error2(r, "Could not open: %s", cb_ctx->object_path);
+        SAFE_FREE(cb_ctx->object_path);
+        fallthrough;
 
         statecase(cb_ctx->cb_state, POL_CB_READ_OBJECT);
-            /* Get object from file */
-            r = ifapi_keystore_load_finish(&fapi_ctx->keystore, &fapi_ctx->io,
-                                           &cb_ctx->object);
-            return_try_again(r);
-            return_if_error(r, "read_finish failed");
+        /* Get object from file */
+        r = ifapi_keystore_load_finish(&fapi_ctx->keystore, &fapi_ctx->io,
+                                       &cb_ctx->object);
+        return_try_again(r);
+        return_if_error(r, "read_finish failed");
 
-            r = ifapi_initialize_object(fapi_ctx->esys, &cb_ctx->object);
-            goto_if_error(r, "Initialize NV object", cleanup);
+        r = ifapi_initialize_object(fapi_ctx->esys, &cb_ctx->object);
+        goto_if_error(r, "Initialize NV object", cleanup);
 
-            if (cb_ctx->object.objectType == IFAPI_NV_OBJ) {
-                /* NV Authorization */
+        if (cb_ctx->object.objectType == IFAPI_NV_OBJ) {
+            /* NV Authorization */
 
-                cb_ctx->nv_index = cb_ctx->object.handle;
+            cb_ctx->nv_index = cb_ctx->object.handle;
 
-                /* Determine the object used for authorization. */
-                get_nv_auth_object(&cb_ctx->object,
-                                   cb_ctx->object.handle,
-                                   &cb_ctx->auth_object,
-                                   &cb_ctx->auth_index);
+            /* Determine the object used for authorization. */
+            get_nv_auth_object(&cb_ctx->object,
+                               cb_ctx->object.handle,
+                               &cb_ctx->auth_object,
+                               &cb_ctx->auth_index);
 
-                goto_if_error(r, "PolicySecret set authorization", cleanup);
-                cb_ctx->cb_state = POL_CB_AUTHORIZE_OBJECT;
+            goto_if_error(r, "PolicySecret set authorization", cleanup);
+            cb_ctx->cb_state = POL_CB_AUTHORIZE_OBJECT;
 
-                cb_ctx->auth_object_ptr = &cb_ctx->auth_object;
-                next_case = true;
-                break;
-            } else if (cb_ctx->object.objectType == IFAPI_HIERARCHY_OBJ) {
-                cb_ctx->cb_state = POL_CB_AUTHORIZE_OBJECT;
-                cb_ctx->auth_object_ptr = &cb_ctx->object;
-                next_case = true;
-                break;
-            } else {
-                cb_ctx->key_handle = cb_ctx->object.handle;
-                cb_ctx->cb_state = POL_CB_LOAD_KEY;
-            }
-            fallthrough;
-
-        statecase(cb_ctx->cb_state, POL_CB_LOAD_KEY);
-            /* Key loading and authorization */
-            r = ifapi_load_key(fapi_ctx, cb_ctx->object_path,
-                               &cb_ctx->auth_object_ptr);
-            FAPI_SYNC(r, "Fapi load key.", cleanup);
-
-            cb_ctx->object = *cb_ctx->key_object_ptr;
-            SAFE_FREE(cb_ctx->key_object_ptr);
+            cb_ctx->auth_object_ptr = &cb_ctx->auth_object;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        } else if (cb_ctx->object.objectType == IFAPI_HIERARCHY_OBJ) {
+            cb_ctx->cb_state = POL_CB_AUTHORIZE_OBJECT;
             cb_ctx->auth_object_ptr = &cb_ctx->object;
-            fallthrough;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        } else {
+            cb_ctx->key_handle = cb_ctx->object.handle;
+            if (cb_ctx->key_handle == ESYS_TR_NONE) {
+                cb_ctx->cb_state = POL_CB_LOAD_KEY;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+        }
+        fallthrough;
 
         statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_OBJECT);
-            r = ifapi_authorize_object(fapi_ctx, cb_ctx->auth_object_ptr, authSession);
-            return_try_again(r);
-            goto_if_error(r, "Authorize  object.", cleanup);
+        r = ifapi_authorize_object(fapi_ctx, cb_ctx->auth_object_ptr, authSession);
+        return_try_again(r);
+        goto_if_error(r, "Authorize  object.", cleanup);
 
-            cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
-            break;
-            /* FALLTHRU */
+        cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
+        break;
+        /* FALLTHRU */
+
+        statecase(cb_ctx->cb_state, POL_CB_LOAD_KEY);
+        /* Prepare new context for loadkey in policy and skip session creation. */
+        memset(&cb_ctx->load_ctx, 0, sizeof(IFAPI_LoadKey));
+        cb_ctx->load_ctx.prepare_state = PREPARE_LOAD_KEY_INIT_KEY;
+        memset(&cb_ctx->create_primary_ctx, 0, sizeof(IFAPI_CreatePrimary));
+        fallthrough;
+
+        statecase(cb_ctx->cb_state, POL_CB_LOAD_KEY_FINISH);
+        cb_ctx->load_ctx_sav = fapi_ctx->loadKey;
+        cb_ctx->create_primary_ctx_sav = fapi_ctx->createPrimary;
+        fapi_ctx->loadKey = cb_ctx->load_ctx;
+        fapi_ctx->createPrimary = cb_ctx->create_primary_ctx;
+        cb_ctx->auth_object_ptr = &cb_ctx->load_ctx.auth_object;
+        r = ifapi_load_key(fapi_ctx, ifapi_get_object_path(&cb_ctx->object),
+                           &cb_ctx->auth_object_ptr);
+        if (r == TSS2_RC_SUCCESS &&
+            !cb_ctx->load_ctx.auth_object.misc.key.persistent_handle) {
+            current_policy->flush_handle = true;
+        }
+        cb_ctx->load_ctx = fapi_ctx->loadKey;
+        cb_ctx->create_primary_ctx = fapi_ctx->createPrimary;
+        fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
+        fapi_ctx->createPrimary = cb_ctx->create_primary_ctx_sav;
+        FAPI_SYNC(r, "Fapi load key.", cleanup);
+
+        ifapi_cleanup_ifapi_object(&cb_ctx->object);
+        cb_ctx->object = *cb_ctx->auth_object_ptr;
+        fallthrough;
+
+        statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_KEY);
+        cb_ctx->load_ctx_sav = fapi_ctx->loadKey;
+        cb_ctx->create_primary_ctx_sav = fapi_ctx->createPrimary;
+        fapi_ctx->loadKey = cb_ctx->load_ctx;
+        fapi_ctx->createPrimary = cb_ctx->create_primary_ctx;
+        cb_ctx->object = *cb_ctx->auth_object_ptr;
+        *auth_handle = cb_ctx->auth_object_ptr->handle;
+
+        r = ifapi_authorize_object(fapi_ctx, cb_ctx->auth_object_ptr, authSession);
+        return_try_again(r);
+        goto_if_error(r, "Authorize  object.", cleanup);
+
+        fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
+        cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
+        break;
+        /* FALLTHRU */
 
         statecasedefault(cb_ctx->cb_state);
-        }
-    } while (next_case);
+    }
     *object_handle = cb_ctx->object.handle;
     if (cb_ctx->object.objectType == IFAPI_NV_OBJ)
         *auth_handle = cb_ctx->auth_index;
@@ -595,7 +628,6 @@ ifapi_policyeval_cbauth(
         fapi_ctx->policy.session = current_policy->policySessionSav;
 
 cleanup:
-    ifapi_cleanup_ifapi_object(&cb_ctx->object);
     if (current_policy->policySessionSav
         && current_policy->policySessionSav != ESYS_TR_NONE)
         fapi_ctx->policy.session = current_policy->policySessionSav;
