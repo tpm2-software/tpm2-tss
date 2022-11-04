@@ -904,7 +904,7 @@ execute_policy_secret(
         r = Esys_PolicySecret_Finish(esys_ctx, NULL,
                                      NULL);
         return_try_again(r);
-        goto_if_error(r, "FAPI PolicyAuthorizeNV_Finish", error_cleanup);
+        goto_if_error(r, "FAPI PolicySecret_Finish", cleanup);
         if (!current_policy->flush_handle) {
             current_policy->state = POLICY_EXECUTE_INIT;
             return r;
@@ -922,10 +922,9 @@ execute_policy_secret(
     statecasedefault(current_policy->state);
     }
 
-cleanup:
     return r;
 
- error_cleanup:
+ cleanup:
     if (current_policy->flush_handle) {
          Esys_FlushContext(esys_ctx, current_policy->auth_handle);
     }
