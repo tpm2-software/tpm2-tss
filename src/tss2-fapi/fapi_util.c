@@ -2735,9 +2735,9 @@ ifapi_load_key(
     return_if_null(keyPath, "Bad reference for key path.",
                    TSS2_FAPI_RC_BAD_REFERENCE);
 
-    switch (context->Key_Sign.state) {
-    statecase(context->Key_Sign.state, SIGN_INIT);
-        context->Key_Sign.keyPath = keyPath;
+    switch (context->loadKey.prepare_state) {
+    statecase(context->loadKey.prepare_state, PREPARE_LOAD_KEY_INIT);
+        context->loadKey.path = keyPath;
 
         /* Prepare the session creation. */
         r = ifapi_get_sessions_async(context,
@@ -2746,8 +2746,8 @@ ifapi_load_key(
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
         fallthrough;
 
-    statecase(context->Key_Sign.state, SIGN_WAIT_FOR_SESSION);
-        r = ifapi_profiles_get(&context->profiles, context->Key_Sign.keyPath, &profile);
+    statecase(context->loadKey.prepare_state, PREPARE_LOAD_KEY_WAIT_FOR_SESSION);
+        r = ifapi_profiles_get(&context->profiles, context->loadKey.path, &profile);
         goto_if_error_reset_state(r, "Reading profile data", error_cleanup);
 
         r = ifapi_get_sessions_finish(context, profile, profile->nameAlg);
@@ -2755,21 +2755,30 @@ ifapi_load_key(
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         /* Prepare the key loading. */
-        r = ifapi_load_keys_async(context, context->Key_Sign.keyPath);
+        r = ifapi_load_keys_async(context, context->loadKey.path);
         goto_if_error(r, "Load keys.", error_cleanup);
         fallthrough;
 
-    statecase(context->Key_Sign.state, SIGN_WAIT_FOR_KEY);
+    statecase(context->loadKey.prepare_state, PREPARE_LOAD_KEY_WAIT_FOR_KEY);
         r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT,
-                                   &context->Key_Sign.handle,
+                                   &context->loadKey.handle,
                                    key_object);
         return_try_again(r);
         goto_if_error_reset_state(r, " Load key.", error_cleanup);
 
-        context->Key_Sign.state = SIGN_INIT;
+        context->loadKey.prepare_state = PREPARE_LOAD_KEY_INIT;
         break;
 
-    statecasedefault(context->Key_Sign.state);
+    statecase(context->loadKey.prepare_state, PREPARE_LOAD_KEY_INIT_KEY);
+        context->loadKey.path = keyPath;
+        r = ifapi_load_keys_async(context, context->loadKey.path);
+        goto_if_error(r, "Load keys.", error_cleanup);
+
+        context->loadKey.prepare_state =  PREPARE_LOAD_KEY_WAIT_FOR_KEY;
+
+        return TSS2_FAPI_RC_TRY_AGAIN;
+
+    statecasedefault(context->loadKey.prepare_state);
     }
 
 error_cleanup:
@@ -2842,6 +2851,7 @@ ifapi_key_sign(
     switch (context->Key_Sign.state) {
     statecase(context->Key_Sign.state, SIGN_INIT);
         sig_key_object = context->Key_Sign.key_object;
+        context->Key_Sign.handle = sig_key_object->public.handle;
 
         r = ifapi_authorize_object(context, sig_key_object, &session);
         FAPI_SYNC(r, "Authorize signature key.", cleanup);

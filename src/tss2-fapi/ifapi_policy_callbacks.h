@@ -11,6 +11,7 @@
 enum IFAPI_STATE_POL_CB_EXCECUTE {
     POL_CB_EXECUTE_INIT = 0,
     POL_CB_LOAD_KEY,
+    POL_CB_LOAD_KEY_FINISH,
     POL_CB_SEARCH_POLICY,
     POL_CB_EXECUTE_SUB_POLICY,
     POL_CB_NV_READ,
@@ -31,7 +32,10 @@ typedef struct {
     ESYS_TR auth_index;             /**< Index of authorization object */
     ESYS_TR flush_handle;           /**< Handle which has to be flushed after policy execution */
     IFAPI_OBJECT auth_object;       /**< FAPI auth object needed for authorization */
-    IFAPI_OBJECT auth_object_sav;
+    IFAPI_LoadKey load_ctx_sav;
+    IFAPI_LoadKey load_ctx;
+    IFAPI_CreatePrimary create_primary_ctx_sav;
+    IFAPI_CreatePrimary create_primary_ctx;
     IFAPI_OBJECT *key_object_ptr;
     IFAPI_OBJECT *auth_object_ptr;
     IFAPI_NV_Cmds nv_cmd_state;

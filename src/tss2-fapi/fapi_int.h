@@ -641,6 +641,14 @@ typedef struct {
     char *current_path;
 } IFAPI_FILE_SEARCH_CTX;
 
+/** The states for the FAPI's prepare key loading */
+enum _FAPI_STATE_PREPARE_LOAD_KEY {
+    PREPARE_LOAD_KEY_INIT = 0,
+    PREPARE_LOAD_KEY_WAIT_FOR_SESSION,
+    PREPARE_LOAD_KEY_INIT_KEY,
+    PREPARE_LOAD_KEY_WAIT_FOR_KEY
+};
+
 /** The states for the FAPI's key loading */
 enum _FAPI_STATE_LOAD_KEY {
     LOAD_KEY_GET_PATH = 0,
@@ -699,6 +707,7 @@ typedef struct {
  */
 typedef struct {
     enum _FAPI_STATE_LOAD_KEY state;   /**< The current state of key  loading */
+    enum  _FAPI_STATE_PREPARE_LOAD_KEY prepare_state;
     NODE_STR_T *path_list;        /**< The current used hierarchy for CreatePrimary */
     NODE_OBJECT_T *key_list;
     IFAPI_OBJECT auth_object;
@@ -708,6 +717,7 @@ typedef struct {
     bool parent_handle_persistent;
     IFAPI_OBJECT *key_object;
     char *key_path;
+    char const *path;
 } IFAPI_LoadKey;
 
 /** The data structure holding internal state of entity delete.
