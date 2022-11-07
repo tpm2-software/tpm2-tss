@@ -173,6 +173,35 @@ char * normalize(const char *string) {
 #define CHECK_JSON(TYPE, SRC, DST)  \
     CHECK_JSON2(TYPE, SRC, DST, &out)
 
+#define CHECK_POLICY2(SRC, DST, PSERIALIZE)                   \
+        { \
+            TPMS_POLICY out; \
+            TSS2_RC rc; \
+            json_object *jso = json_tokener_parse((SRC)); \
+            if (!jso) fprintf(stderr, "JSON parsing failed\n"); \
+            assert_non_null(jso); \
+            rc = ifapi_json_TPMS_POLICY_deserialize (jso, &out); \
+            if (rc) fprintf(stderr, "Deserialization failed\n"); \
+            assert_int_equal (rc, TSS2_RC_SUCCESS); \
+            json_object_put(jso); \
+            jso = NULL; \
+            rc = ifapi_json_TPMS_POLICY_serialize (PSERIALIZE, &jso); \
+            assert_int_equal (rc, TSS2_RC_SUCCESS); \
+            assert_non_null(jso); \
+            const char *jso_string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY); \
+            assert_non_null(jso_string); \
+            char *string1 = normalize(jso_string); \
+            char *string2 =  normalize(DST); \
+            assert_string_equal(string1, string2); \
+            json_object_put(jso); \
+            ifapi_cleanup_policy(&out); \
+            free(string1); \
+            free(string2); \
+        }
+
+#define CHECK_POLICY(SRC, DST)  \
+    CHECK_POLICY2(SRC, DST, &out)
+
 #define CHECK_JSON_SIMPLE(TYPE, SRC, DST)  \
     CHECK_JSON2(TYPE, SRC, DST, out)
 
@@ -1150,7 +1179,7 @@ check_json_structs(void **state)
         "    ]\n"
         "}\n";
 
-      CHECK_JSON(TPMS_POLICY, test_json_TPMS_POLICY_src, test_json_TPMS_POLICY_expt);
+      CHECK_POLICY(test_json_TPMS_POLICY_src, test_json_TPMS_POLICY_expt);
 }
 
 static void
