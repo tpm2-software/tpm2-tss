@@ -46,6 +46,7 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     TPM2B_DIGEST *creationHash = NULL;
     TPMT_TK_CREATION *creationTicket = NULL;
     TPM2B_DIGEST *outHMAC = NULL;
+    TPMT_TK_VERIFIED *validation = NULL;
 
     TPM2B_AUTH authValuePrimary = {
         .size = 5,
@@ -111,7 +112,6 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     TPM2B_DIGEST dig = { .size = 20,
                                      .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
                                               1, 2, 3, 4, 5, 6, 7, 8, 9}} ;
-    TPMT_TK_VERIFIED *validation = NULL;
     TPMT_SIGNATURE sig;
 
     sig.signature.hmac.hashAlg = TPM2_ALG_SHA256;
@@ -131,6 +131,7 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     Esys_Free(creationHash);
     Esys_Free(creationTicket);
     Esys_Free(outHMAC);
+    Esys_Free(validation);
     return EXIT_SUCCESS;
 
  error:
@@ -146,6 +147,7 @@ test_esys_hmac(ESYS_CONTEXT * esys_context)
     Esys_Free(creationHash);
     Esys_Free(creationTicket);
     Esys_Free(outHMAC);
+    Esys_Free(validation);
     return EXIT_FAILURE;
 }
 
