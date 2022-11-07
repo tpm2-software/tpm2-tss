@@ -487,6 +487,7 @@ typedef struct {
     ESYS_TR hierarchy_handle;       /**< NV handle of the hierarchy to be changed */
     char **pathlist;                /**< The array with all keystore objects */
     size_t numPaths;                /**< Size of array with all keystore objects */
+    size_t numPathsCleanup;         /**< Size of array with all keystore objects */
 } IFAPI_Entity_ChangeAuth;
 
 /** The data structure holding internal state of Fapi_AuthorizePolicy.
