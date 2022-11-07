@@ -20,7 +20,7 @@
  *
  * Serialize the metadata of an ESYS_TR object into a byte buffer such that it
  * can be stored on disk for later use by a different program or context.
- * The serialized object can be deserialized suing Esys_TR_Deserialize.
+ * The serialized object can be deserialized using Esys_TR_Deserialize.
  * @param esys_context [in,out] The ESYS_CONTEXT.
  * @param esys_handle [in] The ESYS_TR object to serialize.
  * @param buffer [out] The buffer containing the serialized metadata.
