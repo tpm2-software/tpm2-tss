@@ -18,6 +18,8 @@ following sections describe them for the supported platforms.
 * libcurl development libraries
 * Access Control List utility (acl)
 * JSON C Development library
+* Package libusb-1.0-0-dev
+
 
 The following are dependencies only required when building test suites.
 * Integration test suite (see ./configure option --enable-integration):
@@ -55,7 +57,8 @@ $ sudo apt -y install \
   libini-config-dev \
   libcurl4-openssl-dev \
   uuid-dev \
-  libltdl-dev
+  libltdl-dev \
+  libusb-1.0-0-dev
 ```
 Note: In some Ubuntu versions, the lcov and autoconf-archive packages are incompatible with each other. It is recommended to download autoconf-archive directly from upstream and copy `ax_code_coverage.m4` and `ax_prog_doxygen.m4` to the `m4/` subdirectory of your tpm2-tss directory.
 

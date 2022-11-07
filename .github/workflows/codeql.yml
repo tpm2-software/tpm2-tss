@@ -49,7 +49,8 @@ jobs:
               libini-config-dev \
               libcurl4-openssl-dev \
               uuid-dev \
-              libltdl-dev
+              libltdl-dev \
+              libusb-1.0-0-dev
 
       - name: After Prepare (cpp)
         if: ${{ matrix.language == 'cpp' }}
