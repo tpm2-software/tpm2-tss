@@ -29,6 +29,22 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+bool ifapi_pcr_used(uint32_t pcr, const uint32_t *pcr_list,  size_t pcr_list_size)
+{
+    size_t i;
+
+    if (pcr_list_size) {
+        for (i = 0; i < pcr_list_size; i++) {
+            if (pcr_list[i] == pcr)
+               return true;
+        }
+    } else {
+        return true;
+    }
+    return false;
+}
+
+
 static TSS2_RC
 add_string_to_json(const char *string, json_object *jso, const char *jso_tag)
 {
@@ -506,23 +522,13 @@ bool ifapi_json_TCG_EVENT_HEADER2_cb(
     json_object *jso = NULL;
     callback_data *cb_data = data;
     json_object *jso_event_list = cb_data->jso_event_list;
-    size_t i;
 
     LOG_TRACE("call");
 
     cb_data->skip_event = true;
 
-    if (cb_data->pcr_list_size) {
-        if (in->EventType !=  EV_NO_ACTION) {
-            for (i = 0; i < cb_data->pcr_list_size; i++) {
-                if (cb_data->pcr_list[i] == in->PCRIndex)
-                    cb_data->skip_event = false;
-            }
-        }
-    } else {
-        cb_data->skip_event = false;
-    }
-
+    cb_data->skip_event = !ifapi_pcr_used(in->PCRIndex, cb_data->pcr_list,
+                                          cb_data->pcr_list_size);
     if (cb_data->skip_event)
         return true;
 
@@ -634,23 +640,12 @@ bool ifapi_json_TCG_EVENT_cb(const TCG_EVENT *in, size_t size, void *data)
     json_object *jso = NULL;
     callback_data *cb_data = data;
     json_object *jso_event_list = cb_data->jso_event_list;
-    size_t i;
     (void)size;
 
     LOG_TRACE("call");
 
-    cb_data->skip_event = true;
-
-    if (cb_data->pcr_list_size) {
-        if (in->eventType !=  EV_NO_ACTION) {
-            for (i = 0; i < cb_data->pcr_list_size; i++) {
-                if (cb_data->pcr_list[i] == in->pcrIndex)
-                    cb_data->skip_event = false;
-            }
-        }
-    } else {
-        cb_data->skip_event = false;
-    }
+    cb_data->skip_event = !ifapi_pcr_used(in->pcrIndex, cb_data->pcr_list,
+                                          cb_data->pcr_list_size);
 
     if (cb_data->skip_event)
         return true;
@@ -797,6 +792,10 @@ bool ifapi_json_TCG_SPECID_EVENT_cb(
     TCG_SPECID_EVENT *event_specid = (TCG_SPECID_EVENT*)tcg_event->event;
 
     if (cb_data->skip_event)
+        return true;
+
+    if (!ifapi_pcr_used(0, cb_data->pcr_list,cb_data->pcr_list_size))
+        /* PCR 0 not used */
         return true;
 
     r = ifapi_json_TCG_EVENT_serialize(tcg_event,

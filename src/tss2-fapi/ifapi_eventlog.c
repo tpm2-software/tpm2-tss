@@ -88,6 +88,7 @@ ifapi_eventlog_get_async(
     size_t i;
     json_object *jso;
     TSS2_RC r;
+    bool use_pcr0 = false;
 
     check_not_null(eventlog);
     check_not_null(io);
@@ -108,17 +109,22 @@ ifapi_eventlog_get_async(
     eventlog->log = json_object_new_array();
     return_if_null(eventlog->log, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
-    if (eventlog->firmware_log_file) {
-        memset(&cel_event, 0, sizeof(IFAPI_EVENT));
-        cel_event.content_type = IFAPI_CEL_TAG;
-        cel_event.content.cel_event.type = CEL_VERSION;
-        cel_event.content.cel_event.data.cel_version.major = 1;
-        cel_event.content.cel_event.data.cel_version.minor = 0;
-        jso = NULL;
-        r = ifapi_json_IFAPI_EVENT_serialize(&cel_event, &jso);
-        goto_if_error(r, "Error serialize event", error);
 
-        json_object_array_add(eventlog->log, jso);
+
+    if (eventlog->firmware_log_file) {
+        use_pcr0 = ifapi_pcr_used(0, pcrList, pcrListSize);
+        if (use_pcr0) {
+            memset(&cel_event, 0, sizeof(IFAPI_EVENT));
+            cel_event.content_type = IFAPI_CEL_TAG;
+            cel_event.content.cel_event.type = CEL_VERSION;
+            cel_event.content.cel_event.data.cel_version.major = 1;
+            cel_event.content.cel_event.data.cel_version.minor = 0;
+            jso = NULL;
+            r = ifapi_json_IFAPI_EVENT_serialize(&cel_event, &jso);
+            goto_if_error(r, "Error serialize event", error);
+
+            json_object_array_add(eventlog->log, jso);
+        }
     }
 
     if (eventlog->firmware_log_file) {
@@ -142,13 +148,15 @@ ifapi_eventlog_get_async(
             }
             ifapi_cleanup_event(&prev_event);
         }
-        cel_event.content_type = IFAPI_CEL_TAG;
-        cel_event.content.cel_event.type = FIRMWARE_END;
-        jso = NULL;
-        r = ifapi_json_IFAPI_EVENT_serialize(&cel_event, &jso);
-        goto_if_error(r, "Error serialize event", error);
+        if (use_pcr0) {
+            cel_event.content_type = IFAPI_CEL_TAG;
+            cel_event.content.cel_event.type = FIRMWARE_END;
+            jso = NULL;
+            r = ifapi_json_IFAPI_EVENT_serialize(&cel_event, &jso);
+            goto_if_error(r, "Error serialize event", error);
 
-        json_object_array_add(eventlog->log, jso);
+            json_object_array_add(eventlog->log, jso);
+        }
     }
     if (eventlog->ima_log_file) {
         /* Initialize event list with the IMA events. */
