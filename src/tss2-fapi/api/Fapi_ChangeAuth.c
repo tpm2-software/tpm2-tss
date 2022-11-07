@@ -262,6 +262,8 @@ Fapi_ChangeAuth_Finish(
 
     TSS2_RC r;
     ESYS_TR auth_session;
+    size_t n_slash, len_path, len_hierachy;
+    char *path;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -305,6 +307,12 @@ Fapi_ChangeAuth_Finish(
             if (command->hierarchy_handle) {
                 /* Set the correct re-entry state for handling hierarchies. */
                 context->state = ENTITY_CHANGE_AUTH_HIERARCHY_READ;
+
+                /* Compute the list of all objects stored in keystore. */
+                r = ifapi_keystore_list_all(&context->keystore, "/", &command->pathlist,
+                                            &command->numPaths);
+                goto_if_error(r, "get entities.", error_cleanup);
+
                 /* Load the hierarchy's metadata from the keystore. */
                 r = ifapi_keystore_load_async(&context->keystore, &context->io,
                         command->entityPath);
@@ -529,10 +537,49 @@ Fapi_ChangeAuth_Finish(
                     &command->newAuthValue);
             return_try_again(r);
             goto_if_error(r, "Change auth hierarchy.", error_cleanup);
+            fallthrough;
 
-            /* Jump over to the AUTH_WRITE_PREPARE state for storing the
-               new metadata to the keystore. */
-            context->state = ENTITY_CHANGE_AUTH_WRITE_PREPARE;
+        statecase(context->state, ENTITY_CHANGE_AUTH_SAVE_HIERARCHIES_PREPARE)
+            if (command->numPaths == 0) {
+                context->state = ENTITY_CHANGE_AUTH_CLEANUP;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+            command->numPaths += -1;
+            len_hierachy = strlen(command->entityPath);
+            len_path = strlen(command->pathlist[command->numPaths]);
+            while (!(len_hierachy < len_path &&
+                     strcmp(command->entityPath,
+                            &command->pathlist[command->numPaths][len_path - len_hierachy]) == 0)) {
+                if (command->numPaths == 0) {
+                    context->state = ENTITY_CHANGE_AUTH_CLEANUP;
+                    return TSS2_FAPI_RC_TRY_AGAIN;
+                }
+                command->numPaths += -1;
+                len_path = strlen(command->pathlist[command->numPaths]);
+            }
+            n_slash = 0;
+            path = &command->pathlist[command->numPaths][len_path - len_hierachy];
+            while(*path) if (*path++ == '/') ++n_slash;
+            if (n_slash > 2) {
+                /* No hierarchy */
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+
+            /* Start writing the hierarchy object to the key store */
+            r = ifapi_keystore_store_async(&context->keystore, &context->io,
+                                           command->pathlist[command->numPaths],
+                                           object);
+            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
+                    command->entityPath);
+            fallthrough;
+
+        statecase(context->state, ENTITY_CHANGE_AUTH_SAVE_HIERARCHIES_FINISH)
+            /* Finish writing the object to the key store */
+            r = ifapi_keystore_store_finish(&context->io);
+            return_try_again(r);
+            return_if_error_reset_state(r, "write_finish failed");
+
+            context->state = ENTITY_CHANGE_AUTH_SAVE_HIERARCHIES_PREPARE;
             return TSS2_FAPI_RC_TRY_AGAIN;
 
         statecasedefault(context->state);
@@ -552,6 +599,12 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(command->key_object);
     SAFE_FREE(command->entityPath);
     SAFE_FREE(command->authValue);
+    if (command->pathlist) {
+        for (size_t i = 0; i < command->numPaths; i++) {
+            SAFE_FREE(command->pathlist[i]);
+        }
+        SAFE_FREE(command->pathlist);
+    }
     LOG_TRACE("finished");
     return r;
 }
