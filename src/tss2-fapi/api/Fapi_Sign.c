@@ -296,12 +296,12 @@ Fapi_Sign_Finish(
                     &command->publicKey,
                     (certificate) ? &command->certificate : NULL);
             return_try_again(r);
-            goto_if_error(r, "Fapi sign.", error_cleanup);
+            goto_if_error(r, "Fapi sign.", cleanup);
 
             /* Convert the TPM datatype signature to something useful for the caller. */
             r = ifapi_tpm_to_fapi_signature(command->key_object,
                      command->tpm_signature, &command->ret_signature, &resultSignatureSize);
-            goto_if_error(r, "Create FAPI signature.", error_cleanup);
+            goto_if_error(r, "Create FAPI signature.", cleanup);
 
             if (signatureSize)
                 command->signatureSize = resultSignatureSize;
@@ -310,7 +310,7 @@ Fapi_Sign_Finish(
         statecase(context->state, KEY_SIGN_CLEANUP)
             /* Cleanup the session used for authorization. */
             r = ifapi_cleanup_session(context);
-            try_again_or_error_goto(r, "Cleanup", error_cleanup);
+            try_again_or_error_goto(r, "Cleanup", cleanup);
 
             if (certificate)
                 *certificate = command->certificate;
@@ -325,13 +325,11 @@ Fapi_Sign_Finish(
         statecasedefault(context->state);
     }
 
- error_cleanup:
+ cleanup:
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(command->key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
-
- cleanup:
-    /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->tpm_signature);
     SAFE_FREE(command->keyPath);
     SAFE_FREE(command->padding);
