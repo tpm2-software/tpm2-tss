@@ -22,6 +22,11 @@ typedef struct {
     size_t recnum_tab[TPM2_MAX_PCRS];
 } callback_data;
 
+bool ifapi_pcr_used(
+    uint32_t pcr,
+    const uint32_t *pcr_list,
+    size_t pcr_list_size);
+
 TSS2_RC ifapi_tcg_eventlog_serialize(
     UINT8 const *eventlog,
     size_t size,
