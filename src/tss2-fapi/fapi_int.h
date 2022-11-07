@@ -482,8 +482,11 @@ typedef struct {
     TPM2B_AUTH newAuthValue;        /**< The new auth value */
     TPM2B_PRIVATE *newPrivate;      /**< New private data created by parend */
     IFAPI_OBJECT object;            /**< Deserialized NV object or hierarchy */
+    IFAPI_OBJECT hiearchy_object;   /**< Used for copying a hierarchy   */
     ESYS_TR nv_index;               /**< NV handle of the object to be changed */
     ESYS_TR hierarchy_handle;       /**< NV handle of the hierarchy to be changed */
+    char **pathlist;                /**< The array with all keystore objects */
+    size_t numPaths;                /**< Size of array with all keystore objects */
 } IFAPI_Entity_ChangeAuth;
 
 /** The data structure holding internal state of Fapi_AuthorizePolicy.
@@ -992,6 +995,8 @@ enum _FAPI_STATE {
     ENTITY_CHANGE_AUTH_HIERARCHY_CHANGE_AUTH,
     ENTITY_CHANGE_AUTH_HIERARCHY_READ,
     ENTITY_CHANGE_AUTH_HIERARCHY_AUTHORIZE,
+    ENTITY_CHANGE_AUTH_SAVE_HIERARCHIES_PREPARE,
+    ENTITY_CHANGE_AUTH_SAVE_HIERARCHIES_FINISH,
     ENTITY_CHANGE_AUTH_CLEANUP,
 
     DATA_ENCRYPT_WAIT_FOR_PROFILE,
