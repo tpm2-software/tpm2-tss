@@ -19,6 +19,21 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
+static void store_input_parameters (
+    ESYS_CONTEXT *esysContext,
+    const ESYS_TR pcrHandle,
+    const TPM2B_AUTH *auth)
+{
+    if (auth == NULL)
+        memset(&esysContext->in.PCR.authData, 0,
+                sizeof(esysContext->in.PCR.authData));
+    else
+        esysContext->in.PCR.authData = *auth;
+
+    esysContext->in.PCR.pcrHandle = pcrHandle;
+}
+
 /** One-Call function for TPM2_PCR_SetAuthValue
  *
  * This function invokes the TPM2_PCR_SetAuthValue command in a one-call
@@ -162,6 +177,8 @@ Esys_PCR_SetAuthValue_Async(
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
 
+    store_input_parameters(esysContext, pcrHandle, auth);
+
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, pcrHandle, &pcrHandleNode);
     return_state_if_error(r, _ESYS_STATE_INIT, "pcrHandle unknown.");
@@ -236,6 +253,9 @@ TSS2_RC
 Esys_PCR_SetAuthValue_Finish(
     ESYS_CONTEXT *esysContext)
 {
+    ESYS_TR pcrHandle;
+    RSRC_NODE_T *pcrHandleNode;
+
     TSS2_RC r;
     LOG_TRACE("context=%p",
               esysContext);
@@ -292,6 +312,19 @@ Esys_PCR_SetAuthValue_Finish(
         esysContext->state = _ESYS_STATE_INTERNALERROR;
         return r;
     }
+
+    /*
+     * Session value has to be updated before checking the response to ensure
+     * correct computation of hmac with new auth value.
+     */
+    pcrHandle = esysContext->in.PCR.pcrHandle;
+    r = esys_GetResourceObject(esysContext, pcrHandle, &pcrHandleNode);
+    return_if_error(r, "get resource");
+
+    pcrHandleNode->auth = esysContext->in.PCR.authData;
+
+    iesys_compute_session_value(esysContext->session_tab[0],
+                                &pcrHandleNode->rsrc.name, &pcrHandleNode->auth);
 
     /*
      * Now the verification of the response (hmac check) and if necessary the
