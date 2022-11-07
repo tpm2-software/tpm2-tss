@@ -109,6 +109,11 @@ typedef struct {
     ESYS_TR flushHandle;
 } FlushContext_IN;
 
+typedef struct {
+    ESYS_TR pcrHandle;
+    TPM2B_AUTH authData;
+} PCR_IN;
+
 /** Union for input parameters.
  *
  * The input parameters of a command need to be stored if they are needed
@@ -130,6 +135,7 @@ typedef union {
     Policy_IN Policy;
     NV_IN NV;
     FlushContext_IN FlushContext;
+    PCR_IN PCR;
 } IESYS_CMD_IN_PARAM;
 
 /** The states for the ESAPI's internal state machine */
