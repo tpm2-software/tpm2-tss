@@ -313,6 +313,8 @@ Fapi_ChangeAuth_Finish(
                                             &command->numPaths);
                 goto_if_error(r, "get entities.", error_cleanup);
 
+                command->numPathsCleanup = command->numPaths;
+
                 /* Load the hierarchy's metadata from the keystore. */
                 r = ifapi_keystore_load_async(&context->keystore, &context->io,
                         command->entityPath);
@@ -600,7 +602,7 @@ error_cleanup:
     SAFE_FREE(command->entityPath);
     SAFE_FREE(command->authValue);
     if (command->pathlist) {
-        for (size_t i = 0; i < command->numPaths; i++) {
+        for (size_t i = 0; i < command->numPathsCleanup; i++) {
             SAFE_FREE(command->pathlist[i]);
         }
         SAFE_FREE(command->pathlist);
