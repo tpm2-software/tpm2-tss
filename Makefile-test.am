@@ -229,6 +229,7 @@ ESYS_TESTS_INTEGRATION_DESTRUCTIVE = \
     test/integration/esys-field-upgrade.int \
     test/integration/esys-firmware-read.int \
     test/integration/esys-lock.int \
+    test/integration/esys-pcr-auth-value.int \
     test/integration/esys-set-algorithm-set.int
 
 ESYS_TESTS_INTEGRATION_MANDATORY = \
@@ -317,7 +318,6 @@ ESYS_TESTS_INTEGRATION_OPTIONAL = \
     test/integration/esys-get-time.int \
     test/integration/esys-hierarchy-control.int \
     test/integration/esys-nv-certify.int \
-    test/integration/esys-pcr-auth-value.int \
     test/integration/esys-pcr-basic.int \
     test/integration/esys-policy-authorize-nv-opt.int \
     test/integration/esys-policy-physical-presence-opt.int \
