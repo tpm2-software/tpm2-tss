@@ -321,7 +321,7 @@ Esys_PCR_SetAuthValue_Finish(
     r = esys_GetResourceObject(esysContext, pcrHandle, &pcrHandleNode);
     return_if_error(r, "get resource");
 
-    pcrHandleNode->auth = esysContext->in.NV.authData;
+    pcrHandleNode->auth = esysContext->in.PCR.authData;
 
     iesys_compute_session_value(esysContext->session_tab[0],
                                 &pcrHandleNode->rsrc.name, &pcrHandleNode->auth);
