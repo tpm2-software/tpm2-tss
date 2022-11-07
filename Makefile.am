@@ -423,6 +423,27 @@ src_tss2_tcti_libtss2_tcti_spi_helper_la_SOURCES  = \
     src/tss2-tcti/tcti-spi-helper.h
 endif # ENABLE_TCTI_SPI_HELPER
 
+# tcti library for letstrust-tpm2go usb tpm
+if ENABLE_TCTI_SPI_LT2GO
+libtss2_tcti_spi_lt2go = src/tss2-tcti/libtss2-tcti-spi-lt2go.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spi_lt2go.h
+lib_LTLIBRARIES += $(libtss2_tcti_spi_lt2go)
+pkgconfig_DATA += lib/tss2-tcti-spi-lt2go.pc
+
+src_tss2_tcti_libtss2_tcti_spi_lt2go_la_LDFLAGS  = -lusb-1.0
+
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_spi_lt2go_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spi-lt2go.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_spi_lt2go_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_spi_helper)
+src_tss2_tcti_libtss2_tcti_spi_lt2go_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-spi-lt2go.c \
+    src/tss2-tcti/tcti-spi-lt2go.h
+endif # ENABLE_TCTI_SPI_LT2GO
+EXTRA_DIST += lib/tss2-tcti-spi-lt2go.map \
+              lib/tss2-tcti-spi-lt2go.def
+
 ### TCG TSS SYS spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
@@ -805,6 +826,8 @@ man7_MANS = \
     man/man7/tss2-tcti-swtpm.7 \
     man/man7/tss2-tcti-mssim.7 \
     man/man7/tss2-tcti-cmd.7 \
+    man/man7/tss2-tcti-spi-helper.7 \
+    man/man7/tss2-tcti-spi-lt2go.7 \
     man/man7/tss2-tctildr.7
 
 if FAPI
@@ -883,6 +906,8 @@ EXTRA_DIST += \
     man/man7/tss2-tcti-swtpm.7 \
     man/tss2-tcti-mssim.7.in \
     man/tss2-tcti-cmd.7.in \
+    man/tss2-tcti-spi-helper.7.in \
+    man/tss2-tcti-spi-lt2go.7.in \
     man/tss2-tctildr.7.in
 
 CLEANFILES += \

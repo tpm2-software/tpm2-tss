@@ -666,6 +666,10 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
         return TSS2_RC_SUCCESS;
     }
 
+    if (!platform_conf) {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+
     if (*size < sizeof (TSS2_TCTI_SPI_HELPER_CONTEXT)) {
         return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }

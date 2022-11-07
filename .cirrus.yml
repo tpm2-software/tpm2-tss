@@ -3,6 +3,7 @@ task:
     CFLAGS: "-I/usr/local/include -I/usr/local/openssl/include"
     LDFLAGS: -L/usr/local/lib
     ibmtpm_name: ibmtpm1637
+    libusb_version: v1.0.26
   freebsd_instance:
     matrix:
       image_family: freebsd-13-1
@@ -21,6 +22,9 @@ task:
     - gmake -j && cp tpm_server /usr/bin/
     - cd -
     - rm -fr $ibmtpm_name $ibmtpm_name.tar.gz
+    - git clone --depth 1 -b $libusb_version https://github.com/libusb/libusb
+    - cd libusb && ./bootstrap.sh && ./configure && gmake -j install
+    - cd - && rm -fr libusb
   script:
     ./bootstrap &&
     ./configure --enable-self-generated-certificate --enable-unit=yes --enable-integration=yes --with-crypto=ossl --disable-doxygen-doc --enable-tcti-swtpm=no --enable-tcti-libtpms=no --enable-tcti-mssim=yes --disable-dependency-tracking &&
