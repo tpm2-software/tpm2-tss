@@ -44,6 +44,7 @@ check_hash_functions(void **state)
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
 #ifndef OSSL
+    context = NULL;
     rc = iesys_crypto_hash_start(&crypto_cb, &context, TPM2_ALG_SHA512);
     assert_int_equal (rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
     assert_null (context);
