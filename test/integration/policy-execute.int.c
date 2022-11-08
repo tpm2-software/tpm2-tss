@@ -255,6 +255,8 @@ static TSS2_RC sign_cb (
         assert(false);
     }
 
+    if (pub_key)
+        EVP_PKEY_free(pub_key);
     if (priv_key)
         EVP_PKEY_free(priv_key);
     if (bio)
@@ -549,6 +551,7 @@ static TSS2_RC polauth_cb (
         memcpy(cbdata->update_digest.buffer, buffer,
                 cbdata->update_digest.size);
     }
+    SAFE_FREE(digest);
 
     return TSS2_RC_SUCCESS;
 }
