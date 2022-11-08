@@ -63,7 +63,7 @@ if [ "$CC" == "gcc" ]; then
   export CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --enable-code-coverage";
 fi
 
-if [ ldconfig -p 2>/dev/null| grep libasan > /dev/null && ldconfig -p 2>/dev/null| grep libubsan > /dev/null ]; then
+if ldconfig -p 2>/dev/null| grep libasan > /dev/null && ldconfig -p 2>/dev/null| grep libubsan > /dev/null; then
   SANITIZER_OPTION="--with-sanitizer=undefined,address"
 fi
 
