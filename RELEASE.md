@@ -85,7 +85,9 @@ Additionally they must:
 * be associated with the maintainers github account (https://help.github.com/articles/adding-a-new-gpg-key-to-your-github-account/)
 
 # Announcements
-Release candidates and proper releases should be announced on the 01.org TPM2 mailing list: https://lists.01.org/postorius/lists/tpm2.lists.01.org/.
+Release candidates and proper releases should be announced on the 01.org TPM2 mailing list:
+  - https://lists.linuxfoundation.org/mailman/listinfo/tpm2
+
 This announcement should be accompanied by a link to the release page on Github as well as a link to the CHANGELOG.md accompanying the release.
 
 # Maintenance
