@@ -44,7 +44,9 @@ The latter implements the protocol exposed by the Microsoft software TPM2 simula
 Instructions to build and install tpm2-tss are available in the [INSTALL](INSTALL.md) file.
 
 # Getting in Touch:
-If you're looking to discuss the source code in this project or get some questions answered you should join the 01.org TPM2 mailing list: https://lists.01.org/postorius/lists/tpm2.lists.01.org/.
+If you're looking to discuss the source code in this project or get some questions answered you should join the 01.org TPM2 mailing list:
+  - https://lists.linuxfoundation.org/mailman/listinfo/tpm2
+
 We also have an IRC channel set up on [FreeNode](https://freenode.net/) called \#tpm2.0-tss.
 You can also try Gitter [![Gitter](https://badges.gitter.im/tpm2-software/community.svg)](https://gitter.im/tpm2-software/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
