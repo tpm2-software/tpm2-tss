@@ -272,6 +272,7 @@ static void test_policy_instantiate (
             }
 
             SAFE_FREE(json);
+            SAFE_FREE(buffer);
             Tss2_PolicyFinalize(&ctx);
         } /* end for each hash algorithm */
     } /* end for each policy file */
