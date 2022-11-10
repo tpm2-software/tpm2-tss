@@ -676,7 +676,8 @@ endif # HAVE_LD_VERSION_SCRIPT
 
 # Bump soname due to commit e0636dd6fbec4f286cc908117ecef4d820a50f79 breaking
 # the API and ABI of Fapi_CB_{Auth,Sign,Branch,PolicyAction}
-src_tss2_fapi_libtss2_fapi_la_LDFLAGS += -version-info 1:0:0
+# Bump soname due to change in ABI for EventLogs changed to CEL
+src_tss2_fapi_libtss2_fapi_la_LDFLAGS += -version-info 2:0:0
 
 if DOXYMAN
 DOXYMAN3 += \
