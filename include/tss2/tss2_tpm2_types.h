@@ -1209,6 +1209,15 @@ struct TPML_INTEL_PTT_PROPERTY {
     UINT32 property[TPM2_MAX_PTT_PROPERTIES]; /* property value */
 };
 
+/* Definition of a non-TPM standard buffer object for use in a TPMU_CAPABILITIES
+   for vendor specific capabilities */
+
+typedef struct TPM2B_MAX_CAP_BUFFER TPM2B_MAX_CAP_BUFFER;
+struct TPM2B_MAX_CAP_BUFFER {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_CAP_BUFFER];
+};
+
 /* Definition of TPMU_CAPABILITIES Union <OUT> */
 typedef union TPMU_CAPABILITIES TPMU_CAPABILITIES;
 union TPMU_CAPABILITIES {
@@ -1223,7 +1232,7 @@ union TPMU_CAPABILITIES {
     TPML_ECC_CURVE eccCurves;
     TPML_TAGGED_POLICY authPolicies;
     TPML_ACT_DATA actData;
-    TPML_INTEL_PTT_PROPERTY intelPttProperty;
+    TPM2B_MAX_CAP_BUFFER vendor;
 };
 
 /* Definition of TPMS_CAPABILITY_DATA Structure <OUT> */

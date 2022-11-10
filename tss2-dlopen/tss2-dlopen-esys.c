@@ -29,7 +29,7 @@
 #define WARN(...) do { } while (0)
 #endif /* ENABLE_WARN */
 
-#define LIB "libtss2-esys.so.0"
+#define LIB "libtss2-esys.so.1"
 static void *dlhandle = NULL;
 
 static TSS2_RC

@@ -256,9 +256,13 @@ lib_LTLIBRARIES += $(libtss2_mu)
 pkgconfig_DATA += lib/tss2-mu.pc
 EXTRA_DIST += lib/tss2-mu.map lib/tss2-mu.def src/tss2-mu/tss2-mu.vcxproj
 
+# Bump sys soname due to change in TPMU_CAPABILITY API
+src_tss2_mu_libtss2_mu_la_LDFLAGS = -version-info 1:0:0
+
 if HAVE_LD_VERSION_SCRIPT
-src_tss2_mu_libtss2_mu_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/tss2-mu.map
+src_tss2_mu_libtss2_mu_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-mu.map
 endif # HAVE_LD_VERSION_SCRIPT
+
 src_tss2_mu_libtss2_mu_la_LIBADD = $(libutil)
 src_tss2_mu_libtss2_mu_la_SOURCES = $(TSS2_MU_SRC)
 
@@ -434,7 +438,8 @@ endif # HAVE_LD_VERSION_SCRIPT
 
 # Bump sys soname due to commit 1414f73902cd0c64e447522c64c8e439fa2074b7
 # breaking the backwards compatibility of Tss2_Sys_ReadClock call.
-src_tss2_sys_libtss2_sys_la_LDFLAGS += -version-info 1:0:0
+# Bump sys soname due to change in TPMU_CAPABILITY API
+src_tss2_sys_libtss2_sys_la_LDFLAGS += -version-info 2:0:0
 
 src_tss2_sys_libtss2_sys_la_LIBADD = $(libtss2_mu)
 src_tss2_sys_libtss2_sys_la_SOURCES = $(TSS2_SYS_SRC) \
@@ -464,6 +469,10 @@ src_tss2_esys_libtss2_esys_la_LDFLAGS = $(AM_LDFLAGS) $(LIBSOCKET_LDFLAGS) \
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_esys_libtss2_esys_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-esys.map
 endif # HAVE_LD_VERSION_SCRIPT
+
+# Bump sys soname due to change in TPMU_CAPABILITY API
+src_tss2_esys_libtss2_esys_la_LDFLAGS += -version-info 1:0:0
+
 src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC) $(TSS2_ESYS_SRC_CRYPTO) \
     src/tss2-tcti/tctildr.c src/tss2-tcti/tctildr.h \
     src/tss2-tcti/tctildr-interface.h
