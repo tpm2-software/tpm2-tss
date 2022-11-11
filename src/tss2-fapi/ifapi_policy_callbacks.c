@@ -495,7 +495,7 @@ ifapi_policyeval_cbauth(
             SAFE_FREE(cb_ctx->object_path);
             fallthrough;
 
-            statecase(cb_ctx->cb_state, POL_CB_READ_OBJECT);
+        statecase(cb_ctx->cb_state, POL_CB_READ_OBJECT);
             /* Get object from file */
             r = ifapi_keystore_load_finish(&fapi_ctx->keystore, &fapi_ctx->io,
                                            &cb_ctx->object);
