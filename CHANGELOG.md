@@ -3,6 +3,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [3.2.1] - 2022-12-14
+### Fixed
+- Makefile.am: make all EXTRA_DIST includes unconditional to fix pristine tars
+- Fix usage of NULL pointer if Esys_TR_SetAuth is calles with ESYS_TR_NONE.
+- Store VERSION into the release tarball.
+- fapi: fix usage of policy_nv with a TPM nv index.
+- Tss2_Sys_Flushcontext: flushHandle was encoded as a handleArea handle and not as parameter one, this affected the contents of cpHash.
+- linking tcti for libtpms against tss2-tctildr. It should be linked against tss2-mu.
+- build: Remove erroneous trailing comma in linker option. Bug #2391.
+- esys: fix allow usage of HMAC sessions for Esys_TR_FromTPMPublic.
+- test: build with opaque FILE structure like in musl libc.
+- Usage of a second profile in a path was not possible because the default profile was always used.
+- FAPI: Fix provisioning if auth value for storage hierarchy was set.
+- FAPI: Fix recreation of EK.
+- FAPI: Fix usage of lockout auth value in Fapi_Provison.
+- FAPI: Fix loading of key in policy execution.
+- FAPI: Fix Fapi_ChangeAuth updates on hierarchy objects not being reflected across profiles.
+- Esys_PCR_SetAuthValue: remembers the auth like other SetAutg ESAPI functions.
+- tests: esys-pcr-auth-value.int moved to destructive tests.
+
 ## [3.2.0] - 2022-02-18
 ### Fixed
 - FAPI: fix curl_url_set call
