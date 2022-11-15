@@ -554,6 +554,61 @@ MAKE_ESYS_5(Esys_ACT_SetTimeout_Async,
     ESYS_TR, shandle3,
     UINT32, startTimeout);
 MAKE_ESYS_0(Esys_ACT_SetTimeout_Finish);
+MAKE_ESYS_6(Esys_AC_GetCapability_Async,
+    ESYS_TR, optionalSession1,
+    ESYS_TR, optionalSession2,
+    ESYS_TR, optionalSession3,
+    ESYS_TR, ac,
+    TPM_AT, capability,
+    UINT32, count)
+MAKE_ESYS_2(Esys_AC_GetCapability_Finish,
+    TPMI_YES_NO *, moreData,
+    TPML_AC_CAPABILITIES **, capabilityData);
+MAKE_ESYS_8(Esys_AC_GetCapability,
+    ESYS_TR, optionalSession1,
+    ESYS_TR, optionalSession2,
+    ESYS_TR, optionalSession3,
+    ESYS_TR, ac,
+    TPM_AT, capability,
+    UINT32, count,
+    TPMI_YES_NO *, moreData,
+    TPML_AC_CAPABILITIES **, capabilityData);
+MAKE_ESYS_7(Esys_AC_Send_Async,
+    ESYS_TR, sendObject,
+    ESYS_TR, nvAuthHandle,
+    ESYS_TR, optionalSession1,
+    ESYS_TR, optionalSession2,
+    ESYS_TR, optionalSession3,
+    ESYS_TR, ac,
+    TPM2B_MAX_BUFFER *, acDataIn);
+MAKE_ESYS_1(Esys_AC_Send_Finish,
+    TPMS_AC_OUTPUT **, acDataOut);
+MAKE_ESYS_8(Esys_AC_Send,
+    ESYS_TR, sendObject,
+    ESYS_TR, nvAuthHandle,
+    ESYS_TR, optionalSession1,
+    ESYS_TR, optionalSession2,
+    ESYS_TR, optionalSession3,
+    ESYS_TR, ac,
+    TPM2B_MAX_BUFFER *, acDataIn,
+    TPMS_AC_OUTPUT **, acDataOut);
+MAKE_ESYS_7(Esys_Policy_AC_SendSelect_Async,
+    ESYS_TR, policySession1,
+    ESYS_TR, optionalSession2,
+    ESYS_TR, optionalSession3,
+    TPM2B_NAME *, objectName,
+    TPM2B_NAME *, authHandleName,
+    TPM2B_NAME *, acName,
+    const TPMI_YES_NO, includeObject);
+MAKE_ESYS_0(Esys_Policy_AC_SendSelect_Finish);
+MAKE_ESYS_7(Esys_Policy_AC_SendSelect,
+    ESYS_TR, policySession1,
+    ESYS_TR, optionalSession2,
+    ESYS_TR, optionalSession3,
+    TPM2B_NAME *, objectName,
+    TPM2B_NAME *, authHandleName,
+    TPM2B_NAME *, acName,
+    TPMI_YES_NO, includeObject);
 MAKE_ESYS_8(Esys_MakeCredential,
     ESYS_TR, handle,
     ESYS_TR, shandle1,
@@ -879,6 +934,23 @@ MAKE_ESYS_6(Esys_HMAC_Async,
     TPMI_ALG_HASH, hashAlg);
 MAKE_ESYS_1(Esys_HMAC_Finish,
     TPM2B_DIGEST **, outHMAC);
+MAKE_ESYS_6(Esys_MAC_Async,
+    ESYS_TR, handle,
+    ESYS_TR, handleSession1,
+    ESYS_TR, optionalSession2,
+    ESYS_TR, optionalSession3,
+    const TPM2B_MAX_BUFFER *, buffer,
+    TPMI_ALG_MAC_SCHEME, inScheme);
+MAKE_ESYS_1(Esys_MAC_Finish,
+    TPM2B_DIGEST **, outMAC);
+MAKE_ESYS_7(Esys_MAC,
+    ESYS_TR, handle,
+    ESYS_TR, handleSession1,
+    ESYS_TR, optionalSession2,
+    ESYS_TR, optionalSession3,
+    const TPM2B_MAX_BUFFER *, buffer,
+    TPMI_ALG_MAC_SCHEME, inScheme,
+    TPM2B_DIGEST **, outMAC);
 MAKE_ESYS_5(Esys_GetRandom,
     ESYS_TR, shandle1,
     ESYS_TR, shandle2,
@@ -919,6 +991,23 @@ MAKE_ESYS_6(Esys_HMAC_Start_Async,
     const TPM2B_AUTH *, auth,
     TPMI_ALG_HASH, hashAlg);
 MAKE_ESYS_1(Esys_HMAC_Start_Finish,
+    ESYS_TR *, sequenceHandle);
+MAKE_ESYS_7(Esys_MAC_Start,
+    ESYS_TR, handle,
+    ESYS_TR, handleSession1,
+    ESYS_TR, optionalSession2,
+    ESYS_TR, optionalSession3,
+    const TPM2B_AUTH *, auth,
+    TPMI_ALG_MAC_SCHEME, inScheme,
+    ESYS_TR *, sequenceHandle);
+MAKE_ESYS_6(Esys_MAC_Start_Async,
+    ESYS_TR, handle,
+    ESYS_TR, handleSession1,
+    ESYS_TR, optionalSession2,
+    ESYS_TR, optionalSession3,
+    const TPM2B_AUTH *, auth,
+    TPMI_ALG_MAC_SCHEME, inScheme);
+MAKE_ESYS_1(Esys_MAC_Start_Finish,
     ESYS_TR *, sequenceHandle);
 MAKE_ESYS_6(Esys_HashSequenceStart,
     ESYS_TR, shandle1,
@@ -2206,3 +2295,5 @@ MAKE_ESYS_1(Esys_Vendor_TCG_Test_Finish,
     TPM2B_DATA **, outputData);
 MAKE_ESYS_1(Esys_GetSysContext,
     TSS2_SYS_CONTEXT **, sys_context);
+MAKE_ESYS_1(Esys_SetCryptoCallbacks,
+    ESYS_CRYPTO_CALLBACKS *, callbacks);
