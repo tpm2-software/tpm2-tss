@@ -31,6 +31,8 @@ check-programs: $(check_PROGRAMS)
 check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 TESTS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 
+XFAIL_TESTS =
+
 if UNIT
 check_PROGRAMS += test/helper/tpm_cmd_tcti_dummy
 test_helper_tpm_cmd_tcti_dummy_SOURCES = \
@@ -166,7 +168,11 @@ TESTS_UNIT += \
     test/unit/esys-ac-send \
     test/unit/esys-policy-ac-sendselect \
     test/unit/esys-nulltcti \
-    test/unit/esys-crypto
+    test/unit/esys-crypto \
+    test/unit/esys-vendor
+
+XFAIL_TESTS += \
+    test/unit/esys-vendor
 
 endif ESYS
 if FAPI
@@ -725,6 +731,16 @@ test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
                                 src/tss2-esys/esys_iutil.c \
                                 src/tss2-tcti/tctildr.c \
                                 src/tss2-tcti/tctildr-dl.c \
+                                src/tss2-esys/esys_crypto.c \
+                                $(TSS2_ESYS_SRC_CRYPTO)
+
+
+test_unit_esys_vendor_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
+test_unit_esys_vendor_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD) $(LIBADD_DL)
+test_unit_esys_vendor_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
+test_unit_esys_vendor_SOURCES = test/unit/esys-vendor.c \
+                                src/tss2-esys/esys_context.c \
+                                src/tss2-esys/esys_iutil.c \
                                 src/tss2-esys/esys_crypto.c \
                                 $(TSS2_ESYS_SRC_CRYPTO)
 endif # ESYS
