@@ -1540,7 +1540,8 @@ Esys_MAC_Start_Async(
     const TPM2B_AUTH *auth,
     TPMI_ALG_MAC_SCHEME inScheme);
 
-TSS2_RC Esys_MAC_Start_Finish(
+TSS2_RC
+Esys_MAC_Start_Finish(
     ESYS_CONTEXT *esysContext,
     ESYS_TR *sequenceHandle);
 
