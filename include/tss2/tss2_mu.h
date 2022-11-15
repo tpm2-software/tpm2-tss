@@ -1926,7 +1926,8 @@ Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal(
     size_t        *offset,
     TPMT_TK_HASHCHECK *dest);
 
-TSS2_RC Tss2_MU_TPM2_HANDLE_Marshal(
+TSS2_RC
+Tss2_MU_TPM2_HANDLE_Marshal(
     TPM2_HANDLE     in,
     uint8_t         *buffer,
     size_t          size,
