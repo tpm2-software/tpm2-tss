@@ -644,6 +644,7 @@ ifapi_keystore_load_finish(
     if (jso)
         json_object_put(jso);
     LOG_TRACE("Return %x", r);
+    object->rel_path = NULL;
     SAFE_FREE(keystore->rel_path);
     return r;
 }
