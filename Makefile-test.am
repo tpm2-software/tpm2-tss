@@ -168,6 +168,9 @@ TESTS_UNIT += \
     test/unit/esys-policy-ac-sendselect \
     test/unit/esys-nulltcti \
     test/unit/esys-crypto
+if VENDOR
+TESTS_UNIT += test/unit/esys-vendor
+endif # VENDOR
 
 endif ESYS
 if FAPI
@@ -730,6 +733,17 @@ test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
                                 src/tss2-tcti/tctildr-dl.c \
                                 src/tss2-esys/esys_crypto.c \
                                 $(TSS2_ESYS_SRC_CRYPTO)
+
+if VENDOR
+test_unit_esys_vendor_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
+test_unit_esys_vendor_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD) $(LIBADD_DL)
+test_unit_esys_vendor_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
+test_unit_esys_vendor_SOURCES = test/unit/esys-vendor.c \
+                                src/tss2-esys/esys_context.c \
+                                src/tss2-esys/esys_iutil.c \
+                                src/tss2-esys/esys_crypto.c \
+                                $(TSS2_ESYS_SRC_CRYPTO)
+endif # VENDOR
 endif # ESYS
 
 if FAPI

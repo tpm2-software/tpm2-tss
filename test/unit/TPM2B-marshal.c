@@ -431,6 +431,40 @@ tpm2b_public_rsa_unique_size_marshal_success(void **state) {
     assert_int_equal (ptr1->size, HOST_TO_BE_16(0x11a));
 }
 
+static void
+tpm2b_tpm2b_max_cap_buffer_unmarshal_marshal(void **state) {
+
+    TSS2_RC rc = TSS2_RC_SUCCESS;
+    size_t offset = 0;
+    TPM2B_MAX_CAP_BUFFER dest = {0};
+    const uint8_t buf[] = {
+        0x00, 0x0C,         /* UINT16 size of 12 */
+        'B', 'I', 'L', 'L', /* DATA of 12 bytes */
+        ' ', 'I', 'S', ' ',
+        'C', 'O', 'O', 'L'
+    };
+    uint8_t buf2[sizeof(buf)] = {0};
+
+    rc = Tss2_MU_TPM2B_MAX_CAP_BUFFER_Unmarshal(
+            buf,
+            sizeof(buf),
+            &offset,
+            &dest);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal (sizeof(buf) - sizeof(UINT16), dest.size);
+    assert_memory_equal (&buf[sizeof(UINT16)], dest.buffer, dest.size);
+
+    offset=0;
+    rc = Tss2_MU_TPM2B_MAX_CAP_BUFFER_Marshal(
+        &dest,
+        buf2,
+        sizeof(buf2),
+        &offset);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_memory_equal (buf, buf2, sizeof(buf));
+    assert_int_equal (offset, sizeof(buf));
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(tpm2b_marshal_success),
@@ -446,6 +480,7 @@ int main(void) {
         cmocka_unit_test(tpm2b_unmarshal_buffer_size_lt_data_nad_lt_offset),
         cmocka_unit_test(tpm2b_public_rsa_marshal_success),
         cmocka_unit_test(tpm2b_public_rsa_unique_size_marshal_success),
+        cmocka_unit_test(tpm2b_tpm2b_max_cap_buffer_unmarshal_marshal)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

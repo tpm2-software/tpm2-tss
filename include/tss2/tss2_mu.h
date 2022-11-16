@@ -1407,20 +1407,6 @@ Tss2_MU_TPML_TAGGED_TPM_PROPERTY_Unmarshal(
     TPML_TAGGED_TPM_PROPERTY *dest);
 
 TSS2_RC
-Tss2_MU_TPML_INTEL_PTT_PROPERTY_Marshal(
-    TPML_INTEL_PTT_PROPERTY const *src,
-    uint8_t      buffer[],
-    size_t       buffer_size,
-    size_t      *offset);
-
-TSS2_RC
-Tss2_MU_TPML_INTEL_PTT_PROPERTY_Unmarshal(
-    uint8_t const   buffer[],
-    size_t          buffer_size,
-    size_t         *offset,
-    TPML_INTEL_PTT_PROPERTY *dest);
-
-TSS2_RC
 Tss2_MU_TPML_AC_CAPABILITIES_Marshal(
     TPML_AC_CAPABILITIES const *src,
     uint8_t      buffer[],
@@ -2036,6 +2022,36 @@ Tss2_MU_TPMS_EMPTY_Unmarshal(
     size_t          size,
     size_t          *offset,
     TPMS_EMPTY      *out);
+
+TSS2_RC
+Tss2_MU_TPM2B_MAX_CAP_BUFFER_Marshal(
+    TPM2B_MAX_CAP_BUFFER const *src,
+    uint8_t                    buffer[],
+    size_t                     buffer_size,
+    size_t                     *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_MAX_CAP_BUFFER_Unmarshal(
+        uint8_t const        buffer[],
+        size_t               buffer_size,
+        size_t               *offset,
+        TPM2B_MAX_CAP_BUFFER *dest);
+
+#if !defined(DISABLE_VENDOR)
+TSS2_RC
+Tss2_MU_TPML_INTEL_PTT_PROPERTY_Marshal(
+    TPML_INTEL_PTT_PROPERTY const *src,
+    uint8_t      buffer[],
+    size_t       buffer_size,
+    size_t      *offset);
+
+TSS2_RC
+Tss2_MU_TPML_INTEL_PTT_PROPERTY_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPML_INTEL_PTT_PROPERTY *dest);
+#endif /* NOT defined DISABLE_VENDOR */
 
 #ifdef __cplusplus
 }

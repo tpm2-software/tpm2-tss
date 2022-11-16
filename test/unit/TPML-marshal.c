@@ -473,6 +473,43 @@ tpml_unmarshal_invalid_count(void **state)
     assert_int_equal (rc, TSS2_SYS_RC_MALFORMED_RESPONSE);
 }
 
+#if !defined(DISABLE_VENDOR)
+static void
+tpml_intel_ptt_marshal_unmarshal(void **state)
+{
+
+    TPM2B_MAX_CAP_BUFFER buf = {
+        .size = 8,
+        .buffer = {
+            0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x03
+        }
+    };
+
+    TPML_INTEL_PTT_PROPERTY dest = { 0 };
+    size_t offset = 0;
+
+    TSS2_RC r =  Tss2_MU_TPML_INTEL_PTT_PROPERTY_Unmarshal(
+        buf.buffer,
+        buf.size,
+        &offset,
+        &dest);
+    assert_int_equal(r, TSS2_RC_SUCCESS);
+    assert_int_equal(dest.count, 1);
+    assert_int_equal(dest.property[0], 0x3);
+
+    TPM2B_MAX_CAP_BUFFER buf2 = { 0 };
+    offset = 0;
+    r = Tss2_MU_TPML_INTEL_PTT_PROPERTY_Marshal(
+        &dest,
+        buf2.buffer,
+        sizeof(buf2.buffer),
+        &offset);
+        buf2.size = offset;
+    assert_int_equal(r, TSS2_RC_SUCCESS);
+    assert_memory_equal(&buf, &buf2, sizeof(buf));
+}
+#endif
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tpml_marshal_success),
@@ -487,6 +524,9 @@ int main(void) {
         cmocka_unit_test (tpml_unmarshal_dest_null_offset_valid),
         cmocka_unit_test (tpml_unmarshal_buffer_size_lt_data_nad_lt_offset),
         cmocka_unit_test (tpml_unmarshal_invalid_count),
+#if !defined(DISABLE_VENDOR)
+        cmocka_unit_test (tpml_intel_ptt_marshal_unmarshal)
+#endif
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
