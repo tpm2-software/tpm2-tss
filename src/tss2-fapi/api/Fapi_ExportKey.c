@@ -187,7 +187,7 @@ Fapi_ExportKey_Async(
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
-    return_if_error(r, "Initialize NV_CreateNv");
+    return_if_error(r, "Initialize ExportKey");
 
     /* Copy parameters to context for use during _Finish. */
     command->pathOfKeyToDuplicate = NULL;
