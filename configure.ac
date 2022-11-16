@@ -166,6 +166,20 @@ AC_ARG_WITH([crypto],
 AM_CONDITIONAL(ESYS_OSSL, test "x$with_crypto" = "xossl")
 AM_CONDITIONAL(ESYS_MBED, test "x$with_crypto" = "xmbed")
 
+AC_ARG_ENABLE([vendor],
+            [AS_HELP_STRING([--enable-vendor],
+                            [build vendor specific extensions (default is yes)])],
+            [enable_vendor=$enableval],
+            [enable_vendor=yes])
+
+AM_CONDITIONAL(VENDOR, test "x$enable_vendor" = "xyes")
+# Negative logic since code by default should build with vendor extensions
+# we don't want to require folks to have to pass a define to enable vendor
+# extensions in the header files, only to remove them.
+AS_IF([test "x$enable_vendor" != "xyes"],
+    [AC_DEFINE([DISABLE_VENDOR], [1], [Disable Vendor Extensions])])
+
+
 m4_define([ossl_min_version], [1.1.0])
 m4_define([ossl_err], [OpenSSL libcrypto is missing or version requirements not met. OpenSSL version must be >= ossl_min_version])
 AS_IF([test "x$enable_esys" = xyes],

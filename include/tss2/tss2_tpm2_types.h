@@ -1202,11 +1202,12 @@ struct TPML_ACT_DATA {
     TPMS_ACT_DATA actData[TPM2_MAX_ACT_DATA]; /* array of array of ACT data */
 };
 
-/* Implementation specific structure to hold Intel PTT specific property data. */
-typedef struct TPML_INTEL_PTT_PROPERTY TPML_INTEL_PTT_PROPERTY;
-struct TPML_INTEL_PTT_PROPERTY {
-    UINT32 count;                             /* number of properties zero is allowed. */
-    UINT32 property[TPM2_MAX_PTT_PROPERTIES]; /* property value */
+/* Definition of a non-TPM standard buffer object for use in a TPMU_CAPABILITIES
+   for vendor specific capabilities */
+typedef struct TPM2B_MAX_CAP_BUFFER TPM2B_MAX_CAP_BUFFER;
+struct TPM2B_MAX_CAP_BUFFER {
+    UINT16 size;
+    BYTE buffer[TPM2_MAX_CAP_BUFFER];
 };
 
 /* Definition of TPMU_CAPABILITIES Union <OUT> */
@@ -1223,7 +1224,7 @@ union TPMU_CAPABILITIES {
     TPML_ECC_CURVE eccCurves;
     TPML_TAGGED_POLICY authPolicies;
     TPML_ACT_DATA actData;
-    TPML_INTEL_PTT_PROPERTY intelPttProperty;
+    TPM2B_MAX_CAP_BUFFER vendor;
 };
 
 /* Definition of TPMS_CAPABILITY_DATA Structure <OUT> */
@@ -2041,4 +2042,14 @@ struct TPML_AC_CAPABILITIES {
     UINT32 count; /* Number of values in the acCapabilities list. May be 0 */
     TPMS_AC_OUTPUT acCapabilities[TPM2_MAX_AC_CAPABILITIES]; /* List of AC values */
 };
+
+#if !defined(DISABLE_VENDOR)
+/* Implementation specific structure to hold Intel PTT specific property data. */
+typedef struct TPML_INTEL_PTT_PROPERTY TPML_INTEL_PTT_PROPERTY;
+struct TPML_INTEL_PTT_PROPERTY {
+    UINT32 count;                             /* number of properties zero is allowed. */
+    UINT32 property[TPM2_MAX_PTT_PROPERTIES]; /* property value */
+};
+#endif /* NOT defined DISABLE_VENDOR */
+
 #endif

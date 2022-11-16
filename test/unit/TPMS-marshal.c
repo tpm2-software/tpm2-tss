@@ -342,6 +342,42 @@ tpms_unmarshal_buffer_size_lt_data_nad_lt_offset(void **state)
     assert_int_equal (offset, sizeof(alg));
 }
 
+static void
+tpms_capability_data_intel_ptt_marshal_unmarshal(void **state)
+{
+    uint8_t const buf[] = {
+        /* TPMS_CAPABILITY_DATA */
+        0x00, 0x00, 0x01, 0x00, /* capability */
+        /* TPMU_CAPABILITY_DATA */
+        0x00, 0x08,             /* UINT16 size */
+        0x00, 0x00, 0x00, 0x01, /* property */
+        0x00, 0x00, 0x00, 0x03  /* value */
+    };
+
+    TPMS_CAPABILITY_DATA dest;
+
+    size_t offset = 0;
+    TSS2_RC rc = Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(
+        buf,
+        sizeof(buf),
+        &offset,
+        &dest);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(dest.capability, TPM2_CAP_VENDOR_PROPERTY);
+    assert_int_equal(dest.data.vendor.size, 8);
+    assert_memory_equal(dest.data.vendor.buffer, &buf[6], dest.data.vendor.size);
+
+    uint8_t buf2[sizeof(buf)] = {0};
+    offset = 0;
+    rc = Tss2_MU_TPMS_CAPABILITY_DATA_Marshal(
+            &dest,
+            buf2,
+            sizeof(buf2),
+            &offset);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_memory_equal(buf, buf2, sizeof(buf2));
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tpms_marshal_success),
@@ -354,6 +390,7 @@ int main(void) {
         cmocka_unit_test (tpms_unmarshal_buffer_null_offset_null),
         cmocka_unit_test (tpms_unmarshal_dest_null_offset_valid),
         cmocka_unit_test (tpms_unmarshal_buffer_size_lt_data_nad_lt_offset),
+        cmocka_unit_test (tpms_capability_data_intel_ptt_marshal_unmarshal)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

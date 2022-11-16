@@ -82,6 +82,8 @@
         Tss2_MU_TPM2B_ATTEST_Unmarshal;
         Tss2_MU_TPM2B_MAX_BUFFER_Marshal;
         Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal;
+        Tss2_MU_TPM2B_MAX_CAP_BUFFER_Marshal;
+        Tss2_MU_TPM2B_MAX_CAP_BUFFER_Unmarshal;
         Tss2_MU_TPM2B_IV_Marshal;
         Tss2_MU_TPM2B_IV_Unmarshal;
         Tss2_MU_TPM2B_AUTH_Marshal;
