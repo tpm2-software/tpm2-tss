@@ -31,8 +31,6 @@ check-programs: $(check_PROGRAMS)
 check_PROGRAMS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 TESTS = $(TESTS_UNIT) $(TESTS_INTEGRATION)
 
-XFAIL_TESTS =
-
 if UNIT
 check_PROGRAMS += test/helper/tpm_cmd_tcti_dummy
 test_helper_tpm_cmd_tcti_dummy_SOURCES = \
@@ -169,9 +167,6 @@ TESTS_UNIT += \
     test/unit/esys-policy-ac-sendselect \
     test/unit/esys-nulltcti \
     test/unit/esys-crypto \
-    test/unit/esys-vendor
-
-XFAIL_TESTS += \
     test/unit/esys-vendor
 
 endif ESYS
