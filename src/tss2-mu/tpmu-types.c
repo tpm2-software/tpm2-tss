@@ -243,7 +243,7 @@ static TSS2_RC unmarshal_null(uint8_t const buffer[], size_t buffer_size,
  *   type - The type of the TPMU_* being marshaled. This is used to
  *       generate the name of the function and the type of its first
  *       parameter.
- *   The remaining parameters are grouped as 4-tuples. There are 11 of them,
+ *   The remaining parameters are grouped as 4-tuples. There are 12 of them,
  *       each defined as <selector, operator, member, function> where:
  *       selector - The constant value, typically from a table in some TCG
  *           registry, that the generated function will use to select the
@@ -256,13 +256,13 @@ static TSS2_RC unmarshal_null(uint8_t const buffer[], size_t buffer_size,
  *       function - A function capable of marshaling the 'member' from the
  *           TPMU_* being marshaled.
  *
- * This macro takes 11 such 4-tuples. This is the maximum number of members
- * in the TPMU_* types. All parameters after the first 45 parameters (11*4+1)
+ * This macro takes 12 such 4-tuples. This is the maximum number of members
+ * in the TPMU_* types. All parameters after the first 49 parameters (12*4+1)
  * are taken as variadic arguments (...) but they are ignored. The reason for
  * this is documented with the TPMU_MARSHAL2 macro below.
  *
- * NOTE: this macro must be passed 11 4-tuples even when defining TPMU_* types
- * with fewer than 11 members. The extra tuples should be defined as:
+ * NOTE: this macro must be passed 12 4-tuples even when defining TPMU_* types
+ * with fewer than 12 members. The extra tuples should be defined as:
  * <-X, ADDR, m, marshal_null> where:
  *     -X - A unique negative constant value.
  *     ADDR - The macro defined at the top of this file.
@@ -273,7 +273,8 @@ static TSS2_RC unmarshal_null(uint8_t const buffer[], size_t buffer_size,
 #define TPMU_MARSHAL(type, sel, op, m, fn, sel2, op2, m2, fn2, sel3, op3, m3, fn3, \
                      sel4, op4, m4, fn4, sel5, op5, m5, fn5, sel6, op6, m6, fn6, \
                      sel7, op7, m7, fn7, sel8, op8, m8, fn8, sel9, op9, m9, fn9, \
-                     sel10, op10, m10, fn10, sel11, op11, m11, fn11, ...) \
+                     sel10, op10, m10, fn10, sel11, op11, m11, fn11, sel12, op12, \
+                     m12, fn12,  ...) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buffer[], \
                                  size_t buffer_size, size_t *offset) \
 { \
@@ -319,6 +320,9 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
     case sel11: \
     ret = fn11(op11 src->m11, buffer, buffer_size, offset); \
     break; \
+    case sel12: \
+    ret = fn12(op12 src->m12, buffer, buffer_size, offset); \
+    break; \
     case TPM2_ALG_NULL: \
     LOG_DEBUG("ALG_NULL selector skipping"); \
     ret = TSS2_RC_SUCCESS; \
@@ -333,7 +337,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
 /*
  * The TPMU_MARSHAL2 macro is a thin wrapper around the TPMU_MARSHAL macro.
  * This macro is designed to keep us from having to provide dummy 4-tuples
- * to satisfy the required 45 (11*4+1) parameters required by TPMU_MARSHAL.
+ * to satisfy the required 49 (12*4+1) parameters required by TPMU_MARSHAL.
  *
  * It does this by accepting the tuples describing the variable number of
  * members in a TPMU_* union (except for the first one) as variadic
@@ -342,14 +346,14 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
  * the TPMU_MARSHAL macro.
  *
  * NOTE: Remember that all parameters to the TPMU_MARSHAL macro beyond the
- * first 45 are variadic parameters and are ignored by the macro. This
+ * first 49 are variadic parameters and are ignored by the macro. This
  * allows the TPMU_MARSHAL2 macro to provide the maximum required no-op
  * tuples.
- * e.g. The TPMU_* unions have between 2 and 11 members. A 2 member
+ * e.g. The TPMU_* unions have between 2 and 12 members. A 2 member
  * TPMU_* will require 9 no-op tuples to provide 45 parameters to the
- * TPMU_MARSHAL macro (note the 9 no-op tuples used in the TPMU_MARSHAL2
+ * TPMU_MARSHAL macro (note the 10 no-op tuples used in the TPMU_MARSHAL2
  * macro). The largest TPMU_* with 11 members will need to provide 0 no-op
- * tuples. In this last case the 9 no-op tuples provided by the
+ * tuples. In this last case the 10 no-op tuples provided by the
  * TPMU_MARSHAL2 macro will fall into the variadic parameters accepted by
  * TPMU_MARSHAL and they will be ignored.
  */
@@ -358,7 +362,8 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
                  -2, ADDR, m, marshal_null, -3, ADDR, m, marshal_null, \
                  -4, ADDR, m, marshal_null, -5, ADDR, m, marshal_null, \
                  -6, ADDR, m, marshal_null, -7, ADDR, m, marshal_null, \
-                 -8, ADDR, m, marshal_null, -9, ADDR, m, marshal_null)
+                 -8, ADDR, m, marshal_null, -9, ADDR, m, marshal_null, \
+				 -10, ADDR, m, marshal_null)
 
 /*
  * The TPMU_UNMARSHAL macro functions in the same way as the TPMU_MARSHAL
@@ -370,7 +375,8 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
  */
 #define TPMU_UNMARSHAL(type, sel, m, fn, sel2, m2, fn2, sel3, m3, fn3, \
                        sel4, m4, fn4, sel5, m5, fn5, sel6, m6, fn6, sel7, m7, fn7, \
-                       sel8, m8, fn8, sel9, m9, fn9, sel10, m10, fn10, sel11, m11, fn11, ...) \
+                       sel8, m8, fn8, sel9, m9, fn9, sel10, m10, fn10, sel11, m11, fn11, \
+					   sel12, m12, fn12,...) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, uint32_t selector, type *dest) \
 { \
@@ -411,6 +417,9 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     case sel11: \
     ret = fn11(buffer, buffer_size, offset, dest ? &dest->m11 : NULL); \
     break; \
+    case sel12: \
+    ret = fn12(buffer, buffer_size, offset, dest ? &dest->m12 : NULL); \
+    break; \
     case TPM2_ALG_NULL: \
     LOG_DEBUG("ALG_NULL selector skipping"); \
     ret = TSS2_RC_SUCCESS; \
@@ -431,7 +440,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     TPMU_UNMARSHAL(type, sel, m, fn, __VA_ARGS__, -1, m, unmarshal_null, \
             -2, m, unmarshal_null, -3, m, unmarshal_null, -4, m, unmarshal_null, \
             -5, m, unmarshal_null, -6, m, unmarshal_null, -7, m, unmarshal_null, \
-            -8, m, unmarshal_null, -9, m, unmarshal_null)
+            -8, m, unmarshal_null, -9, m, unmarshal_null, -10, m, unmarshal_null)
 
 /*
  * Following are invocations of the TPMU_MARSHAL2 and TPMU_UNMARSHAL2 macros.
