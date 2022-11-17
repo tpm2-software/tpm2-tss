@@ -43,17 +43,10 @@ check_hash_functions(void **state)
     rc = iesys_crypto_hash_start(&crypto_cb, NULL, TPM2_ALG_SHA384);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
-#ifndef OSSL
-    context = NULL;
-    rc = iesys_crypto_hash_start(&crypto_cb, &context, TPM2_ALG_SHA512);
-    assert_int_equal (rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
-    assert_null (context);
-#endif
-
     rc = iesys_crypto_hash_start(&crypto_cb, &context, 0);
     assert_int_equal (rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
 
-    rc = iesys_crypto_hash_start(&crypto_cb, &context, TPM2_ALG_SHA384);
+    rc = iesys_crypto_hash_start(&crypto_cb, &context, TPM2_ALG_SHA512);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
     rc = iesys_crypto_hash_finish(&crypto_cb, NULL, &buffer[0], &size);
