@@ -935,12 +935,6 @@ struct TPMS_EMPTY {
     UINT8 empty[1]; /* a structure with no member */
 };
 
-typedef struct TPMS_ALGORITHM_DESCRIPTION TPMS_ALGORITHM_DESCRIPTION;
-struct TPMS_ALGORITHM_DESCRIPTION {
-    TPM2_ALG_ID alg;            /* an algorithm */
-    TPMA_ALGORITHM attributes; /* the attributes of the algorithm */
-};
-
 /* Definition of TPMU_HA Union <INOUT S> */
 typedef union TPMU_HA TPMU_HA;
 union TPMU_HA {

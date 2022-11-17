@@ -961,14 +961,6 @@ TPMS_UNMARSHAL_2(TPMS_ALG_PROPERTY,
                  alg, Tss2_MU_UINT16_Unmarshal,
                  algProperties, Tss2_MU_TPMA_ALGORITHM_Unmarshal)
 
-TPMS_MARSHAL_2(TPMS_ALGORITHM_DESCRIPTION,
-               alg, VAL, Tss2_MU_UINT16_Marshal,
-               attributes, VAL, Tss2_MU_TPMA_ALGORITHM_Marshal)
-
-TPMS_UNMARSHAL_2(TPMS_ALGORITHM_DESCRIPTION,
-                 alg, Tss2_MU_UINT16_Unmarshal,
-                 attributes, Tss2_MU_TPMA_ALGORITHM_Unmarshal)
-
 TPMS_MARSHAL_2(TPMS_TAGGED_PROPERTY,
                property, VAL, Tss2_MU_UINT32_Marshal,
                value, VAL, Tss2_MU_UINT32_Marshal)

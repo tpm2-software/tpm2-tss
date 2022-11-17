@@ -185,7 +185,7 @@ ptt_property_1_count_1024(void **state)
     TPMI_YES_NO more_data;
     TPMS_CAPABILITY_DATA *cap_data = NULL;
     r = Esys_GetCapability(ectx, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-    TPM2_CAP_VENDOR_PROPERTY, 1, 1024, &more_data, &cap_data);
+        TPM2_CAP_VENDOR_PROPERTY, 1, 1024, &more_data, &cap_data);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     assert_int_equal(cap_data->capability, TPM2_CAP_VENDOR_PROPERTY);
 
