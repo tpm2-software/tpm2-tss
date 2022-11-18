@@ -2037,7 +2037,7 @@ struct TPML_AC_CAPABILITIES {
     TPMS_AC_OUTPUT acCapabilities[TPM2_MAX_AC_CAPABILITIES]; /* List of AC values */
 };
 
-#if !defined(DISABLE_VENDOR)
+#ifndef DISABLE_VENDOR
 /* Implementation specific structure to hold Intel PTT specific property data. */
 typedef struct TPML_INTEL_PTT_PROPERTY TPML_INTEL_PTT_PROPERTY;
 struct TPML_INTEL_PTT_PROPERTY {

@@ -473,7 +473,7 @@ tpml_unmarshal_invalid_count(void **state)
     assert_int_equal (rc, TSS2_SYS_RC_MALFORMED_RESPONSE);
 }
 
-#if !defined(DISABLE_VENDOR)
+#ifndef DISABLE_VENDOR
 static void
 tpml_intel_ptt_marshal_unmarshal(void **state)
 {
@@ -524,7 +524,7 @@ int main(void) {
         cmocka_unit_test (tpml_unmarshal_dest_null_offset_valid),
         cmocka_unit_test (tpml_unmarshal_buffer_size_lt_data_nad_lt_offset),
         cmocka_unit_test (tpml_unmarshal_invalid_count),
-#if !defined(DISABLE_VENDOR)
+#ifndef DISABLE_VENDOR
         cmocka_unit_test (tpml_intel_ptt_marshal_unmarshal)
 #endif
     };

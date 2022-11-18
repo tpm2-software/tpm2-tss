@@ -2024,7 +2024,7 @@ Tss2_MU_TPM2B_MAX_CAP_BUFFER_Unmarshal(
         size_t               *offset,
         TPM2B_MAX_CAP_BUFFER *dest);
 
-#if !defined(DISABLE_VENDOR)
+#ifndef DISABLE_VENDOR
 TSS2_RC
 Tss2_MU_TPML_INTEL_PTT_PROPERTY_Marshal(
     TPML_INTEL_PTT_PROPERTY const *src,
