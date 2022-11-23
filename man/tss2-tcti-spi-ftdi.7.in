@@ -1,0 +1,14 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH TCTI-SPI 7 "NOVEMBER 2022" "TPM2 Software Stack"
+.SH NAME
+tcti-spi-ftdi \- USB to SPI-based TPM TCTI library
+.SH SYNOPSIS
+A TPM Command Transmission Interface (TCTI) module for interaction with
+a SPI-based TPM over the FTDI MPSSE USB to SPI bridge.
+.SH DESCRIPTION
+tcti-spi-ftdi is a library that abstracts the details of communication
+with a SPI-based TPM over the FTDI MPSSE USB to SPI bridge. The interface
+exposed by this library is defined in the \*(lqTSS System Level API and
+and TPM Command Transmission Interface Specification\*(rq specification.

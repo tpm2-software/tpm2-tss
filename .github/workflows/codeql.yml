@@ -50,7 +50,8 @@ jobs:
               libcurl4-openssl-dev \
               uuid-dev \
               libltdl-dev \
-              libusb-1.0-0-dev
+              libusb-1.0-0-dev \
+              libftdi-dev
 
       - name: After Prepare (cpp)
         if: ${{ matrix.language == 'cpp' }}
