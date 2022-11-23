@@ -444,6 +444,31 @@ endif # ENABLE_TCTI_SPI_LT2GO
 EXTRA_DIST += lib/tss2-tcti-spi-lt2go.map \
               lib/tss2-tcti-spi-lt2go.def
 
+# tcti library for ftdi connected tpm
+if ENABLE_TCTI_SPI_FTDI
+libtss2_tcti_spi_ftdi = src/tss2-tcti/libtss2-tcti-spi-ftdi.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spi_ftdi.h
+lib_LTLIBRARIES += $(libtss2_tcti_spi_ftdi)
+pkgconfig_DATA += lib/tss2-tcti-spi-ftdi.pc
+EXTRA_DIST += lib/tss2-tcti-spi-ftdi.map \
+              lib/tss2-tcti-spi-ftdi.def
+
+src_tss2_tcti_libtss2_tcti_spi_ftdi_la_CFLAGS  = $(AM_CFLAGS) $(LIBFTDI_CFLAGS) -Wno-deprecated-declarations
+src_tss2_tcti_libtss2_tcti_spi_ftdi_la_LDFLAGS  = $(LIBFTDI_LIBS)
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_spi_ftdi_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spi-ftdi.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_spi_ftdi_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_spi_helper)
+src_tss2_tcti_libtss2_tcti_spi_ftdi_la_SOURCES  = \
+    src/tss2-tcti/mpsse/support.c \
+    src/tss2-tcti/mpsse/support.h \
+    src/tss2-tcti/mpsse/mpsse.c \
+    src/tss2-tcti/mpsse/mpsse.h \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-spi-ftdi.c \
+    src/tss2-tcti/tcti-spi-ftdi.h
+endif # ENABLE_TCTI_SPI_FTDI
+
 ### TCG TSS SYS spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
@@ -828,6 +853,7 @@ man7_MANS = \
     man/man7/tss2-tcti-cmd.7 \
     man/man7/tss2-tcti-spi-helper.7 \
     man/man7/tss2-tcti-spi-lt2go.7 \
+    man/man7/tss2-tcti-spi-ftdi.7 \
     man/man7/tss2-tctildr.7
 
 if FAPI
@@ -908,6 +934,7 @@ EXTRA_DIST += \
     man/tss2-tcti-cmd.7.in \
     man/tss2-tcti-spi-helper.7.in \
     man/tss2-tcti-spi-lt2go.7.in \
+    man/tss2-tcti-spi-ftdi.7.in \
     man/tss2-tctildr.7.in
 
 CLEANFILES += \
