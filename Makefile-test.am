@@ -158,6 +158,9 @@ endif
 if ENABLE_TCTI_SPI_LT2GO
 TESTS_UNIT += test/unit/tcti-spi-lt2go
 endif
+if ENABLE_TCTI_SPI_FTDI
+TESTS_UNIT += test/unit/tcti-spi-ftdi
+endif
 if ESYS
 TESTS_UNIT += \
     test/unit/esys-context-null \
@@ -557,6 +560,20 @@ test_unit_tcti_spi_lt2go_LDFLAGS = -Wl,--wrap=libusb_bulk_transfer \
                                    -Wl,--wrap=libusb_strerror
 test_unit_tcti_spi_lt2go_SOURCES = test/unit/tcti-spi-lt2go.c \
                                    src/tss2-tcti/tcti-spi-lt2go.c
+endif
+
+if ENABLE_TCTI_SPI_FTDI
+test_unit_tcti_spi_ftdi_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_spi_ftdi_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
+test_unit_tcti_spi_ftdi_LDFLAGS = -Wl,--wrap=Close \
+                                  -Wl,--wrap=MPSSE \
+                                  -Wl,--wrap=PinHigh \
+                                  -Wl,--wrap=PinLow \
+                                  -Wl,--wrap=Start \
+                                  -Wl,--wrap=Stop \
+                                  -Wl,--wrap=Transfer
+test_unit_tcti_spi_ftdi_SOURCES = test/unit/tcti-spi-ftdi.c \
+                                  src/tss2-tcti/tcti-spi-ftdi.c
 endif
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
