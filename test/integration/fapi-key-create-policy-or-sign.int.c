@@ -160,6 +160,19 @@ test_fapi_key_create_policy_or_sign(FAPI_CONTEXT *context)
     ASSERT(strstr(publicKey, "BEGIN PUBLIC KEY"));
     ASSERT(strstr(certificate, "BEGIN CERTIFICATE"));
 
+
+    /* Test that a NULL branch causes an error */
+    r = Fapi_SetBranchCB(context, NULL, NULL);
+    goto_if_error(r, "Error SetPolicybranchselectioncallback", error);
+
+    r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL,
+                  &digest.buffer[0], digest.size, &signature, &signatureSize,
+                  &publicKey, &certificate);
+    if (r == TSS2_RC_SUCCESS) {
+        LOG_ERROR("Fapi_Sign should fail with a NULL callback");
+        goto error;
+    }
+
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
