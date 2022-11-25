@@ -61,6 +61,8 @@ test_invoke_esys(ESYS_CONTEXT *esys_context)
 
     CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, aes_decrypt);
     CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, aes_encrypt);
+    CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, sm4_decrypt);
+    CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, sm4_encrypt);
     CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, get_ecdh_point);
     CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, get_random2b);
     CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, rsa_pk_encrypt);
@@ -68,6 +70,8 @@ test_invoke_esys(ESYS_CONTEXT *esys_context)
     ESYS_CRYPTO_CALLBACKS callbacks = {
         .aes_decrypt = TEST_FN_PTR,
         .aes_encrypt = TEST_FN_PTR,
+        .sm4_decrypt = TEST_FN_PTR,
+        .sm4_encrypt = TEST_FN_PTR,
         .get_ecdh_point = TEST_FN_PTR,
         .get_random2b = TEST_FN_PTR,
         .rsa_pk_encrypt = TEST_FN_PTR,
@@ -123,6 +127,8 @@ test_invoke_esys(ESYS_CONTEXT *esys_context)
 
     CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, aes_decrypt);
     CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, aes_encrypt);
+    CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, sm4_decrypt);
+    CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, sm4_encrypt);
     CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, get_ecdh_point);
     CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, get_random2b);
     CHECK_BACKEND_FN_NOT_TEST(esys_context->crypto_backend, rsa_pk_encrypt);

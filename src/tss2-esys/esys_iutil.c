@@ -745,6 +745,31 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
                         &encrypt_buffer[0], paramSize,
                         &symKey[aes_off]);
                 return_if_error(r, "AES encryption not possible");
+            } else if (symDef->algorithm == TPM2_ALG_SM4) {
+                /* SM4 encryption with key derived with KDFa */
+                if (symDef->mode.sm4 != TPM2_ALG_CFB) {
+                    return_error(TSS2_ESYS_RC_BAD_VALUE,
+                                 "Invalid symmetric mode (must be CFB)");
+                }
+                r = iesys_crypto_KDFa(&esys_context->crypto_backend, rsrc_session->authHash,
+                                      &rsrc_session->sessionValue[0],
+                                      rsrc_session->sizeSessionValue, "CFB",
+                                      &rsrc_session->nonceCaller,
+                                      &rsrc_session->nonceTPM,
+                                      symDef->keyBits.sm4 + SM4_BLOCK_SIZE_IN_BYTES * 8,
+                                      NULL, &symKey[0], FALSE);
+                return_if_error(r, "while computing KDFa");
+
+                size_t sm4_off = ( symDef->keyBits.sm4 + 7) / 8;
+                r = iesys_crypto_sm4_encrypt(
+                        &esys_context->crypto_backend,
+                        &symKey[0],
+                        symDef->algorithm,
+                        symDef->keyBits.sm4,
+                        symDef->mode.sm4,
+                        &encrypt_buffer[0], paramSize,
+                        &symKey[sm4_off]);
+                return_if_error(r, "SM4 encryption not possible");
             }
             /* XOR obfuscation of parameter */
             else if (symDef->algorithm == TPM2_ALG_XOR) {
@@ -760,7 +785,7 @@ iesys_encrypt_param(ESYS_CONTEXT * esys_context,
 
             } else {
                 return_error(TSS2_ESYS_RC_BAD_VALUE,
-                             "Invalid symmetric algorithm (should be XOR or AES)");
+                             "Invalid symmetric algorithm (should be XOR, AES, or SM4)");
             }
             r = Tss2_Sys_SetDecryptParam(esys_context->sys, paramSize,
                                          &encrypt_buffer[0]);
@@ -850,6 +875,43 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context)
 
         r = Tss2_Sys_SetEncryptParam(esys_context->sys, p2BSize, &plaintext[0]);
         return_if_error(r, "Setting plaintext");
+    } else if (symDef->algorithm == TPM2_ALG_SM4) {
+        /* Parameter decryption with a symmetric SM4 key derived by KDFa */
+        if (symDef->mode.sm4 != TPM2_ALG_CFB) {
+            return_error(TSS2_ESYS_RC_BAD_VALUE,
+                         "Invalid symmetric mode (must be CFB)");
+        }
+        LOGBLOB_DEBUG(&rsrc_session->sessionKey.buffer[0],
+                      rsrc_session->sessionKey.size,
+                      "IESYS encrypt session key");
+
+        r = iesys_crypto_KDFa(&esys_context->crypto_backend, rsrc_session->authHash,
+                              &rsrc_session->sessionValue[0],
+                              rsrc_session->sizeSessionValue,
+                              "CFB", &rsrc_session->nonceTPM,
+                              &rsrc_session->nonceCaller,
+                              symDef->keyBits.sm4
+                              + SM4_BLOCK_SIZE_IN_BYTES * 8, NULL,
+                              &symKey[0], FALSE);
+        return_if_error(r, "KDFa error");
+        LOGBLOB_DEBUG(&symKey[0],
+                      ((symDef->keyBits.sm4 +
+                        SM4_BLOCK_SIZE_IN_BYTES * 8) + 7) / 8,
+                      "IESYS encrypt KDFa key");
+
+        size_t sm4_off = ( symDef->keyBits.sm4 + 7) / 8;
+        r = iesys_crypto_sm4_decrypt(
+            &esys_context->crypto_backend,
+            &symKey[0],
+            symDef->algorithm,
+            symDef->keyBits.sm4,
+            symDef->mode.sm4,
+            &plaintext[0], p2BSize,
+            &symKey[sm4_off]);
+        return_if_error(r, "Decryption error");
+
+        r = Tss2_Sys_SetEncryptParam(esys_context->sys, p2BSize, &plaintext[0]);
+        return_if_error(r, "Setting plaintext");
     } else if (symDef->algorithm == TPM2_ALG_XOR) {
         /* Parameter decryption with XOR obfuscation */
         r = iesys_xor_parameter_obfuscation(&esys_context->crypto_backend,
@@ -866,7 +928,7 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context)
         return_if_error(r, "Setting plaintext");
     } else {
         return_error(TSS2_ESYS_RC_BAD_VALUE,
-                     "Invalid symmetric algorithm (should be XOR or AES)");
+                     "Invalid symmetric algorithm (should be XOR, AES, or SM4)");
     }
     return TSS2_RC_SUCCESS;
 }

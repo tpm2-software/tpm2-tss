@@ -191,6 +191,9 @@ AS_IF([test "x$enable_esys" = xyes],
            AC_CHECK_LIB(crypto,[EVP_sm3], [
                AC_DEFINE([HAVE_EVP_SM3], [1], [Support EVP_sm3 in openssl])],
                 [])
+           AC_CHECK_LIB(crypto, [EVP_sm4_cfb128], [
+               AC_DEFINE([HAVE_EVP_SM4_CFB], [1], [Support EVP_sm4_cfb in openssl])],
+                [])
            TSS2_ESYS_CFLAGS_CRYPTO="$CRYPTO_CFLAGS"
            TSS2_ESYS_LDFLAGS_CRYPTO="$CRYPTO_LIBS"
        ], [test "x$with_crypto" = xmbed], [
