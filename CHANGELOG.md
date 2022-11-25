@@ -3,6 +3,71 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.0-rc0] - 2022-11-28
+### Fixed:
+  - tcti-ldr: Use heap instead of stack when tcti initialize
+ - Fix usage of NULL pointer if Esys_TR_SetAuth is calles with ESYS_TR_NONE.
+ - Conditionally check user/group manipulation commands.
+ - Store VERSION into the release tarball.
+ - When using DESTDIR for make einstall, do not invoke systemd-sysusers and systemd-tmpfiles.
+ - esys_iutil: fix possible NPD.
+ - Tss2_Sys_Flushcontext: flushHandle was encoded as a handleArea handle and not as parameter one, this affected the contents of cpHash.
+- esys: fix allow usage of HMAC sessions for Esys_TR_FromTPMPublic.
+- fapi: fix usage of policy_nv with a TPM nv index.
+- linking tcti for libtpms against tss2-tctildr. It should be linked against tss2-mu.
+- build: Remove erroneous trailing comma in linker option. Bug #2391.
+- fapi: fix encoding of complex tpm2bs in authorize nv, duplication select and policy template policies. Now the complex and TPMT or TPMS representations can be used. Bug #2383
+- The error message for unsupported FAPI curves was in hex without a leading 0x, make it integer output to clarify.
+- Documentation that had various scalar out pointers as "callee allocated".
+- test: build with opaque FILE structure like in musl libc.
+- Transient endorsement keys were not recreated according to the EK credential profile.
+- Evict control for a persistent EK failed during provisioning if an auth value for the storage hierarchy was set.
+- The authorization of the storage hierarchy is now added. Fixes FAPI: Provisioning error if an auth value is needed for the
+   storage hierarchy  #2438.
+- Usage of a second profile in a path was not possible because the default profile was always used.
+- The setting of an empty auth value for Fapi_Provision was fixed.
+- JSON encoding of a structure TPMS_POLICYAUTHORIZATION used the field keyPEMhashAlg instead of hashAlg as
+   defined in "TCG TSS 2.0 JSON Data Types and Policy Language Specification".  Rename to hashAlg but preserve support
+   for reading keyPEMhashAlg for backwards compatibility.
+- fapi: PolicySecret did not work with keys as secret object.
+- Esys_PCR_SetAuthValue: remembers the auth like other SetAutg ESAPI functions.
+- tests: esys-pcr-auth-value.int moved to destructive tests.
+- FAPI: Fix double free if keystore is corrupted.
+- Marshaling of TPMU_CAPABILITIES data, only field intelPttProperty was broken before.
+
+### Added:
+- TPM version 1.59 support.
+- ci: ubuntu-22.04 added.
+- mbedTLS 3.0 is supported by ESAPI.
+- Add CreationHash to JSON output for usage between applications not using the FAPI keystore, like command line tools.
+- Reduced code size for SAPI.
+- Support for Runtime Switchable ESAPI Crypto Backend via `Esys_SetCryptoCallbacks`.
+- Testing for TCG EK Credential Profile TPM 2.0, Version 2.4 Rev. 3, 2021 for the low and high address range of EK templates.
+- tss2-rc: Tss2_RC_DecodeInfo function for parsing TSS2_RC into the various bit fields.
+- FAPI support for P_ECC384 profile.
+- tss2-rc: Tss2_RC_DecodeInfoError: Function to get a human readable error from a TSS2_RC_INFO returned by
+  Tss2_RC_DecodeInfo
+- tcti: Generic SPI driver, implementors only need to connect to acquire/release, transmit/receive, and sleep/timeout functions.
+- FAPI: Add event logging for Firmware and IMA Events. See #2170 for details.
+- FAPI: Fix Fapi_ChangeAuth updates on hierarchy objects not being reflected across profiles.
+- FAPI: Allow keyedhash keys in PolicySigned.
+- ESAPI: Support sha512 for mbedtls crypto backend.
+- TPM2B_MAX_CAP_BUFFER and mu routines
+- vendor field to TPMU_CAPABILTIIES
+
+### Changed
+- libmu soname from 0:0:0 to 0:1:0.
+- tss2-sys soname from 1:0:0 to 1:1:0
+- tss2-esys: from 0:0:0 to 0:1:0
+- FAPI ignores vendor properties on Fapi_GetInfo
+- FAPI Event Logging JSON format, See #2170 for details.
+
+### Removed
+- Dead struct TPMS_ALGORITHM_DESCRIPTION
+- Dead field intelPttProperty from TPMU_CAPABILITIES
+- Dead code Tss2_MU_TPMS_ALGORITHM_DESCRIPTION_Marshal
+- Dead code Tss2_MU_TPMS_ALGORITHM_DESCRIPTION_Unmarshal
+
 ## [3.2.0] - 2022-02-18
 ### Fixed
 - FAPI: fix curl_url_set call
