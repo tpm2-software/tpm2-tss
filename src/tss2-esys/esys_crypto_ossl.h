@@ -109,6 +109,28 @@ TSS2_RC iesys_cryptossl_sym_aes_decrypt(
     uint8_t *iv,
     void *userdata);
 
+#if HAVE_EVP_SM4_CFB && !defined(OPENSSL_NO_SM4)
+TSS2_RC iesys_cryptossl_sym_sm4_encrypt(
+    uint8_t *key,
+    TPM2_ALG_ID tpm_sym_alg,
+    TPMI_SM4_KEY_BITS key_bits,
+    TPM2_ALG_ID tpm_mode,
+    uint8_t *dst,
+    size_t dst_size,
+    uint8_t *iv,
+    void *userdata);
+
+TSS2_RC iesys_cryptossl_sym_sm4_decrypt(
+    uint8_t *key,
+    TPM2_ALG_ID tpm_sym_alg,
+    TPMI_SM4_KEY_BITS key_bits,
+    TPM2_ALG_ID tpm_mode,
+    uint8_t *dst,
+    size_t dst_size,
+    uint8_t *iv,
+    void *userdata);
+#endif
+
 TSS2_RC iesys_cryptossl_get_ecdh_point(
     TPM2B_PUBLIC *key,
     size_t max_out_size,
@@ -122,6 +144,13 @@ TSS2_RC iesys_cryptossl_get_ecdh_point(
 #define _iesys_crypto_get_ecdh_point iesys_cryptossl_get_ecdh_point
 #define _iesys_crypto_aes_encrypt iesys_cryptossl_sym_aes_encrypt
 #define _iesys_crypto_aes_decrypt iesys_cryptossl_sym_aes_decrypt
+#if HAVE_EVP_SM4_CFB && !defined(OPENSSL_NO_SM4)
+#define _iesys_crypto_sm4_encrypt iesys_cryptossl_sym_sm4_encrypt
+#define _iesys_crypto_sm4_decrypt iesys_cryptossl_sym_sm4_decrypt
+#else
+#define _iesys_crypto_sm4_encrypt NULL
+#define _iesys_crypto_sm4_decrypt NULL
+#endif
 
 TSS2_RC iesys_cryptossl_init(void *userdata);
 
