@@ -258,6 +258,61 @@ check_aes_encrypt(void **state)
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
 }
 
+#if HAVE_EVP_SM4_CFB && !defined(OPENSSL_NO_SM4)
+static void
+check_sm4_encrypt(void **state)
+{
+    TSS2_RC rc;
+    uint8_t key[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    uint8_t buffer[5] = { 1, 2, 3, 4, 5 };
+    size_t size = sizeof(buffer);
+
+    ESYS_CRYPTO_CALLBACKS crypto_cb = { 0 };
+    rc = iesys_initialize_crypto_backend(&crypto_cb, NULL);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+
+    rc = iesys_crypto_sm4_encrypt(&crypto_cb, NULL, TPM2_ALG_SM4, 128, TPM2_ALG_CFB,
+                                      &buffer[0], size, &key[0]);
+    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], 0, 128, TPM2_ALG_CFB,
+                                      &buffer[0], size, &key[0]);
+    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+
+    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, 0,
+                                      &buffer[0], size, &key[0]);
+    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+
+    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 999, TPM2_ALG_CFB,
+                                      &buffer[0], size, &key[0]);
+    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+
+    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, TPM2_ALG_CFB,
+                                      &buffer[0], size, &key[0]);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+
+    rc = iesys_crypto_sm4_decrypt(&crypto_cb, NULL, TPM2_ALG_SM4, 128, TPM2_ALG_CFB,
+                                      &buffer[0], size, &key[0]);
+    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], 0, 128, TPM2_ALG_CFB,
+                                      &buffer[0], size, &key[0]);
+    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+
+    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, 0,
+                                      &buffer[0], size, &key[0]);
+    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+
+    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 999, TPM2_ALG_CFB,
+                                      &buffer[0], size, &key[0]);
+    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+
+    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, TPM2_ALG_CFB,
+                                      &buffer[0], size, &key[0]);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+}
+#endif
+
 static void
 check_free(void **state)
 {
@@ -320,6 +375,8 @@ static void test_backend_set(void **state) {
 
     CHECK_BACKEND_FN(crypto_cb, aes_decrypt);
     CHECK_BACKEND_FN(crypto_cb, aes_encrypt);
+    CHECK_BACKEND_FN(crypto_cb, sm4_decrypt);
+    CHECK_BACKEND_FN(crypto_cb, sm4_encrypt);
     CHECK_BACKEND_FN(crypto_cb, get_ecdh_point);
     CHECK_BACKEND_FN(crypto_cb, get_random2b);
     CHECK_BACKEND_FN(crypto_cb, rsa_pk_encrypt);
@@ -328,6 +385,8 @@ static void test_backend_set(void **state) {
     ESYS_CRYPTO_CALLBACKS user_cb = {
         .aes_decrypt = (void *)0xBADCC0DE,
         .aes_encrypt = (void *)0xBADCC0DE,
+        .sm4_decrypt = (void *)0xBADCC0DE,
+        .sm4_encrypt = (void *)0xBADCC0DE,
         .get_ecdh_point = (void *)0xBADCC0DE,
         .get_random2b = (void *)0xBADCC0DE,
         .rsa_pk_encrypt = (void *)0xBADCC0DE,
@@ -377,6 +436,9 @@ main(int argc, char *argv[])
         cmocka_unit_test(check_random),
         cmocka_unit_test(check_pk_encrypt),
         cmocka_unit_test(check_aes_encrypt),
+#if HAVE_EVP_SM4_CFB && !defined(OPENSSL_NO_SM4)
+        cmocka_unit_test(check_sm4_encrypt),
+#endif
         cmocka_unit_test(check_free),
         cmocka_unit_test(check_get_sys_context),
         cmocka_unit_test(test_backend_set)

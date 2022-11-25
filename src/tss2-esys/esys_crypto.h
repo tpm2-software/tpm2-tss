@@ -16,6 +16,8 @@
 #else
 #define _iesys_crypto_aes_decrypt NULL;
 #define _iesys_crypto_aes_encrypt NULL;
+#define _iesys_crypto_sm4_decrypt NULL;
+#define _iesys_crypto_sm4_encrypt NULL;
 #define _iesys_crypto_get_ecdh_point NULL;
 #define _iesys_crypto_hash_abort NULL;
 #define _iesys_crypto_hash_finish NULL;
@@ -35,6 +37,7 @@ extern "C" {
 #endif
 
 #define AES_BLOCK_SIZE_IN_BYTES 16
+#define SM4_BLOCK_SIZE_IN_BYTES 16
 
 TSS2_RC iesys_crypto_hash_get_digest_size(TPM2_ALG_ID hashAlg, size_t *size);
 
@@ -158,6 +161,26 @@ TSS2_RC iesys_crypto_aes_decrypt(
     uint8_t *key,
     TPM2_ALG_ID tpm_sym_alg,
     TPMI_AES_KEY_BITS key_bits,
+    TPM2_ALG_ID tpm_mode,
+    uint8_t *buffer,
+    size_t buffer_size,
+    uint8_t *iv);
+
+TSS2_RC iesys_crypto_sm4_encrypt(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    uint8_t *key,
+    TPM2_ALG_ID tpm_sym_alg,
+    TPMI_SM4_KEY_BITS key_bits,
+    TPM2_ALG_ID tpm_mode,
+    uint8_t *buffer,
+    size_t buffer_size,
+    uint8_t *iv);
+
+TSS2_RC iesys_crypto_sm4_decrypt(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    uint8_t *key,
+    TPM2_ALG_ID tpm_sym_alg,
+    TPMI_SM4_KEY_BITS key_bits,
     TPM2_ALG_ID tpm_mode,
     uint8_t *buffer,
     size_t buffer_size,

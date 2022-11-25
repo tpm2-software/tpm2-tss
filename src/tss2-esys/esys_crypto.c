@@ -280,6 +280,46 @@ TSS2_RC iesys_crypto_aes_decrypt(
             iv);
 }
 
+TSS2_RC iesys_crypto_sm4_encrypt(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    uint8_t *key,
+    TPM2_ALG_ID tpm_sym_alg,
+    TPMI_SM4_KEY_BITS key_bits,
+    TPM2_ALG_ID tpm_mode,
+    uint8_t *buffer,
+    size_t buffer_size,
+    uint8_t *iv)
+{
+    DO_CALLBACK(sm4_encrypt,
+            key,
+            tpm_sym_alg,
+            key_bits,
+            tpm_mode,
+            buffer,
+            buffer_size,
+            iv);
+}
+
+TSS2_RC iesys_crypto_sm4_decrypt(
+    ESYS_CRYPTO_CALLBACKS *crypto_cb,
+    uint8_t *key,
+    TPM2_ALG_ID tpm_sym_alg,
+    TPMI_SM4_KEY_BITS key_bits,
+    TPM2_ALG_ID tpm_mode,
+    uint8_t *buffer,
+    size_t buffer_size,
+    uint8_t *iv)
+{
+    DO_CALLBACK(sm4_decrypt,
+            key,
+            tpm_sym_alg,
+            key_bits,
+            tpm_mode,
+            buffer,
+            buffer_size,
+            iv);
+}
+
 /** Compute the command or response parameter hash.
  *
  * These hashes are needed for the computation of the HMAC used for the
@@ -782,6 +822,8 @@ TSS2_RC
         crypto_cb->userdata = NULL;
         crypto_cb->aes_decrypt = _iesys_crypto_aes_decrypt;
         crypto_cb->aes_encrypt = _iesys_crypto_aes_encrypt;
+        crypto_cb->sm4_decrypt = _iesys_crypto_sm4_decrypt;
+        crypto_cb->sm4_encrypt = _iesys_crypto_sm4_encrypt;
         crypto_cb->get_ecdh_point = _iesys_crypto_get_ecdh_point;
         crypto_cb->hash_abort = _iesys_crypto_hash_abort;
         crypto_cb->hash_finish = _iesys_crypto_hash_finish;
@@ -799,6 +841,17 @@ TSS2_RC
 
         TEST_AND_SET_CALLBACK(crypto_cb, user_cb, aes_decrypt);
         TEST_AND_SET_CALLBACK(crypto_cb, user_cb, aes_encrypt);
+        // sm4 is optional
+        if (user_cb->sm4_encrypt) {
+            crypto_cb->sm4_encrypt = user_cb->sm4_encrypt;
+        } else {
+            crypto_cb->sm4_encrypt = _iesys_crypto_sm4_encrypt;
+        }
+        if (user_cb->sm4_decrypt) {
+            crypto_cb->sm4_decrypt = user_cb->sm4_decrypt;
+        } else {
+            crypto_cb->sm4_decrypt = _iesys_crypto_sm4_decrypt;
+        }
         TEST_AND_SET_CALLBACK(crypto_cb, user_cb, get_ecdh_point);
         TEST_AND_SET_CALLBACK(crypto_cb, user_cb, get_random2b);
         TEST_AND_SET_CALLBACK(crypto_cb, user_cb, rsa_pk_encrypt);

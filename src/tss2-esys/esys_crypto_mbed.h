@@ -120,6 +120,8 @@ TSS2_RC iesys_cryptmbed_init(void *userdata);
 #define _iesys_crypto_get_ecdh_point iesys_cryptmbed_get_ecdh_point
 #define _iesys_crypto_aes_encrypt iesys_cryptmbed_sym_aes_encrypt
 #define _iesys_crypto_aes_decrypt iesys_cryptmbed_sym_aes_decrypt
+#define _iesys_crypto_sm4_encrypt NULL
+#define _iesys_crypto_sm4_decrypt NULL
 
 #define _iesys_crypto_init iesys_cryptmbed_init
 
