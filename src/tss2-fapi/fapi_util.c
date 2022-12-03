@@ -4459,14 +4459,16 @@ ifapi_get_description(IFAPI_OBJECT *object, char **description)
             obj_description = "Hierarchy";
         break;
     default:
-        *description = NULL;
+        *description = strdup("");
+        check_oom(*description);
         return TSS2_RC_SUCCESS;
     }
     if (obj_description) {
         *description = strdup(obj_description);
         check_oom(*description);
     } else {
-        *description = NULL;
+        *description = strdup("");
+        check_oom(*description);
     }
     return TSS2_RC_SUCCESS;
 }
