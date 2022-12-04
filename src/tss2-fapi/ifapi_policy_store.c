@@ -166,6 +166,10 @@ ifapi_policy_store_load_async(
         }
     }
 
+    if (!ifapi_io_path_exists(abs_path)) {
+        goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Policy %s does not exist.", cleanup, path);
+    }
+
     /* Prepare read operation */
     r = ifapi_io_read_async(io, abs_path);
 
