@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.0-rc0] - 2022-11-28
+## [4.0.0-rc1] - 2022-12-05
 ### Fixed:
   - tcti-ldr: Use heap instead of stack when tcti initialize
  - Fix usage of NULL pointer if Esys_TR_SetAuth is calles with ESYS_TR_NONE.
@@ -33,7 +33,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Esys_PCR_SetAuthValue: remembers the auth like other SetAutg ESAPI functions.
 - tests: esys-pcr-auth-value.int moved to destructive tests.
 - FAPI: Fix double free if keystore is corrupted.
-- Marshaling of TPMU_CAPABILITIES data, only field intelPttProperty was broken before.
+- Marshaling of TPMU_CAPABILITIES data, only field intelPttProperty was broken before.a
+- Spec deviation in Fapi_GetDescription caused description to be NULL when it should be empty string.
+  This is API breaking but considered a bug since it deviated from the FAPI spec.
 
 ### Added:
 - TPM version 1.59 support.
