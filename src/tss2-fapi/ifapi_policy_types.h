@@ -174,7 +174,6 @@ typedef struct {
 typedef struct {
     TPM2B_DIGEST                           templateHash;    /**< None */
     TPM2B_PUBLIC                         templatePublic;    /**< None */
-    char                                  *templateName;    /**< None */
 } TPMS_POLICYTEMPLATE;
 
 /** Policy type TPMS_POLICYAUTHORIZENV

@@ -4323,11 +4323,11 @@ ifapi_json_TPMT_PUBLIC_deserialize(json_object *jso,  TPMT_PUBLIC *out)
     return_if_error(r, "Bad value for field \"parameters\".");
 
     if (!ifapi_get_sub_object(jso, "unique", &jso2)) {
-        LOG_ERROR("Field \"unique\" not found.");
-        return TSS2_FAPI_RC_BAD_VALUE;
+        memset(&out->unique, 0, sizeof(TPMU_PUBLIC_ID));
+    } else {
+        r = ifapi_json_TPMU_PUBLIC_ID_deserialize(out->type, jso2, &out->unique);
+        return_if_error(r, "Bad value for field \"unique\".");
     }
-    r = ifapi_json_TPMU_PUBLIC_ID_deserialize(out->type, jso2, &out->unique);
-    return_if_error(r, "Bad value for field \"unique\".");
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;

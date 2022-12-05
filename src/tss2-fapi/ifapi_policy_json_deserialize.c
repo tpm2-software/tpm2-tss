@@ -1061,13 +1061,6 @@ ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
         out->templatePublic.size = 0;
     }
 
-    if (ifapi_get_sub_object(jso, "templateName", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->templateName);
-        return_if_error(r, "Bad value for field \"templateName\".");
-    } else {
-        out->templateName = NULL;
-    }
-
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
