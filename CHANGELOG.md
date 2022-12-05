@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.2.1-rc1] - 2022-12-29
+## [3.2.1-rc2] - 2022-12-29
 ### Fixed
 - Makefile.am: make all EXTRA_DIST includes unconditional to fix pristine tars
 - Fix usage of NULL pointer if Esys_TR_SetAuth is calles with ESYS_TR_NONE.
@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Esys_PCR_SetAuthValue: remembers the auth like other SetAutg ESAPI functions.
 - tests: esys-pcr-auth-value.int moved to destructive tests.
 - FAPI: Fix double free if keystore is corrupted.
+- Spec deviation in Fapi_GetDescription caused description to be NULL when it should be empty string.
+  This is API breaking but considered a bug since it deviated from the FAPI spec.
 
 ## [3.2.0] - 2022-02-18
 ### Fixed
