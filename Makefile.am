@@ -641,6 +641,7 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_authorize_nv_sha384.json \
     test/data/fapi/policy/pol_cphash_sha384.json \
     test/data/fapi/policy/pol_pcr16_0_ecc_authorized_sha384.json \
+    test/data/fapi/policy/pol_template.json \
     test/data/fapi/eventlog/binary_measurements_nuc.b64 \
     test/data/fapi/eventlog/binary_measurements_pc_client.b64 \
     test/data/fapi/eventlog/event.b64 \
