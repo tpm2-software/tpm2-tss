@@ -1505,6 +1505,89 @@ execute_policy_action(
     }
 }
 
+/** Execute policy template.
+ *
+ * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
+ *                policy command.
+ * @param[in,out] policy The policy with the template digest or the public data
+ *                used to compute the template digest.
+ * @param[in,out] current_policy The policy context which stores the state
+ *                of the policy execution.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ *         operation already pending.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ */
+static TSS2_RC
+execute_policy_template(
+    ESYS_CONTEXT *esys_ctx,
+    TPMS_POLICYTEMPLATE *policy,
+    IFAPI_POLICY_EXEC_CTX *current_policy)
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+
+    LOG_TRACE("call");
+
+    TPM2B_DIGEST computed_template_hash;
+    TPM2B_DIGEST *used_template_hash;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
+    uint8_t buffer[sizeof(TPM2B_PUBLIC)];
+    size_t offset = 0;
+    size_t digest_size;
+
+
+    switch (current_policy->state) {
+    statecase(current_policy->state, POLICY_EXECUTE_INIT)
+        if (policy->templateHash.size == 0) {
+            used_template_hash = &computed_template_hash;
+            r = Tss2_MU_TPMT_PUBLIC_Marshal(&policy->templatePublic.publicArea,
+                                            &buffer[0], sizeof(TPMT_PUBLIC), &offset);
+            return_if_error(r, "Marshaling TPMT_PUBLIC");
+
+            r = ifapi_crypto_hash_start(&cryptoContext, current_policy->hash_alg);
+            return_if_error(r, "crypto hash start");
+
+            HASH_UPDATE_BUFFER(cryptoContext,
+                               &buffer[0], offset,
+                               r, cleanup);
+            r = ifapi_crypto_hash_finish(&cryptoContext,
+                                         &used_template_hash->buffer[0],
+                                         &digest_size);
+            goto_if_error(r, "crypto hash finish", cleanup);
+            used_template_hash->size = digest_size;
+
+        } else {
+            used_template_hash = &policy->templateHash;
+        }
+
+        /* Prepare the policy execution. */
+        r = Esys_PolicyTemplate_Async(esys_ctx,
+                                      current_policy->session,
+                                      ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                      used_template_hash);
+        return_if_error(r, "Execute PolicyTemplate.");
+        fallthrough;
+
+    statecase(current_policy->state, POLICY_EXECUTE_FINISH)
+        /* Finalize the policy execution if possible. */
+        r = Esys_PolicyTemplate_Finish(esys_ctx);
+        try_again_or_error(r, "Execute PolicyTemplate_Finish.");
+
+        current_policy->state = POLICY_EXECUTE_INIT;
+        return r;
+
+    statecasedefault(current_policy->state)
+    }
+    return r;
+
+ cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
+    return r;
+}
+
 /** Execute a policy element depending on the type.
  *
  * @param[in,out] *esys_ctx The ESAPI context which is needed to execute the
@@ -1655,6 +1738,13 @@ execute_policy_element(
                                   &policy->element.PolicyAction,
                                   current_policy);
         try_again_or_error_goto(r, "Execute policy action", error);
+        break;
+
+    case POLICYTEMPLATE:
+        r = execute_policy_template(esys_ctx,
+                                    &policy->element.PolicyTemplate,
+                                     current_policy);
+        try_again_or_error_goto(r, "Execute policy template", error);
         break;
 
     default:
