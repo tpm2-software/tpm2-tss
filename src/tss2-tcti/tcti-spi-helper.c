@@ -629,7 +629,7 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
     TSS2_TCTI_SPI_HELPER_CONTEXT* tcti_spi_helper;
     TSS2_TCTI_COMMON_CONTEXT* tcti_common;
 
-    if (!size || !platform_conf) {
+    if (!size) {
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
@@ -642,6 +642,11 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
     if (*size < sizeof (TSS2_TCTI_SPI_HELPER_CONTEXT)) {
         return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
+
+    if (!platform_conf) {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+
 
     // Init TCTI context
     TSS2_TCTI_MAGIC (tcti_context) = TCTI_SPI_HELPER_MAGIC;
