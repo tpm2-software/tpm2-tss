@@ -244,6 +244,15 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
         out->ek_profile = TPM2_NO;
     }
 
+    if (ifapi_get_sub_object(jso, "nonce", &jso2)) {
+        r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->nonce);
+        return_if_error(r, "Bad value for field \"nonce\".");
+
+    } else {
+        memset(&out->nonce, 0, sizeof(TPM2B_DIGEST));
+    }
+
+
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;

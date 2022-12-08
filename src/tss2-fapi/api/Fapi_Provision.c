@@ -24,13 +24,18 @@
 #include "ifapi_curl.h"
 #include "ifapi_get_intl_cert.h"
 #include "ifapi_helpers.h"
+#include "tss2_mu.h"
 
 #define LOGMODULE fapi
 #include "util/log.h"
 #include "util/aux_util.h"
 
 #define EK_CERT_RANGE (0x01c07fff)
-
+#define RSA_EK_NONCE_NV_INDEX 0x01c00003
+#define RSA_EK_TEMPLATE_NV_INDEX 0x01c00004
+#define ECC_EK_NONCE_NV_INDEX 0x01c0000b
+#define ECC_EK_TEMPLATE_NV_INDEX 0x01c0000c
+#define ECC_SM2_EK_TEMPLATE_NV_INDEX 0x01c0001b
 
 /** Error cleanup of provisioning
  *
@@ -358,7 +363,10 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
     TPM2B_NAME *srk_name = NULL, *srk_name_persistent = NULL;
     ESYS_TR srk_persistent_handle;
     ESYS_TR ek_handle = ESYS_TR_NONE;
-
+    UINT8* ek_template = NULL;
+    size_t ek_template_size;
+    UINT8* ek_nonce = NULL;
+    size_t ek_nonce_size;
 
     switch (context->state) {
         /* Read all hierarchies from keystore. */
@@ -567,13 +575,75 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                     &command->public_templ);
             goto_if_error(r, "Merging profile", error_cleanup);
 
+            command->template_nv_index = 0;
+
+            if (context->profiles.default_profile.ignore_ek_template == TPM2_NO) {
+                if (context->profiles.default_profile.type == TPM2_ALG_RSA &&
+                    context->profiles.default_profile.keyBits == 2048) {
+                    command->template_nv_index = RSA_EK_TEMPLATE_NV_INDEX;
+                } else if (context->profiles.default_profile.type == TPM2_ALG_ECC) {
+                    if (context->profiles.default_profile.curveID == TPM2_ECC_NIST_P256) {
+                        command->template_nv_index = ECC_EK_TEMPLATE_NV_INDEX;
+                    } else if  (context->profiles.default_profile.curveID == TPM2_ECC_SM2_P256) {
+                        command->template_nv_index = ECC_SM2_EK_TEMPLATE_NV_INDEX;
+                    }
+                }
+            }
+
+            nvCmd->nv_read_state = NV_READ_CHECK_HANDLE;
+            nvCmd->tpm_handle = command->template_nv_index;
+            fallthrough;
+
+        statecase(context->state, PROVISION_READ_EK_TEMPLATE);
+            if (command->template_nv_index) {
+                /* Overwrite template with template from nv if available. */
+                r = ifapi_nv_read(context, &ek_template, &ek_template_size);
+                return_try_again(r);
+                goto_if_error_reset_state(r, "Read EK template", error_cleanup);
+
+                if (ek_template_size) {
+                    r = Tss2_MU_TPMT_PUBLIC_Unmarshal(ek_template, ek_template_size,
+                                           NULL, &command->public_templ.public.publicArea);
+                    SAFE_FREE(ek_template);
+                    goto_if_error_reset_state(r, "Unmarshal EK template", error_cleanup);
+                }
+            }
+            command->nonce_nv_index = 0;
+
+            if (context->profiles.default_profile.type == TPM2_ALG_RSA) {
+                    command->nonce_nv_index = RSA_EK_NONCE_NV_INDEX;
+            } else if  (context->profiles.default_profile.type == TPM2_ALG_ECC &&
+                        context->profiles.default_profile.curveID == TPM2_ECC_NIST_P256){
+                command->nonce_nv_index = ECC_EK_NONCE_NV_INDEX;
+            }
+
+            nvCmd->nv_read_state = NV_READ_CHECK_HANDLE;
+            nvCmd->tpm_handle = command->nonce_nv_index;
+
+            fallthrough;
+
+        statecase(context->state, PROVISION_READ_EK_NONCE);
+            ek_nonce_size = 0;
+            if (command->nonce_nv_index) {
+                r = ifapi_nv_read(context, &ek_nonce, &ek_nonce_size);
+                return_try_again(r);
+                goto_if_error_reset_state(r, "Read EK nonce", error_cleanup);
+            }
+
             /* Clear key object for the primary to be created */
             memset(pkey, 0, sizeof(IFAPI_KEY));
+
+            if (ek_nonce_size) {
+                pkey->nonce.size = ek_nonce_size;
+                memcpy(&pkey->nonce.buffer[0], ek_nonce, ek_nonce_size);
+                SAFE_FREE(ek_nonce);
+            }
 
             /* Prepare the EK generation. */
             r = ifapi_init_primary_async(context, TSS2_EK);
             goto_if_error(r, "Initialize primary", error_cleanup);
             fallthrough;
+
         statecase(context->state, PROVISION_AUTH_EK_AUTH_SENT);
             fallthrough;
 
