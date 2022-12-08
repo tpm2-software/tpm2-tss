@@ -90,6 +90,9 @@ lockoutRecovery: Time in seconds after a lockoutAuth failure before use
 of lockoutAuth is allowed A value of zero indicates that a reboot is
 required.
 If not set the default is 1000.
+.IP \[bu] 2
+ignore_ek_template: Ignore EK template stored in NV ram.
+If not set the default is "no".
 .SH EXAMPLES
 .PP
 The following JSON encoded example shows the standard profile for ECC

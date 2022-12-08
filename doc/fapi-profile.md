@@ -44,6 +44,8 @@ The parameters of the profile are:
   A value of zero indicates that DA protection is disabled. If not set the default is 1000.
 * lockoutRecovery: Time in seconds after a lockoutAuth failure before use of lockoutAuth is allowed
   A value of zero indicates that a reboot is required. If not set the default is 1000.
+* ignore_ek_template: Ignore EK template stored in NV ram.
+  If not set the default is "no".
 
 # EXAMPLES
 The following JSON encoded example shows the standard profile for ECC keys:

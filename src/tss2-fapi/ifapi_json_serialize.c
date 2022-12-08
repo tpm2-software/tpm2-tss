@@ -208,6 +208,15 @@ ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
 
     json_object_object_add(*jso, "ek_profile", jso2);
 
+    if (in->nonce.size) {
+        jso2 = NULL;
+        r = ifapi_json_TPM2B_DIGEST_serialize(&in->nonce, &jso2);
+        return_if_error(r, "Serialize TPM2B_DIGEST");
+
+        json_object_object_add(*jso, "nonce", jso2);
+    }
+
+
 
     return TSS2_RC_SUCCESS;
 }

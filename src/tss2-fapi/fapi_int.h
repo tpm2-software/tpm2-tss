@@ -198,7 +198,11 @@ enum _FAPI_STATE_NV_READ {
     NV_READ_INIT = 0,
     NV_READ_AUTHORIZE,
     NV_READ_AUTHORIZE2,
-    NV_READ_AUTH_SENT
+    NV_READ_AUTH_SENT,
+    NV_READ_CHECK_HANDLE,
+    NV_READ_GET_CAPABILITY,
+    NV_READ_GET_ESYS_HANDLE,
+    NV_READ_GET_NV_PUBLIC
 };
 
 /** The states for the FAPI's NV write state */
@@ -222,6 +226,7 @@ typedef struct {
     TPM2B_NV_PUBLIC public;     /**< The public info of the NV object. */
     ESYS_TR esys_auth_handle;   /**< The ESAPI handle for the NV auth object */
     ESYS_TR esys_handle;        /**< The ESAPI handle for the NV object */
+    TPM2_HANDLE tpm_handle;     /**< The TPM nv index */
     size_t numBytes;            /**< The number of bytes of a ESYS request */
     UINT16 bytesRequested;      /**< Bytes currently requested from TPM */
     UINT16 offset;              /**< Offset in TPM memory TPM */
@@ -555,6 +560,8 @@ typedef struct {
     ESYS_TR srk_tpm_handle;
     ESYS_TR ek_tpm_handle;
     bool srk_exists;
+    TPM2_HANDLE template_nv_index;
+    TPM2_HANDLE nonce_nv_index;
 } IFAPI_Provision;
 
 /** The data structure holding internal state of regenerate primary key.
@@ -903,6 +910,8 @@ enum _FAPI_STATE {
     PROVISION_CHECK_SRK_EVICT_CONTROL,
     PROVISION_AUTHORIZE_HS_FOR_EK_EVICT,
     PROVISION_PREPARE_EK_EVICT,
+    PROVISION_READ_EK_TEMPLATE,
+    PROVISION_READ_EK_NONCE,
 
     KEY_CREATE,
     KEY_CREATE_PRIMARY,

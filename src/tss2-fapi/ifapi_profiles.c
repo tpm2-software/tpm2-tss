@@ -538,6 +538,15 @@ ifapi_profile_json_deserialize(
         return_if_error(r, "Bad value for field \"lockoutRecovery\".");
     }
 
+    if (ifapi_get_sub_object(jso, "ignore_ek_template", &jso2)) {
+        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ignore_ek_template);
+        return_if_error(r, "Bad value for field \"ignore_ek_template\".");
+
+    } else {
+        out->ignore_ek_template = TPM2_NO;
+    }
+
+
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 
