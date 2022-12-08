@@ -38,6 +38,7 @@ typedef struct IFAPI_PROFILE {
     UINT32                                  newMaxTries;
     UINT32                              newRecoveryTime;
     UINT32                              lockoutRecovery;
+    TPMI_YES_NO                      ignore_ek_template;
 } IFAPI_PROFILE;
 
 /* An entry for the dictionary of loaded profiles */
