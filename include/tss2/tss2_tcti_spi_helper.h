@@ -22,20 +22,20 @@ typedef struct TSS2_TCTI_SPI_HELPER_PLATFORM TSS2_TCTI_SPI_HELPER_PLATFORM;
 /*
  * Sleeps for the specified amount of milliseconds
  */
-typedef void (*TSS2_TCTI_SPI_HELPER_PLATFORM_SLEEP_MS_FUNC) (void* user_data, int milliseconds);
+typedef TSS2_RC (*TSS2_TCTI_SPI_HELPER_PLATFORM_SLEEP_MS_FUNC) (void* user_data, int milliseconds);
 
 /*
  * Starts a timeout timer which expires in the specified amount of milliseconds.
  * This can be done by storing the expire time (now + milliseconds) in the userdata.
  */
-typedef void (*TSS2_TCTI_SPI_HELPER_PLATFORM_START_TIMEOUT_FUNC) (void* user_data, int milliseconds);
+typedef TSS2_RC (*TSS2_TCTI_SPI_HELPER_PLATFORM_START_TIMEOUT_FUNC) (void* user_data, int milliseconds);
 
 /*
  * Returns true if the timeout started previously by START_TIMEOUT_FUNC already has expired, false otherwise.
  * This can be done e.g. by comparing the current time and the stored timer expire time.
  * This method will be called often when waiting for timeouts and should be fast.
  */
-typedef bool (*TSS2_TCTI_SPI_HELPER_PLATFORM_TIMEOUT_EXPIRED_FUNC) (void* user_data);
+typedef TSS2_RC (*TSS2_TCTI_SPI_HELPER_PLATFORM_TIMEOUT_EXPIRED_FUNC) (void* user_data, bool *result);
 
 /*
  * Reserves the SPI bus until the transaction is over and SPI_RELEASE_FUNC is called.

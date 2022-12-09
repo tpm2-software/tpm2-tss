@@ -42,23 +42,25 @@ static const unsigned char TPM_RID_0[] = {0x80, 0xd4, 0x0f, 0x04, 0x00};
 
 static bool is_init = true;
 
-void platform_sleep_ms (void* user_data, int32_t milliseconds)
+TSS2_RC platform_sleep_ms (void* user_data, int32_t milliseconds)
 {
     UNUSED(user_data);
     UNUSED(milliseconds);
+    return TSS2_RC_SUCCESS;
 }
 
-void platform_start_timeout (void* user_data, int32_t milliseconds)
+TSS2_RC platform_start_timeout (void* user_data, int32_t milliseconds)
 {
     UNUSED(user_data);
     UNUSED(milliseconds);
-
+    return TSS2_RC_SUCCESS;
 }
 
-bool platform_timeout_expired (void* user_data)
+TSS2_RC platform_timeout_expired (void* user_data, bool *is_timeout_expired)
 {
     UNUSED(user_data);
-    return true;
+    *is_timeout_expired = true;
+    return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC platform_spi_acquire (void* user_data)
