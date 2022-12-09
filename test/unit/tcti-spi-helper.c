@@ -43,22 +43,25 @@ static const unsigned char TPM_ACCESS_0[] = {0x80, 0xd4, 0x00, 0x00, 0xa1};
 static const unsigned char TPM_STS_0[] = {0x83, 0xd4, 0x00, 0x18, 0x40, 0x00, 0x00, 0x00};
 static const unsigned char TPM_RID_0[] = {0x80, 0xd4, 0x0f, 0x04, 0x00};
 
-void platform_sleep_ms (void* user_data, int32_t milliseconds)
+TSS2_RC platform_sleep_ms (void* user_data, int32_t milliseconds)
 {
     (void) milliseconds;
     assert_string_equal ((const char *) user_data, DUMMY_PLATFORM_DATA);
+    return TSS2_RC_SUCCESS;
 }
 
-void platform_start_timeout (void* user_data, int32_t milliseconds)
+TSS2_RC platform_start_timeout (void* user_data, int32_t milliseconds)
 {
     (void) milliseconds;
     assert_string_equal ((const char *) user_data, DUMMY_PLATFORM_DATA);
+    return TSS2_RC_SUCCESS;
 }
 
-bool platform_timeout_expired (void* user_data)
+TSS2_RC platform_timeout_expired (void* user_data, bool *is_timeout_expired)
 {
     assert_string_equal ((const char *) user_data, DUMMY_PLATFORM_DATA);
-    return true;
+    *is_timeout_expired = true;
+    return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC platform_spi_acquire (void* user_data)
