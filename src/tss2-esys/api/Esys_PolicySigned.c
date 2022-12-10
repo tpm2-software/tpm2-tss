@@ -32,7 +32,6 @@
  * @param[in]  shandle1 First session handle.
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
- * @param[in]  nonceTPM The policy nonce for the session.
  * @param[in]  cpHashA Digest of the command parameters to which this
  *             authorization is limited.
  * @param[in]  policyRef A reference to a policy relating to the authorization
@@ -78,7 +77,6 @@ Esys_PolicySigned(
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    const TPM2B_NONCE *nonceTPM,
     const TPM2B_DIGEST *cpHashA,
     const TPM2B_NONCE *policyRef,
     INT32 expiration,
@@ -89,7 +87,7 @@ Esys_PolicySigned(
     TSS2_RC r;
 
     r = Esys_PolicySigned_Async(esysContext, authObject, policySession, shandle1,
-                                shandle2, shandle3, nonceTPM, cpHashA, policyRef,
+                                shandle2, shandle3, cpHashA, policyRef,
                                 expiration, auth);
     return_if_error(r, "Error in async function");
 
@@ -132,7 +130,6 @@ Esys_PolicySigned(
  * @param[in]  shandle1 First session handle.
  * @param[in]  shandle2 Second session handle.
  * @param[in]  shandle3 Third session handle.
- * @param[in]  nonceTPM The policy nonce for the session.
  * @param[in]  cpHashA Digest of the command parameters to which this
  *             authorization is limited.
  * @param[in]  policyRef A reference to a policy relating to the authorization
@@ -164,7 +161,6 @@ Esys_PolicySigned_Async(
     ESYS_TR shandle1,
     ESYS_TR shandle2,
     ESYS_TR shandle3,
-    const TPM2B_NONCE *nonceTPM,
     const TPM2B_DIGEST *cpHashA,
     const TPM2B_NONCE *policyRef,
     INT32 expiration,
@@ -172,9 +168,9 @@ Esys_PolicySigned_Async(
 {
     TSS2_RC r;
     LOG_TRACE("context=%p, authObject=%"PRIx32 ", policySession=%"PRIx32 ","
-              "nonceTPM=%p, cpHashA=%p, policyRef=%p,"
+              "cpHashA=%p, policyRef=%p,"
               "expiration=%"PRIi32 ", auth=%p",
-              esysContext, authObject, policySession, nonceTPM, cpHashA,
+              esysContext, authObject, policySession, cpHashA,
               policyRef, expiration, auth);
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *authObjectNode;
@@ -206,8 +202,8 @@ Esys_PolicySigned_Async(
                                        : authObjectNode->rsrc.handle,
                                       (policySessionNode == NULL) ? TPM2_RH_NULL
                                        : policySessionNode->rsrc.handle,
-                                      nonceTPM, cpHashA, policyRef, expiration,
-                                      auth);
+                                      &policySessionNode->rsrc.misc.rsrc_session.nonceTPM,
+                                      cpHashA, policyRef, expiration, auth);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */

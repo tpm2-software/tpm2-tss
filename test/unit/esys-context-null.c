@@ -1186,7 +1186,7 @@ check_PolicySigned(void **state)
                           0,
                           ESYS_TR_NONE,
                           ESYS_TR_NONE,
-                          ESYS_TR_NONE, NULL, NULL, NULL, 0, NULL, NULL, NULL);
+                          ESYS_TR_NONE, NULL, NULL, 0, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_PolicySigned_Async(NULL,
@@ -1194,7 +1194,7 @@ check_PolicySigned(void **state)
                                 0,
                                 ESYS_TR_NONE,
                                 ESYS_TR_NONE,
-                                ESYS_TR_NONE, NULL, NULL, NULL, 0, NULL);
+                                ESYS_TR_NONE, NULL, NULL, 0, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_PolicySigned_Finish(NULL, NULL, NULL);
@@ -1211,7 +1211,7 @@ check_PolicySecret(void **state)
                           0,
                           ESYS_TR_PASSWORD,
                           ESYS_TR_NONE,
-                          ESYS_TR_NONE, NULL, NULL, NULL, 0, NULL, NULL);
+                          ESYS_TR_NONE, NULL, NULL, 0, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_PolicySecret_Async(NULL,
@@ -1219,7 +1219,7 @@ check_PolicySecret(void **state)
                                 0,
                                 ESYS_TR_PASSWORD,
                                 ESYS_TR_NONE,
-                                ESYS_TR_NONE, NULL, NULL, NULL, 0);
+                                ESYS_TR_NONE, NULL, NULL, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_PolicySecret_Finish(NULL, NULL, NULL);

@@ -1530,7 +1530,6 @@ test_PolicySigned(void **state)
 
     ESYS_TR authObject_handle = DUMMY_TR_HANDLE_KEY;
     ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
-    TPM2B_NONCE nonceTPM = DUMMY_2B_DATA(.buffer);
     TPM2B_DIGEST cpHashA = DUMMY_2B_DATA(.buffer);
     TPM2B_NONCE policyRef = DUMMY_2B_DATA(.buffer);
     INT32 expiration = 0;
@@ -1543,7 +1542,6 @@ test_PolicySigned(void **state)
                           ESYS_TR_NONE,
                           ESYS_TR_NONE,
                           ESYS_TR_NONE,
-                          &nonceTPM,
                           &cpHashA,
                           &policyRef,
                           expiration, &auth, &timeout, &policyTicket);
@@ -1563,7 +1561,6 @@ test_PolicySecret(void **state)
 
     ESYS_TR authHandle_handle = DUMMY_TR_HANDLE_HIERARCHY_PLATFORM;
     ESYS_TR policySession_handle = DUMMY_TR_HANDLE_POLICY_SESSION;
-    TPM2B_NONCE nonceTPM = DUMMY_2B_DATA(.buffer);
     TPM2B_DIGEST cpHashA = DUMMY_2B_DATA(.buffer);
     TPM2B_NONCE policyRef = DUMMY_2B_DATA(.buffer);
     INT32 expiration = 0;
@@ -1575,7 +1572,6 @@ test_PolicySecret(void **state)
                           ESYS_TR_PASSWORD,
                           ESYS_TR_NONE,
                           ESYS_TR_NONE,
-                          &nonceTPM,
                           &cpHashA,
                           &policyRef, expiration, &timeout, &policyTicket);
 

@@ -518,7 +518,6 @@ execute_policy_signed(
                                     current_policy->object_handle,
                                     current_policy->session,
                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    current_policy->nonceTPM,
                                     &policy->cpHashA,
                                     &policy->policyRef, 0, &policy->signature_tpm);
         SAFE_FREE(current_policy->nonceTPM);
@@ -557,12 +556,10 @@ execute_policy_signed(
                                     current_policy->object_handle,
                                     current_policy->session,
                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    current_policy->nonceTPM,
                                     &policy->cpHashA,
                                     &policy->policyRef, 0, &policy->signature_tpm);
         SAFE_FREE(current_policy->nonceTPM);
         goto_if_error(r, "Execute PolicySigned.", cleanup);
-
         current_policy->state = POLICY_EXECUTE_FINISH;
         return TSS2_FAPI_RC_TRY_AGAIN;
 
@@ -932,7 +929,7 @@ execute_policy_secret(
                                     current_policy->auth_handle,
                                     current_policy->session,
                                     current_policy->auth_session, ESYS_TR_NONE,
-                                    ESYS_TR_NONE, &policy->nonceTPM,
+                                    ESYS_TR_NONE,
                                     &policy->cpHashA, &policy->policyRef,
                                     0);
         goto_if_error(r, "PolicySecret_Async", cleanup);

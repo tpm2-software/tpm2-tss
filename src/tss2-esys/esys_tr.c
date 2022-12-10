@@ -619,7 +619,7 @@ Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 
 /** Retrieve the TPM nonce of an Esys_TR session object.
  *
- * Some operations (i.e. Esys_PolicySigned) require the nonce returned by the
+ * Some operations require the nonce returned by the
  * TPM during Esys_StartauthSession. This function provides this nonce to the
  * caller.
  * @param esys_context [in,out] The ESYS_CONTEXT.
