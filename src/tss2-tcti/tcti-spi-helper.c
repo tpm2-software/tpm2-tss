@@ -430,6 +430,24 @@ static void spi_tpm_helper_fifo_transfer(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx, uint
     } while (handled_so_far != transfer_size);
 }
 
+static TSS2_RC check_platform_conf(TSS2_TCTI_SPI_HELPER_PLATFORM *platform_conf)
+{
+
+    bool required_set = platform_conf->sleep_ms && platform_conf->spi_transfer \
+            && platform_conf->start_timeout && platform_conf->timeout_expired;
+    if (!required_set) {
+        LOG_ERROR("Expected sleep_ms, spi_transfer, start_timeout and timeout_expired to be set.");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+
+    if (!!platform_conf->spi_acquire != !!platform_conf->spi_release) {
+        LOG_ERROR("Expected spi_acquire and spi_release to both be NULL or set.");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+
+    return TSS2_RC_SUCCESS;
+}
+
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the
  * type for the device TCTI context. The only safe-guard we have to ensure
@@ -674,6 +692,9 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
     tcti_common->state = TCTI_STATE_TRANSMIT;
     memset (&tcti_common->header, 0, sizeof (tcti_common->header));
     tcti_common->locality = 0;
+
+    rc = check_platform_conf(platform_conf);
+    return_if_error(rc, "platform_conf invalid");
 
     // Copy platform struct into context
     tcti_spi_helper->platform = *platform_conf;
