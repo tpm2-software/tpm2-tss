@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.2.1-rc2] - 2022-12-29
+## [3.2.1] - 2022-12-12
 ### Fixed
 - Makefile.am: make all EXTRA_DIST includes unconditional to fix pristine tars
 - Fix usage of NULL pointer if Esys_TR_SetAuth is calles with ESYS_TR_NONE.
