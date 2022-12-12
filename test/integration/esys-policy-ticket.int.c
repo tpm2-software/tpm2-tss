@@ -390,9 +390,6 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     }
 
     Esys_Free(outPublic);
-    Esys_Free(creationData);
-    Esys_Free(creationHash);
-    Esys_Free(creationTicket);
     Esys_Free(nameKeySign);
     Esys_Free(keyQualifiedName);
     Esys_Free(signed_digest);
