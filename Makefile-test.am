@@ -444,7 +444,10 @@ FAPI_TESTS_INTEGRATION += \
     test/integration/fapi-key-create-policy-nv-tpm-idx-sign.fint \
     test/integration/fapi-quote-destructive-eventlog-null.fint \
     test/integration/fapi-quote-destructive-eventlog.fint \
-    test/integration/fapi-quote-destructive-eventlog-pc-client.fint
+    test/integration/fapi-quote-destructive-eventlog-pc-client.fint \
+	test/integration/fapi-provisioning-with-template.fint \
+	test/integration/fapi-provisioning-with-template-rsa.fint
+
 endif #!TESTDEVICE
 
 TESTS_INTEGRATION += $(FAPI_TESTS_INTEGRATION)
@@ -2510,6 +2513,21 @@ test_integration_fapi_quote_destructive_eventlog_pc_client_fint_LDADD   = $(TEST
 test_integration_fapi_quote_destructive_eventlog_pc_client_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_quote_destructive_eventlog_pc_client_fint_SOURCES = \
     test/integration/fapi-quote-destructive-eventlog.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_provisioning_with_template_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_provisioning_with_template_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_provisioning_with_template_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provisioning_with_template_fint_SOURCES = \
+    test/integration/fapi-provisioning-with-template.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_provisioning_with_template_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_provisioning_with_template_rsa_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_provisioning_with_template_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provisioning_with_template_rsa_fint_SOURCES = \
+    test/integration/fapi-provisioning-with-template.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 endif #FAPI
