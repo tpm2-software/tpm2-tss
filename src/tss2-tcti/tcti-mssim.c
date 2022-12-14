@@ -284,7 +284,7 @@ tcti_mssim_get_poll_handles (
     *num_handles = 1;
     if (handles != NULL) {
 #ifdef _WIN32
-        *handles = tcti_mssim->tpm_sock;
+        *handles = (TSS2_TCTI_POLL_HANDLE)(tcti_mssim->tpm_sock);
 #else
         handles->fd = tcti_mssim->tpm_sock;
         handles->events = POLLIN | POLLOUT;
