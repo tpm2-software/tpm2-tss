@@ -381,8 +381,12 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
     CURLUcode url_rc;
     url_rc = curl_url_set(urlp, CURLUPART_URL, (const char *)url, CURLU_ALLOW_SPACE | CURLU_URLENCODE);
     if (url_rc) {
+#ifdef HAVE_CURL_URL_STRERROR
         LOG_ERROR("curl_url_set for CURUPART_URL failed: %s",
                   curl_url_strerror(url_rc));
+#else
+        LOG_ERROR("curl_url_set for CURUPART_URL failed: %u", url_rc);
+#endif
         goto out_easy_cleanup;
     }
     rc = curl_easy_setopt(curl, CURLOPT_CURLU, urlp);
