@@ -129,6 +129,12 @@ doLogBlob(log_level loglevel, const char *module, log_level logdefault,
     vsnprintf(msg, sizeof(msg), fmt, vaargs);
     va_end(vaargs);
 
+    if (!blob) {
+        doLog(loglevel, module, logdefault, status, file, func, line,
+              "%s (size=%zi): (null)", msg, size);
+	return;
+    }
+
     doLog(loglevel, module, logdefault, status, file, func, line,
           "%s (size=%zi):", msg, size);
 
