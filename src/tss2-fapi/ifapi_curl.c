@@ -187,8 +187,6 @@ ifapi_curl_verify_ek_cert(
                       TSS2_FAPI_RC_NO_CERT, cleanup);
 
         intermed_cert = get_cert_from_buffer(cert_buffer, cert_buffer_size);
-
-        SAFE_FREE(cert_buffer);
         if (!intermed_cert) {
             LOGBLOB_ERROR(cert_buffer, cert_buffer_size,
                           "Failed to convert intermediate certificate to X509 format.");
@@ -300,6 +298,7 @@ cleanup:
     }
     if (store)
         X509_STORE_free(store);
+    SAFE_FREE(cert_buffer);
     OSSL_FREE(root_cert, X509);
     OSSL_FREE(intermed_cert, X509);
     OSSL_FREE(ek_cert, X509);
