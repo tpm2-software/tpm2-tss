@@ -356,6 +356,7 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
                           size_t *buffer_size) {
     int ret = -1;
     struct CurlBufferStruct curl_buffer = { .size = 0, .buffer = NULL };
+    long http_code;
 #ifdef CURLU_ALLOW_SPACE
     CURLU *urlp = NULL;
 #endif
@@ -432,6 +433,12 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
     rc = curl_easy_perform(curl);
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_perform() failed: %s", curl_easy_strerror(rc));
+        goto out_easy_cleanup;
+    }
+
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+    if (http_code >= 400) {
+        LOG_ERROR("curl http return code %li", http_code);
         goto out_easy_cleanup;
     }
 
