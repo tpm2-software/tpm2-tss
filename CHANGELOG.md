@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.0.0-rc2] - 2022-12-14
+## [4.0.0-rc3] - 2022-12-19
 ### Fixed:
   - tcti-ldr: Use heap instead of stack when tcti initialize
  - Fix usage of NULL pointer if Esys_TR_SetAuth is calles with ESYS_TR_NONE.
@@ -38,6 +38,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
   This is API breaking but considered a bug since it deviated from the FAPI spec.
 - FAPI: undefined reference to curl_url_strerror when using curl less than 7.80.0.
 - FAPI: Fixed support for EK templates in NV inidices per the spec, see #2518 for details.
+- FAPI: fix NPD in ifapi_curl logging.
+- FAPI: Improve documentation fapi-profile
+- FAPI: Fix CURL HTTP handling.
 
 ### Added:
 - TPM version 1.59 support.
@@ -72,7 +75,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Dead field intelPttProperty from TPMU_CAPABILITIES
 - Dead code Tss2_MU_TPMS_ALGORITHM_DESCRIPTION_Marshal
 - Dead code Tss2_MU_TPMS_ALGORITHM_DESCRIPTION_Unmarshal
-
 
 ## [3.2.0] - 2022-02-18
 ### Fixed
