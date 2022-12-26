@@ -45,6 +45,7 @@ typedef struct {
     TPMI_YES_NO                       delete_prohibited;    /**< Persistent object should not be deleted.  */
     TPMI_YES_NO                              ek_profile;    /**< Has to be set if EK is created according
                                                                  to EK credential profile: */
+    TPM2B_DIGEST                                  nonce;    /**< Nonce used to initialize uniqe data */
 } IFAPI_KEY;
 
 /** Type for representing a external public key

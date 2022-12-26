@@ -187,8 +187,6 @@ ifapi_curl_verify_ek_cert(
                       TSS2_FAPI_RC_NO_CERT, cleanup);
 
         intermed_cert = get_cert_from_buffer(cert_buffer, cert_buffer_size);
-
-        SAFE_FREE(cert_buffer);
         if (!intermed_cert) {
             LOGBLOB_ERROR(cert_buffer, cert_buffer_size,
                           "Failed to convert intermediate certificate to X509 format.");
@@ -300,6 +298,7 @@ cleanup:
     }
     if (store)
         X509_STORE_free(store);
+    SAFE_FREE(cert_buffer);
     OSSL_FREE(root_cert, X509);
     OSSL_FREE(intermed_cert, X509);
     OSSL_FREE(ek_cert, X509);
@@ -356,6 +355,7 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
                           size_t *buffer_size) {
     int ret = -1;
     struct CurlBufferStruct curl_buffer = { .size = 0, .buffer = NULL };
+    long http_code;
 #ifdef CURLU_ALLOW_SPACE
     CURLU *urlp = NULL;
 #endif
@@ -432,6 +432,12 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
     rc = curl_easy_perform(curl);
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_perform() failed: %s", curl_easy_strerror(rc));
+        goto out_easy_cleanup;
+    }
+
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+    if (http_code >= 400) {
+        LOG_ERROR("curl http return code %li", http_code);
         goto out_easy_cleanup;
     }
 

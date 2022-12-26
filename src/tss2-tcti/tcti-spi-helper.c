@@ -22,22 +22,22 @@
 #define LOGMODULE tcti
 #include "util/log.h"
 
-static inline void spi_tpm_helper_delay_ms(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx, int milliseconds)
+static inline TSS2_RC spi_tpm_helper_delay_ms(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx, int milliseconds)
 {
     // Sleep a specified amount of milliseconds
-    ctx->platform.sleep_ms(ctx->platform.user_data, milliseconds);
+    return ctx->platform.sleep_ms(ctx->platform.user_data, milliseconds);
 }
 
-static inline void spi_tpm_helper_start_timeout(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx, int milliseconds)
+static inline TSS2_RC spi_tpm_helper_start_timeout(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx, int milliseconds)
 {
     // Start a timeout timer with the specified amount of milliseconds
-    ctx->platform.start_timeout(ctx->platform.user_data, milliseconds);
+    return ctx->platform.start_timeout(ctx->platform.user_data, milliseconds);
 }
 
-static inline bool spi_tpm_helper_timeout_expired(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx)
+static inline TSS2_RC spi_tpm_helper_timeout_expired(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx, bool *result)
 {
     // Check if the last started tiemout expired
-    return ctx->platform.timeout_expired(ctx->platform.user_data);
+    return ctx->platform.timeout_expired(ctx->platform.user_data, result);
 }
 
 static inline TSS2_RC spi_tpm_helper_spi_acquire(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx)
@@ -69,7 +69,8 @@ static inline TSS2_RC spi_tpm_helper_spi_transfer(TSS2_TCTI_SPI_HELPER_CONTEXT* 
 static inline void spi_tpm_helper_platform_finalize(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx)
 {
     // Free user_data and resources inside
-    ctx->platform.finalize(ctx->platform.user_data);
+    if (ctx->platform.finalize)
+        ctx->platform.finalize(ctx->platform.user_data);
 }
 
 static inline uint32_t spi_tpm_helper_read_be32(const void *src)
@@ -127,7 +128,8 @@ static TSS2_RC spi_tpm_helper_start_transaction(TSS2_TCTI_SPI_HELPER_CONTEXT* ct
         if (byte & 1) {
             return TSS2_RC_SUCCESS;
         }
-        spi_tpm_helper_delay_ms(ctx, 1);
+        rc = spi_tpm_helper_delay_ms(ctx, 1);
+        return_if_error(rc, "spi_tpm_helper_delay_ms");
     }
 
     // The TPM did not exit the wait state in time
@@ -366,13 +368,16 @@ static TSS2_RC spi_tpm_helper_claim_locality(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx)
 
 static TSS2_RC spi_tpm_helper_wait_for_status(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx, uint32_t status_mask, uint32_t status_expected, int32_t timeout)
 {
+    TSS2_RC rc;
     uint32_t status;
     bool blocking = (timeout == TSS2_TCTI_TIMEOUT_BLOCK);
     if (!blocking) {
-        spi_tpm_helper_start_timeout(ctx, timeout);
+        rc = spi_tpm_helper_start_timeout(ctx, timeout);
+        return_if_error(rc, "spi_tpm_helper_start_timeout");
     }
 
     // Wait for the expected status with or without timeout
+    bool is_timeout_expired = false;
     do {
         status = spi_tpm_helper_read_sts_reg(ctx);
         // Return success on expected status
@@ -380,8 +385,12 @@ static TSS2_RC spi_tpm_helper_wait_for_status(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx,
             return TSS2_RC_SUCCESS;
         }
         // Delay next poll by 8ms to avoid spamming the TPM
-        spi_tpm_helper_delay_ms(ctx, 8);
-    } while (blocking || !spi_tpm_helper_timeout_expired(ctx));
+        rc = spi_tpm_helper_delay_ms(ctx, 8);
+        return_if_error(rc, "spi_tpm_helper_delay_ms");
+
+        rc = spi_tpm_helper_timeout_expired(ctx, &is_timeout_expired);
+        return_if_error(rc, "spi_tpm_helper_timeout_expired");
+    } while (blocking || !is_timeout_expired);
 
     // Timed out
     return TSS2_TCTI_RC_TRY_AGAIN;
@@ -419,6 +428,24 @@ static void spi_tpm_helper_fifo_transfer(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx, uint
         handled_so_far += transaction_size;
 
     } while (handled_so_far != transfer_size);
+}
+
+static TSS2_RC check_platform_conf(TSS2_TCTI_SPI_HELPER_PLATFORM *platform_conf)
+{
+
+    bool required_set = platform_conf->sleep_ms && platform_conf->spi_transfer \
+            && platform_conf->start_timeout && platform_conf->timeout_expired;
+    if (!required_set) {
+        LOG_ERROR("Expected sleep_ms, spi_transfer, start_timeout and timeout_expired to be set.");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+
+    if (!!platform_conf->spi_acquire != !!platform_conf->spi_release) {
+        LOG_ERROR("Expected spi_acquire and spi_release to both be NULL or set.");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+
+    return TSS2_RC_SUCCESS;
 }
 
 /*
@@ -629,7 +656,7 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
     TSS2_TCTI_SPI_HELPER_CONTEXT* tcti_spi_helper;
     TSS2_TCTI_COMMON_CONTEXT* tcti_common;
 
-    if (!size || !platform_conf) {
+    if (!size) {
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
@@ -642,6 +669,11 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
     if (*size < sizeof (TSS2_TCTI_SPI_HELPER_CONTEXT)) {
         return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
     }
+
+    if (!platform_conf) {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+
 
     // Init TCTI context
     TSS2_TCTI_MAGIC (tcti_context) = TCTI_SPI_HELPER_MAGIC;
@@ -661,6 +693,9 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
     memset (&tcti_common->header, 0, sizeof (tcti_common->header));
     tcti_common->locality = 0;
 
+    rc = check_platform_conf(platform_conf);
+    return_if_error(rc, "platform_conf invalid");
+
     // Copy platform struct into context
     tcti_spi_helper->platform = *platform_conf;
 
@@ -673,7 +708,8 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
         spi_tpm_helper_read_reg(ctx, TCTI_SPI_HELPER_TPM_DID_VID_REG, &did_vid, sizeof(did_vid));
         if (did_vid != 0) break;
         // TPM might be resetting, let's retry in a bit
-        spi_tpm_helper_delay_ms(ctx, 10);
+        rc = spi_tpm_helper_delay_ms(ctx, 10);
+        return_if_error(rc, "spi_tpm_helper_delay_ms");
     }
     if (did_vid == 0) {
         LOG_ERROR("Probing TPM failed");

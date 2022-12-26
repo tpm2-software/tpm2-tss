@@ -803,21 +803,13 @@ ifapi_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in,
 
         json_object_object_add(*jso, "templateHash", jso2);
     }
-    if (in->templatePublic.size != 0) {
+    if (in->templatePublic.publicArea.type) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPM2B_PUBLIC_serialize(&in->templatePublic, &jso2);
+        r = ifapi_json_TPMT_PUBLIC_serialize(&in->templatePublic.publicArea, &jso2);
         return_if_error(r, "Serialize TPM2B_PUBLIC");
 
         json_object_object_add(*jso, "templatePublic", jso2);
-    }
-    if (in->templateName) {
-        jso2 = NULL;
-        cond_cnt++;
-        r = ifapi_json_char_serialize(in->templateName, &jso2);
-        return_if_error(r, "Serialize char");
-
-        json_object_object_add(*jso, "templateName", jso2);
     }
 
     /* Check whether only one condition field found in policy. */

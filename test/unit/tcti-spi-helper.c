@@ -43,22 +43,25 @@ static const unsigned char TPM_ACCESS_0[] = {0x80, 0xd4, 0x00, 0x00, 0xa1};
 static const unsigned char TPM_STS_0[] = {0x83, 0xd4, 0x00, 0x18, 0x40, 0x00, 0x00, 0x00};
 static const unsigned char TPM_RID_0[] = {0x80, 0xd4, 0x0f, 0x04, 0x00};
 
-void platform_sleep_ms (void* user_data, int32_t milliseconds)
+TSS2_RC platform_sleep_ms (void* user_data, int32_t milliseconds)
 {
     (void) milliseconds;
     assert_string_equal ((const char *) user_data, DUMMY_PLATFORM_DATA);
+    return TSS2_RC_SUCCESS;
 }
 
-void platform_start_timeout (void* user_data, int32_t milliseconds)
+TSS2_RC platform_start_timeout (void* user_data, int32_t milliseconds)
 {
     (void) milliseconds;
     assert_string_equal ((const char *) user_data, DUMMY_PLATFORM_DATA);
+    return TSS2_RC_SUCCESS;
 }
 
-bool platform_timeout_expired (void* user_data)
+TSS2_RC platform_timeout_expired (void* user_data, bool *is_timeout_expired)
 {
     assert_string_equal ((const char *) user_data, DUMMY_PLATFORM_DATA);
-    return true;
+    *is_timeout_expired = true;
+    return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC platform_spi_acquire (void* user_data)
@@ -257,6 +260,58 @@ tcti_spi_with_wait_state_success_test (void **state)
     free (tcti_ctx);
 }
 
+static void
+tcti_spi_with_bad_callbacks_test (void **state)
+{
+    TSS2_RC rc;
+    size_t size;
+    TSS2_TCTI_SPI_HELPER_PLATFORM tcti_platform = {};
+    TSS2_TCTI_CONTEXT* tcti_ctx;
+
+    // Get requested TCTI context size
+    rc = Tss2_Tcti_Spi_Helper_Init (NULL, &size, &tcti_platform);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+
+    // Allocate TCTI context size
+    tcti_ctx = (TSS2_TCTI_CONTEXT*) calloc (1, size);
+    assert_non_null (tcti_ctx);
+
+    // Initialize TCTI context
+    tcti_platform = create_tcti_spi_helper_platform (false);
+    tcti_platform.sleep_ms = NULL;
+    rc = Tss2_Tcti_Spi_Helper_Init (tcti_ctx, &size, &tcti_platform);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+
+    free (tcti_platform.user_data);
+    free (tcti_ctx);
+}
+
+static void
+tcti_spi_with_wait_state_bad_callbacks_test (void **state)
+{
+    TSS2_RC rc;
+    size_t size;
+    TSS2_TCTI_SPI_HELPER_PLATFORM tcti_platform = {};
+    TSS2_TCTI_CONTEXT* tcti_ctx;
+
+    // Get requested TCTI context size
+    rc = Tss2_Tcti_Spi_Helper_Init (NULL, &size, &tcti_platform);
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+
+    // Allocate TCTI context size
+    tcti_ctx = (TSS2_TCTI_CONTEXT*) calloc (1, size);
+    assert_non_null (tcti_ctx);
+
+    // Initialize TCTI context
+    tcti_platform = create_tcti_spi_helper_platform (true);
+    tcti_platform.spi_acquire = NULL;
+    rc = Tss2_Tcti_Spi_Helper_Init (tcti_ctx, &size, &tcti_platform);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+
+    free (tcti_platform.user_data);
+    free (tcti_ctx);
+}
+
 int
 main (int   argc,
       char *argv[])
@@ -264,6 +319,8 @@ main (int   argc,
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tcti_spi_no_wait_state_success_test),
         cmocka_unit_test (tcti_spi_with_wait_state_success_test),
+        cmocka_unit_test (tcti_spi_with_bad_callbacks_test),
+        cmocka_unit_test (tcti_spi_with_wait_state_bad_callbacks_test)
     };
     return cmocka_run_group_tests (tests, NULL, NULL);
 }

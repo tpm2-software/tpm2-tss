@@ -32,6 +32,8 @@ The parameters of the profile are:
 * sym_mode: The block cipher mode for symmetric encryption.
 * sym_parameters: The algorithm and parameters used for symmetric encryption.
 * sym_block_size: The block size used for symmetric encryption.
+* session_symmetric: The algorithm and parameters used for parameter encryption of
+  a session (The same format and default as sym_parameters).
 * pcr_selection: The PCR registers and banks used by FAPI.
 * curveID: The curve ID for ECC keys.
 * ek_policy: The JSON encoded policy for the /EK object.
@@ -44,6 +46,8 @@ The parameters of the profile are:
   A value of zero indicates that DA protection is disabled. If not set the default is 1000.
 * lockoutRecovery: Time in seconds after a lockoutAuth failure before use of lockoutAuth is allowed
   A value of zero indicates that a reboot is required. If not set the default is 1000.
+* ignore_ek_template: Ignore EK template stored in NV ram.
+  If not set the default is "no".
 
 # EXAMPLES
 The following JSON encoded example shows the standard profile for ECC keys:
@@ -141,3 +145,16 @@ Possible modes for the RSA decrypt scheme are:
 The following curve ids can be used:
 
 * ECC_NIST_P192, ECC_NIST_P224, ECC_NIST_P256, ECC_NIST_P384, ECC_NIST_P521, ECC_BN_P256, ECC_BN_P638, ECC_SM2_P256
+
+If the PCR registers 0 to 10 are extended by BIOS and IMA in the SHA1 bank the following PCR selection should
+be used to enable the use of FAPI quote and verify quote:
+```
+    "pcr_selection": [
+       { "hash": "TPM2_ALG_SHA1",
+         "pcrSelect": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
+       },
+       { "hash": "TPM2_ALG_SHA256",
+         "pcrSelect": [ 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 ]
+       }
+    ],
+ ```

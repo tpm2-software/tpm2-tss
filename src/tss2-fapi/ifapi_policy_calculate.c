@@ -1198,6 +1198,95 @@ cleanup:
     return r;
 }
 
+/** Calculate a policy digest for policy template.
+ *
+ * The template hash will be derived from template_public if no template hash
+ * is provided.
+ *
+ * @param[in] policy The policy with the template hash or the public data used to
+ *            compute the template hash.
+ * @param[in,out] current_digest The digest list which has to be updated.
+ * @param[in] current_hash_alg The hash algorithm used for the policy computation.
+ *
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ */
+TSS2_RC
+ifapi_calculate_policy_template(
+    TPMS_POLICYTEMPLATE *policy,
+    TPML_DIGEST_VALUES *current_digest,
+    TPMI_ALG_HASH current_hash_alg)
+
+{
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    size_t digest_idx;
+    size_t hash_size;
+    TPM2B_DIGEST computed_template_hash;
+    TPM2B_DIGEST *used_template_hash;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
+    uint8_t buffer[sizeof(TPM2B_PUBLIC)];
+    size_t offset = 0;
+    size_t digest_size;
+
+    LOG_DEBUG("call");
+
+    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                   "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+                   current_hash_alg);
+    }
+
+    /* Compute of the index of the current policy in the passed digest list */
+    r = get_policy_digest_idx(current_digest, current_hash_alg, &digest_idx);
+    return_if_error(r, "Get hash alg for digest.");
+
+    if (policy->templateHash.size == 0) {
+        used_template_hash = &computed_template_hash;
+        r = Tss2_MU_TPMT_PUBLIC_Marshal(&policy->templatePublic.publicArea,
+                                        &buffer[0], sizeof(TPMT_PUBLIC), &offset);
+        return_if_error(r, "Marshaling TPMT_PUBLIC");
+
+        r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+        return_if_error(r, "crypto hash start");
+
+        HASH_UPDATE_BUFFER(cryptoContext,
+                           &buffer[0], offset,
+                           r, cleanup);
+        r = ifapi_crypto_hash_finish(&cryptoContext,
+                                     &used_template_hash->buffer[0],
+                                     &digest_size);
+        goto_if_error(r, "crypto hash finish", cleanup);
+        used_template_hash->size = digest_size;
+    } else {
+        used_template_hash = &policy->templateHash;
+    }
+
+    LOG_TRACE("Compute policy template");
+    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    return_if_error(r, "crypto hash start");
+
+    HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyTemplate, r,
+                cleanup);
+    HASH_UPDATE_BUFFER(cryptoContext, &used_template_hash->buffer[0],
+                       used_template_hash->size, r, cleanup);
+    r = ifapi_crypto_hash_finish(&cryptoContext,
+                                 (uint8_t *) & current_digest->
+                                 digests[digest_idx].digest, &hash_size);
+    return_if_error(r, "crypto hash finish");
+
+    LOGBLOB_DEBUG((uint8_t *) & current_digest->digests[digest_idx].digest,
+                  hash_size, "Policy Duplicate digest");
+
+cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
+    return r;
+}
+
 /** Compute policy digest for a list of policies.
  *
  * Every policy in the list will update the previous policy. Thus the final
@@ -1360,6 +1449,15 @@ ifapi_calculate_policy(
 
         case POLICYACTION:
             /* This does not alter the policyDigest */
+            break;
+
+        case POLICYTEMPLATE:
+            r = ifapi_calculate_policy_template(&policy->elements[i].element.
+                                                 PolicyTemplate,
+                                                 &policy->elements[i].
+                                                 policyDigests, hash_alg);
+            return_if_error(r, "Compute policy template");
+
             break;
 
         default:

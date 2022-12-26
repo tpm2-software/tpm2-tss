@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.0.0-rc1] - 2022-12-05
+## [4.0.0-rc3] - 2022-12-19
 ### Fixed:
   - tcti-ldr: Use heap instead of stack when tcti initialize
  - Fix usage of NULL pointer if Esys_TR_SetAuth is calles with ESYS_TR_NONE.
@@ -36,6 +36,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Marshaling of TPMU_CAPABILITIES data, only field intelPttProperty was broken before.a
 - Spec deviation in Fapi_GetDescription caused description to be NULL when it should be empty string.
   This is API breaking but considered a bug since it deviated from the FAPI spec.
+- FAPI: undefined reference to curl_url_strerror when using curl less than 7.80.0.
+- FAPI: Fixed support for EK templates in NV inidices per the spec, see #2518 for details.
+- FAPI: fix NPD in ifapi_curl logging.
+- FAPI: Improve documentation fapi-profile
+- FAPI: Fix CURL HTTP handling.
 
 ### Added:
 - TPM version 1.59 support.
@@ -56,6 +61,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - ESAPI: Support sha512 for mbedtls crypto backend.
 - TPM2B_MAX_CAP_BUFFER and mu routines
 - vendor field to TPMU_CAPABILTIIES
+- FAPI: support for PolicyTemplate
 
 ### Changed
 - libmu soname from 0:0:0 to 0:1:0.

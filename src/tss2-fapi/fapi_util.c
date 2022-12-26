@@ -614,11 +614,19 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
         pkey->ek_profile = TPM2_YES;
         /* Values set according to EK credential profile. */
         if (context->cmd.Provision.public_templ.public.publicArea.type == TPM2_ALG_RSA) {
+            if (pkey->nonce.size) {
+                memcpy(context->cmd.Provision.public_templ.public.publicArea.unique.rsa.buffer,
+                       &pkey->nonce.buffer[0], pkey->nonce.size);
+            }
             if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
                 context->cmd.Provision.public_templ.public.publicArea.unique.rsa.size = 0;
             else
                 context->cmd.Provision.public_templ.public.publicArea.unique.rsa.size = 256;
         } else if (context->cmd.Provision.public_templ.public.publicArea.type == TPM2_ALG_ECC) {
+            if (pkey->nonce.size) {
+                memcpy(context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.buffer,
+                       &pkey->nonce.buffer[0], pkey->nonce.size);
+            }
             if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH)) {
                 context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.size = 0;
                 context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 0;
@@ -650,7 +658,17 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
             SAFE_FREE(policy);
             return r;
         }
-
+        /* Check whether policy digest defined for key matches the computed policy. */
+        if (context->cmd.Provision.public_templ.public.publicArea.authPolicy.size) {
+            if (context->cmd.Provision.public_templ.public.publicArea.authPolicy.size
+                != context->cmd.Provision.hash_size ||
+                memcmp(&policy->policyDigests.digests[context->policy.digest_idx].digest,
+                       &context->cmd.Provision.public_templ.public.publicArea.authPolicy.buffer[0],
+                       context->cmd.Provision.hash_size) != 0) {
+                SAFE_FREE(policy);
+                return_error(TSS2_FAPI_RC_BAD_VALUE, "EK Policy does not match policy defined in profile.");
+            }
+        }
         context->cmd.Provision.public_templ.public.publicArea.authPolicy.size =
             context->cmd.Provision.hash_size;
         memcpy(&context->cmd.Provision.public_templ.public.publicArea.authPolicy.buffer[0],
@@ -1004,17 +1022,25 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
             pkey->ek_profile) {
             /* Values set according to EK credential profile. */
             if (public.publicArea.type == TPM2_ALG_RSA) {
+                if (pkey->nonce.size) {
+                    memcpy(public.publicArea.unique.rsa.buffer,
+                           &pkey->nonce.buffer[0], pkey->nonce.size);
+                }
                 if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
                     public.publicArea.unique.rsa.size = 0;
                 else
                     public.publicArea.unique.rsa.size = 256;
             } else if (public.publicArea.type == TPM2_ALG_ECC) {
+                if (pkey->nonce.size) {
+                    memcpy(public.publicArea.unique.ecc.x.buffer,
+                           &pkey->nonce.buffer[0], pkey->nonce.size);
+                }
                 if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH)) {
                     public.publicArea.unique.ecc.x.size = 0;
                     public.publicArea.unique.ecc.y.size = 0;
                 } else {
                     public.publicArea.unique.ecc.x.size = 32;
-                   public.publicArea.unique.ecc.y.size = 32;
+                    public.publicArea.unique.ecc.y.size = 32;
                 }
             }
         }
@@ -2447,7 +2473,16 @@ error_cleanup:
 
 /** State machine to read data from the NV ram of the TPM.
  *
+ * The state machine can bes used to read NV data for a given ESAPI
+ * object or for a TPM NV index. If TPM NV index is used a ESAPI object
+ * will be created if the NV index exists. If not the size 0 will be
+ * returned.
+ * If a TPM handle is used the initial stat NV_READ_CHECK_HANDLE has
+ * to be set: context->nv_cmd.nv_read_state.
  * Context nv_cmd has to be prepared before the call of this function:
+ * With an TPM handle:
+ * - tpm_handle The ESAPI handle of the authorization object.
+ * With an ESYS handle:
  * - auth_index The ESAPI handle of the authorization object.
  * - numBytes The number of bytes which should be read.
  * - esys_handle The ESAPI handle of the NV object.
@@ -2455,6 +2490,8 @@ error_cleanup:
  * @param[in,out] context for storing all state information.
  * @param[out] data the data fetched from TPM.
  * @param[in,out] size The number of bytes requested and fetched.
+ *                will be 0 if a TPM handle is used but the NV index
+ *                does not exist.
  *
  * @retval TSS2_RC_SUCCESS If the data was read successfully.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
@@ -2492,6 +2529,9 @@ ifapi_nv_read(
     ESYS_TR nv_index = context->nv_cmd.esys_handle;
     IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
     ESYS_TR session;
+    TPMS_CAPABILITY_DATA *capabilityData = NULL;
+    TPM2B_NV_PUBLIC *nvPublic = NULL;
+    TPMI_YES_NO moreData;
 
     switch (context->nv_cmd.nv_read_state) {
     statecase(context->nv_cmd.nv_read_state, NV_READ_INIT);
@@ -2591,10 +2631,63 @@ ifapi_nv_read(
             r = TSS2_RC_SUCCESS;
             break;
         }
+    statecase(context->nv_cmd.nv_read_state, NV_READ_CHECK_HANDLE);
+        context->nv_cmd.data_idx = 0;
+        context->nv_cmd.auth_index = ESYS_TR_RH_OWNER;
+        context->nv_cmd.offset = 0;
+        r = Esys_GetCapability_Async(context->esys,
+                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                     TPM2_CAP_HANDLES,
+                                     context->nv_cmd.tpm_handle, 1);
+        goto_if_error(r, "Esys_GetCapability_Async", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->nv_cmd.nv_read_state, NV_READ_GET_CAPABILITY);
+        r = Esys_GetCapability_Finish(context->esys, &moreData, &capabilityData);
+        return_try_again(r);
+        goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
+
+        if (capabilityData->data.handles.count == 0 ||
+            capabilityData->data.handles.handle[0] != context->nv_cmd.tpm_handle) {
+            context->nv_cmd.nv_read_state = NV_READ_INIT;
+            *size = 0;
+            break;
+        }
+        SAFE_FREE(capabilityData);
+        r = Esys_TR_FromTPMPublic_Async(context->esys, context->nv_cmd.tpm_handle,
+                                        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+        goto_if_error(r, "Esys_TR_FromTPMPublic_Async", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->nv_cmd.nv_read_state, NV_READ_GET_ESYS_HANDLE);
+        r = Esys_TR_FromTPMPublic_Finish(context->esys, &context->nv_cmd.esys_handle);
+        return_try_again(r);
+
+        goto_if_error(r, "Esys_TR_FromTPMPublic_Finish", error_cleanup);
+
+        r = Esys_NV_ReadPublic_Async(context->esys, context->nv_cmd.esys_handle,
+                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+        goto_if_error(r, "Esys_NV_ReadPublic_Async", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->nv_cmd.nv_read_state, NV_READ_GET_NV_PUBLIC);
+        r = Esys_NV_ReadPublic_Finish(context->esys, &nvPublic, NULL);
+        return_try_again(r);
+        goto_if_error(r, "Error: nv read public", error_cleanup);
+
+        context->nv_cmd.numBytes = nvPublic->nvPublic.dataSize;
+        SAFE_FREE(nvPublic);
+        context->nv_cmd.nv_read_state = NV_READ_INIT;
+        return TSS2_FAPI_RC_TRY_AGAIN;
+
     statecasedefault(context->nv_cmd.nv_read_state);
     }
 
 error_cleanup:
+    SAFE_FREE(capabilityData);
     return r;
 }
 
@@ -4282,7 +4375,7 @@ ifapi_get_certificates(
 {
     TSS2_RC r;
     TPMI_YES_NO moreData;
-    uint8_t *cert_data;
+    uint8_t *cert_data = NULL;
     size_t cert_size;
 
     context->cmd.Provision.cert_nv_idx = MIN_EK_CERT_HANDLE;
