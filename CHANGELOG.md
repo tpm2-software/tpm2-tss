@@ -3,8 +3,8 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.0.0-rc4] - 2022-12-26
-### Fixed:
+## [4.0.0] - 2023-01-02
+### Fixed
   - tcti-ldr: Use heap instead of stack when tcti initialize
  - Fix usage of NULL pointer if Esys_TR_SetAuth is calles with ESYS_TR_NONE.
  - Conditionally check user/group manipulation commands.
@@ -43,7 +43,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - FAPI: Fix CURL HTTP handling.
 - FAPI: Return FAPI_RC_IO_ERROR if a policy does not exist in keystore.
 
-### Added:
+### Added
 - TPM version 1.59 support.
 - ci: ubuntu-22.04 added.
 - mbedTLS 3.0 is supported by ESAPI.
