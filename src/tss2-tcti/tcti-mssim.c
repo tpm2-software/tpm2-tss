@@ -285,12 +285,11 @@ tcti_mssim_get_poll_handles (
     if (handles != NULL) {
 #ifdef _WIN32
         HANDLE hEvent = WSACreateEvent();
-        if (WSAEventSelect(tcti_mssim->tpm_sock, hEvent, FD_READ | FD_WRITE) == 0){
-            *handles = hEvent;
-        } else {
+        if (WSAEventSelect(tcti_mssim->tpm_sock, hEvent, FD_READ | FD_WRITE)) {
             WSACloseEvent(hEvent);
             return TSS2_TCTI_RC_BAD_VALUE;
         }
+        *handles = hEvent
 #else
         handles->fd = tcti_mssim->tpm_sock;
         handles->events = POLLIN | POLLOUT;
