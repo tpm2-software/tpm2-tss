@@ -16,9 +16,8 @@
 import subprocess
 
 # Create (unused) root file
-index_rst = open("index.rst", "w")
-index_rst.write(".. toctree::\n   :maxdepth: 2")
-index_rst.close()
+with open("index.rst", "w") as index_rst:
+    index_rst.write(".. toctree::\n   :maxdepth: 2")
 
 # Build doxygen documentation
 subprocess.call(
