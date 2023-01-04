@@ -339,7 +339,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ### Removed
 - Removed libtss2-mu from "Requires" field of libtss2-esys.pc
-  Needs to be added explicitely now
+  Needs to be added explicitly now
 
 ### Fixed
 - All fixes from 2.2.1, 2.2.2 and 2.2.3
