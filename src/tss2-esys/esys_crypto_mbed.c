@@ -88,7 +88,7 @@ iesys_cryptmbed_hash_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
           md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA384);
           break;
     case TPM2_ALG_SHA512:
-          md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA384);
+          md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA512);
           break;
     }
 
