@@ -34,6 +34,19 @@
 #define LOGMODULE tests
 #include "util/log.h"
 
+#define EXIT_SKIP 77
+
+static bool big_endian(void) {
+
+    uint32_t test_word;
+    uint8_t *test_byte;
+
+    test_word = 0xFF000000;
+    test_byte = (uint8_t *) (&test_word);
+
+    return test_byte[0] == 0xFF;
+}
+
 static uint8_t *file_to_buffer(const char *filename, size_t *size)
 {
     uint8_t *eventlog = NULL;
@@ -167,6 +180,10 @@ check_specid_vendordata(void **state)
 int
 main(int argc, char *argv[])
 {
+    if (big_endian()) {
+        return EXIT_SKIP;
+    }
+
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(check_bios_nuc),
         cmocka_unit_test(check_bios_pc_client),

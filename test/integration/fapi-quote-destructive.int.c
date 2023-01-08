@@ -23,6 +23,17 @@
 
 #define EVENT_SIZE 10
 
+static bool big_endian(void) {
+
+    uint32_t test_word;
+    uint8_t *test_byte;
+
+    test_word = 0xFF000000;
+    test_byte = (uint8_t *) (&test_word);
+
+    return test_byte[0] == 0xFF;
+}
+
 /** Test the FAPI functions for quote commands.
  *
  * Tested FAPI commands:
@@ -55,6 +66,10 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     uint8_t data[EVENT_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     size_t signatureSize = 0;
     uint32_t pcrList[2] = { 11, 16 };
+
+    if (big_endian()) {
+        return EXIT_SKIP;
+    }
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
 

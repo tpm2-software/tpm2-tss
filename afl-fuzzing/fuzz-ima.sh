@@ -7,8 +7,13 @@ function stop() {
     killall afl-fuzz
     }
 
-
 trap stop
+
+test_endian=$(echo -n I | od -to2 | awk 'FNR==1{ print substr($2,6,1)}')
+if [ $test_endian == 0 ]; then
+    echo "Little endian test files can't be used on big endian architecture"
+    exit 1
+fi
 
 mkdir -p afl-fuzzing/ima-sml
 for x in sml-ima-ng-sha1.b64  sml-ima-sha1.b64  sml-ima-sha1-invalidated.b64  sml-ima-sig-sha256.b64  sml-ima-sig-sha256-invalidated.b64
