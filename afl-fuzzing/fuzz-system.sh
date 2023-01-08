@@ -5,6 +5,12 @@ export srcdir=$(pwd)
 
 trap killall afl-fuzz
 
+test_endian=$(echo -n I | od -to2 | awk 'FNR==1{ print substr($2,6,1)}')
+if [ $test_endian == 0 ]; then
+    echo "Little endian test files can't be used on big endian architecture"
+    exit 1
+fi
+
 mkdir -p afl-fuzzing/system-events
 for x in binary_measurements_nuc.b64  binary_measurements_pc_client.b64
 do
