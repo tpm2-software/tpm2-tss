@@ -41,6 +41,40 @@
 /* Define from kernel crypt.h */
 #define CRYPTO_MAX_ALG_NAME 128
 
+static uint32_t endian_swap_32(uint32_t data) {
+    uint32_t converted;
+    uint8_t *bytes = (uint8_t *)&data;
+    uint8_t *tmp = (uint8_t *)&converted;
+    size_t i;
+    for(i=0; i < sizeof(uint32_t); i ++) {
+        tmp[i] = bytes[sizeof(uint32_t) - i - 1];
+    }
+    return converted;
+}
+
+static bool big_endian_arch(void) {
+
+    uint32_t test_word;
+    uint8_t *test_byte;
+
+    test_word = 0xFF000000;
+    test_byte = (uint8_t *) (&test_word);
+    return test_byte[0] == 0xFF;
+}
+
+static bool little_endian_pcr(uint32_t pcr) {
+
+    uint8_t *test_pcr;
+
+    test_pcr = (uint8_t *) (&pcr);
+    return test_pcr[0];
+}
+
+static bool need_to_convert_to_big_endian(IFAPI_IMA_TEMPLATE *template)
+{
+    return big_endian_arch() && little_endian_pcr(template->header.pcr);
+}
+
 static TSS2_RC
 get_json_content(json_object *jso, json_object **jso_sub) {
     if (!ifapi_get_sub_object(jso, CONTENT, jso_sub)) {
@@ -188,10 +222,13 @@ sha_digest_json_cb(UINT8 *digest, UINT8 * buffer, size_t *offset, json_object *j
 /** Get UINT32 size value from buffer and increase offset.
  */
 UINT32
-get_size_from_buffer(UINT8 *buffer, size_t *offset) {
+get_size_from_buffer(UINT8 *buffer, size_t *offset, IFAPI_IMA_TEMPLATE *template) {
     UINT32 size;
     memcpy(&size, &buffer[*offset], sizeof(UINT32));
     *offset += sizeof(UINT32);
+    if (template->convert_to_big_endian) {
+        size = endian_swap_32(size);
+    }
     return size;
 }
 
@@ -207,7 +244,7 @@ digest_with_hash_name_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_obje
     int digest_size;
     UINT32 digest_buffer_size;
 
-    digest_buffer_size = get_size_from_buffer(buffer, offset);
+    digest_buffer_size = get_size_from_buffer(buffer, offset, template);
     alg_name_size = strlen((char *)&buffer[*offset]) - 1; /**< strip : */
     if (alg_name_size > CRYPTO_MAX_ALG_NAME) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid hash name.");
@@ -220,9 +257,12 @@ digest_with_hash_name_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_obje
     *offset += alg_name_size + 2; /**< skip : and '\0' */
     digest_size = EVP_MD_size(md);
     if (alg_name_size + 2 + digest_size != digest_buffer_size) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid IMA binary format.");
+        digest_buffer_size = endian_swap_32(digest_buffer_size);
+        /* Try with endian swap */
+        if (alg_name_size + 2 + digest_size != digest_buffer_size) {
+            return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid IMA binary format.");
+        }
     }
-
     LOGBLOB_TRACE(&buffer[*offset], digest_size, "IMA data_hash");
 
     if (jso && zero_digest(digest, template->hash_size) &&
@@ -244,7 +284,7 @@ signature_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
     UINT32 digest_size;
     UNUSED(template);
 
-    digest_size =  get_size_from_buffer(buffer, offset);
+    digest_size =  get_size_from_buffer(buffer, offset, template);
     LOGBLOB_TRACE(&buffer[*offset], digest_size, "IMA Signature:");
     *offset += digest_size;
     return TSS2_RC_SUCCESS;
@@ -259,13 +299,17 @@ static TSS2_RC eventname_ng_json_cb(UINT8 *digest, UINT8 *buffer, size_t *offset
     UNUSED(digest);
     UNUSED(jso);
 
-    /* Get size from buffer without 0 Terminator. */
-    size_from_buffer = get_size_from_buffer(buffer, offset) - 1;
+    /* Get size from buffer with 0 Terminator. */
+    size_from_buffer = get_size_from_buffer(buffer, offset, template);
     size = strlen((const char *)&buffer[*offset]);
-    if (size != size_from_buffer) {
-        return_error2(TSS2_FAPI_RC_BAD_VALUE,
-                      "Invalid digest size, string length: %zu size from buffer: %"
-                      PRIu32, size, size_from_buffer);
+    if (size != size_from_buffer - 1) {
+        size_from_buffer = endian_swap_32(size_from_buffer);
+        /* Try with endian swap */
+        if (size != size_from_buffer - 1) {
+            return_error2(TSS2_FAPI_RC_BAD_VALUE,
+                          "Invalid digest size, string length: %zu size from buffer: %"
+                          PRIu32, size, size_from_buffer);
+        }
     }
     LOG_TRACE("IMA name: %s", (const char *)&buffer[*offset]);
     template->name = (char *)&buffer[*offset];
@@ -543,6 +587,9 @@ read_event_buffer(IFAPI_IMA_TEMPLATE *template, FILE *fp)
         if (rsize != 1) {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid ima data");
         }
+        if (template->convert_to_big_endian) {
+            template->event_size = endian_swap_32(template->event_size);
+        }
         size = template->event_size;
     }
 
@@ -559,6 +606,9 @@ read_event_buffer(IFAPI_IMA_TEMPLATE *template, FILE *fp)
         rsize = fread(&field_len, sizeof(UINT32), 1, fp);
         if (rsize != 1) {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid ima data");
+        }
+        if (template->convert_to_big_endian) {
+            field_len = endian_swap_32(field_len);
         }
         if (field_len > template->event_size - TPM2_SHA1_DIGEST_SIZE) {
              return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid ima data");
@@ -585,11 +635,17 @@ size_t read_ima_header(IFAPI_IMA_TEMPLATE *template, FILE *fp, TSS2_RC *rc)
     if (size == 0) {
         return size;
     }
+
+    template->convert_to_big_endian = need_to_convert_to_big_endian(template);
+
     if (memcmp(&template->header.digest[pos_ima_type], "ima", 3) == 0) {
         /* Start of IMA type string found. */
         memcpy(&template->ima_type_size,
                &template->header.digest[pos_ima_type - sizeof(UINT32)],
                sizeof(UINT32));
+        if (template->convert_to_big_endian) {
+            template->ima_type_size = endian_swap_32(template->ima_type_size);
+        }
         memcpy(&template->ima_type[0], "ima", 3);
         /* Get the description of the IMA event. */
         size = template->ima_type_size - 3;
@@ -633,10 +689,11 @@ ifapi_read_ima_event_log(
     json_object **jso_list) {
     TSS2_RC r;
     FILE *fp = NULL;
-    IFAPI_IMA_TEMPLATE template;
+    IFAPI_IMA_TEMPLATE template = { 0 };
     size_t recnum = 0, i;
     json_object *jso_current_event = NULL;;
     bool add_event;
+    uint32_t pcr = 0;
 
     return_if_null(jso_list, "Bad reference.", TSS2_FAPI_RC_BAD_VALUE);
     template.event_buffer = NULL;
@@ -662,7 +719,11 @@ ifapi_read_ima_event_log(
 
         /* Check whether IMA PCR is member of pcrList. */
         for (i = 0; i < pcrListSize; i++) {
-            if (pcrList[i] == template.header.pcr)
+            pcr = template.header.pcr;
+            if (template.convert_to_big_endian) {
+                pcr= endian_swap_32(pcr);
+            }
+            if (pcrList[i] == pcr)
                 break;
         }
         if (i == pcrListSize) {
@@ -671,7 +732,7 @@ ifapi_read_ima_event_log(
         }
 
         if (add_event) {
-            r = event_callbacks.add_header_cb(recnum, template.header.pcr,
+            r = event_callbacks.add_header_cb(recnum, pcr,
                                               template.ima_type, template.header.digest,
                                               template.hash_size,
                                               *jso_list, &jso_current_event);

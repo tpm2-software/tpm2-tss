@@ -25,6 +25,11 @@ typedef UINT32 IFAPI_IMA_EVENT_TYPE;
 
 /* Structure to store event header and data of IMA template */
 typedef struct {
+    /* Switch whether conversion from little endian to big endian
+       is needed if on a big endian machine with the option
+       --ima_canonical_fmt ima is forced to produce a little endian log. */
+    bool convert_to_big_endian;
+
     /* header is the First part of the template which will be read
        beforte the rest of the event will be read and parsed. */
     struct {
