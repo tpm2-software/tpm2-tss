@@ -29,6 +29,15 @@
 #define LOGMODULE tests
 #include "util/log.h"
 
+static bool big_endian_arch(void) {
+
+    uint32_t test_word;
+    uint8_t *test_byte;
+
+    test_word = 0xFF000000;
+    test_byte = (uint8_t *) (&test_word);
+    return test_byte[0] == 0xFF;
+}
 
 static void
 check_eventlog(const char *file)
@@ -127,6 +136,9 @@ check_sml_ima_sig_sha256(void **state)
 static void
 check_sml_ima_sig_sha256_invalidated(void **state)
 {
+    if (big_endian_arch())
+        skip();
+
     check_eventlog("test/data/fapi/eventlog/sml-ima-sig-sha256-invalidated.bin");
 }
 
