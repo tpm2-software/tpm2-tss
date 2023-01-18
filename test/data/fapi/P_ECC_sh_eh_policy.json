@@ -31,7 +31,7 @@
         "policy":[
             {
                 "type":"POLICYSECRET",
-                "objectName": "4000000b",
+                "objectName": "4000000b"
             }
         ]
     },
