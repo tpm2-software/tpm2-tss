@@ -165,6 +165,7 @@ AS_IF([test "x$enable_fapi" = xyes ],
 
 AS_IF([test "x$enable_fapi" = xyes ],
       [PKG_CHECK_MODULES([CURL], [libcurl])])
+AC_CHECK_LIB([curl], [curl_url_strerror], [AC_DEFINE([HAVE_CURL_URL_STRERROR],[1], [If lib curl has curl_url_strerror function])])
 
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
