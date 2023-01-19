@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.0.1-rc0] - 2023-01-19
+### Fixed:
+ - A buffer overflow in tss2-rc as CVE-2023-22745.
+
 ## [4.0.0] - 2023-01-02
 ### Fixed
   - tcti-ldr: Use heap instead of stack when tcti initialize
