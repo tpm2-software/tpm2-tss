@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Fixed:
  - A buffer overflow in tss2-rc as CVE-2023-22745.
  - The drv layer in tss2-rc should have been the policy layer.
+ - Spec deviation in Fapi_GetDescription caused description to be NULL when it should be empty string.
+   This is API breaking but considered a bug since it deviated from the FAPI spec.
 
 ## [3.2.1] - 2022-12-12
 ### Fixed
