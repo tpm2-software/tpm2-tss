@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [3.2.2-rc0] - 2022-01-19
+### Fixed:
+ - A buffer overflow in tss2-rc as CVE-2023-22745.
+ - The drv layer in tss2-rc should have been the policy layer.
+
 ## [3.2.1] - 2022-12-12
 ### Fixed
 - Makefile.am: make all EXTRA_DIST includes unconditional to fix pristine tars
