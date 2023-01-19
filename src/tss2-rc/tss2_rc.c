@@ -1,5 +1,8 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
-
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include <assert.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -846,7 +849,7 @@ tss_err_handler (TSS2_RC rc)
 static struct {
     char name[TSS2_ERR_LAYER_NAME_MAX];
     TSS2_RC_HANDLER handler;
-} layer_handler[TPM2_ERROR_TSS2_RC_LAYER_COUNT] = {
+} layer_handler[TPM2_ERROR_TSS2_RC_LAYER_COUNT + 1] = {
     ADD_HANDLER("tpm" , tpm2_ehandler),
     ADD_NULL_HANDLER,                       /* layer 1  is unused */
     ADD_NULL_HANDLER,                       /* layer 2  is unused */
@@ -881,7 +884,7 @@ unknown_layer_handler(TSS2_RC rc)
     static __thread char buf[32];
 
     clearbuf(buf);
-    catbuf(buf, "0x%X", tpm2_error_get(rc));
+    catbuf(buf, "0x%X", rc);
 
     return buf;
 }
@@ -978,19 +981,27 @@ Tss2_RC_Decode(TSS2_RC rc)
         catbuf(buf, "%u:", layer);
     }
 
-    handler = !handler ? unknown_layer_handler : handler;
-
     /*
      * Handlers only need the error bits. This way they don't
      * need to concern themselves with masking off the layer
      * bits or anything else.
      */
-    UINT16 err_bits = tpm2_error_get(rc);
-    const char *e = err_bits ? handler(err_bits) : "success";
-    if (e) {
-        catbuf(buf, "%s", e);
+    if (handler) {
+        UINT16 err_bits = tpm2_error_get(rc);
+        const char *e = err_bits ? handler(err_bits) : "success";
+        if (e) {
+            catbuf(buf, "%s", e);
+        } else {
+            catbuf(buf, "0x%X", err_bits);
+        }
     } else {
-        catbuf(buf, "0x%X", err_bits);
+        /*
+         * we don't want to drop any bits if we don't know what to do with it
+         * so drop the layer byte since we we already have that.
+         */
+        const char *e = unknown_layer_handler(rc >> 8);
+        assert(e);
+        catbuf(buf, "%s", e);
     }
 
     return buf;

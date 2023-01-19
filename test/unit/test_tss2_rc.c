@@ -197,7 +197,7 @@ test_custom_handler(void **state)
      * Test an unknown layer
      */
     e = Tss2_RC_Decode(rc);
-    assert_string_equal(e, "1:0x2A");
+    assert_string_equal(e, "1:0x100");
 }
 
 static void
@@ -407,6 +407,23 @@ test_info_str_null(void **state)
     assert_null(m);
 }
 
+static void
+test_all_FFs(void **state)
+{
+    (void) state;
+
+    const char *e = Tss2_RC_Decode(0xFFFFFFFF);
+    assert_string_equal(e, "255:0xFFFFFF");
+}
+
+static void
+test_all_FFs_set_handler(void **state)
+{
+    (void) state;
+    Tss2_RC_SetHandler(0xFF, "garbage", custom_err_handler);
+    Tss2_RC_SetHandler(0xFF, NULL, NULL);
+}
+
 /* link required symbol, but tpm2_tool.c declares it AND main, which
  * we have a main below for cmocka tests.
  */
@@ -449,6 +466,8 @@ main(int argc, char* argv[])
             cmocka_unit_test(test_info_str_fmt0_warn),
             cmocka_unit_test(test_info_str_fmt0_ff),
             cmocka_unit_test(test_info_str_null),
+            cmocka_unit_test(test_all_FFs),
+            cmocka_unit_test(test_all_FFs_set_handler)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
