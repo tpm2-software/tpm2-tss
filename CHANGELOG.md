@@ -3,12 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.2.2-rc0] - 2022-01-19
+## [3.2.2-rc1] - 2023-01-23
 ### Fixed:
  - A buffer overflow in tss2-rc as CVE-2023-22745.
  - The drv layer in tss2-rc should have been the policy layer.
  - Spec deviation in Fapi_GetDescription caused description to be NULL when it should be empty string.
    This is API breaking but considered a bug since it deviated from the FAPI spec.
+ - FAPI: undefined reference to curl_url_strerror when using curl less than 7.80.0.
 
 ## [3.2.1] - 2022-12-12
 ### Fixed
