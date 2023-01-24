@@ -997,9 +997,9 @@ Tss2_RC_Decode(TSS2_RC rc)
     } else {
         /*
          * we don't want to drop any bits if we don't know what to do with it
-         * so drop the layer byte since we we already have that.
+         * so just send the whole thing.
          */
-        const char *e = unknown_layer_handler(rc >> 8);
+        const char *e = unknown_layer_handler(rc);
         assert(e);
         catbuf(buf, "%s", e);
     }
