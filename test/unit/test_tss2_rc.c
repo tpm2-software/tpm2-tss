@@ -199,7 +199,7 @@ test_custom_handler(void **state)
      * Test an unknown layer
      */
     e = Tss2_RC_Decode(rc);
-    assert_string_equal(e, "1:0x100");
+    assert_string_equal(e, "1:0x1002A");
 }
 
 static void
@@ -288,7 +288,7 @@ test_all_FFs(void **state)
     (void) state;
 
     const char *e = Tss2_RC_Decode(0xFFFFFFFF);
-    assert_string_equal(e, "255:0xFFFFFF");
+    assert_string_equal(e, "255:0xFFFFFFFF");
 }
 
 static void
