@@ -500,7 +500,7 @@ convert_ima_event_buffer(
         r = get_json_content(jso, &jso_content);
         goto_if_error(r, "Get sub event", error);
 
-        r = add_uint8_ary_to_json(template->event_buffer, template->event_size, jso_content, "template_value");
+        r = add_uint8_ary_to_json(template->event_buffer, template->event_size, jso_content, "template_data");
         goto_if_error(r, "Create data to be hashed", error);
     }
 
@@ -706,6 +706,7 @@ ifapi_read_ima_event_log(
 
 static char *field_IFAPI_IMA_EVENT_tab[] = {
     "template_value",
+    "template_data",
     "template_name"
 };
 
@@ -784,18 +785,20 @@ ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso,  IFAPI_IMA_EVENT *out)
                                    SIZE_OF_ARY(field_IFAPI_IMA_EVENT_tab));
 
     if (!ifapi_get_sub_object(jso, "template_name", &jso2)) {
-        LOG_ERROR("Field \"template_value\" not found.");
+        LOG_ERROR("Field \"template_name\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     r = ifapi_json_IFAPI_IMA_EVENT_TYPE_deserialize(jso2, &out->template_name);
     return_if_error(r, "Bad value for field \"template_name\".");
 
-    if (!ifapi_get_sub_object(jso, "template_value", &jso2)) {
-        LOG_ERROR("Field \"template_value\" not found.");
-        return TSS2_FAPI_RC_BAD_VALUE;
+    if (!ifapi_get_sub_object(jso, "template_data", &jso2)) {
+        if (!ifapi_get_sub_object(jso, "template_value", &jso2)) {
+            LOG_ERROR("Field \"template_data\" not found.");
+            return TSS2_FAPI_RC_BAD_VALUE;
+        }
     }
     r = ifapi_json_UINT8_ARY_deserialize(jso2, &out->template_value);
-    return_if_error(r, "Bad value for field \"template_valuse\".");
+    return_if_error(r, "Bad value for field \"template_data \".");
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
