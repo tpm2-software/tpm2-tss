@@ -775,7 +775,7 @@ ifapi_json_IFAPI_IMA_EVENT_serialize(const IFAPI_IMA_EVENT *in,
     r = ifapi_json_UINT8_ARY_serialize(&in->template_value, &jso2);
     return_if_error(r, "Serialize UINT8_ARY");
 
-    json_object_object_add(*jso, "template_value", jso2);
+    json_object_object_add(*jso, "template_data", jso2);
     return TSS2_RC_SUCCESS;
 }
 
