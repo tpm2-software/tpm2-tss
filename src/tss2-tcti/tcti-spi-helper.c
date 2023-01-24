@@ -619,6 +619,14 @@ TSS2_RC tcti_spi_helper_transmit (TSS2_TCTI_CONTEXT *tcti_ctx, size_t size, cons
     // Tell TPM to expect command
     spi_tpm_helper_write_sts_reg(ctx, TCTI_SPI_HELPER_TPM_STS_COMMAND_READY);
 
+    // Wait until ready bit is set by TPM device
+    uint32_t expected_status_bits = TCTI_SPI_HELPER_TPM_STS_COMMAND_READY;
+    rc = spi_tpm_helper_wait_for_status(ctx, expected_status_bits, expected_status_bits, 200);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Failed waiting for TPM to become ready");
+        return rc;
+    }
+
     // Send command
     spi_tpm_helper_fifo_transfer(ctx, (void*)cmd_buf, size, TCTI_SPI_HELPER_FIFO_TRANSMIT);
 
