@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [3.2.2-rc1] - 2023-01-23
+## [3.2.2] - 2023-01-31
 ### Fixed:
  - A buffer overflow in tss2-rc as CVE-2023-22745.
  - The drv layer in tss2-rc should have been the policy layer.
