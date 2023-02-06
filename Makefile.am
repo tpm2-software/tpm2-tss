@@ -903,7 +903,7 @@ EXTRA_DIST += \
     man/Tss2_TctiLdr_Initialize.3.in \
     man/tss2-tcti-pcap.7.in \
     man/tss2-tcti-device.7.in \
-    man/man7/tss2-tcti-swtpm.7 \
+    man/tss2-tcti-swtpm.7.in \
     man/tss2-tcti-mssim.7.in \
     man/tss2-tcti-cmd.7.in \
     man/tss2-tcti-spi-helper.7.in \
