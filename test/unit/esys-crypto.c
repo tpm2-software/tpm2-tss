@@ -96,10 +96,10 @@ check_hmac_functions(void **state)
     rc = iesys_crypto_hmac_start(&crypto_cb, NULL, TPM2_ALG_SHA384, &buffer[0], 10);
     assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
-#ifndef OSSL
     rc = iesys_crypto_hmac_start(&crypto_cb, &context, TPM2_ALG_SHA512, &buffer[0], 10);
-    assert_int_equal (rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
-#endif
+    assert_int_equal (rc, TSS2_RC_SUCCESS);
+
+    iesys_crypto_hmac_abort(&crypto_cb, &context);
 
     rc = iesys_crypto_hmac_start(&crypto_cb, &context, 0,  &buffer[0], 10);
     assert_int_equal (rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
