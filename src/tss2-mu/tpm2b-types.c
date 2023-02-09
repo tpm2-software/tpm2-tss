@@ -248,11 +248,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
              sizeof(size)); \
         return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
     } \
-    if (dest && dest->size != 0) { \
-        LOG_WARNING("Size not zero"); \
-        return TSS2_SYS_RC_BAD_VALUE; \
-    } \
-\
+ \
     rc = Tss2_MU_UINT16_Unmarshal(buffer, buffer_size, &local_offset, &size); \
     if (rc) \
         return rc; \
