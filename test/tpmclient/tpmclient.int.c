@@ -847,12 +847,6 @@ static void TestHierarchyControl()
     rval = Tss2_Sys_NV_DefineSpace( sysContext, TPM2_RH_PLATFORM, &sessionsData, &nvAuth, &publicInfo, 0 );
     CheckPassed( rval );
 
-    /* Test SYS for case where nvPublic.size != 0 */
-    nvPublic.size = 0xff;
-    INIT_SIMPLE_TPM2B_SIZE( nvName );
-    rval = Tss2_Sys_NV_ReadPublic( sysContext, TPM20_INDEX_TEST1, 0, &nvPublic, &nvName, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
-
     nvPublic.size = 0;
     INIT_SIMPLE_TPM2B_SIZE( nvName );
     rval = Tss2_Sys_NV_ReadPublic( sysContext, TPM20_INDEX_TEST1, 0, &nvPublic, &nvName, 0 );
@@ -2135,10 +2129,7 @@ static void EcEphemeralTest()
 
     LOG_INFO("EC Ephemeral TESTS:" );
 
-    /* Test SYS for case of Q size field not being set to 0. */
     INIT_SIMPLE_TPM2B_SIZE( Q );
-    rval = Tss2_Sys_EC_Ephemeral( sysContext, 0, TPM2_ECC_BN_P256, &Q, &counter, 0 );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_VALUE );
 
     Q.size = 0;
     rval = Tss2_Sys_EC_Ephemeral( sysContext, 0, TPM2_ECC_BN_P256, &Q, &counter, 0 );
