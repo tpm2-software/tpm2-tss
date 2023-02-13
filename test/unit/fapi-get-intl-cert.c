@@ -167,7 +167,7 @@ teardown (void **state)
 }
 
 /*
- * Check receiving of valid JSON data for the certificate.
+ * Check receiving of valid JSON data for the certificate (Intel)
  */
 static void
 check_get_intl_cert_ok(void **state) {
@@ -177,14 +177,35 @@ check_get_intl_cert_ok(void **state) {
     TSS2_RC r;
 
     mock_json_cert = valid_json_cert;
-    r = ifapi_get_intl_ek_certificate(ctx, &eccPublic, &cert_buf, &cert_size);
+    r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_INTC, &cert_buf, &cert_size);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     SAFE_FREE(cert_buf);
 
-    r = ifapi_get_intl_ek_certificate(ctx, &rsaPublic, &cert_buf, &cert_size);
+    r = ifapi_get_web_ek_certificate(ctx, &rsaPublic,  VENDOR_INTC, &cert_buf, &cert_size);
     SAFE_FREE(cert_buf);
     assert_int_equal(r, TSS2_RC_SUCCESS);
 }
+
+/*
+ * Check receiving data for the certificate (AMD).
+ */
+static void
+check_get_amd_cert_ok(void **state) {
+    FAPI_CONTEXT *ctx = *state;
+    unsigned char *cert_buf = NULL;
+    size_t cert_size;
+    TSS2_RC r;
+
+    mock_json_cert = valid_json_cert;
+    r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_AMD, &cert_buf, &cert_size);
+    assert_int_equal(r, TSS2_RC_SUCCESS);
+    SAFE_FREE(cert_buf);
+
+    r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_AMD, &cert_buf, &cert_size);
+    SAFE_FREE(cert_buf);
+    assert_int_equal(r, TSS2_RC_SUCCESS);
+}
+
 
 /*
  * Check receiving of invalid JSON data for the certificate.
@@ -196,11 +217,11 @@ check_get_intl_cert_invalid_json(void **state) {
     size_t cert_size;
     TSS2_RC r;
     mock_json_cert = invalid_json_cert1;
-    r = ifapi_get_intl_ek_certificate(ctx, &eccPublic, &cert_buf, &cert_size);
+    r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_INTC, &cert_buf, &cert_size);
     assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
 
     mock_json_cert = invalid_json_cert2;
-    r = ifapi_get_intl_ek_certificate(ctx, &rsaPublic, &cert_buf, &cert_size);
+    r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_INTC, &cert_buf, &cert_size);
     assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
 }
 
@@ -216,21 +237,48 @@ check_get_intl_cert_sha_error(void **state) {
     will_return_always(__wrap_EVP_DigestUpdate, 0);
     mock_json_cert = valid_json_cert;
     wrap_EVP_DigestUpdate_test = 1;
-    r = ifapi_get_intl_ek_certificate(ctx, &eccPublic, &cert_buf, &cert_size);
+    r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_INTC, &cert_buf, &cert_size);
     assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
 
     wrap_EVP_DigestUpdate_test = 1;
-    r = ifapi_get_intl_ek_certificate(ctx, &rsaPublic, &cert_buf, &cert_size);
+    r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_INTC, &cert_buf, &cert_size);
     assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
 
     wrap_EVP_DigestUpdate_test = 2;
-    r = ifapi_get_intl_ek_certificate(ctx, &eccPublic, &cert_buf, &cert_size);
+    r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_INTC, &cert_buf, &cert_size);
     assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
 
     wrap_EVP_DigestUpdate_test = 2;
-    r = ifapi_get_intl_ek_certificate(ctx, &rsaPublic, &cert_buf, &cert_size);
+    r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_INTC, &cert_buf, &cert_size);
+    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+}
+
+/*
+ * Simulate error during hash update for the EK public data.
+ */
+static void
+check_get_amd_cert_sha_error(void **state) {
+    FAPI_CONTEXT *ctx = *state;
+    unsigned char *cert_buf = NULL;
+    size_t cert_size;
+    TSS2_RC r;
+    will_return_always(__wrap_EVP_DigestUpdate, 0);
+    mock_json_cert = valid_json_cert;
+    wrap_EVP_DigestUpdate_test = 1;
+    r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_AMD, &cert_buf, &cert_size);
     assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
 
+    wrap_EVP_DigestUpdate_test = 1;
+    r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_AMD, &cert_buf, &cert_size);
+    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+
+    wrap_EVP_DigestUpdate_test = 2;
+    r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_AMD, &cert_buf, &cert_size);
+    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+
+    wrap_EVP_DigestUpdate_test = 2;
+    r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_AMD, &cert_buf, &cert_size);
+    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
 }
 
 int
@@ -238,8 +286,10 @@ main(int argc, char *argv[])
 {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test_setup_teardown(check_get_intl_cert_ok, setup, teardown),
+        cmocka_unit_test_setup_teardown(check_get_amd_cert_ok, setup, teardown),
         cmocka_unit_test_setup_teardown(check_get_intl_cert_invalid_json, setup, teardown),
         cmocka_unit_test_setup_teardown(check_get_intl_cert_sha_error, setup, teardown),
+        cmocka_unit_test_setup_teardown(check_get_amd_cert_sha_error, setup, teardown),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

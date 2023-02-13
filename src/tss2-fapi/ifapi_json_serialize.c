@@ -960,10 +960,10 @@ ifapi_json_IFAPI_CONFIG_serialize(const IFAPI_CONFIG *in, json_object **jso)
      }
 
      jso2 = NULL;
-     r = ifapi_json_char_serialize(in->intel_cert_service, &jso2);
+     r = ifapi_json_char_serialize(in->web_cert_service, &jso2);
      return_if_error(r, "Serialize char");
 
-     json_object_object_add(*jso, "intel_cert_service", jso2);
+     json_object_object_add(*jso, "web_cert_service", jso2);
 
      if (in->firmware_log_file) {
          jso2 = NULL;

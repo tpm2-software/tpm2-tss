@@ -119,7 +119,7 @@ void check_remove_field(char *file_content, char* fname, TSS2_RC rc)
         SAFE_FREE(config.profile_name);
         SAFE_FREE(config.tcti);
         SAFE_FREE(config.ek_cert_file);
-        SAFE_FREE(config.intel_cert_service)
+        SAFE_FREE(config.web_cert_service)
             }
 }
 

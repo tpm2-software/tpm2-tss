@@ -24,6 +24,9 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+#define AMD_EK_URI_LEN 16 /*<< AMD EK takes first 16 hex chars of hash */
+#define NULL_TERM_LEN 1 // '\0'
+
 typedef struct tpm_getekcertificate_ctx tpm_getekcertificate_ctx;
 struct tpm_getekcertificate_ctx {
     char *ec_cert_path;
@@ -40,14 +43,17 @@ static tpm_getekcertificate_ctx ctx = {
     .is_tpm2_device_active = true,
 };
 
+
+
+
 /** Compute the SHA256 hash from the public key of an EK.
  *
  * @param[in]  ek_public The public information of the EK.
  * @retval unsigned_char* The hash value.
  * @retval NULL If the computation of the hash fails.
  */
-static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
-
+static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor)
+{
     unsigned char *hash = (unsigned char *)malloc(SHA256_DIGEST_LENGTH);
     if (!hash) {
         LOG_ERROR("OOM");
@@ -66,53 +72,124 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public) {
         goto err;
     }
 
-    switch (ek_public->publicArea.type) {
-    case TPM2_ALG_RSA:
-        /* Add public key to the hash. */
-        is_success = EVP_DigestUpdate(sha256ctx,
-                                      ek_public->publicArea.unique.rsa.buffer,
-                                      ek_public->publicArea.unique.rsa.size);
-        if (!is_success) {
-            LOG_ERROR("EVP_DigestUpdate failed");
-            goto err;
-        }
+    if (vendor == VENDOR_AMD) {
+        switch (ek_public->publicArea.type) {
+        case TPM2_ALG_RSA: {
+            /*
+             * hash = sha256(00 00 22 22 || (uint32_t) exp || modulus)
+             */
+            BYTE buf[4] = { 0x00, 0x00, 0x22, 0x22 }; // Prefix
+            is_success = EVP_DigestUpdate(sha256ctx, buf, sizeof(buf));
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
 
-        /* Add exponent to the hash. */
-        if (ek_public->publicArea.parameters.rsaDetail.exponent != 0) {
-            LOG_ERROR("non-default exponents unsupported");
-            goto err;
-        }
-        /* Exponent 65537 will be added. */
-        BYTE buf[3] = { 0x1, 0x00, 0x01 };
-        is_success = EVP_DigestUpdate(sha256ctx, buf, sizeof(buf));
-        if (!is_success) {
-            LOG_ERROR("EVP_DigestUpdate failed");
-            goto err;
-        }
-        break;
+            UINT32 exp = ek_public->publicArea.parameters.rsaDetail.exponent;
+            if (exp == 0) {
+                exp = 0x00010001; // 0 indicates default
+            } else {
+                LOG_WARNING("non-default exponent used");
+            }
+            buf[3] = (BYTE)exp;
+            buf[2] = (BYTE)(exp>>=8);
+            buf[1] = (BYTE)(exp>>=8);
+            buf[0] = (BYTE)(exp>>8);
+            is_success = EVP_DigestUpdate(sha256ctx, buf, sizeof(buf));
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
 
-    case TPM2_ALG_ECC:
-        is_success = EVP_DigestUpdate(sha256ctx,
-                                      ek_public->publicArea.unique.ecc.x.buffer,
-                                      ek_public->publicArea.unique.ecc.x.size);
-        if (!is_success) {
-            LOG_ERROR("EVP_DigestUpdate failed");
+            is_success = EVP_DigestUpdate(sha256ctx,
+                    ek_public->publicArea.unique.rsa.buffer,
+                    ek_public->publicArea.unique.rsa.size);
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            break;
+        }
+        case TPM2_ALG_ECC: {
+            /*
+             * hash = sha256(00 00 44 44 || (UINT32) exp || modulus)
+             */
+            BYTE buf[4] = { 0x00, 0x00, 0x44, 0x44 }; // Prefix
+            is_success = EVP_DigestUpdate(sha256ctx, buf, sizeof(buf));
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            is_success = EVP_DigestUpdate(sha256ctx,
+                    ek_public->publicArea.unique.ecc.x.buffer,
+                    ek_public->publicArea.unique.ecc.x.size);
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+
+            is_success = EVP_DigestUpdate(sha256ctx,
+                    ek_public->publicArea.unique.ecc.y.buffer,
+                    ek_public->publicArea.unique.ecc.y.size);
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            break;
+        }
+        default:
+            LOG_ERROR("unsupported EK algorithm");
             goto err;
         }
+    } else {
+        switch (ek_public->publicArea.type) {
+        case TPM2_ALG_RSA:
+            /* Add public key to the hash. */
+            is_success = EVP_DigestUpdate(sha256ctx,
+                                          ek_public->publicArea.unique.rsa.buffer,
+                                          ek_public->publicArea.unique.rsa.size);
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
 
-        /* Add public key to the hash. */
-        is_success = EVP_DigestUpdate(sha256ctx,
-                                      ek_public->publicArea.unique.ecc.y.buffer,
-                                      ek_public->publicArea.unique.ecc.y.size);
-        if (!is_success) {
-            LOG_ERROR("EVP_DigestUpdate failed");
+            /* Add exponent to the hash. */
+            if (ek_public->publicArea.parameters.rsaDetail.exponent != 0) {
+                LOG_ERROR("non-default exponents unsupported");
+                goto err;
+            }
+            /* Exponent 65537 will be added. */
+            BYTE buf[3] = { 0x1, 0x00, 0x01 };
+            is_success = EVP_DigestUpdate(sha256ctx, buf, sizeof(buf));
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            break;
+
+        case TPM2_ALG_ECC:
+            is_success = EVP_DigestUpdate(sha256ctx,
+                                          ek_public->publicArea.unique.ecc.x.buffer,
+                                          ek_public->publicArea.unique.ecc.x.size);
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+
+            /* Add public key to the hash. */
+            is_success = EVP_DigestUpdate(sha256ctx,
+                                          ek_public->publicArea.unique.ecc.y.buffer,
+                                          ek_public->publicArea.unique.ecc.y.size);
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            break;
+
+        default:
+            LOG_ERROR("unsupported EK algorithm");
             goto err;
         }
-        break;
-
-    default:
-        LOG_ERROR("unsupported EK algorithm");
-        goto err;
     }
 
     is_success = EVP_DigestFinal_ex(sha256ctx, hash, NULL);
@@ -270,6 +347,25 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
     return binary_data;
 }
 
+/** Encode the hash to the path required by the vendor
+ *
+ * @param[in] hash The sha256 hash of the public ek.
+ * @retval The encoded path.
+ */
+static char *encode_ek_public(unsigned char *hash, UINT32 vendor) {
+    if (vendor == VENDOR_INTC) {
+        return base64_encode(hash);
+    } else {
+        char *hash_str = malloc(AMD_EK_URI_LEN * 2 + NULL_TERM_LEN);
+        for (size_t i = 0; i < AMD_EK_URI_LEN; i++)
+            {
+                sprintf((char*)(hash_str + (i*2)), "%02x", hash[i]);
+            }
+        hash_str[AMD_EK_URI_LEN * 2] = '\0';
+        return hash_str;
+    }
+}
+
 /** Get endorsement certificate from the WEB.
  *
  * The base64 encoded public endorsement key will be added to the INTEL
@@ -280,11 +376,11 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
  * @param[out] buffer The json encoded certificate.
  * @param[out] cert_size The size of the certificate.
  */
-int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
+int retrieve_endorsement_certificate(char *path, unsigned char ** buffer,
                                      size_t *cert_size) {
     int ret = -1;
 
-    size_t len = 1 + strlen(b64h) + strlen(ctx.ek_server_addr);
+    size_t len = 1 + strlen(path) + strlen(ctx.ek_server_addr);
     char *weblink = (char *) malloc(len);
 
     if (!weblink) {
@@ -292,7 +388,7 @@ int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
         return ret;
     }
 
-    snprintf(weblink, len, "%s%s", ctx.ek_server_addr, b64h);
+    snprintf(weblink, len, "%s%s", ctx.ek_server_addr, path);
 
     CURLcode rc =  ifapi_get_curl_buffer((unsigned char *)weblink,
                                          buffer, cert_size);
@@ -319,64 +415,81 @@ int retrieve_endorsement_certificate(char *b64h, unsigned char ** buffer,
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
+ifapi_get_web_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
+                              UINT32 vendor,
                               unsigned char ** cert_buffer, size_t *cert_size)
 {
     int rc = 1;
-    unsigned char *hash = hash_ek_public(ek_public);
     char *cert_ptr = NULL;
     char *cert_start = NULL, *cert_bin = NULL;
-    char *b64 = base64_encode(hash);
+    char *path = NULL;
+    unsigned char *hash = hash_ek_public(ek_public, vendor);
+    struct json_object *jso_cert, *jso = NULL;
+
+    if (hash == NULL) {
+        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "Compute EK hash failed.", out);
+    }
+
+    path = encode_ek_public(hash, vendor);
     *cert_buffer = NULL;
 
-    if (!b64) {
-        LOG_ERROR("base64_encode returned null");
+    if (!path) {
+        LOG_ERROR("encode ek hash returned null");
         goto out;
     }
-    if (context->config.intel_cert_service)
-        ctx.ek_server_addr = context->config.intel_cert_service;
-    else
-        ctx.ek_server_addr = "https://ekop.intel.com/ekcertservice/";
+    if (context->config.web_cert_service) {
+        ctx.ek_server_addr = context->config.web_cert_service;
+    } else {
+        if (vendor == VENDOR_AMD) {
+            ctx.ek_server_addr = "https://ftpm.amd.com/pki/aia/";
+        } else {
+            ctx.ek_server_addr = "https://ekop.intel.com/ekcertservice/";
+        }
+    }
 
-    LOG_INFO("%s", b64);
+    LOG_INFO("%s", path);
 
     /* Download the JSON encoded certificate. */
-    rc = retrieve_endorsement_certificate(b64, cert_buffer, cert_size);
-    free(b64);
+    rc = retrieve_endorsement_certificate(path, cert_buffer, cert_size);
+    free(path);
     goto_if_error(rc, "Retrieve endorsement certificate", out);
     cert_ptr = (char *)*cert_buffer;
     LOGBLOB_DEBUG((uint8_t *)cert_ptr, *cert_size, "%s", "Certificate");
 
-    /* Parse certificate data out of the json structure */
-    struct json_object *jso_cert, *jso = ifapi_parse_json(cert_ptr);
-    if (jso == NULL)
-        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Failed to parse EK cert data", out_free_json);
+    if (vendor == VENDOR_INTC ) {
+        /* Parse certificate data out of the json structure */
+        jso = ifapi_parse_json(cert_ptr);
+        if (jso == NULL)
+            goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
+                       "Failed to parse EK cert data", out_free_json);
 
-    if (!json_object_object_get_ex(jso, "certificate", &jso_cert))
-        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Could not find cert object", out_free_json);
+        if (!json_object_object_get_ex(jso, "certificate", &jso_cert))
+            goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
+                       "Could not find cert object", out_free_json);
 
-    if (!json_object_is_type(jso_cert, json_type_string))
-        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Invalid EK cert data", out_free_json);
+        if (!json_object_is_type(jso_cert, json_type_string))
+            goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
+                       "Invalid EK cert data", out_free_json);
 
-    cert_start = strdup(json_object_get_string(jso_cert));
-    if (!cert_start) {
+        cert_start = strdup(json_object_get_string(jso_cert));
+        if (!cert_start) {
+            SAFE_FREE(cert_ptr);
+            goto_error(rc, TSS2_FAPI_RC_MEMORY,
+                       "Failed to duplicate cert", out_free_json);
+        }
+
+        *cert_size = strlen(cert_start);
+
+        /* Base64 decode buffer into binary PEM format */
+        cert_bin = base64_decode((unsigned char *)cert_start,
+                                 *cert_size, cert_size);
         SAFE_FREE(cert_ptr);
-        goto_error(rc, TSS2_FAPI_RC_MEMORY,
-                   "Failed to duplicate cert", out_free_json);
+        SAFE_FREE(cert_start);
+    } else {
+        cert_bin = cert_ptr;
     }
-
-    *cert_size = strlen(cert_start);
-
-    /* Base64 decode buffer into binary PEM format */
-    cert_bin = base64_decode((unsigned char *)cert_start,
-                             *cert_size, cert_size);
-    SAFE_FREE(cert_ptr);
-    SAFE_FREE(cert_start);
-
-    if (cert_bin == NULL) {
+      if (cert_bin == NULL) {
         goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Invalid EK cert data", out_free_json);
     }
@@ -384,7 +497,8 @@ ifapi_get_intl_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
     *cert_buffer = (unsigned char *)cert_bin;
 
 out_free_json:
-    json_object_put(jso);
+    if (jso)
+        json_object_put(jso);
 
 out:
     free(hash);

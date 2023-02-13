@@ -115,8 +115,11 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
     }
 
     if (ifapi_get_sub_object(jso, "intel_cert_service", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->intel_cert_service);
+        r = ifapi_json_char_deserialize(jso2, &out->web_cert_service);
         return_if_error(r, "Bad value for field \"intel_cert_service\".");
+    } else if (ifapi_get_sub_object(jso, "web_cert_service", &jso2)) {
+        r = ifapi_json_char_deserialize(jso2, &out->web_cert_service);
+        return_if_error(r, "Bad value for field \"web_cert_service\".");
     }
 
     if (!ifapi_get_sub_object(jso, "firmware_log_file", &jso2)) {
@@ -305,7 +308,7 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
     SAFE_FREE(config->tcti);
     SAFE_FREE(config->log_dir);
     SAFE_FREE(config->ek_cert_file);
-    SAFE_FREE(config->intel_cert_service);
+    SAFE_FREE(config->web_cert_service);
     SAFE_FREE(configFileContent);
     if (jso != NULL) {
         json_object_put(jso);
