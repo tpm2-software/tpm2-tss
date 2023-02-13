@@ -22,7 +22,7 @@
 
 #include "tss2_fapi.h"
 #include "fapi_int.h"
-#include "ifapi_get_intl_cert.h"
+#include "ifapi_get_web_cert.h"
 
 #include "util/aux_util.h"
 
