@@ -184,7 +184,7 @@ TESTS_UNIT += \
     test/unit/fapi-io \
     test/unit/fapi-profiles \
     test/unit/fapi-config \
-    test/unit/fapi-get-intl-cert \
+    test/unit/fapi-get-web-cert \
     test/unit/fapi-eventlog \
     test/unit/fapi-ima-eventlog \
     test/unit/fapi-check-ima-log
@@ -888,13 +888,13 @@ test_unit_fapi_config_SOURCES = test/unit/fapi-config.c \
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c
 
-test_unit_fapi_get_intl_cert_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_fapi_get_intl_cert_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
-test_unit_fapi_get_intl_cert_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
+test_unit_fapi_get_web_cert_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_get_web_cert_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
+test_unit_fapi_get_web_cert_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                                        -Wl,--wrap=ifapi_get_curl_buffer \
                                        -Wl,--wrap=EVP_DigestUpdate
-test_unit_fapi_get_intl_cert_SOURCES = test/unit/fapi-get-intl-cert.c \
-	                                   src/tss2-fapi/ifapi_get_intl_cert.c \
+test_unit_fapi_get_web_cert_SOURCES = test/unit/fapi-get-web-cert.c \
+	                                   src/tss2-fapi/ifapi_get_web_cert.c \
                                        src/tss2-fapi/ifapi_json_deserialize.c \
                                        src/tss2-fapi/ifapi_json_serialize.c \
                                        src/tss2-fapi/ifapi_ima_eventlog.c \
