@@ -38,8 +38,8 @@ typedef struct {
     char                *ek_cert_file;
      /* Switch whether certificate validation will done */
     TPMI_YES_NO         ek_cert_less;
-    /** Certificate service for Intel TPMs */
-    char                *intel_cert_service;
+    /** Certificate service for Intel/AMD  TPMs */
+    char                *web_cert_service;
     /* File with firmware measurements. */
     char                *firmware_log_file;
     /* File with ima measurements. */

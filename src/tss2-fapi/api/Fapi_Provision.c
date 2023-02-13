@@ -1568,13 +1568,15 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             return_try_again(r);
             goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
 
-            if ((*capabilityData)->data.tpmProperties.tpmProperty[0].value == VENDOR_INTC) {
+            if ((*capabilityData)->data.tpmProperties.tpmProperty[0].value == VENDOR_INTC ||
+                (*capabilityData)->data.tpmProperties.tpmProperty[0].value == VENDOR_AMD) {
                 /* Get INTEL certificate for EK public hash via web */
                 uint8_t *cert_buffer = NULL;
                 size_t cert_size;
                 TPM2B_PUBLIC public;
-                r = ifapi_get_intl_ek_certificate(context, &pkey->public, &cert_buffer,
-                                                  &cert_size);
+                r = ifapi_get_web_ek_certificate(context, &pkey->public,
+                                (*capabilityData)->data.tpmProperties.tpmProperty[0].value,
+                                &cert_buffer, &cert_size);
                 goto_if_error_reset_state(r, "Get certificates", error_cleanup);
 
                 r = ifapi_cert_to_pem(cert_buffer, cert_size, &command->pem_cert,
