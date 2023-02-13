@@ -22,7 +22,7 @@
 #include "fapi_crypto.h"
 #include "fapi_policy.h"
 #include "ifapi_curl.h"
-#include "ifapi_get_intl_cert.h"
+#include "ifapi_get_web_cert.h"
 #include "ifapi_helpers.h"
 #include "tss2_mu.h"
 
