@@ -1355,7 +1355,10 @@ ifapi_get_sessions_async(FAPI_CONTEXT *context,
     context->session2_attribute_flags = attribute_flags2;
     char *file = NULL;
 
-    if (!(session_flags & IFAPI_SESSION_GENEK)) {
+    if (session_flags & IFAPI_SESSION_USE_SRK) {
+        context->session_state = SESSION_CREATE_SESSION;
+        return TSS2_RC_SUCCESS;
+    } else if (!(session_flags & IFAPI_SESSION_GENEK)) {
         context->srk_handle = ESYS_TR_NONE;
         context->session_state = SESSION_CREATE_SESSION;
         return TSS2_RC_SUCCESS;
