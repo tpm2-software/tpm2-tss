@@ -884,7 +884,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
         statecase(context->state, PROVISION_INIT_SRK);
             /* Create session which will be used for SRK generation. */
             context->srk_handle = context->ek_handle;
-            r = ifapi_get_sessions_async(context, IFAPI_SESSION1, 0, 0);
+            r = ifapi_get_sessions_async(context, IFAPI_SESSION_USE_SRK | IFAPI_SESSION1,
+                                         TPMA_SESSION_DECRYPT, 0);
             goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
             fallthrough;
@@ -1084,7 +1085,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
             /* Create session which will be used for parameter encryption. */
-            r = ifapi_get_sessions_async(context, IFAPI_SESSION1, 0, 0);
+            r = ifapi_get_sessions_async(context, IFAPI_SESSION_USE_SRK | IFAPI_SESSION1,
+                                         TPMA_SESSION_DECRYPT, 0);
             goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
             fallthrough;
