@@ -63,7 +63,9 @@
 #define TPM2_PRIVATE_VENDOR_SPECIFIC_BYTES ((TPM2_MAX_RSA_KEY_BYTES / 2) * (3 + 2))
 
 /* Vendor Specific Defines */
+#ifndef DISABLE_VENDOR
 #define TPM2_MAX_PTT_PROPERTIES (TPM2_MAX_CAP_BUFFER / sizeof(UINT32))
+#endif
 
 /* Attached Component Capabilities */
 #define TPM2_MAX_AC_CAPABILITIES (TPM2_MAX_CAP_BUFFER / sizeof(TPMS_AC_OUTPUT))
