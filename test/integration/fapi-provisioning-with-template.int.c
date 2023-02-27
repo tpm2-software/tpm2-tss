@@ -34,6 +34,9 @@
 int
 test_fapi_provision_template(FAPI_CONTEXT *context)
 {
+#ifndef SELF_GENERATED_CERTIFICATE
+    return EXIT_SKIP;
+#endif
     size_t offset = 0;
     UINT16 offset_nv = 0;
      TSS2_TCTI_CONTEXT *tcti;
