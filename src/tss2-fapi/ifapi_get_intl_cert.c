@@ -203,8 +203,8 @@ base64_encode(const unsigned char* buffer)
 static char *
 base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
 {
-    size_t i, r;
-    int unescape_len = 0;
+    size_t i;
+    int unescape_len = 0, r = 0;
     char *binary_data = NULL, *unescaped_string = NULL;
 
     LOG_INFO("Decoding the base64 encoded cert into binary form");
@@ -263,7 +263,7 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
         free(binary_data);
         binary_data = NULL;
     }
-    *new_len = r;
+    *new_len = (size_t)r;
 
     free (unescaped_string);
     BIO_free_all(bio);
