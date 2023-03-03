@@ -1301,6 +1301,11 @@ execute_policy_cp_hash(
         r = Esys_PolicyCpHash_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyCpHash_Finish.");
 
+        /* Disable encryption to enable check of cp hash defined in
+           policy cp. */
+        r = Esys_TRSess_SetAttributes(esys_ctx, current_policy->session,
+                                      0, 0xff);
+
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
