@@ -2138,21 +2138,20 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
         statecase(object->authorization_state, AUTH_INIT)
             LOG_TRACE("**STATE** AUTH_INIT");
 
-            if (!policy_digest_size(object)) {
-                /* No policy used authorization callbacks have to be called if necessary. */
-                if (object_with_auth(object)) {
-                    /* Check whether hierarchy was already authorized. */
-                    if (object->objectType != IFAPI_HIERARCHY_OBJ ||
-                        !object->misc.hierarchy.authorized) {
-                        char *description = NULL;
-                        r = ifapi_get_description(object, &description);
-                        return_if_error(r, "Get description");
+            if (object_with_auth(object)) {
+                /* Check whether hierarchy was already authorized. */
+                if (object->objectType != IFAPI_HIERARCHY_OBJ ||
+                    !object->misc.hierarchy.authorized) {
+                    char *description = NULL;
+                    r = ifapi_get_description(object, &description);
+                    return_if_error(r, "Get description");
 
-                        r = ifapi_set_auth(context, object, description);
-                        SAFE_FREE(description);
-                        return_if_error(r, "Set auth value");
-                    }
+                    r = ifapi_set_auth(context, object, description);
+                    SAFE_FREE(description);
+                    return_if_error(r, "Set auth value");
                 }
+            }
+            if (!policy_digest_size(object)) {
                 /* No policy session needed current fapi session can be used */
                 if (context->session1 && context->session1 != ESYS_TR_NONE)
                     *session = context->session1;
@@ -2161,6 +2160,7 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
                     *session = ESYS_TR_PASSWORD;
                 break;
             }
+
             /* Save current object to be authorized in context. */
             context->current_auth_object = object;
             r = ifapi_policyutil_execute_prepare(context, get_name_alg(context, object),
