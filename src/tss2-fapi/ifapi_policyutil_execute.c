@@ -121,6 +121,10 @@ create_session(
         r = Esys_StartAuthSession_Finish(context->esys, session);
         if (r != TSS2_RC_SUCCESS)
             return r;
+
+        r = Esys_TRSess_SetAttributes(context->esys, *session,
+                                      TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT,
+                                      0xff);
         context->policy.create_session_state = CREATE_SESSION_INIT;
         break;
 
