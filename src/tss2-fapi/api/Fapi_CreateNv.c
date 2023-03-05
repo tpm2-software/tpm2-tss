@@ -399,7 +399,7 @@ Fapi_CreateNv_Finish(
             context->primary_state = PRIMARY_INIT;
             r = ifapi_get_sessions_async(context,
                                          IFAPI_SESSION_GENEK | IFAPI_SESSION1,
-                                         0, 0);
+                                         TPMA_SESSION_DECRYPT, 0);
             goto_if_error_reset_state(r, "Create sessions", error_cleanup);
             fallthrough;
 

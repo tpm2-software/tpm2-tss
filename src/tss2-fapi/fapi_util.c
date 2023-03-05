@@ -2743,7 +2743,8 @@ ifapi_load_key(
         /* Prepare the session creation. */
         r = ifapi_get_sessions_async(context,
                                      IFAPI_SESSION_GENEK | IFAPI_SESSION1,
-                                     TPMA_SESSION_DECRYPT, 0);
+                                     TPMA_SESSION_DECRYPT | TPMA_SESSION_ENCRYPT,
+                                     0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
         fallthrough;
 
