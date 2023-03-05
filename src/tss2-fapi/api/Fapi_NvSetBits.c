@@ -282,7 +282,7 @@ Fapi_NvSetBits_Finish(
         /* Prepare session for authorization */
         r = ifapi_get_sessions_async(context,
                                      IFAPI_SESSION_GENEK | IFAPI_SESSION1,
-                                     0, 0);
+                                     TPMA_SESSION_DECRYPT, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
         fallthrough;
