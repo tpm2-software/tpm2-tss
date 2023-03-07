@@ -299,15 +299,27 @@ AS_IF([test "x$enable_tcti_spi_helper" = "xyes"],
 	[AC_DEFINE([TCTI_SPI_HELPER],[1], [TCTI HELPER FOR SPI BASED ACCESS TO TPM2 DEVICE])])
 
 AC_ARG_ENABLE([tcti-spi-lt2go],
-            [AS_HELP_STRING([--disable-tcti-libtpms],
+            [AS_HELP_STRING([--disable-tcti-spi-lt2go],
                             [don't build the tcti-spi-lt2go module])],
             [AS_IF([test "x$enable_tcti_spi_lt2go" = "xyes"],
-                   [PKG_CHECK_MODULES([LIBUSB], [libusb-1.0], [AC_MSG_ERROR([libusb-1.0 library is missing])])])],
-            [PKG_CHECK_MODULES([LIBUSB], [libusb-1.0], [enable_tcti_spi_lt2go=yes],
-                                                       [enable_tcti_spi_lt2go=no]
-                                                       [AC_MSG_WARN([libusb-1.0 library is missing])])])
+                   [PKG_CHECK_MODULES([LIBUSB], [libusb-1.0],
+                        [AC_CHECK_HEADER(libusb-1.0/libusb.h,
+                                [enable_tcti_spi_lt2go=yes],
+                                [enable_tcti_spi_lt2go=no] [AC_MSG_ERROR([libusb-1.0 library header is missing.])])],
+                        [enable_tcti_spi_lt2go=no] [AC_MSG_ERROR([libusb-1.0 library is missing.])])],
+                   [AS_IF([test "x$enable_tcti_spi_lt2go" = "xno"],
+                          [enable_tcti_spi_lt2go=no])])],
+            [PKG_CHECK_MODULES([LIBUSB], [libusb-1.0],
+                   [AC_CHECK_HEADER(libusb-1.0/libusb.h,
+                         [enable_tcti_spi_lt2go=yes],
+                         [enable_tcti_spi_lt2go=no])],
+                   [enable_tcti_spi_lt2go=no])])
+
 
 AM_CONDITIONAL([ENABLE_TCTI_SPI_LT2GO], [test "x$enable_tcti_spi_lt2go" != xno])
+
+AS_IF([test "x$enable_tcti_spi_lt2go" = "xyes"],
+    AC_DEFINE([TCTI_SPI_LT2GO],[1], [TCTI FOR USB BASED ACCESS TO LETSTRUST-TPM2GO]))
 
 AC_ARG_ENABLE([tcti-fuzzing],
             [AS_HELP_STRING([--enable-tcti-fuzzing],
@@ -655,4 +667,5 @@ AC_MSG_RESULT([
     userstatedir:       [\$HOME/]$with_userstatedir
     sysmeasurements:    $sysmeasurements
     imameasurements:    $imameasurements
+    tcti_spi_lt2go      $enable_tcti_spi_lt2go
 ])
