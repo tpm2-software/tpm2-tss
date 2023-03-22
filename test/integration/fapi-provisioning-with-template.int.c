@@ -4,6 +4,8 @@
 #endif
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
@@ -31,6 +33,39 @@
  * @retval EXIT_SKIP
  *
  */
+static bool
+fapi_ek_certless()
+{
+    FILE *stream = NULL;
+    long config_size;
+    char *config = NULL;
+    char *fapi_config_file = getenv("TSS2_FAPICONF");
+
+    stream = fopen(fapi_config_file, "r");
+    if (!stream) {
+        LOG_ERROR("File %s does not exist", fapi_config_file);
+        return NULL;
+    }
+    fseek(stream, 0L, SEEK_END);
+    config_size = ftell(stream);
+    fclose(stream);
+    config = malloc(config_size + 1);
+    stream = fopen(fapi_config_file, "r");
+    ssize_t ret = read(fileno(stream), config, config_size);
+    if (ret != config_size) {
+        LOG_ERROR("IO error %s.", fapi_config_file);
+        return NULL;
+    }
+    config[config_size] = '\0';
+    if (strstr(config, "\"ek_cert_less\": \"yes\"") == NULL) {
+        SAFE_FREE(config);
+        return false;
+    } else {
+        SAFE_FREE(config);
+        return true;
+    }
+}
+
 int
 test_fapi_provision_template(FAPI_CONTEXT *context)
 {
@@ -148,6 +183,9 @@ test_fapi_provision_template(FAPI_CONTEXT *context)
     TPM2B_AUTH auth = { .size = 0, .buffer = {} };
     TPM2B_MAX_NV_BUFFER nv_data;
 
+    if (fapi_ek_certless())
+        return EXIT_SKIP;
+
     if (strcmp(FAPI_PROFILE, "P_ECC") == 0) {
         nv_template_idx = ecc_nv_template_idx;
         nv_nonce_idx = ecc_nv_nonce_idx;
@@ -166,7 +204,7 @@ test_fapi_provision_template(FAPI_CONTEXT *context)
     r = Esys_Initialize(&esys_ctx, tcti, NULL);
     goto_if_error(r, "Error Esys_Initialize", error);
 
-     /*
+    /*
      * Store template (marshaled TPMT_PUBLIC) in NV ram.
      */
     r = Tss2_MU_TPMT_PUBLIC_Marshal(&in_public, &nv_data.buffer[0],
