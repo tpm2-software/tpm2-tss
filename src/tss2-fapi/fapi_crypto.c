@@ -2100,3 +2100,104 @@ ifapi_base64encode(uint8_t *buffer, size_t buffer_size, char** b64_data) {
 
     return r;
 }
+
+/** Openssl rsa encryption with OAEP padding.
+ *
+ * @param[in] pem_key The public RSA key.
+ * @param[in] rsa_decrypt_scheme The padding scheme.
+ * @param[in] plainText The data to be encrypted.
+ *  @param[in] plainTextSize The size of the data to be encrypted.
+ * @param[out] cipherText The encrypted data.
+ * @param[out] cipherTextSize The size of the encrypted data.
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
+ */
+TSS2_RC
+ifapi_rsa_encrypt(const char *pem_key,
+                  const TPMT_RSA_DECRYPT *rsa_decrypt_scheme,
+                  const uint8_t *plainText,
+                  size_t plainTextSize,
+                  uint8_t  **cipherText,
+                  size_t *cipherTextSize) {
+    EVP_PKEY_CTX *ctx = NULL;
+    EVP_PKEY *publicKey = NULL;
+    BIO *bufio = NULL;
+    TSS2_RC r;
+    const EVP_MD *evp_md;
+
+    /* Convert the pem key to an OpenSSL object */
+    bufio = BIO_new_mem_buf((void *)pem_key, strlen(pem_key));
+    goto_if_null(bufio, "Out of memory.", TSS2_FAPI_RC_MEMORY, cleanup);
+
+    publicKey = PEM_read_bio_PUBKEY(bufio, NULL, NULL, NULL);
+    goto_if_null(publicKey, "PEM format could not be decoded.",
+                 TSS2_FAPI_RC_MEMORY, cleanup);
+
+    if (EVP_PKEY_type(EVP_PKEY_id(publicKey)) == EVP_PKEY_RSA) {
+        if (rsa_decrypt_scheme->scheme == TPM2_ALG_OAEP) {
+            switch (rsa_decrypt_scheme->details.oaep.hashAlg) {
+            case TPM2_ALG_SHA1:
+                evp_md = EVP_sha1();
+                break;
+            case TPM2_ALG_SHA256:
+                evp_md = EVP_sha256();
+                break;
+            case TPM2_ALG_SHA384:
+                evp_md = EVP_sha384();
+                break;
+            case TPM2_ALG_SHA512:
+                evp_md = EVP_sha512();
+                break;
+#if HAVE_EVP_SM3 && !defined(OPENSSL_NO_SM3)
+            case TPM2_ALG_SM3_256:
+                evp_md = EVP_sm3();
+                break;
+#endif
+            default:
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid hash alg.",
+                               cleanup);
+            }
+        } else {
+            LOG_WARNING("OEAP (sha256) will be used for encryption padding.");
+            evp_md = EVP_sha256();
+        }
+
+        ctx = EVP_PKEY_CTX_new(publicKey, NULL);
+        goto_if_null(ctx, "EVP_PKEY_CTX_new.", TSS2_FAPI_RC_GENERAL_FAILURE,
+                     cleanup);
+        if (EVP_PKEY_encrypt_init(ctx) <= 0 ||
+            EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING) <= 0 ||
+            EVP_PKEY_CTX_set_rsa_oaep_md(ctx, evp_md) <= 0 ||
+            EVP_PKEY_CTX_set_rsa_mgf1_md(ctx, evp_md) <= 0) {
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP init encrypt.",
+                       cleanup);
+        }
+
+        /* Determine buffer length */
+        if (EVP_PKEY_encrypt(ctx, NULL, cipherTextSize, plainText, plainTextSize) <= 0) {
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP encrypt determine size.",
+                                   cleanup);
+        }
+
+        *cipherText = OPENSSL_malloc(*cipherTextSize);
+        if (EVP_PKEY_encrypt(ctx, *cipherText, cipherTextSize, plainText, plainTextSize) <= 0) {
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP encrypt.",
+                       cleanup);
+        }
+        r = TSS2_RC_SUCCESS;
+    } else {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "No RSA public key.",
+                               cleanup);
+    }
+
+ cleanup:
+    if (bufio)
+        BIO_free(bufio);
+    if (publicKey)
+        EVP_PKEY_free(publicKey);
+    if (ctx)
+        OSSL_FREE(ctx, EVP_PKEY_CTX);
+    return r;
+}
