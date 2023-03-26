@@ -207,6 +207,7 @@ test_fapi_data_crypt(FAPI_CONTEXT *context)
 
     uint8_t *cipherText = NULL;
     size_t cipherTextSize;
+    char *export_data = NULL;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -279,6 +280,42 @@ test_fapi_data_crypt(FAPI_CONTEXT *context)
 
     Fapi_Free(cipherText);
     Fapi_Free(plainText2);
+    SAFE_FREE(global_signature);
+
+    /*
+     * Run test with openssl encryption with the public RSA key.
+     */
+    r = Fapi_ExportKey(context, "HS/SRK/myRsaCryptKey", NULL, &export_data);
+    goto_if_error(r, "Export.", error);
+
+    r = Fapi_Import(context, "/ext/myRsaCryptKey", export_data);
+    goto_if_error(r, "Error Fapi_Import", error);
+
+    r = Fapi_Encrypt(context, "/ext/myRsaCryptKey", &plainText[0],
+                     SIZE, &cipherText, &cipherTextSize);
+
+    goto_if_error(r, "Error Fapi_Encrypt", error);
+
+    plainText2 = NULL;
+    plainText2_size = 0;
+
+    r = Fapi_Decrypt(context, "HS/SRK/myRsaCryptKey", cipherText, cipherTextSize,
+                     &plainText2, &plainText2_size);
+
+    if (r == TSS2_FAPI_RC_NOT_IMPLEMENTED) {
+        goto skip;
+    }
+    goto_if_error(r, "Error Fapi_Encrypt", error);
+
+    if (plainText2_size != SIZE ||
+        memcmp(plainText, plainText2, plainText2_size) != 0) {
+        LOG_ERROR("Error: decrypted text not  equal to origin");
+        goto error;
+    }
+
+    SAFE_FREE(export_data);
+    Fapi_Free(cipherText);
+    Fapi_Free(plainText2);
     Fapi_Free(json_policy);
     Fapi_Delete(context, "/");
     SAFE_FREE(global_signature);
@@ -286,6 +323,7 @@ test_fapi_data_crypt(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    SAFE_FREE(export_data);
     Fapi_Delete(context, "/");
     Fapi_Free(cipherText);
     Fapi_Free(json_policy);
@@ -295,6 +333,7 @@ error:
     return EXIT_FAILURE;
 
  skip:
+    SAFE_FREE(export_data);
     Fapi_Delete(context, "/");
     Fapi_Free(json_policy);
     Fapi_Delete(context, "/");
