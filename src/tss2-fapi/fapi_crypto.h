@@ -123,4 +123,13 @@ ifapi_base64encode(
     size_t buffer_size,
     char** b64_data);
 
+TSS2_RC
+ifapi_rsa_encrypt(
+    const char *pem_key,
+    const TPMT_RSA_DECRYPT *rsa_decrypt_scheme,
+    const uint8_t *plainText,
+    size_t plainTextSize,
+    uint8_t  **cipherText,
+    size_t *cipherTextSize);
+
 #endif /* FAPI_CRYPTO_H */
