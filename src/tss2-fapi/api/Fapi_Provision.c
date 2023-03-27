@@ -1582,6 +1582,11 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 SAFE_FREE(cert_buffer);
                 goto_if_error_reset_state(r, "Convert certificate buffer to PEM.",
                                           error_cleanup);
+
+                 r = ifapi_curl_verify_ek_cert(NULL, NULL, command->pem_cert);
+                 goto_if_error_reset_state(r, "Verify EK certificate.",
+                                           error_cleanup);
+
             } else {
                 /* No certificate was stored in the TPM and ek_cert_less was not set.*/
                 goto_error(r, TSS2_FAPI_RC_NO_CERT,
