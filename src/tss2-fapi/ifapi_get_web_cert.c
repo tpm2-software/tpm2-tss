@@ -43,17 +43,13 @@ static tpm_getekcertificate_ctx ctx = {
     .is_tpm2_device_active = true,
 };
 
-
-
-
 /** Compute the SHA256 hash from the public key of an EK.
  *
  * @param[in]  ek_public The public information of the EK.
  * @retval unsigned_char* The hash value.
  * @retval NULL If the computation of the hash fails.
  */
-static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor)
-{
+static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor) {
     unsigned char *hash = (unsigned char *)malloc(SHA256_DIGEST_LENGTH);
     if (!hash) {
         LOG_ERROR("OOM");

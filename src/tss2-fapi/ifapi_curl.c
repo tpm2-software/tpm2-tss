@@ -107,8 +107,10 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
     unsigned const char* tmp_ptr1 = crl_buffer;
     unsigned const char** tmp_ptr2 = &tmp_ptr1;
 
-    if (!d2i_X509_CRL(crl, tmp_ptr2, crl_buffer_size)) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Can't convert crl.", cleanup);
+    if (crl_buffer_size > 0) {
+        if (!d2i_X509_CRL(crl, tmp_ptr2, crl_buffer_size)) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Can't convert crl.", cleanup);
+        }
     }
 
 cleanup:
