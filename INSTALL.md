@@ -64,11 +64,22 @@ Note: In some Ubuntu versions, the lcov and autoconf-archive packages are incomp
 
 ### Fedora
 
+libtool automake autoconf and autoconf-archive should be installed:
+```
+$ sudo dnf install libtool automake autoconf autoconf-archive
+```
+
 There is a package already, so the package build dependencies information can be
 used to make sure that the needed packages to compile from source are installed:
 
 ```
 $ sudo dnf builddep tpm2-tss
+```
+If you want to install a version from 4.0.0 and the default version of the release
+is lower than this version you have to install libuuid-devel additionally:
+
+```
+$ sudo dnf install libuuid-devel
 ```
 
 ## Windows
