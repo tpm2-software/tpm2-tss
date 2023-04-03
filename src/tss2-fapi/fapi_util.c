@@ -4849,6 +4849,7 @@ ifapi_create_primary(
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_AUTHORIZE2);
         if (template->persistent_handle) {
+            object->misc.key.persistent_handle = template->persistent_handle;
             r = ifapi_authorize_object(context, hierarchy, &auth_session);
             FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
 
