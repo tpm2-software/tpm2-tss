@@ -392,16 +392,20 @@ Fapi_Quote_Finish(
             goto_if_error(r, "Error: PCR_Quote", error_cleanup);
 
             /* Flush the key used for the quote. */
-            r = Esys_FlushContext_Async(context->esys, command->handle);
-            goto_if_error(r, "Error: FlushContext", error_cleanup);
+            if (!command->key_object->misc.key.persistent_handle) {
+                r = Esys_FlushContext_Async(context->esys, command->handle);
+                goto_if_error(r, "Error: FlushContext", error_cleanup);
+            }
             command->handle = ESYS_TR_NONE;
 
             fallthrough;
 
         statecase(context->state, PCR_QUOTE_WAIT_FOR_FLUSH);
-            r = Esys_FlushContext_Finish(context->esys);
-            return_try_again(r);
-            goto_if_error(r, "Error: Sign", error_cleanup);
+           if (!command->key_object->misc.key.persistent_handle) {
+               r = Esys_FlushContext_Finish(context->esys);
+               return_try_again(r);
+               goto_if_error(r, "Error: Sign", error_cleanup);
+           }
 
             sig_key_object = command->key_object;
             /* Convert the TPM-encoded signature into something useful for the caller. */
