@@ -148,19 +148,20 @@ bool foreach_digest2(
         } else {
             LOG_WARNING("PCR%d algorithm %d unsupported", pcr_index, alg);
         }
-        if (pcr) {
-            r = ifapi_extend_pcr(alg, pcr, digest->Digest, alg_size);
-            if (r) {
-                LOG_ERROR("PCR%d extend failed", pcr_index);
-                return false;
-            }
-        }
 
         if (event_type == EV_NO_ACTION) {
             /* Digest for EV_NO_ACTION must consist of 0 bytes. */
             for (j = 0; j < alg_size; j++) {
                 if (digest->Digest[j]) {
                     LOG_ERROR("No zero digest for EV_NO_ACTION.");
+                    return false;
+                }
+            }
+        } else {
+            if (pcr) {
+                r = ifapi_extend_pcr(alg, pcr, digest->Digest, alg_size);
+                if (r) {
+                    LOG_ERROR("PCR%d extend failed", pcr_index);
                     return false;
                 }
             }
@@ -283,11 +284,8 @@ bool parse_event2(TCG_EVENT_HEADER2 const *eventhdr, size_t buf_size,
     return true;
 }
 
-bool parse_sha1_log_event(tpm2_eventlog_context *ctx, TCG_EVENT const *event, size_t size,
+bool parse_sha1_log_event(TCG_EVENT const *event, size_t size,
                           size_t *event_size) {
-
-    uint8_t *pcr = NULL;
-    TSS2_RC r;
 
     /* enough size for the 1.2 event structure */
     if (size < sizeof(*event)) {
@@ -300,16 +298,6 @@ bool parse_sha1_log_event(tpm2_eventlog_context *ctx, TCG_EVENT const *event, si
     }
     *event_size = sizeof(*event);
 
-    pcr = ctx->sha1_pcrs[ event->pcrIndex];
-    if (pcr) {
-        r = ifapi_extend_pcr(TPM2_ALG_SHA1, pcr, &event->digest[0], 20);
-        if (r) {
-            LOG_ERROR("PCR%d extend failed", event->pcrIndex);
-            return false;
-        }
-        ctx->sha1_used |= (1 << event->pcrIndex);
-    }
-
     /* buffer size must be sufficient to hold event and event data */
     if (size < sizeof(*event) + (sizeof(event->event[0]) *
                                  event->eventDataSize)) {
@@ -321,6 +309,9 @@ bool parse_sha1_log_event(tpm2_eventlog_context *ctx, TCG_EVENT const *event, si
 }
 
 bool foreach_sha1_log_event(tpm2_eventlog_context *ctx, TCG_EVENT const *eventhdr_start, size_t size) {
+
+    uint8_t *pcr = NULL;
+    TSS2_RC r;
 
     if (eventhdr_start == NULL) {
         LOG_ERROR("invalid parameter");
@@ -339,7 +330,7 @@ bool foreach_sha1_log_event(tpm2_eventlog_context *ctx, TCG_EVENT const *eventhd
          eventhdr = (TCG_EVENT*)((uintptr_t)eventhdr + event_size),
          size -= event_size) {
 
-        ret = parse_sha1_log_event(ctx, eventhdr, size, &event_size);
+        ret = parse_sha1_log_event(eventhdr, size, &event_size);
         if (!ret) {
             return ret;
         }
@@ -357,6 +348,16 @@ bool foreach_sha1_log_event(tpm2_eventlog_context *ctx, TCG_EVENT const *eventhd
         ret = parse_event2body(event, eventhdr->eventType);
         if (ret != true) {
             return ret;
+        }
+
+        pcr = ctx->sha1_pcrs[eventhdr->pcrIndex];
+        if (pcr && eventhdr->eventType != EV_NO_ACTION ) {
+            r = ifapi_extend_pcr(TPM2_ALG_SHA1, pcr, &eventhdr->digest[0], 20);
+            if (r) {
+                LOG_ERROR("PCR%d extend failed", eventhdr->pcrIndex);
+                return false;
+            }
+            ctx->sha1_used |= (1 << eventhdr->pcrIndex);
         }
 
         /* event data callback */
