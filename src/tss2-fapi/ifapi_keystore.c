@@ -1772,6 +1772,14 @@ ifapi_check_provisioned(
 
     *ok = false;
 
+    /* No profile in path, test can be skipped. */
+    if (ifapi_path_type_p(rel_path, IFAPI_NV_PATH) ||
+        ifapi_path_type_p(rel_path, IFAPI_POLICY_PATH) ||
+        ifapi_path_type_p(rel_path, IFAPI_EXT_PATH)) {
+        *ok = true;
+        return TSS2_RC_SUCCESS;
+    }
+
     /* First expand path in user directory  */
     r = expand_path(keystore, rel_path, &directory);
     goto_if_error(r, "Expand path", cleanup);
