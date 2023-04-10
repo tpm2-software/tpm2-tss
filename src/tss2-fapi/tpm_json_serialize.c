@@ -1561,6 +1561,14 @@ ifapi_json_TPMS_ALG_PROPERTY_serialize(const TPMS_ALG_PROPERTY *in, json_object 
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
+
+    if ((in->alg == TPM2_ALG_SHA3_256 ||
+         in->alg == TPM2_ALG_SHA3_384 ||
+         in->alg == TPM2_ALG_SHA3_512)) {
+        LOG_WARNING("SHA3 hash algs are not supported by TSS");
+        return TSS2_RC_SUCCESS;
+    }
+
     json_object *jso2;
     if (*jso == NULL)
         *jso = json_object_new_object ();
