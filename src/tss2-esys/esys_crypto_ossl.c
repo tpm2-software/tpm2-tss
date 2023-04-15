@@ -919,7 +919,7 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
         curveId = NID_secp521r1;
         key_size = 66;
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+#ifdef NID_sm2
     case TPM2_ECC_SM2_P256:
         curveId = NID_sm2;
         key_size = 32;
