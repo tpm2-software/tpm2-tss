@@ -544,7 +544,7 @@ ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
     case TPM2_ECC_NIST_P521:
         curveId = NID_secp521r1;
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+#ifdef NID_sm2
     case TPM2_ECC_SM2_P256:
         curveId = NID_sm2;
         break;
@@ -1195,7 +1195,7 @@ get_ecc_tpm2b_public_from_evp(
     case NID_secp521r1:
         tpmCurveId = TPM2_ECC_NIST_P521;
         break;
-#if OPENSSL_VERSION_NUMBER >= 0x10101000L
+#ifdef NID_sm2
     case NID_sm2:
         tpmCurveId = TPM2_ECC_SM2_P256;
         break;
