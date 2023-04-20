@@ -15,7 +15,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setti
 
 AC_CONFIG_HEADERS([config.h])
 
-AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-tcti-pcap.pc lib/tss2-tcti-libtpms.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc lib/tss2-tcti-cmd.pc lib/tss2-policy.pc lib/tss2-tcti-spi-helper.pc lib/tss2-tcti-spi-lt2go.pc lib/tss2-tcti-spi-ftdi.pc])
+AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-tcti-pcap.pc lib/tss2-tcti-libtpms.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc lib/tss2-tcti-cmd.pc lib/tss2-policy.pc lib/tss2-tcti-spi-helper.pc lib/tss2-tcti-spi-lt2go.pc lib/tss2-tcti-spi-ftdi.pc lib/tss2-tcti-i2c-helper.pc lib/tss2-tcti-i2c-ftdi.pc])
 
 # propagate configure arguments to distcheck
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
@@ -321,31 +321,54 @@ AM_CONDITIONAL([ENABLE_TCTI_SPI_LT2GO], [test "x$enable_tcti_spi_lt2go" != xno])
 AS_IF([test "x$enable_tcti_spi_lt2go" = "xyes"],
     AC_DEFINE([TCTI_SPI_LT2GO],[1], [TCTI FOR USB BASED ACCESS TO LETSTRUST-TPM2GO]))
 
+PKG_CHECK_MODULES([LIBFTDI],
+                  [libftdi],
+                  [AC_DEFINE(LIBFTDI_VERSION, [0], [libftdi version 0.x])]
+                  [have_libftdi=yes],
+                  [PKG_CHECK_MODULES([LIBFTDI],
+                                     [libftdi1],
+                                     [AC_DEFINE(LIBFTDI_VERSION, [1], [libftdi version 1.x])]
+                                     [have_libftdi=yes],
+                                     [have_libftdi=no])])
+
 AC_ARG_ENABLE([tcti-spi-ftdi],
               [AS_HELP_STRING([--disable-tcti-spi-ftdi],
                               [don't build the tcti-spi-ftdi module])],
               [AS_IF([test "x$enable_tcti_spi_ftdi" = "xyes"],
-                     [PKG_CHECK_MODULES([LIBFTDI],
-                                        [libftdi],
-                                        [AC_DEFINE(LIBFTDI_VERSION, [0], [libftdi version 0.x])],
-                                        [PKG_CHECK_MODULES([LIBFTDI],
-                                                           [libftdi1],
-                                                           [AC_DEFINE(LIBFTDI_VERSION, [1], [libftdi version 1.x])],
-                                                           [AC_MSG_ERROR([libftdi/libftdi1 library is missing.])])])])],
-              [PKG_CHECK_MODULES([LIBFTDI],
-                                 [libftdi],
-                                 [enable_tcti_spi_ftdi=yes]
-                                 [AC_DEFINE(LIBFTDI_VERSION, [0], [libftdi version 0.x])],
-                                 [PKG_CHECK_MODULES([LIBFTDI],
-                                                    [libftdi1],
-                                                    [enable_tcti_spi_ftdi=yes]
-                                                    [AC_DEFINE(LIBFTDI_VERSION, [1], [libftdi version 1.x])],
-                                                    [enable_tcti_spi_ftdi=no])])])
+                     [AS_IF([test "x$have_libftdi" != "xyes"],
+                            [AC_MSG_ERROR([libftdi/libftdi1 library is missing.])])])],
+              [AS_IF([test "x$have_libftdi" = "xyes"],
+                     [enable_tcti_spi_ftdi=yes],
+                     [enable_tcti_spi_ftdi=no])])
 
 AM_CONDITIONAL([ENABLE_TCTI_SPI_FTDI], [test "x$enable_tcti_spi_ftdi" != xno])
 
 AS_IF([test "x$enable_tcti_spi_ftdi" = "xyes"],
     AC_DEFINE([TCTI_SPI_FTDI],[1], [TCTI FOR USB BASED ACCESS TO SPI BASED TPM OVER THE FTDI MPSSE USB TO SPI BRIDGE]))
+
+AC_ARG_ENABLE([tcti-i2c-helper],
+            [AS_HELP_STRING([--disable-tcti-i2c-helper],
+                            [don't build the tcti-i2c-helper module])],,
+            [enable_tcti_i2c_helper=yes])
+
+AM_CONDITIONAL([ENABLE_TCTI_I2C_HELPER], [test "x$enable_tcti_i2c_helper" != xno])
+AS_IF([test "x$enable_tcti_i2c_helper" = "xyes"],
+	[AC_DEFINE([TCTI_I2C_HELPER],[1], [TCTI HELPER FOR I2C BASED ACCESS TO TPM2 DEVICE])])
+
+AC_ARG_ENABLE([tcti-i2c-ftdi],
+              [AS_HELP_STRING([--disable-tcti-i2c-ftdi],
+                              [don't build the tcti-i2c-ftdi module])],
+              [AS_IF([test "x$enable_tcti_i2c_ftdi" = "xyes"],
+                     [AS_IF([test "x$have_libftdi" != "xyes"],
+                            [AC_MSG_ERROR([libftdi/libftdi1 library is missing.])])])],
+              [AS_IF([test "x$have_libftdi" = "xyes"],
+                     [enable_tcti_i2c_ftdi=yes],
+                     [enable_tcti_i2c_ftdi=no])])
+
+AM_CONDITIONAL([ENABLE_TCTI_I2C_FTDI], [test "x$enable_tcti_i2c_ftdi" != xno])
+
+AS_IF([test "x$enable_tcti_i2c_ftdi" = "xyes"],
+    AC_DEFINE([TCTI_I2C_FTDI],[1], [TCTI FOR USB BASED ACCESS TO I2C BASED TPM OVER THE FTDI MPSSE USB TO I2C BRIDGE]))
 
 AC_ARG_ENABLE([tcti-fuzzing],
             [AS_HELP_STRING([--enable-tcti-fuzzing],
@@ -695,4 +718,5 @@ AC_MSG_RESULT([
     imameasurements:    $imameasurements
     tcti_spi_lt2go      $enable_tcti_spi_lt2go
     tcti_spi_ftdi       $enable_tcti_spi_ftdi
+    tcti_i2c_ftdi       $enable_tcti_i2c_ftdi
 ])
