@@ -469,6 +469,52 @@ src_tss2_tcti_libtss2_tcti_spi_ftdi_la_SOURCES  = \
     src/tss2-tcti/tcti-spi-ftdi.h
 endif # ENABLE_TCTI_SPI_FTDI
 
+# tcti library for i2c connected tpms
+if ENABLE_TCTI_I2C_HELPER
+libtss2_tcti_i2c_helper = src/tss2-tcti/libtss2-tcti-i2c-helper.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_i2c_helper.h
+lib_LTLIBRARIES += $(libtss2_tcti_i2c_helper)
+pkgconfig_DATA += lib/tss2-tcti-i2c-helper.pc
+EXTRA_DIST += lib/tss2-tcti-i2c-helper.map \
+              lib/tss2-tcti-i2c-helper.def
+
+if HAVE_LD_VERSION_SCRIPT
+if !UNIT
+src_tss2_tcti_libtss2_tcti_i2c_helper_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-i2c-helper.map
+endif # UNIT
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_i2c_helper_la_LIBADD   = $(libutil) $(libtss2_mu)
+src_tss2_tcti_libtss2_tcti_i2c_helper_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-i2c-helper.c \
+    src/tss2-tcti/tcti-i2c-helper.h
+endif # ENABLE_TCTI_I2C_HELPER
+
+# tcti library for ftdi connected tpm
+if ENABLE_TCTI_I2C_FTDI
+libtss2_tcti_i2c_ftdi = src/tss2-tcti/libtss2-tcti-i2c-ftdi.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_i2c_ftdi.h
+lib_LTLIBRARIES += $(libtss2_tcti_i2c_ftdi)
+pkgconfig_DATA += lib/tss2-tcti-i2c-ftdi.pc
+EXTRA_DIST += lib/tss2-tcti-i2c-ftdi.map \
+              lib/tss2-tcti-i2c-ftdi.def
+
+src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_CFLAGS  = $(AM_CFLAGS) $(LIBFTDI_CFLAGS) -Wno-deprecated-declarations
+src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_LDFLAGS  = $(LIBFTDI_LIBS)
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-i2c-ftdi.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_i2c_helper)
+src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_SOURCES  = \
+    src/tss2-tcti/mpsse/support.c \
+    src/tss2-tcti/mpsse/support.h \
+    src/tss2-tcti/mpsse/mpsse.c \
+    src/tss2-tcti/mpsse/mpsse.h \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-i2c-ftdi.c \
+    src/tss2-tcti/tcti-i2c-ftdi.h
+endif # ENABLE_TCTI_I2C_FTDI
+
 ### TCG TSS SYS spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
@@ -854,6 +900,8 @@ man7_MANS = \
     man/man7/tss2-tcti-spi-helper.7 \
     man/man7/tss2-tcti-spi-lt2go.7 \
     man/man7/tss2-tcti-spi-ftdi.7 \
+    man/man7/tss2-tcti-i2c-helper.7 \
+    man/man7/tss2-tcti-i2c-ftdi.7 \
     man/man7/tss2-tctildr.7
 
 if FAPI
@@ -935,6 +983,8 @@ EXTRA_DIST += \
     man/tss2-tcti-spi-helper.7.in \
     man/tss2-tcti-spi-lt2go.7.in \
     man/tss2-tcti-spi-ftdi.7.in \
+    man/tss2-tcti-i2c-helper.7.in \
+    man/tss2-tcti-i2c-ftdi.7.in \
     man/tss2-tctildr.7.in
 
 CLEANFILES += \
