@@ -1,0 +1,14 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH TCTI-I2C 7 "APRIL 2023" "TPM2 Software Stack"
+.SH NAME
+tcti-i2c-ftdi \- USB to I2C-based TPM TCTI library
+.SH SYNOPSIS
+A TPM Command Transmission Interface (TCTI) module for interaction with
+a I2C-based TPM over the FTDI MPSSE USB to I2C bridge.
+.SH DESCRIPTION
+tcti-i2c-ftdi is a library that abstracts the details of communication
+with a I2C-based TPM over the FTDI MPSSE USB to I2C bridge. The interface
+exposed by this library is defined in the \*(lqTSS System Level API and
+and TPM Command Transmission Interface Specification\*(rq specification.

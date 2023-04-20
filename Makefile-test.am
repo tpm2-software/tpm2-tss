@@ -161,6 +161,12 @@ endif
 if ENABLE_TCTI_SPI_FTDI
 TESTS_UNIT += test/unit/tcti-spi-ftdi
 endif
+if ENABLE_TCTI_I2C_HELPER
+TESTS_UNIT += test/unit/tcti-i2c-helper
+endif
+if ENABLE_TCTI_I2C_FTDI
+TESTS_UNIT += test/unit/tcti-i2c-ftdi
+endif
 if ESYS
 TESTS_UNIT += \
     test/unit/esys-context-null \
@@ -578,6 +584,30 @@ test_unit_tcti_spi_ftdi_LDFLAGS = -Wl,--wrap=Close \
                                   -Wl,--wrap=gettimeofday
 test_unit_tcti_spi_ftdi_SOURCES = test/unit/tcti-spi-ftdi.c \
                                   src/tss2-tcti/tcti-spi-ftdi.c
+endif
+
+if ENABLE_TCTI_I2C_HELPER
+test_unit_tcti_i2c_helper_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_i2c_helper_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_i2c_helper)
+test_unit_tcti_i2c_helper_SOURCES = test/unit/tcti-i2c-helper.c
+endif
+
+if ENABLE_TCTI_I2C_FTDI
+test_unit_tcti_i2c_ftdi_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_i2c_ftdi_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_i2c_helper)
+test_unit_tcti_i2c_ftdi_LDFLAGS = -Wl,--wrap=MPSSE \
+                                  -Wl,--wrap=Start \
+                                  -Wl,--wrap=Stop \
+                                  -Wl,--wrap=Close \
+                                  -Wl,--wrap=Read \
+                                  -Wl,--wrap=Write \
+                                  -Wl,--wrap=GetAck \
+                                  -Wl,--wrap=SendAcks \
+                                  -Wl,--wrap=SendNacks \
+                                  -Wl,--wrap=select \
+                                  -Wl,--wrap=gettimeofday
+test_unit_tcti_i2c_ftdi_SOURCES = test/unit/tcti-i2c-ftdi.c \
+                                  src/tss2-tcti/tcti-i2c-ftdi.c
 endif
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
