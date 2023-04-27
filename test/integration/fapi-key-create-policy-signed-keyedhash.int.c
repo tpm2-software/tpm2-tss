@@ -196,8 +196,8 @@ int
 test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
-    char *policy_name = "/policy/pol_signed_keyedhash";
-    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_signed_keyedhash.json";
+    char *policy_name;
+    char *policy_file;
     FILE *stream = NULL;
     char *json_policy = NULL;
     long policy_size;
@@ -205,6 +205,14 @@ test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
     uint8_t *signature = NULL;
     char    *publicKey = NULL;
     char    *certificate = NULL;
+
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+	policy_name = "/policy/pol_signed_keyedhash_sha384";
+        policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_signed_keyedhash_sha384.json";
+    } else {
+	policy_name = "/policy/pol_signed_keyedhash";
+        policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_signed_keyedhash.json";
+    }
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
