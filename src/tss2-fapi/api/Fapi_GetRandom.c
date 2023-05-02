@@ -162,7 +162,7 @@ Fapi_GetRandom_Async(
 
     /* Start a session for integrity protection and encryption of random data. */
     r = ifapi_get_sessions_async(context,
-                                 IFAPI_SESSION_GENEK | IFAPI_SESSION1,
+                                 IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
                                  TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
     return_if_error_reset_state(r, "Create FAPI session");
 

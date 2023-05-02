@@ -1321,7 +1321,7 @@ ifapi_primary_clean(FAPI_CONTEXT *context)
  * @param[in] context The FAPI_CONTEXT storing the used handles.
  * @param[in] session_flags The flags to adjust used session and encryption
  *            key. With IFAPI_SESSION1 and IFAPI_SESSION2 the session creation
- *            for sesion1 and session2 can be activated, IFAPI_SESSION_GENEK
+ *            for sesion1 and session2 can be activated, IFAPI_SESSION_GEN_SRK
  *            triggers the creation of the primary for session secret encryption.
  * @param[in] attribute_flags1 The attributes used for session1.
  * @param[in] attribute_flags2 The attributes used for session2.
@@ -1358,7 +1358,7 @@ ifapi_get_sessions_async(FAPI_CONTEXT *context,
     if (session_flags & IFAPI_SESSION_USE_SRK) {
         context->session_state = SESSION_CREATE_SESSION;
         return TSS2_RC_SUCCESS;
-    } else if (!(session_flags & IFAPI_SESSION_GENEK)) {
+    } else if (!(session_flags & IFAPI_SESSION_GEN_SRK)) {
         context->srk_handle = ESYS_TR_NONE;
         context->session_state = SESSION_CREATE_SESSION;
         return TSS2_RC_SUCCESS;
@@ -2330,7 +2330,7 @@ ifapi_nv_write(
         context->nv_cmd.auth_index = auth_index;
 
         /* Get A session for authorizing the NV write operation. */
-        r = ifapi_get_sessions_async(context, IFAPI_SESSION_GENEK | IFAPI_SESSION1,
+        r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
                                          TPMA_SESSION_DECRYPT, 0);
         goto_if_error(r, "Create sessions", error_cleanup);
 
@@ -2837,7 +2837,7 @@ ifapi_load_key(
 
         /* Prepare the session creation. */
         r = ifapi_get_sessions_async(context,
-                                     IFAPI_SESSION_GENEK | IFAPI_SESSION1,
+                                     IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
                                      TPMA_SESSION_DECRYPT | TPMA_SESSION_ENCRYPT,
                                      0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
@@ -3496,7 +3496,7 @@ ifapi_key_create(
                    context->policy.hash_size);
         }
         r = ifapi_get_sessions_async(context,
-                                     IFAPI_SESSION_GENEK | IFAPI_SESSION1,
+                                     IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
                                      TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
         fallthrough;
@@ -4761,7 +4761,7 @@ ifapi_create_primary(
         }
 
         r = ifapi_get_sessions_async(context,
-                                     IFAPI_SESSION_GENEK | IFAPI_SESSION1,
+                                     IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
                                      TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
