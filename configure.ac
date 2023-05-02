@@ -340,8 +340,7 @@ AC_ARG_ENABLE([tcti-spi-ftdi],
                                                     [libftdi1],
                                                     [enable_tcti_spi_ftdi=yes]
                                                     [AC_DEFINE(LIBFTDI_VERSION, [1], [libftdi version 1.x])],
-                                                    [enable_tcti_spi_ftdi=no]
-                                                    [AC_MSG_ERROR([libftdi/libftdi1 library is missing.])])])])
+                                                    [enable_tcti_spi_ftdi=no])])])
 
 AM_CONDITIONAL([ENABLE_TCTI_SPI_FTDI], [test "x$enable_tcti_spi_ftdi" != xno])
 
