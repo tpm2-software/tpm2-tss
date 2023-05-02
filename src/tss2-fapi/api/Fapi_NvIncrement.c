@@ -273,7 +273,7 @@ Fapi_NvIncrement_Finish(
 
         /* Prepare the session for authorization */
         r = ifapi_get_sessions_async(context,
-            IFAPI_SESSION_GENEK | IFAPI_SESSION1,
+            IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
             0, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
