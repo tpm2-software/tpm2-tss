@@ -910,16 +910,14 @@ file_to_buffer(const char *filename, size_t *size, uint8_t **eventlog)
 
     while (file_size == alloc_buf_size) {
         n_alloc += 1;
-        uint8_t* tmp_buff = calloc(1, alloc_size * n_alloc);
+        uint8_t* tmp_buff = realloc(*eventlog, file_size + alloc_size);
         if (!tmp_buff) {
             free(*eventlog);
             return_error2(TSS2_FAPI_RC_IO_ERROR, "Could not read %s", filename);
         }
         alloc_buf_size = alloc_size * n_alloc;
-        memcpy(&tmp_buff[0], eventlog[0], file_size);
-        free(*eventlog);
         *eventlog = tmp_buff;
-        read_size = fread(eventlog[file_size], 1, alloc_size, fp);
+        read_size = fread(*eventlog + file_size, 1, alloc_size, fp);
         file_size += read_size;
     }
     *size = file_size;
