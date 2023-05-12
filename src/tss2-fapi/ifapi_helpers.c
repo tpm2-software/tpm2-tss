@@ -1345,7 +1345,7 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
     case POLICYPCR:
         to_policy->element.PolicyPCR.pcrs =
             calloc(1, sizeof(TPML_PCRVALUES) +
-                   from_policy->element.PolicyPCR.pcrs->count + sizeof(TPMS_PCRVALUE));
+                   from_policy->element.PolicyPCR.pcrs->count * sizeof(TPMS_PCRVALUE));
         goto_if_null2(to_policy->element.PolicyPCR.pcrs, "Out of memory.",
                       r, TSS2_FAPI_RC_MEMORY, error);
         to_policy->element.PolicyPCR.pcrs->count
