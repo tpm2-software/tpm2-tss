@@ -29,12 +29,19 @@
 #define TPM2_MAX_CONTEXT_SIZE   5120
 
 /* Hash algorithm sizes */
-#define TPM2_SHA_DIGEST_SIZE     20
-#define TPM2_SHA1_DIGEST_SIZE    20
-#define TPM2_SHA256_DIGEST_SIZE  32
-#define TPM2_SHA384_DIGEST_SIZE  48
-#define TPM2_SHA512_DIGEST_SIZE  64
-#define TPM2_SM3_256_DIGEST_SIZE 32
+#define TPM2_SHA_DIGEST_SIZE          20
+#define TPM2_SHA1_DIGEST_SIZE         20
+#define TPM2_SHA256_DIGEST_SIZE       32
+#define TPM2_SHA384_DIGEST_SIZE       48
+#define TPM2_SHA512_DIGEST_SIZE       64
+#define TPM2_SHA256_192_DIGEST_SIZE   24
+#define TPM2_SM3_256_DIGEST_SIZE      32
+#define TPM2_SHA3_256_DIGEST_SIZE     32
+#define TPM2_SHA3_384_DIGEST_SIZE     48
+#define TPM2_SHA3_512_DIGEST_SIZE     64
+#define TPM2_SHAKE256_192_DIGEST_SIZE 24
+#define TPM2_SHAKE256_256_DIGEST_SIZE 32
+#define TPM2_SHAKE256_512_DIGEST_SIZE 64
 
 /* Encryption algorithm sizes */
 #define TPM2_MAX_SYM_BLOCK_SIZE 16
@@ -86,6 +93,7 @@ typedef UINT16 TPM2_ALG_ID;
 #define TPM2_ALG_SHA256              ((TPM2_ALG_ID) 0x000B)
 #define TPM2_ALG_SHA384              ((TPM2_ALG_ID) 0x000C)
 #define TPM2_ALG_SHA512              ((TPM2_ALG_ID) 0x000D)
+#define TPM2_ALG_SHA256_192          ((TPM2_ALG_ID) 0x000E)
 #define TPM2_ALG_NULL                ((TPM2_ALG_ID) 0x0010)
 #define TPM2_ALG_SM3_256             ((TPM2_ALG_ID) 0x0012)
 #define TPM2_ALG_SM4                 ((TPM2_ALG_ID) 0x0013)
@@ -105,17 +113,29 @@ typedef UINT16 TPM2_ALG_ID;
 #define TPM2_ALG_ECC                 ((TPM2_ALG_ID) 0x0023)
 #define TPM2_ALG_SYMCIPHER           ((TPM2_ALG_ID) 0x0025)
 #define TPM2_ALG_CAMELLIA            ((TPM2_ALG_ID) 0x0026)
-#define TPM2_ALG_CMAC                ((TPM2_ALG_ID) 0x003F)
-#define TPM2_ALG_CTR                 ((TPM2_ALG_ID) 0x0040)
 #define TPM2_ALG_SHA3_256            ((TPM2_ALG_ID) 0x0027)
 #define TPM2_ALG_SHA3_384            ((TPM2_ALG_ID) 0x0028)
 #define TPM2_ALG_SHA3_512            ((TPM2_ALG_ID) 0x0029)
+#define TPM2_ALG_SHAKE128            ((TPM2_ALG_ID) 0x002A)
+#define TPM2_ALG_SHAKE256            ((TPM2_ALG_ID) 0x002B)
+#define TPM2_ALG_SHAKE256_192        ((TPM2_ALG_ID) 0x002C)
+#define TPM2_ALG_SHAKE256_256        ((TPM2_ALG_ID) 0x002D)
+#define TPM2_ALG_SHAKE256_512        ((TPM2_ALG_ID) 0x002E)
+#define TPM2_ALG_CMAC                ((TPM2_ALG_ID) 0x003F)
+#define TPM2_ALG_CTR                 ((TPM2_ALG_ID) 0x0040)
 #define TPM2_ALG_OFB                 ((TPM2_ALG_ID) 0x0041)
 #define TPM2_ALG_CBC                 ((TPM2_ALG_ID) 0x0042)
 #define TPM2_ALG_CFB                 ((TPM2_ALG_ID) 0x0043)
 #define TPM2_ALG_ECB                 ((TPM2_ALG_ID) 0x0044)
+#define TPM2_ALG_CCM                 ((TPM2_ALG_ID) 0x0050)
+#define TPM2_ALG_GCM                 ((TPM2_ALG_ID) 0x0051)
+#define TPM2_ALG_KW                  ((TPM2_ALG_ID) 0x0052)
+#define TPM2_ALG_KWP                 ((TPM2_ALG_ID) 0x0053)
+#define TPM2_ALG_EAX                 ((TPM2_ALG_ID) 0x0054)
+#define TPM2_ALG_EDDSA               ((TPM2_ALG_ID) 0x0060)
+#define TPM2_ALG_EDDSA_PH            ((TPM2_ALG_ID) 0x0061)
 #define TPM2_ALG_FIRST               ((TPM2_ALG_ID) 0x0001)
-#define TPM2_ALG_LAST                ((TPM2_ALG_ID) 0x0044)
+#define TPM2_ALG_LAST                ((TPM2_ALG_ID) 0x0061)
 
 /* From TCG Algorithm Registry: Definition of TPM2_ECC_CURVE Constants */
 typedef UINT16                TPM2_ECC_CURVE;
@@ -128,6 +148,11 @@ typedef UINT16                TPM2_ECC_CURVE;
 #define TPM2_ECC_BN_P256      ((TPM2_ECC_CURVE) 0x0010)
 #define TPM2_ECC_BN_P638      ((TPM2_ECC_CURVE) 0x0011)
 #define TPM2_ECC_SM2_P256     ((TPM2_ECC_CURVE) 0x0020)
+#define TPM2_ECC_BP_P256_R1   ((TPM2_ECC_CURVE) 0x0030)
+#define TPM2_ECC_BP_P384_R1   ((TPM2_ECC_CURVE) 0x0031)
+#define TPM2_ECC_BP_P512_R1   ((TPM2_ECC_CURVE) 0x0032)
+#define TPM2_ECC_CURVE_25519  ((TPM2_ECC_CURVE) 0x0040)
+#define TPM2_ECC_CURVE_448    ((TPM2_ECC_CURVE) 0x0041)
 
 /* From TPM 2.0 Part 2: Definition of TPM2_CC Constants */
 typedef UINT32                                TPM2_CC;
@@ -439,6 +464,7 @@ typedef UINT16 TPM2_ST;
 #define TPM2_ST_ATTEST_TIME          ((TPM2_ST) 0x8019) /* tag for an attestation structure */
 #define TPM2_ST_ATTEST_CREATION      ((TPM2_ST) 0x801A) /* tag for an attestation structure */
 #define TPM2_ST_RESERVED3            ((TPM2_ST) 0x801B) /* do not use . NOTE This was previously assigned to TPM2_ST_ATTEST_NV. The tag is changed because the structure has changed */
+#define TPM2_ST_ATTEST_NV_DIGEST     ((TPM2_ST) 0x801C) /* tag for an attestation structure */
 #define TPM2_ST_CREATION             ((TPM2_ST) 0x8021) /* tag for a ticket type */
 #define TPM2_ST_VERIFIED             ((TPM2_ST) 0x8022) /* tag for a ticket type */
 #define TPM2_ST_AUTH_SECRET          ((TPM2_ST) 0x8023) /* tag for a ticket type */
@@ -945,7 +971,14 @@ union TPMU_HA {
     BYTE sha256[TPM2_SHA256_DIGEST_SIZE];
     BYTE sha384[TPM2_SHA384_DIGEST_SIZE];
     BYTE sha512[TPM2_SHA512_DIGEST_SIZE];
+    BYTE sha256_192[TPM2_SHA256_192_DIGEST_SIZE];
     BYTE sm3_256[TPM2_SM3_256_DIGEST_SIZE];
+    BYTE sha3_256[TPM2_SHA3_256_DIGEST_SIZE];
+    BYTE sha3_384[TPM2_SHA3_384_DIGEST_SIZE];
+    BYTE sha3_512[TPM2_SHA3_512_DIGEST_SIZE];
+    BYTE shake256_192[TPM2_SHAKE256_192_DIGEST_SIZE];
+    BYTE shake256_256[TPM2_SHAKE256_256_DIGEST_SIZE];
+    BYTE shake256_512[TPM2_SHAKE256_512_DIGEST_SIZE];
 };
 
 /* Definition of TPMT_HA Structure <INOUT> */
@@ -1318,6 +1351,7 @@ union TPMU_ATTEST {
     TPMS_SESSION_AUDIT_INFO sessionAudit;
     TPMS_TIME_ATTEST_INFO time;
     TPMS_NV_CERTIFY_INFO nv;
+    TPMS_NV_DIGEST_CERTIFY_INFO nvDigest;
 };
 
 /* Definition of TPMS_ATTEST Structure <OUT> */
@@ -1365,12 +1399,16 @@ typedef TPM2_KEY_BITS TPMI_SM4_KEY_BITS;
 /* Definition of  CAMELLIA TPM2_KEY_BITS TPMI_CAMELLIA_KEY_BITS   Type */
 typedef TPM2_KEY_BITS TPMI_CAMELLIA_KEY_BITS;
 
+/* Definition of  TDES TPM2_KEY_BITS TPMI_TDES_KEY_BITS   Type */
+typedef TPM2_KEY_BITS TPMI_TDES_KEY_BITS;
+
 /* Definition of TPMU_SYM_KEY_BITS Union */
 typedef union TPMU_SYM_KEY_BITS TPMU_SYM_KEY_BITS;
 union TPMU_SYM_KEY_BITS {
     TPMI_AES_KEY_BITS aes;                /* all symmetric algorithms */
     TPMI_SM4_KEY_BITS sm4;                /* all symmetric algorithms */
     TPMI_CAMELLIA_KEY_BITS camellia;      /* all symmetric algorithms */
+    TPMI_TDES_KEY_BITS tdes;              /* all symmetric algorithms */
     TPM2_KEY_BITS sym;                    /* when selector may be any of the symmetric block ciphers */
     TPMI_ALG_HASH exclusiveOr;            /* overload for using xor. NOTE TPM2_ALG_NULL is not allowed */
     TPMS_EMPTY null;                      /* TPM2_ALG_NULL */
@@ -1382,6 +1420,7 @@ union TPMU_SYM_MODE {
     TPMI_ALG_SYM_MODE aes;
     TPMI_ALG_SYM_MODE sm4;
     TPMI_ALG_SYM_MODE camellia;
+    TPMI_ALG_SYM_MODE tdes;
     TPMI_ALG_SYM_MODE sym;  /* when selector may be any of the symmetric block ciphers */
     TPMS_EMPTY exclusiveOr; /* TPM2_ALG_XOR */
     TPMS_EMPTY null;        /* TPM2_ALG_NULL */
@@ -1515,6 +1554,8 @@ typedef TPMS_SCHEME_HASH  TPMS_SIG_SCHEME_ECDSA;     /* all asymmetric signing s
 typedef TPMS_SCHEME_HASH  TPMS_SIG_SCHEME_SM2;       /* all asymmetric signing schemes */
 typedef TPMS_SCHEME_HASH  TPMS_SIG_SCHEME_ECSCHNORR; /* all asymmetric signing schemes */
 typedef TPMS_SCHEME_ECDAA TPMS_SIG_SCHEME_ECDAA;     /* schemes that need a hash and a count */
+typedef TPMS_SCHEME_HASH  TPMS_SIG_SCHEME_EDDSA;     /* all asymmetric signing schemes */
+typedef TPMS_SCHEME_HASH  TPMS_SIG_SCHEME_EDDSA_PH;  /* all asymmetric signing schemes */
 
 /* Definition of TPMU_SIG_SCHEME Union <INOUT S> */
 typedef union TPMU_SIG_SCHEME TPMU_SIG_SCHEME;
@@ -1525,6 +1566,8 @@ union TPMU_SIG_SCHEME {
     TPMS_SIG_SCHEME_ECDAA ecdaa;         /* all signing schemes including anonymous schemes */
     TPMS_SIG_SCHEME_SM2 sm2;             /* all signing schemes including anonymous schemes */
     TPMS_SIG_SCHEME_ECSCHNORR ecschnorr; /* all signing schemes including anonymous schemes */
+    TPMS_SIG_SCHEME_EDDSA eddsa;         /* all signing schemes including anonymous schemes */
+    TPMS_SIG_SCHEME_EDDSA_PH eddsa_ph;   /* all signing schemes including anonymous schemes */
     TPMS_SCHEME_HMAC hmac;               /* the HMAC scheme */
     TPMS_SCHEME_HASH any;                /* selector that allows access to digest for any signing scheme */
     TPMS_EMPTY null;                     /* TPM2_ALG_NULL */
@@ -1582,6 +1625,8 @@ union TPMU_ASYM_SCHEME {
     TPMS_SIG_SCHEME_ECDAA ecdaa;         /* signing and anonymous signing */
     TPMS_SIG_SCHEME_SM2 sm2;             /* signing and anonymous signing */
     TPMS_SIG_SCHEME_ECSCHNORR ecschnorr; /* signing and anonymous signing */
+    TPMS_SIG_SCHEME_EDDSA eddsa;         /* signing and anonymous signing */
+    TPMS_SIG_SCHEME_EDDSA_PH eddsa_ph;   /* signing and anonymous signing */
     TPMS_ENC_SCHEME_RSAES rsaes;         /* schemes with no hash */
     TPMS_ENC_SCHEME_OAEP oaep;           /* schemes with no hash */
     TPMS_SCHEME_HASH anySig;
@@ -1706,6 +1751,8 @@ typedef TPMS_SIGNATURE_ECC TPMS_SIGNATURE_ECDSA;
 typedef TPMS_SIGNATURE_ECC TPMS_SIGNATURE_ECDAA;
 typedef TPMS_SIGNATURE_ECC TPMS_SIGNATURE_SM2;
 typedef TPMS_SIGNATURE_ECC TPMS_SIGNATURE_ECSCHNORR;
+typedef TPMS_SIGNATURE_ECC TPMS_SIGNATURE_EDDSA;
+typedef TPMS_SIGNATURE_ECC TPMS_SIGNATURE_EDDSA_PH;
 
 /* Definition of TPMU_SIGNATURE Union <INOUT S> */
 typedef union TPMU_SIGNATURE TPMU_SIGNATURE;
@@ -1716,6 +1763,8 @@ union TPMU_SIGNATURE {
     TPMS_SIGNATURE_ECDAA ecdaa;         /* all asymmetric signatures */
     TPMS_SIGNATURE_SM2 sm2;             /* all asymmetric signatures */
     TPMS_SIGNATURE_ECSCHNORR ecschnorr; /* all asymmetric signatures */
+    TPMS_SIGNATURE_EDDSA eddsa;         /* all asymmetric signatures */
+    TPMS_SIGNATURE_EDDSA_PH eddsa_ph;   /* all asymmetric signatures */
     TPMT_HA hmac;                       /* HMAC signature required to be supported */
     TPMS_SCHEME_HASH any;               /* used to access the hash */
     TPMS_EMPTY null;                    /* TPM2_ALG_NULL */
