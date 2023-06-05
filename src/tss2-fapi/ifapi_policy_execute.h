@@ -74,6 +74,8 @@ struct IFAPI_POLICY_EXEC_CTX {
     ESYS_TR session;                /**< The current policy session */
     TPMS_POLICY *policy;
     ESYS_TR policySessionSav;       /**< Backup policy session */
+    ESYS_TR *enc_session;           /**< ession used for encryption if policy is used */
+
     ESYS_TR object_handle;
     ESYS_TR nv_index;
     ESYS_TR auth_handle;

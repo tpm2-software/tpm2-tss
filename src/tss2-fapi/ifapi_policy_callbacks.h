@@ -32,6 +32,7 @@ typedef struct {
     ESYS_TR auth_index;             /**< Index of authorization object */
     ESYS_TR flush_handle;           /**< Handle which has to be flushed after policy execution */
     IFAPI_OBJECT auth_object;       /**< FAPI auth object needed for authorization */
+    ESYS_TR *enc_session;           /**< FAPI session used for encryption if policy is used */
     IFAPI_LoadKey load_ctx_sav;
     IFAPI_LoadKey load_ctx;
     IFAPI_CreatePrimary create_primary_ctx_sav;

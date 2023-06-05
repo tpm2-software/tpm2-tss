@@ -371,7 +371,9 @@ Fapi_Quote_Finish(
 
             /* Perform the Quote operation. */
             r = Esys_Quote_Async(context->esys, command->handle,
-                                 auth_session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                 auth_session,
+                                 ENC_SESSION_IF_POLICY(auth_session),
+                                 ESYS_TR_NONE,
                                  &command->qualifyingData,
                                  &command->key_object->misc.key.signing_scheme,
                                  &command->pcr_selection);
