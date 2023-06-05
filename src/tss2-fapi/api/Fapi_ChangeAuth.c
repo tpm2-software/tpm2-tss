@@ -352,7 +352,8 @@ Fapi_ChangeAuth_Finish(
                     command->handle,
                     context->loadKey.parent_handle,
                     auth_session,
-                    ESYS_TR_NONE, ESYS_TR_NONE,
+                    ENC_SESSION_IF_POLICY(auth_session),
+                    ESYS_TR_NONE,
                     &command->newAuthValue);
             goto_if_error(r, "Error: Sign", error_cleanup);
 
@@ -481,7 +482,7 @@ Fapi_ChangeAuth_Finish(
             r = Esys_NV_ChangeAuth_Async(context->esys,
                     command->object.handle,
                     auth_session,
-                    ESYS_TR_NONE,
+                    ENC_SESSION_IF_POLICY(auth_session),
                     ESYS_TR_NONE,
                     &command->newAuthValue);
             goto_if_error(r, "Error: NV_ChangeAuth", error_cleanup);

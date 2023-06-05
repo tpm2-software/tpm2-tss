@@ -614,7 +614,7 @@ Fapi_Delete_Finish(
                                             command->auth_index,
                                             object->handle,
                                             auth_session,
-                                            ESYS_TR_NONE,
+                                            ENC_SESSION_IF_POLICY(auth_session),
                                             ESYS_TR_NONE);
             goto_if_error_reset_state(r, " Fapi_NV_UndefineSpace_Async", error_cleanup);
 
@@ -658,8 +658,9 @@ Fapi_Delete_Finish(
                     r = Esys_EvictControl_Async(context->esys, ESYS_TR_RH_OWNER,
                                                 object->handle,
                                                 auth_session,
-                                                ESYS_TR_NONE, ESYS_TR_NONE,
-                                            object->misc.key.persistent_handle);
+                                                ESYS_TR_NONE,
+                                                ESYS_TR_NONE,
+                                                object->misc.key.persistent_handle);
                     goto_if_error(r, "Evict Control", error_cleanup);
                     context->state = ENTITY_DELETE_NULL_AUTH_SENT_FOR_KEY;
                 }

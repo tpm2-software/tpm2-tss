@@ -53,6 +53,9 @@ new_policy(
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
     }
     (*current_policy)->pol_exec_ctx = pol_exec_ctx;
+    /* Save address of encryption session to disable encryption if
+       policy cp hash is executed. */
+    pol_exec_ctx->enc_session = &context->session2;
     pol_exec_ctx->callbacks.cbauth = ifapi_policyeval_cbauth;
     pol_exec_ctx->callbacks.cbauth_userdata = context;
     pol_exec_ctx->callbacks.cbpolsel = ifapi_branch_selection;
@@ -120,9 +123,6 @@ create_session(
         if (r != TSS2_RC_SUCCESS)
             return r;
 
-        r = Esys_TRSess_SetAttributes(context->esys, *session,
-                                      TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT,
-                                      0xff);
         context->policy.create_session_state = CREATE_SESSION_INIT;
         break;
 

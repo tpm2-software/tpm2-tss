@@ -427,7 +427,8 @@ Fapi_Import_Finish(
 
             r = Esys_Load_Async(context->esys, context->loadKey.handle,
                                 auth_session,
-                                ESYS_TR_NONE, ESYS_TR_NONE,
+                                ENC_SESSION_IF_POLICY(auth_session),
+                                ESYS_TR_NONE,
                                 &private, &object->misc.key.public);
             goto_if_error(r, "Load async", error_cleanup);
             fallthrough;
@@ -534,7 +535,8 @@ Fapi_Import_Finish(
             r = Esys_Import_Async(context->esys,
                   command->parent_object->handle,
                   session,
-                  ESYS_TR_NONE, ESYS_TR_NONE,
+                  ENC_SESSION_IF_POLICY(session),
+                  ESYS_TR_NONE,
                   NULL, &keyTree->public,
                   &keyTree->duplicate,
                   &keyTree->encrypted_seed,

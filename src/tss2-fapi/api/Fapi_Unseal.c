@@ -244,7 +244,8 @@ Fapi_Unseal_Finish(
             /* Perform the unseal operation with the TPM. */
             r = Esys_Unseal_Async(context->esys, command->object->handle,
                     auth_session,
-                    ESYS_TR_NONE, ESYS_TR_NONE);
+                    ENC_SESSION_IF_POLICY(auth_session),
+                    ESYS_TR_NONE);
             goto_if_error(r, "Error esys Unseal ", error_cleanup);
 
             fallthrough;

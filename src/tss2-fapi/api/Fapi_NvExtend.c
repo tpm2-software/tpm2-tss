@@ -349,7 +349,7 @@ Fapi_NvExtend_Finish(
                                  command->auth_index,
                                  nvIndex,
                                  auth_session,
-                                 ESYS_TR_NONE,
+                                 ENC_SESSION_IF_POLICY(auth_session),
                                  ESYS_TR_NONE,
                                  auxData);
         goto_if_error_reset_state(r, " Fapi_NvExtend_Async", error_cleanup);
