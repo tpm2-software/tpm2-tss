@@ -421,7 +421,7 @@ Fapi_CreateNv_Finish(
             r = Esys_NV_DefineSpace_Async(context->esys,
                                           hierarchy->public.handle,
                                           auth_session,
-                                          ESYS_TR_NONE,
+                                          ENC_SESSION_IF_POLICY(auth_session),
                                           ESYS_TR_NONE,
                                           auth,
                                           publicInfo);

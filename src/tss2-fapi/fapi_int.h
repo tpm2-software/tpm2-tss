@@ -127,6 +127,10 @@ typedef struct {
         goto label;  \
     }
 
+#define ENC_SESSION_IF_POLICY(auth_session)             \
+    (auth_session == ESYS_TR_PASSWORD || auth_session == ESYS_TR_NONE || \
+     auth_session == context->session2) ? ESYS_TR_NONE : context->session2
+
 /** The states for the FAPI's object authorization state*/
 enum IFAPI_GET_CERT_STATE {
     GET_CERT_INIT = 0,
