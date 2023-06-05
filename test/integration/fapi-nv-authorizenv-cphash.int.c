@@ -148,7 +148,6 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     r = Fapi_WriteAuthorizeNv(context, "/nv/Owner/myNV", policy2_name);
     goto_if_error(r, "Error Fapi_WriteAuthorizeNv", error);
 
-    LOG_ERROR("XXXX Write");
     r = Fapi_NvWrite(context, "/nv/Owner/myNV2", &data[0], sizeof(data));
     goto_if_error(r, "Error Fapi_NvWrite", error);
 
