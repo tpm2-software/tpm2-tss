@@ -1247,8 +1247,9 @@ execute_policy_cp_hash(
 
         /* Disable encryption to enable check of cp hash defined in
            policy cp. */
-        r = Esys_TRSess_SetAttributes(esys_ctx, current_policy->session,
-                                      0, 0xff);
+        if (current_policy->enc_session) {
+            *current_policy->enc_session = ESYS_TR_NONE;
+        }
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;

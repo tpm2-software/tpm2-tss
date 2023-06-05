@@ -391,7 +391,8 @@ Fapi_ExportKey_Finish(
                                      command->key_object->handle,
                                      command->handle_ext_key,
                                      auth_session,
-                                     ESYS_TR_NONE, ESYS_TR_NONE,
+                                     ENC_SESSION_IF_POLICY(auth_session),
+                                     ESYS_TR_NONE,
                                      &encryptionKey, &symmetric);
             goto_if_error(r, "Duplicate", cleanup);
 

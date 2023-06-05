@@ -315,7 +315,9 @@ Fapi_Decrypt_Finish(
             /* Decrypt the actual data. */
             r = Esys_RSA_Decrypt_Async(context->esys,
                                        context->cmd.Data_EncryptDecrypt.key_handle,
-                                       command->auth_session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                       command->auth_session,
+                                       ENC_SESSION_IF_POLICY(command->auth_session),
+                                       ESYS_TR_NONE,
                                        aux_data,
                                        &command->profile->rsa_decrypt_scheme,
                                        &null_data);
