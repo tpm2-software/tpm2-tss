@@ -609,10 +609,14 @@ fapi-config.json: dist/fapi-config.json.in
 		-e 's|[@]sysmeasurements@|$(sysmeasurements)|g' \
 		< "$<" > "$@"
 
+if SYSD_SYSUSERS
 sysusers_DATA = dist/sysusers.d/tpm2-tss.conf
-tmpfiles_DATA = tpm2-tss-fapi.conf
+endif
 
+if SYSD_TMPFILES
+tmpfiles_DATA = tpm2-tss-fapi.conf
 CLEANFILES += tpm2-tss-fapi.conf
+endif
 
 # We have to do this ourselves, in order to get absolute paths
 tpm2-tss-fapi.conf: dist/tmpfiles.d/tpm2-tss-fapi.conf.in
