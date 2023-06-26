@@ -605,7 +605,7 @@ TSS2_RC
 ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
 {
     TSS2_RC r;
-    TPMS_POLICY *policy;
+    TPMS_POLICY *policy = NULL;
     IFAPI_KEY *pkey = &context->createPrimary.pkey_object.misc.key;
 
     r = TSS2_RC_SUCCESS;
