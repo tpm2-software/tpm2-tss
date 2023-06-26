@@ -43,6 +43,39 @@ static const unsigned char TPM_RID_0[] = {0x80, 0xd4, 0x0f, 0x04, 0x00};
 static struct mpsse_context *_mpsse;
 
 /*
+ * Mock function select
+ */
+int __wrap_select (int nfds, fd_set *readfds,
+                   fd_set *writefds,
+                   fd_set *exceptfds,
+                   struct timeval *timeout)
+{
+
+    assert_int_equal (nfds, 0);
+    assert_null (readfds);
+    assert_null (writefds);
+    assert_null (exceptfds);
+    assert_non_null (timeout);
+
+    return 0;
+}
+
+/*
+ * Mock function gettimeofday
+ */
+int __wrap_gettimeofday (struct timeval *tv,
+                         struct timezone *tz)
+{
+    assert_null (tz);
+    assert_non_null (tv);
+
+    tv->tv_sec = 0;
+    tv->tv_usec = 0;
+
+    return 0;
+}
+
+/*
  * Mock function MPSSE
  */
 struct mpsse_context *__wrap_MPSSE (enum modes mode, int freq, int endianess)

@@ -557,7 +557,9 @@ test_unit_tcti_spi_lt2go_LDFLAGS = -Wl,--wrap=libusb_bulk_transfer \
                                    -Wl,--wrap=libusb_open_device_with_vid_pid \
                                    -Wl,--wrap=libusb_release_interface \
                                    -Wl,--wrap=libusb_set_auto_detach_kernel_driver \
-                                   -Wl,--wrap=libusb_strerror
+                                   -Wl,--wrap=libusb_strerror \
+                                   -Wl,--wrap=select \
+                                   -Wl,--wrap=gettimeofday
 test_unit_tcti_spi_lt2go_SOURCES = test/unit/tcti-spi-lt2go.c \
                                    src/tss2-tcti/tcti-spi-lt2go.c
 endif
@@ -571,7 +573,9 @@ test_unit_tcti_spi_ftdi_LDFLAGS = -Wl,--wrap=Close \
                                   -Wl,--wrap=PinLow \
                                   -Wl,--wrap=Start \
                                   -Wl,--wrap=Stop \
-                                  -Wl,--wrap=Transfer
+                                  -Wl,--wrap=Transfer \
+                                  -Wl,--wrap=select \
+                                  -Wl,--wrap=gettimeofday
 test_unit_tcti_spi_ftdi_SOURCES = test/unit/tcti-spi-ftdi.c \
                                   src/tss2-tcti/tcti-spi-ftdi.c
 endif
