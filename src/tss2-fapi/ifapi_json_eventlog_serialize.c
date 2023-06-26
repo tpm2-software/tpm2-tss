@@ -902,6 +902,7 @@ file_to_buffer(const char *filename, size_t *size, uint8_t **eventlog)
     *size = 0;
     *eventlog = calloc(1, alloc_size);
     if (!*eventlog) {
+	fclose(fp);
         return_error2(TSS2_FAPI_RC_IO_ERROR, "Could not read %s", filename);
     }
     read_size = fread(*eventlog, 1, alloc_size, fp);
@@ -921,6 +922,7 @@ file_to_buffer(const char *filename, size_t *size, uint8_t **eventlog)
         file_size += read_size;
     }
     *size = file_size;
+    fclose(fp);
     return TSS2_RC_SUCCESS;
 }
 
