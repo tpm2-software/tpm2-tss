@@ -15,8 +15,8 @@ check_LTLIBRARIES =
 TEST_EXTENSIONS = .int .fint
 INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
 FINT_LOG_COMPILER = $(srcdir)/script/fint-log-compiler.sh
-INT_LOG_FLAGS = $(INTEGRATION_TCTI) $(INTEGRATION_ARGS)
-FINT_LOG_FLAGS = $(INTEGRATION_TCTI) $(INTEGRATION_ARGS)
+INT_LOG_FLAGS = $(INTEGRATION_TCTI)
+FINT_LOG_FLAGS = $(INTEGRATION_TCTI)
 EXTRA_DIST += $(srcdir)/script/int-log-compiler.sh \
               $(srcdir)/script/fint-log-compiler.sh \
               $(srcdir)/script/int-log-compiler-common.sh \
@@ -1091,11 +1091,10 @@ test_tpmclient_tpmclient_int_SOURCES  = \
 
 test_integration_libtest_utils_la_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_libtest_utils_la_SOURCES = \
-    test/integration/sys-context-util.c test/integration/context-util.h \
     test/integration/sys-util.c    test/integration/sys-util.h \
     test/integration/sys-session-util.c test/integration/session-util.h \
-    test/integration/sys-test-options.c test/integration/test-options.h \
     test/integration/sys-entity-util.c test/integration/test.h \
+    test/integration/test-common.c test/integration/test-common.h \
     src/util/log.c
 
 test_integration_sys_asymmetric_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)

@@ -474,11 +474,9 @@ AS_IF([test "x$enable_integration" = "xyes"],
 
        # choose tcti for testing and look for TPM simulator binary
        integration_tcti="none"
-       integration_args=""
        AS_IF([test "x$with_device_set" = xyes],
              [# use device if --with-device was passed
-              integration_tcti=device
-              integration_args="--device=$with_device"
+              integration_tcti=device:$with_device
               AC_MSG_WARN([Using physical TPM for integration testing])])
        AS_IF([test "x$integration_tcti" = "xnone" && test "x$enable_tcti_swtpm" != xyes && test "x$enable_tcti_mssim" != xyes],
              [AC_MSG_ERROR([No suitable TCTI for testing enabled. Please use option --enable-tcti-swtpm (recommended) or --enable-tcti-mssim (fallback) to enable a suitable TCTI or disable testing with --disable-integration.])])
@@ -499,7 +497,6 @@ AS_IF([test "x$enable_integration" = "xyes"],
        AS_IF([test "x$integration_tcti" = "xnone"],
              [AC_MSG_ERROR([No simulator executable found in PATH for testing TCTI.])])
        AC_SUBST([INTEGRATION_TCTI], [$integration_tcti])
-       AC_SUBST([INTEGRATION_ARGS], [$integration_args])
        AC_SUBST([ENABLE_INTEGRATION], [$enable_integration])])
 AM_CONDITIONAL([ENABLE_INTEGRATION],[test "x$enable_integration" = "xyes"])
 #

@@ -14,10 +14,6 @@
 #include "tss2/tss2_tcti_spi_helper.h"
 #include "util/log.h"
 #include "test.h"
-#include "test-options.h"
-#include "context-util.h"
-#include "tss2-sys/sysapi_util.h"
-#include "tcti/tcti-fuzzing.h"
 
 typedef struct fuzz_user_data fuzz_user_data;
 struct fuzz_user_data {
