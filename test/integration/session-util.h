@@ -57,7 +57,7 @@ tpm_calc_phash(
 
 UINT32
 tpm_handle_to_name(
-    TSS2_TCTI_CONTEXT *tcti_context,
+    TSS2_SYS_CONTEXT *sysContext,
     TPM2_HANDLE handle,
     TPM2B_NAME *name);
 
@@ -89,7 +89,7 @@ TSS2_RC create_auth_session(
     TPM2_SE sessionType,
     TPMT_SYM_DEF *symmetric,
     TPMI_ALG_HASH algId,
-    TSS2_TCTI_CONTEXT *tctiContext);
+    TSS2_SYS_CONTEXT *sysContext);
 
 TSS2_RC
 compute_command_hmac(

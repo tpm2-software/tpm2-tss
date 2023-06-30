@@ -15,7 +15,6 @@
 
 #include "tss2_sys.h"
 
-#include "context-util.h"
 #include "sys-util.h"
 #include "session-util.h"
 #define LOGMODULE test
@@ -40,13 +39,6 @@ create_policy (TSS2_SYS_CONTEXT *sys_ctx,
     TPMT_SYM_DEF symmetric = {
         .algorithm = TPM2_ALG_NULL,
     };
-    TSS2_TCTI_CONTEXT *tcti_ctx;
-
-    rc = Tss2_Sys_GetTctiContext (sys_ctx, &tcti_ctx);
-    if (rc != TSS2_RC_SUCCESS || tcti_ctx == NULL) {
-        LOG_ERROR("InitSysContext failed, exiting...");
-        return rc;
-    }
 
     rc = create_auth_session (&trialPolicySession,
                               TPM2_RH_NULL,
@@ -58,7 +50,7 @@ create_policy (TSS2_SYS_CONTEXT *sys_ctx,
                               TPM2_SE_TRIAL,
                               &symmetric,
                               TPM2_ALG_SHA256,
-                              tcti_ctx);
+                              sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR ("create_auth_session failed with rc: 0x%x", rc);
         return rc;
@@ -116,7 +108,6 @@ nv_rw_with_session (
     TPMT_SYM_DEF symmetric = {
         .algorithm = TPM2_ALG_NULL,
     };
-    TSS2_TCTI_CONTEXT *tcti_ctx;
     TSS2L_SYS_AUTH_RESPONSE nvRspAuths;
     TSS2L_SYS_AUTH_COMMAND nvCmdAuths = {
         .count = 1,
@@ -140,12 +131,6 @@ nv_rw_with_session (
         },
     };
 
-
-    rc = Tss2_Sys_GetTctiContext (sys_ctx, &tcti_ctx);
-    if (rc != TSS2_RC_SUCCESS || tcti_ctx == NULL) {
-        LOG_ERROR ("Failed to get TCTI from Sys context, got RC: 0x%x", rc);
-        return TSS2_SYS_RC_GENERAL_FAILURE;
-    }
 
     rc = DefineNvIndex (sys_ctx,
                         TPM2_RH_PLATFORM,
@@ -172,7 +157,7 @@ nv_rw_with_session (
     }
 
     /* Get the name of the NV index. */
-    rc = tpm_handle_to_name (tcti_ctx,
+    rc = tpm_handle_to_name (sys_ctx,
                              TPM20_INDEX_PASSWORD_TEST,
                              &nvName);
     if (rc != TSS2_RC_SUCCESS) {
@@ -196,7 +181,7 @@ nv_rw_with_session (
                               session_type,
                               &symmetric,
                               TPM2_ALG_SHA256,
-                              tcti_ctx);
+                              sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR ("create_auth_session failed with RC: 0x%x", rc);
         return rc;
@@ -209,7 +194,7 @@ nv_rw_with_session (
      * Get the name of the session and save it in
      * the nvSession structure.
      */
-    rc = tpm_handle_to_name (tcti_ctx,
+    rc = tpm_handle_to_name (sys_ctx,
                              nvSession->sessionHandle,
                              &nvSession->name);
     if (rc != TSS2_RC_SUCCESS) {

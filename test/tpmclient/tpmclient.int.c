@@ -27,7 +27,7 @@
 #include "tss2_tcti_swtpm.h"
 #endif /* TCTI_SWTPM */
 
-#include "../integration/context-util.h"
+#include "../integration/test-common.h"
 #include "../integration/sys-util.h"
 #include "../integration/session-util.h"
 #include "util/tss2_endian.h"
@@ -109,7 +109,8 @@ static void ErrorHandler(UINT32 rval, char *errorString, int errorStringSize)
 static void Cleanup_exit(int rc)
 {
     if (resMgrTctiContext != NULL) {
-        tcti_teardown(resMgrTctiContext);
+        Tss2_Tcti_Finalize(resMgrTctiContext);
+        free(resMgrTctiContext);
         resMgrTctiContext = NULL;
     }
     exit(rc == EXIT_SKIP ? EXIT_SKIP : 1);
@@ -209,6 +210,35 @@ static TSS2_RC TpmReset()
     }
 
     return rval;
+}
+
+/*
+ * Initialize a SYS context using the TCTI context provided by the caller.
+ * This function allocates memory for the SYS context and returns it to the
+ * caller. This memory must be freed by the caller.
+ */
+TSS2_SYS_CONTEXT *
+sys_init_from_tcti_ctx(TSS2_TCTI_CONTEXT * tcti_ctx)
+{
+    TSS2_SYS_CONTEXT *sys_ctx;
+    TSS2_RC rc;
+    size_t size;
+    TSS2_ABI_VERSION abi_version = TEST_ABI_VERSION;
+
+    size = Tss2_Sys_GetContextSize(0);
+    sys_ctx = (TSS2_SYS_CONTEXT *) calloc(1, size);
+    if (sys_ctx == NULL) {
+        fprintf(stderr,
+                "Failed to allocate 0x%zx bytes for the SYS context\n", size);
+        return NULL;
+    }
+    rc = Tss2_Sys_Initialize(sys_ctx, size, tcti_ctx, &abi_version);
+    if (rc != TSS2_RC_SUCCESS) {
+        fprintf(stderr, "Failed to initialize SYS context: 0x%x\n", rc);
+        free(sys_ctx);
+        return NULL;
+    }
+    return sys_ctx;
 }
 
 static void TestDictionaryAttackLockReset()
@@ -421,7 +451,7 @@ static void TestStartAuthSession()
     encryptedSalt.size = 0;
 
      /* Init session */
-    rval = create_auth_session(&authSession, TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+    rval = create_auth_session(&authSession, TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, sysContext );
     CheckPassed( rval );
 
     rval = Tss2_Sys_FlushContext( sysContext, authSession->sessionHandle );
@@ -429,7 +459,7 @@ static void TestStartAuthSession()
     end_auth_session( authSession );
 
     /* Init session */
-    rval = create_auth_session(&authSession, TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, 0xff, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+    rval = create_auth_session(&authSession, TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, 0xff, &symmetric, TPM2_ALG_SHA256, sysContext );
     CheckFailed( rval, TPM2_RC_VALUE + TPM2_RC_P + TPM2_RC_3 );
 
     /*
@@ -438,7 +468,7 @@ static void TestStartAuthSession()
     for( i = 0; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
     {
         /* Init session struct */
-        rval = create_auth_session(&sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+        rval = create_auth_session(&sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, sysContext );
         CheckPassed( rval );
         LOG_INFO("Number of sessions created: %d", i+1 );
 
@@ -453,12 +483,12 @@ static void TestStartAuthSession()
     }
 
     /* Now do some gap tests. */
-    rval = create_auth_session(&sessions[0], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+    rval = create_auth_session(&sessions[0], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, sysContext );
     CheckPassed( rval );
 
     for( i = 1; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
     {
-        rval = create_auth_session(&sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+        rval = create_auth_session(&sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, sysContext );
         CheckPassed( rval );
 
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
@@ -470,7 +500,7 @@ static void TestStartAuthSession()
 
     for( i = 0; i < ( sizeof(sessions) / sizeof (SESSION *) ); i++ )
     {
-        rval = create_auth_session(&sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+        rval = create_auth_session(&sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, sysContext );
         CheckPassed( rval );
 
         rval = Tss2_Sys_FlushContext( sysContext, sessions[i]->sessionHandle );
@@ -936,7 +966,7 @@ static TSS2_RC BuildPolicy( TSS2_SYS_CONTEXT *sysContext, SESSION **policySessio
 
     /* Start policy session. */
     symmetric.algorithm = TPM2_ALG_NULL;
-    rval = create_auth_session(policySession, TPM2_RH_NULL, 0, TPM2_RH_NULL, 0, &nonceCaller, &encryptedSalt, trialSession ? TPM2_SE_TRIAL : TPM2_SE_POLICY , &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+    rval = create_auth_session(policySession, TPM2_RH_NULL, 0, TPM2_RH_NULL, 0, &nonceCaller, &encryptedSalt, trialSession ? TPM2_SE_TRIAL : TPM2_SE_POLICY , &symmetric, TPM2_ALG_SHA256, sysContext );
     if( rval != TPM2_RC_SUCCESS )
         return rval;
 
@@ -984,7 +1014,7 @@ static TSS2_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySess
     symmetric.algorithm = TPM2_ALG_NULL;
     rval = create_auth_session(policySession, TPM2_RH_NULL,
             0, TPM2_RH_NULL, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY,
-            &symmetric, TPM2_ALG_SHA256, resMgrTctiContext );
+            &symmetric, TPM2_ALG_SHA256, sysContext );
     CheckPassed( rval );
 
     /* Send PolicyLocality command */
@@ -1930,7 +1960,8 @@ static void GetSetDecryptParamTests()
     rval = Tss2_Sys_SetDecryptParam( decryptParamTestSysContext, 1, &( nvWriteData.buffer[0] ) );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SIZE );
 
-    sys_teardown(decryptParamTestSysContext);
+    Tss2_Sys_Finalize(decryptParamTestSysContext);
+    free(decryptParamTestSysContext);
 }
 
 static void SysFinalizeTests()
@@ -1959,7 +1990,8 @@ static void GetContextSizeTests()
     rval = Tss2_Sys_GetTestResult_Prepare(testSysContext);
     CheckPassed(rval);
 
-    sys_teardown(testSysContext);
+    Tss2_Sys_Finalize(testSysContext);
+    free(testSysContext);
 }
 
 static void GetTctiContextTests()
@@ -1980,7 +2012,8 @@ static void GetTctiContextTests()
     rval = Tss2_Sys_GetTctiContext(0, &tctiContext);
     CheckFailed(rval, TSS2_SYS_RC_BAD_REFERENCE);
 
-    sys_teardown(testSysContext);
+    Tss2_Sys_Finalize(testSysContext);
+    free(testSysContext);
 }
 
 static void GetSetEncryptParamTests()

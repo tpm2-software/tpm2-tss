@@ -14,101 +14,42 @@
 sanity_test
 
 # start simulator if needed
-if [[ ${INTEGRATION_TCTI} == "mssim" || ${INTEGRATION_TCTI} == "swtpm" ]]; then
+if [[ ${INTEGRATION_TCTI} == *mssim* || ${INTEGRATION_TCTI} == *swtpm* ]]; then
     echo "Trying to start simulator ${INTEGRATION_TCTI}"
     try_simulator_start
 fi
 
-TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}"
-TPM20TEST_TCTI="${INTEGRATION_TCTI}:host=${TPM20TEST_SOCKET_ADDRESS},port=${TPM20TEST_SOCKET_PORT}"
+TPM20TEST_TCTI="${INTEGRATION_TCTI}"
 
-while true; do
+# if $TPM20TEST_TCTI ends with mssim or swtpm (i.e. there is no config), add config:
+TCTI_SIM_CONF="host=127.0.0.1,port=${SIM_PORT_DATA-}"
+TPM20TEST_TCTI=${TPM20TEST_TCTI/%mssim/mssim:$TCTI_SIM_CONF}
+TPM20TEST_TCTI=${TPM20TEST_TCTI/%swtpm/swtpm:$TCTI_SIM_CONF}
 
-# Some debug prints
-echo "TPM20TEST_TCTI_NAME=${TPM20TEST_TCTI_NAME}"
-echo "TPM20TEST_DEVICE_FILE=${TPM20TEST_DEVICE_FILE}"
-echo "TPM20TEST_SOCKET_ADDRESS=${TPM20TEST_SOCKET_ADDRESS}"
-echo "TPM20TEST_SOCKET_PORT=${TPM20TEST_SOCKET_PORT}"
+# Add pcap-tcti as wrapper
+# TPM20TEST_TCTI="pcap:${TPM20TEST_TCTI}"
+TCTI_PCAP_FILE="${@: -1}.pcap"
+# rm -f "$TCTI_PCAP_FILE"
+
+
 echo "TPM20TEST_TCTI=${TPM20TEST_TCTI}"
 
-if [ "${TPM20TEST_TCTI_NAME}" != "device" ]; then
-    env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-        TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-        TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-        TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-        G_MESSAGES_DEBUG=all ./test/helper/tpm_startup
-    if [ $? -ne 0 ]; then
-        echo "TPM_StartUp failed"
-        ret=99
-        break
-    fi
-else
-    env TPM20TEST_TCTI_NAME=${TPM20TEST_TCTI_NAME} \
-        TPM20TEST_DEVICE_FILE=${TPM20TEST_DEVICE_FILE} \
-        G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
-    if [ $? -ne 0 ]; then
-        echo "TPM transient area not empty => skipping"
-        ret=99
-        break
-    fi
-fi
-
-TPMSTATE_FILE1=${TEST_BIN}_state1
-TPMSTATE_FILE2=${TEST_BIN}_state2
-
-env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-    TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-    TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-    TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-    TPM20TEST_DEVICE_FILE="${TPM20TEST_DEVICE_FILE}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>${TPMSTATE_FILE1}
-if [ $? -ne 0 ]; then
-    echo "Error during dumpstate"
-    ret=99
-    break
-fi
-
 echo "Execute the test script"
-env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-    TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-    TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-    TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-    TPM20TEST_DEVICE_FILE="${TPM20TEST_DEVICE_FILE}" \
-    G_MESSAGES_DEBUG=all ${@: -1}
+env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+    TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
+    G_MESSAGES_DEBUG=all \
+    ${@: -1}
 ret=$?
 echo "Script returned $ret"
 
-#We check the state before a reboot to see if transients and NV were chagned.
-env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-    TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-    TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-    TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-    TPM20TEST_DEVICE_FILE="${TPM20TEST_DEVICE_FILE}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>${TPMSTATE_FILE2}
-if [ $? -ne 0 ]; then
-    echo "Error during dumpstate"
-    ret=99
-    break
+if [[ ${TPM20TEST_TCTI} == *mssim* || ${TPM20TEST_TCTI} == *swtpm* ]]; then
+    # This sleep is sadly necessary: If we kill the tabrmd w/o sleeping for a
+    # second after the test finishes the simulator will die too. Bug in the
+    # simulator?
+    sleep 1
+    # teardown
+    daemon_stop ${SIM_PID_FILE}
+    rm -rf ${SIM_TMP_DIR} ${SIM_PID_FILE}
 fi
 
-if [ "$(cat ${TPMSTATE_FILE1})" != "$(cat ${TPMSTATE_FILE2})" ]; then
-    echo "TPM changed state during test"
-    echo "State before ($TPMSTATE_FILE1):"
-    cat ${TPMSTATE_FILE1}
-    echo "State after ($TPMSTATE_FILE2):"
-    cat ${TPMSTATE_FILE2}
-    ret=1
-    break
-fi
-
-break
-done
-
-# This sleep is sadly necessary: If we kill the tabrmd w/o sleeping for a
-# second after the test finishes the simulator will die too. Bug in the
-# simulator?
-sleep 1
-# teardown
-daemon_stop ${SIM_PID_FILE}
-rm -rf ${SIM_TMP_DIR} ${SIM_PID_FILE}
 exit $ret
