@@ -16,7 +16,6 @@
 
 #include "tss2_sys.h"
 
-#include "context-util.h"
 #include "sys-util.h"
 #include "util/aux_util.h"
 #define LOGMODULE test

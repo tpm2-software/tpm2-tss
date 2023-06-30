@@ -14,30 +14,37 @@
 sanity_test
 
 # start simulator if needed
-if [[ ${INTEGRATION_TCTI} == "mssim" || ${INTEGRATION_TCTI} == "swtpm" ]]; then
+if [[ ${INTEGRATION_TCTI} == *mssim* || ${INTEGRATION_TCTI} == *swtpm* ]]; then
     echo "Trying to start simulator ${INTEGRATION_TCTI}"
     try_simulator_start
-    TPM20TEST_SOCKET_PORT="${SIM_PORT_DATA}"
-    TPM20TEST_TCTI="${INTEGRATION_TCTI}:host=${TPM20TEST_SOCKET_ADDRESS},port=${TPM20TEST_SOCKET_PORT}"
-else
-    # Device will be used.
-    TPM20TEST_TCTI="${INTEGRATION_TCTI}:${TPM20TEST_DEVICE_FILE}"
 fi
+
+TPM20TEST_TCTI="${INTEGRATION_TCTI}"
+
+# if $TPM20TEST_TCTI ends with mssim or swtpm (i.e. there is no config), add config:
+TCTI_SIM_CONF="host=127.0.0.1,port=${SIM_PORT_DATA-}"
+TPM20TEST_TCTI=${TPM20TEST_TCTI/%mssim/mssim:$TCTI_SIM_CONF}
+TPM20TEST_TCTI=${TPM20TEST_TCTI/%swtpm/swtpm:$TCTI_SIM_CONF}
+
+# if $TPM20TEST_TCTI ends with libtpms (i.e. there is no config), add config:
+# for FAPI, we need a state file which persists accross different processes
+TCTI_LIBTPMS_CONF="${@: -1}.libtpms"
+TPM20TEST_TCTI=${TPM20TEST_TCTI/%libtpms/libtpms:$TCTI_LIBTPMS_CONF}
+rm -f "${TCTI_LIBTPMS_CONF}"
+
+# Add pcap-tcti as wrapper
+# TPM20TEST_TCTI="pcap:${TPM20TEST_TCTI}"
+TCTI_PCAP_FILE="${@: -1}.pcap"
+# rm -f "$TCTI_PCAP_FILE"
+
+
+echo "TPM20TEST_TCTI=${TPM20TEST_TCTI}"
 
 while true; do
 
-# Some debug prints
-echo "TPM20TEST_TCTI_NAME=${TPM20TEST_TCTI_NAME}"
-echo "TPM20TEST_DEVICE_FILE=${TPM20TEST_DEVICE_FILE}"
-echo "TPM20TEST_SOCKET_ADDRESS=${TPM20TEST_SOCKET_ADDRESS}"
-echo "TPM20TEST_SOCKET_PORT=${TPM20TEST_SOCKET_PORT}"
-echo "TPM20TEST_TCTI=${TPM20TEST_TCTI}"
-
-if [ "${TPM20TEST_TCTI_NAME}" != "device" ]; then
-    env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-        TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-        TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-        TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+if [[ ${TPM20TEST_TCTI} != *device* ]]; then
+    env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+        TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
         G_MESSAGES_DEBUG=all ./test/helper/tpm_startup
     if [ $? -ne 0 ]; then
         echo "TPM_StartUp failed"
@@ -45,8 +52,8 @@ if [ "${TPM20TEST_TCTI_NAME}" != "device" ]; then
         break
     fi
 else
-    env TPM20TEST_TCTI_NAME=${TPM20TEST_TCTI_NAME} \
-        TPM20TEST_DEVICE_FILE=${TPM20TEST_DEVICE_FILE} \
+    env TPM20TEST_TCTI=${TPM20TEST_TCTI} \
+        TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
         G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
     if [ $? -ne 0 ]; then
         echo "TPM transient area not empty => skipping"
@@ -56,16 +63,13 @@ else
 fi
 
 # Certificate generation for simulator tests
-if [ "${TPM20TEST_TCTI_NAME}" != "device" ]; then
+if [[ ${TPM20TEST_TCTI} != *device* ]]; then
     EKPUB_FILE=${TEST_BIN}_ekpub.pem
     EKCERT_FILE=${TEST_BIN}_ekcert.crt
     EKCERT_PEM_FILE=${TEST_BIN}_ekcert.pem
 
-    env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-        TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-        TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-        TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-        TPM20TEST_DEVICE_FILE="${TPM20TEST_DEVICE_FILE}" \
+    env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+        TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
         G_MESSAGES_DEBUG=all ./test/helper/tpm_getek ${EKPUB_FILE}
     if [ $? -ne 0 ]; then
         echo "TPM_getek failed"
@@ -77,11 +81,8 @@ if [ "${TPM20TEST_TCTI_NAME}" != "device" ]; then
     EKECCCERT_FILE=${TEST_BIN}_ekecccert.crt
     EKECCCERT_PEM_FILE=${TEST_BIN}_ekecccert.pem
 
-    env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-        TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-        TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-        TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-        TPM20TEST_DEVICE_FILE="${TPM20TEST_DEVICE_FILE}" \
+    env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+        TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
         G_MESSAGES_DEBUG=all ./test/helper/tpm_getek_ecc ${EKECCPUB_FILE}
     if [ $? -ne 0 ]; then
         echo "TPM_getek_ecc failed"
@@ -114,11 +115,8 @@ if [ "${TPM20TEST_TCTI_NAME}" != "device" ]; then
     export FAPI_TEST_CERTIFICATE_ECC="file:${EKECCCERT_PEM_FILE}"
 
     cat $EKCERT_FILE | \
-        env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-            TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-            TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-            TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-            TPM20TEST_DEVICE_FILE="${TPM20TEST_DEVICE_FILE}" \
+        env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+            TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
             G_MESSAGES_DEBUG=all ./test/helper/tpm_writeekcert 1C00002
     if [ $? -ne 0 ]; then
         echo "TPM_writeekcert failed"
@@ -127,11 +125,8 @@ if [ "${TPM20TEST_TCTI_NAME}" != "device" ]; then
     fi
 
     cat $EKECCCERT_FILE | \
-        env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-            TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-            TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-            TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-            TPM20TEST_DEVICE_FILE="${TPM20TEST_DEVICE_FILE}" \
+        env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+            TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
             G_MESSAGES_DEBUG=all ./test/helper/tpm_writeekcert 1C0000A
     if [ $? -ne 0 ]; then
         echo "TPM_writeekcert failed"
@@ -142,11 +137,8 @@ fi # certificate generation
 TPMSTATE_FILE1=${TEST_BIN}_state1
 TPMSTATE_FILE2=${TEST_BIN}_state2
 
-env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-    TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-    TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-    TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-    TPM20TEST_DEVICE_FILE="${TPM20TEST_DEVICE_FILE}" \
+env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+    TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>${TPMSTATE_FILE1}
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"
@@ -155,32 +147,24 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Execute the test script"
-if [ "${TPM20TEST_TCTI_NAME}" == "device" ]; then
+if [[ ${TPM20TEST_TCTI} == *device* ]]; then
     # No root certificate needed
-    env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-        TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-        TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-        TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-        TPM20TEST_DEVICE_FILE="${TPM20TEST_DEVICE_FILE}" \
+    env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+        TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
         G_MESSAGES_DEBUG=all ${@: -1}
 else
     # Run test with generated certificate.
-    env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-        TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-        TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-        TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+    env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+        TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
         FAPI_TEST_ROOT_CERT=${ROOTCA_FILE}.pem \
-        TPM20TEST_DEVICE_FILE="${TPM20TEST_DEVICE_FILE}" \
         G_MESSAGES_DEBUG=all ${@: -1}
 fi
 ret=$?
 echo "Script returned $ret"
 
 #We check the state before a reboot to see if transients and NV were chagned.
-env TPM20TEST_TCTI_NAME="${TPM20TEST_TCTI_NAME}" \
-    TPM20TEST_SOCKET_ADDRESS="${TPM20TEST_SOCKET_ADDRESS}" \
-    TPM20TEST_SOCKET_PORT="${TPM20TEST_SOCKET_PORT}" \
-    TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
+    TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
     G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>${TPMSTATE_FILE2}
 if [ $? -ne 0 ]; then
     echo "Error during dumpstate"
@@ -203,7 +187,7 @@ fi
 break
 done
 
-if [ "${TPM20TEST_TCTI_NAME}" != "device" ]; then
+if [[ ${TPM20TEST_TCTI} == *mssim* || ${TPM20TEST_TCTI} == *swtpm* ]]; then
     # This sleep is sadly necessary: If we kill the tabrmd w/o sleeping for a
     # second after the test finishes the simulator will die too. Bug in the
     # simulator?

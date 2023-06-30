@@ -16,54 +16,47 @@
 #include "tss2_tcti.h"
 #include "util/log.h"
 #include "test.h"
-#include "test-options.h"
-#include "context-util.h"
 #include "tss2-sys/sysapi_util.h"
 #include "tcti/tcti-fuzzing.h"
+
+#include "test-common.h"
 
 int
 LLVMFuzzerTestOneInput (
         const uint8_t *Data,
         size_t Size)
 {
-    int ret;
-    TSS2_SYS_CONTEXT *sys_context;
-    _TSS2_SYS_CONTEXT_BLOB *ctx = NULL;
+    TSS2_TEST_SYS_CONTEXT *test_sys_ctx;
     TSS2_TCTI_FUZZING_CONTEXT *tcti_fuzzing = NULL;
+    TSS2_RC rc;
+    int ret;
 
-    /* Use the fuzzing tcti */
-    test_opts_t opts = {
-        .tcti_type      = FUZZING_TCTI,
-        .device_file    = DEVICE_PATH_DEFAULT,
-        .socket_address = HOSTNAME_DEFAULT,
-        .socket_port    = PORT_DEFAULT,
-    };
-
-    get_test_opts_from_env (&opts);
-    if (sanity_check_test_opts (&opts) != 0) {
-        LOG_ERROR("Checking test options");
-        exit(1); /* fatal error */
+    ret = test_sys_setup(&test_sys_ctx);
+    if (ret != 0) {
+        return ret;
     }
 
-    sys_context = sys_init_from_opts (&opts);
-    if (sys_context == NULL) {
-        LOG_ERROR("SYS context not initialized");
-        exit(1); /* fatal error */
+    ret = test_sys_checks_pre(test_sys_ctx);
+    if (ret != 0) {
+        return ret;
     }
 
-    ctx = syscontext_cast (sys_context);
-    tcti_fuzzing = tcti_fuzzing_context_cast (ctx->tctiContext);
+    tcti_fuzzing = tcti_fuzzing_context_cast(test_sys_ctx->tcti_ctx);
     tcti_fuzzing->data = Data;
     tcti_fuzzing->size = Size;
 
-    ret = test_invoke (sys_context);
-
-    sys_teardown_full (sys_context);
-
-    if (ret) {
-        LOG_ERROR("Test failed");
-        exit(1); /* fatal error */
+    rc = test_invoke(test_sys_ctx->sys_ctx);
+    if (rc != 0 && ret != 77) {
+        LOG_ERROR("Test returned %08x", rc);
+        exit(1);
     }
+
+    ret = test_sys_checks_post(test_sys_ctx);
+    if (ret != 0) {
+        exit(1);
+    }
+
+    test_sys_teardown(test_sys_ctx);
 
     return 0;  // Non-zero return values are reserved for future use.
 }

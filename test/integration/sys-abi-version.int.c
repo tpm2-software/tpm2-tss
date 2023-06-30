@@ -15,12 +15,8 @@
 #include <stdio.h>
 #define LOGMODULE test
 #include "util/log.h"
+#include "test-common.h"
 #include "test.h"
-
-#define TSSWG_INTEROP 1
-#define TSS_SYS_FIRST_FAMILY 2
-#define TSS_SYS_FIRST_LEVEL 1
-#define TSS_SYS_FIRST_VERSION 108
 
 /**
  */
@@ -30,7 +26,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     TSS2_RC rc;
     UINT32 contextSize;
     TSS2_TCTI_CONTEXT *tcti_context = NULL;
-    TSS2_ABI_VERSION tstAbiVersion = { TSSWG_INTEROP, TSS_SYS_FIRST_FAMILY, TSS_SYS_FIRST_LEVEL, TSS_SYS_FIRST_VERSION };
+    TSS2_ABI_VERSION tstAbiVersion = TEST_ABI_VERSION;
 
     LOG_INFO( "ABI NEGOTIATION TESTS" );
 

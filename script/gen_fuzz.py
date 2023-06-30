@@ -54,8 +54,6 @@ SYS_TEMPLATE_HEADER = """/* SPDX-License-Identifier: BSD-2-Clause */
 #include "tss2_tcti.h"
 #include "util/log.h"
 #include "test.h"
-#include "test-options.h"
-#include "context-util.h"
 #include "tss2-sys/sysapi_util.h"
 #include "tcti/tcti-fuzzing.h"
 
