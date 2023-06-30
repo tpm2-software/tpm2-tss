@@ -159,6 +159,10 @@ TPM_RESULT TPMLIB_SetState(enum TPMLIB_StateType st, const unsigned char *buf, u
 void TPMLIB_Terminate(void)
 {
 }
+TPM_RESULT TPM_IO_TpmEstablished_Reset(void)
+{
+    return TPM_SUCCESS;
+}
 
 void *__wrap_dlopen(const char *filename, int flags)
 {
@@ -424,6 +428,10 @@ tcti_libtpms_init_state_open_fail_test(void **state)
     expect_string(__wrap_dlsym, symbol, "TPMLIB_Terminate");
     will_return(__wrap_dlsym, &TPMLIB_Terminate);
 
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPM_IO_TpmEstablished_Reset");
+    will_return(__wrap_dlsym, &TPM_IO_TpmEstablished_Reset);
+
     /* fail open */
     expect_string(__wrap_open, pathname, STATEFILE_PATH);
     expect_value(__wrap_open, flags, O_RDWR | O_CREAT);
@@ -484,6 +492,10 @@ tcti_libtpms_init_state_lseek_fail_test(void **state)
     expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
     expect_string(__wrap_dlsym, symbol, "TPMLIB_Terminate");
     will_return(__wrap_dlsym, &TPMLIB_Terminate);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPM_IO_TpmEstablished_Reset");
+    will_return(__wrap_dlsym, &TPM_IO_TpmEstablished_Reset);
 
     expect_string(__wrap_open, pathname, STATEFILE_PATH);
     expect_value(__wrap_open, flags, O_RDWR | O_CREAT);
@@ -555,6 +567,10 @@ tcti_libtpms_init_state_posix_fallocate_fail_test(void **state)
     expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
     expect_string(__wrap_dlsym, symbol, "TPMLIB_Terminate");
     will_return(__wrap_dlsym, &TPMLIB_Terminate);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPM_IO_TpmEstablished_Reset");
+    will_return(__wrap_dlsym, &TPM_IO_TpmEstablished_Reset);
 
     expect_string(__wrap_open, pathname, STATEFILE_PATH);
     expect_value(__wrap_open, flags, O_RDWR | O_CREAT);
@@ -632,6 +648,10 @@ tcti_libtpms_init_state_mmap_fail_test(void **state)
     expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
     expect_string(__wrap_dlsym, symbol, "TPMLIB_Terminate");
     will_return(__wrap_dlsym, &TPMLIB_Terminate);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPM_IO_TpmEstablished_Reset");
+    will_return(__wrap_dlsym, &TPM_IO_TpmEstablished_Reset);
 
     expect_string(__wrap_open, pathname, STATEFILE_PATH);
     expect_value(__wrap_open, flags, O_RDWR | O_CREAT);
@@ -728,6 +748,10 @@ tcti_libtpms_init_from_conf(const char *conf)
     expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
     expect_string(__wrap_dlsym, symbol, "TPMLIB_Terminate");
     will_return(__wrap_dlsym, &TPMLIB_Terminate);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPM_IO_TpmEstablished_Reset");
+    will_return(__wrap_dlsym, &TPM_IO_TpmEstablished_Reset);
 
     if (conf != NULL) {
         expect_string(__wrap_open, pathname, STATEFILE_PATH);
@@ -851,6 +875,10 @@ tcti_libtpms_init_from_conf_real(const char *conf)
     expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
     expect_string(__wrap_dlsym, symbol, "TPMLIB_Terminate");
     will_return(__wrap_dlsym, &TPMLIB_Terminate);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPM_IO_TpmEstablished_Reset");
+    will_return(__wrap_dlsym, &TPM_IO_TpmEstablished_Reset);
 
     if (conf != NULL) {
         expect_string(__wrap_open, pathname, conf);

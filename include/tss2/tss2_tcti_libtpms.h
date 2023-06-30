@@ -17,6 +17,9 @@ TSS2_RC Tss2_Tcti_Libtpms_Init (
     size_t *size,
     const char *conf);
 
+TSS2_RC
+Tss2_Tcti_Libtpms_Reset(TSS2_TCTI_CONTEXT *tctiCont);
+
 #ifdef __cplusplus
 }
 #endif
