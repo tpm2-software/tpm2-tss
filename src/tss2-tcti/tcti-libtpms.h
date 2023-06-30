@@ -15,6 +15,7 @@
 #include <sys/mman.h>
 
 #include <libtpms/tpm_library.h>
+#include <libtpms/tpm_tis.h>
 #include <libtpms/tpm_error.h>
 
 #include "tcti-common.h"
@@ -34,6 +35,7 @@ typedef struct {
     TPM_RESULT (*TPMLIB_Process)(unsigned char **, uint32_t *, uint32_t *, unsigned char *, uint32_t);
     TPM_RESULT (*TPMLIB_SetState)(enum TPMLIB_StateType, const unsigned char *, uint32_t);
     void (*TPMLIB_Terminate)(void);
+    TPM_RESULT (*TPM_IO_TpmEstablished_Reset)(void);
     uint8_t *response_buffer;
     size_t response_buffer_len;
     size_t response_len;

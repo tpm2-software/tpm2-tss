@@ -354,6 +354,20 @@ tcti_libtpms_down_cast(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     return &tcti_libtpms->common;
 }
 
+TSS2_RC
+Tss2_Tcti_Libtpms_Reset(TSS2_TCTI_CONTEXT *tcti_ctx)
+{
+    TSS2_RC rc;
+    int ret;
+    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = tcti_libtpms_context_cast(tcti_ctx);
+
+    LIBTPMS_API_CALL(fail, tcti_libtpms, TPM_IO_TpmEstablished_Reset);
+    rc = TSS2_RC_SUCCESS;
+
+fail:
+    return rc;
+}
+
 /*
  * Transmits and gets the response. The response buffer was allocated by
  * libtpms, is referenced by the libtpms TCTI context and needs to be freed once
@@ -614,6 +628,12 @@ tcti_libtpms_dl(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     tcti_libtpms->TPMLIB_Terminate = dlsym(tcti_libtpms->libtpms, "TPMLIB_Terminate");
     if (tcti_libtpms->TPMLIB_Terminate == NULL) {
         LOG_ERROR("Could not resolve libtpms symbol TPMLIB_Terminate(): %s", dlerror());
+        goto cleanup_dl;
+    }
+
+    tcti_libtpms->TPM_IO_TpmEstablished_Reset = dlsym(tcti_libtpms->libtpms, "TPM_IO_TpmEstablished_Reset");
+    if (tcti_libtpms->TPM_IO_TpmEstablished_Reset == NULL) {
+        LOG_ERROR("Could not resolve libtpms symbol TPM_IO_TpmEstablished_Reset(): %s", dlerror());
         goto cleanup_dl;
     }
 
