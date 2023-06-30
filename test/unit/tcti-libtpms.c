@@ -122,11 +122,6 @@ TPM_RESULT TPMLIB_MainInit(void)
     assert_int_equal(ret, 0);
     ret = global_callbacks.tpm_io_init();
     assert_int_equal(ret, 0);
-    ret = global_callbacks.tpm_nvram_loaddata((unsigned char **) 1,
-                                               (uint32_t *) 2,
-                                               3,
-                                               "4");
-    assert_int_equal(ret, TPM_RETRY);
     return mock_type(int);
 }
 TPM_RESULT TPMLIB_Process(unsigned char **resp_buf, uint32_t *resp_len, uint32_t *resp_buf_len, unsigned char *cmd, uint32_t cmd_len)
@@ -138,9 +133,6 @@ TPM_RESULT TPMLIB_Process(unsigned char **resp_buf, uint32_t *resp_len, uint32_t
     ret = global_callbacks.tpm_io_getlocality(&locality, 0);
     assert_int_equal(ret, 0);
     check_expected(locality);
-
-    ret = global_callbacks.tpm_nvram_storedata((unsigned char *) 1, 2, 3, "4");
-    assert_int_equal(ret, TPM_SUCCESS);
 
     unsigned char *buf_out = mock_type(unsigned char *);
     *resp_buf_len = *resp_len = mock_type(uint32_t);
