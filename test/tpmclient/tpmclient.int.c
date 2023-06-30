@@ -16,7 +16,10 @@
 #include <string.h>
 
 #include "tss2_sys.h"
+#include "tss2-tcti/tctildr.h"
+#include "tss2-tcti/tcti-pcap.h"
 #include "tss2_tcti_device.h"
+#include "tss2_tcti_libtpms.h"
 #ifdef TCTI_MSSIM
 #include "tss2_tcti_mssim.h"
 #endif /* TCTI_MSSIM */
@@ -153,9 +156,35 @@ static void InitSysContextFailure()
 static TSS2_RC TpmReset()
 {
     TSS2_RC rval = TSS2_RC_SUCCESS;
+    TSS2_TCTI_CONTEXT *tcti = resMgrTctiContext;
+
+    /*
+     * Try to unwrap tctildr/pcap. It would be better to provide an API call for
+     * reset by tctildr, but for now, use this instead.
+     */
+    uint64_t magic = 0;
+    while (magic == 0 || magic == TCTILDR_MAGIC || magic == TCTI_PCAP_MAGIC) {
+        magic = *((uint64_t*) tcti);
+        if (magic == TCTILDR_MAGIC) {
+            tcti = ((TSS2_TCTILDR_CONTEXT *) tcti)->tcti;
+        } else if (magic == TCTI_PCAP_MAGIC) {
+            tcti = ((TSS2_TCTI_PCAP_CONTEXT *) tcti)->tcti_child;
+        }
+    }
+
+#ifdef TCTI_LIBTPMS
+    rval = Tss2_Tcti_Libtpms_Reset(tcti);
+
+    /* If TCTI is not libtpms, bad context is returned. */
+    if (rval != TSS2_TCTI_RC_BAD_CONTEXT) {
+        return rval;
+    } else {
+        LOG_WARNING("TPM Reset failed: wrong TCTI type retrying with swtpm...");
+    }
+#endif /* TCTI_LIBTPMS */
 
 #ifdef TCTI_SWTPM
-    rval = Tss2_Tcti_Swtpm_Reset(resMgrTctiContext);
+    rval = Tss2_Tcti_Swtpm_Reset(tcti);
 
     /* If TCTI is not swtpm, bad context is returned. */
     if (rval != TSS2_TCTI_RC_BAD_CONTEXT) {
@@ -166,12 +195,16 @@ static TSS2_RC TpmReset()
 #endif /* TCTI_SWTPM */
 
 #ifdef TCTI_MSSIM
-    rval = (TSS2_RC)tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_OFF );
+    rval = (TSS2_RC)tcti_platform_command( tcti, MS_SIM_POWER_OFF );
     if (rval == TSS2_RC_SUCCESS) {
-        rval = (TSS2_RC)tcti_platform_command( resMgrTctiContext, MS_SIM_POWER_ON );
+        rval = (TSS2_RC)tcti_platform_command( tcti, MS_SIM_POWER_ON );
+    } else {
+        LOG_WARNING("TPM Reset failed: mssim returned 0x%x.", rval);
     }
 #endif /* TCTI_MSSIM */
+
     if (rval == TSS2_TCTI_RC_BAD_CONTEXT) {
+        LOG_WARNING("TPM Reset failed: could not reset using known TCTI types. TCTI magic: %" PRIx64, *((uint64_t *) tcti));
         rval = EXIT_SKIP;
     }
 
