@@ -165,7 +165,7 @@ test_fapi_key_create_policies_sign(FAPI_CONTEXT *context)
     if (number_rc(r) == TPM2_RC_PP) {
         LOG_WARNING("Test requires physical presence.");
         goto skip;
-    } else if (r == TPM2_RC_COMMAND_CODE) {
+    } else if (base_rc(r) == TPM2_RC_COMMAND_CODE) {
         LOG_WARNING("Command not supported, probably PolicyPhysicalPresence");
         goto skip;
     }
