@@ -67,9 +67,9 @@ Esys_TR_Serialize(ESYS_CONTEXT * esys_context,
  * stored on disk for later use by a different program or context.
  * An object can be deserialized using Esys_TR_Deserialize.
  * @param esys_context [in,out] The ESYS_CONTEXT.
- * @param esys_handle [out] The ESYS_TR object to deserialize.
  * @param buffer [in] The buffer containing the metadata of the ESYS_TR object.
  * @param buffer_size [in] The size of the buffer parameter.
+ * @param esys_handle [out] The ESYS_TR object to deserialize.
  * @retval TSS2_RC_SUCCESS on Success.
  * @retval TSS2_ESYS_RC_MEMORY if the object can not be allocated.
  * @retval TSS2_ESYS_RC_INSUFFICIENT_BUFFER if the buffer for unmarshalling.
