@@ -822,7 +822,7 @@ define make_fapi_dirs
 endef
 
 define set_fapi_permissions
-    if test -z "${DESTDIR}"; then \ e
+    if test -z "${DESTDIR}"; then \
         ($(call set_tss_permissions,$(DESTDIR)$(runstatedir)/tpm2-tss)) && \
         ($(call set_tss_permissions,$(DESTDIR)$(localstatedir)/lib/tpm2-tss)) \
     fi
