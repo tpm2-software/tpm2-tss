@@ -1,0 +1,4 @@
+LIBRARY tss2-tcti-spi-ltt2go
+EXPORTS
+    Tss2_Tcti_Info
+    Tss2_Tcti_Spi_Ltt2go_Init

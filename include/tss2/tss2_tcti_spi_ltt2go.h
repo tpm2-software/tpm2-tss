@@ -2,8 +2,8 @@
 /*
  * Copyright 2020 Peter Huewe
  */
-#ifndef TSS2_TCTI_SPI_LT2GO_H
-#define TSS2_TCTI_SPI_LT2GO_H
+#ifndef TSS2_TCTI_SPI_LTT2GO_H
+#define TSS2_TCTI_SPI_LTT2GO_H
 
 #include <stdbool.h>
 #include "tss2_tcti.h"
@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-TSS2_RC Tss2_Tcti_Spi_Lt2go_Init (
+TSS2_RC Tss2_Tcti_Spi_Ltt2go_Init (
     TSS2_TCTI_CONTEXT *tctiContext,
     size_t *size,
     const char *config);
@@ -22,4 +22,4 @@ TSS2_RC Tss2_Tcti_Spi_Lt2go_Init (
 }
 #endif
 
-#endif /* TSS2_TCTI_SPI_LT2GO_H */
+#endif /* TSS2_TCTI_SPI_LTT2GO_H */

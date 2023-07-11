@@ -3,12 +3,12 @@
 .\"
 .TH TCTI-SPI 7 "NOVEMBER 2022" "TPM2 Software Stack"
 .SH NAME
-tcti-spi-lt2go \- LetsTrust-TPM2Go USB TPM TCTI library
+tcti-spi-ltt2go \- LetsTrust-TPM2Go USB TPM TCTI library
 .SH SYNOPSIS
 A TPM Command Transmission Interface (TCTI) module for interaction with
 the LetsTrust-TPM2Go USB TPM.
 .SH DESCRIPTION
-tcti-spi-lt2go is a library that abstracts the details of communication
+tcti-spi-ltt2go is a library that abstracts the details of communication
 with the LetsTrust-TPM2Go USB TPM. The interface exposed by this library
 is defined in the \*(lqTSS System Level API and TPM Command Transmission
 Interface Specification\*(rq specification.
