@@ -424,25 +424,25 @@ src_tss2_tcti_libtss2_tcti_spi_helper_la_SOURCES  = \
 endif # ENABLE_TCTI_SPI_HELPER
 
 # tcti library for letstrust-tpm2go usb tpm
-if ENABLE_TCTI_SPI_LT2GO
-libtss2_tcti_spi_lt2go = src/tss2-tcti/libtss2-tcti-spi-lt2go.la
-tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spi_lt2go.h
-lib_LTLIBRARIES += $(libtss2_tcti_spi_lt2go)
-pkgconfig_DATA += lib/tss2-tcti-spi-lt2go.pc
+if ENABLE_TCTI_SPI_LTT2GO
+libtss2_tcti_spi_ltt2go = src/tss2-tcti/libtss2-tcti-spi-ltt2go.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spi_ltt2go.h
+lib_LTLIBRARIES += $(libtss2_tcti_spi_ltt2go)
+pkgconfig_DATA += lib/tss2-tcti-spi-ltt2go.pc
 
-src_tss2_tcti_libtss2_tcti_spi_lt2go_la_LDFLAGS  = -lusb-1.0
+src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_LDFLAGS  = -lusb-1.0
 
 if HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_spi_lt2go_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spi-lt2go.map
+src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spi-ltt2go.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_spi_lt2go_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_spi_helper)
-src_tss2_tcti_libtss2_tcti_spi_lt2go_la_SOURCES  = \
+src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_spi_helper)
+src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-spi-lt2go.c \
-    src/tss2-tcti/tcti-spi-lt2go.h
-endif # ENABLE_TCTI_SPI_LT2GO
-EXTRA_DIST += lib/tss2-tcti-spi-lt2go.map \
-              lib/tss2-tcti-spi-lt2go.def
+    src/tss2-tcti/tcti-spi-ltt2go.c \
+    src/tss2-tcti/tcti-spi-ltt2go.h
+endif # ENABLE_TCTI_SPI_LTT2GO
+EXTRA_DIST += lib/tss2-tcti-spi-ltt2go.map \
+              lib/tss2-tcti-spi-ltt2go.def
 
 # tcti library for ftdi connected tpm
 if ENABLE_TCTI_SPI_FTDI
@@ -902,7 +902,7 @@ man7_MANS = \
     man/man7/tss2-tcti-mssim.7 \
     man/man7/tss2-tcti-cmd.7 \
     man/man7/tss2-tcti-spi-helper.7 \
-    man/man7/tss2-tcti-spi-lt2go.7 \
+    man/man7/tss2-tcti-spi-ltt2go.7 \
     man/man7/tss2-tcti-spi-ftdi.7 \
     man/man7/tss2-tcti-i2c-helper.7 \
     man/man7/tss2-tcti-i2c-ftdi.7 \
@@ -985,7 +985,7 @@ EXTRA_DIST += \
     man/tss2-tcti-mssim.7.in \
     man/tss2-tcti-cmd.7.in \
     man/tss2-tcti-spi-helper.7.in \
-    man/tss2-tcti-spi-lt2go.7.in \
+    man/tss2-tcti-spi-ltt2go.7.in \
     man/tss2-tcti-spi-ftdi.7.in \
     man/tss2-tcti-i2c-helper.7.in \
     man/tss2-tcti-i2c-ftdi.7.in \
