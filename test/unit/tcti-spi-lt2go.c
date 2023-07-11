@@ -26,8 +26,8 @@
 #include "tss2-tcti/tcti-spi-helper.h"
 #include "util/key-value-parse.h"
 
-#define VID_CYPRESS 0x04b4u
-#define PID_CYUSBSPI 0x0004u
+#define VID_PI3G 0x365Du
+#define PID_LTT2GO 0x1337u
 #define CTRL_SET 0xC0u
 #define CY_CMD_SPI 0xCAu
 #define CY_SPI_WRITEREAD 0x03u
@@ -297,8 +297,8 @@ libusb_device_handle * __wrap_libusb_open_device_with_vid_pid (
     libusb_context *ctx, uint16_t vendor_id, uint16_t product_id)
 {
     assert_ptr_equal (ctx, context);
-    assert_int_equal (vendor_id, VID_CYPRESS);
-    assert_int_equal (product_id, PID_CYUSBSPI);
+    assert_int_equal (vendor_id, VID_PI3G);
+    assert_int_equal (product_id, PID_LTT2GO);
 
     device_handle = malloc (1);
 
