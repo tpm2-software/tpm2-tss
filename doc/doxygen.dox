@@ -906,7 +906,7 @@ Both the synchronous and asynchronous API are exposed through a single library: 
  \fn TSS2_RC Esys_StartAuthSession_Async(ESYS_CONTEXT *esysContext, ESYS_TR tpmKey, ESYS_TR bind, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceCaller, TPM2_SE sessionType, const TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH authHash)
 
  \fn TSS2_RC Esys_StartAuthSession(ESYS_CONTEXT *esysContext, ESYS_TR tpmKey, ESYS_TR bind, ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3, const TPM2B_NONCE *nonceCaller, TPM2_SE sessionType, const TPMT_SYM_DEF *symmetric, TPMI_ALG_HASH authHash, ESYS_TR *sessionHandle)
- \fn TSS2_RC Esys_StartAuthSession_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *sessionHandle, TPM2B_NONCE **nonceTPM)
+ \fn TSS2_RC Esys_StartAuthSession_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *sessionHandle)
  \}
  \defgroup Esys_Startup The ESAPI function for the TPM2_Startup command.
  * ESAPI function to invoke the TPM2_Startup command
