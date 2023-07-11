@@ -60,6 +60,39 @@ static size_t device_mem_alloc_length;
 static uint16_t transfer_length;
 
 /*
+ * Mock function select
+ */
+int __wrap_select (int nfds, fd_set *readfds,
+                   fd_set *writefds,
+                   fd_set *exceptfds,
+                   struct timeval *timeout)
+{
+
+    assert_int_equal (nfds, 0);
+    assert_null (readfds);
+    assert_null (writefds);
+    assert_null (exceptfds);
+    assert_non_null (timeout);
+
+    return 0;
+}
+
+/*
+ * Mock function gettimeofday
+ */
+int __wrap_gettimeofday (struct timeval *tv,
+                         struct timezone *tz)
+{
+    assert_null (tz);
+    assert_non_null (tv);
+
+    tv->tv_sec = 0;
+    tv->tv_usec = 0;
+
+    return 0;
+}
+
+/*
  * Mock function libusb_get_device.
  */
 libusb_device * __wrap_libusb_get_device (libusb_device_handle *dev_handle)

@@ -7,7 +7,7 @@ following sections describe them for the supported platforms.
 
 ## GNU/Linux:
 * GNU Autoconf
-* GNU Autoconf Archive, version >= 2017.03.21
+* GNU Autoconf Archive, version >= 2019.01.06
 * GNU Automake
 * GNU Libtool
 * C compiler
