@@ -1,6 +1,6 @@
-# SPI TCTI LT2GO
-The SPI TCTI LT2GO can be used for communication with LetsTrust-TPM2Go USB TPM.
-The LT2GO module utilizes the `tcti-spi-helper` library for PTP SPI protocol handling
+# SPI TCTI LTT2GO
+The SPI TCTI LTT2GO can be used for communication with LetsTrust-TPM2Go USB TPM.
+The LTT2GO module utilizes the `tcti-spi-helper` library for PTP SPI protocol handling
 and the `libusb-1.0-0-dev` library for USB communication.
 
 # EXAMPLES
@@ -31,16 +31,16 @@ sudo udevadm info -e | grep LetsTrust
  E: ID_SERIAL=www.pi3g.com_LetsTrust-TPM2Go_000010
 ```
 
-Use tcti-spi-lt2go to communicate with LetsTrust-TPM2Go:
+Use tcti-spi-ltt2go to communicate with LetsTrust-TPM2Go:
 ```console
-tpm2_startup -Tspi-lt2go -c
-tpm2_getrandom -Tspi-lt2go 8 --hex
+tpm2_startup -Tspi-ltt2go -c
+tpm2_getrandom -Tspi-ltt2go 8 --hex
 ```
 
 Enable abrmd:
 ```console
 export DBUS_SESSION_BUS_ADDRESS=`dbus-daemon --session --print-address --fork`
-tpm2-abrmd --allow-root --session --tcti=spi-lt2go &
+tpm2-abrmd --allow-root --session --tcti=spi-ltt2go &
 
 export TPM2TOOLS_TCTI="tabrmd:bus_name=com.intel.tss2.Tabrmd,bus_type=session"
 tpm2_startup -c

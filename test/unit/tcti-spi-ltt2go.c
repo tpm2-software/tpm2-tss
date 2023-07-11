@@ -19,10 +19,10 @@
 #include <cmocka.h>
 
 #include "tss2_tcti.h"
-#include "tss2_tcti_spi_lt2go.h"
+#include "tss2_tcti_spi_ltt2go.h"
 
 #include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-spi-lt2go.h"
+#include "tss2-tcti/tcti-spi-ltt2go.h"
 #include "tss2-tcti/tcti-spi-helper.h"
 #include "util/key-value-parse.h"
 
@@ -336,7 +336,7 @@ int __wrap_libusb_dev_mem_free (libusb_device_handle *dev_handle,
 }
 
 /*
- * The test will invoke Tss2_Tcti_Spi_Lt2go_Init() and subsequently
+ * The test will invoke Tss2_Tcti_Spi_Ltt2go_Init() and subsequently
  * it will start reading TPM_DID_VID, claim locality, read TPM_STS,
  * and finally read TPM_RID before exiting the Init function.
  * For testing purpose, the TPM responses are hardcoded.
@@ -350,7 +350,7 @@ tcti_spi_no_wait_state_success_test (void **state)
     TSS2_TCTI_CONTEXT* tcti_ctx;
 
     /* Get requested TCTI context size */
-    rc = Tss2_Tcti_Spi_Lt2go_Init (NULL, &size, NULL);
+    rc = Tss2_Tcti_Spi_Ltt2go_Init (NULL, &size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
     /* Allocate TCTI context size */
@@ -358,7 +358,7 @@ tcti_spi_no_wait_state_success_test (void **state)
     assert_non_null (tcti_ctx);
 
     /* Initialize TCTI context */
-    rc = Tss2_Tcti_Spi_Lt2go_Init (tcti_ctx, &size, NULL);
+    rc = Tss2_Tcti_Spi_Ltt2go_Init (tcti_ctx, &size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
     TSS2_TCTI_SPI_HELPER_PLATFORM platform = ((TSS2_TCTI_SPI_HELPER_CONTEXT *) tcti_ctx)->platform;
