@@ -256,12 +256,12 @@ ifapi_profiles_get(
     }
 
     /* Search for path delimiter */
-    split = index(name, IFAPI_FILE_DELIM_CHAR);
+    split = strchr(name, IFAPI_FILE_DELIM_CHAR);
 
     /* If the path beging with delimiters, skip over those */
     if (name == split) {
         name += 1;
-        split = index(name, IFAPI_FILE_DELIM_CHAR);
+        split = strchr(name, IFAPI_FILE_DELIM_CHAR);
     }
     if (split == NULL)
         len = strlen(name);
