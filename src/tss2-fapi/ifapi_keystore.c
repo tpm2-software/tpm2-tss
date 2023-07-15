@@ -6,10 +6,10 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-#include <dirent.h>
-#include <ctype.h>
 #endif
 
+#include <dirent.h>
+#include <ctype.h>
 #include "ifapi_io.h"
 #include "ifapi_helpers.h"
 #include "ifapi_keystore.h"
