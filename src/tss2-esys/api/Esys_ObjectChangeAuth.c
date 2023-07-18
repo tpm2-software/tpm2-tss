@@ -148,6 +148,11 @@ Esys_ObjectChangeAuth_Async(
     TSS2L_SYS_AUTH_COMMAND auths;
     RSRC_NODE_T *objectHandleNode;
     RSRC_NODE_T *parentHandleNode;
+    TPM2B_AUTH authCopy =
+        { .size = 0,
+          .buffer = {}
+        };
+    TPMI_ALG_HASH hashAlg = 0;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -169,6 +174,17 @@ Esys_ObjectChangeAuth_Async(
     r = esys_GetResourceObject(esysContext, parentHandle, &parentHandleNode);
     return_state_if_error(r, _ESYS_STATE_INIT, "parentHandle unknown.");
 
+    if (objectHandleNode->rsrc.rsrcType == IESYSC_KEY_RSRC) {
+        hashAlg = objectHandleNode->rsrc.misc.rsrc_key_pub.publicArea.nameAlg;
+    }
+
+    if (newAuth) {
+        authCopy = *newAuth;
+    };
+
+    r = iesys_adapt_auth_value(&esysContext->crypto_backend, &authCopy, hashAlg);
+    return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value");
+
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_ObjectChangeAuth_Prepare(esysContext->sys,
                                           (objectHandleNode == NULL)
@@ -177,7 +193,7 @@ Esys_ObjectChangeAuth_Async(
                                           (parentHandleNode == NULL)
                                            ? TPM2_RH_NULL
                                            : parentHandleNode->rsrc.handle,
-                                          newAuth);
+                                          &authCopy);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */

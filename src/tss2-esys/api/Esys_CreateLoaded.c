@@ -203,7 +203,7 @@ Esys_CreateLoaded_Async(
                                           &publicArea);
         return_if_error(r, "Unmarshalling inPublic failed");
 
-        r = iesys_hash_long_auth_values(
+        r = iesys_adapt_auth_value(
             &esysContext->crypto_backend,
             &esysContext->in.CreateLoaded.inSensitive->sensitive.userAuth,
              publicArea.nameAlg);
