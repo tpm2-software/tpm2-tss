@@ -171,10 +171,13 @@ TSS2_RC iesys_get_name(
 bool iesys_tpm_error(
     TSS2_RC r);
 
-TSS2_RC iesys_hash_long_auth_values(
+TSS2_RC iesys_adapt_auth_value(
     ESYS_CRYPTO_CALLBACKS *crypto_cb,
     TPM2B_AUTH *auth_value,
     TPMI_ALG_HASH hash_alg);
+
+void iesys_strip_trailing_zeros(
+    TPM2B_AUTH *auth_value);
 
 #ifdef __cplusplus
 } /* extern "C" */

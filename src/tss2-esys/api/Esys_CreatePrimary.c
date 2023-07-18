@@ -208,7 +208,7 @@ Esys_CreatePrimary_Async(
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
     store_input_parameters (esysContext, inSensitive);
     if (inPublic) {
-        r = iesys_hash_long_auth_values(
+        r = iesys_adapt_auth_value(
             &esysContext->crypto_backend,
             &esysContext->in.CreatePrimary.inSensitive->sensitive.userAuth,
              inPublic->publicArea.nameAlg);
