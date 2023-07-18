@@ -479,14 +479,20 @@ Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
             name_alg = esys_object->rsrc.misc.rsrc_key_pub.publicArea.nameAlg;
         } else if (esys_object->rsrc.rsrcType == IESYSC_NV_RSRC) {
             name_alg = esys_object->rsrc.misc.rsrc_nv_pub.nvPublic.nameAlg;
+        } else {
+            name_alg = TPM2_ALG_NULL;
         }
         esys_object->auth = *authValue;
-        /* Adapt auth value to hash for large auth values. */
+
+        /* Adapt auth value. */
         if (name_alg != TPM2_ALG_NULL) {
-            r = iesys_hash_long_auth_values(&esys_context->crypto_backend,
+            r = iesys_adapt_auth_value(&esys_context->crypto_backend,
                     &esys_object->auth, name_alg);
             return_if_error(r, "Hashing overlength authValue failed.");
+        } else {
+            iesys_strip_trailing_zeros(&esys_object->auth);
         }
+
     }
     return TSS2_RC_SUCCESS;
 }
