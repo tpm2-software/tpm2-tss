@@ -226,6 +226,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-certify-creation.int \
     test/integration/esys-certifyX509.int \
     test/integration/esys-certify.int \
+    test/integration/esys-check-auth-with-trailing-zero.int \
     test/integration/esys-clear-control.int \
     test/integration/esys-clockset.int \
     test/integration/esys-clockset-audit.int \
@@ -1255,6 +1256,13 @@ test_integration_esys_change_eps_int_LDADD = $(TESTS_LDADD)
 test_integration_esys_change_eps_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_change_eps_int_SOURCES = \
     test/integration/esys-change-eps.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_check_auth_with_trailing_zero_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_check_auth_with_trailing_zero_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_check_auth_with_trailing_zero_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_check_auth_with_trailing_zero_int_SOURCES = \
+    test/integration/esys-check-auth-with-trailing-zero.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_clear_int_CFLAGS  = $(TESTS_CFLAGS)

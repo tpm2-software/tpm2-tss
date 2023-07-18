@@ -200,9 +200,9 @@ Esys_NV_DefineSpace_Async(
     store_input_parameters(esysContext, auth, publicInfo);
 
     if (publicInfo) {
-        r = iesys_hash_long_auth_values(&esysContext->crypto_backend,
-                                        &esysContext->in.NV.authData,
-                                        publicInfo->nvPublic.nameAlg);
+        r = iesys_adapt_auth_value(&esysContext->crypto_backend,
+                                   &esysContext->in.NV.authData,
+                                   publicInfo->nvPublic.nameAlg);
         return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value.");
     }
 

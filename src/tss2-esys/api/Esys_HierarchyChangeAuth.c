@@ -26,11 +26,13 @@ static void store_input_parameters (
     const TPM2B_AUTH *newAuth)
 {
     esysContext->in.HierarchyChangeAuth.authHandle = authHandle;
-    if (newAuth == NULL)
+    if (newAuth == NULL) {
         memset(&esysContext->in.HierarchyChangeAuth.newAuth, 0,
                 sizeof(esysContext->in.HierarchyChangeAuth.newAuth));
-    else
+    } else {
         esysContext->in.HierarchyChangeAuth.newAuth = *newAuth;
+        iesys_strip_trailing_zeros(&esysContext->in.HierarchyChangeAuth.newAuth);
+    }
 }
 
 /** One-Call function for TPM2_HierarchyChangeAuth
@@ -175,7 +177,9 @@ Esys_HierarchyChangeAuth_Async(
     /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+
     store_input_parameters(esysContext, authHandle, newAuth);
+    iesys_strip_trailing_zeros(&esysContext->in.HierarchyChangeAuth.newAuth);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, authHandle, &authHandleNode);
@@ -186,7 +190,7 @@ Esys_HierarchyChangeAuth_Async(
                                              (authHandleNode == NULL)
                                               ? TPM2_RH_NULL
                                               : authHandleNode->rsrc.handle,
-                                             newAuth);
+                                             &esysContext->in.HierarchyChangeAuth.newAuth);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
