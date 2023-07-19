@@ -361,6 +361,9 @@ Esys_EvictControl_Finish(
     /* The object was already persistent */
     if (iesys_get_handle_type(objectHandleNode->rsrc.handle) == TPM2_HT_PERSISTENT) {
         *newObjectHandle = ESYS_TR_NONE;
+        r = Esys_TR_Close(esysContext, &objectHandle);
+        if (r != TSS2_RC_SUCCESS)
+            return r;
     } else {
         /* A new resource is created and updated with date from the not persistent object */
         RSRC_NODE_T *newObjectHandleNode = NULL;
