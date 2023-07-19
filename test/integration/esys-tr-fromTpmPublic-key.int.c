@@ -105,51 +105,72 @@ test_esys_tr_fromTpmPublic_key(ESYS_CONTEXT * ectx)
         .count = 0,
     };
 
-    r = Esys_CreatePrimary(ectx, ESYS_TR_RH_OWNER,
-                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitivePrimary, &inPublic, &outsideInfo,
-                           &creationPCR,
-                           &primaryHandle, NULL, NULL, NULL, NULL);
-    goto_if_error(r, "Create primary", error);
+    /*
+     * Do this twice to test that Esys_TR_FromTPMPublic doesn't error
+     * due to the handle not being closed by Esys_EvictControl
+     */
+    for (int i = 0; i < 2; i++) {
+        /*
+         * Change public data to verify that handle is closed on
+         * Esys_EvictControl delete
+         */
+        if (i == 1) {
+            inPublic.publicArea.unique.rsa.size = 2048 / 8;
+            inPublic.publicArea.unique.rsa.buffer[0] = 1;
+        }
 
-    r = Esys_ReadPublic(ectx, primaryHandle,
-                        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                        NULL, &name1, NULL);
-    goto_if_error(r, "Read Public", error);
+        r = Esys_CreatePrimary(ectx, ESYS_TR_RH_OWNER,
+                               ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                               &inSensitivePrimary, &inPublic, &outsideInfo,
+                               &creationPCR,
+                               &primaryHandle, NULL, NULL, NULL, NULL);
+        goto_if_error(r, "Create primary", error);
 
-    r = Esys_EvictControl(ectx, ESYS_TR_RH_OWNER, primaryHandle,
-                          ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                          TPM2_PERSISTENT_FIRST, &keyHandle);
-    goto_if_error(r, "EvictControl make persistent", error_name1);
+        r = Esys_ReadPublic(ectx, primaryHandle,
+                            ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                            NULL, &name1, NULL);
+        goto_if_error(r, "Read Public", error);
 
-    r = Esys_FlushContext(ectx, primaryHandle);
-    goto_if_error(r, "Flushing primary", error_name1);
+        r = Esys_EvictControl(ectx, ESYS_TR_RH_OWNER, primaryHandle,
+                              ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                              TPM2_PERSISTENT_FIRST, &keyHandle);
+        goto_if_error(r, "EvictControl make persistent", error_name1);
 
-    r = Esys_TR_Close(ectx, &keyHandle);
-    goto_if_error(r, "TR close on nv object", error_name1);
+        LOG_ERROR("Key handle (1) 0x%x", keyHandle);
 
-    r = Esys_TR_FromTPMPublic(ectx, TPM2_PERSISTENT_FIRST,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &keyHandle);
-    goto_if_error(r, "TR from TPM public", error_name1);
+        r = Esys_FlushContext(ectx, primaryHandle);
+        goto_if_error(r, "Flushing primary", error_name1);
 
-    r = Esys_TR_GetName(ectx, keyHandle, &name2);
-    goto_if_error(r, "TR get name", error_name1);
+        r = Esys_TR_Close(ectx, &keyHandle);
+        goto_if_error(r, "TR close on nv object", error_name1);
 
-    r = Esys_EvictControl(ectx, ESYS_TR_RH_OWNER, keyHandle,
-                          ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                          TPM2_PERSISTENT_FIRST, &keyHandle);
-    goto_if_error(r, "EvictControl delete", error_name2);
+        r = Esys_TR_FromTPMPublic(ectx, TPM2_PERSISTENT_FIRST,
+                                  ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                  &keyHandle);
+        goto_if_error(r, "TR from TPM public", error_name1);
 
-    if (name1->size != name2->size ||
-        memcmp(&name1->name[0], &name2->name[0], name1->size) != 0)
-    {
-        LOG_ERROR("Names mismatch between NV_GetPublic and TR_GetName");
-        goto error_name2;
+        LOG_ERROR("Key handle (2) 0x%x", keyHandle);
+
+        r = Esys_TR_GetName(ectx, keyHandle, &name2);
+        goto_if_error(r, "TR get name", error_name1);
+
+        r = Esys_EvictControl(ectx, ESYS_TR_RH_OWNER, keyHandle,
+                              ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                              TPM2_PERSISTENT_FIRST, &keyHandle);
+        goto_if_error(r, "EvictControl delete", error_name2);
+
+        LOG_ERROR("Key handle (after delete) 0x%x", keyHandle);
+
+        if (name1->size != name2->size ||
+            memcmp(&name1->name[0], &name2->name[0], name1->size) != 0)
+        {
+            LOG_ERROR("Names mismatch between NV_GetPublic and TR_GetName");
+            goto error_name2;
+        }
+
+        free(name1);
+        free(name2);
     }
-
-    free(name1);
-    free(name2);
 
     return EXIT_SUCCESS;
 
