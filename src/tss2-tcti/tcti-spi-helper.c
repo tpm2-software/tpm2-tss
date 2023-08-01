@@ -155,12 +155,12 @@ static void spi_tpm_helper_log_register_access(enum TCTI_SPI_HELPER_REGISTER_ACC
     char* access_str = (access == TCTI_SPI_HELPER_REGISTER_READ) ? "READ" : "WRITE";
 
     if (err != NULL) {
-        LOG_ERROR("%s register %#02x (%zu bytes) %s", access_str, reg_number, cnt, err);
+        LOG_ERROR("%s register %#02"PRIx32" (%zu bytes) %s", access_str, reg_number, cnt, err);
     } else {
 #if MAXLOGLEVEL < LOGL_TRACE
         (void) buffer;
 #else
-        LOGBLOB_TRACE(buffer, cnt, "%s register %#02x (%zu bytes)", access_str, reg_number, cnt);
+        LOGBLOB_TRACE(buffer, cnt, "%s register %#02"PRIx32" (%zu bytes)", access_str, reg_number, cnt);
 #endif
     }
 #endif
@@ -545,7 +545,7 @@ TSS2_RC tcti_spi_helper_receive (TSS2_TCTI_CONTEXT* tcti_context, size_t *respon
     // Verify that there is still data to read
     uint32_t status = spi_tpm_helper_read_sts_reg(ctx);
     if ((status & expected_status_bits) != expected_status_bits) {
-        LOG_ERROR("Unexpected intermediate status %#x",status);
+        LOG_ERROR("Unexpected intermediate status %#"PRIx32,status);
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
@@ -558,7 +558,7 @@ TSS2_RC tcti_spi_helper_receive (TSS2_TCTI_CONTEXT* tcti_context, size_t *respon
     // Verify that there is no more data available
     status = spi_tpm_helper_read_sts_reg(ctx);
     if ((status & expected_status_bits) != TCTI_SPI_HELPER_TPM_STS_VALID) {
-        LOG_ERROR("Unexpected final status %#x", status);
+        LOG_ERROR("Unexpected final status %#"PRIx32, status);
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
@@ -613,7 +613,7 @@ TSS2_RC tcti_spi_helper_transmit (TSS2_TCTI_CONTEXT *tcti_ctx, size_t size, cons
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
-    LOGBLOB_DEBUG (cmd_buf, size, "Sending command with TPM_CC %#x and size %" PRIu32,
+    LOGBLOB_DEBUG (cmd_buf, size, "Sending command with TPM_CC %#"PRIx32" and size %" PRIu32,
                header.code, header.size);
 
     // Tell TPM to expect command

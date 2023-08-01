@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include "tss2_rc.h"
 #include "tss2_sys.h"
@@ -641,7 +642,7 @@ tpm2_err_handler_fmt1(TPM2_RC rc)
     if (m) {
         catbuf(buf, "%s", m);
     } else {
-        catbuf(buf, "unknown error num: 0x%X", errnum);
+        catbuf(buf, "unknown error num: 0x%"PRIX8, errnum);
     }
 
     return buf;
@@ -663,7 +664,7 @@ tpm2_err_handler_fmt0(TSS2_RC rc)
     if (tpm2_rc_tpm_fmt0_V_get(rc)) {
         /* TCG specific error code */
         if (tpm2_rc_fmt0_T_get(rc)) {
-            catbuf(buf, "Vendor specific error: 0x%X", errnum);
+            catbuf(buf, "Vendor specific error: 0x%"PRIX8, errnum);
             return buf;
         }
 
@@ -884,7 +885,7 @@ unknown_layer_handler(TSS2_RC rc)
     static __thread char buf[32];
 
     clearbuf(buf);
-    catbuf(buf, "0x%X", rc);
+    catbuf(buf, "0x%"PRIX32, rc);
 
     return buf;
 }
@@ -992,7 +993,7 @@ Tss2_RC_Decode(TSS2_RC rc)
         if (e) {
             catbuf(buf, "%s", e);
         } else {
-            catbuf(buf, "0x%X", err_bits);
+            catbuf(buf, "0x%"PRIX16, err_bits);
         }
     } else {
         /*
@@ -1076,7 +1077,7 @@ Tss2_RC_DecodeInfoError(TSS2_RC_INFO *info)
     if (m) {
         catbuf(buf, "%s", m);
     } else {
-        catbuf(buf, "0x%X", info->error);
+        catbuf(buf, "0x%"PRIX32, info->error);
     }
 
     return buf;
