@@ -22,18 +22,15 @@
 #define BE_TO_HOST_32(value) be32toh(value)
 #define BE_TO_HOST_64(value) be64toh(value)
 
+#define HOST_TO_LE_16(value) htole16(value)
+#define HOST_TO_LE_32(value) htole32(value)
+#define HOST_TO_LE_64(value) htole64(value)
+#define LE_TO_HOST_16(value) le16toh(value)
+#define LE_TO_HOST_32(value) le32toh(value)
+#define LE_TO_HOST_64(value) le64toh(value)
+
 #else /* linux || unix */
 
-#if defined(WORDS_BIGENDIAN)
-
-#define HOST_TO_BE_16(value) (value)
-#define HOST_TO_BE_32(value) (value)
-#define HOST_TO_BE_64(value) (value)
-#define BE_TO_HOST_16(value) (value)
-#define BE_TO_HOST_32(value) (value)
-#define BE_TO_HOST_64(value) (value)
-
-#else
 #include <stdint.h>
 
 static inline uint16_t endian_conv_16(uint16_t value)
@@ -62,6 +59,24 @@ static inline uint64_t endian_conv_64(uint64_t value)
            ((value & (0xffULL << 56)) >> 56);
 }
 
+#if defined(WORDS_BIGENDIAN)
+
+#define HOST_TO_BE_16(value) (value)
+#define HOST_TO_BE_32(value) (value)
+#define HOST_TO_BE_64(value) (value)
+#define BE_TO_HOST_16(value) (value)
+#define BE_TO_HOST_32(value) (value)
+#define BE_TO_HOST_64(value) (value)
+
+#define HOST_TO_LE_16(value) endian_conv_16(value)
+#define HOST_TO_LE_32(value) endian_conv_32(value)
+#define HOST_TO_LE_64(value) endian_conv_64(value)
+#define LE_TO_HOST_16(value) endian_conv_16(value)
+#define LE_TO_HOST_32(value) endian_conv_32(value)
+#define LE_TO_HOST_64(value) endian_conv_64(value)
+
+#else /* WORDS_BIGENDIAN */
+
 #define HOST_TO_BE_16(value) endian_conv_16(value)
 #define HOST_TO_BE_32(value) endian_conv_32(value)
 #define HOST_TO_BE_64(value) endian_conv_64(value)
@@ -69,6 +84,13 @@ static inline uint64_t endian_conv_64(uint64_t value)
 #define BE_TO_HOST_32(value) endian_conv_32(value)
 #define BE_TO_HOST_64(value) endian_conv_64(value)
 
-#endif /* WORDS_BIGENDIAN */
+#define HOST_TO_LE_16(value) (value)
+#define HOST_TO_LE_32(value) (value)
+#define HOST_TO_LE_64(value) (value)
+#define LE_TO_HOST_16(value) (value)
+#define LE_TO_HOST_32(value) (value)
+#define LE_TO_HOST_64(value) (value)
+
+#endif /* WORDS_BIGENDIAN else */
 #endif /* linux || unix */
 #endif /* TSS2_ENDIAN_H */
