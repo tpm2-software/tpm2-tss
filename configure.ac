@@ -151,7 +151,7 @@ AS_IF([test "x$enable_fapi_async_tests" = "xyes"],
     [AC_MSG_WARN("FAPI compiled with asynchronous spinning testing. NOT FOR PRODUCTION!")])
 
 AC_ARG_ENABLE([policy],
-            [AS_HELP_STRING([--enable-policy],
+            [AS_HELP_STRING([--disable-policy],
                             [build the tss2-policy library (default is yes)])],
             [enable_policy=$enableval],
             [enable_policy=yes])
