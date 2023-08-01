@@ -39,6 +39,9 @@ static char *strndup(const char* s, size_t n)
 #endif
 #else
 #include <limits.h>
+#ifndef PATH_MAX
+#define PATH_MAX 256
+#endif
 #endif
 #include <stdlib.h>
 #include <string.h>
