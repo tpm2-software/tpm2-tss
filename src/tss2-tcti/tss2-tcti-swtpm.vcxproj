@@ -137,14 +137,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\util\io.c" />
+    <ClCompile Include="..\util-io\io.c" />
     <ClCompile Include="..\util\key-value-parse.c" />
     <ClCompile Include="..\util\log.c" />
     <ClCompile Include="tcti-common.c" />
     <ClCompile Include="tcti-swtpm.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\util\io.h" />
+    <ClInclude Include="..\util-io\io.h" />
     <ClInclude Include="..\util\key-value-parse.h" />
     <ClInclude Include="..\util\log.h" />
     <ClInclude Include="tcti-common.h" />

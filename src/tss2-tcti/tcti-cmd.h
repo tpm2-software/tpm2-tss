@@ -10,7 +10,7 @@
 #include <limits.h>
 
 #include "tcti-common.h"
-#include "util/io.h"
+#include "util-io/io.h"
 
 #define TCTI_CMD_NAME "tcti-cmd"
 #define TCTI_CMD_DESCRIPTION "TCTI module for using a process to send and receive data."

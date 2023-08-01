@@ -10,6 +10,7 @@
 #include <limits.h>
 
 #include <dlfcn.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 
@@ -17,7 +18,6 @@
 #include <libtpms/tpm_error.h>
 
 #include "tcti-common.h"
-#include "util/io.h"
 #include "util/aux_util.h"
 
 #define TCTI_LIBTPMS_MAGIC 0x49E299A554504D32ULL

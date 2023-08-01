@@ -10,7 +10,7 @@
 #include <limits.h>
 
 #include "tcti-common.h"
-#include "util/io.h"
+#include "util-io/io.h"
 
 /*
  * longest possible conf string:

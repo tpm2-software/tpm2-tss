@@ -36,7 +36,6 @@
 #include "tss2_tcti_spi_ftdi.h"
 #include "tcti-spi-helper.h"
 #include "tss2_mu.h"
-#include "util/io.h"
 #define LOGMODULE tcti
 #include "util/log.h"
 

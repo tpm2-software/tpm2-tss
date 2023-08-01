@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "tss2_mu.h"
 #include "tss2_tcti_fuzzing.h"

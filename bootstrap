@@ -52,6 +52,10 @@ echo "Generating file lists: ${VARS_FILE}"
   src_listvar "src/util" "*.h" "UTIL_H"
   printf "UTIL_SRC = \$(UTIL_C) \$(UTIL_H)\n"
 
+  src_listvar "src/util-io" "*.c" "UTIL_IO_C"
+  src_listvar "src/util-io" "*.h" "UTIL_IO_H"
+  printf "UTIL_IO_SRC = \$(UTIL_IO_C) \$(UTIL_IO_H)\n"
+
   src_listvar "src/tss2-sys/" "*.c" "TSS2_SYS_C"
   src_listvar "src/tss2-sys/" "*.h" "TSS2_SYS_H"
   printf "TSS2_SYS_SRC = \$(TSS2_SYS_H) \$(TSS2_SYS_C)\n"

@@ -249,6 +249,12 @@ libutil = libutil.la
 noinst_LTLIBRARIES += $(libutil)
 libutil_la_SOURCES = $(UTIL_SRC)
 
+if ENABLE_UTIL_IO
+libutilio = libutil-io.la
+noinst_LTLIBRARIES += $(libutilio)
+libutil_io_la_SOURCES = $(UTIL_IO_SRC)
+endif
+
 ### TCG TSS Marshaling/Unmarshaling spec library ###
 libtss2_mu = src/tss2-mu/libtss2-mu.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_mu.h
@@ -301,7 +307,7 @@ pkgconfig_DATA += lib/tss2-tcti-device.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-device.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_device_la_LIBADD   = $(libtss2_mu) $(libutil)
+src_tss2_tcti_libtss2_tcti_device_la_LIBADD   = $(libtss2_mu) $(libutil) $(libutilio)
 src_tss2_tcti_libtss2_tcti_device_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-device.c
@@ -318,7 +324,7 @@ pkgconfig_DATA += lib/tss2-tcti-swtpm.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_swtpm_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-swtpm.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_swtpm_la_LIBADD   = $(libtss2_mu) $(libutil)
+src_tss2_tcti_libtss2_tcti_swtpm_la_LIBADD   = $(libtss2_mu) $(libutil) $(libutilio)
 src_tss2_tcti_libtss2_tcti_swtpm_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-swtpm.c \
@@ -336,7 +342,7 @@ pkgconfig_DATA += lib/tss2-tcti-mssim.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-mssim.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_mssim_la_LIBADD   = $(libtss2_mu) $(libutil)
+src_tss2_tcti_libtss2_tcti_mssim_la_LIBADD   = $(libtss2_mu) $(libutil) $(libutilio)
 src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-mssim.c
@@ -355,7 +361,7 @@ pkgconfig_DATA += lib/tss2-tcti-pcap.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_pcap_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-pcap.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_pcap_la_LIBADD   = $(libtss2_tctildr) $(libtss2_mu) $(libutil)
+src_tss2_tcti_libtss2_tcti_pcap_la_LIBADD   = $(libtss2_tctildr) $(libtss2_mu) $(libutil) $(libutilio)
 src_tss2_tcti_libtss2_tcti_pcap_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-pcap-builder.c \
