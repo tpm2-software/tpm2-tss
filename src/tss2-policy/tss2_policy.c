@@ -250,7 +250,7 @@ Tss2_PolicyExecute(
           through all execution stages / states of this invocation. */
      } while (is_try_again(r));
 
-    LOG_TRACE("finished, returning: 0x%x", r);
+    LOG_TRACE("finished, returning: 0x%"PRIx32, r);
 
     return r;
 }

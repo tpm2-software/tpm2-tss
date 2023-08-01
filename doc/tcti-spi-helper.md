@@ -222,7 +222,7 @@ TSS2_TCTI_CONTEXT* create_tcti_ctx()
     // Get requested TCTI context size
     rc = Tss2_Tcti_Spi_Helper_Init(NULL, &size, &tcti_platform);
     if (rc != TSS2_RC_SUCCESS) {
-        printf("Failed to get allocation size for device tcti context: 0x%x\n", rc);
+        printf("Failed to get allocation size for device tcti context: 0x%"PRIx32"\n", rc);
         return NULL;
     }
 
@@ -236,7 +236,7 @@ TSS2_TCTI_CONTEXT* create_tcti_ctx()
     // Initialize TCTI context
     rc = Tss2_Tcti_Spi_Helper_Init(tcti_ctx, &size, &tcti_platform);
     if (rc != TSS2_RC_SUCCESS) {
-        printf("Failed to initialize device TCTI context: 0x%x\n", rc);
+        printf("Failed to initialize device TCTI context: 0x%"PRIx32"\n", rc);
         free(tcti_ctx);
         return NULL;
     }

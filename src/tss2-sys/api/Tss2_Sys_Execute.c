@@ -75,7 +75,7 @@ TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
     }
     if (response_size > ctx->maxCmdSize) {
         ctx->previousStage = CMD_STAGE_PREPARE;
-        LOG_ERROR("Response size to big: %zu > %u", response_size, ctx->maxCmdSize);
+        LOG_ERROR("Response size to big: %zu > %"PRIu32, response_size, ctx->maxCmdSize);
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
     }
 
