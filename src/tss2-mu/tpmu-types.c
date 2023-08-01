@@ -285,7 +285,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
         return TSS2_MU_RC_BAD_REFERENCE; \
     } \
 \
-    LOG_DEBUG("Marshalling " #type ", selector %x", selector); \
+    LOG_DEBUG("Marshalling " #type ", selector 0x%"PRIx32, selector); \
     switch (selector) { \
     case sel: \
     ret = fn(op src->m, buffer, buffer_size, offset); \
@@ -328,7 +328,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
     ret = TSS2_RC_SUCCESS; \
     break; \
     default: \
-    LOG_DEBUG("wrong selector %x return error", selector); \
+    LOG_DEBUG("wrong selector 0x%"PRIx32" return error", selector); \
     break; \
     } \
     return ret; \
@@ -382,7 +382,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 { \
     TSS2_RC ret = TSS2_MU_RC_BAD_VALUE; \
 \
-    LOG_DEBUG("Unmarshalling " #type ", selector %x", selector); \
+    LOG_DEBUG("Unmarshalling " #type ", selector 0x%"PRIx32, selector); \
     switch (selector) { \
     case sel: \
     ret = fn(buffer, buffer_size, offset, dest ? &dest->m : NULL); \
@@ -425,7 +425,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     ret = TSS2_RC_SUCCESS; \
     break; \
     default: \
-    LOG_DEBUG("wrong selector %x return error", selector); \
+    LOG_DEBUG("wrong selector 0x%"PRIx32" return error", selector); \
     break; \
     } \
     return ret; \

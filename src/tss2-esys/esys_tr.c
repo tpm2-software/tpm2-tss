@@ -431,7 +431,7 @@ Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
             return TSS2_RC_SUCCESS;
         }
     }
-    LOG_ERROR("Error: Esys handle does not exist (%x).", TSS2_ESYS_RC_BAD_TR);
+    LOG_ERROR("Error: Esys handle does not exist (0x%08"PRIx32").", TSS2_ESYS_RC_BAD_TR);
     return TSS2_ESYS_RC_BAD_TR;
 }
 

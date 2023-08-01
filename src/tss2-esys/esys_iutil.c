@@ -392,7 +392,7 @@ iesys_handle_to_tpm_handle(ESYS_TR esys_handle, TPM2_HANDLE * tpm_handle)
         *tpm_handle = TPM2_NV_AC_FIRST + (esys_handle - ESYS_TR_RH_AC_FIRST);
         return TPM2_RC_SUCCESS;
     }
-    LOG_ERROR("Error: Esys invalid ESAPI handle (%x).", esys_handle);
+    LOG_ERROR("Error: Esys invalid ESAPI handle (%"PRIx32").", esys_handle);
     return TSS2_ESYS_RC_BAD_VALUE;
 }
 
@@ -413,7 +413,7 @@ iesys_is_platform_handle(ESYS_TR handle) {
     case TPM2_RH_PLATFORM_NV:
     case TPM2_RH_ENDORSEMENT:
     case TPM2_RH_NULL:
-        LOG_WARNING("Convert handle from TPM2_RH to ESYS_TR, got: 0x%x",
+        LOG_WARNING("Convert handle from TPM2_RH to ESYS_TR, got: 0x%"PRIx32,
                 handle);
         return true;
     default:
@@ -574,7 +574,7 @@ iesys_gen_caller_nonces(ESYS_CONTEXT * esys_context)
         r = iesys_crypto_get_random2b(&esys_context->crypto_backend,
                 &session->rsrc.misc.rsrc_session.nonceCaller,
                 session->rsrc.misc.rsrc_session.nonceCaller.size);
-        return_if_error(r, "Error: computing caller nonce (%x).");
+        return_if_error(r, "Error: computing caller nonce.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -612,7 +612,7 @@ iesys_update_session_flags(ESYS_CONTEXT * esys_context,
         rsrc_session->sessionAttributes &= ~(TPMA_SESSION_ENCRYPT);
     }
 
-    LOG_DEBUG("Session Attrs 0x%x orig 0x%x",
+    LOG_DEBUG("Session Attrs 0x%"PRIx32" orig 0x%"PRIx32,
 	      rsrc_session->sessionAttributes,
 	      rsrc_session->origSessionAttributes);
 }
@@ -633,7 +633,7 @@ iesys_restore_session_flags(ESYS_CONTEXT *esys_context)
         if (session == NULL)
             continue;
         IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
-        LOG_DEBUG("Orig Session %i Attrs 0x%x, altered Attrs x%x", i,
+        LOG_DEBUG("Orig Session %i Attrs 0x%"PRIx8", altered Attrs x%"PRIx8, i,
                   rsrc_session->origSessionAttributes,
                   rsrc_session->sessionAttributes);
 
@@ -1104,7 +1104,7 @@ esys_GetResourceObject(ESYS_CONTEXT * esys_context,
     /* All objects with a TR-handle larger than ESYS_TR_MIN_OBJECT must have
        been initialized previously. Therefore the TR handle was erroneous. */
     if (esys_handle >= ESYS_TR_MIN_OBJECT) {
-        LOG_ERROR("Error: Esys handle does not exist (%x).",
+        LOG_ERROR("Error: Esys handle does not exist (0x%08"PRIx32").",
                   TSS2_ESYS_RC_BAD_TR);
         return TSS2_ESYS_RC_BAD_TR;
     }

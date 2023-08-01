@@ -436,14 +436,14 @@ Esys_StartAuthSession_Finish(
                      tpmKeyNode->rsrc.misc.rsrc_key_pub.publicArea.nameAlg, &
                      keyHash_size);
             if (r != TSS2_RC_SUCCESS) {
-                LOG_ERROR("Error: initialize auth session (%x).", r);
+                LOG_ERROR("Error: initialize auth session (0x%08"PRIx32").", r);
                 return r;
             }
         }
         r = iesys_crypto_hash_get_digest_size(esysContext->in.StartAuthSession.
                                               authHash,&authHash_size);
         if (r != TSS2_RC_SUCCESS) {
-            LOG_ERROR("Error: initialize auth session (%x).", r);
+            LOG_ERROR("Error: initialize auth session (0x%08"PRIx32").", r);
             return r;
         }
         /* compute session key except for an unbound session */
