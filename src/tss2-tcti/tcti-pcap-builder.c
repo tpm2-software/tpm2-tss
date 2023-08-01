@@ -20,7 +20,7 @@
 
 #include "tss2_common.h"
 #include "tcti-pcap-builder.h"
-#include "util/io.h"
+#include "util-io/io.h"
 #define LOGMODULE tcti
 #include "util/log.h"
 

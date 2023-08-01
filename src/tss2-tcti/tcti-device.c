@@ -52,7 +52,7 @@
 #include "tss2_mu.h"
 #include "tcti-common.h"
 #include "tcti-device.h"
-#include "util/io.h"
+#include "util-io/io.h"
 #include "util/aux_util.h"
 #define LOGMODULE tcti
 #include "util/log.h"

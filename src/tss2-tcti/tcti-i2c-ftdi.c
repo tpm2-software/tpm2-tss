@@ -36,7 +36,6 @@
 #include "tss2_tcti_i2c_ftdi.h"
 #include "tcti-i2c-helper.h"
 #include "tss2_mu.h"
-#include "util/io.h"
 #define LOGMODULE tcti
 #include "util/log.h"
 

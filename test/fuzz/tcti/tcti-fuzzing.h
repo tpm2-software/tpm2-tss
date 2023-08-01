@@ -10,7 +10,6 @@
 #include <limits.h>
 
 #include "tss2-tcti/tcti-common.h"
-#include "util/io.h"
 #include "tss2-sys/sysapi_util.h"
 
 #define TCTI_FUZZING_MAGIC 0x66757a7a696e6700ULL

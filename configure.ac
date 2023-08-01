@@ -226,6 +226,13 @@ AC_CHECK_LIB([curl], [curl_url_strerror], [AC_DEFINE([HAVE_CURL_URL_STRERROR],[1
 AS_IF([test "x$enable_fapi" = xyes -o "x$enable_policy" = xyes ],
       [PKG_CHECK_MODULES([UUID], [uuid])])
 
+AC_ARG_ENABLE([util-io],
+              [AS_HELP_STRING([--disable-util-io],
+              [don't build the util-io])],,
+              [enable_util_io=yes])
+
+AM_CONDITIONAL(ENABLE_UTIL_IO, test "x$enable_util_io" = "xyes")
+
 AC_ARG_WITH([tctidefaultmodule],
             [AS_HELP_STRING([--with-tctidefaultmodule],
 [The default TCTI module for ESYS. (Default: libtss2-tcti-default.so)])],
