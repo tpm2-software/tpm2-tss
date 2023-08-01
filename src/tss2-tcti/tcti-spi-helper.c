@@ -18,7 +18,6 @@
 #include "tss2_mu.h"
 #include "tcti-common.h"
 #include "tcti-spi-helper.h"
-#include "util/io.h"
 #define LOGMODULE tcti
 #include "util/log.h"
 
