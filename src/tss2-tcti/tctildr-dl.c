@@ -202,7 +202,14 @@ get_info_default(const TSS2_TCTI_INFO **info,
         return TSS2_TCTI_RC_IO_ERROR;
 #else
     size_t i;
+    if (ARRAY_SIZE(tctis) == 0) {
+        LOG_ERROR("No default TCTIs configured during compilation");
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
     for (i = 0; i < ARRAY_SIZE(tctis); i++) {
+#pragma GCC diagnostic pop
         name = tctis[i].file;
         LOG_DEBUG("name: %s", name);
         if (name == NULL) {
@@ -256,7 +263,14 @@ tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
     TSS2_RC r;
     size_t i;
 
+    if (ARRAY_SIZE(tctis) == 0) {
+        LOG_ERROR("No default TCTIs configured during compilation");
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
     for (i = 0; i < ARRAY_SIZE(tctis); i++) {
+#pragma GCC diagnostic pop
         LOG_DEBUG("Attempting to connect using standard TCTI: %s",
                   tctis[i].description);
         r = tcti_from_file(tctis[i].file, tctis[i].conf, tcticontext,
