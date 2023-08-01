@@ -223,3 +223,31 @@ $ make doxygen-doc
 The generated documentation will appear here:
 * doxygen-doc/html HTML format (start with file doxygen-doc/html/index.html)
 * doxygen-doc/rtf/refman.rtf RTF format
+
+# Building for embedded
+
+The libraries SYS, ESYS, MU, RC, tctildr, tcti-spi-helper, tcti-i2c-helper
+can also be build for embedded devices. The following is an example to build
+for cortex-m4:
+```
+./bootstrap
+./configure \
+        --disable-fapi \
+        --disable-esys \
+        --disable-policy \
+        --disable-tcti-cmd \
+        --disable-tcti-device \
+        --disable-tcti-libtpms \
+        --disable-tcti-mssim \
+        --disable-tcti-pcap \
+        --disable-tcti-spi-lt2go \
+        --disable-tcti-spi-ftdi \
+        --disable-tcti-swtpm \
+        --disable-doxygen-doc \
+        --enable-nodl \
+        --host=arm-none-eabi \
+        --prefix=/home/afuchs/tpm2-software/INSTALL.uC \
+        CFLAGS='-mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mthumb' \
+        LDFLAGS='--specs=nosys.specs'
+make
+```
