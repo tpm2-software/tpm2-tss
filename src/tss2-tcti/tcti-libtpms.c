@@ -384,6 +384,8 @@ tcti_libtpms_transmit(
     tpm_header_t header;
     TSS2_RC rc;
     TPM_RESULT ret;
+    uint32_t resp_size;
+    uint32_t respbufsize;
 
     rc = tcti_common_transmit_checks(tcti_common, cmd_buf, TCTI_LIBTPMS_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
@@ -400,11 +402,16 @@ tcti_libtpms_transmit(
     }
 
     LOGBLOB_DEBUG(cmd_buf, size, "Sending command with TPM_CC 0x%" PRIx32, header.size);
+    resp_size = (uint32_t) tcti_libtpms->response_len;
+    respbufsize = (uint32_t) tcti_libtpms->response_buffer_len;
     LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_Process, &tcti_libtpms->response_buffer,
-                                                         (uint32_t *) &tcti_libtpms->response_len,
-                                                         (uint32_t *) &tcti_libtpms->response_buffer_len,
+                                                         (uint32_t *) &resp_size,
+                                                         (uint32_t *) &respbufsize,
                                                          (uint8_t *) cmd_buf,
                                                          size);
+    tcti_libtpms->response_len = resp_size;
+    tcti_libtpms->response_buffer_len = respbufsize;
+
     rc = tcti_libtpms_store_state(tcti_libtpms);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to store state file");
