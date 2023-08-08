@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define LOGMODULE test
 #include "tss2_sys.h"
