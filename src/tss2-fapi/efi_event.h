@@ -125,4 +125,19 @@ typedef struct {
     BYTE DevicePath[];
 } PACKED UEFI_IMAGE_LOAD_EVENT;
 
+/*
+ * EV_NO_ACTION_STRUCT is the structure of an EV_NO_ACTION event.
+ * Described in TCG PCClient PFP section 9.4.5.
+ * The Signature identifies which arm of the union applies.
+ */
+typedef struct {
+    BYTE Signature[16];
+    union {
+        BYTE StartupLocality;
+    } Cases;
+} PACKED EV_NO_ACTION_STRUCT;
+
+static const BYTE STARTUP_LOCALITY_SIGNATURE[16] = {0x53, 0x74, 0x61, 0x72, 0x74, 0x75, 0x70, 0x4C,
+    0x6F, 0x63, 0x61, 0x6C, 0x69, 0x74, 0x79, 0};
+
 #endif
