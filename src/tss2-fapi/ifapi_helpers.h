@@ -17,6 +17,15 @@
 #include "tss2_fapi.h"
 #include "fapi_int.h"
 
+/** Type for representing a external public key
+ */
+typedef struct {
+    TPMI_ALG_HASH bank;
+    TPM2_HANDLE pcr;
+    TPM2B_DIGEST value;
+} IFAPI_PCR_REG;
+
+
 TSS2_RC
 ifapi_create_dirs(const char *supdir, const char *path);
 
@@ -163,6 +172,12 @@ ifapi_filter_pcr_selection_by_index(
     TPML_PCR_SELECTION *pcr_selection,
     const TPM2_HANDLE *pcr_index,
     size_t pcr_count);
+
+TSS2_RC ifapi_calculate_pcrs(
+    json_object *jso_event_list,
+    const TPML_PCR_SELECTION *pcr_selection,
+    IFAPI_PCR_REG pcrs[],
+    size_t *n_pcrs);
 
 TSS2_RC ifapi_calculate_pcr_digest(
     json_object *jso_event_list,
