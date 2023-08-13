@@ -760,7 +760,8 @@ EXTRA_DIST +=  \
     test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.b64 \
     test/data/fapi/eventlog/sml-ima-ng-sha1-invalidated.b64 \
     test/data/fapi/eventlog/sml-ima-sig-sha256-invalidated.b64 \
-    test/data/fapi/eventlog/sml-ima-sha1-invalidated.b64
+    test/data/fapi/eventlog/sml-ima-sha1-invalidated.b64 \
+    test/data/fapi/eventlog/binary_measurements_hcrtm.b64
 
 src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_esys) \
     $(libutil) $(libtss2_tctildr)
