@@ -92,7 +92,8 @@ FAPI_TEST_BINS = \
     test/data/fapi/eventlog/sml-ima-sig-sha256-invalidated.bin \
     test/data/fapi/eventlog/event-uefivar.bin \
     test/data/fapi/eventlog/specid-vendordata.bin \
-    test/data/fapi/eventlog/sml-ima-ng-sha1.bin
+    test/data/fapi/eventlog/sml-ima-ng-sha1.bin \
+    test/data/fapi/eventlog/binary_measurements_hcrtm.bin
 
 CLEANFILES += $(FAPI_TEST_BINS)
 endif #FAPI
