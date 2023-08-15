@@ -3688,7 +3688,7 @@ ifapi_key_create(
             r = Esys_EvictControl_Async(context->esys, hierarchy->public.handle,
                                         context->loadKey.handle,
                                         auth_session,
-                                        ENC_SESSION_IF_POLICY(auth_session),
+                                        ESYS_TR_NONE,
                                         ESYS_TR_NONE,
                                         object->misc.key.persistent_handle);
             goto_if_error(r, "Error Esys EvictControl", error_cleanup);
@@ -4890,7 +4890,7 @@ ifapi_create_primary(
             r = Esys_EvictControl_Async(context->esys, hierarchy->public.handle,
                                         context->cmd.Key_Create.handle,
                                         auth_session,
-                                        ENC_SESSION_IF_POLICY(auth_session),
+                                        ESYS_TR_NONE,
                                         ESYS_TR_NONE,
                                         object->misc.key.persistent_handle);
             goto_if_error(r, "Error Esys EvictControl", error_cleanup);
