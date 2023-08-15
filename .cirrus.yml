@@ -6,8 +6,9 @@ task:
     libusb_version: v1.0.26
   freebsd_instance:
     matrix:
-      image_family: freebsd-13-1
+      image_family: freebsd-13-2
   install_script:
+    - IGNORE_OSVERSION=yes
     - pkg update -f
     - pkg upgrade -y
     - pkg install -y bash gmake coreutils libtool pkgconf autoconf autoconf-archive
