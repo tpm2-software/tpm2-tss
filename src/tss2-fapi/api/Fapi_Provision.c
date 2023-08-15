@@ -927,7 +927,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             /* Prepare the setting of the dictionary attack parameters. */
             r = Esys_DictionaryAttackParameters_Async(context->esys, ESYS_TR_RH_LOCKOUT,
                        auth_session,
-                       ENC_SESSION_IF_POLICY(auth_session),
+                       ESYS_TR_NONE,
                        ESYS_TR_NONE,
                        defaultProfile->newMaxTries, defaultProfile->newRecoveryTime,
                        defaultProfile->lockoutRecovery);

@@ -297,7 +297,7 @@ Fapi_NvIncrement_Finish(
         r = Esys_NV_Increment_Async(context->esys,  command->auth_index,
                                     nvIndex,
                                     auth_session,
-                                    ENC_SESSION_IF_POLICY(auth_session),
+                                    ESYS_TR_NONE,
                                     ESYS_TR_NONE);
         goto_if_error_reset_state(r, " Fapi_NvIncrement_Async", error_cleanup);
 

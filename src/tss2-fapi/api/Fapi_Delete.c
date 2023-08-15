@@ -614,7 +614,7 @@ Fapi_Delete_Finish(
                                             command->auth_index,
                                             object->handle,
                                             auth_session,
-                                            ENC_SESSION_IF_POLICY(auth_session),
+                                            ESYS_TR_NONE,
                                             ESYS_TR_NONE);
             goto_if_error_reset_state(r, " Fapi_NV_UndefineSpace_Async", error_cleanup);
 
