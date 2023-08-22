@@ -2,6 +2,8 @@
 /*
  * Copyright 2020 Fraunhofer SIT. All rights reserved.
  */
+#define _BSD_SOURCE
+#include <endian.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -312,7 +314,7 @@ static uint32_t spi_tpm_helper_read_sts_reg(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx)
 {
     uint32_t status = 0;
     spi_tpm_helper_read_reg(ctx, TCTI_SPI_HELPER_TPM_STS_REG, &status, sizeof(status));
-    return status;
+    return le32toh(status);
 }
 
 static void spi_tpm_helper_write_sts_reg(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx, uint32_t status)
