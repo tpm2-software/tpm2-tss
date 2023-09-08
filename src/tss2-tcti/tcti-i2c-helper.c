@@ -42,6 +42,8 @@
 #define LOGMODULE tcti
 #include "util/log.h"
 
+#define TIMEOUT_B 2000 /* The default timeout value as specified in the TCG spec. */
+
 /*
  * CRC-CCITT KERMIT with following parameters:
  *
@@ -560,7 +562,7 @@ TSS2_RC tcti_i2c_helper_transmit (TSS2_TCTI_CONTEXT *tcti_ctx, size_t size, cons
 
     /* Wait until ready bit is set by TPM device */
     uint32_t expected_status_bits = TCTI_I2C_HELPER_TPM_STS_COMMAND_READY;
-    rc = i2c_tpm_helper_wait_for_status (ctx, expected_status_bits, expected_status_bits, 200);
+    rc = i2c_tpm_helper_wait_for_status (ctx, expected_status_bits, expected_status_bits, TIMEOUT_B);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed waiting for TPM to become ready");
         return rc;
@@ -817,14 +819,23 @@ TSS2_RC Tss2_Tcti_I2c_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
-    /* Wait up to 200ms for TPM to become ready */
+    /* Wait up to TIMEOUT_B for TPM to become ready */
     LOG_DEBUG ("Waiting for TPM to become ready...");
     uint32_t expected_status_bits = TCTI_I2C_HELPER_TPM_STS_COMMAND_READY;
-    rc = i2c_tpm_helper_wait_for_status (ctx, expected_status_bits, expected_status_bits, 200);
+    rc = i2c_tpm_helper_wait_for_status (ctx, expected_status_bits, expected_status_bits, TIMEOUT_B);
+    if (rc == TSS2_TCTI_RC_TRY_AGAIN) {
+        /*
+         * TPM did not auto transition into ready state,
+         * write 1 to commandReady to start the transition.
+         */
+        i2c_tpm_helper_write_sts_reg (ctx, TCTI_I2C_HELPER_TPM_STS_COMMAND_READY);
+        rc = i2c_tpm_helper_wait_for_status (ctx, expected_status_bits, expected_status_bits, TIMEOUT_B);
+    }
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR ("Failed waiting for TPM to become ready");
         return rc;
     }
+
     LOG_DEBUG ("TPM is ready");
 
     /* Get rid */
