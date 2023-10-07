@@ -28,6 +28,11 @@ typedef struct {
 } TSS2_TCTILDR_CONTEXT;
 
 TSS2_RC
+Tss2_Tcti_TctiLdr_Init (TSS2_TCTI_CONTEXT *tctiContext,
+                        size_t *size,
+                        const char *conf);
+
+TSS2_RC
 tcti_from_init(TSS2_TCTI_INIT_FUNC init,
                const char* conf,
                TSS2_TCTI_CONTEXT **tcti);
