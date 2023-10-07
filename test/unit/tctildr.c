@@ -247,6 +247,7 @@ tctildr_init_ex_default_fail (void **state)
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *context;
 
+    will_return (__wrap_calloc, &tcti_ctx);
     will_return (__wrap_tctildr_get_tcti, TSS2_TCTI_RC_BAD_REFERENCE);
     rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, &context);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
@@ -257,6 +258,7 @@ tctildr_init_ex_from_file_fail (void **state)
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *context;
 
+    will_return (__wrap_calloc, &tcti_ctx);
     will_return (__wrap_tctildr_get_tcti, TSS2_TCTI_RC_BAD_REFERENCE);
     rc = Tss2_TctiLdr_Initialize_Ex ("foo", NULL, &context);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
@@ -268,9 +270,6 @@ tctildr_init_ex_calloc_fail_test (void **state)
     TSS2_RC rc;
     TSS2_TCTI_CONTEXT *ctx;
 
-    will_return (__wrap_tctildr_get_tcti, TSS2_RC_SUCCESS);
-    will_return (__wrap_tctildr_get_tcti, &tcti_ctx);
-    will_return (__wrap_tctildr_get_tcti, TEST_TCTI_HANDLE);
     will_return (__wrap_calloc, NULL);
 
     rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, &ctx);
@@ -289,6 +288,56 @@ tctildr_init_ex_success_test (void **state)
 
     rc = Tss2_TctiLdr_Initialize_Ex (NULL, NULL, &ctx);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
+}
+static void
+tctildr_tcti_init_size_test (void **state)
+{
+    size_t tcti_size = 0;
+    TSS2_RC ret = TSS2_RC_SUCCESS;
+
+    ret = Tss2_Tcti_TctiLdr_Init (NULL, &tcti_size, NULL);
+    assert_int_equal (ret, TSS2_RC_SUCCESS);
+}
+static void
+tctildr_tcti_init_conf_fail (void **state)
+{
+    size_t tcti_size = 0;
+    TSS2_RC ret = TSS2_RC_SUCCESS;
+    TSS2_TCTILDR_CONTEXT ctx = {0};
+
+    ret = Tss2_Tcti_TctiLdr_Init (NULL, &tcti_size, NULL);
+    assert_true (ret == TSS2_RC_SUCCESS);
+    assert_int_equal (tcti_size, sizeof (TSS2_TCTILDR_CONTEXT));
+
+    will_return (__wrap_tctildr_get_tcti, TSS2_TCTI_RC_IO_ERROR);
+    ret = Tss2_Tcti_TctiLdr_Init ( (TSS2_TCTI_CONTEXT *) &ctx, &tcti_size, "/path/to/nonexistent");
+    assert_true (ret == TSS2_TCTI_RC_IO_ERROR);
+}
+static void
+tctildr_tcti_init_all_null_test (void **state)
+{
+    TSS2_RC rc;
+
+    rc = Tss2_Tcti_TctiLdr_Init (NULL, NULL, NULL);
+    assert_int_equal (rc, TSS2_TCTI_RC_BAD_VALUE);
+}
+static void
+tctildr_tcti_init_conf_fail_test (void **state)
+{
+    size_t tcti_size = 0;
+    TSS2_RC ret = TSS2_RC_SUCCESS;
+    TSS2_TCTILDR_CONTEXT ctx = {0};
+    char name[PATH_MAX+1];
+
+    ret = Tss2_Tcti_TctiLdr_Init (NULL, &tcti_size, NULL);
+    assert_true (ret == TSS2_RC_SUCCESS);
+    assert_int_equal (tcti_size, sizeof (TSS2_TCTILDR_CONTEXT));
+
+    memset(&name[0], 'a', sizeof(name));
+    name[PATH_MAX] = '\0';
+
+    ret = Tss2_Tcti_TctiLdr_Init ( (TSS2_TCTI_CONTEXT *) &ctx, &tcti_size, name);
+    assert_int_equal (ret, TSS2_TCTI_RC_BAD_VALUE);
 }
 static void
 tctildr_finalize_null_ref_test (void **state)
@@ -341,6 +390,10 @@ main(void)
         cmocka_unit_test (tctildr_init_ex_from_file_fail),
         cmocka_unit_test (tctildr_init_ex_calloc_fail_test),
         cmocka_unit_test (tctildr_init_ex_success_test),
+        cmocka_unit_test (tctildr_tcti_init_size_test),
+        cmocka_unit_test (tctildr_tcti_init_conf_fail),
+        cmocka_unit_test (tctildr_tcti_init_all_null_test),
+        cmocka_unit_test (tctildr_tcti_init_conf_fail_test),
         cmocka_unit_test (tctildr_finalize_null_ref_test),
         cmocka_unit_test (tctildr_finalize_null_ctx_test),
         cmocka_unit_test (tctildr_finalize_test),
