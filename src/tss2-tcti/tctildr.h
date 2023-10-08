@@ -9,13 +9,14 @@
 #include "tss2_tpm2_types.h"
 #include "tss2_tcti.h"
 
-#define TCTI_SUFFIX ".so"
-#define TCTI_SUFFIX_0 TCTI_SUFFIX".0"
-#define LIB_PREFIX "lib"
-#define TCTI_PREFIX LIB_PREFIX"tss2-tcti"
-#define TCTI_NAME_TEMPLATE TCTI_PREFIX"-%s"TCTI_SUFFIX
-#define TCTI_NAME_TEMPLATE_0 TCTI_PREFIX"-%s"TCTI_SUFFIX_0
-#define DEFAULT_TCTI_LIBRARY_NAME TCTI_PREFIX"-default"TCTI_SUFFIX
+#define FMT_LIB_PREFIX "lib"
+#define FMT_TSS_PREFIX FMT_LIB_PREFIX"tss2-"
+#define FMT_TCTI_PREFIX FMT_TSS_PREFIX"tcti-"
+
+#define FMT_LIB_SUFFIX_0 FMT_LIB_SUFFIX".0"
+#define FMT_LIB_SUFFIX ".so"
+
+#define DEFAULT_TCTI_LIBRARY_NAME FMT_TCTI_PREFIX"-default"TCTI_SUFFIX
 
 #define TCTILDR_MAGIC 0xbc44a31ca74b4aafULL
 
