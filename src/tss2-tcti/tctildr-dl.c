@@ -87,6 +87,10 @@ handle_from_name(const char *file,
         FMT_TCTI_PREFIX "%s" FMT_LIB_SUFFIX_0,
         /* libtss2-tcti-<name>.so */
         FMT_TCTI_PREFIX "%s" FMT_LIB_SUFFIX,
+        /* libtss2-<name>.so.0 */
+        FMT_TSS_PREFIX "%s" FMT_LIB_SUFFIX_0,
+        /* libtss2-<name>.so */
+        FMT_TSS_PREFIX "%s" FMT_LIB_SUFFIX,
     };
 
     if (handle == NULL) {

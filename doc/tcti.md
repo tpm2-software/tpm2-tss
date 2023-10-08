@@ -107,6 +107,8 @@ Where:
   1. `<child_name>`
   2. `libtss2-tcti-<child_name>.so.0`
   3. `libtss2-tcti-<child_name>.so`
+  4. `libtss2-<child_name>.so.0`
+  5. `libtss2-<child_name>.so`
 
 **`child_conf`**
 
