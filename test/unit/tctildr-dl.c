@@ -152,7 +152,7 @@ test_handle_from_name_first_dlopen_success (void **state)
     assert_int_equal (handle, TEST_HANDLE);
 }
 
-#define TEST_TCTI_NAME_SO_0 TCTI_PREFIX"-"TEST_TCTI_NAME""TCTI_SUFFIX_0
+#define TEST_TCTI_NAME_SO_0 FMT_TCTI_PREFIX TEST_TCTI_NAME""FMT_LIB_SUFFIX_0
 static void
 test_handle_from_name_second_dlopen_success (void **state)
 {
@@ -171,7 +171,7 @@ test_handle_from_name_second_dlopen_success (void **state)
     assert_int_equal (rc, TSS2_RC_SUCCESS);
     assert_int_equal (handle, TEST_HANDLE);
 }
-#define TEST_TCTI_NAME_SO TCTI_PREFIX"-"TEST_TCTI_NAME""TCTI_SUFFIX
+#define TEST_TCTI_NAME_SO FMT_TCTI_PREFIX TEST_TCTI_NAME""FMT_LIB_SUFFIX
 static void
 test_handle_from_name_third_dlopen_success (void **state)
 {
