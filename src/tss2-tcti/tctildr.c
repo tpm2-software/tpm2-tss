@@ -603,7 +603,9 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
         "Where child_name: if not empty, tctildr will try to dynamically load the child tcti library in the following order:\n"
         "   * <child_name>\n"
         "   * libtss2-tcti-<child_name>.so.0\n"
-        "   * libtss2-tcti-<child_name>.so\n",
+        "   * libtss2-tcti-<child_name>.so\n"
+        "   * libtss2-<child_name>.so.0\n"
+        "   * libtss2-<child_name>.so\n",
     .init = Tss2_Tcti_TctiLdr_Init,
 };
 
