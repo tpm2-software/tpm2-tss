@@ -809,8 +809,6 @@ test_unit_esys_crypto_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
 test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
                                 src/tss2-esys/esys_context.c \
                                 src/tss2-esys/esys_iutil.c \
-                                src/tss2-tcti/tctildr.c \
-                                src/tss2-tcti/tctildr-dl.c \
                                 src/tss2-esys/esys_crypto.c \
                                 $(TSS2_ESYS_SRC_CRYPTO)
 
