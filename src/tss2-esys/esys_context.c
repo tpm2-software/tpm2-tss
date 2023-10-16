@@ -28,6 +28,7 @@
  *       Library libtss2-tcti-tabrmd.so (tabrmd)
  *       Device /dev/tpmrm0 (kernel resident resource manager)
  *       Device /dev/tpm0 (hardware TPM)
+ *       Device /dev/tcm0 (hardware TCM)
  *       TCP socket localhost:2321 (TPM simulator)
  * @param esys_context [out] The ESYS_CONTEXT.
  * @param tcti [in] The TCTI context used to connect to the TPM (may be NULL).
