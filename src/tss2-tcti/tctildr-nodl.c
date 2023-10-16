@@ -100,6 +100,16 @@ struct {
         .conf = "/dev/tpm0",
         .description = "Access to /dev/tpm0",
     },
+    {
+        .names = {
+            "libtss2-tcti-device.so.0",
+            "libtss2-tcti-device.so",
+            "device",
+        },
+        .init = Tss2_Tcti_Device_Init,
+        .conf = "/dev/tcm0",
+        .description = "Access to /dev/tcm0",
+    },
 #endif /* TCTI_DEVICE */
 #endif /* _WIN32 */
 #ifdef TCTI_SWTPM

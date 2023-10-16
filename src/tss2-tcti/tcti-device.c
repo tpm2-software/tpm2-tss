@@ -63,6 +63,7 @@ static char *default_conf[] = {
 #else
     "/dev/tpmrm0",
     "/dev/tpm0",
+    "/dev/tcm0",
 #endif /* __VX_WORKS__ */
 };
 
