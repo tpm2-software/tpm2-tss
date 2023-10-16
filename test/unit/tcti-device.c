@@ -114,6 +114,7 @@ tcti_device_init_conf_default_fail (void **state)
     errno = EACCES; /* Permission denied */
     will_return (__wrap_open, -1);
     will_return (__wrap_open, -1);
+    will_return (__wrap_open, -1);
     ret = Tss2_Tcti_Device_Init (ctx, &tcti_size, NULL);
     assert_true (ret == TSS2_TCTI_RC_IO_ERROR);
 

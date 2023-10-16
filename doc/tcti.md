@@ -96,8 +96,9 @@ flowchart TD
   2. `libtss2-tcti-tabrmd.so`
   3. `libtss2-tcti-device.so.0:/dev/tpmrm0`
   4. `libtss2-tcti-device.so.0:/dev/tpm0`
-  5. `libtss2-tcti-swtpm.so`
-  6. `libtss2-tcti-mssim.so`
+  5. `libtss2-tcti-device.so.0:/dev/tcm0`
+  6. `libtss2-tcti-swtpm.so`
+  7. `libtss2-tcti-mssim.so`
 
 Where:
 
@@ -118,7 +119,7 @@ Where:
 ## tcti-device
 
 To put it simply, tcti-device writes to and reads from a file, typically
-`/dev/tpm0` or `/dev/tpmrm0`. The character devices are provided by the Linux
+`/dev/tpm0` or `/dev/tpmrm0` or `/dev/tcm0`. The character devices are provided by the Linux
 kernel module `tpm_tis`. If no files like these are present, verify that the
 kernel module is loaded (`lsmod`) and load it if necessary (`modprobe tpm_tis`).
 
@@ -136,7 +137,7 @@ flowchart TD
 
 **`conf`**
 
-* path to the character device, typically `/dev/tpm0` or `/dev/tpmrm0`
+* path to the character device, typically `/dev/tpm0` or `/dev/tpmrm0` or `/dev/tcm0`
 
 ## tcti-tbs
 

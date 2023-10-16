@@ -598,6 +598,7 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
         "   * libtss2-tcti-tabrmd.so\n"
         "   * libtss2-tcti-device.so.0:/dev/tpmrm0\n"
         "   * libtss2-tcti-device.so.0:/dev/tpm0\n"
+        "   * libtss2-tcti-device.so.0:/dev/tcm0\n"
         "   * libtss2-tcti-swtpm.so\n"
         "   * libtss2-tcti-mssim.so\n"
         "Where child_name: if not empty, tctildr will try to dynamically load the child tcti library in the following order:\n"
