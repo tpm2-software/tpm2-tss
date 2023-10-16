@@ -62,6 +62,9 @@ test_tctildr_get_default_all_fail (void **state)
     TSS2_TCTI_CONTEXT *tcti_ctx = NULL;
 
 #define TEST_RC 0x65203563
+    /* device:/dev/tcm0 */
+    will_return(__wrap_tcti_from_init, tcti_ctx);
+    will_return(__wrap_tcti_from_init, TEST_RC);
     /* device:/dev/tpm0 */
     will_return (__wrap_tcti_from_init, tcti_ctx);
     will_return (__wrap_tcti_from_init, TEST_RC);
