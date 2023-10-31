@@ -22,6 +22,27 @@
 #define VAL
 #define TAB_SIZE(tab) (sizeof(tab) / sizeof(tab[0]))
 
+static TSS2_RC
+TPM2_GENERATED_Unmarshal(
+    uint8_t const   buffer[],
+    size_t          buffer_size,
+    size_t         *offset,
+    TPM2_GENERATED *magic)
+{
+    TPM2_GENERATED mymagic = 0;
+    TSS2_RC rc = Tss2_MU_UINT32_Unmarshal(buffer, buffer_size, offset, &mymagic);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
+    }
+    if (mymagic != TPM2_GENERATED_VALUE) {
+        LOG_ERROR("Bad magic in tpms_attest");
+        return TSS2_SYS_RC_BAD_VALUE;
+    }
+    if (magic != NULL)
+        *magic = mymagic;
+    return TSS2_RC_SUCCESS;
+}
+
 #define TPMS_PCR_MARSHAL(type, firstFieldMarshal) \
 TSS2_RC \
 Tss2_MU_##type##_Marshal(const type *src, uint8_t buffer[], \
@@ -1227,7 +1248,7 @@ TPMS_MARSHAL_7_U(TPMS_ATTEST,
                  attested, ADDR, Tss2_MU_TPMU_ATTEST_Marshal)
 
 TPMS_UNMARSHAL_7_U(TPMS_ATTEST,
-                   magic, Tss2_MU_UINT32_Unmarshal,
+                   magic, TPM2_GENERATED_Unmarshal,
                    type, Tss2_MU_TPM2_ST_Unmarshal,
                    qualifiedSigner, Tss2_MU_TPM2B_NAME_Unmarshal,
                    extraData, Tss2_MU_TPM2B_DATA_Unmarshal,
