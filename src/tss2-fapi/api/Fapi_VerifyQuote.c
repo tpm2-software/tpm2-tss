@@ -286,6 +286,11 @@ Fapi_VerifyQuote_Finish(
                                      &command->fapi_quote_info);
             goto_if_error(r, "Get quote info.", error_cleanup);
 
+            if (command->fapi_quote_info.attest.magic != TPM2_GENERATED_VALUE) {
+                goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
+                           "Attest without TPM2 generated value", error_cleanup);
+            }
+
             /* Verify the signature over the attest2b structure. */
             r = ifapi_verify_signature_quote(&key_object,
                                              command->signature,
