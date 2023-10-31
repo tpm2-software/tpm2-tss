@@ -715,6 +715,7 @@ ifapi_json_TPM2_GENERATED_deserialize(json_object *jso, TPM2_GENERATED *out)
     const char *s = json_object_get_string(jso);
     const char *str = strip_prefix(s, "TPM_", "TPM2_", "GENERATED_", NULL);
     LOG_TRACE("called for %s parsing %s", s, str);
+    TSS2_RC r;
 
     if (str) {
         for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
@@ -724,8 +725,14 @@ ifapi_json_TPM2_GENERATED_deserialize(json_object *jso, TPM2_GENERATED *out)
             }
         }
     }
-
-    return ifapi_json_UINT32_deserialize(jso, out);
+    r = ifapi_json_UINT32_deserialize(jso, out);
+    return_if_error(r, "Could not deserialize UINT32");
+    if (*out != TPM2_GENERATED_VALUE) {
+        return_error2(TSS2_FAPI_RC_BAD_VALUE,
+                      "Value %x not equal TPM self generated value %x",
+                      *out, TPM2_GENERATED_VALUE);
+    }
+    return TSS2_RC_SUCCESS;
 }
 
 /** Deserialize a TPM2_ALG_ID json object.
