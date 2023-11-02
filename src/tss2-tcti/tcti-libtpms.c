@@ -399,12 +399,17 @@ tcti_libtpms_transmit(
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
+    uint32_t response_len, response_buffer_len;
+
     LOGBLOB_DEBUG(cmd_buf, size, "Sending command with TPM_CC 0x%" PRIx32, header.size);
     LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_Process, &tcti_libtpms->response_buffer,
-                                                         (uint32_t *) &tcti_libtpms->response_len,
-                                                         (uint32_t *) &tcti_libtpms->response_buffer_len,
+                                                         &response_len,
+                                                         &response_buffer_len,
                                                          (uint8_t *) cmd_buf,
                                                          size);
+    tcti_libtpms->response_len = response_len;
+    tcti_libtpms->response_buffer_len = response_buffer_len;
+
     rc = tcti_libtpms_store_state(tcti_libtpms);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to store state file");
