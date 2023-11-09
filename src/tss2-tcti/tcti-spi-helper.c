@@ -2,6 +2,10 @@
 /*
  * Copyright 2020 Fraunhofer SIT. All rights reserved.
  */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -18,6 +22,7 @@
 #include "tss2_mu.h"
 #include "tcti-common.h"
 #include "tcti-spi-helper.h"
+#include "util/tss2_endian.h"
 #define LOGMODULE tcti
 #include "util/log.h"
 
@@ -313,7 +318,7 @@ static uint32_t spi_tpm_helper_read_sts_reg(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx)
 {
     uint32_t status = 0;
     spi_tpm_helper_read_reg(ctx, TCTI_SPI_HELPER_TPM_STS_REG, &status, sizeof(status));
-    return status;
+    return LE_TO_HOST_32(status);
 }
 
 static void spi_tpm_helper_write_sts_reg(TSS2_TCTI_SPI_HELPER_CONTEXT* ctx, uint32_t status)
