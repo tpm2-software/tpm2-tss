@@ -472,13 +472,15 @@ CLEANFILES += \
     test/integration/*.crt \
     test/integration/*.crl \
     test/integration/*.fint_state* \
+    test/integration/*.fint.* \
     test/integration/*.int_state* \
     test/integration/*.log \
     test/integration/*.fint_ek* \
     test/integration/*.fint_*-ca.pem \
     test/tpmclient/*.int_state* \
     test/tpmclient/*.log \
-    test/unit/*.log
+    test/unit/*.log \
+    NVChip
 
 if UNIT
 if ENABLE_TCTI_DEVICE

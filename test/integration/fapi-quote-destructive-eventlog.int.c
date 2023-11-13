@@ -24,8 +24,6 @@
 
 #define EVENT_SIZE 10
 
-
-
 typedef struct {
 	uint32_t pcr;
     TPML_DIGEST_VALUES digest;
@@ -1007,6 +1005,10 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     uint8_t data[EVENT_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     size_t signatureSize = 0;
     uint32_t pcrList[13] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 16 };
+
+    #ifdef WORDS_BIGENDIAN
+    return EXIT_SKIP;
+    #endif
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
 

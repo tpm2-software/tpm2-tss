@@ -29,6 +29,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_LN_S
 AC_USE_SYSTEM_EXTENSIONS
+AC_C_BIGENDIAN
 LT_INIT()
 LT_LIB_DLLOAD
 PKG_INSTALLDIR()
@@ -411,13 +412,8 @@ dnl ---------  Physical TPM device for testing -----------------------
 
 AC_ARG_WITH([device],
             [AS_HELP_STRING([--with-device=<device>],[TPM device for testing])],
-            [AS_IF([test -w "$with_device" && test -r "$with_device"],
-                   [AC_MSG_RESULT([success])
-                    AX_NORMALIZE_PATH([with_device])
-                    with_device_set=yes],
-                   [AC_MSG_ERROR([TPM device provided does not exist or is not writable])])],
+            [with_device_set=yes],
             [with_device_set=no])
-AM_CONDITIONAL([TESTDEVICE],[test "x$with_device_set" = xyes])
 
 AC_ARG_WITH([devicetests],
             [AS_HELP_STRING([--with-devicetests=<case>],[Comma-separated values of possible tests: destructive,mandatory,optional] default is mandatory)],
@@ -445,6 +441,27 @@ AM_CONDITIONAL([DEVICEMANDATORY],[test "x$enable_device_mandatory" = "xyes"])
 #
 # enable integration tests and check for simulator binary
 #
+
+AC_ARG_WITH([integrationtcti],
+            [AS_HELP_STRING([--with-integrationtcti=<tcti>],[TCTI used for testing])],
+            [AS_IF([test x"$with_device_set" = "xyes"],
+                   [AC_MSG_ERROR([with-device defines already the used TCTI"])],
+                   [AS_IF([test "xdevice:" = x$(echo $with_integrationtcti | sed 's/\(device:\).*/\1/') ],
+                          [ with_device=$(echo $with_integrationtcti | sed 's/^device\://')
+                            with_device_set=yes
+                            integration_tcti=$with_integrationtcti],
+                          [ integration_tcti=$with_integrationtcti])])],
+            [integration_tcti=none])
+
+AM_CONDITIONAL([TESTDEVICE],[test "x$with_device_set" = xyes])
+
+AS_IF([test "xyes" = x"$with_device_set"],
+      [ AS_IF([test -w "$with_device" && test -r "$with_device"],
+            [AC_MSG_RESULT([success])
+                     AX_NORMALIZE_PATH([with_device])
+                     w th_device_set=yes],
+            [AC_MSG_ERROR([TPM device provided does not exist or is not writable])]) ])
+
 AC_ARG_ENABLE([integration],
     [AS_HELP_STRING([--enable-integration],
         [build and execute integration tests])],,
@@ -473,7 +490,6 @@ AS_IF([test "x$enable_integration" = "xyes"],
        AC_CHECK_HEADER(uthash.h, [], [AC_MSG_ERROR([Can not find uthash.h. Please install uthash-dev])])
 
        # choose tcti for testing and look for TPM simulator binary
-       integration_tcti="none"
        AS_IF([test "x$with_device_set" = xyes],
              [# use device if --with-device was passed
               integration_tcti=device:$with_device

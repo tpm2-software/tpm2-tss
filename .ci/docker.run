@@ -24,6 +24,11 @@ if [ -z "$WITH_CRYPTO" ]; then
     export WITH_CRYPTO="ossl"
 fi
 
+little_endian=$(echo -n I | od -to2 | awk 'FNR==1{ print substr($2,6,1)}')
+if [ $little_endian -eq 0 ]; then
+    export CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --with-integrationtcti=libtpms"
+fi
+
 if [ "$WITH_CRYPTO" != "ossl" ]; then
     export CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --disable-fapi --disable-policy"
 fi
@@ -69,7 +74,9 @@ if [[ "$CC" == "gcc" && "$ENABLE_COVERAGE" == "true" ]]; then
 fi
 
 if ldconfig -p 2>/dev/null| grep libasan > /dev/null && ldconfig -p 2>/dev/null| grep libubsan > /dev/null; then
-  SANITIZER_OPTION="--with-sanitizer=undefined,address"
+  if [ $little_endian -eq 1 ]; then
+    SANITIZER_OPTION="--with-sanitizer=undefined,address"
+  fi
 fi
 
 if [ "$SCANBUILD" == "yes" ]; then
