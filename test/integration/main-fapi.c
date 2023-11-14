@@ -28,13 +28,6 @@
 
 char *fapi_profile = NULL;
 char *tmpdir = NULL;
-
-char *config = NULL;
-char *config_bak = NULL;
-char *config_path = NULL;
-char *config_env = NULL;
-char *remove_cmd = NULL;
-char *system_dir = NULL;
 FAPI_CONTEXT *global_fapi_context = NULL;
 
 bool file_exists (char *path) {
@@ -208,12 +201,10 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 {
     TSS2_RC rc;
     int ret, size;
-    SAFE_FREE(config);
-    SAFE_FREE(config_path);
-    SAFE_FREE(config_env);
-    SAFE_FREE(remove_cmd);
-    SAFE_FREE(system_dir);
-
+    char *config = NULL;
+    char *config_path = NULL;
+    char *config_env = NULL;
+    char *config_bak = NULL;
     FILE *config_file;
 
     fapi_profile = profile;
@@ -389,22 +380,6 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
     }
     SAFE_FREE(config_bak);
 
-    size = asprintf(&system_dir, "%s/system_dir/", tmpdir);
-    if (size < 0) {
-        LOG_ERROR("Out of memory");
-        ret = EXIT_ERROR;
-        goto error;
-    }
-
-    if (!file_exists(system_dir)) {
-        int rc_mkdir = mkdir(system_dir, 0777);
-        if (rc_mkdir != 0) {
-            LOG_ERROR("mkdir not possible: %i %s", rc_mkdir, system_dir);
-            ret = EXIT_ERROR;
-            goto error;
-        }
-    }
-
     if (size < 0) {
         LOG_ERROR("Out of memory");
         ret = EXIT_ERROR;
@@ -457,16 +432,17 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
         goto error;
     }
     global_fapi_context = *fapi_context;
+    SAFE_FREE(config_env);
+    SAFE_FREE(config);
+    SAFE_FREE(config_path);
     return 0;
 
  error:
     Fapi_Finalize(fapi_context);
 
-    if (system_dir) free(system_dir);
     if (config) free(config);
     if (config_path) free(config_path);
     if (config_env) free(config_env);
-    if (remove_cmd) free(remove_cmd);
 
     return ret;
 }
@@ -485,7 +461,6 @@ main(int argc, char *argv[])
     char *config_path = NULL;
     char *config_env = NULL;
     char *remove_cmd = NULL;
-    char *system_dir = NULL;
 
     char template[] = "/tmp/fapi_tmpdir.XXXXXX";
 
@@ -517,9 +492,9 @@ main(int argc, char *argv[])
     }
 
 error:
-    Fapi_Finalize(&global_fapi_context);
 
-    if (system_dir) free(system_dir);
+    if (global_fapi_context) Fapi_Finalize(&global_fapi_context);
+
     if (config) free(config);
     if (config_path) free(config_path);
     if (config_env) free(config_env);
