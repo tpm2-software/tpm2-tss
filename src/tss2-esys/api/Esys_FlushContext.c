@@ -184,6 +184,7 @@ Esys_FlushContext_Finish(
     ESYS_CONTEXT *esysContext)
 {
     TSS2_RC r;
+    RSRC_NODE_T *flushHandleNode;
     LOG_TRACE("context=%p",
               esysContext);
 
@@ -244,6 +245,12 @@ Esys_FlushContext_Finish(
                           "Received error from SAPI unmarshaling" );
 
     /* The ESYS_TR object has to be invalidated */
+
+    r = esys_GetResourceObject(esysContext, esysContext->in.FlushContext.flushHandle,
+                               &flushHandleNode);
+    return_state_if_error(r, _ESYS_STATE_INIT, "flushHandle unknown.");
+
+    flushHandleNode->reference_count = 0;
     r = Esys_TR_Close(esysContext, &esysContext->in.FlushContext.flushHandle);
     return_if_error(r, "invalidate object");
 
