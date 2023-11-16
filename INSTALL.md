@@ -90,7 +90,7 @@ Building should be as simple as loading the tpm2-tss solution (tpm2-tss.sln) wit
 a compatible and properly configured version of Visual Studio 2019+ and pressing the 'build' button.
 
 ### References
-Visual Studio 2017 with "Clang for Windows": https://blogs.msdn.microsoft.com/vcblog/2017/03/07/use-any-c-compiler-with-visual-studio/
+Visual Studio 2019+ with "Clang for Windows": https://learn.microsoft.com/en-us/cpp/build/clang-support-msbuild
 Universal CRT overview & setup instructions: https://docs.microsoft.com/en-us/cpp/porting/upgrade-your-code-to-the-universal-crt
 
 # Building From Source
