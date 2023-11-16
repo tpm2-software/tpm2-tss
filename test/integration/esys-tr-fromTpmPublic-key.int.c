@@ -142,12 +142,20 @@ test_esys_tr_fromTpmPublic_key(ESYS_CONTEXT * ectx)
         goto_if_error(r, "Flushing primary", error_name1);
 
         r = Esys_TR_Close(ectx, &keyHandle);
-        goto_if_error(r, "TR close on nv object", error_name1);
+        goto_if_error(r, "TR close on object", error_name1);
 
         r = Esys_TR_FromTPMPublic(ectx, TPM2_PERSISTENT_FIRST,
                                   ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                                   &keyHandle);
         goto_if_error(r, "TR from TPM public", error_name1);
+
+        r = Esys_TR_FromTPMPublic(ectx, TPM2_PERSISTENT_FIRST,
+                                  ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                  &keyHandle);
+        goto_if_error(r, "TR from TPM public", error_name1);
+
+        r = Esys_TR_Close(ectx, &keyHandle);
+        goto_if_error(r, "TR close on object", error_name1)
 
         LOG_ERROR("Key handle (2) 0x%x", keyHandle);
 
