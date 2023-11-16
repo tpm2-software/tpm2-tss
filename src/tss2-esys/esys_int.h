@@ -24,6 +24,7 @@ typedef struct RSRC_NODE_T {
                                      to reference this entry. */
     TPM2B_AUTH auth;            /**< The authValue for this resource object. */
     IESYS_RESOURCE rsrc;        /**< The meta data for this resource object. */
+    size_t reference_count;     /**< Reference Count for Esys_TR_FromTPMPublic */
     struct RSRC_NODE_T * next;  /**< The next object in the linked list. */
 } RSRC_NODE_T;
 

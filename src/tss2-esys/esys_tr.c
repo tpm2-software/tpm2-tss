@@ -313,6 +313,7 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
         return_if_error(r, "Error TR FromTPMPublic");
         return TSS2_ESYS_RC_TRY_AGAIN;
     } else {
+        objectHandleNode->reference_count++;
         *object = objectHandle;
         return TSS2_RC_SUCCESS;
     }
@@ -425,6 +426,10 @@ Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
          node != NULL;
          update_ptr = &node->next, node = node->next) {
         if (node->esys_handle == *object) {
+            if (node->reference_count > 1) {
+                node->reference_count--;
+                return TSS2_RC_SUCCESS;
+            }
             *update_ptr = node->next;
             SAFE_FREE(node);
             *object = ESYS_TR_NONE;
