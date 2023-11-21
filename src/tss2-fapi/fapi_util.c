@@ -944,9 +944,12 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         /* Check whether a persistent key was loaded.
            In this case the handle has already been set. */
         if (pkey_object->public.handle != ESYS_TR_NONE) {
-            if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
+            if (pkey->creationTicket.hierarchy == TPM2_RH_ENDORSEMENT &&
+                strcmp("/EK",
+                       &pkey_object->rel_path[strlen(pkey_object->rel_path)-3]) == 0) {
                 context->ek_persistent = true;
-            } else {
+            } else if (strcmp("/SRK",
+                              &pkey_object->rel_path[strlen(pkey_object->rel_path)-4]) == 0) {
                 context->srk_persistent = true;
             }
             /* It has to be checked whether the persistent handle exists. */
@@ -954,7 +957,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
         else {
-            if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
+            if (pkey->creationTicket.hierarchy == TPM2_RH_ENDORSEMENT) {
                 context->ek_persistent = false;
             } else {
                 context->srk_persistent = false;
@@ -964,8 +967,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
 
     statecase(context->primary_state, PRIMARY_READ_HIERARCHY);
         /* The hierarchy object used for auth_session will be loaded from key store. */
-        if (pkey->creationTicket.hierarchy == TPM2_RH_EK ||
-            (pkey->ek_profile && pkey->creationTicket.hierarchy == TPM2_RH_ENDORSEMENT)) {
+        if (pkey->creationTicket.hierarchy == TPM2_RH_ENDORSEMENT) {
             r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HE");
             return_if_error2(r, "Could not open hierarchy /HE");
         } else if (pkey->creationTicket.hierarchy == TPM2_RH_NULL) {
@@ -985,10 +987,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         r = ifapi_initialize_object(context->esys, hierarchy);
         goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
 
-        if (pkey->creationTicket.hierarchy == TPM2_RH_EK) {
-            hierarchy->public.handle = ESYS_TR_RH_ENDORSEMENT;
-        } else if (pkey->creationTicket.hierarchy == TPM2_RH_ENDORSEMENT &&
-                   pkey->ek_profile) {
+        if (pkey->creationTicket.hierarchy == TPM2_RH_ENDORSEMENT) {
             hierarchy->public.handle = ESYS_TR_RH_ENDORSEMENT;
         } else if (pkey->creationTicket.hierarchy == TPM2_RH_NULL) {
             hierarchy->public.handle = ESYS_TR_RH_NULL;
@@ -1072,6 +1071,14 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         }
         *handle = pkey_object->public.handle;
         context->primary_state = PRIMARY_INIT;
+
+        /* Check whether the public key corresponds to key in key store. */
+        if (!ifapi_cmp_public_key(outPublic, &pkey_object->misc.key.public)) {
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                       "Public key for %s was not created correctly.",
+                       error_cleanup, pkey_object->rel_path);
+        }
+
         break;
 
     statecase(context->primary_state, PRIMARY_VERIFY_PERSISTENT);
