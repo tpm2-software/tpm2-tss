@@ -990,10 +990,24 @@ install-data-hook: install-dirs
 	fi
 
 uninstall-local:
+	-rm -r -f $(top_builddir)/ca
 	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
 	cd $(DESTDIR)$(man3dir) && \
 		[ -L Tss2_TctiLdr_Initialize_Ex.3 ] && \
 			rm -f Tss2_TctiLdr_Initialize_Ex.3 || true
+
+clean-hook:
+	-rm -r -f $(top_builddir)/ca
+
+check-hook:
+	-rm -r -f $(top_builddir)/ca
+
+prepare-check:
+if INIT_CA
+	$(top_srcdir)/script/ekca/init_ca.sh $(top_builddir)
+endif
+
+check: prepare-check
 
 EXTRA_DIST += \
     doc/doxygen.dox \
