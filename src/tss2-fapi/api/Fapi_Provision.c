@@ -37,6 +37,9 @@
 #define ECC_EK_TEMPLATE_NV_INDEX 0x01c0000c
 #define ECC_SM2_EK_TEMPLATE_NV_INDEX 0x01c0001b
 
+#define FAPI_TEST_ROOT_CERT_FILE "./ca/root-ca/root-ca.cert.pem"
+#define FAPI_TEST_INT_CERT_FILE "./ca/intermed-ca/intermed-ca.cert.pem"
+
 /** Error cleanup of provisioning
  *
  * The profile directory will be deleted.
@@ -891,6 +894,10 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 #ifdef SELF_GENERATED_CERTIFICATE
 #pragma message ( "*** Allow self generated certifcate ***" )
             root_ca_file = getenv("FAPI_TEST_ROOT_CERT");
+
+            if (!root_ca_file && ifapi_io_path_exists(FAPI_TEST_ROOT_CERT_FILE)) {
+                root_ca_file = FAPI_TEST_ROOT_CERT_FILE;
+            }
 #endif
             if (!root_ca_file) {
                 context->state = PROVISION_EK_CHECK_CERT;
@@ -917,6 +924,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 #ifdef SELF_GENERATED_CERTIFICATE
 #pragma message ( "*** Allow self generated certifcate ***" )
             int_ca_file = getenv("FAPI_TEST_INT_CERT");
+            if (!int_ca_file && ifapi_io_path_exists(FAPI_TEST_INT_CERT_FILE)) {
+                int_ca_file = FAPI_TEST_INT_CERT_FILE;
+            }
 #endif
             if (!int_ca_file) {
                 context->state = PROVISION_EK_CHECK_CERT;
