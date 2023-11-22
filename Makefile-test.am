@@ -2015,7 +2015,7 @@ test_integration_sys_policy_authorizeNV_int_SOURCES = test/integration/main-sys.
 
 if FAPI
 test_integration_dlopen_fapi_get_random_fint_CFLAGS  = $(TESTS_CFLAGS) \
-    -DENABLE_WARN=1
+    -DENABLE_WARN=1 -DDLOPEN=1
 test_integration_dlopen_fapi_get_random_fint_LDADD   = $(TESTS_LDADD) $(LIBADD_DL)
 test_integration_dlopen_fapi_get_random_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_dlopen_fapi_get_random_fint_SOURCES = \

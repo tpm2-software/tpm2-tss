@@ -18,17 +18,22 @@
 
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
-
 #include "test-fapi.h"
+#include "fapi_int.h"
 
 #define LOGDEFAULT LOGLEVEL_INFO
 #define LOGMODULE test
 #include "util/log.h"
 #include "util/aux_util.h"
 
+#include "test-common.h"
+
 char *fapi_profile = NULL;
-char *tmpdir = NULL;
-FAPI_CONTEXT *global_fapi_context = NULL;
+TSS2_TEST_FAPI_CONTEXT *fapi_test_ctx = NULL;
+
+struct tpm_state {
+    TPMS_CAPABILITY_DATA capabilities[7];
+};
 
 bool file_exists (char *path) {
   struct stat   buffer;
@@ -206,8 +211,10 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
     char *config_env = NULL;
     char *config_bak = NULL;
     FILE *config_file;
+    char *tmpdir;
 
     fapi_profile = profile;
+    tmpdir = fapi_test_ctx->tmpdir;
 
     /* First we construct a fapi config file */
 #if defined(FAPI_NONTPM)
@@ -431,7 +438,7 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
         ret = EXIT_FAILURE;
         goto error;
     }
-    global_fapi_context = *fapi_context;
+    fapi_test_ctx->fapi_ctx = *fapi_context;
     SAFE_FREE(config_env);
     SAFE_FREE(config);
     SAFE_FREE(config_path);
@@ -445,6 +452,66 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
     if (config_env) free(config_env);
 
     return ret;
+}
+
+int
+test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx)
+{
+    char template[] = "/tmp/fapi_tmpdir.XXXXXX";
+    char *tmpdir = NULL;
+    size_t size;
+    int ret;
+
+    size = sizeof(TSS2_TEST_FAPI_CONTEXT);
+    *test_ctx = calloc(size, 1);
+    if (test_ctx == NULL) {
+        LOG_ERROR("Failed to allocate 0x%zx bytes for the test context", size);
+        goto error;
+    }
+
+    tmpdir = strdup(template);
+    if (!tmpdir) {
+        LOG_ERROR("Failed to allocate name of temp dir.");
+        goto error;
+    }
+    (*test_ctx)->tmpdir = mkdtemp(tmpdir);
+    if (!(*test_ctx)->tmpdir) {
+        LOG_ERROR("No temp dir created");
+        goto error;
+    }
+    fapi_test_ctx = *test_ctx;
+
+    ret = init_fapi(FAPI_PROFILE, &(*test_ctx)->fapi_ctx);
+    if (ret != 0) {
+        LOG_ERROR("init fapi failed.");
+        goto error;
+    }
+    (*test_ctx)->test_esys_ctx.esys_ctx = (*test_ctx)->fapi_ctx->esys;
+    (*test_ctx)->test_esys_ctx.tpm_state = malloc(sizeof(tpm_state));
+    if (test_ctx == NULL) {
+        LOG_ERROR("Failed to allocate 0x%zx bytes for tpm_state.", size);
+        goto error;
+    }
+
+    return ret;
+
+ error:
+    SAFE_FREE(tmpdir);
+    SAFE_FREE(*test_ctx);
+    return EXIT_ERROR;
+}
+
+void
+test_fapi_teardown(TSS2_TEST_FAPI_CONTEXT *test_ctx)
+{
+    if (test_ctx) {
+        if (test_ctx->fapi_ctx) {
+            Fapi_Finalize(&test_ctx->fapi_ctx);
+        }
+        SAFE_FREE(test_ctx->tmpdir);
+        SAFE_FREE(test_ctx->test_esys_ctx.tpm_state);
+        SAFE_FREE(test_ctx);
+    }
 }
 
 /**
@@ -461,40 +528,47 @@ main(int argc, char *argv[])
     char *config_path = NULL;
     char *config_env = NULL;
     char *remove_cmd = NULL;
+    TSS2_TEST_FAPI_CONTEXT *test_ctx = NULL;
 
-    char template[] = "/tmp/fapi_tmpdir.XXXXXX";
-
-    tmpdir = mkdtemp(template);
-
-    if (!tmpdir) {
-        LOG_ERROR("No temp dir created");
-        return EXIT_ERROR;
-    }
-    ret = init_fapi(FAPI_PROFILE, &global_fapi_context);
-    if (ret)
+    ret = test_fapi_setup(&test_ctx);
+    if (ret != 0) {
         goto error;
+    }
 
-    ret = test_invoke_fapi(global_fapi_context);
+#if !defined(FAPI_NONTPM) && !defined(DLOPEN)
+    ret = test_fapi_checks_pre(test_ctx);
+    if (ret != 0) {
+        goto error;
+    }
+#endif
+
+    ret = test_invoke_fapi(test_ctx->fapi_ctx);
 
     LOG_INFO("Test returned %i", ret);
     if (ret) goto error;
 
-    size = asprintf(&remove_cmd, "rm -r -f %s", tmpdir);
+#if !defined(FAPI_NONTPM) && !defined(DLOPEN)
+    test_ctx->test_esys_ctx.esys_ctx = test_ctx->fapi_ctx->esys;
+    ret = test_fapi_checks_post(test_ctx);
+    if (ret != 0) {
+        goto error;
+    }
+#endif
+
+    size = asprintf(&remove_cmd, "rm -r -f %s", test_ctx->tmpdir);
     if (size < 0) {
         LOG_ERROR("Out of memory");
         ret = EXIT_ERROR;
         goto error;
     }
     if (system(remove_cmd) != 0) {
-        LOG_ERROR("Directory %s can't be deleted.", tmpdir);
+        LOG_ERROR("Directory %s can't be deleted.", test_ctx->tmpdir);
         ret = EXIT_ERROR;
         goto error;
     }
 
 error:
-
-    if (global_fapi_context) Fapi_Finalize(&global_fapi_context);
-
+    test_fapi_teardown(test_ctx);
     if (config) free(config);
     if (config_path) free(config_path);
     if (config_env) free(config_env);

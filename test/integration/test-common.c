@@ -47,7 +47,6 @@ struct tpm_state {
     TPMS_CAPABILITY_DATA capabilities[7];
 };
 
-
 /** Define a proxy tcti that returns yielded on every second invocation
  * thus the corresponding handling code in ESYS can be tested.
  * The first invocation will be Tss2_Sys_StartUp.
@@ -556,6 +555,20 @@ test_esys_checks_post(TSS2_TEST_ESYS_CONTEXT *test_ctx)
 
     return EXIT_SUCCESS;
 }
+
+int
+test_fapi_checks_pre(TSS2_TEST_FAPI_CONTEXT *test_ctx)
+{
+    return test_esys_checks_pre(&test_ctx->test_esys_ctx);
+}
+
+int
+test_fapi_checks_post(TSS2_TEST_FAPI_CONTEXT *test_ctx)
+{
+    return test_esys_checks_post(&test_ctx->test_esys_ctx);
+}
+
+
 
 void
 test_esys_teardown(TSS2_TEST_ESYS_CONTEXT *test_ctx)
