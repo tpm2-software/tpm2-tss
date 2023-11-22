@@ -568,8 +568,6 @@ test_fapi_checks_post(TSS2_TEST_FAPI_CONTEXT *test_ctx)
     return test_esys_checks_post(&test_ctx->test_esys_ctx);
 }
 
-
-
 void
 test_esys_teardown(TSS2_TEST_ESYS_CONTEXT *test_ctx)
 {

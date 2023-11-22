@@ -21,7 +21,6 @@
 
 #define ASSERT_SIZE 10 /* sanity check value for string outputs of Fapi commands  */
 
-
 #define ASSERT(EXPR)                          \
     if (!(EXPR)) { \
         LOG_ERROR("Failed assertion: " #EXPR);              \

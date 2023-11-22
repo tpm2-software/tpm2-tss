@@ -67,5 +67,7 @@ int test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx);
 int test_fapi_checks_pre(TSS2_TEST_FAPI_CONTEXT *test_ctx);
 int test_fapi_checks_post(TSS2_TEST_FAPI_CONTEXT *test_ctx);
 void test_fapi_teardown(TSS2_TEST_FAPI_CONTEXT *test_ctx);
+void test_esys_teardown(TSS2_TEST_ESYS_CONTEXT *test_ctx);
+
 
 #endif                          /* TEST_COMMON_H */

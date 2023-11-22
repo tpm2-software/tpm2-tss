@@ -42,109 +42,8 @@ echo "TPM20TEST_TCTI=${TPM20TEST_TCTI}"
 
 while true; do
 
-if [[ ${TPM20TEST_TCTI} != *device* ]]; then
-    env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-        TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
-        G_MESSAGES_DEBUG=all ./test/helper/tpm_startup
-    if [ $? -ne 0 ]; then
-        echo "TPM_StartUp failed"
-        ret=99
-        break
-    fi
-else
-    env TPM20TEST_TCTI=${TPM20TEST_TCTI} \
-        TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
-        G_MESSAGES_DEBUG=all ./test/helper/tpm_transientempty
-    if [ $? -ne 0 ]; then
-        echo "TPM transient area not empty => skipping"
-        ret=99
-        break
-    fi
-fi
-
-# Certificate generation for simulator tests
-if [[ ${TPM20TEST_TCTI} != *device* ]]; then
-    EKPUB_FILE=${TEST_BIN}_ekpub.pem
-    EKCERT_FILE=${TEST_BIN}_ekcert.crt
-    EKCERT_PEM_FILE=${TEST_BIN}_ekcert.pem
-
-    env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-        TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
-        G_MESSAGES_DEBUG=all ./test/helper/tpm_getek ${EKPUB_FILE}
-    if [ $? -ne 0 ]; then
-        echo "TPM_getek failed"
-        ret=99
-        break
-    fi
-
-    EKECCPUB_FILE=${TEST_BIN}_ekeccpub.pem
-    EKECCCERT_FILE=${TEST_BIN}_ekecccert.crt
-    EKECCCERT_PEM_FILE=${TEST_BIN}_ekecccert.pem
-
-    env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-        TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
-        G_MESSAGES_DEBUG=all ./test/helper/tpm_getek_ecc ${EKECCPUB_FILE}
-    if [ $? -ne 0 ]; then
-        echo "TPM_getek_ecc failed"
-        ret=99
-        break
-    fi
-
-    INTERMEDCA_FILE=${TEST_BIN}_intermedecc-ca
-    ROOTCA_FILE=${TEST_BIN}_root-ca
-
-    SCRIPTDIR="$(dirname $(realpath $0))/"
-    ${SCRIPTDIR}/ekca/create_ca.sh "${EKPUB_FILE}" "${EKECCPUB_FILE}" "${EKCERT_FILE}" \
-                "${EKECCCERT_FILE}" "${INTERMEDCA_FILE}" "${ROOTCA_FILE}" >${TEST_BIN}_ca.log 2>&1
-    if [ $? -ne 0 ]; then
-        echo "ek-cert ca failed"
-        ret=99
-        break
-    fi
-
-    # Determine the fingerprint of the RSA EK public.
-    FINGERPRINT=$(openssl pkey -pubin -inform PEM -in ${EKPUB_FILE} -outform DER | shasum -a 256  | cut -f 1 -d ' ')
-    export FAPI_TEST_FINGERPRINT=" { \"hashAlg\" : \"sha256\", \"digest\" : \"${FINGERPRINT}\" }"
-    openssl x509 -inform DER -in ${EKCERT_FILE} -outform PEM -out ${EKCERT_PEM_FILE}
-    export FAPI_TEST_CERTIFICATE="file:${EKCERT_PEM_FILE}"
-
-    # Determine the fingerprint of the RSA EK public.
-    FINGERPRINT_ECC=$(openssl pkey -pubin -inform PEM -in ${EKECCPUB_FILE} -outform DER | shasum -a 256  | cut -f 1 -d ' ')
-    export FAPI_TEST_FINGERPRINT_ECC=" { \"hashAlg\" : \"sha256\", \"digest\" : \"${FINGERPRINT_ECC}\" }"
-    openssl x509 -inform DER -in ${EKECCCERT_FILE} -outform PEM -out ${EKECCCERT_PEM_FILE}
-    export FAPI_TEST_CERTIFICATE_ECC="file:${EKECCCERT_PEM_FILE}"
-
-    cat $EKCERT_FILE | \
-        env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-            TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
-            G_MESSAGES_DEBUG=all ./test/helper/tpm_writeekcert 1C00002
-    if [ $? -ne 0 ]; then
-        echo "TPM_writeekcert failed"
-        ret=99
-        break
-    fi
-
-    cat $EKECCCERT_FILE | \
-        env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-            TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
-            G_MESSAGES_DEBUG=all ./test/helper/tpm_writeekcert 1C0000A
-    if [ $? -ne 0 ]; then
-        echo "TPM_writeekcert failed"
-        ret=99
-    fi
-fi # certificate generation
-
-TPMSTATE_FILE1=${TEST_BIN}_state1
-TPMSTATE_FILE2=${TEST_BIN}_state2
-
-env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-    TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>${TPMSTATE_FILE1}
-if [ $? -ne 0 ]; then
-    echo "Error during dumpstate"
-    ret=99
-    break
-fi
+INTERMEDCA_FILE=ca/intermed-ca/intermed-ca.cert
+ROOTCA_FILE=ca/root-ca/root-ca.cert
 
 echo "Execute the test script"
 if [[ ${TPM20TEST_TCTI} == *device* ]]; then
@@ -154,33 +53,20 @@ if [[ ${TPM20TEST_TCTI} == *device* ]]; then
         G_MESSAGES_DEBUG=all ${@: -1}
 else
     # Run test with generated certificate.
+
+    EKECCCERT_PEM_FILE=${TEST_BIN}_ekecccert.pem
+    export FAPI_TEST_CERTIFICATE_ECC="${EKECCCERT_PEM_FILE}"
+    EKCERT_PEM_FILE=${TEST_BIN}_ekcert.pem
+    export FAPI_TEST_CERTIFICATE="${EKCERT_PEM_FILE}"
+
     env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
         TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
         FAPI_TEST_ROOT_CERT=${ROOTCA_FILE}.pem \
+        FAPI_TEST_INT_CERT=${INTERMEDCA_FILE}.pem \
         G_MESSAGES_DEBUG=all ${@: -1}
 fi
 ret=$?
 echo "Script returned $ret"
-
-#We check the state before a reboot to see if transients and NV were chagned.
-env TPM20TEST_TCTI="${TPM20TEST_TCTI}" \
-    TCTI_PCAP_FILE="${TCTI_PCAP_FILE}" \
-    G_MESSAGES_DEBUG=all ./test/helper/tpm_dumpstate>${TPMSTATE_FILE2}
-if [ $? -ne 0 ]; then
-    echo "Error during dumpstate"
-    ret=99
-    break
-fi
-
-if [ "$(cat ${TPMSTATE_FILE1})" != "$(cat ${TPMSTATE_FILE2})" ]; then
-    echo "TPM changed state during test"
-    echo "State before ($TPMSTATE_FILE1):"
-    cat ${TPMSTATE_FILE1}
-    echo "State after ($TPMSTATE_FILE2):"
-    cat ${TPMSTATE_FILE2}
-    ret=1
-    break
-fi
 
 #TODO: Add a tpm-restart/reboot here
 
