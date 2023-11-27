@@ -13,6 +13,7 @@
 - [tcti-spi-ftdi](#tcti-spi-ftdi)
 - [tcti-i2c-ftdi](#tcti-i2c-ftdi)
 - [tcti-spi-ltt2go](#tcti-spi-ltt2go)
+- [tcti-spidev](#tcti-spidev)
 - [TPM Simulator tctis](#tpm-simulator-tctis)
   - [tcti-libtpms](#tcti-libtpms)
     - [Parameters](#parameters-4)
@@ -272,6 +273,12 @@ flowchart TD
     style cy7c65211a stroke-dasharray: 3, 3
     style tpm stroke-dasharray: 3, 3
 ```
+
+## tcti-spidev
+
+The tcti-spidev is used for communicating to a TPM that is connected via
+a spidev device. On a Raspberry Pi for example this happens when enabling
+the device tree overlay `spi0-cs2`.
 
 ## TPM Simulator tctis
 

@@ -15,7 +15,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setti
 
 AC_CONFIG_HEADERS([config.h])
 
-AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-tcti-pcap.pc lib/tss2-tcti-libtpms.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc lib/tss2-tcti-cmd.pc lib/tss2-policy.pc lib/tss2-tcti-spi-helper.pc lib/tss2-tcti-spi-ltt2go.pc lib/tss2-tcti-spi-ftdi.pc lib/tss2-tcti-i2c-helper.pc lib/tss2-tcti-i2c-ftdi.pc])
+AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-tcti-pcap.pc lib/tss2-tcti-libtpms.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc lib/tss2-tcti-cmd.pc lib/tss2-policy.pc lib/tss2-tcti-spi-helper.pc lib/tss2-tcti-spi-ltt2go.pc lib/tss2-tcti-spidev.pc lib/tss2-tcti-spi-ftdi.pc lib/tss2-tcti-i2c-helper.pc lib/tss2-tcti-i2c-ftdi.pc])
 
 # propagate configure arguments to distcheck
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
@@ -327,6 +327,18 @@ AM_CONDITIONAL([ENABLE_TCTI_SPI_LTT2GO], [test "x$enable_tcti_spi_ltt2go" != xno
 
 AS_IF([test "x$enable_tcti_spi_ltt2go" = "xyes"],
     AC_DEFINE([TCTI_SPI_LTT2GO],[1], [TCTI FOR USB BASED ACCESS TO LETSTRUST-TPM2GO]))
+
+AC_ARG_ENABLE([tcti-spidev],
+            [AS_HELP_STRING([--disable-tcti-spidev],
+                            [don't build the tcti-spidev module; Default: Auto])],,
+            [enable_tcti_spidev=auto])
+AS_IF([test "x$enable_tcti_spidev" = "xauto"],
+    AC_CHECK_HEADER(linux/ioctl.h,
+        [enable_tcti_spidev=yes],
+        [enable_tcti_spidev=no]))
+AM_CONDITIONAL([ENABLE_TCTI_SPIDEV], [test "x$enable_tcti_spidev" != xno])
+AS_IF([test "x$enable_tcti_spidev" = "xyes"],
+    AC_DEFINE([TCTI_SPIDEV],[1], [TCTI FOR SPIDEV BASED ACCESS TO TPM]))
 
 PKG_CHECK_MODULES([LIBFTDI],
                   [libftdi],
@@ -721,6 +733,7 @@ AC_MSG_RESULT([
     sysmeasurements:    $sysmeasurements
     imameasurements:    $imameasurements
     tcti_spi_ltt2go      $enable_tcti_spi_ltt2go
+    tcti_spidev         $enable_tcti_spidev
     tcti_spi_ftdi       $enable_tcti_spi_ftdi
     tcti_i2c_ftdi       $enable_tcti_i2c_ftdi
 ])
