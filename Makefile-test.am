@@ -158,6 +158,9 @@ endif
 if ENABLE_TCTI_SPI_LTT2GO
 TESTS_UNIT += test/unit/tcti-spi-ltt2go
 endif
+if ENABLE_TCTI_SPIDEV
+TESTS_UNIT += test/unit/tcti-spidev
+endif
 if ENABLE_TCTI_SPI_FTDI
 TESTS_UNIT += test/unit/tcti-spi-ftdi
 endif
@@ -568,6 +571,18 @@ test_unit_tcti_spi_ltt2go_LDFLAGS = -Wl,--wrap=libusb_bulk_transfer \
                                    -Wl,--wrap=gettimeofday
 test_unit_tcti_spi_ltt2go_SOURCES = test/unit/tcti-spi-ltt2go.c \
                                    src/tss2-tcti/tcti-spi-ltt2go.c
+endif
+
+if ENABLE_TCTI_SPIDEV
+test_unit_tcti_spidev_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_spidev_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
+test_unit_tcti_spidev_LDFLAGS = -Wl,--wrap=open \
+                                -Wl,--wrap=close \
+                                -Wl,--wrap=ioctl \
+                                -Wl,--wrap=select \
+                                -Wl,--wrap=gettimeofday
+test_unit_tcti_spidev_SOURCES = test/unit/tcti-spidev.c \
+                                src/tss2-tcti/tcti-spidev.c
 endif
 
 if ENABLE_TCTI_SPI_FTDI
