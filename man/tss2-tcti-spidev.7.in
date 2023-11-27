@@ -1,0 +1,16 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH TCTI-SPI 7 "NOVEMBER 2023" "TPM2 Software Stack"
+.SH NAME
+tcti-spidev \- TCTI library for accessing TPMs via spidev
+.SH SYNOPSIS
+A TPM Command Transmission Interface (TCTI) module for interaction with
+a TPM that is attached to an spidev device node.
+.SH DESCRIPTION
+tcti-spidev is a library that abstracts the details of communication
+with a TPM that is attached to an spidev device node.. The interface
+exposed by this library is defined in the \*(lqTSS System Level API
+and TPM Command Transmission Interface Specification\*(rq specification.
+The configuration of this TCTI takes the filepath to the device node
+(Default: /dev/spidev0.1).

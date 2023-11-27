@@ -450,6 +450,26 @@ endif # ENABLE_TCTI_SPI_LTT2GO
 EXTRA_DIST += lib/tss2-tcti-spi-ltt2go.map \
               lib/tss2-tcti-spi-ltt2go.def
 
+# tcti library for letstrust-tpm2go usb tpm
+if ENABLE_TCTI_SPIDEV
+libtss2_tcti_spidev = src/tss2-tcti/libtss2-tcti-spidev.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spidev.h
+lib_LTLIBRARIES += $(libtss2_tcti_spidev)
+pkgconfig_DATA += lib/tss2-tcti-spidev.pc
+
+src_tss2_tcti_libtss2_tcti_spidev_la_LDFLAGS  =
+
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_spidev_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spidev.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_spidev_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_spi_helper)
+src_tss2_tcti_libtss2_tcti_spidev_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-spidev.c
+endif # ENABLE_TCTI_SPIDEV
+EXTRA_DIST += lib/tss2-tcti-spidev.map \
+              lib/tss2-tcti-spidev.def
+
 # tcti library for ftdi connected tpm
 if ENABLE_TCTI_SPI_FTDI
 libtss2_tcti_spi_ftdi = src/tss2-tcti/libtss2-tcti-spi-ftdi.la
@@ -907,6 +927,7 @@ man7_MANS = \
     man/man7/tss2-tcti-swtpm.7 \
     man/man7/tss2-tcti-mssim.7 \
     man/man7/tss2-tcti-cmd.7 \
+    man/man7/tss2-tcti-spidev.7 \
     man/man7/tss2-tcti-spi-helper.7 \
     man/man7/tss2-tcti-spi-ltt2go.7 \
     man/man7/tss2-tcti-spi-ftdi.7 \
@@ -990,6 +1011,7 @@ EXTRA_DIST += \
     man/tss2-tcti-swtpm.7.in \
     man/tss2-tcti-mssim.7.in \
     man/tss2-tcti-cmd.7.in \
+    man/tss2-tcti-spidev.7.in \
     man/tss2-tcti-spi-helper.7.in \
     man/tss2-tcti-spi-ltt2go.7.in \
     man/tss2-tcti-spi-ftdi.7.in \
