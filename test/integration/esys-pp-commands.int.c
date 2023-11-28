@@ -58,8 +58,9 @@ test_esys_pp_commands(ESYS_CONTEXT * esys_context)
     }
 
     if (r == (TPM2_RC_WARN  | TPM2_RC_PP)) {
-        LOG_INFO("Command TPM2_PP_Commands requires physical presence.");
-        return EXIT_SUCCESS;
+        LOG_WARNING("Command TPM2_PP_Commands requires physical presence.");
+        failure_return = EXIT_SKIP;
+        goto error;
     }
 
     if (number_rc(r) == TPM2_RC_BAD_AUTH) {
