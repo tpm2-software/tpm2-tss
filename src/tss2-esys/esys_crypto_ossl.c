@@ -394,9 +394,14 @@ iesys_cryptossl_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
 
 #if OPENSSL_VERSION_NUMBER < 0x10101000L
     if (!(hkey = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, NULL, key, size))) {
-#else
+#elif OPENSSL_VERSION_NUMBER < 0x30000000L
     /* this is preferred, but available since OpenSSL 1.1.1 only */
     if (!(hkey = EVP_PKEY_new_raw_private_key(EVP_PKEY_HMAC, NULL, key, size))) {
+#else
+    /* this is nessecary from OpenSSL 3.0.0 to avoid using the TPM2 provider using
+     * OpenSSL in a circular dependency */
+    if (!(hkey = EVP_PKEY_new_raw_private_key_ex(mycontext->hash.ossl_libctx,
+                                                 "HMAC", NULL, key, size))) {
 #endif
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Failed to create HMAC key", cleanup);
