@@ -178,7 +178,12 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
         &inScheme,
         &hash_validation,
         &signature);
-    goto_if_error(r, "Error: Sign", error);
+
+    if (r != TSS2_RC_SUCCESS) {
+        LOG_ERROR("%s " TPM2_ERROR_FORMAT, "Error: Sign", TPM2_ERROR_TEXT(r));
+        Esys_FlushContext(context->esys, esys_handle);
+        goto error;
+    }
 
     SAFE_FREE(signature);
 
