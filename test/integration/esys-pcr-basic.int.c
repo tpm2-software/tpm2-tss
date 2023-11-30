@@ -142,6 +142,7 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
         failure_return =  EXIT_SKIP;
+        goto error;
     }
 
     goto_if_error(r, "Error: PCR_Allocate", error);
