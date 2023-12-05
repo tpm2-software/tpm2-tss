@@ -19,6 +19,7 @@
 #include "fapi_int.h"
 #include "fapi_util.h"
 #include "tss2_esys.h"
+#include "tss2_mu.h"
 #include "ifapi_json_deserialize.h"
 #include "ifapi_policy_json_deserialize.h"
 #include "tpm_json_deserialize.h"
@@ -148,6 +149,7 @@ Fapi_Import_Async(
     json_object *jso2;
     size_t pos = 0;
     TPMS_POLICY policy = { 0 };
+    TPMA_OBJECT *attributes;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -169,6 +171,9 @@ Fapi_Import_Async(
     command->jso_string = NULL;
     strdup_check(command->out_path, path, r, cleanup_error);
     memset(&command->object, 0, sizeof(IFAPI_OBJECT));
+    memset(&command->public_templ, 0, sizeof(IFAPI_KEY_TEMPLATE));
+    command->ossl_priv = NULL;
+    command->profile = NULL;
     extPubKey->pem_ext_public = NULL;
 
     if (strncmp(importData, IFAPI_PEM_PUBLIC_STRING,
@@ -202,8 +207,48 @@ Fapi_Import_Async(
 
         context->state = IMPORT_KEY_WRITE_OBJECT_PREPARE;
 
-    } else if (strcmp(importData, IFAPI_PEM_PRIVATE_KEY) == 0) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid importData.", cleanup_error);
+        } else if (strncmp(importData, IFAPI_PEM_PRIVATE_KEY,
+                           sizeof(IFAPI_PEM_PRIVATE_KEY) - 1) == 0 ||
+                   strncmp(importData, IFAPI_PEM_ECC_PRIVATE_KEY,
+                           sizeof(IFAPI_PEM_ECC_PRIVATE_KEY) - 1) == 0 ||
+                   strncmp(importData, IFAPI_PEM_RSA_PRIVATE_KEY,
+                           sizeof(IFAPI_PEM_RSA_PRIVATE_KEY) - 1) == 0) {
+
+        r = ifapi_non_tpm_mode_init(context);
+        goto_if_error(r, "Initialize Import in none TPM mode", cleanup_error);
+
+        /* If the async state automata of FAPI shall be tested, then we must not set
+       the timeouts of ESYS to blocking mode.
+       During testing, the mssim tcti will ensure multiple re-invocations.
+       Usually however the synchronous invocations of FAPI shall instruct ESYS
+       to block until a result is available. */
+#ifndef TEST_FAPI_ASYNC
+        r = Esys_SetTimeout(context->esys, TSS2_TCTI_TIMEOUT_BLOCK);
+        goto_if_error_reset_state(r, "Set Timeout to blocking", cleanup_error);
+#endif /* TEST_FAPI_ASYNC */
+
+        r = ifapi_session_init(context);
+        goto_if_error(r, "Initialize Import", cleanup_error);
+
+        attributes = &context->cmd.ImportKey.public_templ.public.publicArea.objectAttributes;
+        r = ifapi_profiles_get(&context->profiles, path, &context->cmd.ImportKey.profile);
+        goto_if_error2(r, "Get profile for path: %s", cleanup_error, path);
+
+        r = ifapi_merge_profile_into_template(context->cmd.ImportKey.profile,
+                                              &context->cmd.ImportKey.public_templ);
+        goto_if_error(r, "Merge profile", cleanup_error);
+
+        *attributes = TPMA_OBJECT_SIGN_ENCRYPT | TPMA_OBJECT_DECRYPT | TPMA_OBJECT_USERWITHAUTH;
+        context->cmd.ImportKey.ossl_priv = importData;
+
+        /* Create session for key loading. */
+        r = ifapi_get_sessions_async(context,
+                                     IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
+                                     TPMA_SESSION_DECRYPT, 0);
+        goto_if_error_reset_state(r, "Create sessions", cleanup_error);
+
+        context->state = IMPORT_WAIT_FOR_SESSION;
+        return TSS2_RC_SUCCESS;
 
     } else {
         r = ifapi_non_tpm_mode_init(context);
@@ -368,6 +413,8 @@ Fapi_Import_Finish(
 
     TSS2_RC r;
     ESYS_TR session;
+    size_t marshalled_sensitive_size = 0;
+    size_t marshalled_length = 0;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -393,6 +440,7 @@ Fapi_Import_Finish(
            char *profile_name = context->loadKey.path_list->str;
            r = ifapi_profiles_get(&context->profiles, profile_name,
                                   &context->cmd.ImportKey.profile);
+
            goto_if_error_reset_state(r, "Retrieving profile data", error_cleanup);
 
            if (object->misc.key.public.publicArea.type == TPM2_ALG_RSA)
@@ -413,6 +461,39 @@ Fapi_Import_Finish(
             goto_if_error(r, "LoadKey finish", error_cleanup);
 
             context->loadKey.auth_object = *auth_object;
+
+            /* Copy private OSSL PEM key to key tree. */
+            if (command->ossl_priv) {
+                command->parent_object = &context->loadKey.auth_object;
+                command->public_templ.public.publicArea.nameAlg =
+                    command->parent_object->misc.key.public.publicArea.nameAlg;
+                r = ifapi_openssl_load_private(command->ossl_priv,
+                                               NULL,
+                                               NULL,
+                                               &context->cmd.ImportKey.public_templ.public,
+                                               &keyTree->public,
+                                               &command->sensitive);
+
+                goto_if_error_reset_state(r, "Fapi load OSSL Key.", error_cleanup);
+
+                r = Tss2_MU_TPMT_SENSITIVE_Marshal(&command->sensitive.sensitiveArea,
+                                                   &keyTree->duplicate.buffer[sizeof(uint16_t)],
+                                                   TPM2_MAX_DIGEST_BUFFER,
+                                                   &marshalled_sensitive_size);
+                goto_if_error_reset_state(r, "Fapi marshalling sensitive data of OSSL key failed.",
+                                          error_cleanup);
+
+                r = Tss2_MU_UINT16_Marshal(marshalled_sensitive_size,
+                                           &keyTree->duplicate.buffer[0], sizeof(uint16_t),
+                                           &marshalled_length);
+                goto_if_error_reset_state(r, "Fapi marshalling size of sensitive date failed.",
+                                          error_cleanup);
+
+                keyTree->duplicate.size = marshalled_sensitive_size + sizeof(uint16_t);
+                context->state = IMPORT_KEY_AUTHORIZE_PARENT;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+
             fallthrough;
 
         statecase(context->state, IMPORT_WAIT_FOR_AUTHORIZATION);
@@ -550,14 +631,16 @@ Fapi_Import_Finish(
             r = Esys_Import_Finish(context->esys, &command->private);
             try_again_or_error_goto(r, "Import", error_cleanup);
 
-            /* Concatenate keyname and parent path */
-            char* ipath = NULL;
-            r = ifapi_asprintf(&ipath, "%s%s%s", command->parent_path,
-                               IFAPI_FILE_DELIM, command->out_path);
-            goto_if_error(r, "Out of memory.", error_cleanup);
+            if (!command->ossl_priv) {
+                /* Concatenate keyname and parent path */
+                char* ipath = NULL;
+                r = ifapi_asprintf(&ipath, "%s%s%s", command->parent_path,
+                                   IFAPI_FILE_DELIM, command->out_path);
+                goto_if_error(r, "Out of memory.", error_cleanup);
 
-            SAFE_FREE(command->out_path);
-            command->out_path = ipath;
+                SAFE_FREE(command->out_path);
+                command->out_path = ipath;
+            }
 
             context->state = IMPORT_KEY_WAIT_FOR_FLUSH;
             fallthrough;
@@ -580,7 +663,9 @@ Fapi_Import_Finish(
             newObject->misc.key.policyInstance = NULL;
             newObject->misc.key.description = NULL;
             newObject->misc.key.certificate = NULL;
-            r = ifapi_get_profile_sig_scheme(&context->profiles.default_profile,
+            r = ifapi_get_profile_sig_scheme(context->cmd.ImportKey.profile ?
+                                             context->cmd.ImportKey.profile :
+                                             &context->profiles.default_profile,
                                              &keyTree->public.publicArea,
                                              &newObject->misc.key.signing_scheme);
             goto_if_error(r, "Get signing scheme.", error_cleanup);

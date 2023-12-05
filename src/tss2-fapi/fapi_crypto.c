@@ -2201,3 +2201,193 @@ ifapi_rsa_encrypt(const char *pem_key,
         OSSL_FREE(ctx, EVP_PKEY_CTX);
     return r;
 }
+
+static bool
+load_private_RSA_from_key(EVP_PKEY *key,
+                          TPM2B_SENSITIVE *priv) {
+
+    bool result = false;
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    const BIGNUM *p = NULL; /* the private key exponent */
+
+    RSA *k = EVP_PKEY_get0_RSA(key);
+    if (!k) {
+        LOG_ERROR("Could not retrieve RSA key");
+        goto out;
+    }
+    RSA_get0_factors(k, &p, NULL);
+#else
+    BIGNUM *p = NULL; /* the private key exponent */
+
+    int rc = EVP_PKEY_get_bn_param(key, OSSL_PKEY_PARAM_RSA_FACTOR1, &p);
+    if (!rc) {
+        LOG_ERROR("Could not read private key");
+        goto out;
+    }
+#endif
+
+    TPMT_SENSITIVE *sa = &priv->sensitiveArea;
+
+    sa->sensitiveType = TPM2_ALG_RSA;
+
+    TPM2B_PRIVATE_KEY_RSA *pkr = &sa->sensitive.rsa;
+
+    unsigned priv_bytes = BN_num_bytes(p);
+    if (priv_bytes > sizeof(pkr->buffer)) {
+        LOG_ERROR("Expected prime \"d\" to be less than or equal to %zu,"
+                " got: %u", sizeof(pkr->buffer), priv_bytes);
+        goto out;
+    }
+
+    pkr->size = priv_bytes;
+
+    int success = BN_bn2bin(p, pkr->buffer);
+    if (!success) {
+        ERR_print_errors_fp(stderr);
+        LOG_ERROR("Could not copy private exponent \"d\"");
+        goto out;
+    }
+    result = true;
+out:
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    /* k,p point to internal structrues and must not be freed after use */
+#else
+    BN_free(p);
+#endif
+    return result;
+}
+
+static TSS2_RC
+load_RSA_key(EVP_PKEY *key,
+             TPM2B_PUBLIC *pub,
+             TPM2B_SENSITIVE *priv) {
+    TSS2_RC rc = TSS2_RC_SUCCESS;
+
+    bool loaded_priv = load_private_RSA_from_key(key, priv);
+    if (!loaded_priv) {
+        return TSS2_FAPI_RC_GENERAL_FAILURE;
+    }
+
+    rc = get_rsa_tpm2b_public_from_evp(key, pub);
+    if (rc) {
+        goto out;
+    }
+out:
+    EVP_PKEY_free(key);
+    return rc;
+}
+
+static bool
+load_private_ECC_from_key(EVP_PKEY *key,
+                          TPM2B_SENSITIVE *priv) {
+    bool result = false;
+    /*
+     * private data
+     */
+    priv->sensitiveArea.sensitiveType = TPM2_ALG_ECC;
+
+    TPM2B_ECC_PARAMETER *p = &priv->sensitiveArea.sensitive.ecc;
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    EC_KEY *k = EVP_PKEY_get0_EC_KEY(key);
+    if (!k) {
+        LOG_ERROR("Could not retrieve ECC key");
+        goto out;
+    }
+
+    const EC_GROUP *group = EC_KEY_get0_group(k);
+    const BIGNUM *b = EC_KEY_get0_private_key(k);
+    unsigned priv_bytes = (EC_GROUP_get_degree(group) + 7) / 8;
+#else
+    BIGNUM *b = NULL; /* the private key exponent */
+
+    int rc = EVP_PKEY_get_bn_param(key, OSSL_PKEY_PARAM_PRIV_KEY, &b);
+    if (!rc) {
+        LOG_ERROR("Could not read ECC private key");
+        goto out;
+    }
+    unsigned priv_bytes = (EVP_PKEY_bits(key) + 7) / 8;
+#endif
+
+    if (priv_bytes > sizeof(p->buffer)) {
+        LOG_ERROR("Expected ECC private portion to be less than or equal to %zu,"
+                  " got: %u", sizeof(p->buffer), priv_bytes);
+        goto out;
+    }
+
+    p->size = BN_bn2binpad(b, p->buffer, priv_bytes);
+    if (p->size != priv_bytes) {
+        goto out;
+    }
+    result = true;
+out:
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    /* k,b point to internal structrues and must not be freed after use */
+#else
+    BN_free(b);
+#endif
+    return result;
+}
+
+static TSS2_RC
+load_ECC_key(EVP_PKEY *key,
+             TPM2B_PUBLIC *pub,
+             TPM2B_SENSITIVE *priv) {
+    TSS2_RC rc = TSS2_RC_SUCCESS;
+
+    if (!load_private_ECC_from_key(key, priv)) {
+        rc = TSS2_FAPI_RC_GENERAL_FAILURE;
+        goto out;
+    }
+    rc = get_ecc_tpm2b_public_from_evp(key, pub);
+    if (rc) {
+        goto out;
+    }
+out:
+    EVP_PKEY_free(key);
+    return rc;
+}
+
+TSS2_RC
+ifapi_openssl_load_private(const char *pem_key,
+                          const char *passin,
+                          const char *object_auth,
+                          TPM2B_PUBLIC *template,
+                          TPM2B_PUBLIC *pub,
+                          TPM2B_SENSITIVE *priv) {
+    *pub = *template;
+    BIO *bio = NULL;
+    EVP_PKEY *key = NULL;
+    TSS2_RC rc = TSS2_RC_SUCCESS;
+    (void)object_auth;
+
+    /* Create a key from PEM string. */
+    bio = BIO_new_mem_buf(pem_key, -1);
+
+    if (!bio) {
+        LOG_ERROR("Error creating BIO.");
+        return TSS2_FAPI_RC_GENERAL_FAILURE;
+    }
+
+    key = PEM_read_bio_PrivateKey(bio,NULL,NULL, (void *) passin);
+
+    if (!key) {
+        LOG_ERROR("Creation of key from PEM string failed.");
+        BIO_free_all(bio);
+        return TSS2_FAPI_RC_GENERAL_FAILURE;
+    }
+
+    switch (template->publicArea.type) {
+    case TPM2_ALG_RSA:
+        rc = load_RSA_key(key, pub, priv);
+        break;
+    case TPM2_ALG_ECC:
+        rc = load_ECC_key(key, pub, priv);
+        break;
+    default:
+        LOG_ERROR("Cannot handle algorithm, got: 0x%x", template->publicArea.type);
+        rc = TSS2_FAPI_RC_GENERAL_FAILURE;
+    }
+    BIO_free_all(bio);
+    return rc;
+}

@@ -351,6 +351,8 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-get-esys-blobs.fint \
     test/integration/fapi-get-random.fint \
     test/integration/fapi-platform-certificates.fint \
+	test/integration/fapi-import-ossl-key-ecc.fint \
+	test/integration/fapi-import-ossl-key-rsa.fint \
     test/integration/fapi-key-create-sign.fint \
     test/integration/fapi-key-create-he-sign.fint \
     test/integration/fapi-key-create-primary-sign.fint \
@@ -2413,6 +2415,22 @@ test_integration_fapi_duplicate_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_duplicate_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_duplicate_fint_SOURCES = \
     test/integration/fapi-duplicate.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_import_ossl_key_ecc_fint_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_ECC\"
+test_integration_fapi_import_ossl_key_ecc_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_import_ossl_key_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_import_ossl_key_ecc_fint_SOURCES = \
+    test/integration/fapi-import-ossl-key.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_import_ossl_key_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_import_ossl_key_rsa_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_import_ossl_key_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_import_ossl_key_rsa_fint_SOURCES = \
+    test/integration/fapi-import-ossl-key.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_pcr_test_fint_CFLAGS  = $(TESTS_CFLAGS)
