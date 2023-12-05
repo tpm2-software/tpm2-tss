@@ -2177,6 +2177,7 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
                 else
                     /* Use password session if session1 had not been created */
                     *session = ESYS_TR_PASSWORD;
+                context->session2 = ESYS_TR_NONE;
                 break;
             }
 
