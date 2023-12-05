@@ -69,7 +69,9 @@ typedef UINT8 IFAPI_SESSION_TYPE;
 #define IFAPI_PUB_KEY_DIR "ext"
 #define IFAPI_POLICY_DIR "policy"
 #define IFAPI_PEM_PUBLIC_STRING "-----BEGIN PUBLIC KEY-----"
-#define IFAPI_PEM_PRIVATE_KEY "-----PRIVATE KEY-----"
+#define IFAPI_PEM_PRIVATE_KEY "-----BEGIN PRIVATE KEY-----"
+#define IFAPI_PEM_RSA_PRIVATE_KEY "-----BEGIN RSA PRIVATE KEY-----"
+#define IFAPI_PEM_ECC_PRIVATE_KEY "-----BEGIN EC PRIVATE KEY-----"
 #define IFAPI_JSON_TAG_POLICY "policy"
 #define IFAPI_JSON_TAG_OBJECT_TYPE "objectType"
 #define IFAPI_JSON_TAG_DUPLICATE "public_parent"
@@ -716,6 +718,9 @@ typedef struct {
     TPM2B_PRIVATE *private;
     char *jso_string;
     const IFAPI_PROFILE *profile;
+    IFAPI_KEY_TEMPLATE public_templ;  /**< The template for the keys public data */
+    const char *ossl_priv;            /**< Private OSSL PEM key to be import. */
+    TPM2B_SENSITIVE sensitive;        /**< The sensitive part of an OSSL key. */
 } IFAPI_ImportKey;
 
 
