@@ -6,6 +6,7 @@
         Tss2_TctiLdr_GetInfo;
         Tss2_TctiLdr_Initialize;
         Tss2_TctiLdr_Initialize_Ex;
+        Tss2_Tcti_TctiLdr_Init;
     local:
         *;
 };
