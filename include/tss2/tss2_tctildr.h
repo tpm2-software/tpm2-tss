@@ -30,6 +30,11 @@ Tss2_TctiLdr_GetInfo (const char *name,
 void
 Tss2_TctiLdr_FreeInfo (TSS2_TCTI_INFO **info);
 
+TSS2_RC
+Tss2_Tcti_TctiLdr_Init (TSS2_TCTI_CONTEXT *tctiContext,
+                        size_t *size,
+                        const char *nameConf);
+
 #ifdef __cplusplus
 }
 #endif
