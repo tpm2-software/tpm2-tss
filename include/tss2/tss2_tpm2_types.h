@@ -348,6 +348,8 @@ typedef UINT32 TPM2_RC;
 #define TPM2_RC_BINDING            ((TPM2_RC) (TPM2_RC_FMT1 + 0x025)) /* public and sensitive portions of an object are not cryptographically bound */
 #define TPM2_RC_CURVE              ((TPM2_RC) (TPM2_RC_FMT1 + 0x026)) /* curve not supported */
 #define TPM2_RC_ECC_POINT          ((TPM2_RC) (TPM2_RC_FMT1 + 0x027)) /* point is not on the required curve. */
+#define TPM2_RC_FW_LIMITED         ((TPM2_RC) (TPM2_RC_FMT1 + 0x028)) /* the command requires the firmware secret but the firmware secret is unavailable */
+#define TPM2_RC_SVN_LIMITED        ((TPM2_RC) (TPM2_RC_FMT1 + 0x029)) /* the command requires the firmware SVN secret but the firmware SVN secret is unavailable */
 #define TPM2_RC_WARN                              ((TPM2_RC)  0x900)  /* set for warning response codes */
 #define TPM2_RC_CONTEXT_GAP        ((TPM2_RC) (TPM2_RC_WARN + 0x001)) /* gap for context ID is too large */
 #define TPM2_RC_OBJECT_MEMORY      ((TPM2_RC) (TPM2_RC_WARN + 0x002)) /* out of memory for object contexts */
@@ -525,6 +527,8 @@ typedef UINT32 TPM2_PT;
 #define TPM2_PT_NV_BUFFER_MAX            ((TPM2_PT) (TPM2_PT_FIXED + 44)) /* the maximum data size in one NV write command */
 #define TPM2_PT_MODES                    ((TPM2_PT) (TPM2_PT_FIXED + 45)) /* a TPMA_MODES value indicating that the TPM is designed for these modes. */
 #define TPM2_PT_MAX_CAP_BUFFER           ((TPM2_PT) (TPM2_PT_FIXED + 46)) /* the maximum size of a TPMS_CAPABILITY_DATA structure returned in TPM2_GetCapability(). */
+#define TPM_PT_FIRMWARE_SVN              ((TPM2_PT) (TPM2_PT_FIXED + 47)) /* the current SVN of the TPM's firmware */
+#define TPM_PT_FIRMWARE_MAX_SVN          ((TPM2_PT) (TPM2_PT_FIXED + 48)) /* the maximum value `TPM_PT_FIRMWARE_SVN` may take */
 #define TPM2_PT_VAR                      ((TPM2_PT) (TPM2_PT_GROUP * 2)) /* the group of variable properties returned as TPMS_TAGGED_PROPERTY. The properties in this group change because of a Protected Capability other than a firmware update. The values are not necessarily persistent across all power transitions. */
 #define TPM2_PT_PERMANENT                ((TPM2_PT) (TPM2_PT_VAR + 0)) /* TPMA_PERMANENT */
 #define TPM2_PT_STARTUP_CLEAR            ((TPM2_PT) (TPM2_PT_VAR + 1)) /* TPMA_STARTUP_CLEAR */
@@ -652,7 +656,15 @@ typedef TPM2_HANDLE TPM2_RH;
 #define TPM2_RH_ACT_D       ((TPM2_RH) 0x4000011D)
 #define TPM2_RH_ACT_E       ((TPM2_RH) 0x4000011E)
 #define TPM2_RH_ACT_F       ((TPM2_RH) 0x4000011F) /* A P */
-#define TPM2_RH_LAST        ((TPM2_RH) 0x4000011F) /* R */
+#define TPM2_RH_FW_OWNER             ((TPM2_RH) 0x40000140) /* K */
+#define TPM2_RH_FW_ENDORSEMENT       ((TPM2_RH) 0x40000141) /* K */
+#define TPM2_RH_FW_PLATFORM          ((TPM2_RH) 0x40000142) /* K */
+#define TPM2_RH_FW_NULL              ((TPM2_RH) 0x40000143) /* K */
+#define TPM2_RH_SVN_OWNER_BASE       ((TPM2_RH) 0x40010000) /* K */
+#define TPM2_RH_SVN_ENDORSEMENT_BASE ((TPM2_RH) 0x40020000) /* K */
+#define TPM2_RH_SVN_PLATFORM_BASE    ((TPM2_RH) 0x40030000) /* K */
+#define TPM2_RH_SVN_NULL_BASE        ((TPM2_RH) 0x40040000) /* K */
+#define TPM2_RH_LAST                 ((TPM2_RH) 0x4004FFFF) /* R */
 
 /* Definition of TPM2_HANDLE TPM2_HC Constants <S> */
 typedef TPM2_HANDLE TPM2_HC;
@@ -713,6 +725,8 @@ typedef uint32_t TPMA_OBJECT;
 #define TPMA_OBJECT_SENSITIVEDATAORIGIN  ((TPMA_OBJECT) 0x00000020) /* SET 1 Indicates that when the object was created with TPM2_Create or TPM2_CreatePrimary the TPM generated all of the sensitive data other than the authValue. CLEAR 0 A portion of the sensitive data other than the authValue was provided by the caller. */
 #define TPMA_OBJECT_USERWITHAUTH         ((TPMA_OBJECT) 0x00000040) /* SET 1 Approval of USER role actions with this object may be with an HMAC session or with a password using the authValue of the object or a policy session. CLEAR 0 Approval of USER role actions with this object may only be done with a policy session. */
 #define TPMA_OBJECT_ADMINWITHPOLICY      ((TPMA_OBJECT) 0x00000080) /* SET 1 Approval of ADMIN role actions with this object may only be done with a policy session. CLEAR 0 Approval of ADMIN role actions with this object may be with an HMAC session or with a password using the authValue of the object or a policy session. */
+#define TPMA_OBJECT_FIRMWARELIMITED      ((TPMA_OBJECT) 0x00000100) /* SET 1 Object is in a firmware-limited hierarchy */
+#define TPMA_OBJECT_SVNLIMITED           ((TPMA_OBJECT) 0x00000200) /* SET 1 Object is in an SVN-limited hierarchy */
 #define TPMA_OBJECT_RESERVED3_MASK       ((TPMA_OBJECT) 0x00000300) /* shall be zero */
 #define TPMA_OBJECT_NODA                 ((TPMA_OBJECT) 0x00000400) /* SET 1 The object is not subject to dictionary attack protections. CLEAR 0 The object is subject to dictionary attack protections. */
 #define TPMA_OBJECT_ENCRYPTEDDUPLICATION ((TPMA_OBJECT) 0x00000800) /* SET 1 If the object is duplicated then symmetricAlg shall not be TPM2_ALG_NULL and newParentHandle shall not be TPM2_RH_NULL. CLEAR 0 The object may be duplicated without an inner wrapper on the private portion of the object and the new parent may be TPM2_RH_NULL. */

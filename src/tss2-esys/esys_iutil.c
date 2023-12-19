@@ -382,6 +382,38 @@ iesys_handle_to_tpm_handle(ESYS_TR esys_handle, TPM2_HANDLE * tpm_handle)
         *tpm_handle = TPM2_RH_PLATFORM_NV;
         return TPM2_RC_SUCCESS;
     }
+    if (esys_handle == ESYS_TR_RH_FW_OWNER) {
+        *tpm_handle = TPM2_RH_FW_OWNER;
+        return TPM2_RC_SUCCESS;
+    }
+    if (esys_handle == ESYS_TR_RH_FW_ENDORSEMENT) {
+        *tpm_handle = TPM2_RH_FW_ENDORSEMENT;
+        return TPM2_RC_SUCCESS;
+    }
+    if (esys_handle == ESYS_TR_RH_FW_PLATFORM) {
+        *tpm_handle = TPM2_RH_FW_PLATFORM;
+        return TPM2_RC_SUCCESS;
+    }
+    if (esys_handle == ESYS_TR_RH_FW_NULL) {
+        *tpm_handle = TPM2_RH_FW_NULL;
+        return TPM2_RC_SUCCESS;
+    }
+    if ((esys_handle & 0xFFFF0000) == ESYS_TR_RH_SVN_OWNER_BASE) {
+        *tpm_handle = TPM2_RH_SVN_OWNER_BASE + (esys_handle & 0x0000FFFF);
+        return TPM2_RC_SUCCESS;
+    }
+    if ((esys_handle & 0xFFFF0000) == ESYS_TR_RH_SVN_ENDORSEMENT_BASE) {
+        *tpm_handle = TPM2_RH_SVN_ENDORSEMENT_BASE + (esys_handle & 0x0000FFFF);
+        return TPM2_RC_SUCCESS;
+    }
+    if ((esys_handle & 0xFFFF0000) == ESYS_TR_RH_SVN_PLATFORM_BASE) {
+        *tpm_handle = TPM2_RH_SVN_PLATFORM_BASE + (esys_handle & 0x0000FFFF);
+        return TPM2_RC_SUCCESS;
+    }
+    if ((esys_handle & 0xFFFF0000) == ESYS_TR_RH_SVN_NULL_BASE) {
+        *tpm_handle = TPM2_RH_SVN_NULL_BASE + (esys_handle & 0x0000FFFF);
+        return TPM2_RC_SUCCESS;
+    }
     if (esys_handle >= ESYS_TR_RH_ACT_FIRST &&
         esys_handle <= ESYS_TR_RH_ACT_LAST) {
         *tpm_handle = TPM2_RH_ACT_0 + (esys_handle - ESYS_TR_RH_ACT_FIRST);
