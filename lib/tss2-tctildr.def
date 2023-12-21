@@ -1,5 +1,6 @@
 LIBRARY tss2-tctildr
 EXPORTS
+    Tss2_Tcti_Info
     Tss2_TctiLdr_Finalize
     Tss2_TctiLdr_FreeInfo;
     Tss2_TctiLdr_GetInfo;

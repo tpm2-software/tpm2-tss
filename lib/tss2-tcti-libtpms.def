@@ -2,3 +2,4 @@ LIBRARY tss2-tcti-libtpms
 EXPORTS
     Tss2_Tcti_Info
     Tss2_Tcti_Libtpms_Init
+    Tss2_Tcti_Libtpms_Reset

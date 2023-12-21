@@ -14,7 +14,6 @@
 #include <inttypes.h>
 
 #include "tss2_sys.h"
-#include "context-util.h"
 #include "sys-util.h"
 #include "session-util.h"
 #define LOGMODULE test
@@ -29,7 +28,6 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
 {
     TSS2_RC rc, rc2;
     SESSION *session;
-    TSS2_TCTI_CONTEXT *tcti_ctx;
     TPM2B_MAX_NV_BUFFER data_to_write, data_read;
     TPM2B_MAX_BUFFER encrypted_param, decrypted_param;
     TPMI_RH_NV_INDEX nv_index = TPM2_HR_NV_INDEX | 0x01;
@@ -59,12 +57,6 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
 
     LOG_INFO("param-encrypt-decrypt test");
 
-    rc = Tss2_Sys_GetTctiContext(sys_context, &tcti_ctx);
-    if (rc) {
-        LOG_ERROR("Tss2_Sys_GetTctiContext failed 0x%" PRIx32, rc);
-        return rc;
-    }
-
     nv_public.size = 0;
     nv_public.nvPublic.attributes = nv_attribs;
     CopySizedByteBuffer((TPM2B *)&nv_public.nvPublic.authPolicy, (TPM2B *)&policy_auth);
@@ -86,7 +78,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
 retry:
     rc = create_auth_session(&session, TPM2_RH_NULL, 0,
                 TPM2_RH_NULL, 0, &nonce_caller, 0, TPM2_SE_POLICY,
-                &symmetric, TPM2_ALG_SHA256, tcti_ctx);
+                &symmetric, TPM2_ALG_SHA256, sys_context);
     if (rc) {
         LOG_ERROR("create_auth_session failed 0x%" PRIx32, rc);
         goto clean;

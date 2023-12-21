@@ -1078,6 +1078,7 @@ ifapi_json_IFAPI_EVENT_deserialize(
     } else {
         out->recnum = 0;
     }
+    LOG_TRACE("Event num %"PRIu32, out->recnum);
 
     if (!ifapi_get_sub_object(jso, "pcr", &jso2)) {
         LOG_ERROR("Field \"pcr\" not found.");

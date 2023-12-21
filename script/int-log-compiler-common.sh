@@ -44,39 +44,7 @@ elif [ "$OS" == "FreeBSD" ]; then
     sock_tool_params="-l4"
 fi
 
-simulator_bin=""
 INTEGRATION_TCTI=$1
-TPM20TEST_DEVICE_FILE=""
-TPM20TEST_TCTI_NAME=""
-TPM20TEST_TCTI=""
-TPM20TEST_SOCKET_PORT=""
-TPM20TEST_SOCKET_ADDRESS=""
-SIM_PORT_DATA=""
-
-case ${INTEGRATION_TCTI} in
- "swtpm")
-   simulator_bin="swtpm"
-   TPM20TEST_TCTI_NAME="swtpm"
-   TPM20TEST_SOCKET_ADDRESS="127.0.0.1"
-   ;;
- "mssim")
-   simulator_bin="tpm_server"
-   TPM20TEST_TCTI_NAME="socket"
-   TPM20TEST_SOCKET_ADDRESS="127.0.0.1"
-
-   ;;
- "device")
-   simulator_bin=""
-   TPM20TEST_TCTI_NAME="device"
-   DEVICE_FILE=$2
-   TPM20TEST_DEVICE_FILE=${DEVICE_FILE:9}
-   TPM20TEST_TCTI="${TPM20TEST_TCTI_NAME}:${TPM20TEST_DEVICE_FILE}"
-   ;;
- *)
-  echo "Wrong INTEGRATION_TCTI exiting.."
-  exit 1;
-  ;;
-esac
 
 # Verify the running shell and OS environment is sufficient to run these tests.
 sanity_test ()
@@ -157,10 +125,10 @@ simulator_start ()
     # simulator port is a random port between 1024 and 65535
 
     cd ${sim_tmp_dir}
-    if [ "${INTEGRATION_TCTI}" == "mssim" ]; then
+    if [[ "${INTEGRATION_TCTI}" == *mssim* ]]; then
         daemon_start "${sim_bin}" "-port ${sim_port}" "${sim_log_file}" \
             "${sim_pid_file}" ""
-    elif [ "${INTEGRATION_TCTI}" == "swtpm" ]; then
+    elif [[ "${INTEGRATION_TCTI}" == *swtpm* ]]; then
         daemon_start "${sim_bin}" "socket --tpm2 -p ${sim_port} --ctrl type=tcp,port=$((${sim_port}+1)) --log fd=1,level=5 --flags not-need-init --tpmstate dir=${sim_tmp_dir} --locality allow-set-locality" \
             "${sim_log_file}" "${sim_pid_file}" ""
     else
@@ -207,6 +175,11 @@ TEST_DIR=$(dirname "${@: -1}")
 TEST_NAME=$(basename "${TEST_BIN}")
 
 # start an instance of the simulator for the test, have it use a random port
+case ${INTEGRATION_TCTI} in
+ *swtpm*) simulator_bin="swtpm" ;;
+ *mssim*) simulator_bin="tpm_server" ;;
+ *) simulator_bin=""; ;;
+esac
 SIM_LOG_FILE=${TEST_BIN}_simulator.log
 SIM_PID_FILE=${TEST_BIN}_simulator.pid
 SIM_TMP_DIR=$(mktemp -d /tmp/tpm_simulator_XXXXXX)

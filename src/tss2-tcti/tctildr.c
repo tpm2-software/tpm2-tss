@@ -189,6 +189,56 @@ tctildr_conf_parse (const char *name_conf,
 
     return TSS2_RC_SUCCESS;
 }
+/*
+ * calls tctildr_conf_parse.
+ * allocates memory for name and conf if necessary.
+ * does not return empty strings, but NULL instead.
+ */
+TSS2_RC
+tctildr_conf_parse_alloc (const char *name_conf,
+                     char **name,
+                     char **conf)
+{
+    size_t combined_length;
+    TSS2_RC rc;
+
+    if (name_conf == NULL) {
+        *name = NULL;
+        *conf = NULL;
+        return TSS2_RC_SUCCESS;
+    }
+
+    /* Parse name_conf into name and conf */
+    combined_length = strlen (name_conf);
+    if (combined_length > PATH_MAX - 1) {
+        LOG_ERROR ("combined conf length must be between 0 and PATH_MAX");
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+    *name = calloc(combined_length + 1, sizeof(char));
+    *conf = calloc(combined_length + 1, sizeof(char));
+    if (*name == NULL || *conf == NULL) {
+        SAFE_FREE(*name);
+        SAFE_FREE(*conf);
+        return TSS2_TCTI_RC_MEMORY;
+    }
+    rc = tctildr_conf_parse (name_conf, *name, *conf);
+    if (rc != TSS2_RC_SUCCESS) {
+        SAFE_FREE(*name);
+        SAFE_FREE(*conf);
+        return rc;
+    }
+
+    /* Set name and conf to NULL if they are empty strings */
+    if (!strcmp(*name, "")) {
+        SAFE_FREE(*name);
+    }
+    if (!strcmp(*conf, "")) {
+        SAFE_FREE(*conf);
+    }
+
+    return TSS2_RC_SUCCESS;
+}
+
 TSS2_TCTILDR_CONTEXT*
 tctildr_context_cast (TSS2_TCTI_CONTEXT *ctx)
 {
@@ -407,6 +457,45 @@ Tss2_TctiLdr_FreeInfo (TSS2_TCTI_INFO **info)
     free (info_tmp);
     *info = NULL;
 }
+
+TSS2_RC
+tctildr_init_context_data (TSS2_TCTI_CONTEXT *tctiContext,
+                           const char *name,
+                           const char *conf)
+{
+    TSS2_TCTILDR_CONTEXT *ldr_ctx = NULL;
+    TSS2_TCTI_CONTEXT *child_ctx = NULL;
+    void *dl_handle = NULL;
+    TSS2_RC rc;
+
+    if (tctiContext == NULL) {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+
+    rc = tctildr_get_tcti(name, conf, &child_ctx, &dl_handle);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR ("Failed to instantiate TCTI");
+        return rc;
+    }
+    TSS2_TCTI_MAGIC (tctiContext) = TCTILDR_MAGIC;
+    TSS2_TCTI_VERSION (tctiContext) = TCTI_VERSION;
+    TSS2_TCTI_TRANSMIT (tctiContext) = tctildr_transmit;
+    TSS2_TCTI_RECEIVE (tctiContext) = tctildr_receive;
+    TSS2_TCTI_FINALIZE (tctiContext) = tctildr_finalize;
+    TSS2_TCTI_CANCEL (tctiContext) = tctildr_cancel;
+    TSS2_TCTI_GET_POLL_HANDLES (tctiContext) = tctildr_get_poll_handles;
+    TSS2_TCTI_SET_LOCALITY (tctiContext) = tctildr_set_locality;
+    TSS2_TCTI_MAKE_STICKY (tctiContext) = tctildr_make_sticky;
+    ldr_ctx = tctildr_context_cast(tctiContext);
+    if (ldr_ctx == NULL) {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
+    ldr_ctx->library_handle = dl_handle;
+    ldr_ctx->tcti = child_ctx;
+
+    return TSS2_RC_SUCCESS;
+}
+
 TSS2_RC
 Tss2_TctiLdr_Initialize_Ex (const char *name,
                             const char *conf,
@@ -428,29 +517,15 @@ Tss2_TctiLdr_Initialize_Ex (const char *name,
     if (conf != NULL && strcmp (conf, "")) {
         local_conf = conf;
     }
-    rc = tctildr_get_tcti (local_name, local_conf, tctiContext, &dl_handle);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR ("Failed to instantiate TCTI");
-        goto err;
-    }
     ldr_ctx = calloc (1, sizeof (TSS2_TCTILDR_CONTEXT));
     if (ldr_ctx == NULL) {
         rc = TSS2_TCTI_RC_MEMORY;
         goto err;
     }
-    TSS2_TCTI_MAGIC (ldr_ctx) = TCTILDR_MAGIC;
-    TSS2_TCTI_VERSION (ldr_ctx) = TCTI_VERSION;
-    TSS2_TCTI_TRANSMIT (ldr_ctx) = tctildr_transmit;
-    TSS2_TCTI_RECEIVE (ldr_ctx) = tctildr_receive;
-    TSS2_TCTI_FINALIZE (ldr_ctx) = tctildr_finalize;
-    TSS2_TCTI_CANCEL (ldr_ctx) = tctildr_cancel;
-    TSS2_TCTI_GET_POLL_HANDLES (ldr_ctx) = tctildr_get_poll_handles;
-    TSS2_TCTI_SET_LOCALITY (ldr_ctx) = tctildr_set_locality;
-    TSS2_TCTI_MAKE_STICKY (ldr_ctx) = tctildr_make_sticky;
-    ldr_ctx->library_handle = dl_handle;
-    ldr_ctx->tcti = *tctiContext;
-    *tctiContext = (TSS2_TCTI_CONTEXT*)ldr_ctx;
-    return rc;
+
+    *tctiContext = (TSS2_TCTI_CONTEXT *) ldr_ctx;
+    return tctildr_init_context_data(*tctiContext, local_name, local_conf);
+
 err:
     if (*tctiContext != NULL) {
         Tss2_Tcti_Finalize (*tctiContext);
@@ -468,29 +543,75 @@ Tss2_TctiLdr_Initialize (const char *nameConf,
     char *name = NULL;
     char *conf = NULL;
     TSS2_RC rc;
-    size_t combined_length;
 
-    if (nameConf == NULL) {
-        return Tss2_TctiLdr_Initialize_Ex (NULL, NULL, tctiContext);
+    rc = tctildr_conf_parse_alloc (nameConf, &name, &conf);
+    if (rc != TSS2_RC_SUCCESS) {
+        return rc;
     }
-
-    combined_length = strlen (nameConf);
-    if (combined_length > PATH_MAX - 1) {
-        LOG_ERROR ("combined conf length must be between 0 and PATH_MAX");
-        return TSS2_TCTI_RC_BAD_VALUE;
-    }
-    name = calloc(combined_length + 1, sizeof(char));
-    conf = calloc(combined_length + 1, sizeof(char));
-    if (name == NULL || conf == NULL) {
-        rc = TSS2_TCTI_RC_MEMORY;
-        goto out;
-    }
-    rc = tctildr_conf_parse (nameConf, name, conf);
-    if (rc != TSS2_RC_SUCCESS)
-        goto out;
     rc = Tss2_TctiLdr_Initialize_Ex (name, conf, tctiContext);
-out:
+
     SAFE_FREE(name);
     SAFE_FREE(conf);
     return rc;
+}
+
+TSS2_RC Tss2_Tcti_TctiLdr_Init (TSS2_TCTI_CONTEXT *tctiContext, size_t *size,
+                                const char *nameConf)
+{
+    TSS2_RC rc;
+    char *name = NULL;
+    char *conf = NULL;
+
+    LOG_TRACE("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ", conf: %s",
+               (uintptr_t)tctiContext, (uintptr_t)size, nameConf);
+
+    if (tctiContext == NULL && size == NULL) {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    } else if (tctiContext == NULL) {
+        *size = sizeof (TSS2_TCTILDR_CONTEXT);
+        return TSS2_RC_SUCCESS;
+    }
+
+    rc = tctildr_conf_parse_alloc (nameConf, &name, &conf);
+    if (rc != TSS2_RC_SUCCESS) {
+        goto free_name_conf;
+    }
+
+    rc = tctildr_init_context_data(tctiContext, name, conf);
+
+free_name_conf:
+    SAFE_FREE(name);
+    SAFE_FREE(conf);
+    return rc;
+}
+
+__attribute__((weak))
+const TSS2_TCTI_INFO tss2_tcti_info = {
+    .version = TCTI_VERSION,
+    .name = "tctildr",
+    .description = "TCTI module for dynamically loading other TCTI modules",
+    .config_help = "TCTI to load and its configuration. Either"
+        " * <child_name>, e.g. device (child_conf will be NULL) OR\n"
+        " * <child_name>:<child_conf>, e.g., device:/dev/tpmrm0 OR\n"
+        " * NULL, tctildr will attempt to load a child tcti in the following order:\n"
+        "   * libtss2-tcti-default.so\n"
+        "   * libtss2-tcti-tabrmd.so\n"
+        "   * libtss2-tcti-device.so.0:/dev/tpmrm0\n"
+        "   * libtss2-tcti-device.so.0:/dev/tpm0\n"
+        "   * libtss2-tcti-swtpm.so\n"
+        "   * libtss2-tcti-mssim.so\n"
+        "Where child_name: if not empty, tctildr will try to dynamically load the child tcti library in the following order:\n"
+        "   * <child_name>\n"
+        "   * libtss2-tcti-<child_name>.so.0\n"
+        "   * libtss2-tcti-<child_name>.so\n"
+        "   * libtss2-<child_name>.so.0\n"
+        "   * libtss2-<child_name>.so\n",
+    .init = Tss2_Tcti_TctiLdr_Init,
+};
+
+__attribute__((weak))
+const TSS2_TCTI_INFO*
+Tss2_Tcti_Info (void)
+{
+    return &tss2_tcti_info;
 }

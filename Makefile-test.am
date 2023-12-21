@@ -15,8 +15,8 @@ check_LTLIBRARIES =
 TEST_EXTENSIONS = .int .fint
 INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
 FINT_LOG_COMPILER = $(srcdir)/script/fint-log-compiler.sh
-INT_LOG_FLAGS = $(INTEGRATION_TCTI) $(INTEGRATION_ARGS)
-FINT_LOG_FLAGS = $(INTEGRATION_TCTI) $(INTEGRATION_ARGS)
+INT_LOG_FLAGS = $(INTEGRATION_TCTI)
+FINT_LOG_FLAGS = $(INTEGRATION_TCTI)
 EXTRA_DIST += $(srcdir)/script/int-log-compiler.sh \
               $(srcdir)/script/fint-log-compiler.sh \
               $(srcdir)/script/int-log-compiler-common.sh \
@@ -92,7 +92,8 @@ FAPI_TEST_BINS = \
     test/data/fapi/eventlog/sml-ima-sig-sha256-invalidated.bin \
     test/data/fapi/eventlog/event-uefivar.bin \
     test/data/fapi/eventlog/specid-vendordata.bin \
-    test/data/fapi/eventlog/sml-ima-ng-sha1.bin
+    test/data/fapi/eventlog/sml-ima-ng-sha1.bin \
+    test/data/fapi/eventlog/binary_measurements_hcrtm.bin
 
 CLEANFILES += $(FAPI_TEST_BINS)
 endif #FAPI
@@ -157,6 +158,9 @@ TESTS_UNIT += test/unit/tcti-spi-helper
 endif
 if ENABLE_TCTI_SPI_LTT2GO
 TESTS_UNIT += test/unit/tcti-spi-ltt2go
+endif
+if ENABLE_TCTI_SPIDEV
+TESTS_UNIT += test/unit/tcti-spidev
 endif
 if ENABLE_TCTI_SPI_FTDI
 TESTS_UNIT += test/unit/tcti-spi-ftdi
@@ -570,6 +574,18 @@ test_unit_tcti_spi_ltt2go_SOURCES = test/unit/tcti-spi-ltt2go.c \
                                    src/tss2-tcti/tcti-spi-ltt2go.c
 endif
 
+if ENABLE_TCTI_SPIDEV
+test_unit_tcti_spidev_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_spidev_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
+test_unit_tcti_spidev_LDFLAGS = -Wl,--wrap=open \
+                                -Wl,--wrap=close \
+                                -Wl,--wrap=ioctl \
+                                -Wl,--wrap=select \
+                                -Wl,--wrap=gettimeofday
+test_unit_tcti_spidev_SOURCES = test/unit/tcti-spidev.c \
+                                src/tss2-tcti/tcti-spidev.c
+endif
+
 if ENABLE_TCTI_SPI_FTDI
 test_unit_tcti_spi_ftdi_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_spi_ftdi_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
@@ -809,8 +825,6 @@ test_unit_esys_crypto_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
 test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
                                 src/tss2-esys/esys_context.c \
                                 src/tss2-esys/esys_iutil.c \
-                                src/tss2-tcti/tctildr.c \
-                                src/tss2-tcti/tctildr-dl.c \
                                 src/tss2-esys/esys_crypto.c \
                                 $(TSS2_ESYS_SRC_CRYPTO)
 
@@ -1091,11 +1105,10 @@ test_tpmclient_tpmclient_int_SOURCES  = \
 
 test_integration_libtest_utils_la_CFLAGS = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_libtest_utils_la_SOURCES = \
-    test/integration/sys-context-util.c test/integration/context-util.h \
     test/integration/sys-util.c    test/integration/sys-util.h \
     test/integration/sys-session-util.c test/integration/session-util.h \
-    test/integration/sys-test-options.c test/integration/test-options.h \
     test/integration/sys-entity-util.c test/integration/test.h \
+    test/integration/test-common.c test/integration/test-common.h \
     src/util/log.c
 
 test_integration_sys_asymmetric_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)

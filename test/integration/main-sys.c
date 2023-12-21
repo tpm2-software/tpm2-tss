@@ -12,15 +12,16 @@
 #include <stdlib.h>
 
 #define LOGMODULE test
+#include "tss2_tctildr.h"
 #include "tss2_sys.h"
 #include "util/log.h"
 #include "test.h"
-#include "test-options.h"
-#include "context-util.h"
+
+#include "test-common.h"
 
 /**
  * This program is a template for integration tests (ones that use the TCTI
- * and the SYS contexts / API directly). It does nothing more than parsing
+ * and the SYS ctxs / API directly). It does nothing more than parsing
  * command line options that allow the caller (likely a script) to specify
  * which TCTI to use for the test.
  */
@@ -28,38 +29,35 @@ int
 main (int   argc,
       char *argv[])
 {
-    TSS2_SYS_CONTEXT *sys_context;
+    TSS2_TEST_SYS_CONTEXT *test_sys_ctx;
+    TSS2_RC rc;
     int ret;
-    test_opts_t opts = {
-        .tcti_type      = TCTI_DEFAULT,
-        .device_file    = DEVICE_PATH_DEFAULT,
-        .socket_address = HOSTNAME_DEFAULT,
-        .socket_port    = PORT_DEFAULT,
-    };
 
     UNUSED(argc);
     UNUSED(argv);
 
-    get_test_opts_from_env (&opts);
-    if (sanity_check_test_opts (&opts) != 0) {
-        LOG_ERROR("Checking test options");
-        return 99; /* fatal error */
-    }
-    sys_context = sys_init_from_opts (&opts);
-    if (sys_context == NULL) {
-        LOG_ERROR("SYS context not initialized");
-        return 99; /* fatal error */
+    ret = test_sys_setup(&test_sys_ctx);
+    if (ret != 0) {
+        return ret;
     }
 
-    ret = Tss2_Sys_Startup(sys_context, TPM2_SU_CLEAR);
-    if (ret != TSS2_RC_SUCCESS && ret != TPM2_RC_INITIALIZE) {
-        LOG_ERROR("TPM Startup FAILED! Response Code : 0x%x", ret);
-        exit(1);
+    ret = test_sys_checks_pre(test_sys_ctx);
+    if (ret != 0) {
+        return ret;
     }
 
-    ret = test_invoke (sys_context);
+    rc = test_invoke(test_sys_ctx->sys_ctx);
+    if (rc != 0 && ret != 77) {
+        LOG_ERROR("Test returned %08x", rc);
+        return rc;
+    }
 
-    sys_teardown_full (sys_context);
+    ret = test_sys_checks_post(test_sys_ctx);
+    if (ret != 0) {
+        return ret;
+    }
 
-    return ret;
+    test_sys_teardown(test_sys_ctx);
+
+    return rc;
 }

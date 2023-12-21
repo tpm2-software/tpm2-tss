@@ -10,9 +10,10 @@
 
 #include <inttypes.h>
 
+#include "tss2_tcti.h"
+#include "test-common.h"
 #include "session-util.h"
 #include "sys-util.h"
-#include "context-util.h"
 #include "util/tss2_endian.h"
 #define LOGMODULE test
 #include "util/log.h"
@@ -31,19 +32,15 @@ get_session(TPMI_SH_AUTH_SESSION hndl)
 static TSS2_RC
 start_auth_session(
     SESSION *session,
-    TSS2_TCTI_CONTEXT *tctiContext)
+    TSS2_SYS_CONTEXT *sys_context)
 {
     TSS2_RC rval;
     TPM2B_ENCRYPTED_SECRET key;
     char label[] = "ATH";
-    TSS2_SYS_CONTEXT *tmp_context;
     UINT16 bytes;
 
     key.size = 0;
 
-    tmp_context = sys_init_from_tcti_ctx(tctiContext);
-    if (tmp_context == NULL)
-        return TSS2_SYS_RC_GENERAL_FAILURE;
 
     if (session->nonceOlder.size == 0)
         session->nonceOlder.size = GetDigestSize(session->authHash);
@@ -54,13 +51,13 @@ start_auth_session(
     session->nonceTpmEncrypt.size = 0;
 
     rval = Tss2_Sys_StartAuthSession(
-            tmp_context, session->tpmKey, session->bind, 0,
+            sys_context, session->tpmKey, session->bind, 0,
             &session->nonceOlder, &session->encryptedSalt,
             session->sessionType, &session->symmetric,
             session->authHash, &session->sessionHandle,
             &session->nonceNewer, 0);
     if (rval != TPM2_RC_SUCCESS)
-        goto out;
+        return rval;
 
     if (session->tpmKey == TPM2_RH_NULL)
         session->salt.size = 0;
@@ -70,21 +67,21 @@ start_auth_session(
 
     session->sessionKey.size = 0;
     if (session->tpmKey == TPM2_RH_NULL && session->bind == TPM2_RH_NULL)
-        goto out;
+        return rval;
 
     /* Generate the key used as input to the KDF. */
     rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key,
             (TPM2B *)&session->authValueBind);
     if (rval != TPM2_RC_SUCCESS) {
-        Tss2_Sys_FlushContext(tmp_context, session->sessionHandle);
-        goto out;
+        Tss2_Sys_FlushContext(sys_context, session->sessionHandle);
+        return rval;
     }
 
     rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key,
             (TPM2B *)&session->salt);
     if (rval != TPM2_RC_SUCCESS) {
-        Tss2_Sys_FlushContext(tmp_context, session->sessionHandle);
-        goto out;
+        Tss2_Sys_FlushContext(sys_context, session->sessionHandle);
+        return rval;
     }
 
     bytes = GetDigestSize(session->authHash) * 8;
@@ -93,8 +90,7 @@ start_auth_session(
                 (TPM2B *)&session->nonceNewer,
                 (TPM2B *)&session->nonceOlder,
                 bytes, (TPM2B_MAX_BUFFER *)&session->sessionKey);
-out:
-    sys_teardown(tmp_context);
+
     return rval;
 }
 
@@ -121,12 +117,16 @@ compute_session_auth(
 
     rval = tpm_calc_phash(sysContext, handle1, handle2, handle3,
                         session->authHash, command, &pHash);
-    if (rval != TPM2_RC_SUCCESS)
+    if (rval != TPM2_RC_SUCCESS) {
+        LOG_ERROR ("tpm_calc_phash failed with RC: 0x%x", rval);
         return rval;
+    }
 
     rval = Tss2_Sys_GetCommandCode(sysContext, (UINT8 *)&cmdCode);
-    if (rval != TPM2_RC_SUCCESS)
+    if (rval != TPM2_RC_SUCCESS) {
+        LOG_ERROR ("Tss2_Sys_GetCommandCode failed with RC: 0x%x", rval);
         return rval;
+    }
 
     /* cmdCode comes back as BigEndian; not suited for comparisons below. */
     cmdCode = BE_TO_HOST_32(cmdCode);
@@ -206,8 +206,10 @@ compute_command_hmac(
                 handle2,
                 handle3,
                 &hmac_key);
-        if (rval != TPM2_RC_SUCCESS)
+        if (rval != TPM2_RC_SUCCESS) {
+            LOG_ERROR ("compute_session_auth failed with RC: 0x%x", rval);
             break;
+        }
     }
     return rval;
 }
@@ -281,7 +283,7 @@ TSS2_RC create_auth_session(
     TPM2_SE sessionType,
     TPMT_SYM_DEF *symmetric,
     TPMI_ALG_HASH algId,
-    TSS2_TCTI_CONTEXT *tctiContext)
+    TSS2_SYS_CONTEXT *sysContext)
 {
     TSS2_RC rval;
     SESSION *session, *tmp;
@@ -309,7 +311,7 @@ TSS2_RC create_auth_session(
     if (session->tpmKey != TPM2_RH_NULL)
         CopySizedByteBuffer((TPM2B *)&session->salt, (TPM2B *)salt);
 
-    rval = start_auth_session(session, tctiContext);
+    rval = start_auth_session(session, sysContext);
     if (rval != TSS2_RC_SUCCESS) {
         free(session);
         return rval;
@@ -336,6 +338,39 @@ void roll_nonces(SESSION *session, TPM2B_NONCE *new_nonce)
     session->nonceNewer = *new_nonce;
 }
 
+/*
+ * Create a new SysContext from the TCTI of an existing one.
+ * This is needed where we need to keep the state of the existing SysContext.
+ */
+TSS2_RC
+sys_context_from_sys_context(
+    TSS2_SYS_CONTEXT *sysContext,
+    TSS2_SYS_CONTEXT **newSysContext)
+{
+    TSS2_ABI_VERSION abiVersion = TEST_ABI_VERSION;
+    TSS2_TCTI_CONTEXT *tctiContext;
+    TSS2_RC rval = TPM2_RC_SUCCESS;
+    size_t size;
+
+    rval = Tss2_Sys_GetTctiContext (sysContext, &tctiContext);
+    if( rval != TSS2_RC_SUCCESS ) {
+        return rval;
+    }
+
+    size = Tss2_Sys_GetContextSize(0);
+    *newSysContext = (TSS2_SYS_CONTEXT *) calloc(1, size);
+    if (*newSysContext == NULL) {
+        return 1;
+    }
+    rval = Tss2_Sys_Initialize(*newSysContext, size, tctiContext, &abiVersion);
+    if (rval != TSS2_RC_SUCCESS) {
+        free(*newSysContext);
+        return rval;
+    }
+
+    return TPM2_RC_SUCCESS;
+}
+
 TSS2_RC
 tpm_calc_phash(
     TSS2_SYS_CONTEXT *sysContext,
@@ -347,7 +382,6 @@ tpm_calc_phash(
     TPM2B_DIGEST *pHash)
 {
     TSS2_RC rval = TPM2_RC_SUCCESS;
-    TSS2_TCTI_CONTEXT *tcti_context;
     UINT32 i;
     TPM2B_NAME name1, name2, name3;
     TPM2B_MAX_BUFFER hashInput;
@@ -355,26 +389,34 @@ tpm_calc_phash(
     size_t parametersSize;
     const uint8_t *startParams;
     TPM2_CC cmdCode;
+    TSS2_SYS_CONTEXT *sysContextCopy;
 
     name1.size = 0;
     name2.size = 0;
     name3.size = 0;
     hashInput.size = 0;
 
-    rval = Tss2_Sys_GetTctiContext(sysContext, &tcti_context);
-    if (rval != TPM2_RC_SUCCESS)
-        return rval;
-
     if (command) {
-        rval = tpm_handle_to_name(tcti_context, handle1, &name1);
-        if (rval != TPM2_RC_SUCCESS)
-                return rval;
-
-        rval = tpm_handle_to_name(tcti_context, handle2, &name2);
-        if (rval != TPM2_RC_SUCCESS)
+        rval = sys_context_from_sys_context(sysContext, &sysContextCopy);
+        if (rval != TPM2_RC_SUCCESS) {
             return rval;
+        }
 
-        rval = tpm_handle_to_name(tcti_context, handle3, &name3);
+        rval = tpm_handle_to_name(sysContextCopy, handle1, &name1);
+        if (rval != TPM2_RC_SUCCESS)
+            goto cleanup_sys_context_copy;
+
+        rval = tpm_handle_to_name(sysContextCopy, handle2, &name2);
+        if (rval != TPM2_RC_SUCCESS)
+            goto cleanup_sys_context_copy;
+
+        rval = tpm_handle_to_name(sysContextCopy, handle3, &name3);
+        if (rval != TPM2_RC_SUCCESS)
+            goto cleanup_sys_context_copy;
+
+cleanup_sys_context_copy:
+        Tss2_Sys_Finalize(sysContextCopy);
+        free(sysContextCopy);
         if (rval != TPM2_RC_SUCCESS)
             return rval;
 
@@ -433,7 +475,7 @@ tpm_calc_phash(
 }
 
 UINT32 tpm_handle_to_name(
-    TSS2_TCTI_CONTEXT *tcti_context,
+    TSS2_SYS_CONTEXT *sysContext,
     TPM2_HANDLE handle,
     TPM2B_NAME *name)
 {
@@ -441,10 +483,9 @@ UINT32 tpm_handle_to_name(
     TPM2B_NAME qualified_name = TPM2B_NAME_INIT;
     TPM2B_PUBLIC public;
     TPM2B_NV_PUBLIC nvPublic;
-    TSS2_SYS_CONTEXT *sysContext;
     UINT8 *namePtr;
 
-    if (!tcti_context || !name)
+    if (!sysContext || !name)
         return TSS2_SYS_RC_BAD_VALUE;
 
     namePtr = name->name;
@@ -457,26 +498,16 @@ UINT32 tpm_handle_to_name(
     switch(handle >> TPM2_HR_SHIFT)
     {
         case TPM2_HT_NV_INDEX:
-            sysContext = sys_init_from_tcti_ctx(tcti_context);
-            if (sysContext == NULL)
-                return TSS2_SYS_RC_GENERAL_FAILURE;
-
             nvPublic.size = 0;
             rval = Tss2_Sys_NV_ReadPublic(sysContext, handle, 0,
                                           &nvPublic, name, 0);
-            sys_teardown(sysContext);
             break;
 
         case TPM2_HT_TRANSIENT:
         case TPM2_HT_PERSISTENT:
-            sysContext = sys_init_from_tcti_ctx(tcti_context);
-            if (sysContext == NULL)
-                return TSS2_SYS_RC_GENERAL_FAILURE;
-
             public.size = 0;
             rval = Tss2_Sys_ReadPublic(sysContext, handle, 0,
                                        &public, name, &qualified_name, 0);
-            sys_teardown(sysContext);
             break;
 
         default:
