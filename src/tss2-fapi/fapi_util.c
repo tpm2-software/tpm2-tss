@@ -1204,7 +1204,7 @@ ifapi_session_clean(FAPI_CONTEXT *context)
     if (context->policy_session && context->policy_session != ESYS_TR_NONE) {
         Esys_FlushContext(context->esys, context->policy_session);
     }
-    if (context->session1 != ESYS_TR_NONE) {
+    if (context->session1 != ESYS_TR_NONE && context->session1 != ESYS_TR_PASSWORD) {
         if (context->session1 == context->session2) {
             context->session2 = ESYS_TR_NONE;
         }
