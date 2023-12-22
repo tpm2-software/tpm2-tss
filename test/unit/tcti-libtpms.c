@@ -383,6 +383,11 @@ tcti_libtpms_init_state_open_fail_test(void **state)
     TSS2_RC ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    skip();
+#endif
+
     ret = Tss2_Tcti_Libtpms_Init(NULL, &tcti_size, NULL);
     assert_true(ret == TSS2_RC_SUCCESS);
     ctx = calloc(1, tcti_size);
@@ -447,6 +452,11 @@ tcti_libtpms_init_state_lseek_fail_test(void **state)
     size_t tcti_size = 0;
     TSS2_RC ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
+
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    skip();
+#endif
 
     ret = Tss2_Tcti_Libtpms_Init(NULL, &tcti_size, NULL);
     assert_true(ret == TSS2_RC_SUCCESS);
@@ -522,6 +532,11 @@ tcti_libtpms_init_state_posix_fallocate_fail_test(void **state)
     size_t tcti_size = 0;
     TSS2_RC ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
+
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    skip();
+#endif
 
     ret = Tss2_Tcti_Libtpms_Init(NULL, &tcti_size, NULL);
     assert_true(ret == TSS2_RC_SUCCESS);
@@ -604,6 +619,11 @@ tcti_libtpms_init_state_mmap_fail_test(void **state)
     TSS2_RC ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    skip();
+#endif
+
     ret = Tss2_Tcti_Libtpms_Init(NULL, &tcti_size, NULL);
     assert_true(ret == TSS2_RC_SUCCESS);
     ctx = calloc(1, tcti_size);
@@ -682,6 +702,67 @@ tcti_libtpms_init_state_mmap_fail_test(void **state)
 
     ret = Tss2_Tcti_Libtpms_Init(ctx, &tcti_size, STATEFILE_PATH);
     assert_int_equal(ret, TSS2_TCTI_RC_IO_ERROR);
+
+    free(ctx);
+}
+
+/* Currently, state files are not supported on FreeBSD. */
+static void
+tcti_libtpms_init_state_freebsd_fail_test(void **state)
+{
+    size_t tcti_size = 0;
+    TSS2_RC ret = TSS2_RC_SUCCESS;
+    TSS2_TCTI_CONTEXT *ctx = NULL;
+
+    // FreeBSD-only test
+#ifndef __FreeBSD__
+    skip();
+#endif
+
+    ret = Tss2_Tcti_Libtpms_Init(NULL, &tcti_size, NULL);
+    assert_true(ret == TSS2_RC_SUCCESS);
+    ctx = calloc(1, tcti_size);
+    assert_non_null(ctx);
+
+    // successfull dlopen
+    expect_string(__wrap_dlopen, filename, "libtpms.so");
+    expect_value(__wrap_dlopen, flags, RTLD_LAZY | RTLD_LOCAL);
+    will_return(__wrap_dlopen, LIBTPMS_DL_HANDLE);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPMLIB_ChooseTPMVersion");
+    will_return(__wrap_dlsym, &TPMLIB_ChooseTPMVersion);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPMLIB_RegisterCallbacks");
+    will_return(__wrap_dlsym, &TPMLIB_RegisterCallbacks);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPMLIB_GetState");
+    will_return(__wrap_dlsym, &TPMLIB_GetState);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPMLIB_MainInit");
+    will_return(__wrap_dlsym, &TPMLIB_MainInit);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPMLIB_Process");
+    will_return(__wrap_dlsym, &TPMLIB_Process);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPMLIB_SetState");
+    will_return(__wrap_dlsym, &TPMLIB_SetState);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPMLIB_Terminate");
+    will_return(__wrap_dlsym, &TPMLIB_Terminate);
+
+    expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
+    expect_string(__wrap_dlsym, symbol, "TPM_IO_TpmEstablished_Reset");
+    will_return(__wrap_dlsym, &TPM_IO_TpmEstablished_Reset);
+
+    ret = Tss2_Tcti_Libtpms_Init(ctx, &tcti_size, STATEFILE_PATH);
+    assert_int_equal(ret, TSS2_TCTI_RC_BAD_VALUE);
 
     free(ctx);
 }
@@ -916,6 +997,11 @@ tcti_libtpms_locality_success_test(void **state)
     unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
     unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
 
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    skip();
+#endif
+
     rc = Tss2_Tcti_SetLocality(ctx, 4);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
 
@@ -938,6 +1024,11 @@ tcti_libtpms_transmit_success_test(void **state)
     TSS2_RC rc;
     unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
     unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
+
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    skip();
+#endif
 
     expect_memory(TPMLIB_Process, cmd, cmd, sizeof(cmd));
     expect_value(TPMLIB_Process, cmd_len, sizeof(cmd));
@@ -980,6 +1071,11 @@ tcti_libtpms_receive_success_test(void **state)
     unsigned char rsp_out[sizeof(rsp)];
     size_t rsp_len_out = 0;
 
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    skip();
+#endif
+
     tcti_common->state = TCTI_STATE_RECEIVE;
     tcti_libtpms->response_buffer = malloc(sizeof(rsp));
     assert_non_null(tcti_libtpms->response_buffer);
@@ -1013,6 +1109,11 @@ tcti_libtpms_remap_state_success_test(void **state)
     TSS2_RC rc;
     unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
     unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
+
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    skip();
+#endif
 
     expect_memory(TPMLIB_Process, cmd, cmd, sizeof(cmd));
     expect_value(TPMLIB_Process, cmd_len, sizeof(cmd));
@@ -1071,6 +1172,11 @@ tcti_libtpms_remap_state_mremap_fail_test(void **state)
     unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
     unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
 
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    skip();
+#endif
+
     expect_memory(TPMLIB_Process, cmd, cmd, sizeof(cmd));
     expect_value(TPMLIB_Process, cmd_len, sizeof(cmd));
     expect_value(TPMLIB_Process, locality, 0);
@@ -1113,6 +1219,11 @@ tcti_libtpms_remap_state_posix_fallocate_fail_test(void **state)
     TSS2_RC rc;
     unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
     unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
+
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    skip();
+#endif
 
     expect_memory(TPMLIB_Process, cmd, cmd, sizeof(cmd));
     expect_value(TPMLIB_Process, cmd_len, sizeof(cmd));
@@ -1324,6 +1435,12 @@ tcti_libtpms_two_states_success_test(void **state)
     unsigned char rsp_bb_out[sizeof(rsp_bb)];
     size_t rsp_bb_len_out = sizeof(rsp_bb);
 
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    *state = NULL;
+    skip();
+#endif
+
     tcti_common[0] = tcti_common_context_cast(ctxs[0]);
     tcti_common[1] = tcti_common_context_cast(ctxs[1]);
 
@@ -1422,6 +1539,11 @@ tcti_libtpms_two_states_success_test(void **state)
 static int
 tcti_libtpms_setup(void **state)
 {
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    return 0;
+#endif
+
     fprintf(stderr, "%s: before tcti_libtpms_init_from_conf\n", __func__);
     *state = tcti_libtpms_init_from_conf(STATEFILE_PATH);
     fprintf(stderr, "%s: done\n", __func__);
@@ -1460,7 +1582,14 @@ static int
 tcti_libtpms_setup_two_states(void **state)
 {
     int ret;
-    TSS2_TCTI_CONTEXT **ctxs = malloc(sizeof(void *) * 2);
+    TSS2_TCTI_CONTEXT **ctxs;
+
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    return 0;
+#endif
+
+    ctxs = malloc(sizeof(void *) * 2);
     assert_non_null(ctxs);
 
     /* delete state files if they exist already */
@@ -1511,6 +1640,11 @@ tcti_libtpms_teardown_s1(void **state)
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*) *state;
     TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*) ctx;
 
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    return 0;
+#endif
+
     expect_value(__wrap_dlclose, handle, LIBTPMS_DL_HANDLE);
     will_return(__wrap_dlclose, 0);
 
@@ -1539,6 +1673,11 @@ tcti_libtpms_teardown_s2(void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*) *state;
 
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    return 0;
+#endif
+
     expect_value(__wrap_dlclose, handle, LIBTPMS_DL_HANDLE);
     will_return(__wrap_dlclose, 0);
 
@@ -1565,6 +1704,11 @@ tcti_libtpms_teardown_s3(void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*) *state;
 
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    return 0;
+#endif
+
     expect_value(__wrap_dlclose, handle, LIBTPMS_DL_HANDLE);
     will_return(__wrap_dlclose, 0);
 
@@ -1590,8 +1734,18 @@ static int
 tcti_libtpms_teardown_two_states(void **state)
 {
     int ret;
-    TSS2_TCTI_CONTEXT **ctxs = (TSS2_TCTI_CONTEXT**) *state;
-    TSS2_TCTI_LIBTPMS_CONTEXT **tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT**) ctxs;
+    TSS2_TCTI_CONTEXT **ctxs;
+    TSS2_TCTI_LIBTPMS_CONTEXT **tcti_libtpms;
+
+#ifdef __FreeBSD__
+    // Currently, state files are not supported on FreeBSD
+    if (*state == NULL) {
+        return 0;
+    }
+#endif
+
+    ctxs = (TSS2_TCTI_CONTEXT**) *state;
+    tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT**) ctxs;
     *state = *ctxs;
 
     /* for both tcti instances */
@@ -1640,6 +1794,7 @@ main(int   argc,
         cmocka_unit_test(tcti_libtpms_init_state_lseek_fail_test),
         cmocka_unit_test(tcti_libtpms_init_state_posix_fallocate_fail_test),
         cmocka_unit_test(tcti_libtpms_init_state_mmap_fail_test),
+        cmocka_unit_test(tcti_libtpms_init_state_freebsd_fail_test),
         cmocka_unit_test_setup_teardown(tcti_libtpms_no_statefile_success_test,
                                         tcti_libtpms_setup_no_statefile,
                                         tcti_libtpms_teardown_no_statefile),
