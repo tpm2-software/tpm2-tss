@@ -810,12 +810,19 @@ Tss2_Tcti_Libtpms_Init(
     if (conf == NULL || strlen(conf) == 0) {
         tcti_libtpms->state_path = NULL;
     } else {
+#ifdef __FreeBSD__
+        // mremap() on FreeBSD is a stub returning -1/ENOMEM
+        // this could be fixed with a munmap()/mmap() workaround
+        LOG_ERROR("Libtpms state files are not supported on FreeBSD. Try an empty conf string.");
+        return TSS2_TCTI_RC_BAD_VALUE;
+#else
         tcti_libtpms->state_path = strdup(conf);
         if (tcti_libtpms->state_path == NULL) {
             LOG_ERROR("Out of memory.");
             rc = TSS2_TCTI_RC_MEMORY;
             goto cleanup_dl;
         }
+#endif
     }
 
     rc = tcti_libtpms_map_state_file(tcti_libtpms);
