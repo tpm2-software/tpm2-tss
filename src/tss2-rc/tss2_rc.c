@@ -290,6 +290,10 @@ tss2_fmt1_err_strs_get(TSS2_RC error)
         "curve not supported",
         /* 0x27 - TPM2_RC_ECC_POINT */
         "point is not on the required curve",
+        /* 0x28 - TPM2_RC_FW_LIMITED */
+        "the command requires the firmware secret but the firmware secret is unavailable",
+        /* 0x29 - TPM2_RC_SVN_LIMITED */
+        "the command requires the firmware SVN secret but the firmware SVN secret is unavailable"
     };
 
     if (error < ARRAY_LEN(fmt1_err_strs)) {
