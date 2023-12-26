@@ -118,6 +118,19 @@ cleanup:
     return r;
 }
 
+static bool
+is_self_signed(X509 *cert) {
+    X509_NAME *issuer = X509_get_issuer_name(cert);
+    X509_NAME *subject = X509_get_subject_name(cert);
+
+    /* Compare the issuer and subject names */
+    if (X509_NAME_cmp(issuer, subject) == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 /**
  * Verify EK certificate read from TPM.
  *
@@ -256,25 +269,28 @@ ifapi_curl_verify_ek_cert(
     }
 
     /* Verify intermediate certificate */
-    ctx = X509_STORE_CTX_new();
-    goto_if_null2(ctx, "Failed to create X509 store context.",
-                  r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
-    if (1 != X509_STORE_CTX_init(ctx, store, intermed_cert, NULL)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Failed to initialize X509 context.", cleanup);
-    }
-    if (1 != X509_verify_cert(ctx)) {
-        LOG_ERROR("%s", X509_verify_cert_error_string(X509_STORE_CTX_get_error(ctx)));
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Failed to verify intermediate certificate", cleanup);
-    }
-    if (1 != X509_STORE_add_cert(store, intermed_cert)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Failed to add intermediate certificate", cleanup);
-    }
+    if (!is_self_signed(intermed_cert)) {
+        ctx = X509_STORE_CTX_new();
+        goto_if_null2(ctx, "Failed to create X509 store context.",
+                      r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
 
-    X509_STORE_CTX_cleanup(ctx);
-    X509_STORE_CTX_free(ctx);
+        if (1 != X509_STORE_CTX_init(ctx, store, intermed_cert, NULL)) {
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                       "Failed to initialize X509 context.", cleanup);
+        }
+        if (1 != X509_verify_cert(ctx)) {
+            LOG_ERROR("%s", X509_verify_cert_error_string(X509_STORE_CTX_get_error(ctx)));
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                       "Failed to verify intermediate certificate", cleanup);
+        }
+        if (1 != X509_STORE_add_cert(store, intermed_cert)) {
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                       "Failed to add intermediate certificate", cleanup);
+        }
+
+        X509_STORE_CTX_cleanup(ctx);
+        X509_STORE_CTX_free(ctx);
+    }
     ctx = NULL;
     ctx = X509_STORE_CTX_new();
     goto_if_null2(ctx, "Failed to create X509 store context.",
