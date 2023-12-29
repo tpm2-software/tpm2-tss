@@ -200,10 +200,11 @@ ifapi_eventlog_get_async(
 TSS2_RC
 ifapi_eventlog_get_finish(
     IFAPI_EVENTLOG *eventlog,
+    FAPI_QUOTE_INFO *fapi_quote_info,
     IFAPI_IO *io,
     char **log)
 {
-    /* eventlog parameter currently not used */
+    /* eventlog parameteifapi_eventlog_get_finishr currently not used */
     check_not_null(eventlog);
     check_not_null(io);
     check_not_null(log);
@@ -230,7 +231,13 @@ loop:
             goto_if_error(r, "Error serialize policy", error);
 
             ifapi_cleanup_event(&event);
-    }
+        }
+        if (fapi_quote_info) {
+            r = ifapi_calculate_pcr_digest(eventlog->log,
+                                           fapi_quote_info);
+
+            goto_if_error(r, "Verify event list.", error);
+        }
 
         *log = strdup(json_object_to_json_string_ext(eventlog->log, JSON_C_TO_STRING_PRETTY));
         check_oom(*log);

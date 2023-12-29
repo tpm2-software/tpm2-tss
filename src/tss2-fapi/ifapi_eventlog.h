@@ -84,6 +84,13 @@ typedef struct IFAPI_EVENT {
                                                                  verified. */
 } IFAPI_EVENT;
 
+/** Type for representing the quote info and signature scheme for quote.
+ */
+typedef struct {
+    TPMT_SIG_SCHEME                          sig_scheme;    /**< Signature scheme used for quote. */
+    TPMS_ATTEST                                  attest;    /**< Attestation data from Quote */
+} FAPI_QUOTE_INFO;
+
 enum IFAPI_EVENTLOG_STATE {
     IFAPI_EVENTLOG_STATE_INIT = 0,
     IFAPI_EVENTLOG_STATE_READING,
@@ -120,6 +127,7 @@ ifapi_eventlog_get_async(
 TSS2_RC
 ifapi_eventlog_get_finish(
     IFAPI_EVENTLOG *eventlog,
+    FAPI_QUOTE_INFO *fapi_quote_info,
     IFAPI_IO *io,
     char **log);
 
