@@ -258,7 +258,7 @@ Fapi_PcrRead_Finish(
             fallthrough;
 
         statecase(context->state, PCR_READ_READ_EVENT_LIST);
-            r = ifapi_eventlog_get_finish(&context->eventlog, &context->io, pcrLog);
+        r = ifapi_eventlog_get_finish(&context->eventlog, NULL, &context->io, pcrLog);
             return_try_again(r);
             goto_if_error(r, "Error getting event log", cleanup);
 
