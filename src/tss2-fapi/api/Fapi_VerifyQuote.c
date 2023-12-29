@@ -262,7 +262,6 @@ Fapi_VerifyQuote_Finish(
     TSS2_RC r;
     IFAPI_OBJECT key_object;
     TPM2B_ATTEST attest2b;
-    TPM2B_DIGEST pcr_digest;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -319,7 +318,7 @@ Fapi_VerifyQuote_Finish(
 
             /* Recalculate and verify the PCR digests. */
             r = ifapi_calculate_pcr_digest(command->event_list,
-                                           &command->fapi_quote_info, &pcr_digest);
+                                           &command->fapi_quote_info);
 
             goto_if_error(r, "Verify event list.", error_cleanup);
 

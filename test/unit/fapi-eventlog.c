@@ -138,7 +138,6 @@ check_eventlog_pcr0(const char *file, uint32_t *pcr_list, size_t pcr_list_size, 
     uint8_t *eventlog;
     size_t size;
     json_object *json_event_list = NULL;
-    size_t n_pcrs;
     IFAPI_PCR_REG pcrs[TPM2_MAX_PCRS];
 
     TPML_PCR_SELECTION pcr_selection =
@@ -166,7 +165,7 @@ check_eventlog_pcr0(const char *file, uint32_t *pcr_list, size_t pcr_list_size, 
     r = ifapi_get_tcg_firmware_event_list(file, pcr_list, pcr_list_size, &json_event_list);
     assert_int_equal (r, TSS2_RC_SUCCESS);
 
-    r = ifapi_calculate_pcrs(json_event_list, &pcr_selection, &pcrs[0], &n_pcrs);
+    r = ifapi_calculate_pcrs(json_event_list, &pcr_selection, TPM2_ALG_SHA1, NULL, &pcrs[0]);
     assert_int_equal (r, TSS2_RC_SUCCESS);
 
     /* Compare with the pcr0 value got from system with HCRTM events */

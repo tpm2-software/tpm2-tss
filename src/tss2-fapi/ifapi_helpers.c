@@ -1730,6 +1730,8 @@ error_cleanup:
  *
  * @param[in]  sig_key_object The key object which was used for the quote.
  * @param[in]  tpm_quoted: The attest produced by the quote.
+ * @param[out] fapi_quote_info Info The representation of the
+ *             attest together with the signing schemed.
  * @param[out] quoteInfo The character string with the JSON representation of the
  *             attest together with the signing schemed.
  *
@@ -1745,13 +1747,13 @@ TSS2_RC
 ifapi_compute_quote_info(
     IFAPI_OBJECT *sig_key_object,
     TPM2B_ATTEST *tpm_quoted,
+    FAPI_QUOTE_INFO *fapi_quote_info,
     char **quoteInfo)
 {
     json_object *jso = NULL;
     TSS2_RC r;
     size_t offset = 0;
     TPMS_ATTEST attest_struct;
-    FAPI_QUOTE_INFO fapi_quote_info;
 
     /* The TPM2B_ATTEST contains the marshaled TPMS_ATTEST structure. */
     r = Tss2_MU_TPMS_ATTEST_Unmarshal((const uint8_t *)
@@ -1759,10 +1761,10 @@ ifapi_compute_quote_info(
                                       tpm_quoted->size, &offset, &attest_struct);
     return_if_error(r, "Unmarshal TPMS_ATTEST.");
 
-    fapi_quote_info.attest = attest_struct;
+    fapi_quote_info->attest = attest_struct;
     /* The signate scheme will be taken from the key used for qoting. */
-    fapi_quote_info.sig_scheme = sig_key_object->misc.key.signing_scheme;
-    r = ifapi_json_FAPI_QUOTE_INFO_serialize(&fapi_quote_info, &jso);
+    fapi_quote_info->sig_scheme = sig_key_object->misc.key.signing_scheme;
+    r = ifapi_json_FAPI_QUOTE_INFO_serialize(fapi_quote_info, &jso);
     return_if_error(r, "Conversion to TPM2B_ATTEST to JSON.");
 
     /* The intermediate structure of type FAPI_QOTE_INFO will be serialized. */
@@ -2101,10 +2103,11 @@ error_cleanup:
     return r;
 }
 
-/** Compute pcr values from event list
+/** Compute pcr values from event list and verify quote digest.
  *
  * The event list is used to compute the PCR values corresponding
- * to this event list.
+ * to this event list. If a quote digest is passed success will
+ * be returned if the computed pcr digest matches the quote digest.
  * @param[in]  jso_event_list The event list in JSON representation.
  * @param[in]  pcr_selection The definition of the used pcrs.
  * @param[out] pcrs The computed pcr list
@@ -2122,19 +2125,19 @@ TSS2_RC
 ifapi_calculate_pcrs(
     json_object *jso_event_list,
     const TPML_PCR_SELECTION *pcr_selection,
-    IFAPI_PCR_REG pcrs[],
-    size_t *n_pcrs)
+    TPMI_ALG_HASH pcr_digest_hash_alg,
+    const TPM2B_DIGEST *quote_digest,
+    IFAPI_PCR_REG *pcrs)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t i, pcr, i_evt, hash_size, n_events = 0;
-
+    size_t n_pcrs = 0;
+    TPM2B_DIGEST pcr_digest;
     json_object *jso;
     IFAPI_EVENT event;
     bool found_hcrtm = false;
     UINT8 locality = 0;
-
-    *n_pcrs = 0;
 
     /* Initialize used pcrs */
     for (i = 0; i < pcr_selection->count; i++) {
@@ -2143,11 +2146,11 @@ ifapi_calculate_pcrs(
             uint8_t flag = 1 << (pcr % 8);
             if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
                 hash_size = ifapi_hash_get_digest_size(pcr_selection->pcrSelections[i].hash);
-                pcrs[*n_pcrs].pcr = pcr;
-                pcrs[*n_pcrs].bank = pcr_selection->pcrSelections[i].hash;
-                pcrs[*n_pcrs].value.size = hash_size;
-                memset(&pcrs[*n_pcrs].value.buffer[0], 0, hash_size);
-                *n_pcrs += 1;
+                pcrs[n_pcrs].pcr = pcr;
+                pcrs[n_pcrs].bank = pcr_selection->pcrSelections[i].hash;
+                pcrs[n_pcrs].value.size = hash_size;
+                memset(&pcrs[n_pcrs].value.buffer[0], 0, hash_size);
+                n_pcrs += 1;
             }
         }
     }
@@ -2180,7 +2183,7 @@ ifapi_calculate_pcrs(
                 }
             }
 
-            for (i = 0; i < *n_pcrs; i++) {
+            for (i = 0; i < n_pcrs; i++) {
                 if (pcrs[i].pcr == event.pcr) {
                     if (event.content_type == IFAPI_PC_CLIENT && event.pcr == 0) {
                         if (event.content.firmware_event.event_type == EV_EFI_HCRTM_EVENT) {
@@ -2197,6 +2200,42 @@ ifapi_calculate_pcrs(
                 }
             }
             ifapi_cleanup_event(&event);
+
+            /* Compute digest for the used pcrs */
+            if (quote_digest) {
+                r = ifapi_crypto_hash_start(&cryptoContext, pcr_digest_hash_alg);
+                return_if_error(r, "crypto hash start");
+
+                for (i = 0; i < n_pcrs; i++) {
+                    HASH_UPDATE_BUFFER(cryptoContext, &pcrs[i].value.buffer, pcrs[i].value.size,
+                                       r, error_cleanup);
+                }
+                r = ifapi_crypto_hash_finish(&cryptoContext,
+                                             (uint8_t *) &pcr_digest.buffer[0],
+                                             &hash_size);
+                return_if_error(r, "crypto hash finish");
+                pcr_digest.size = hash_size;
+
+                /* Compare the digest from the event list with the digest from the attest */
+                if (memcmp(&pcr_digest.buffer[0], &quote_digest->buffer[0],
+                           pcr_digest.size) == 0) {
+                    if (i_evt < (n_events - 1)) {
+                        /* delete the events added after the quote */
+                        if (json_object_array_del_idx(jso_event_list, i_evt + 1,
+                                                      n_events - i_evt - 1)) {
+                            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                                       "Can't delete remaining eventsize", error_cleanup);
+                        }
+                    }
+                    break;
+                } else {
+                    ifapi_crypto_hash_abort(&cryptoContext);
+                }
+            }
+        }
+        if (i_evt == n_events && quote_digest) {
+            /* Quote digest was not found. */
+            r = TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED;
         }
     }
 
@@ -2230,22 +2269,17 @@ error_cleanup:
 TSS2_RC
 ifapi_calculate_pcr_digest(
     json_object *jso_event_list,
-    const FAPI_QUOTE_INFO *quote_info,
-    TPM2B_DIGEST *pcr_digest)
+    const FAPI_QUOTE_INFO *quote_info)
 {
     TSS2_RC r;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     IFAPI_PCR_REG pcrs[TPM2_MAX_PCRS];
-    size_t i, hash_size, n_pcrs = 0;
-
-    IFAPI_EVENT event;
 
     const TPML_PCR_SELECTION *pcr_selection;
     TPMI_ALG_HASH pcr_digest_hash_alg;
 
     /* Get some data from the quote info for easier access */
     pcr_selection = &quote_info->attest.attested.quote.pcrSelect;
-    pcr_digest->size = quote_info->attest.attested.quote.pcrDigest.size;
 
     switch (quote_info->sig_scheme.scheme) {
     case TPM2_ALG_RSAPSS:
@@ -2265,35 +2299,15 @@ ifapi_calculate_pcr_digest(
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 
-    r = ifapi_calculate_pcrs(jso_event_list, pcr_selection, &pcrs[0], &n_pcrs);
-    goto_if_error(r, "Compute PCRFs", error_cleanup);
+    r = ifapi_calculate_pcrs(jso_event_list, pcr_selection, pcr_digest_hash_alg,
+                             &quote_info->attest.attested.quote.pcrDigest,
+                             &pcrs[0]);
+    goto_if_error(r, "Compute PCRs", error_cleanup);
 
-    /* Compute digest for the used pcrs */
-    r = ifapi_crypto_hash_start(&cryptoContext, pcr_digest_hash_alg);
-    return_if_error(r, "crypto hash start");
-
-    for (i = 0; i < n_pcrs; i++) {
-        HASH_UPDATE_BUFFER(cryptoContext, &pcrs[i].value.buffer, pcrs[i].value.size,
-                           r, error_cleanup);
-    }
-    r = ifapi_crypto_hash_finish(&cryptoContext,
-                                 (uint8_t *) &pcr_digest->buffer[0],
-                                 &hash_size);
-    return_if_error(r, "crypto hash finish");
-    pcr_digest->size = hash_size;
-
-    /* Compare the digest from the event list with the digest from the attest */
-    if (memcmp(&pcr_digest->buffer[0], &quote_info->attest.attested.quote.pcrDigest.buffer[0],
-               pcr_digest->size) != 0) {
-        goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
-                   "The digest computed from event list does not match the attest.",
-                   error_cleanup);
-    }
 
 error_cleanup:
     if (cryptoContext)
         ifapi_crypto_hash_abort(&cryptoContext);
-    ifapi_cleanup_event(&event);
     return r;
 }
 

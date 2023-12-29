@@ -421,6 +421,7 @@ Fapi_Quote_Finish(
                signed by the TPM. */
             r = ifapi_compute_quote_info(sig_key_object,
                                          command->tpm_quoted,
+                                         &command->fapi_quote_info,
                                          quoteInfo);
             goto_if_error(r, "Create compute quote info.", error_cleanup);
 
@@ -444,7 +445,9 @@ Fapi_Quote_Finish(
             fallthrough;
 
         statecase(context->state, PCR_QUOTE_READ_EVENT_LIST);
-            r = ifapi_eventlog_get_finish(&context->eventlog, &context->io,
+            r = ifapi_eventlog_get_finish(&context->eventlog,
+                                          &command->fapi_quote_info,
+                                          &context->io,
                                           &command->pcrLog);
             return_try_again(r);
             goto_if_error(r, "Error getting event log", error_cleanup);
