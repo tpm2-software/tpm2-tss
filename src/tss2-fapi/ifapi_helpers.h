@@ -139,6 +139,7 @@ TSS2_RC
 ifapi_compute_quote_info(
     IFAPI_OBJECT *sig_key_object,
     TPM2B_ATTEST *tpm_quoted,
+    FAPI_QUOTE_INFO *fapi_quote_info,
     char **quoteInfo);
 
 TSS2_RC
@@ -173,16 +174,17 @@ ifapi_filter_pcr_selection_by_index(
     const TPM2_HANDLE *pcr_index,
     size_t pcr_count);
 
-TSS2_RC ifapi_calculate_pcrs(
+TSS2_RC
+ifapi_calculate_pcrs(
     json_object *jso_event_list,
     const TPML_PCR_SELECTION *pcr_selection,
-    IFAPI_PCR_REG pcrs[],
-    size_t *n_pcrs);
+    TPMI_ALG_HASH pcr_digest_hash_alg,
+    const TPM2B_DIGEST *quote_digest,
+    IFAPI_PCR_REG *pcrs);
 
 TSS2_RC ifapi_calculate_pcr_digest(
     json_object *jso_event_list,
-    const FAPI_QUOTE_INFO *quote_info,
-    TPM2B_DIGEST *pcr_digest);
+    const FAPI_QUOTE_INFO *quote_info);
 
 TSS2_RC
 ifapi_compute_policy_digest(
