@@ -435,6 +435,22 @@ static char * root_cert_list[] = {
     "2N/xZkcohRZIAiBDufnmhZWCbX4pibbzAOgcxjsc5+qmpAovxW9ipWJEsA==\n"
     "-----END CERTIFICATE-----\n",
 
+     /* Nuvoton TPM Root CA 1210 */
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIICHTCCAaOgAwIBAgIBATAKBggqhkjOPQQDAzBVMR0wGwYDVQQDExROdXZvdG9u\n"
+    "VFBNUm9vdENBMTIxMDEnMCUGA1UEChMeTnV2b3RvbiBUZWNobm9sb2d5IENvcnBv\n"
+    "cmF0aW9uMQswCQYDVQQGEwJUVzAgFw0yMTA4MDIwMjUyMTVaGA8yMDUxMDcyNzAy\n"
+    "NTIxNVowVTEdMBsGA1UEAxMUTnV2b3RvblRQTVJvb3RDQTEyMTAxJzAlBgNVBAoT\n"
+    "Hk51dm90b24gVGVjaG5vbG9neSBDb3Jwb3JhdGlvbjELMAkGA1UEBhMCVFcwdjAQ\n"
+    "BgcqhkjOPQIBBgUrgQQAIgNiAARvsPpMWmh0EW5n+tBoGvcLWeRUiTCZIwyAFimh\n"
+    "wFrQ8SgvxX5A7QaUGQuyel/6Lio8GEzA15tDJPKn34fcWXvM2r2wPFQbE/a5N9Pl\n"
+    "R//ygpvgM1nTocas6xLd4BRIhcajRTBDMA4GA1UdDwEB/wQEAwICBDASBgNVHRMB\n"
+    "Af8ECDAGAQH/AgEEMB0GA1UdDgQWBBThUbCrBr/3WwdOW2qoNOLaL7qDgzAKBggq\n"
+    "hkjOPQQDAwNoADBlAjBKFPxjYwwwhFZ+w0wl0XrwRiPVzRkT2/HW3X7C8lC00sj7\n"
+    "z4fZilzZetOJPuTY0DACMQD3yABKMvC/Lu6/QclxX/2Tqk9Le3J8LyW5vIUFPesY\n"
+    "azaJJ7CuWqE9XgXOlfZR0vU=\n"
+    "-----END CERTIFICATE-----\n",
+
     /* Nuvoton TPM Root CA 2010 */
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDkjCCAnqgAwIBAgIIWAnP9p2CIZcwDQYJKoZIhvcNAQEFBQAwVTFTMB8GA1UE\n"
@@ -512,6 +528,21 @@ static char * root_cert_list[] = {
     "rtdSVy4wCgYIKoZIzj0EAwIDSAAwRQIgXgXs2eVt2U4sCoRf1GLoUTf2ZzYTSsyg\n"
     "6I5w6hPTLigCIQDLLFlXK1xw1a1D1/idVhdd3a8gkE0FnTJO890WwiQbpg==\n"
     "-----END CERTIFICATE-----",
+
+     /* Nuvoton TPM Root CA 2112 */
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIICBjCCAa2gAwIBAgIJAOmPfeHxqsTXMAoGCCqGSM49BAMCMFUxUzAfBgNVBAMT\n"
+    "GE51dm90b24gVFBNIFJvb3QgQ0EgMjExMjAlBgNVBAoTHk51dm90b24gVGVjaG5v\n"
+    "bG9neSBDb3Jwb3JhdGlvbjAJBgNVBAYTAlRXMB4XDTIxMDMyMzA3NTgwNloXDTQx\n"
+    "MDMxOTA3NTgwNlowVTFTMB8GA1UEAxMYTnV2b3RvbiBUUE0gUm9vdCBDQSAyMTEy\n"
+    "MCUGA1UEChMeTnV2b3RvbiBUZWNobm9sb2d5IENvcnBvcmF0aW9uMAkGA1UEBhMC\n"
+    "VFcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASWuAVsyaGySEs+Z2NfR+0ZVq8d\n"
+    "rwXGuvaplMoiQFLr0Qphw/OaTrIcuBJ3Qdf3n1GH4Qi2/JyV9Vzg9s+OqOgio2Yw\n"
+    "ZDAOBgNVHQ8BAf8EBAMCAgQwEgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQU\n"
+    "5Khmb49MbZw5MqlIhHeApoEMQhMwHwYDVR0jBBgwFoAU5Khmb49MbZw5MqlIhHeA\n"
+    "poEMQhMwCgYIKoZIzj0EAwIDRwAwRAIgAeBBSSNr4BvEDi0v5vJVOCV9W9Hy+nGB\n"
+    "TR4/YoYg3t8CIHC7KC8PS56v9xhPQQjJmN+DxH51RQ2s8ONrb1D8z/2m\n"
+    "-----END CERTIFICATE-----\n",
 
     /* AMD root certificate ECC */
     "-----BEGIN CERTIFICATE-----\n"
