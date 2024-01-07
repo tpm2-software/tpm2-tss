@@ -322,8 +322,12 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     jso = json_object_new_object();
     goto_if_null2(jso, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
 
-    json_object_object_add(jso, "public", publicblobHex_jso);
-    json_object_object_add(jso, "private", privateblobHex_jso);
+    if (json_object_object_add(jso, "public", publicblobHex_jso)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
+    if (json_object_object_add(jso, "private", privateblobHex_jso)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     const char * jso_string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
 
