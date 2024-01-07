@@ -56,7 +56,9 @@ add_string_to_json(const char *string, json_object *jso, const char *jso_tag)
     jso_string = json_object_new_string(string);
     return_if_null(jso_string, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
-    json_object_object_add(jso, jso_tag, jso_string);
+    if (json_object_object_add(jso, jso_tag, jso_string)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -194,14 +196,18 @@ TSS2_RC ifapi_json_TCG_DIGEST2_serialize(const TCG_DIGEST2 *in, json_object **js
     r = ifapi_json_TPM2_ALG_ID_serialize(in->AlgorithmId, &jso2);
     return_if_jso_error(r, "Serialize hash algorithm", jso2);
 
-    json_object_object_add(*jso, "hashAlg", jso2);
+    if (json_object_object_add(*jso, "hashAlg", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
 
     size = ifapi_hash_get_digest_size(in->AlgorithmId);
     r = ifapi_json_BYTE_ARY_serialize(&in->Digest[0], size, &jso2);
     return_if_jso_error(r, "Serialize UINT8", jso2);
 
-    json_object_object_add(*jso, "digest", jso2);
+    if (json_object_object_add(*jso, "digest", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -237,7 +243,9 @@ bool ifapi_json_TCG_DIGEST2_cb(const TCG_DIGEST2 *in, size_t size, void *data)
         return false;
     }
 
-    json_object_array_add(jso_digests, jso_digest);
+    if (json_object_array_add(jso_digests, jso_digest)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return true;
 }
 
@@ -422,7 +430,9 @@ TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type,
         r = ifapi_json_BYTE_ARY_serialize(&in->Event[0], in->EventSize, &jso2);
         return_if_jso_error(r, "Serialize UINT8", jso2);
 
-        json_object_object_add(*jso, "event_data", jso2);
+        if (json_object_object_add(*jso, "event_data", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
         return TSS2_RC_SUCCESS;
 }
@@ -487,7 +497,9 @@ TSS2_RC ifapi_json_TCG_EVENT_HEADER2_serialize(
     }
     jso_sub = json_object_new_object();
     return_if_null(jso_sub, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-    json_object_object_add(*jso, CONTENT, jso_sub);
+    if (json_object_object_add(*jso, CONTENT, jso_sub)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     r = add_string_to_json("pcclient_std", *jso, CONTENT_TYPE);
     return_if_error(r, "Add event type");
@@ -495,20 +507,28 @@ TSS2_RC ifapi_json_TCG_EVENT_HEADER2_serialize(
     r = ifapi_json_UINT32_serialize(in->PCRIndex, &jso2);
     return_if_error(r, "Serialize UINT32");
 
-    json_object_object_add(*jso, "pcr", jso2);
+    if (json_object_object_add(*jso, "pcr", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
 
     jso2 = json_object_new_int64(recnum);
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-    json_object_object_add(*jso, "recnum", jso2);
+    if (json_object_object_add(*jso, "recnum", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     jso2 = json_object_new_string(eventtype_to_string(in->EventType));
 
-    json_object_object_add(jso_sub, "event_type", jso2);
+    if (json_object_object_add(jso_sub, "event_type", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     jso_ary = json_object_new_array();
     return_if_null(jso_ary, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-    json_object_object_add(*jso, "digests", jso_ary);
+    if (json_object_object_add(*jso, "digests", jso_ary)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     return TSS2_RC_SUCCESS;
 }
@@ -542,7 +562,9 @@ bool ifapi_json_TCG_EVENT_HEADER2_cb(
 
     cb_data->recnum_tab[in->PCRIndex]++;
 
-    json_object_array_add(jso_event_list, jso);
+    if (json_object_array_add(jso_event_list, jso)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return true;
 }
 
@@ -591,19 +613,27 @@ TSS2_RC ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_
     r = ifapi_json_UINT32_serialize(in->pcrIndex, &jso2);
     return_if_error(r, "Serialize UINT32");
 
-    json_object_object_add(*jso, "pcr", jso2);
+    if (json_object_object_add(*jso, "pcr", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = json_object_new_int64(recnum);
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    json_object_object_add(*jso, "recnum", jso2);
+    if (json_object_object_add(*jso, "recnum", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = json_object_new_string(eventtype_to_string(in->eventType));
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     jso_sub = json_object_new_object();
     return_if_null(jso_sub, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-    json_object_object_add(*jso, CONTENT, jso_sub);
+    if (json_object_object_add(*jso, CONTENT, jso_sub)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-    json_object_object_add(jso_sub, "event_type", jso2);
+    if (json_object_object_add(jso_sub, "event_type", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     jso_digest = json_object_new_object();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
@@ -612,25 +642,35 @@ TSS2_RC ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_
     r = ifapi_json_TPM2_ALG_ID_serialize(TPM2_ALG_SHA1, &jso2);
     return_if_error(r, "Serialize hash algorithm");
 
-    json_object_object_add(jso_digest, "hashAlg", jso2);
+    if (json_object_object_add(jso_digest, "hashAlg", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     jso2 = NULL;
     r = ifapi_json_BYTE_ARY_serialize(&in->digest[0], 20, &jso2);
     return_if_error(r, "Serialize BYTE");
 
-    json_object_object_add(jso_digest, "digest", jso2);
+    if (json_object_object_add(jso_digest, "digest", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     jso_ary = json_object_new_array();
     return_if_null(jso_ary, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    json_object_array_add(jso_ary, jso_digest);
+    if (json_object_array_add(jso_ary, jso_digest)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-    json_object_object_add(*jso, "digests", jso_ary);
+    if (json_object_object_add(*jso, "digests", jso_ary)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
     r = ifapi_json_BYTE_ARY_serialize(&in->event[0], in->eventDataSize, &jso2);
     return_if_error(r, "Serialize BYTE");
 
-    json_object_object_add(jso_sub, "event_data", jso2);
+    if (json_object_object_add(jso_sub, "event_data", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -660,7 +700,9 @@ bool ifapi_json_TCG_EVENT_cb(const TCG_EVENT *in, size_t size, void *data)
 
      cb_data->recnum_tab[in->pcrIndex]++;
 
-    json_object_array_add(jso_event_list, jso);
+    if (json_object_array_add(jso_event_list, jso)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return true;
 }
 
@@ -690,12 +732,16 @@ TSS2_RC ifapi_json_TCG_SPECID_ALG_serialize(
     r = ifapi_json_TPM2_ALG_ID_serialize(in->algorithmId, &jso2);
     return_if_error(r, "Serialize UINT16");
 
-    json_object_object_add(*jso, "algorithmId", jso2);
+    if (json_object_object_add(*jso, "algorithmId", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
     r = ifapi_json_UINT16_serialize(in->digestSize, &jso2);
     return_if_error(r, "Serialize UINT16");
 
-    json_object_object_add(*jso, "digestSize", jso2);
+    if (json_object_object_add(*jso, "digestSize", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -726,7 +772,9 @@ TSS2_RC ifapi_json_TCG_VENDOR_INFO_serialize(const TCG_VENDOR_INFO *in, json_obj
     r = ifapi_json_BYTE_ARY_serialize(&in->vendorInfo[0], in->vendorInfoSize, &jso2);
     return_if_error(r, "Serialize BYTE");
 
-    json_object_object_add(*jso, "vendorInfo", jso2);
+    if (json_object_object_add(*jso, "vendorInfo", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -819,7 +867,9 @@ bool ifapi_json_TCG_SPECID_EVENT_cb(
         return false;
     }
 
-    json_object_array_add(jso_event_list, jso);
+    if (json_object_array_add(jso_event_list, jso)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return true;
 }
 
