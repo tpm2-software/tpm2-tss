@@ -80,7 +80,9 @@ get_json_content(json_object *jso, json_object **jso_sub) {
     if (!ifapi_get_sub_object(jso, CONTENT, jso_sub)) {
         *jso_sub = json_object_new_object();
         return_if_null(*jso_sub, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-        json_object_object_add(jso, CONTENT, *jso_sub);
+        if (json_object_object_add(jso, CONTENT, *jso_sub)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     return TSS2_RC_SUCCESS;
 }
@@ -105,7 +107,9 @@ add_uint8_ary_to_json(UINT8 *buffer, UINT32 size, json_object *jso, const char *
     SAFE_FREE(hex_string)
     return_if_null(jso_byte_string, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
-    json_object_object_add(jso, jso_tag, jso_byte_string);
+    if (json_object_object_add(jso, jso_tag, jso_byte_string)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -120,7 +124,9 @@ add_string_to_json(const char *string, json_object *jso, const char *jso_tag)
     jso_string = json_object_new_string(string);
     return_if_null(jso_string, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
-    json_object_object_add(jso, jso_tag, jso_string);
+    if (json_object_object_add(jso, jso_tag, jso_string)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -134,7 +140,9 @@ add_number_to_json(UINT32 number, json_object *jso, const char *jso_tag)
     jso_number = json_object_new_int64(number);
     return_if_null(jso_number, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
-    json_object_object_add(jso, jso_tag, jso_number);
+    if (json_object_object_add(jso, jso_tag, jso_number)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -178,14 +186,20 @@ set_ff_digest(json_object *jso) {
     jso_digest_type = json_object_new_string ("sha1");
     goto_if_null(jso_digest_type, "Out of memory.", TSS2_FAPI_RC_MEMORY, error);
 
-    json_object_object_add(jso_digest, "hashAlg", jso_digest_type);
+    if (json_object_object_add(jso_digest, "hashAlg", jso_digest_type)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     jso_ary = json_object_new_array();
     goto_if_null(jso_ary, "Out of memory.", TSS2_FAPI_RC_MEMORY, error);
 
-    json_object_array_add(jso_ary, jso_digest);
+    if (json_object_array_add(jso_ary, jso_digest)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     json_object_object_del(jso, "digests");
-    json_object_object_add(jso, "digests", jso_ary);
+    if (json_object_object_add(jso, "digests", jso_ary)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 
  error:
@@ -397,13 +411,19 @@ event_header_json_cb(
     jso_digest_type = json_object_new_string (hash_name);
     return_if_null(jso_digest_type, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    json_object_object_add(jso_digest, "hashAlg", jso_digest_type);
+    if (json_object_object_add(jso_digest, "hashAlg", jso_digest_type)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     jso_ary = json_object_new_array();
     return_if_null(jso_ary, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    json_object_array_add(jso_ary, jso_digest);
-    json_object_object_add(*jso, "digests", jso_ary);
+    if (json_object_array_add(jso_ary, jso_digest)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
+    if (json_object_object_add(*jso, "digests", jso_ary)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     r = add_uint8_ary_to_json(digest, digest_size, jso_digest, "digest");
     return_if_error(r, "Add digest to json");
@@ -417,7 +437,9 @@ event_header_json_cb(
     r = add_string_to_json(ima_type, jso_content, "template_name");
     return_if_error(r, "Add number to json object.");
 
-    json_object_array_add(jso_list, *jso);
+    if (json_object_array_add(jso_list, *jso)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 

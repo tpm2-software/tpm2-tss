@@ -135,14 +135,18 @@ ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in,
         r = ifapi_json_TPM2B_DIGEST_serialize(&in->cpHashA, &jso2);
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
-        json_object_object_add(*jso, "cpHashA", jso2);
+        if (json_object_object_add(*jso, "cpHashA", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->policyRef.size != 0) {
         jso2 = NULL;
         r = ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2);
         return_if_error(r, "Serialize TPM2B_NONCE");
 
-        json_object_object_add(*jso, "policyRef", jso2);
+        if (json_object_object_add(*jso, "policyRef", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->keyPath && strlen(in->keyPath) > 0) {
         jso2 = NULL;
@@ -150,7 +154,9 @@ ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in,
         r = ifapi_json_char_serialize(in->keyPath, &jso2);
         return_if_error(r, "Serialize char");
 
-        json_object_object_add(*jso, "keyPath", jso2);
+        if (json_object_object_add(*jso, "keyPath", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->keyPublic.type != 0) {
         jso2 = NULL;
@@ -158,7 +164,9 @@ ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in,
         r = ifapi_json_TPMT_PUBLIC_serialize(&in->keyPublic, &jso2);
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
-        json_object_object_add(*jso, "keyPublic", jso2);
+        if (json_object_object_add(*jso, "keyPublic", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if ((in->keyPEM) && strcmp(in->keyPEM, "") != 0) {
         jso2 = NULL;
@@ -166,28 +174,36 @@ ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in,
         r = ifapi_json_char_serialize(in->keyPEM, &jso2);
         return_if_error(r, "Serialize char");
 
-        json_object_object_add(*jso, "keyPEM", jso2);
+        if (json_object_object_add(*jso, "keyPEM", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if ((in->publicKeyHint) && strcmp(in->publicKeyHint, "") != 0) {
         jso2 = NULL;
         r = ifapi_json_char_serialize(in->publicKeyHint, &jso2);
         return_if_error(r, "Serialize char");
 
-        json_object_object_add(*jso, "publicKeyHint", jso2);
+        if (json_object_object_add(*jso, "publicKeyHint", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->publicKey.size) {
         jso2 = NULL;
         r = ifapi_json_TPM2B_NAME_serialize(&in->publicKey, &jso2);
         return_if_error(r, "Serialize key name");
 
-        json_object_object_add(*jso, "publicKey", jso2);
+        if (json_object_object_add(*jso, "publicKey", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->keyPEMhashAlg != 0) {
         jso2 = NULL;
         r = ifapi_json_TPMI_ALG_HASH_serialize(in->keyPEMhashAlg, &jso2);
         return_if_error(r, "Serialize TPMI_ALG_HASH");
 
-        json_object_object_add(*jso, "keyPEMhashAlg", jso2);
+        if (json_object_object_add(*jso, "keyPEMhashAlg", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
@@ -198,7 +214,9 @@ ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in,
     r = ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2);
     return_if_error(r, "Serialize RSA scheme");
 
-    json_object_object_add(*jso, "rsaScheme", jso2);
+    if (json_object_object_add(*jso, "rsaScheme", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     return TSS2_RC_SUCCESS;
 }
@@ -228,31 +246,41 @@ ifapi_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in,
     r = ifapi_json_TPM2B_NONCE_serialize(&in->nonceTPM, &jso2);
     return_if_error(r, "Serialize TPM2B_NONCE");
 
-    json_object_object_add(*jso, "nonceTPM", jso2);
+    if (json_object_object_add(*jso, "nonceTPM", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
     r = ifapi_json_TPM2B_DIGEST_serialize(&in->cpHashA, &jso2);
     return_if_error(r, "Serialize TPM2B_DIGEST");
 
-    json_object_object_add(*jso, "cpHashA", jso2);
+    if (json_object_object_add(*jso, "cpHashA", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     if (in->policyRef.size != 0) {
         jso2 = NULL;
         r = ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2);
         return_if_error(r, "Serialize TPM2B_NONCE");
 
-        json_object_object_add(*jso, "policyRef", jso2);
+        if (json_object_object_add(*jso, "policyRef", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     jso2 = NULL;
     r = ifapi_json_INT32_serialize(in->expiration, &jso2);
     return_if_error(r, "Serialize INT32");
 
-    json_object_object_add(*jso, "expiration", jso2);
+    if (json_object_object_add(*jso, "expiration", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     if ((in->objectPath) && strcmp(in->objectPath, "") != 0) {
         jso2 = NULL;
         cond_cnt++;
         r = ifapi_json_char_serialize(in->objectPath, &jso2);
         return_if_error(r, "Serialize char");
 
-        json_object_object_add(*jso, "objectPath", jso2);
+        if (json_object_object_add(*jso, "objectPath", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->objectName.size != 0) {
         jso2 = NULL;
@@ -260,7 +288,9 @@ ifapi_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in,
         r = ifapi_json_TPM2B_NAME_serialize(&in->objectName, &jso2);
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
-        json_object_object_add(*jso, "objectName", jso2);
+        if (json_object_object_add(*jso, "objectName", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (cond_cnt != 1) {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
@@ -293,7 +323,9 @@ ifapi_json_TPMS_POLICYLOCALITY_serialize(const TPMS_POLICYLOCALITY *in,
     r = ifapi_json_TPMA_LOCALITY_serialize(in->locality, &jso2);
     return_if_error(r, "Serialize TPMA_LOCALITY");
 
-    json_object_object_add(*jso, "locality", jso2);
+    if (json_object_object_add(*jso, "locality", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -323,7 +355,9 @@ ifapi_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
         r = ifapi_json_char_serialize(in->nvPath, &jso2);
         return_if_error(r, "Serialize char");
 
-        json_object_object_add(*jso, "nvPath", jso2);
+        if (json_object_object_add(*jso, "nvPath", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->nvIndex != 0) {
         jso2 = NULL;
@@ -331,7 +365,9 @@ ifapi_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
         r = ifapi_json_TPMI_RH_NV_INDEX_serialize(in->nvIndex, &jso2);
         return_if_error(r, "Serialize TPMI_RH_NV_INDEX");
 
-        json_object_object_add(*jso, "nvIndex", jso2);
+        if (json_object_object_add(*jso, "nvIndex", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
 
     if (in->nvPublic.nvIndex) {
@@ -341,27 +377,35 @@ ifapi_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
         r = ifapi_json_TPM2B_NV_PUBLIC_serialize(&tmp, &jso2);
         return_if_error(r, "Serialize TPM2B_NV_PUBLIC");
 
-        json_object_object_add(*jso, "nvPublic", jso2);
+        if (json_object_object_add(*jso, "nvPublic", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
 
     jso2 = NULL;
     r = ifapi_json_TPM2B_OPERAND_serialize(&in->operandB, &jso2);
     return_if_error(r, "Serialize TPM2B_OPERAND");
 
-    json_object_object_add(*jso, "operandB", jso2);
+    if (json_object_object_add(*jso, "operandB", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     if (in->offset != 0) {
         jso2 = NULL;
         r = ifapi_json_UINT16_serialize(in->offset, &jso2);
         return_if_error(r, "Serialize UINT16");
 
-        json_object_object_add(*jso, "offset", jso2);
+        if (json_object_object_add(*jso, "offset", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->operation != 0) {
         jso2 = NULL;
         r = ifapi_json_TPM2_EO_serialize(in->operation, &jso2);
         return_if_error(r, "Serialize TPM2_EO");
 
-        json_object_object_add(*jso, "operation", jso2);
+        if (json_object_object_add(*jso, "operation", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
@@ -396,19 +440,25 @@ ifapi_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in,
     r = ifapi_json_TPM2B_OPERAND_serialize(&in->operandB, &jso2);
     return_if_error(r, "Serialize TPM2B_OPERAND");
 
-    json_object_object_add(*jso, "operandB", jso2);
+    if (json_object_object_add(*jso, "operandB", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     if (in->offset != 0) {
         jso2 = NULL;
         r = ifapi_json_UINT16_serialize(in->offset, &jso2);
         return_if_error(r, "Serialize UINT16");
 
-        json_object_object_add(*jso, "offset", jso2);
+        if (json_object_object_add(*jso, "offset", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     jso2 = NULL;
     r = ifapi_json_TPM2_EO_serialize(in->operation, &jso2);
     return_if_error(r, "Serialize TPM2_EO");
 
-    json_object_object_add(*jso, "operation", jso2);
+    if (json_object_object_add(*jso, "operation", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -436,7 +486,9 @@ ifapi_json_TPMS_POLICYCOMMANDCODE_serialize(const TPMS_POLICYCOMMANDCODE *in,
     r = ifapi_json_TPM2_CC_serialize(in->code, &jso2);
     return_if_error(r, "Serialize TPM2_CC");
 
-    json_object_object_add(*jso, "code", jso2);
+    if (json_object_object_add(*jso, "code", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -484,7 +536,9 @@ ifapi_json_TPMS_POLICYCPHASH_serialize(const TPMS_POLICYCPHASH *in,
     r = ifapi_json_TPM2B_DIGEST_serialize(&in->cpHash, &jso2);
     return_if_error(r, "Serialize TPM2B_DIGEST");
 
-    json_object_object_add(*jso, "cpHash", jso2);
+    if (json_object_object_add(*jso, "cpHash", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -519,7 +573,9 @@ ifapi_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in,
         r = ifapi_json_TPM2B_DIGEST_serialize(&in->nameHash, &jso2);
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
-        json_object_object_add(*jso, "nameHash", jso2);
+        if (json_object_object_add(*jso, "nameHash", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
 
         /* No need to serialize namePaths or objectNames from which would be
            needed to compute nameHash. */
@@ -537,18 +593,26 @@ ifapi_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in,
             r = ifapi_json_char_serialize(in->namePaths[i], &jso2);
             return_if_error(r, "Serialize char");
 
-            json_object_array_add(jso_ary, jso2);
+            if (json_object_array_add(jso_ary, jso2)) {
+                return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            }
         }
-        json_object_object_add(*jso, "namePaths", jso_ary);
+        if (json_object_object_add(*jso, "namePaths", jso_ary)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     } else {
         /* TPM object names are used */
         for (i = 0; i < in->count; i++) {
             jso2 = NULL;
             r = ifapi_json_TPM2B_NAME_serialize(&in->objectNames[i], &jso2);
             return_if_error(r, "Serialize TPM2B_NAME");
-            json_object_array_add(jso_ary, jso2);
+            if (json_object_array_add(jso_ary, jso2)) {
+                return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            }
         }
-        json_object_object_add(*jso, "objectNames", jso_ary);
+        if (json_object_object_add(*jso, "objectNames", jso_ary)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
@@ -584,7 +648,9 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const
     r = ifapi_json_TPM2B_NAME_serialize(&in->objectName, &jso2);
     return_if_error(r, "Serialize TPM2B_NAME");
 
-    json_object_object_add(*jso, "objectName", jso2);
+    if (json_object_object_add(*jso, "objectName", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     if (in->newParentName.size) {
         cond_cnt++;
@@ -592,13 +658,17 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const
         r = ifapi_json_TPM2B_NAME_serialize(&in->newParentName, &jso2);
         return_if_error(r, "Serialize TPM2B_NAME");
 
-        json_object_object_add(*jso, "newParentName", jso2);
+        if (json_object_object_add(*jso, "newParentName", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     jso2 = NULL;
     r = ifapi_json_TPMI_YES_NO_serialize(in->includeObject, &jso2);
     return_if_error(r, "Serialize TPMI_YES_NO");
 
-    json_object_object_add(*jso, "includeObject", jso2);
+    if (json_object_object_add(*jso, "includeObject", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     if (in->newParentPath) {
         jso2 = NULL;
@@ -606,7 +676,9 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const
         r = ifapi_json_char_serialize(in->newParentPath, &jso2);
         return_if_error(r, "Serialize char");
 
-        json_object_object_add(*jso, "newParentPath", jso2);
+        if (json_object_object_add(*jso, "newParentPath", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
 
     if (in->newParentPublic.type) {
@@ -615,7 +687,9 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const
         r = ifapi_json_TPMT_PUBLIC_serialize(&in->newParentPublic, &jso2);
         return_if_error(r, "Serialize TPM2B_PUBLIC");
 
-        json_object_object_add(*jso, "newParentPublic", jso2);
+        if (json_object_object_add(*jso, "newParentPublic", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
 
     /* Check whether only one condition field found in policy. */
@@ -652,19 +726,25 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
     r = ifapi_json_TPM2B_DIGEST_serialize(&in->approvedPolicy, &jso2);
     return_if_error(r, "Serialize TPM2B_DIGEST");
 
-    json_object_object_add(*jso, "approvedPolicy", jso2);
+    if (json_object_object_add(*jso, "approvedPolicy", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     if (in->policyRef.size != 0) {
         jso2 = NULL;
         r = ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2);
         return_if_error(r, "Serialize TPM2B_NONCE");
 
-        json_object_object_add(*jso, "policyRef", jso2);
+        if (json_object_object_add(*jso, "policyRef", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     jso2 = NULL;
     r = ifapi_json_TPM2B_NAME_serialize(&in->keyName, &jso2);
     return_if_error(r, "Serialize TPM2B_NAME");
 
-    json_object_object_add(*jso, "keyName", jso2);
+    if (json_object_object_add(*jso, "keyName", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
 
     if (in->keyPath) {
@@ -672,7 +752,9 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
         r = ifapi_json_char_serialize(in->keyPath, &jso2);
         return_if_error(r, "Serialize char");
 
-        json_object_object_add(*jso, "keyPath", jso2);
+        if (json_object_object_add(*jso, "keyPath", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->keyPublic.type != 0) {
         jso2 = NULL;
@@ -680,28 +762,36 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
         r = ifapi_json_TPMT_PUBLIC_serialize(&in->keyPublic, &jso2);
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
-        json_object_object_add(*jso, "keyPublic", jso2);
+        if (json_object_object_add(*jso, "keyPublic", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if ((in->keyPEM) && strcmp(in->keyPEM, "") != 0) {
         jso2 = NULL;
         r = ifapi_json_char_serialize(in->keyPEM, &jso2);
         return_if_error(r, "Serialize char");
 
-        json_object_object_add(*jso, "keyPEM", jso2);
+        if (json_object_object_add(*jso, "keyPEM", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->keyPEMhashAlg != 0) {
         jso2 = NULL;
         r = ifapi_json_TPMI_ALG_HASH_serialize(in->keyPEMhashAlg, &jso2);
         return_if_error(r, "Serialize TPMI_ALG_HASH");
 
-        json_object_object_add(*jso, "keyPEMhashAlg", jso2);
+        if (json_object_object_add(*jso, "keyPEMhashAlg", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
 
     jso2 = NULL;
     r = ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2);
     return_if_error(r, "Serialize RSA scheme");
 
-    json_object_object_add(*jso, "rsaScheme", jso2);
+    if (json_object_object_add(*jso, "rsaScheme", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     return TSS2_RC_SUCCESS;
 }
@@ -770,7 +860,9 @@ ifapi_json_TPMS_POLICYNVWRITTEN_serialize(const TPMS_POLICYNVWRITTEN *in,
     r = ifapi_json_TPMI_YES_NO_serialize(in->writtenSet, &jso2);
     return_if_error(r, "Serialize TPMI_YES_NO");
 
-    json_object_object_add(*jso, "writtenSet", jso2);
+    if (json_object_object_add(*jso, "writtenSet", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -801,7 +893,9 @@ ifapi_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in,
         r = ifapi_json_TPM2B_DIGEST_serialize(&in->templateHash, &jso2);
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
-        json_object_object_add(*jso, "templateHash", jso2);
+        if (json_object_object_add(*jso, "templateHash", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (in->templatePublic.publicArea.type) {
         jso2 = NULL;
@@ -809,7 +903,9 @@ ifapi_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in,
         r = ifapi_json_TPMT_PUBLIC_serialize(&in->templatePublic.publicArea, &jso2);
         return_if_error(r, "Serialize TPM2B_PUBLIC");
 
-        json_object_object_add(*jso, "templatePublic", jso2);
+        if (json_object_object_add(*jso, "templatePublic", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
 
     /* Check whether only one condition field found in policy. */
@@ -847,7 +943,9 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in,
         r = ifapi_json_char_serialize(in->nvPath, &jso2);
         return_if_error(r, "Serialize char");
 
-        json_object_object_add(*jso, "nvPath", jso2);
+        if (json_object_object_add(*jso, "nvPath", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     jso2 = NULL;
     if (in->nvPublic.nvIndex > 0) {
@@ -856,7 +954,9 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in,
         r = ifapi_json_TPMS_NV_PUBLIC_serialize(&in->nvPublic, &jso2);
         return_if_error(r, "Serialize TPM2B_NV_PUBLIC");
 
-        json_object_object_add(*jso, "nvPublic", jso2);
+        if (json_object_object_add(*jso, "nvPublic", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     if (cond_cnt != 1) {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
@@ -889,7 +989,9 @@ ifapi_json_TPMS_POLICYACTION_serialize(const TPMS_POLICYACTION *in,
     r = ifapi_json_char_serialize(in->action, &jso2);
     return_if_error(r, "Serialize char");
 
-    json_object_object_add(*jso, "action", jso2);
+    if (json_object_object_add(*jso, "action", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -916,17 +1018,23 @@ ifapi_json_TPMS_PCRVALUE_serialize(const TPMS_PCRVALUE *in, json_object **jso)
     r = ifapi_json_UINT32_serialize(in->pcr, &jso2);
     return_if_error(r, "Serialize UINT32");
 
-    json_object_object_add(*jso, "pcr", jso2);
+    if (json_object_object_add(*jso, "pcr", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
     r = ifapi_json_TPM2_ALG_ID_serialize(in->hashAlg, &jso2);
     return_if_error(r, "Serialize TPM2_ALG_ID");
 
-    json_object_object_add(*jso, "hashAlg", jso2);
+    if (json_object_object_add(*jso, "hashAlg", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
     r = ifapi_json_TPMU_HA_serialize(&in->digest, in->hashAlg, &jso2);
     return_if_error(r, "Serialize TPMU_HA");
 
-    json_object_object_add(*jso, "digest", jso2);
+    if (json_object_object_add(*jso, "digest", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -955,7 +1063,9 @@ ifapi_json_TPML_PCRVALUES_serialize(const TPML_PCRVALUES *in, json_object **jso)
         r = ifapi_json_TPMS_PCRVALUE_serialize(&in->pcrs[i], &jso2);
         return_if_error(r, "Serialize TPMS_PCRVALUE");
 
-        json_object_array_add(*jso, jso2);
+        if (json_object_array_add(*jso, jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     return TSS2_RC_SUCCESS;
 }
@@ -986,7 +1096,9 @@ ifapi_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **jso)
         r = ifapi_json_TPML_PCRVALUES_serialize(in->pcrs, &jso2);
         return_if_error(r, "Serialize TPML_PCRVALUES");
 
-        json_object_object_add(*jso, "pcrs", jso2);
+        if (json_object_object_add(*jso, "pcrs", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
 
     if (in->currentPCRandBanks.count) {
@@ -995,7 +1107,9 @@ ifapi_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **jso)
         r = ifapi_json_TPML_PCR_SELECTION_serialize(&in->currentPCRandBanks, &jso2);
         return_if_error(r, "Serialize TPML_PCR_SELECTION");
 
-        json_object_object_add(*jso, "currentPCRandBanks", jso2);
+        if (json_object_object_add(*jso, "currentPCRandBanks", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
 
     if (in->currentPCRs.sizeofSelect) {
@@ -1004,7 +1118,9 @@ ifapi_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **jso)
         r = ifapi_json_TPMS_PCR_SELECT_serialize(&in->currentPCRs, &jso2);
         return_if_error(r, "Serialize TPMS_PCR_SELECT");
 
-        json_object_object_add(*jso, "currentPCRs", jso2);
+        if (json_object_object_add(*jso, "currentPCRs", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
@@ -1039,52 +1155,68 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(
     r = ifapi_json_char_serialize(in->type, &jso2);
     return_if_error(r, "Serialize char");
 
-    json_object_object_add(*jso, "type", jso2);
+    if (json_object_object_add(*jso, "type", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     jso2 = NULL;
     r = ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2);
     return_if_error(r, "Serialize TPM2B_NONCE");
 
-    json_object_object_add(*jso, "policyRef", jso2);
+    if (json_object_object_add(*jso, "policyRef", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     if (strcmp(in->type, "tpm") == 0) {
         jso2 = NULL;
         r = ifapi_json_TPMT_PUBLIC_serialize(&in->key, &jso2);
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
-        json_object_object_add(*jso, "key", jso2);
+        if (json_object_object_add(*jso, "key", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
         jso2 = NULL;
 
         jso2 = NULL;
         r = ifapi_json_TPMT_SIGNATURE_serialize(&in->signature, &jso2);
         return_if_error(r, "Serialize TPMT_SIGNATURE");
 
-        json_object_object_add(*jso, "signature", jso2);
+        if (json_object_object_add(*jso, "signature", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     } else if (strcmp(in->type, "pem") == 0) {
         jso2 = NULL;
         r = ifapi_json_char_serialize(in->keyPEM, &jso2);
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
-        json_object_object_add(*jso, "key", jso2);
+        if (json_object_object_add(*jso, "key", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
         jso2 = NULL;
 
         jso2 = NULL;
         r = ifapi_json_UINT8_ARY_serialize(&in->pemSignature, &jso2);
         return_if_error(r, "Serialize Signature");
 
-        json_object_object_add(*jso, "signature", jso2);
+        if (json_object_object_add(*jso, "signature", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
 
         jso2 = NULL;
         r = ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2);
         return_if_error(r, "Serialize RSA scheme");
 
-        json_object_object_add(*jso, "rsaScheme", jso2);
+        if (json_object_object_add(*jso, "rsaScheme", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
 
         jso2 = NULL;
         r = ifapi_json_TPMI_ALG_HASH_serialize(in->hashAlg, &jso2);
         return_if_error(r, "Serialize hash alg.");
 
-        json_object_object_add(*jso, "hashAlg", jso2);
+        if (json_object_object_add(*jso, "hashAlg", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     } else {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid key type.");
     }
@@ -1121,7 +1253,9 @@ ifapi_json_TPML_POLICYAUTHORIZATIONS_serialize(const TPML_POLICYAUTHORIZATIONS
                 &jso2);
         return_if_error(r, "Serialize TPMS_POLICYAUTHORIZATION");
 
-        json_object_array_add(*jso, jso2);
+        if (json_object_array_add(*jso, jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     return TSS2_RC_SUCCESS;
 }
@@ -1150,23 +1284,31 @@ ifapi_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in,
     r = ifapi_json_char_serialize(in->name, &jso2);
     return_if_error(r, "Serialize char");
 
-    json_object_object_add(*jso, "name", jso2);
+    if (json_object_object_add(*jso, "name", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
     r = ifapi_json_char_serialize(in->description, &jso2);
     return_if_error(r, "Serialize char");
 
-    json_object_object_add(*jso, "description", jso2);
+    if (json_object_object_add(*jso, "description", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
     r = ifapi_json_TPML_POLICYELEMENTS_serialize(in->policy, &jso2);
     return_if_error(r, "Serialize TPML_POLICYELEMENTS");
 
-    json_object_object_add(*jso, "policy", jso2);
+    if (json_object_object_add(*jso, "policy", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     if (in->policyDigests.count > 0) {
         jso2 = NULL;
         r = ifapi_json_TPML_DIGEST_VALUES_serialize(&in->policyDigests, &jso2);
         return_if_error(r, "Serialize TPML_DIGEST_VALUES");
 
-        json_object_object_add(*jso, "policyDigests", jso2);
+        if (json_object_object_add(*jso, "policyDigests", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     return TSS2_RC_SUCCESS;
 }
@@ -1199,7 +1341,9 @@ ifapi_json_TPML_POLICYBRANCHES_serialize(const TPML_POLICYBRANCHES *in,
         r = ifapi_json_TPMS_POLICYBRANCH_serialize(&in->authorizations[i], &jso2);
         return_if_error(r, "Serialize TPMS_POLICYBRANCH");
 
-        json_object_array_add(*jso, jso2);
+        if (json_object_array_add(*jso, jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     return TSS2_RC_SUCCESS;
 }
@@ -1227,7 +1371,9 @@ ifapi_json_TPMS_POLICYOR_serialize(const TPMS_POLICYOR *in, json_object **jso)
     r = ifapi_json_TPML_POLICYBRANCHES_serialize(in->branches, &jso2);
     return_if_error(r, "Serialize TPML_POLICYBRANCHES");
 
-    json_object_object_add(*jso, "branches", jso2);
+    if (json_object_object_add(*jso, "branches", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -1323,14 +1469,18 @@ ifapi_json_TPMT_POLICYELEMENT_serialize(const TPMT_POLICYELEMENT *in,
     r = ifapi_json_TPMI_POLICYTYPE_serialize(in->type, &jso2);
     return_if_error(r, "Serialize TPMI_POLICYTYPE");
 
-    json_object_object_add(*jso, "type", jso2);
+    if (json_object_object_add(*jso, "type", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
     if (in->policyDigests.count > 0) {
         jso2 = NULL;
         r = ifapi_json_TPML_DIGEST_VALUES_serialize(&in->policyDigests, &jso2);
         return_if_error(r, "Serialize TPML_DIGEST_VALUES");
 
-        json_object_object_add(*jso, "policyDigests", jso2);
+        if (json_object_object_add(*jso, "policyDigests", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     r = ifapi_json_TPMU_POLICYELEMENT_serialize(&in->element, in->type, jso);
     return_if_error(r, "Serialize TPMU_POLICYELEMENT");
@@ -1366,7 +1516,9 @@ ifapi_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in,
         r = ifapi_json_TPMT_POLICYELEMENT_serialize(&in->elements[i], &jso2);
         return_if_error(r, "Serialize TPMT_POLICYELEMENT");
 
-        json_object_array_add(*jso, jso2);
+        if (json_object_array_add(*jso, jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     return TSS2_RC_SUCCESS;
 }
@@ -1395,24 +1547,32 @@ ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *in,
     r = ifapi_json_char_serialize(in->description, &jso2);
     return_if_error(r, "Serialize char");
 
-    json_object_object_add(*jso, "description", jso2);
+    if (json_object_object_add(*jso, "description", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     jso2 = NULL;
     r = ifapi_json_TPML_DIGEST_VALUES_serialize(&in->policyDigests, &jso2);
     return_if_error(r, "Serialize TPML_DIGEST_VALUES");
 
-    json_object_object_add(*jso, "policyDigests", jso2);
+    if (json_object_object_add(*jso, "policyDigests", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     if (in->policyAuthorizations) {
         jso2 = NULL;
         r = ifapi_json_TPML_POLICYAUTHORIZATIONS_serialize(in->policyAuthorizations,
                 &jso2);
         return_if_error(r, "Serialize TPML_POLICYAUTHORIZATIONS");
 
-        json_object_object_add(*jso, "policyAuthorizations", jso2);
+        if (json_object_object_add(*jso, "policyAuthorizations", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     jso2 = NULL;
     r = ifapi_json_TPML_POLICYELEMENTS_serialize(in->policy, &jso2);
     return_if_error(r, "Serialize TPML_POLICYELEMENTS");
 
-    json_object_object_add(*jso, "policy", jso2);
+    if (json_object_object_add(*jso, "policy", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
     return TSS2_RC_SUCCESS;
 }
