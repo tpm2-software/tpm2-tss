@@ -7,7 +7,7 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     strategy:
       matrix:
-        docker_image: [ubuntu-18.04, ubuntu-20.04, fedora-32, opensuse-leap, ubuntu-22.04, alpine-3.15]
+        docker_image: [ubuntu-20.04, fedora-32, opensuse-leap, ubuntu-22.04, alpine-3.15]
         compiler: [gcc, clang]
     steps:
       - name: Check out repository
@@ -117,7 +117,7 @@ jobs:
           tpm2-software/ci/runCI@main
         with:
           CC: gcc
-          DOCKER_IMAGE: ubuntu-18.04
+          DOCKER_IMAGE: ubuntu-20.04
           ENABLE_COVERAGE: true
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
@@ -159,7 +159,7 @@ jobs:
           REPO_BRANCH: ${{ github.ref }}
           REPO_NAME: ${{ github.repository }}
           ENABLE_COVERITY: true
-          DOCKER_IMAGE: ubuntu-18.04
+          DOCKER_IMAGE: ubuntu-20.04
           CC: gcc
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           COVERITY_SUBMISSION_EMAIL: tadeusz.struk@intel.com
