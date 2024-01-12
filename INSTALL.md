@@ -178,6 +178,12 @@ $ sudo udevadm control --reload-rules && sudo udevadm trigger
 If this doesn't work on your distro please consult your distro's
 documentation for UDEVADM(8).
 
+Users who should have access to the TPM and the FAPI keystore should be
+included in the tss group.
+​```
+ sudo usermod -aG tss <username>
+ ```
+
 ## ldconfig
 
 It may be necessary to run ldconfig (as root) to update the run-time
@@ -249,3 +255,12 @@ for cortex-m4:
         LDFLAGS='--specs=nosys.specs'
 make
 ```
+
+## Test operating systems in the CI
+
+* ubuntu-20.04
+* fedora-32
+* opensuse-leap
+* ubuntu-22.04
+* alpine-3.15
+* FreeBSD
