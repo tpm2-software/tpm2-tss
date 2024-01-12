@@ -999,12 +999,11 @@ uninstall-local:
 clean-hook:
 	-rm -r -f $(top_builddir)/ca
 
-check-hook:
-	-rm -r -f $(top_builddir)/ca
-
 prepare-check:
 if INIT_CA
 	$(top_srcdir)/script/ekca/init_ca.sh $(top_builddir)
+	@echo "Build CI in:" 1>&2
+	@echo $(top_builddir) 1>&2
 endif
 
 check: prepare-check

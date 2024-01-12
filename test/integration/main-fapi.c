@@ -946,7 +946,10 @@ load_intermed_cert_and_key(const char *ca_key_path, EVP_PKEY **ca_key,
     /* Load the intermediate certificate */
     bio = BIO_new(BIO_s_file());
     if (!bio || !BIO_read_filename(bio, ca_cert_path)) {
-        LOG_ERROR("Failure in BIO_read_filename %s", ca_cert_path);
+        unsigned long err = ERR_get_error();
+        char err_buffer[256];
+        ERR_error_string_n(err, err_buffer, sizeof(err_buffer));
+        LOG_ERROR("Failure in BIO_read_filename %s", err_buffer);
         goto error_cleanup;
     }
     *ca_crt = PEM_read_bio_X509(bio, NULL, NULL, NULL);
@@ -959,7 +962,10 @@ load_intermed_cert_and_key(const char *ca_key_path, EVP_PKEY **ca_key,
     /* Load the intermediate key. */
     bio = BIO_new(BIO_s_file());
     if (!bio  || !BIO_read_filename(bio, ca_key_path)) {
-        LOG_ERROR("Failure in BIO_read_filename %s", ca_key_path);
+        unsigned long err = ERR_get_error();
+        char err_buffer[256];
+        ERR_error_string_n(err, err_buffer, sizeof(err_buffer));
+        LOG_ERROR("Failure in BIO_read_filename %s", err_buffer);
         goto error_cleanup;
     }
     *ca_key = PEM_read_bio_PrivateKey(bio, NULL, pass_cb, NULL);
