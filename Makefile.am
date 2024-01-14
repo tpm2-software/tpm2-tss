@@ -541,6 +541,28 @@ src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_SOURCES  = \
     src/tss2-tcti/tcti-i2c-ftdi.h
 endif # ENABLE_TCTI_I2C_FTDI
 
+# tcti library for python implemented TCTIs
+if ENABLE_TCTI_PY
+libtss2_tcti_py = src/tss2-tcti/libtss2-tcti-py.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_py.h
+lib_LTLIBRARIES += $(libtss2_tcti_py)
+pkgconfig_DATA += lib/tss2-tcti-py.pc
+EXTRA_DIST += lib/tss2-tcti-py.map \
+              lib/tss2-tcti-py.def
+
+src_tss2_tcti_libtss2_tcti_py_la_CFLAGS  = $(AM_CFLAGS) $(PYTHON3_EMBED_CFLAGS) -Wno-deprecated-declarations
+src_tss2_tcti_libtss2_tcti_py_la_LDFLAGS  = -ldl -lpthread $(PYTHON3_EMBED_LIBS)
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_py_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-py.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_py_la_LIBADD   = $(libutil)
+src_tss2_tcti_libtss2_tcti_py_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-py.c \
+    src/tss2-tcti/tcti-py.h
+endif # ENABLE_TCTI_PY
+
+
 ### TCG TSS SYS spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_sys.h
@@ -936,6 +958,7 @@ man7_MANS = \
     man/man7/tss2-tcti-spi-ftdi.7 \
     man/man7/tss2-tcti-i2c-helper.7 \
     man/man7/tss2-tcti-i2c-ftdi.7 \
+    man/man7/tss2-tcti-py.7 \
     man/man7/tss2-tctildr.7
 
 if FAPI
@@ -1033,6 +1056,7 @@ EXTRA_DIST += \
     man/tss2-tcti-spi-ftdi.7.in \
     man/tss2-tcti-i2c-helper.7.in \
     man/tss2-tcti-i2c-ftdi.7.in \
+    man/tss2-tcti-py.7.in \
     man/tss2-tctildr.7.in
 
 CLEANFILES += \
