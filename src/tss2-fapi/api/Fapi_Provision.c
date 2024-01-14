@@ -895,6 +895,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 #pragma message ( "*** Allow self generated certifcate ***" )
             root_ca_file = getenv("FAPI_TEST_ROOT_CERT");
 
+            if (root_ca_file && strcasecmp(root_ca_file, "self") == 0) {
+                /* The self signed root cert will be used as intermediate certificate. */
+                context->state = PROVISION_PREPARE_READ_INT_CERT;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+
             if (!root_ca_file && ifapi_io_path_exists(FAPI_TEST_ROOT_CERT_FILE)) {
                 root_ca_file = FAPI_TEST_ROOT_CERT_FILE;
             }
