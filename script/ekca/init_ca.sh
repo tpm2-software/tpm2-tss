@@ -25,6 +25,7 @@ if test -e $CA_DIR; then
     exit
 fi
 mkdir -p $CA_DIR
+echo "CA build in \"$CA_DIR\" realpath: \"$(realpath $CA_DIR)\"" 1>&2
 
 pushd "$CA_DIR"
 
@@ -78,7 +79,7 @@ mkdir certreqs certs crl newcerts private
 touch intermed-ca.index
 echo 00 > intermed-ca.crlnum
 echo 2000 > intermed-ca.serial
-echo "abcdef" > pass.txt
+echo "123456" > pass.txt
 
 cp "${EKCADIR}/intermed-ca.cnf" ./
 export OPENSSL_CONF=./intermed-ca.cnf
@@ -128,3 +129,4 @@ openssl ca -gencrl  -cert ../root-ca/certs/intermed-ca.cert.pem \
 openssl crl -in intermed-ca.crl.pem -outform DER -out intermed-ca.crl
 
 popd #intermed-ca
+sync

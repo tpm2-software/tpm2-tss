@@ -404,6 +404,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-policy-or-nv-read-write.fint \
     test/integration/fapi-second-provisioning.fint \
     test/integration/fapi-provisioning-error.fint \
+    test/integration/fapi-provisioning-cert-error.fint \
     test/integration/fapi-info.fint \
     test/integration/fapi-unseal.fint \
     test/integration/fapi-unseal-persistent.fint
@@ -2545,6 +2546,14 @@ test_integration_fapi_provisioning_error_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provisioning_error_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_provisioning_error_fint_SOURCES = \
     test/integration/fapi-provisioning-error.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_provisioning_cert_error_fint_CFLAGS  = $(TESTS_CFLAGS) \
+ -DSELF_SIGNED_CERTIFICATE
+test_integration_fapi_provisioning_cert_error_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_provisioning_cert_error_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_provisioning_cert_error_fint_SOURCES = \
+    test/integration/fapi-provisioning-cert-error.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_quote_destructive_fint_CFLAGS  = $(TESTS_CFLAGS)

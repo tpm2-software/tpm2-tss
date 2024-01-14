@@ -856,7 +856,7 @@ get_ecc_ek_public(TSS2_SYS_CONTEXT *sys_context, EVP_PKEY **evp_pub)
 
 }
 
-char pwd[6] = "abcdef";
+char pwd[6] = "123456";
 
 int pass_cb(char *buf, int size, int rwflag, void *u)
 {
@@ -949,7 +949,7 @@ load_intermed_cert_and_key(const char *ca_key_path, EVP_PKEY **ca_key,
         unsigned long err = ERR_get_error();
         char err_buffer[256];
         ERR_error_string_n(err, err_buffer, sizeof(err_buffer));
-        LOG_ERROR("Failure in BIO_read_filename %s", err_buffer);
+        LOG_ERROR("Failure in BIO_read_filename \"%s\" %s", ca_cert_path, err_buffer);
         goto error_cleanup;
     }
     *ca_crt = PEM_read_bio_X509(bio, NULL, NULL, NULL);
@@ -965,7 +965,7 @@ load_intermed_cert_and_key(const char *ca_key_path, EVP_PKEY **ca_key,
         unsigned long err = ERR_get_error();
         char err_buffer[256];
         ERR_error_string_n(err, err_buffer, sizeof(err_buffer));
-        LOG_ERROR("Failure in BIO_read_filename %s", err_buffer);
+        LOG_ERROR("Failure in BIO_read_filename \"%s\" %s", ca_key_path, err_buffer);
         goto error_cleanup;
     }
     *ca_key = PEM_read_bio_PrivateKey(bio, NULL, pass_cb, NULL);
@@ -1264,11 +1264,20 @@ init_ek_certificates(TSS2_SYS_CONTEXT *sys_ctx)
         goto error_cleanup;
     }
 
-    rc = load_intermed_cert_and_key("ca/intermed-ca/private/intermed-ca.key.pem",
+#ifdef SELF_SIGNED_CERTIFICATE
+    /* The self signed root cert will be used as intermediate certificate. */
+    rc = load_intermed_cert_and_key("./ca/root-ca/private/root-ca.key.pem",
                                     &intermed_key,
-                                    "ca/intermed-ca/intermed-ca.cert.pem",
+                                    "./ca/root-ca/root-ca.cert.pem",
                                     &intermed_cert);
-    if (rc != TSS2_RC_SUCCESS) {
+#else
+    rc = load_intermed_cert_and_key("./ca/intermed-ca/private/intermed-ca.key.pem",
+                                    &intermed_key,
+                                    "./ca/intermed-ca/intermed-ca.cert.pem",
+                                    &intermed_cert);
+#endif
+
+     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to load intermediate key and cert %s\n", Tss2_RC_Decode(rc));
         goto error_cleanup;
     }
