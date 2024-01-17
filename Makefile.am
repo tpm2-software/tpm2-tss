@@ -55,9 +55,16 @@ GITIGNOREFILES = ""
 if AUTOCONF_CODE_COVERAGE_2019_01_06
 include $(top_srcdir)/aminclude_static.am
 clean-local: code-coverage-clean
+	-rm -r -f $(top_builddir)/ca
 distclean-local: code-coverage-dist-clean
+	-rm -r -f $(top_builddir)/ca
 else
 @CODE_COVERAGE_RULES@
+clean-local:
+	-rm -r -f $(top_builddir)/ca
+distclean-local:
+	-rm -r -f $(top_builddir)/ca
+
 endif
 GITIGNOREFILES += $(TSS_GITIGNOREFILES)
 CODE_COVERAGE_DIRECTORY = $(top_builddir)/src $(top_builddir)/test
@@ -990,14 +997,10 @@ install-data-hook: install-dirs
 	fi
 
 uninstall-local:
-	-rm -r -f $(top_builddir)/ca
 	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
 	cd $(DESTDIR)$(man3dir) && \
 		[ -L Tss2_TctiLdr_Initialize_Ex.3 ] && \
 			rm -f Tss2_TctiLdr_Initialize_Ex.3 || true
-
-clean-hook:
-	-rm -r -f $(top_builddir)/ca
 
 prepare-check:
 if INIT_CA
@@ -1037,7 +1040,10 @@ EXTRA_DIST += \
 
 CLEANFILES += \
     $(man3_MANS) \
-    $(man7_MANS)
+    $(man7_MANS) \
+    $(top_builddir)/ca
+
+DISTCLEANFILES += $(top_builddir)/ca
 
 # function to transform man .in files to man pages
 # $1: target
