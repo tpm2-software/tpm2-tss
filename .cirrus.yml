@@ -28,6 +28,9 @@ task:
     - cd libusb && ./bootstrap.sh && ./configure && gmake -j install
     - cd - && rm -fr libusb
   script:
+    #
+    # Due to a race condition that only occurs in the cirrus ci, "make distcheck" has been replaced by "make check".
+    #
     ./bootstrap &&
     ./configure --enable-self-generated-certificate --enable-unit=yes --enable-integration=yes --with-crypto=ossl --disable-doxygen-doc --enable-tcti-swtpm=no --enable-tcti-libtpms=no --enable-tcti-mssim=yes --disable-dependency-tracking &&
-    gmake -j distcheck || { cat /tmp/cirrus-ci-build/tpm2-tss-*/_build/sub/test-suite.log; exit 1; }
+    gmake -j check || { cat /tmp/cirrus-ci-build/tpm2-tss-*/_build/sub/test-suite.log; exit 1; }
