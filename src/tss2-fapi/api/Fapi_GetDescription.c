@@ -123,6 +123,10 @@ Fapi_GetDescription_Async(
     check_not_null(context);
     check_not_null(path);
 
+    if (context->state != _FAPI_STATE_INIT) {
+        return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
+    }
+
     /* Load the object metadata from keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     return_if_error2(r, "Could not open: %s", path);

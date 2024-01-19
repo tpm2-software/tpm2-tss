@@ -127,6 +127,10 @@ Fapi_SetDescription_Async(
     check_not_null(context);
     check_not_null(path);
 
+    if (context->state != _FAPI_STATE_INIT) {
+        return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
+    }
+
     /* Check for invalid parameters */
     if (description && strlen(description) + 1 > 1024) {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
@@ -225,7 +229,6 @@ Fapi_SetDescription_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 
-            context->state = _FAPI_STATE_INIT;
             r = TSS2_RC_SUCCESS;
             break;
 
@@ -239,6 +242,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     SAFE_FREE(command->object_path);
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

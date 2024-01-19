@@ -459,7 +459,6 @@ Fapi_Quote_Finish(
                 *pcrLog = command->pcrLog;
             *signature = command->signature;
             *signatureSize = command->signatureSize;
-            context->state = _FAPI_STATE_INIT;
             break;
 
         statecasedefault(context->state);
@@ -483,6 +482,7 @@ error_cleanup:
     if (command->handle != ESYS_TR_NONE) {
         Esys_FlushContext(context->esys, command->handle);
     }
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }
