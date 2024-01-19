@@ -330,7 +330,6 @@ Fapi_NvRead_Finish(
         *data = command->rdata;
         if (size)
             *size = command->size;
-        context->state = _FAPI_STATE_INIT;
         break;
 
     statecasedefault(context->state);
@@ -345,6 +344,7 @@ error_cleanup:
     SAFE_FREE(command->nvPath);
     //SAFE_FREE(context->nv_cmd.tes);
     ifapi_session_clean(context);
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

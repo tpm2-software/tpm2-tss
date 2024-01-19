@@ -137,6 +137,10 @@ Fapi_GetTpmBlobs_Async(
     check_not_null(context);
     check_not_null(path);
 
+    if (context->state != _FAPI_STATE_INIT) {
+        return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
+    }
+
     /* Load the object from the key store. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
     return_if_error2(r, "Could not open: %s", path);
@@ -270,5 +274,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     LOG_TRACE("finished");
+    context->state = _FAPI_STATE_INIT;
     return r;
 }
