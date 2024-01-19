@@ -63,9 +63,9 @@ ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR handle)
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
             return TSS2_FAPI_RC_TRY_AGAIN;
 
+        context->flush_object_state = FLUSH_INIT;
         return_if_error(r, "FlushContext");
 
-        context->flush_object_state = FLUSH_INIT;
         return TSS2_RC_SUCCESS;
 
     statecasedefault(context->flush_object_state);
@@ -1256,40 +1256,40 @@ ifapi_cleanup_session(FAPI_CONTEXT *context)
                     context->session2 = ESYS_TR_NONE;
                 }
                 r = Esys_FlushContext_Async(context->esys, context->session1);
-                try_again_or_error(r, "Flush session.");
+                try_again_or_error_goto(r, "Flush session.", error);
             }
             fallthrough;
 
         statecase(context->cleanup_state, CLEANUP_SESSION1);
             if (context->session1 != ESYS_TR_NONE) {
                 r = Esys_FlushContext_Finish(context->esys);
-                try_again_or_error(r, "Flush session.");
+                try_again_or_error_goto(r, "Flush session.", error);
             }
             context->session1 = ESYS_TR_NONE;
 
             if (context->session2 != ESYS_TR_NONE) {
                 r = Esys_FlushContext_Async(context->esys, context->session2);
-                try_again_or_error(r, "Flush session.");
+                try_again_or_error_goto(r, "Flush session.", error);
             }
             fallthrough;
 
         statecase(context->cleanup_state, CLEANUP_SESSION2);
             if (context->session2 != ESYS_TR_NONE) {
                 r = Esys_FlushContext_Finish(context->esys);
-                try_again_or_error(r, "Flush session.");
+                try_again_or_error_goto(r, "Flush session.", error);
             }
             context->session2 = ESYS_TR_NONE;
 
             if (!context->srk_persistent && context->srk_handle != ESYS_TR_NONE) {
                 r = Esys_FlushContext_Async(context->esys, context->srk_handle);
-                try_again_or_error(r, "Flush SRK.");
+                try_again_or_error_goto(r, "Flush SRK.", error);
             }
             fallthrough;
 
         statecase(context->cleanup_state, CLEANUP_SRK);
             if (!context->srk_persistent && context->srk_handle != ESYS_TR_NONE) {
                 r = Esys_FlushContext_Finish(context->esys);
-                try_again_or_error(r, "Flush SRK.");
+                try_again_or_error_goto(r, "Flush SRK.", error);
 
                 context->srk_handle = ESYS_TR_NONE;
                 context->srk_persistent = false;
@@ -1299,6 +1299,9 @@ ifapi_cleanup_session(FAPI_CONTEXT *context)
 
         statecasedefault(context->state);
     }
+ error:
+    context->cleanup_state = CLEANUP_INIT;
+    return r;
 }
 
 /** Cleanup primary keys in error cases (non asynchronous).
@@ -2319,13 +2322,13 @@ ifapi_nv_write(
         /* Prepare reading of the key from keystore. */
         r = ifapi_keystore_load_async(&context->keystore, &context->io,
                                       context->nv_cmd.nvPath);
-        return_if_error2(r, "Could not open: %s", context->nv_cmd.nvPath);
+        goto_if_error2(r, "Could not open: %s", error_cleanup, context->nv_cmd.nvPath);
         fallthrough;
 
     statecase(context->nv_cmd.nv_write_state, NV2_WRITE_READ);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
         return_try_again(r);
-        return_if_error(r, "read_finish failed");
+        goto_if_error(r, "read_finish failed", error_cleanup);
 
         if (object->objectType != IFAPI_NV_OBJ)
             goto_error(r, TSS2_FAPI_RC_BAD_PATH, "%s is no NV object.", error_cleanup,
@@ -2403,7 +2406,7 @@ ifapi_nv_write(
                 IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
                 char *description;
                 r = ifapi_get_description(auth_object, &description);
-                return_if_error(r, "Get description");
+                goto_if_error(r, "Get description", error_cleanup);
                 r = ifapi_set_auth(context, auth_object, description);
                 SAFE_FREE(description);
                 goto_if_error_reset_state(r, " Fapi_NvWrite_Finish", error_cleanup);
@@ -2487,8 +2490,6 @@ ifapi_nv_write(
 
         LOG_DEBUG("success");
         r = TSS2_RC_SUCCESS;
-
-        context->nv_cmd.nv_write_state = NV2_WRITE_INIT;
         break;
 
     statecasedefault(context->nv_cmd.nv_write_state);
@@ -2498,6 +2499,7 @@ error_cleanup:
     context->session2 = ESYS_TR_NONE;
     SAFE_FREE(nv_file_name);
     SAFE_FREE(context->nv_cmd.write_data);
+    context->nv_cmd.nv_write_state = NV2_WRITE_INIT;
     return r;
 }
 
@@ -2657,7 +2659,6 @@ ifapi_nv_read(
             return TSS2_FAPI_RC_TRY_AGAIN;
         } else {
             *size = context->nv_cmd.data_idx;
-            context->nv_cmd.nv_read_state = NV_READ_INIT;
             LOG_DEBUG("success");
             r = TSS2_RC_SUCCESS;
             break;
@@ -2681,7 +2682,6 @@ ifapi_nv_read(
 
         if (capabilityData->data.handles.count == 0 ||
             capabilityData->data.handles.handle[0] != context->nv_cmd.tpm_handle) {
-            context->nv_cmd.nv_read_state = NV_READ_INIT;
             *size = 0;
             break;
         }
@@ -2720,6 +2720,7 @@ ifapi_nv_read(
 error_cleanup:
     context->session2 = ESYS_TR_NONE;
     SAFE_FREE(capabilityData);
+    context->nv_cmd.nv_read_state = NV_READ_INIT;
     return r;
 }
 
@@ -2892,7 +2893,6 @@ ifapi_load_key(
         return_try_again(r);
         goto_if_error_reset_state(r, " Load key.", error_cleanup);
 
-        context->loadKey.prepare_state = PREPARE_LOAD_KEY_INIT;
         break;
 
     statecase(context->loadKey.prepare_state, PREPARE_LOAD_KEY_INIT_KEY);
@@ -2908,6 +2908,7 @@ ifapi_load_key(
     }
 
 error_cleanup:
+    context->loadKey.prepare_state = PREPARE_LOAD_KEY_INIT;
     return r;
 }
 
@@ -3041,7 +3042,6 @@ ifapi_key_sign(
                 strdup_check(*certificate, "", r, cleanup);
             }
         }
-        context->Key_Sign.state = SIGN_INIT;
         LOG_TRACE("success");
         r = TSS2_RC_SUCCESS;
         break;
@@ -3053,6 +3053,8 @@ cleanup:
     if (context->Key_Sign.handle != ESYS_TR_NONE)
         Esys_FlushContext(context->esys, context->Key_Sign.handle);
     ifapi_cleanup_ifapi_object(context->Key_Sign.key_object);
+    context->Key_Sign.state = SIGN_INIT;
+
     return r;
 }
 
@@ -3960,6 +3962,7 @@ ifapi_change_auth_hierarchy(
     statecasedefault(context->hierarchy_state);
     }
 error:
+    context->hierarchy_state = HIERARCHY_CHANGE_AUTH_INIT;
     return r;
 }
 

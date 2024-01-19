@@ -287,14 +287,14 @@ Fapi_ExportPolicy_Finish(
             /* Load the key meta data from the keystore. */
             r = ifapi_keystore_load_async(&context->keystore, &context->io,
                                           command->path);
-            return_if_error2(r, "Could not open: %s", command->path);
+            goto_if_error2(r, "Could not open: %s", error_cleanup, command->path);
             fallthrough;
 
         statecase(context->state, POLICY_EXPORT_READ_OBJECT_FINISH);
             r = ifapi_keystore_load_finish(&context->keystore, &context->io,
                                            &command->object);
             return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+            goto_if_error(r, "read_finish failed", error_cleanup);
 
             goto_if_null2(command->object.policy,
                           "Object has no policy",

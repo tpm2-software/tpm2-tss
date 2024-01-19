@@ -333,7 +333,6 @@ Fapi_WriteAuthorizeNv_Finish(
             /* Cleanup the session used for authorizing access to the NV index. */
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
-            context->state = _FAPI_STATE_INIT;
             break;
 
         statecasedefault(context->state);
@@ -349,6 +348,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(object);
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

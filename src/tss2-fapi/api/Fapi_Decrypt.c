@@ -409,6 +409,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
-
+    context->state = _FAPI_STATE_INIT;
     return r;
 }

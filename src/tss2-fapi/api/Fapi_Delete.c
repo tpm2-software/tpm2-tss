@@ -550,7 +550,7 @@ Fapi_Delete_Finish(
 
             /* Load the object metadata from the keystore. */
             r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
-            return_if_error2(r, "Could not open: %s", path);
+            goto_if_error2(r, "Could not open: %s", error_cleanup, path);
 
             fallthrough;
 
@@ -559,7 +559,7 @@ Fapi_Delete_Finish(
                TPM operations; e.g. persistent key or NV index. */
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
             return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+            goto_if_error(r, "read_finish failed", error_cleanup);
 
             /* Initialize the ESYS object for the persistent key or NV Index. */
             r = ifapi_initialize_object(context->esys, object);
@@ -579,7 +579,7 @@ Fapi_Delete_Finish(
                 /* Check whether hierarchy file has been read. */
                 if (authObject->objectType == IFAPI_OBJ_NONE) {
                     r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
-                    return_if_error2(r, "Could not open hierarchy /HS");
+                    goto_if_error(r, "Could not open hierarchy /HS", error_cleanup);
 
                     command->auth_index = ESYS_TR_RH_OWNER;
                 } else {
@@ -624,7 +624,7 @@ Fapi_Delete_Finish(
         statecase(context->state, ENTITY_DELETE_KEY);
             if (object->misc.key.persistent_handle) {
                 r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
-                return_if_error2(r, "Could not open hierarchy /HS");
+                goto_if_error(r, "Could not open hierarchy /HS", error_cleanup);
             }
             fallthrough;
 
@@ -632,7 +632,7 @@ Fapi_Delete_Finish(
             if (object->misc.key.persistent_handle) {
                 r = ifapi_keystore_load_finish(&context->keystore, &context->io, authObject);
                 return_try_again(r);
-                return_if_error(r, "read_finish failed");
+                goto_if_error(r, "read_finish failed", error_cleanup);
 
                 r = ifapi_initialize_object(context->esys, authObject);
                 goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
@@ -786,5 +786,6 @@ error_cleanup:
     SAFE_FREE(command->pathlist);
     ifapi_session_clean(context);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
+    context->state = _FAPI_STATE_INIT;
     return r;
 }

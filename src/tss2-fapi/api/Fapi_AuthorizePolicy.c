@@ -366,7 +366,6 @@ Fapi_AuthorizePolicy_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", cleanup);
 
-            context->state = _FAPI_STATE_INIT;
             break;
 
        statecasedefault(context->state);
@@ -383,6 +382,7 @@ cleanup:
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     SAFE_FREE(command->policyPath);
     SAFE_FREE(command->signingKeyPath);
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }
