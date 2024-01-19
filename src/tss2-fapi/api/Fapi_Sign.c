@@ -335,6 +335,7 @@ Fapi_Sign_Finish(
     SAFE_FREE(command->padding);
     ifapi_session_clean(context);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

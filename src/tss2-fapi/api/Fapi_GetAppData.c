@@ -215,7 +215,6 @@ Fapi_GetAppData_Finish(
             if (appDataSize)
                 *appDataSize = objAppData->size;
 
-            context->state = _FAPI_STATE_INIT;
             r = TSS2_RC_SUCCESS;
             break;
 
@@ -228,6 +227,7 @@ cleanup:
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

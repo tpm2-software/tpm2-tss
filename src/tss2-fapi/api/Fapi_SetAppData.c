@@ -139,6 +139,10 @@ Fapi_SetAppData_Async(
     check_not_null(context);
     check_not_null(path);
 
+    if (context->state != _FAPI_STATE_INIT) {
+        return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
+    }
+
     /* App data is restricted to 10MB. */
     if (appDataSize > FAPI_MAX_APP_DATA_SIZE) {
         LOG_ERROR("Only 10MB are allowd for app data.");
@@ -264,10 +268,9 @@ Fapi_SetAppData_Finish(
             /* Finish writing of object */
             r = ifapi_keystore_store_finish(&context->io);
             return_try_again(r);
-            return_if_error_reset_state(r, "write_finish failed");
+            goto_if_error(r, "write_finish failed", error_cleanup);
             ifapi_cleanup_ifapi_object(object);
 
-            context->state = _FAPI_STATE_INIT;
             r = TSS2_RC_SUCCESS;
             break;
 
@@ -281,6 +284,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     SAFE_FREE(command->object_path);
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

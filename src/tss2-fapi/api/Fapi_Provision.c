@@ -906,9 +906,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 if (command->auth_state & TPMA_PERMANENT_LOCKOUTAUTHSET) {
                     hierarchy_lockout->misc.hierarchy.with_auth = TPM2_YES;
                     r = ifapi_get_description(hierarchy_lockout, &description);
-                    return_if_error(r, "Get description");
+                    goto_if_error(r, "Get description", error_cleanup);
                     r = ifapi_set_auth(context, hierarchy_lockout, description);
-                    return_if_error(r, "Set auth value");
+                    goto_if_error(r, "Set auth value", error_cleanup);
                 } else {
                     hierarchy_lockout->misc.hierarchy.with_auth = TPM2_NO;
                 }
@@ -1269,7 +1269,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             /* Finish writing the endorsement hierarchy to the key store */
             r = ifapi_keystore_store_finish(&context->io);
             return_try_again(r);
-            return_if_error_reset_state(r, "write_finish failed");
+            goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
             /* Write all endorsement hierarchies. */
             command->hierarchy = hierarchy_he;
@@ -1541,6 +1541,7 @@ error_cleanup:
         }
         SAFE_FREE(command->pathlist);
     }
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }
