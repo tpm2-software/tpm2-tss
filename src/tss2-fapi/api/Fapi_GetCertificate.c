@@ -135,6 +135,10 @@ Fapi_GetCertificate_Async(
     check_not_null(context);
     check_not_null(path);
 
+    if (context->state != _FAPI_STATE_INIT) {
+        return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
+    }
+
     r = ifapi_non_tpm_mode_init(context);
     return_if_error(r, "Initialize GetCertificate");
 

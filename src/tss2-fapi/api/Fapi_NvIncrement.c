@@ -336,7 +336,6 @@ Fapi_NvIncrement_Finish(
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-        context->state = _FAPI_STATE_INIT;
         break;
 
     statecasedefault(context->state);
@@ -351,6 +350,7 @@ error_cleanup:
     SAFE_FREE(command->nvPath);
     SAFE_FREE(jso);
     ifapi_session_clean(context);
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

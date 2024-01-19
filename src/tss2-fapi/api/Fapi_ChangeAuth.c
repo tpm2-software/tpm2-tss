@@ -445,7 +445,6 @@ Fapi_ChangeAuth_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-            context->state = _FAPI_STATE_INIT;
             LOG_TRACE("success");
             break;
 
@@ -609,5 +608,6 @@ error_cleanup:
         SAFE_FREE(command->pathlist);
     }
     LOG_TRACE("finished");
+    context->state = _FAPI_STATE_INIT;
     return r;
 }
