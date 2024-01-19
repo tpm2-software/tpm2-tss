@@ -175,6 +175,10 @@ Fapi_VerifyQuote_Async(
     check_not_null(quoteInfo);
     check_not_null(signature);
 
+    if (context->state != _FAPI_STATE_INIT) {
+        return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
+    }
+
     /* Check for invalid parameters */
     if (qualifyingData == NULL && qualifyingDataSize != 0) {
         LOG_ERROR("qualifyingData is NULL but qualifyingDataSize is not 0");
@@ -322,7 +326,6 @@ Fapi_VerifyQuote_Finish(
 
             goto_if_error(r, "Verify event list.", error_cleanup);
 
-            context->state = _FAPI_STATE_INIT;
             break;
 
         statecasedefault(context->state);
@@ -341,6 +344,7 @@ error_cleanup:
     SAFE_FREE(command->signature);
     SAFE_FREE(command->quoteInfo);
     SAFE_FREE(command->logData);
+    context->state = _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

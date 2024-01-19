@@ -258,7 +258,7 @@ Fapi_PcrExtend_Finish(
             /* Construct the filename for the eventlog file */
             r = ifapi_asprintf(&command->event_log_file, "%s/%s%i",
                                context->eventlog.log_dir, IFAPI_PCR_LOG_FILE, command->pcrIndex);
-            return_if_error(r, "Out of memory.");
+            return_if_error_reset_state(r, "Out of memory.");
 
             /* Check wheter the event log has to be read. */
             if (ifapi_io_path_exists(command->event_log_file)) {
@@ -296,7 +296,7 @@ Fapi_PcrExtend_Finish(
             r = Esys_PCR_Event_Async(context->esys, command->pcrIndex,
                                      context->session1, ESYS_TR_NONE, ESYS_TR_NONE,
                                      &command->event);
-            return_if_error(r, "Esys_PCR_Event_Async");
+            goto_if_error(r, "Esys_PCR_Event_Async", error_cleanup);
             command->event_digests = NULL;
 
             fallthrough;
@@ -333,7 +333,6 @@ Fapi_PcrExtend_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-            context->state =  _FAPI_STATE_INIT;
             break;
 
         statecasedefault(context->state);
@@ -350,6 +349,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_event(pcrEvent);
     ifapi_session_clean(context);
+    context->state =  _FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }
