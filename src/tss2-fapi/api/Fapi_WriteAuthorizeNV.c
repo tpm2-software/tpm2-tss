@@ -156,6 +156,9 @@ Fapi_WriteAuthorizeNv_Async(
     check_not_null(nvPath);
     check_not_null(policyPath);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_api_WriteAuthorizeNv * command = &context->cmd.WriteAuthorizeNV;
     IFAPI_NV_Cmds * nvCmd = &context->nv_cmd;

@@ -374,6 +374,9 @@ Fapi_Delete_Async(
     check_not_null(context);
     check_not_null(path);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_Entity_Delete * command = &(context->cmd.Entity_Delete);
     IFAPI_OBJECT *object = &command->object;

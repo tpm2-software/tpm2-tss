@@ -187,6 +187,9 @@ Fapi_GetCertificate_Finish(
     check_not_null(context);
     check_not_null(x509certData);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_Key_SetCertificate *command = &context->cmd.Key_SetCertificate;
     IFAPI_OBJECT *keyObject = &command->key_object;

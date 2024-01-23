@@ -182,6 +182,9 @@ Fapi_ExportKey_Async(
     check_not_null(context);
     check_not_null(pathOfKeyToDuplicate);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_ExportKey * command = &context->cmd.ExportKey;
 

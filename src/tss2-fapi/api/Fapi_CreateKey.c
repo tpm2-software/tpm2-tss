@@ -175,6 +175,9 @@ Fapi_CreateKey_Async(
     check_not_null(context);
     check_not_null(path);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     attributes = &context->cmd.Key_Create.public_templ.public.publicArea.objectAttributes;
 
     /* Reset all context-internal session state information. */

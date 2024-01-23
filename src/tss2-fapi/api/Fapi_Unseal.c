@@ -76,6 +76,9 @@ Fapi_Unseal(
     check_not_null(context);
     check_not_null(path);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Check whether TCTI and ESYS are initialized */
     return_if_null(context->esys, "Command can't be executed in none TPM mode.",
                    TSS2_FAPI_RC_NO_TPM);

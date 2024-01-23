@@ -156,6 +156,9 @@ Fapi_Import_Async(
     check_not_null(path);
     check_not_null(importData);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_ImportKey * command = &context->cmd.ImportKey;
     IFAPI_OBJECT *object = &command->object;

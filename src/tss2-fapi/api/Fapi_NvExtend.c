@@ -174,6 +174,9 @@ Fapi_NvExtend_Async(
     check_not_null(nvPath);
     check_not_null(data);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Check for maximum allowed dataSize. */
     if (dataSize > 1024) {
         LOG_ERROR("dataSize exceeds allowed maximum of 1024. dataSize = %zi", dataSize);

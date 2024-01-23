@@ -145,6 +145,9 @@ Fapi_GetEsysBlob_Async(
     check_not_null(context);
     check_not_null(path);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_GetEsysBlob * command = &(context->cmd.GetEsysBlob);
     IFAPI_OBJECT *object = &command->object;
