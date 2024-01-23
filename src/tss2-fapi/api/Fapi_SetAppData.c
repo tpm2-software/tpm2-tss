@@ -139,6 +139,9 @@ Fapi_SetAppData_Async(
     check_not_null(context);
     check_not_null(path);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     if (context->state != _FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
     }

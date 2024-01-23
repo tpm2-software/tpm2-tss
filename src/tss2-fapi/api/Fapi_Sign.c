@@ -187,6 +187,9 @@ Fapi_Sign_Async(
     check_not_null(keyPath);
     check_not_null(digest);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Check for invalid parameters */
     if (padding) {
         if (strcasecmp("RSA_SSA", padding) != 0 &&
