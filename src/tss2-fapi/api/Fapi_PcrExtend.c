@@ -163,6 +163,9 @@ Fapi_PcrExtend_Async(
     check_not_null(context);
     check_not_null(data);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_PCR * command = &context->cmd.pcr;
 

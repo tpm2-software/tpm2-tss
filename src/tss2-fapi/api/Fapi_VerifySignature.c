@@ -164,6 +164,9 @@ Fapi_VerifySignature_Async(
     check_not_null(digest);
     check_not_null(signature);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_Key_VerifySignature * command = &context->cmd.Key_VerifySignature;
 

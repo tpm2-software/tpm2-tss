@@ -162,6 +162,9 @@ Fapi_NvRead_Async(
     check_not_null(context);
     check_not_null(nvPath);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_NV_Cmds * command = &context->nv_cmd;
 

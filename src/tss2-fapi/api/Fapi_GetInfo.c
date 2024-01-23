@@ -157,6 +157,9 @@ Fapi_GetInfo_Async(
     /* Check for NULL parameters */
     check_not_null(context);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_GetInfo * command = &context->cmd.GetInfo;
 
