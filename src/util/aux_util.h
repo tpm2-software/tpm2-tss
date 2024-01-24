@@ -10,6 +10,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+#include <inttypes.h>
 #include "tss2_tpm2_types.h"
 #ifdef __cplusplus
 extern "C" {
