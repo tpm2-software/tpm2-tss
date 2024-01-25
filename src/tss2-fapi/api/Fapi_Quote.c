@@ -427,7 +427,7 @@ Fapi_Quote_Finish(
 
             /* Return the key's certificate if requested. */
             if (certificate) {
-                strdup_check(*certificate, sig_key_object->misc.key.certificate, r, error_cleanup);
+                strdup_check(command->certificate, sig_key_object->misc.key.certificate, r, error_cleanup);
             }
 
             /* If the pcrLog was not requested, the operation is done. */
@@ -460,6 +460,8 @@ Fapi_Quote_Finish(
 
             if (pcrLog)
                 *pcrLog = command->pcrLog;
+            if (certificate)
+                *certificate = command->certificate;
             *signature = command->signature;
             *signatureSize = command->signatureSize;
             break;
@@ -474,6 +476,8 @@ error_cleanup:
     SAFE_FREE(command->keyPath);
     SAFE_FREE(command->pcrList);
     if (r) {
+        SAFE_FREE(command->certificate);
+        SAFE_FREE(command->quoteInfo);
         SAFE_FREE(command->pcrLog);
         SAFE_FREE(command->signature);
     }
