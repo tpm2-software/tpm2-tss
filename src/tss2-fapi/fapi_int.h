@@ -292,7 +292,8 @@ typedef struct {
     uint32_t const *hashAlgs;
     uint32_t *hashAlgs2;
     size_t numHashAlgs;
-    char    const *quoteInfo;
+    char const *quoteInfo;
+    char *certificate;
     TPM2B_ATTEST *tpm_quoted;
     TPMT_SIGNATURE *tpm_signature;
     uint8_t *signature;
