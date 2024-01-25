@@ -2233,7 +2233,7 @@ ifapi_calculate_pcrs(
                 }
             }
         }
-        if (i_evt == n_events && quote_digest) {
+        if (n_events > 0 && i_evt == n_events && quote_digest) {
             /* Quote digest was not found. */
             r = TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED;
         }
@@ -2242,7 +2242,9 @@ ifapi_calculate_pcrs(
 error_cleanup:
     if (cryptoContext)
         ifapi_crypto_hash_abort(&cryptoContext);
-    ifapi_cleanup_event(&event);
+    if (n_events > 0) {
+        ifapi_cleanup_event(&event);
+    }
     return r;
 }
 
