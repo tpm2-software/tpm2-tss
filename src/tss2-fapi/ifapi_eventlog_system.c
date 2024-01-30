@@ -656,6 +656,7 @@ ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize(
                used as digest. */
             SAFE_FREE(out->data.buffer);
             out->data.buffer = calloc(1, 4);
+            check_oom(out->data.buffer);
             out->data.size = 4;
             /* hash of 0x00000001 will be used as digest. */
             out->data.buffer[3] = 1;
