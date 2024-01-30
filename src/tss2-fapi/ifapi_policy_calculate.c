@@ -127,7 +127,7 @@ ifapi_compute_policy_pcr(
     r = ifapi_crypto_hash_finish(&cryptoContext,
                                  (uint8_t *) & current_digest->
                                  digests[digest_idx].digest, &hash_size);
-    return_if_error(r, "crypto hash finish");
+    goto_if_error(r, "crypto hash finish", cleanup);
 
 cleanup:
     if (cryptoContext)
@@ -187,7 +187,7 @@ calculate_policy_key_param(
     r = ifapi_crypto_hash_finish(&cryptoContext,
                                  (uint8_t *) digest, &hash_size);
     LOGBLOB_DEBUG((uint8_t *) digest, hash_size, "Digest Finish");
-    return_if_error(r, "crypto hash finish");
+    goto_if_error(r, "crypto hash finish", cleanup);
 
     /* Use policyRef for second hash computation */
     if (policyRef) {
@@ -199,7 +199,7 @@ calculate_policy_key_param(
                            policyRef->size, r, cleanup);
         r = ifapi_crypto_hash_finish(&cryptoContext,
                                      (uint8_t *) digest, &hash_size);
-        return_if_error(r, "crypto hash finish");
+        goto_if_error(r, "crypto hash finish", cleanup);
     }
 
 cleanup:
@@ -372,7 +372,7 @@ ifapi_calculate_policy_duplicate(
     r = ifapi_crypto_hash_finish(&cryptoContext,
                                  (uint8_t *) & current_digest->
                                  digests[digest_idx].digest, &hash_size);
-    return_if_error(r, "crypto hash finish");
+    goto_if_error(r, "crypto hash finish", cleanup);
 
     LOGBLOB_DEBUG((uint8_t *) & current_digest->digests[digest_idx].digest,
                   hash_size, "Policy Duplicate digest");
@@ -871,7 +871,7 @@ ifapi_calculate_policy_name_hash(
     r = ifapi_calculate_policy_digest_hash(&policy->nameHash,
                                            current_digest,
                                            current_hash_alg, TPM2_CC_PolicyNameHash);
-    return_if_error(r, "Calculate digest hash for policy");
+    goto_if_error(r, "Calculate digest hash for policy", cleanup);
 
 cleanup:
     if (cryptoContext)
@@ -1099,7 +1099,7 @@ ifapi_calculate_policy_nv(
     r = ifapi_crypto_hash_finish(&cryptoContext,
                                  (uint8_t *) &current_digest->digests[digest_idx].digest,
                                  &hash_size);
-    return_if_error(r, "crypto hash finish");
+    goto_if_error(r, "crypto hash finish", cleanup);
 
 cleanup:
     if (cryptoContext)
@@ -1276,7 +1276,7 @@ ifapi_calculate_policy_template(
     r = ifapi_crypto_hash_finish(&cryptoContext,
                                  (uint8_t *) & current_digest->
                                  digests[digest_idx].digest, &hash_size);
-    return_if_error(r, "crypto hash finish");
+    goto_if_error(r, "crypto hash finish", cleanup);
 
     LOGBLOB_DEBUG((uint8_t *) & current_digest->digests[digest_idx].digest,
                   hash_size, "Policy Duplicate digest");
