@@ -183,6 +183,8 @@ Fapi_List_Finish(
     /* Helpful alias pointers */
     IFAPI_Entities_List * command = &context->cmd.Entities_List;
 
+    check_not_null(command->searchPath);
+
     /* Retrieve the objects along the search path. */
     r = ifapi_keystore_list_all(&context->keystore, command->searchPath,
                                 &pathArray, &numPaths);
