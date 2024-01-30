@@ -2269,10 +2269,6 @@ load_RSA_key(EVP_PKEY *key,
     }
 
     rc = get_rsa_tpm2b_public_from_evp(key, pub);
-    if (rc) {
-        goto out;
-    }
-out:
     EVP_PKEY_free(key);
     return rc;
 }
