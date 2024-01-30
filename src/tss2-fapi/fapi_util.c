@@ -320,14 +320,13 @@ error:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TSS2_RC
-pop_object_from_list(FAPI_CONTEXT *context, NODE_OBJECT_T **object_list)
+pop_object_from_list(NODE_OBJECT_T **object_list)
 {
     return_if_null(*object_list, "Pop from list.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     NODE_OBJECT_T *head = *object_list;
     NODE_OBJECT_T *next = head->next;
     *object_list = next;
-    ifapi_free_object(context, (void *)&head->object);
     free(head);
     return TSS2_RC_SUCCESS;
 }
@@ -2035,13 +2034,8 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
         IFAPI_OBJECT *top_obj = context->loadKey.key_list->object;
         ifapi_cleanup_ifapi_object(top_obj);
         SAFE_FREE(context->loadKey.key_list->object);
-        r = pop_object_from_list(context, &context->loadKey.key_list);
+        r = pop_object_from_list(&context->loadKey.key_list);
         goto_if_error_reset_state(r, "Pop key failed.", error_cleanup);
-
-        if (context->loadKey.key_list) {
-            /* Object can be cleaned if it's not the last */
-            ifapi_free_object(context, &top_obj);
-        }
 
         context->loadKey.state = LOAD_KEY_LOAD_KEY;
         return TSS2_FAPI_RC_TRY_AGAIN;
@@ -4152,32 +4146,6 @@ ifapi_free_objects(FAPI_CONTEXT *context)
         free_node = node;
         node = node->next;
         free(free_node);
-    }
-}
-
-/** Free ifapi a object stored in the context.
- *
- * @param[in,out] context The FAPI_CONTEXT.
- * @param[in,out] object The object which should be removed from the
- *                the linked list stored in context.
- */
-void
-ifapi_free_object(FAPI_CONTEXT *context, IFAPI_OBJECT **object)
-{
-    NODE_OBJECT_T *node;
-    NODE_OBJECT_T **update_ptr;
-
-    for (node = context->object_list,
-             update_ptr = &context->object_list;
-             node != NULL;
-         update_ptr = &node->next, node = node->next) {
-        if (node->object == object) {
-            *update_ptr = node->next;
-            SAFE_FREE(node->object);
-            SAFE_FREE(node);
-            *object = NULL;
-            return;
-        }
     }
 }
 
