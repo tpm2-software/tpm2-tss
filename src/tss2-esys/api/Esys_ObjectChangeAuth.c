@@ -194,9 +194,7 @@ Esys_ObjectChangeAuth_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_ObjectChangeAuth_Prepare(esysContext->sys,
-                                          (objectHandleNode == NULL)
-                                           ? TPM2_RH_NULL
-                                           : objectHandleNode->rsrc.handle,
+                                          objectHandleNode->rsrc.handle,
                                           (parentHandleNode == NULL)
                                            ? TPM2_RH_NULL
                                            : parentHandleNode->rsrc.handle,

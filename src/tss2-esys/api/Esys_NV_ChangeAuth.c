@@ -194,8 +194,7 @@ Esys_NV_ChangeAuth_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_NV_ChangeAuth_Prepare(esysContext->sys,
-                                       (nvIndexNode == NULL) ? TPM2_RH_NULL
-                                        : nvIndexNode->rsrc.handle, newAuth);
+                                       nvIndexNode->rsrc.handle, newAuth);
     return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
