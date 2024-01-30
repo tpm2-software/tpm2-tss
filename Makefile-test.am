@@ -404,7 +404,6 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-policy-or-nv-read-write.fint \
     test/integration/fapi-second-provisioning.fint \
     test/integration/fapi-provisioning-error.fint \
-    test/integration/fapi-provisioning-cert-error.fint \
     test/integration/fapi-info.fint \
     test/integration/fapi-unseal.fint \
     test/integration/fapi-unseal-persistent.fint
@@ -434,7 +433,8 @@ FAPI_TESTS_INTEGRATION += \
     test/integration/fapi-quote-destructive-eventlog.fint \
     test/integration/fapi-quote-destructive-eventlog-pc-client.fint \
 	test/integration/fapi-provisioning-with-template.fint \
-	test/integration/fapi-provisioning-with-template-rsa.fint
+	test/integration/fapi-provisioning-with-template-rsa.fint \
+    test/integration/fapi-provisioning-cert-error.fint
 
 endif #!TESTDEVICE
 

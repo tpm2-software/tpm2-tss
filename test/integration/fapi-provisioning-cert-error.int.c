@@ -40,10 +40,9 @@ test_fapi_test_provisioning_cert_error(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
 
-#ifndef SELF_SIGNED_CERTIFICATE
+#if !defined(SELF_SIGNED_CERTIFICATE) || defined(FAPI_TEST_EK_CERT_LESS)
     return EXIT_SKIP;
 #endif
-
 
     setenv("FAPI_TEST_ROOT_CERT", "self", 1);
     setenv("FAPI_TEST_INT_CERT",  "./ca/root-ca/root-ca.cert.pem", 1);
