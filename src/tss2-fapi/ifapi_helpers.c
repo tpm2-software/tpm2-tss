@@ -2018,7 +2018,7 @@ ifapi_extend_vpcr(
     TSS2_RC r;
     size_t i, j;
     size_t event_size, size;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     bool zero_digest = false;
 
     LOGBLOB_TRACE(&vpcr->buffer[0], vpcr->size, "Old vpcr value");
@@ -2274,7 +2274,6 @@ ifapi_calculate_pcr_digest(
     const FAPI_QUOTE_INFO *quote_info)
 {
     TSS2_RC r;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     IFAPI_PCR_REG pcrs[TPM2_MAX_PCRS];
 
     const TPML_PCR_SELECTION *pcr_selection;
@@ -2304,12 +2303,8 @@ ifapi_calculate_pcr_digest(
     r = ifapi_calculate_pcrs(jso_event_list, pcr_selection, pcr_digest_hash_alg,
                              &quote_info->attest.attested.quote.pcrDigest,
                              &pcrs[0]);
-    goto_if_error(r, "Compute PCRs", error_cleanup);
+    return_if_error(r, "Compute PCRs");
 
-
-error_cleanup:
-    if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
