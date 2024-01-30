@@ -181,6 +181,13 @@ Esys_NV_ChangeAuth_Async(
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, nvIndex, &nvIndexNode);
     return_state_if_error(r, _ESYS_STATE_INIT, "nvIndex unknown.");
+
+    if (!nvIndexNode) {
+        LOG_ERROR("NV Object for Esys handle %x not found.", nvIndex);
+        esysContext->state = _ESYS_STATE_INIT;
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+
     hashAlg = nvIndexNode->rsrc.misc.rsrc_nv_pub.nvPublic.nameAlg;
     r = iesys_adapt_auth_value(&esysContext->crypto_backend, authCopy, hashAlg);
     return_state_if_error(r, _ESYS_STATE_INIT, "Adapt auth value");
