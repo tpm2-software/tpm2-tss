@@ -291,6 +291,8 @@ out:
         libusb_exit (platform_data->ctx);
     }
 
+    free(platform_data);
+
     return TSS2_BASE_RC_IO_ERROR;
 }
 
