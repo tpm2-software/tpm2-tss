@@ -2051,7 +2051,20 @@ ifapi_extend_vpcr(
         }
     }
     if (event->digests.count > 0 && i == event->digests.count && !zero_digest) {
-        LOG_ERROR("No digest for bank %"PRIu16" found in event", bank);
+        LOG_ERROR("No digest for bank %"PRIu16" found in event."
+                  "\n\nThe bank for each pcr register can be set in the FAPI profile. If, for example,"
+                  "\nno  digest for the default bank sha256 (11) exists in the eventlog of a"
+                  "\ncertain PCR register the PCR selection has to be adapted. E.g.:"
+                  "\n\n\"pcr_selection\": ["
+                  "\n      { \"hash\": \"TPM2_ALG_SHA1\","
+                  "\n         \"pcrSelect\": [ 0, 10 ],"
+                  "\n      },"
+                  "\n      { \"hash\": \"TPM2_ALG_SHA256\","
+                  "\n        \"pcrSelect\": [ 1, 2, ,3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15,"
+                  "16, 17, 18, 19, 20, 21, 22, 23 ]"
+                  "\n      }"
+                  "\n],"
+                  , bank);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     LOGBLOB_TRACE(&vpcr->buffer[0], vpcr->size, "New vpcr value");
