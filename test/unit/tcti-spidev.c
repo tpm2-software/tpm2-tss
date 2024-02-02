@@ -108,8 +108,10 @@ int __wrap_ioctl(int fd, unsigned long request, struct spi_ioc_transfer *tr)
     assert_int_equal(tr->bits_per_word, 8);
 
     size_t len = tr->len;
-    uint8_t *tx_buf = (uint8_t *) tr->tx_buf;
-    uint8_t *rx_buf = (uint8_t *) tr->rx_buf;
+
+    /* Use size_t to cast 64 bit number to pointer (needed for 32 bit systems) */
+    uint8_t *tx_buf = (uint8_t *)(size_t) tr->tx_buf;
+    uint8_t *rx_buf = (uint8_t *)(size_t) tr->rx_buf;
 
     static tpm_state_t tpm_state = TPM_DID_VID_HEAD;
 

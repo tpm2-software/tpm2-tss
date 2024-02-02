@@ -128,7 +128,8 @@ static TSS2_RC tcti_fake_recv(
     UNUSED(tctiContext);
     UNUSED(timeout);
 
-    const char *id = (const char*)mock();
+    /* Use size_t to cast 64 bit number to pointer (needed for 32 bit systems) */
+    const char *id = (const char*)(size_t)mock();
 
     get_response(id, response, size);
     return TSS2_RC_SUCCESS;
