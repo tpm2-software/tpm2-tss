@@ -19,6 +19,7 @@
 #include "test.h"
 #include "sys-util.h"
 #define PCR_8   8
+#define EXIT_SKIP 77
 /**
  * This program contains integration test for SYS Tss2_Sys_PCR_Read
  * and Tss2_Sys_PCR_Extend. This is an use case scenario on PCR extend.
@@ -37,8 +38,8 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     TPML_PCR_SELECTION  pcr_selection;
     UINT32 pcr_update_counter_before_extend;
     UINT32 pcr_update_counter_after_extend;
-    UINT8 pcr_before_extend[20];
-    UINT8 pcr_after_extend[20];
+    UINT8 pcr_before_extend[TPM2_SHA256_DIGEST_SIZE];
+    UINT8 pcr_after_extend[TPM2_SHA256_DIGEST_SIZE];
     TPML_DIGEST pcr_values;
     TPML_DIGEST_VALUES digests;
     TPML_PCR_SELECTION pcr_selection_out;
@@ -57,15 +58,15 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
         exit(1);
     }
     digests.count = 1;
-    digests.digests[0].hashAlg = TPM2_ALG_SHA1;
+    digests.digests[0].hashAlg = TPM2_ALG_SHA256;
     digest_size = GetDigestSize( digests.digests[0].hashAlg );
 
     for( i = 0; i < digest_size; i++ )
     {
-        digests.digests[0].digest.sha1[i] = (UINT8)(i % 256);
+        digests.digests[0].digest.sha256[i] = (UINT8)(i % 256);
     }
     pcr_selection.count = 1;
-    pcr_selection.pcrSelections[0].hash = TPM2_ALG_SHA1;
+    pcr_selection.pcrSelections[0].hash = TPM2_ALG_SHA256;
     pcr_selection.pcrSelections[0].sizeofSelect = 3;
     pcr_selection.pcrSelections[0].pcrSelect[0] = 0;
     pcr_selection.pcrSelections[0].pcrSelect[1] = 0;
@@ -77,6 +78,11 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
         LOG_ERROR("PCR_Read FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
+    if (!pcr_selection_out.pcrSelections[0].pcrSelect[PCR_8 / 8]) {
+        LOG_ERROR("PCR register not supported.");
+        return(EXIT_SKIP);
+    }
+
     memcpy(&(pcr_before_extend[0]), &(pcr_values.digests[0].buffer[0]), pcr_values.digests[0].size);
 
     rc = Tss2_Sys_PCR_Extend(sys_context, PCR_8, &sessions_data, &digests, 0);
@@ -89,13 +95,13 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
         LOG_ERROR("PCR_Read FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
-    memcpy(&(pcr_after_extend[0]), &(pcr_values.digests[0].buffer[0]), pcr_values.digests[0].size);
+        memcpy(&(pcr_after_extend[0]), &(pcr_values.digests[0].buffer[0]), pcr_values.digests[0].size);
 
     if(pcr_update_counter_before_extend == pcr_update_counter_after_extend) {
         LOG_ERROR("ERROR!! pcr_update_counter didn't change value");
         exit(1);
     }
-    if(memcmp(&(pcr_before_extend[0]), &(pcr_after_extend[0]), 20) == 0) {
+    if(memcmp(&(pcr_before_extend[0]), &(pcr_after_extend[0]), TPM2_SHA256_DIGEST_SIZE) == 0) {
         LOG_ERROR("ERROR!! PCR didn't change value");
         exit(1);
     }
