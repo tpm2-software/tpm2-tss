@@ -1001,6 +1001,7 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     size_t i;
     json_object *jso_log = NULL;
     json_object *jso_log2 = NULL;
+    bool sha1_bank_exists;
 
     uint8_t data[EVENT_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     size_t signatureSize = 0;
@@ -1009,6 +1010,13 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     #ifdef WORDS_BIGENDIAN
     return EXIT_SKIP;
     #endif
+
+    r = pcr_bank_sha1_exists(context, &sha1_bank_exists);
+    goto_if_error(r, "Test sha1 bank", error);
+
+    if (!sha1_bank_exists) {
+        return EXIT_SKIP;
+    }
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
 

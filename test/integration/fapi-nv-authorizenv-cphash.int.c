@@ -96,7 +96,7 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
-    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         policy2_name = "/policy/pol_cphash_sha384";
         policy2_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_cphash_sha384.json";
         policy_nv_auth_size = 50;
