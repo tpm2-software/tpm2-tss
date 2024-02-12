@@ -217,6 +217,49 @@ error:
 }
 
 TSS2_RC
+pcr_bank_sha1_exists(FAPI_CONTEXT *context, bool *exists)
+{
+    TSS2_RC r;
+    TSS2_TCTI_CONTEXT *tcti;
+    ESYS_CONTEXT *esys;
+    TPML_PCR_SELECTION pcrSelectionIn = {
+        .count = 1,
+        .pcrSelections = {
+            { .hash = TPM2_ALG_SHA1,
+              .sizeofSelect = 3,
+              .pcrSelect = { 1, 0, 0}
+            },
+        }
+    };
+    UINT32 pcrUpdateCounter;
+    TPML_PCR_SELECTION *pcrSelectionOut = NULL;
+    TPML_DIGEST *pcrValues = NULL;
+
+    r = Fapi_GetTcti(context, &tcti);
+    goto_if_error(r, "Error Fapi_GetTcti", error);
+
+    r = Esys_Initialize(&esys, tcti, NULL);
+    goto_if_error(r, "Error Fapi_GetTcti", error);
+
+    r = Esys_PCR_Read(esys, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+        &pcrSelectionIn, &pcrUpdateCounter, &pcrSelectionOut, &pcrValues);
+    goto_if_error(r, "Error: PCR_Read", error);
+    if (!pcrSelectionOut->pcrSelections[0].pcrSelect[0]) {
+        *exists = false;
+    } else {
+        *exists = true;
+    }
+    Esys_Finalize(&esys);
+    goto_if_error(r, "Error Eys_PCR_Reset", error);
+
+error:
+    SAFE_FREE(pcrSelectionOut);
+    SAFE_FREE(pcrValues);
+    return r;
+}
+
+
+TSS2_RC
 pcr_extend(FAPI_CONTEXT *context, UINT32 pcr, TPML_DIGEST_VALUES *digest_values)
 {
     TSS2_RC r;

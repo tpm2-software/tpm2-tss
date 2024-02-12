@@ -63,6 +63,11 @@ test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
 
+    if (strncmp(FAPI_PROFILE, "P_RSA", 5) == 0) {
+        LOG_WARNING("Default ECC profile needed for this test %s is used", FAPI_PROFILE);
+        return EXIT_SKIP;
+    }
+
     /* We need to reset the passwords again, in order to not brick physical TPMs */
     r = Fapi_Provision(context, PASSWORD, PASSWORD, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -148,6 +153,8 @@ test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
     if (strcmp(FAPI_PROFILE, "P_ECC") == 0) {
         rc = init_fapi("P_ECC", &context);
     } else if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+        rc = init_fapi("P_ECC384", &context);
+    } else if (strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         rc = init_fapi("P_ECC384", &context);
     } else {
         LOG_ERROR("Profile %s not supported for this test!", FAPI_PROFILE);
