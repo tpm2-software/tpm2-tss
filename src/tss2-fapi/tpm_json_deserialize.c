@@ -3578,7 +3578,7 @@ ifapi_json_TPMI_RSA_KEY_BITS_deserialize(json_object *jso,
         TPMI_RSA_KEY_BITS *out)
 {
     SUBTYPE_FILTER(TPMI_RSA_KEY_BITS, UINT16,
-        1024, 2048);
+        1024, 2048, 3072, 4096);
 }
 
 /** Deserialize a TPM2B_ECC_PARAMETER json object.
