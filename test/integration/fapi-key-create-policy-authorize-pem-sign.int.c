@@ -53,8 +53,8 @@ test_fapi_key_create_policy_authorize_pem_sign(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
     char *policy_pcr = "/policy/pol_pcr";
-    char *policy_file_pcr;
-    char *policy_file_authorize;
+    char *policy_file_pcr = NULL;
+    char *policy_file_authorize = NULL;
     char *policy_name_authorize = "/policy/pol_authorize";
     // uint8_t policyRef[] = { 1, 2, 3, 4, 5 };
     FILE *stream = NULL;
@@ -72,6 +72,9 @@ test_fapi_key_create_policy_authorize_pem_sign(FAPI_CONTEXT *context)
     } else if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
         policy_file_authorize = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize_ecc_pem_sha384.json";
         policy_file_pcr = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0_ecc_authorized_sha384.json";
+    } else {
+        LOG_ERROR("Invalid profile for ECC test: %s", FAPI_PROFILE);
+        return EXIT_FAILURE;
     }
 #else
     policy_file_pcr = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0_rsa_authorized.json";
