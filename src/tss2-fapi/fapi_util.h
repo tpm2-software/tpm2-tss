@@ -125,12 +125,6 @@ ifapi_nv_read(
     uint8_t     **data,
     size_t       *size);
 
-void
-ifapi_flush_policy_session(
-    FAPI_CONTEXT *context,
-    ESYS_TR session,
-    TSS2_RC r);
-
 TSS2_RC
 ifapi_nv_write(
     FAPI_CONTEXT *context,

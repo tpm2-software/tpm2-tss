@@ -430,6 +430,8 @@ Fapi_ExportKey_Finish(
             return_try_again(r);
             goto_if_error(r, "Flush key", cleanup);
 
+            command->key_object->public.handle = ESYS_TR_NONE;
+
             fallthrough;
 
         statecase(context->state, EXPORT_KEY_WAIT_FOR_FLUSH2);
@@ -437,6 +439,8 @@ Fapi_ExportKey_Finish(
             r = ifapi_flush_object(context, command->handle_ext_key);
             return_try_again(r);
             goto_if_error(r, "Flush key", cleanup);
+
+            command->handle_ext_key = ESYS_TR_NONE;
 
             fallthrough;
 
