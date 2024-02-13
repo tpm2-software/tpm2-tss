@@ -1157,7 +1157,6 @@ ifapi_session_init(FAPI_CONTEXT *context)
 
     context->session1 = ESYS_TR_NONE;
     context->session2 = ESYS_TR_NONE;
-    context->policy.session = ESYS_TR_NONE;
     context->srk_handle = ESYS_TR_NONE;
     return TSS2_RC_SUCCESS;
 }
@@ -1186,7 +1185,6 @@ ifapi_non_tpm_mode_init(FAPI_CONTEXT *context)
 
     context->session1 = ESYS_TR_NONE;
     context->session2 = ESYS_TR_NONE;
-    context->policy.session = ESYS_TR_NONE;
     context->srk_handle = ESYS_TR_NONE;
     return TSS2_RC_SUCCESS;
 }
@@ -1201,9 +1199,6 @@ ifapi_non_tpm_mode_init(FAPI_CONTEXT *context)
 void
 ifapi_session_clean(FAPI_CONTEXT *context)
 {
-    if (context->policy_session && context->policy_session != ESYS_TR_NONE) {
-        Esys_FlushContext(context->esys, context->policy_session);
-    }
     if (context->session1 != ESYS_TR_NONE && context->session1 != ESYS_TR_PASSWORD) {
         if (context->session1 == context->session2) {
             context->session2 = ESYS_TR_NONE;
@@ -1247,7 +1242,6 @@ ifapi_cleanup_session(FAPI_CONTEXT *context)
     TSS2_RC r;
 
     /* Policy sessions were closed after successful execution. */
-    context->policy_session = ESYS_TR_NONE;
 
     switch (context->cleanup_state) {
         statecase(context->cleanup_state, CLEANUP_INIT);
@@ -2102,27 +2096,6 @@ get_name_alg(FAPI_CONTEXT *context, IFAPI_OBJECT *object)
     }
 }
 
-/** Check whether policy session has to be flushed.
- *
- * Policy sessions with cleared continue session flag are not flushed in error
- * cases. Therefore the return code will be checked and if a policy session was
- * used the session will be flushed if the command was not executed successfully.
- *
- * @param[in,out] context for storing all state information.
- * @param[in] session the session to be checked whether flush is needed.
- * @param[in] r The return code of the command using the session.
- */
-void
-ifapi_flush_policy_session(FAPI_CONTEXT *context, ESYS_TR session, TSS2_RC r)
-{
-    if (session != context->session1) {
-        /* A policy session was used instead auf the default session. */
-        if (r != TSS2_RC_SUCCESS) {
-            Esys_FlushContext(context->esys, session);
-        }
-    }
-}
-
 /** State machine to authorize a key, a NV object of a hierarchy.
  *
  * @param[in,out] context for storing all state information.
@@ -2235,6 +2208,7 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
 error:
     /* No policy call was executed session can be flushed */
     Esys_FlushContext(context->esys, *session);
+    *session = ESYS_TR_NONE;
     return r;
 }
 
@@ -2376,6 +2350,8 @@ ifapi_nv_write(
         r = ifapi_authorize_object(context, auth_object, &auth_session);
         FAPI_SYNC(r, "Authorize NV object.", error_cleanup);
 
+        context->nv_cmd.auth_session = auth_session;
+
         /* Prepare the writing to NV ram. */
         r = Esys_NV_Write_Async(context->esys,
                                 context->nv_cmd.auth_index,
@@ -2415,11 +2391,8 @@ ifapi_nv_write(
                 r = Esys_NV_Write_Async(context->esys,
                                         context->nv_cmd.auth_index,
                                         nv_index,
-                                        (!context->policy.session
-                                         || context->policy.session == ESYS_TR_NONE) ? context->session1 :
-                                        context->policy.session,
-                                        (context->policy.session && context->policy.session != ESYS_TR_NONE) ?
-                                        context->session2 : ESYS_TR_NONE,
+                                        context->nv_cmd.auth_session,
+                                        ENC_SESSION_IF_POLICY(context->nv_cmd.auth_session),
                                         ESYS_TR_NONE,
                                         aux_data,
                                         context->nv_cmd.data_idx);
@@ -2981,9 +2954,7 @@ ifapi_key_sign(
         context->Key_Sign.handle = sig_key_object->public.handle;
 
         r = ifapi_authorize_object(context, sig_key_object, &session);
-        FAPI_SYNC(r, "Authorize signature key.", cleanup);
-
-        context->policy.session = session;
+        return_try_again(r);
 
         r = ifapi_get_sig_scheme(context, sig_key_object, padding, digest, &sig_scheme);
         goto_if_error(r, "Get signature scheme", cleanup);
@@ -3006,7 +2977,6 @@ ifapi_key_sign(
                              &context->Key_Sign.signature);
         return_try_again(r);
         context->session2 = ESYS_TR_NONE;
-        ifapi_flush_policy_session(context, context->policy.session, r);
         goto_if_error(r, "Error: Sign", cleanup);
 
         /* Prepare the flushing of the signing key. */
@@ -3723,6 +3693,8 @@ ifapi_key_create(
             r = ifapi_flush_object(context, context->loadKey.handle);
             return_try_again(r);
             goto_if_error(r, "Flush key", error_cleanup);
+
+            context->loadKey.handle = ESYS_TR_NONE;
         }
 
         fallthrough;
@@ -4923,6 +4895,8 @@ ifapi_create_primary(
         r = ifapi_flush_object(context, context->cmd.Key_Create.handle);
         return_try_again(r);
         goto_if_error(r, "Flush key", error_cleanup);
+
+        context->cmd.Key_Create.handle = ESYS_TR_NONE;
 
         fallthrough;
 

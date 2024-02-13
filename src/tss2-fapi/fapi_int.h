@@ -245,6 +245,7 @@ typedef struct {
     TPM2B_AUTH auth;            /**< The Password */
     IFAPI_NV nv_obj;            /**< The NV Object */
     ESYS_TR auth_index;         /**< The ESAPI handle of the authorization object */
+    ESYS_TR auth_session;       /**< The autorization session for a nv object */
     uint64_t bitmap;            /**< The bitmask for the SetBits command */
     IFAPI_NV_TEMPLATE public_templ; /**< The template for nv creation, adjusted
                                          appropriate by the passed flags */
