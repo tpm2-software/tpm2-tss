@@ -566,6 +566,8 @@ Fapi_Import_Finish(
             if (!command->parent_object->misc.key.persistent_handle) {
                 r = ifapi_flush_object(context, command->parent_object->public.handle);
                 return_try_again(r);
+
+                command->parent_object->public.handle = ESYS_TR_NONE;
                 ifapi_cleanup_ifapi_object(command->parent_object);
                 goto_if_error(r, "Flush key", error_cleanup);
             } else {

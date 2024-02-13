@@ -394,7 +394,8 @@ Fapi_Encrypt_Finish(
 
 error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
-    if (command->key_handle != ESYS_TR_NONE)
+    if (command->key_handle != ESYS_TR_NONE &&
+        command->key_object && !command->key_object->misc.key.persistent_handle)
         Esys_FlushContext(context->esys,  command->key_handle);
     if (r)
         SAFE_FREE(command->cipherText);
