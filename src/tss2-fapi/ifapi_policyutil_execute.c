@@ -120,8 +120,13 @@ create_session(
 
     case WAIT_FOR_CREATE_SESSION:
         r = Esys_StartAuthSession_Finish(context->esys, session);
-        if (r != TSS2_RC_SUCCESS)
+        if (r == TSS2_FAPI_RC_TRY_AGAIN) {
             return r;
+        }
+        if (r != TSS2_RC_SUCCESS) {
+            context->policy.create_session_state = CREATE_SESSION_INIT;
+            return r;
+        }
 
         context->policy.create_session_state = CREATE_SESSION_INIT;
         break;
@@ -304,6 +309,7 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
         statecasedefault(pol_util_ctx->state);
     }
     *session = pol_util_ctx->policy_session;
+    pol_util_ctx->state = POLICY_UTIL_INIT;
 
     pol_util_ctx = pol_util_ctx->prev;
 
@@ -316,6 +322,7 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
     return r;
 
 error:
+    pol_util_ctx->state = POLICY_UTIL_INIT;
     pol_util_ctx = pol_util_ctx->prev;
     if (context->policy.util_current_policy)
         clear_current_policy(context);
