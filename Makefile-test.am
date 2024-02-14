@@ -10,6 +10,13 @@ TESTS_CFLAGS = $(AM_CFLAGS) $(CRYPTO_CFLAGS) -I$(srcdir)/include -I$(srcdir)/src
 TESTS_LDADD = $(check_LTLIBRARIES) $(lib_LTLIBRARIES) \
     $(CRYPTO_LIBS) $(libutil) $(libutilio)
 
+if ESYS
+TESTS_CFLAGS += -DTEST_ESYS
+endif
+if FAPI
+TESTS_CFLAGS += -DTEST_FAPI
+endif
+
 check_LTLIBRARIES =
 # test harness configuration
 TEST_EXTENSIONS = .int .fint
