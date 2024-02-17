@@ -1091,7 +1091,9 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
         jso_duplicate = json_object_get(jso_event);
         goto_if_null(jso_duplicate, "Out of memory.", TSS2_FAPI_RC_MEMORY, error);
 
-        json_object_array_add(jso_log2, jso_duplicate);
+        if (json_object_array_add(jso_log2, jso_duplicate)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
 
     pcrEventLog2 = strdup(json_object_to_json_string_ext(jso_log2, JSON_C_TO_STRING_PRETTY));
