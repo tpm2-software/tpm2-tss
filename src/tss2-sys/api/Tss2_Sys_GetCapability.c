@@ -108,7 +108,7 @@ TSS2_RC Tss2_Sys_GetCapability_Complete(
      */
     ctx->nextData = next_data_vendor;
     size_t left = ctx->rsp_header.responseSize - ctx->nextData;
-    if (left > sizeof(capabilityData->data.vendor))
+    if (left > sizeof(capabilityData->data.vendor.buffer))
         return TSS2_MU_RC_BAD_SIZE;
 
     /* seems callers can use NULL */
