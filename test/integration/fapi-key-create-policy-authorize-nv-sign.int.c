@@ -141,7 +141,7 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
         return EXIT_SKIP;
     }
 
-    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         if (snprintf(&extended_name[0], 1023, "%s_sha384", POLICY_AUTHORIZE_NV) < 0) {
             LOG_ERROR("snprint failed");
             return EXIT_FAILURE;
@@ -158,7 +158,7 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
 
      if (strcmp(FAPI_PROFILE, "P_ECC") == 0) {
         policy_nv_auth_size = 34;
-    } else if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+    } else if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         policy_nv_auth_size = 50;
     } else {
         LOG_ERROR("No appropriate policy file exists!");

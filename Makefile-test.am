@@ -10,6 +10,13 @@ TESTS_CFLAGS = $(AM_CFLAGS) $(CRYPTO_CFLAGS) -I$(srcdir)/include -I$(srcdir)/src
 TESTS_LDADD = $(check_LTLIBRARIES) $(lib_LTLIBRARIES) \
     $(CRYPTO_LIBS) $(libutil) $(libutilio)
 
+if ESYS
+TESTS_CFLAGS += -DTEST_ESYS
+endif
+if FAPI
+TESTS_CFLAGS += -DTEST_FAPI
+endif
+
 check_LTLIBRARIES =
 # test harness configuration
 TEST_EXTENSIONS = .int .fint
@@ -434,7 +441,8 @@ FAPI_TESTS_INTEGRATION += \
     test/integration/fapi-quote-destructive-eventlog.fint \
     test/integration/fapi-quote-destructive-eventlog-pc-client.fint \
 	test/integration/fapi-provisioning-with-template.fint \
-	test/integration/fapi-provisioning-with-template-rsa.fint
+	test/integration/fapi-provisioning-with-template-rsa.fint \
+    test/integration/fapi-provisioning-cert-error.fint
 
 endif #!TESTDEVICE
 

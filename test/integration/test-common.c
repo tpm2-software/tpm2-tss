@@ -18,8 +18,9 @@
 #include "tss2_tpm2_types.h"
 #include "tss2_tctildr.h"
 #include "tss2_mu.h"
+#ifdef TEST_ESYS
 #include "tss2_esys.h"
-
+#endif
 #define LOGMODULE test
 #include "util/log.h"
 
@@ -51,6 +52,7 @@ struct tpm_state {
  * thus the corresponding handling code in ESYS can be tested.
  * The first invocation will be Tss2_Sys_StartUp.
  */
+#ifdef TEST_ESYS
 
 TSS2_RC
 (*transmit_hook) (const uint8_t *command_buffer, size_t command_size) = NULL;
@@ -200,6 +202,7 @@ tcti_proxy_initialize(
 
     return TSS2_RC_SUCCESS;
 }
+#endif /* TEST_ESYS */
 
 int
 transient_empty(TSS2_SYS_CONTEXT *sys_ctx)
@@ -418,6 +421,7 @@ test_sys_teardown(TSS2_TEST_SYS_CONTEXT *test_ctx)
     }
 }
 
+#ifdef TEST_ESYS
 int
 test_esys_setup(TSS2_TEST_ESYS_CONTEXT **test_ctx)
 {
@@ -556,18 +560,6 @@ test_esys_checks_post(TSS2_TEST_ESYS_CONTEXT *test_ctx)
     return EXIT_SUCCESS;
 }
 
-int
-test_fapi_checks_pre(TSS2_TEST_FAPI_CONTEXT *test_ctx)
-{
-    return test_esys_checks_pre(&test_ctx->test_esys_ctx);
-}
-
-int
-test_fapi_checks_post(TSS2_TEST_FAPI_CONTEXT *test_ctx)
-{
-    return test_esys_checks_post(&test_ctx->test_esys_ctx);
-}
-
 void
 test_esys_teardown(TSS2_TEST_ESYS_CONTEXT *test_ctx)
 {
@@ -580,3 +572,19 @@ test_esys_teardown(TSS2_TEST_ESYS_CONTEXT *test_ctx)
         free(test_ctx);
     }
 }
+
+#endif /* TEST_ESYS */
+
+#ifdef TEST_FAPI
+int
+test_fapi_checks_pre(TSS2_TEST_FAPI_CONTEXT *test_ctx)
+{
+    return test_esys_checks_pre(&test_ctx->test_esys_ctx);
+}
+
+int
+test_fapi_checks_post(TSS2_TEST_FAPI_CONTEXT *test_ctx)
+{
+    return test_esys_checks_post(&test_ctx->test_esys_ctx);
+}
+#endif /* TEST_FAPI */

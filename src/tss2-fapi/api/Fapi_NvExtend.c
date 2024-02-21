@@ -410,7 +410,9 @@ Fapi_NvExtend_Finish(
             /* libjson-c does not deliver an array if array has only one element */
             if (jsoType != json_type_array) {
                 json_object *jsonArray = json_object_new_array();
-                json_object_array_add(jsonArray, command->jso_event_log);
+                if (json_object_array_add(jsonArray, command->jso_event_log)) {
+                    return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+                }
                 command->jso_event_log = jsonArray;
             }
         } else {
@@ -423,7 +425,9 @@ Fapi_NvExtend_Finish(
         r = ifapi_json_IFAPI_EVENT_serialize(&command->pcr_event, &jso);
         goto_if_error(r, "Error serialize event", error_cleanup);
 
-        json_object_array_add(command->jso_event_log, jso);
+        if (json_object_array_add(command->jso_event_log, jso)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
         SAFE_FREE(object->misc.nv.event_log);
         strdup_check(object->misc.nv.event_log,
             json_object_to_json_string_ext(command->jso_event_log,

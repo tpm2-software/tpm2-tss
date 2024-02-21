@@ -281,7 +281,7 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     ASSERT(policy != NULL);
     LOG_INFO("\nTEST_JSON\nPolicy_sha256:\n%s\nEND_JSON", policy);
 
-    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         CHECK_JSON(policy, policy_sha384_check, error);
     } else {
         CHECK_JSON(policy, policy_sha256_check, error);
@@ -296,7 +296,7 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
     ASSERT(policy != NULL);
     LOG_INFO("\nTEST_JSON\nPolicy export1:\n%s\nEND_JSON", policy);
-    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         CHECK_JSON(policy, policy_sha384_export_check, error)
     } else {
         CHECK_JSON(policy, policy_sha256_export_check, error)
@@ -427,7 +427,7 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
     ASSERT(policy != NULL);
 
-    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+        if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0){
         CHECK_JSON(policy, policy_sha384_check, error);
     } else {
         CHECK_JSON(policy, policy_sha256_check, error);
