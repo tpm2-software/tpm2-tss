@@ -574,8 +574,10 @@ cleanup:
     SAFE_FREE(current_policy->buffer);
     SAFE_FREE(current_policy->pem_key);
     /* In error cases object might not have been flushed. */
-    if (current_policy->object_handle != ESYS_TR_NONE)
+    if (current_policy->object_handle != ESYS_TR_NONE)  {
         Esys_FlushContext(esys_ctx, current_policy->object_handle);
+        current_policy->object_handle = ESYS_TR_NONE;
+    }
     return r;
 }
 
@@ -745,9 +747,10 @@ execute_policy_authorize(
     }
 cleanup:
     /* In error cases object might not have been flushed. */
-    if (current_policy->object_handle != ESYS_TR_NONE)
+    if (current_policy->object_handle != ESYS_TR_NONE) {
         Esys_FlushContext(esys_ctx, current_policy->object_handle);
-
+        current_policy->object_handle = ESYS_TR_NONE;
+    }
     return r;
 }
 
@@ -955,6 +958,7 @@ execute_policy_secret(
     statecase(current_policy->state, POLICY_FLUSH_KEY);
         r = Esys_FlushContext_Finish(esys_ctx);
         try_again_or_error(r, "Flush key finish.");
+        current_policy->auth_handle = ESYS_TR_NONE;
         current_policy->state = POLICY_EXECUTE_INIT;
         break;
 
@@ -964,8 +968,9 @@ execute_policy_secret(
     return r;
 
  cleanup:
-    if (current_policy->flush_handle) {
+    if (current_policy->flush_handle && current_policy->auth_handle != ESYS_TR_NONE) {
          Esys_FlushContext(esys_ctx, current_policy->auth_handle);
+         current_policy->auth_handle = ESYS_TR_NONE;
     }
     SAFE_FREE(current_policy->nonceTPM);
     return r;
@@ -1907,7 +1912,6 @@ ifapi_policyeval_execute(
         if (r != TSS2_RC_SUCCESS) {
             if (do_flush) {
                 Esys_FlushContext(esys_ctx, current_policy->session);
-                current_policy->session = ESYS_TR_NONE;
             }
             ifapi_free_node_list(current_policy->policy_elements);
 

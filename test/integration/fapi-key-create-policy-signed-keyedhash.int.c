@@ -206,7 +206,7 @@ test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
     char    *publicKey = NULL;
     char    *certificate = NULL;
 
-    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
 	policy_name = "/policy/pol_signed_keyedhash_sha384";
         policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_signed_keyedhash_sha384.json";
     } else {

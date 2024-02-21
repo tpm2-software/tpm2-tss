@@ -140,6 +140,9 @@ TSS2_RC
 pcr_extend(FAPI_CONTEXT *context, UINT32 pcr, TPML_DIGEST_VALUES *digest_values);
 
 TSS2_RC
+pcr_bank_sha1_exists(FAPI_CONTEXT *context, bool *exists);
+
+TSS2_RC
 pcr_reset(FAPI_CONTEXT *context, UINT32 pcr);
 
 bool cmp_strtokens(char* string1, char *string2, char *delimiter);

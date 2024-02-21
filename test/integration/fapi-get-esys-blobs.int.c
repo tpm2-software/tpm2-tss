@@ -72,6 +72,7 @@ auth_callback(
  * @param[in,out] context The FAPI_CONTEXT.
  * @retval EXIT_FAILURE
  * @retval EXIT_SUCCESS
+ * @retval EXIT_SKIP
  */
 int
 test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
@@ -89,6 +90,11 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
     size_t         offset = 0;
     ESYS_TR        esys_handle;
     uint8_t        type;
+
+    if (strncmp(FAPI_PROFILE,"P_ECC", 5)) {
+        LOG_WARNING("Profile %s is no ECC profile.", FAPI_PROFILE);
+        return EXIT_SKIP;
+    }
 
     /* We need to reset the passwords again, in order to not brick physical TPMs */
     r = Fapi_Provision(context, NULL, NULL, NULL);

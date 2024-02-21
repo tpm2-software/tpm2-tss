@@ -96,9 +96,11 @@ signatureCallback(
     UNUSED(publicKey);
     UNUSED(publicKeyHint);
     uint8_t *aux_signature = NULL;
+    size_t profile_len = strlen(FAPI_PROFILE);
 
-    if (strcmp(objectPath, "P_RSA/HS/SRK/myRsaCryptKey") != 0) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path");
+    if (strcmp(objectPath + profile_len, "/HS/SRK/myRsaCryptKey") ||
+        strncmp(objectPath, "P_RSA", 5))
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path") {
     }
 
     if (userData != userDataTest) {

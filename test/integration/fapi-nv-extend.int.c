@@ -91,7 +91,7 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     LOG_INFO("\nTEST_JSON\nLog:\n%s\nEND_JSON", log);
     char *fields_log1[] =  { "0", "digests", "0", "digest" };
 
-    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         CHECK_JSON_FIELDS(log, fields_log1,
                           "c8ffec7d7d70c61b16adaab88925a1759b94cf6b50669b04aef1a8427fabb131eafbf9a21e3b8bddd9c5d5e7",
                           error);
@@ -120,7 +120,7 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     LOG_INFO("\nTEST_JSON\nLog:\n%s\nEND_JSON", log);
     char *fields_log2[] =  { "1", "digests", "0", "digest" };
 
-    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         CHECK_JSON_FIELDS(log, fields_log2,
                           "c8ffec7d7d70c61b16adaab88925a1759b94cf6b50669b04aef1a8427fabb131eafbf9a21e3b8bddd9c5d5e7",
                           error);

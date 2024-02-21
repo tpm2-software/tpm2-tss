@@ -123,7 +123,9 @@ ifapi_eventlog_get_async(
             r = ifapi_json_IFAPI_EVENT_serialize(&cel_event, &jso);
             goto_if_error(r, "Error serialize event", error);
 
-            json_object_array_add(eventlog->log, jso);
+            if (json_object_array_add(eventlog->log, jso)) {
+                return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            }
         }
     }
 
@@ -155,7 +157,9 @@ ifapi_eventlog_get_async(
             r = ifapi_json_IFAPI_EVENT_serialize(&cel_event, &jso);
             goto_if_error(r, "Error serialize event", error);
 
-            json_object_array_add(eventlog->log, jso);
+            if (json_object_array_add(eventlog->log, jso)) {
+                return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            }
         }
     }
     if (eventlog->ima_log_file) {
@@ -286,7 +290,9 @@ loop:
         json_type jso_type = json_object_get_type(logpart);
         if (jso_type != json_type_array) {
             /* libjson-c does not deliver an array if array has only one element */
-            json_object_array_add(eventlog->log, logpart);
+            if (json_object_array_add(eventlog->log, logpart)) {
+                return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            }
         } else {
             /* Iterate through the array of logpart and add each item to the eventlog */
             /* The return type of json_object_array_length() was changed, thus the case */
@@ -294,7 +300,9 @@ loop:
                 jso_event = json_object_array_get_idx(logpart, i);
                 /* Increment the refcount of event so it does not get freed on put(logpart) below */
                 json_object_get(jso_event);
-                json_object_array_add(eventlog->log, jso_event);
+                if (json_object_array_add(eventlog->log, jso_event)) {
+                    return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+                }
             }
             json_object_put(logpart);
         }
@@ -365,7 +373,9 @@ ifapi_eventlog_append_check(
             json_type jso_type = json_object_get_type(eventlog->log);
             if (jso_type != json_type_array) {
                 json_object *json_array = json_object_new_array();
-                json_object_array_add(json_array, eventlog->log);
+                if (json_object_array_add(json_array, eventlog->log)) {
+                    return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+                }
                 eventlog->log = json_array;
             }
         } else {
@@ -444,7 +454,9 @@ ifapi_eventlog_append_finish(
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Error serializing event data", error_cleanup);
         }
 
-        json_object_array_add(eventlog->log, event);
+        if (json_object_array_add(eventlog->log, event)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
         logstr2 = json_object_to_json_string_ext(eventlog->log, JSON_C_TO_STRING_PRETTY);
 
         /* Construct the filename for the eventlog file */

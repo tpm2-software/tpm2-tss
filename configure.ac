@@ -218,7 +218,7 @@ AS_IF([test "x$enable_policy" != xno && test "x$with_crypto" != "xossl"],
     [AC_MSG_ERROR([libpolicy has to be compiled with OpenSSL])])
 
 AS_IF([test "x$enable_fapi" = xyes -o "x$enable_policy" = xyes ],
-      [PKG_CHECK_MODULES([JSONC], [json-c])])
+      [PKG_CHECK_MODULES([JSONC], [json-c >= 0.13])])
 
 AS_IF([test "x$enable_fapi" = xyes ],
       [PKG_CHECK_MODULES([CURL], [libcurl])])

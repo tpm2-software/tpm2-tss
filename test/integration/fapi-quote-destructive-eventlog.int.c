@@ -1001,6 +1001,7 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     size_t i;
     json_object *jso_log = NULL;
     json_object *jso_log2 = NULL;
+    bool sha1_bank_exists;
 
     uint8_t data[EVENT_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     size_t signatureSize = 0;
@@ -1009,6 +1010,13 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     #ifdef WORDS_BIGENDIAN
     return EXIT_SKIP;
     #endif
+
+    r = pcr_bank_sha1_exists(context, &sha1_bank_exists);
+    goto_if_error(r, "Test sha1 bank", error);
+
+    if (!sha1_bank_exists) {
+        return EXIT_SKIP;
+    }
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
 
@@ -1083,7 +1091,9 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
         jso_duplicate = json_object_get(jso_event);
         goto_if_null(jso_duplicate, "Out of memory.", TSS2_FAPI_RC_MEMORY, error);
 
-        json_object_array_add(jso_log2, jso_duplicate);
+        if (json_object_array_add(jso_log2, jso_duplicate)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
 
     pcrEventLog2 = strdup(json_object_to_json_string_ext(jso_log2, JSON_C_TO_STRING_PRETTY));

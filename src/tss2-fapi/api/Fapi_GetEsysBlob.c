@@ -337,10 +337,6 @@ Fapi_GetEsysBlob_Finish(
             SAFE_FREE(key_context);
             goto_if_error(r, "Marshaling context", error_cleanup);
 
-            /* Cleanup policy session if an error did occur. */
-            ifapi_flush_policy_session(context, context->policy.session, r);
-            goto_if_error(r, "Cleanup policy session", error_cleanup);
-
             /* Flush current object used for blob computation. */
             if (!key_object->misc.key.persistent_handle) {
                 r = Esys_FlushContext_Async(context->esys, key_object->public.handle);

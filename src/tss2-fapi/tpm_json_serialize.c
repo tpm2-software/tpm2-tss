@@ -3452,7 +3452,7 @@ ifapi_json_TPM2B_PUBLIC_KEY_RSA_serialize(const TPM2B_PUBLIC_KEY_RSA *in, json_o
 TSS2_RC
 ifapi_json_TPMI_RSA_KEY_BITS_serialize(const TPMI_RSA_KEY_BITS in, json_object **jso)
 {
-    CHECK_IN_LIST(TPMI_RSA_KEY_BITS, in, 1024, 2048);
+    CHECK_IN_LIST(TPMI_RSA_KEY_BITS, in, 1024, 2048, 3072, 4096);
     return ifapi_json_UINT16_serialize(in, jso);
 }
 

@@ -707,7 +707,9 @@ tpm2-tss-fapi.conf: dist/tmpfiles.d/tpm2-tss-fapi.conf.in
 
 fapiprofilesdir = @sysconfdir@/tpm2-tss/fapi-profiles
 fapiprofiles_DATA = dist/fapi-profiles/P_RSA2048SHA256.json \
-                    dist/fapi-profiles/P_ECCP256SHA256.json
+                    dist/fapi-profiles/P_ECCP256SHA256.json \
+                    dist/fapi-profiles/P_RSA3072SHA384.json \
+                    dist/fapi-profiles/P_ECCP384SHA384.json
 
 libtss2_fapi = src/tss2-fapi/libtss2-fapi.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_fapi.h
@@ -717,6 +719,8 @@ EXTRA_DIST +=  \
     dist/fapi-config.json.in \
     dist/fapi-profiles/P_RSA2048SHA256.json \
     dist/fapi-profiles/P_ECCP256SHA256.json \
+    dist/fapi-profiles/P_RSA3072SHA384.json \
+    dist/fapi-profiles/P_ECCP384SHA384.json \
     dist/sysusers.d/tpm2-tss.conf \
     dist/tmpfiles.d/tpm2-tss-fapi.conf.in \
     doc/fapi-config.md \
