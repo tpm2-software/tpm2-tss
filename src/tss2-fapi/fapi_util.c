@@ -1105,9 +1105,8 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
         }
         goto_error(r, TSS2_FAPI_RC_KEY_NOT_FOUND ,
                    "The persistent handle 0x%x does not exist. "
-                   "The TPM state and the keystore state do not match."
-,                   error_cleanup, pkey_object->misc.key.persistent_handle);
-        fallthrough;
+                   "The TPM state and the keystore state do not match.",
+                   error_cleanup, pkey_object->misc.key.persistent_handle);
 
     statecasedefault(context->primary_state);
     }
