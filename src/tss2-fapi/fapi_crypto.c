@@ -786,7 +786,7 @@ ifapi_hmac_sig_to_tpm(
 
     tpmSignature->sigAlg = TPM2_ALG_HMAC;
     tpmSignature->signature.hmac.hashAlg = hashAlgorithm;
-    memcpy(&tpmSignature->signature.hmac.digest.sha1, signature, signatureSize);
+    memcpy(&tpmSignature->signature.hmac.digest.sha512, signature, signatureSize);
     return TSS2_RC_SUCCESS;
 }
 
