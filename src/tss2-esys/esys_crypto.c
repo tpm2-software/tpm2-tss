@@ -426,7 +426,7 @@ iesys_crypto_authHmac(ESYS_CRYPTO_CALLBACKS *crypto_cb,
     }
 
     if (nonceEncrypt != NULL) {
-        iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *) nonceEncrypt);
+        r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *) nonceEncrypt);
         goto_if_error(r, "Error", error);
     }
 
