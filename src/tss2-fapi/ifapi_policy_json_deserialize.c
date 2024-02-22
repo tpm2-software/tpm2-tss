@@ -451,7 +451,7 @@ ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso,  TPMS_POLICYNV *out)
     }
 
     if (!ifapi_get_sub_object(jso, "nvPublic", &jso2)) {
-        memset(&out->nvPublic, 0, sizeof(TPM2B_NV_PUBLIC));
+        memset(&out->nvPublic, 0, sizeof(TPMS_NV_PUBLIC));
     } else {
         TPM2B_NV_PUBLIC tmp = { 0 };
         r = ifapi_json_TPM2B_NV_PUBLIC_deserialize(jso2, &tmp);
