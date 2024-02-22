@@ -963,6 +963,7 @@ file_to_buffer(const char *filename, size_t *size, uint8_t **eventlog)
         n_alloc += 1;
         uint8_t* tmp_buff = realloc(*eventlog, file_size + alloc_size);
         if (!tmp_buff) {
+            fclose(fp);
             free(*eventlog);
             return_error2(TSS2_FAPI_RC_IO_ERROR, "Could not read %s", filename);
         }
