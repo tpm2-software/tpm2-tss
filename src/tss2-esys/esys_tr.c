@@ -284,6 +284,9 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
         } else {
             if (objectHandleNode->rsrc.name.size != name->size ||
                 memcmp(&objectHandleNode->rsrc.name.name[0], &name->name[0], name->size) != 0) {
+                SAFE_FREE(public);
+                SAFE_FREE(name);
+                SAFE_FREE(qualifiedName);
                 goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                            "Name mismatch between two calls of Esys_TR_FromTPMPublic",
                            error_cleanup);
