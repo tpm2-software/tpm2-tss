@@ -132,8 +132,12 @@ TSS2_RC tcti_control_command (
     uint8_t req_buf[SWTPM_CTRL_REQ_MAX_LEN] = { 0 };
     size_t req_buf_len = 0;
     uint8_t resp_buf[SWTPM_CTRL_RESP_MAX_LEN] = { 0 };
-    size_t resp_buf_len = sizeof(uint32_t);
 
+#ifdef _WIN32
+    int  resp_buf_len = sizeof(uint32_t);
+#else
+    ssize_t resp_buf_len = sizeof(uint32_t);
+#endif
     if (tcti_swtpm->swtpm_conf.path)
         rc = socket_connect_unix (tcti_swtpm->swtpm_conf.path,
                                   1,
@@ -187,7 +191,7 @@ TSS2_RC tcti_control_command (
     }
 #else
     resp_buf_len = read(tcti_swtpm->ctrl_sock, resp_buf, sizeof(resp_buf));
-    if (resp_buf_len < (ssize_t) sizeof(uint32_t)) {
+    if (resp_buf_len == -1 || resp_buf_len < (ssize_t) sizeof(uint32_t)) {
         LOG_ERROR ("Failed to get response to control command, errno %d: %s",
                    errno, strerror (errno));
         rc = TSS2_TCTI_RC_IO_ERROR;
