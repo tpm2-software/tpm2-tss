@@ -455,7 +455,6 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 context->state = PROVISION_PREPARE_GET_CAP_AUTH_STATE;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
-            fallthrough;
 
         statecase(context->state, PROVISION_INIT);
 
