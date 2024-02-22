@@ -656,9 +656,15 @@ size_t read_ima_header(IFAPI_IMA_TEMPLATE *template, FILE *fp, TSS2_RC *rc)
 
     *rc = TSS2_RC_SUCCESS;
 
-    size = fread(&template->header, header_size, 1, fp);
+    size = fread(&template->header, 1, header_size, fp);
     if (size == 0) {
         return size;
+    }
+
+    if (size != header_size) {
+        *rc = TSS2_FAPI_RC_BAD_VALUE;
+        LOG_ERROR("Invalid ima data");
+        return 0;
     }
 
     template->convert_to_big_endian = need_to_convert_to_big_endian(template);
