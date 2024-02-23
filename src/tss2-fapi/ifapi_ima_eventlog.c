@@ -180,25 +180,28 @@ set_ff_digest(json_object *jso) {
     return_if_null(jso_digest, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     r = add_uint8_ary_to_json(digest_ff,TPM2_SHA1_DIGEST_SIZE, jso_digest, "digest");
-    return_if_error(r, "Add digest to json");
+    goto_if_error2(r, "Add digest to json", error);
 
     jso_digest_type = NULL;
     jso_digest_type = json_object_new_string ("sha1");
     goto_if_null(jso_digest_type, "Out of memory.", TSS2_FAPI_RC_MEMORY, error);
 
     if (json_object_object_add(jso_digest, "hashAlg", jso_digest_type)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.",
+                   error);
     }
 
     jso_ary = json_object_new_array();
     goto_if_null(jso_ary, "Out of memory.", TSS2_FAPI_RC_MEMORY, error);
 
     if (json_object_array_add(jso_ary, jso_digest)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.",
+                   error);
     }
     json_object_object_del(jso, "digests");
     if (json_object_object_add(jso, "digests", jso_ary)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.",
+                   error);
     }
     return TSS2_RC_SUCCESS;
 
@@ -653,9 +656,15 @@ size_t read_ima_header(IFAPI_IMA_TEMPLATE *template, FILE *fp, TSS2_RC *rc)
 
     *rc = TSS2_RC_SUCCESS;
 
-    size = fread(&template->header, header_size, 1, fp);
+    size = fread(&template->header, 1, header_size, fp);
     if (size == 0) {
         return size;
+    }
+
+    if (size != header_size) {
+        *rc = TSS2_FAPI_RC_BAD_VALUE;
+        LOG_ERROR("Invalid ima data");
+        return 0;
     }
 
     template->convert_to_big_endian = need_to_convert_to_big_endian(template);

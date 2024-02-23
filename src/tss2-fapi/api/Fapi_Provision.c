@@ -455,7 +455,6 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 context->state = PROVISION_PREPARE_GET_CAP_AUTH_STATE;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
-            fallthrough;
 
         statecase(context->state, PROVISION_INIT);
 
@@ -940,7 +939,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             }
             r = ifapi_io_read_async(&context->io, int_ca_file);
             return_try_again(r);
-            goto_if_error2(r, "Reading certificate %s", error_cleanup, int_ca_file);
+            goto_if_error2(r, "Reading certificate %s", error_cleanup,
+                           getenv("FAPI_TEST_INT_CERT"));
 
 	        fallthrough;
 

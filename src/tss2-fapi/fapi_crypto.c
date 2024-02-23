@@ -786,7 +786,7 @@ ifapi_hmac_sig_to_tpm(
 
     tpmSignature->sigAlg = TPM2_ALG_HMAC;
     tpmSignature->signature.hmac.hashAlg = hashAlgorithm;
-    memcpy(&tpmSignature->signature.hmac.digest.sha1, signature, signatureSize);
+    memcpy(&tpmSignature->signature.hmac.digest.sha512, signature, signatureSize);
     return TSS2_RC_SUCCESS;
 }
 
@@ -1715,6 +1715,8 @@ TSS2_RC
 ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
                          uint8_t *digest, size_t *digestSize)
 {
+    TSS2_RC r = TSS2_RC_SUCCESS;
+
     /* Check for NULL parameters */
     return_if_null(context, "context is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(digest, "digest is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -1727,12 +1729,12 @@ ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
     IFAPI_CRYPTO_CONTEXT *mycontext = *context;
     if (1 != EVP_DigestFinal_ex(mycontext->osslContext, digest,
                                 &computedDigestSize)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "OSSL error.");
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "OSSL error.", cleanup);
     }
 
     if (computedDigestSize != mycontext->hashSize) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE,
-                     "Invalid size computed by EVP_DigestFinal_ex");
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "Invalid size computed by EVP_DigestFinal_ex", cleanup);
     }
 
     LOGBLOB_DEBUG(digest, mycontext->hashSize, "finish hash");
@@ -1741,11 +1743,13 @@ ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
         *digestSize = mycontext->hashSize;
     }
 
+ cleanup:
+
     /* Finalize the hash context */
     ifapi_crypto_context_free(mycontext);
     *context = NULL;
 
-    return TSS2_RC_SUCCESS;
+    return r;
 }
 
 /**
