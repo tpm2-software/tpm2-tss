@@ -198,6 +198,9 @@ tcti_device_receive (
                            tcti_dev->fd, errno, strerror (errno));
                     return TSS2_TCTI_RC_IO_ERROR;
                 }
+            } else {
+                LOG_ERROR ("Header could not be received");
+                return TSS2_TCTI_RC_GENERAL_FAILURE;
             }
             LOG_DEBUG("Partial read - received header");
             rc = Tss2_MU_UINT32_Unmarshal(header, TPM_HEADER_SIZE,
