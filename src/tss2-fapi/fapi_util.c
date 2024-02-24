@@ -2955,6 +2955,7 @@ ifapi_key_sign(
 
         r = ifapi_authorize_object(context, sig_key_object, &session);
         return_try_again(r);
+        goto_if_error(r, "Authorize signing key", cleanup);
 
         r = ifapi_get_sig_scheme(context, sig_key_object, padding, digest, &sig_scheme);
         goto_if_error(r, "Get signature scheme", cleanup);
