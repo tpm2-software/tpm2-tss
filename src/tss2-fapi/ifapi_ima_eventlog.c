@@ -648,18 +648,14 @@ size_t read_ima_header(IFAPI_IMA_TEMPLATE *template, FILE *fp, TSS2_RC *rc)
         }
         memcpy(&template->ima_type[0], "ima", 3);
         /* Get the description of the IMA event. */
-        if (template->ima_type_size < 3) {
+        if (template->ima_type_size < 3 ||
+            template->ima_type_size >= TCG_EVENT_NAME_LEN_MAX) {
             LOG_ERROR("Invalid ima data");
             *rc = TSS2_FAPI_RC_BAD_VALUE;
             return 0;
         }
         size = template->ima_type_size - 3;
         if (size > 0) {
-            if (size > TCG_EVENT_NAME_LEN_MAX) {
-                LOG_ERROR("Invalid ima data");
-                *rc = TSS2_FAPI_RC_BAD_VALUE;
-                return 0;
-            }
             rsize = fread(&template->ima_type[3], size, 1, fp);
             if (rsize != 1) {
                 LOG_ERROR("Invalid ima data");
