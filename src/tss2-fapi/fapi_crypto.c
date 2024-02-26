@@ -66,10 +66,16 @@ ifapi_crypto_context_free(IFAPI_CRYPTO_CONTEXT *ctx)
     if (!ctx)
         return;
 
-    EVP_MD_CTX_destroy(ctx->osslContext);
+    if (ctx->osslContext) {
+        EVP_MD_CTX_destroy(ctx->osslContext);
+    }
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-    EVP_MD_free(ctx->osslHashAlgorithm);
-    OSSL_LIB_CTX_free(ctx->libctx);
+    if (ctx->osslHashAlgorithm) {
+        EVP_MD_free(ctx->osslHashAlgorithm);
+    }
+    if (ctx->libctx) {
+        OSSL_LIB_CTX_free(ctx->libctx);
+    }
 #endif
     SAFE_FREE(ctx);
 }
@@ -1659,11 +1665,11 @@ ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context,
     }
 
     *context = (IFAPI_CRYPTO_CONTEXT_BLOB *) mycontext;
-
     return TSS2_RC_SUCCESS;
 
 cleanup:
     ifapi_crypto_context_free(mycontext);
+    *context = NULL;
     return r;
 }
 
@@ -1766,9 +1772,8 @@ ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context)
         LOG_DEBUG("Null-Pointer passed");
         return;
     }
-    IFAPI_CRYPTO_CONTEXT *mycontext = (IFAPI_CRYPTO_CONTEXT *) * context;
 
-    ifapi_crypto_context_free(mycontext);
+    ifapi_crypto_context_free(*context);
     *context = NULL;
 }
 
