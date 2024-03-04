@@ -1910,7 +1910,8 @@ ifapi_policyeval_execute(
         return_try_again(r);
 
         if (r != TSS2_RC_SUCCESS) {
-            if (do_flush) {
+            if (do_flush && current_policy->session &&
+                current_policy->session != ESYS_TR_NONE) {
                 Esys_FlushContext(esys_ctx, current_policy->session);
             }
             ifapi_free_node_list(current_policy->policy_elements);

@@ -1197,6 +1197,11 @@ ifapi_non_tpm_mode_init(FAPI_CONTEXT *context)
 void
 ifapi_session_clean(FAPI_CONTEXT *context)
 {
+    TPM2_HANDLE tpm_policy_handle;
+    TPMI_YES_NO moreData;
+    TPMS_CAPABILITY_DATA *capabilityData = NULL;
+    bool handle_found = false;
+
     if (context->session1 != ESYS_TR_NONE && context->session1 != ESYS_TR_PASSWORD) {
         if (context->session1 == context->session2) {
             context->session2 = ESYS_TR_NONE;
@@ -1209,8 +1214,41 @@ ifapi_session_clean(FAPI_CONTEXT *context)
     if (context->session2 != ESYS_TR_NONE) {
         if (Esys_FlushContext(context->esys, context->session2) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup session failed.");
-            context->session2 = ESYS_TR_NONE;
         }
+        context->session2 = ESYS_TR_NONE;
+    }
+
+    if (context->policy_session &&
+        context->policy_session != ESYS_TR_NONE) {
+        if (Esys_TR_GetTpmHandle(context->esys,  context->policy_session, &tpm_policy_handle)) {
+            LOG_ERROR("Cleanup policy_session could not get TPM handle.");
+        } else {
+            /* Check whether policy session still exists. */
+            if (Esys_GetCapability(context->esys,
+                                   ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                   TPM2_CAP_HANDLES, TPM2_LOADED_SESSION_FIRST , TPM2_MAX_CAP_HANDLES, &moreData,
+                                   &capabilityData)) {
+                LOG_ERROR("Cleanup policy_session could not check TPM handle.");
+            } else {
+                /* Loop is used because usage of tpm_policy_handle instead of TPM2_LOADED_SESSION_FIRST
+                   for get capability did not work. If the handle is not found and moreData is set
+                   the flush will also be executed. */
+                for (uint32_t  i = 0; i < capabilityData->data.handles.count; i++) {
+                    if (capabilityData->data.handles.handle[i] == tpm_policy_handle) {
+                        handle_found = true;
+                    }
+                }
+                if (handle_found || moreData) {
+                    SAFE_FREE(capabilityData);
+                    if (Esys_FlushContext(context->esys, context->policy_session) != TSS2_RC_SUCCESS) {
+                        LOG_ERROR("Cleanup policy_session failed.");
+                    }
+                } else {
+                    SAFE_FREE(capabilityData);
+                }
+            }
+        }
+        context->policy_session = ESYS_TR_NONE;
     }
     if (!context->srk_persistent && context->srk_handle != ESYS_TR_NONE) {
         if (Esys_FlushContext(context->esys, context->srk_handle) != TSS2_RC_SUCCESS) {
@@ -2174,6 +2212,7 @@ ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *ses
 
             return_if_error(r, "Execute policy.");
 
+            context->policy_session = *session;
             r = Esys_TRSess_GetAuthRequired(context->esys, *session,
                                             &auth_required);
             return_if_error(r, "GetAuthRequired");
