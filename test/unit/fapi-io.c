@@ -28,6 +28,7 @@
 #define LOGMODULE tests
 #include "util/log.h"
 
+#define EXIT_SKIP 77
 /*
  * The unit tests will simulate error codes which can be returned by the
  * system calls for file system IO.
@@ -364,6 +365,12 @@ check_io_write_finish(void **state) {
 int
 main(int argc, char *argv[])
 {
+#if _FILE_OFFSET_BITS == 64
+    // Would produce cmocka error
+    LOG_WARNING("_FILE_OFFSET == 64 would produce cmocka errors.");
+    return EXIT_SKIP;
+#endif
+
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(check_io_read_async),
         cmocka_unit_test(check_io_read_finish),

@@ -27,6 +27,11 @@
 #include "tss2-tcti/tcti-common.h"
 #include "tss2-tcti/tcti-pcap.h"
 
+#define LOGMODULE tests
+#include "util/log.h"
+
+#define EXIT_SKIP 77
+
 #if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
 #define _LE32TOH(a,b,c,d) d,c,b,a
 #define _LE16TOH(a,b) b,a
@@ -726,6 +731,12 @@ int
 main (int   argc,
       char *argv[])
 {
+#if _FILE_OFFSET_BITS == 64
+    // Would produce cmocka error
+    LOG_WARNING("_FILE_OFFSET == 64 would produce cmocka errors.");
+    return EXIT_SKIP;
+#endif
+
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tcti_pcap_init_context_and_size_null_test),
         cmocka_unit_test (tcti_pcap_init_size_test),
