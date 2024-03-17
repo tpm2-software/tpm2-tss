@@ -28,6 +28,8 @@
 #define LOGMODULE test
 #include "util/log.h"
 
+#define EXIT_SKIP 77
+
 #define LIBTPMS_DL_HANDLE  0x12345678
 #define STATEFILE_PATH     "statefile.bin"
 #define STATEFILE_FD       0xAABB
@@ -1786,6 +1788,12 @@ int
 main(int   argc,
      char *argv[])
 {
+#if _FILE_OFFSET_BITS == 64
+    // Would produce cmocka error
+    LOG_WARNING("_FILE_OFFSET == 64 would produce cmocka errors.");
+    return EXIT_SKIP;
+#endif
+
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(tcti_libtpms_init_all_null_test),
         cmocka_unit_test(tcti_libtpms_init_dlopen_fail_test),

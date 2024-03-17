@@ -25,6 +25,11 @@
 #include "tss2-tcti/tcti-common.h"
 #include "tss2-tcti/tcti-device.h"
 
+#define LOGMODULE tests
+#include "util/log.h"
+
+#define EXIT_SKIP 77
+
 /*
  * Size of the TPM2 buffer used in these tests. In some cases this will be
  * the command sent (transmit tests) and in others it's used as the response
@@ -444,6 +449,12 @@ tcti_device_poll_io_error (void **state)
 int
 main(int argc, char* argv[])
 {
+#if _FILE_OFFSET_BITS == 64
+    // Would produce cmocka error
+    LOG_WARNING("_FILE_OFFSET == 64 would produce cmocka errors.");
+    return EXIT_SKIP;
+#endif
+
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tcti_device_init_all_null_test),
         cmocka_unit_test(tcti_device_init_size_test),
