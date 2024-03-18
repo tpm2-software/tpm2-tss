@@ -2090,7 +2090,7 @@ ifapi_base64encode(uint8_t *buffer, size_t buffer_size, char** b64_data) {
                    cleanup);
     }
 
-    BIO_flush(bio);
+    (void) BIO_flush(bio);
     BIO_get_mem_ptr(bio, &b64_mem);
     goto_if_null2(b64_mem, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
