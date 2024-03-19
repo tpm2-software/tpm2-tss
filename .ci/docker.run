@@ -3,6 +3,8 @@
 
 set -eo pipefail
 
+JOBCOUNT=1
+
 source $DOCKER_BUILD_DIR/.ci/docker-prelude.sh
 
 export CONFIGURE_OPTIONS=
@@ -40,7 +42,7 @@ if [ "$GEN_FUZZ" == "1" ]; then
     ./configure --with-fuzzing=libfuzzer --enable-tcti-fuzzing \
       --disable-tcti-device --disable-tcti-mssim --disable-tcti-swtpm \
       --disable-shared --with-crypto="$WITH_CRYPTO"
-    make -j$(nproc) check
+    make -j ${JOBCOUNT} check
     exit 0
 fi
 
@@ -57,7 +59,7 @@ echo "PWD: $(pwd)"
 echo "ls -la ../ $(ls -la ../)"
 
 ../configure --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
-make -j$(nproc)
+make -j ${JOBCOUNT}
 popd
 
 if [ "$WITH_CRYPTO" == "none" ]; then
@@ -92,11 +94,11 @@ else
 fi
 
 if [ "$SCANBUILD" == "yes" ]; then
-  scan-build --status-bugs make -j
+  scan-build --status-bugs make -j ${JOBCOUNT}
 elif [ "$CC" == "clang" ]; then
-  make -j distcheck
+  make -j ${JOBCOUNT} distcheck
 else
-  make -j check
+  make -j ${JOBCOUNT} check
 fi
 
 popd
@@ -111,31 +113,31 @@ if [ "$CC" == "gcc" ]; then
   # only device TCTI
   echo "========================== START TEST - device TCTI =========================="
   mkdir -p ./dev/tpm0 && ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --disable-tcti-swtpm --disable-tcti-mssim --enable-tcti-device --with-device=./dev/tpm0
-  make -j check TESTS="test/unit/tcti-device" && rm -rf ./dev
+  make -j ${JOBCOUNT} check TESTS="test/unit/tcti-device" && rm -rf ./dev
   # only mssim TCTI
   echo "========================== START TEST - mssim TCTI =========================="
   ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --disable-tcti-swtpm --enable-tcti-mssim --disable-tcti-device
-  make -j check TESTS="test/unit/tcti-mssim"
+  make -j ${JOBCOUNT} check TESTS="test/unit/tcti-mssim"
   # device and mssim TCTIs
   echo "========================== START TEST - mssim & device TCTI =========================="
   ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --disable-tcti-swtpm --enable-tcti-mssim --enable-tcti-device
-  make -j check TESTS="test/unit/tcti-device test/unit/tcti-mssim"
+  make -j ${JOBCOUNT} check TESTS="test/unit/tcti-device test/unit/tcti-mssim"
   # only swtmp TCTI
   echo "========================== START TEST - swtpm TCTI =========================="
   ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --enable-tcti-swtpm --disable-tcti-mssim --disable-tcti-device
-  make -j check TESTS="test/unit/tcti-swtpm"
+  make -j ${JOBCOUNT} check TESTS="test/unit/tcti-swtpm"
   # swtmp and device TCTIs
   echo "========================== START TEST - swtpm & device TCTI =========================="
   ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --enable-tcti-swtpm --disable-tcti-mssim --enable-tcti-device
-  make -j check TESTS="test/unit/tcti-swtpm test/unit/tcti-device"
+  make -j ${JOBCOUNT} check TESTS="test/unit/tcti-swtpm test/unit/tcti-device"
   # swtmp and mssim TCTIs
   echo "========================== START TEST - swtpm & mssim TCTI =========================="
   ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --enable-tcti-swtpm --enable-tcti-mssim --disable-tcti-device
-  make -j check TESTS="test/unit/tcti-swtpm test/unit/tcti-mssim"
+  make -j ${JOBCOUNT} check TESTS="test/unit/tcti-swtpm test/unit/tcti-mssim"
   # all TCTIs
   echo "========================== START TEST - swtpm & mssim & device TCTI =========================="
   ../configure --disable-doxygen-doc --enable-unit --enable-self-generated-certificate --enable-integration --enable-tcti-swtpm --enable-tcti-mssim --enable-tcti-device
-  make -j check TESTS="test/unit/tcti-swtpm test/unit/tcti-mssim test/unit/tcti-device"
+  make -j ${JOBCOUNT} check TESTS="test/unit/tcti-swtpm test/unit/tcti-mssim test/unit/tcti-device"
 fi # CC == gcc
 popd
 fi # TEST_TCTI_CONFIG
