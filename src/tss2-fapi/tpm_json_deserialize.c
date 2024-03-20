@@ -34,9 +34,11 @@ json_object*
 ifapi_parse_json(const char *jstring) {
     json_object *jso = NULL;
     enum json_tokener_error jerr;
+#if MAXLOGLEVEL > 0
     int line = 1;
     int line_offset = 0;
     int char_pos;
+#endif
     struct json_tokener* tok = json_tokener_new();
     if (!tok) {
         LOG_ERROR("Could not allocate json tokener");
@@ -45,6 +47,7 @@ ifapi_parse_json(const char *jstring) {
     jso = json_tokener_parse_ex(tok, jstring, -1);
     jerr = json_tokener_get_error(tok);
     if (jerr != json_tokener_success) {
+#if MAXLOGLEVEL > 0
         for (char_pos = 0; char_pos <= tok->char_offset; char_pos++) {
             if (jstring[char_pos] == '\n') {
                 line++;
@@ -55,6 +58,7 @@ ifapi_parse_json(const char *jstring) {
         }
         LOG_ERROR("Invalid JSON at line %i column %i: %s.", line, line_offset,
                   json_tokener_error_desc(jerr));
+#endif
         json_tokener_free(tok);
         return NULL;
     }
