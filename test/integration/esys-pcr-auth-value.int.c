@@ -39,7 +39,7 @@ test_esys_pcr_auth_value(ESYS_CONTEXT * esys_context)
     int failure_return = EXIT_FAILURE;
 
     /*
-     * PCR register 20 belongs to the policy group and the auth value group.
+     * PCR register 21 belongs to the policy group and the auth value group.
      * PCRs of these groups can be used for SetAuthValue and SetAuthPolicy.
      */
     ESYS_TR  pcrHandle_handle = 20;
@@ -60,7 +60,8 @@ test_esys_pcr_auth_value(ESYS_CONTEXT * esys_context)
         );
 
 
-    if ((r == TPM2_RC_COMMAND_CODE) ||
+    if ((r == TPM2_RC_VALUE) ||
+        (r == TPM2_RC_COMMAND_CODE) ||
         (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
         (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_PCR_SetAuthValue not supported by TPM.");
