@@ -703,6 +703,13 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
 
     json_object_object_add(*jso, "rsaScheme", jso2);
 
+    /* Check whether only one condition field found in policy. */
+    if (cond_cnt > 1) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
+                     "Exactly one conditional is allowed for policy "
+                     "duplication select.");
+    }
+
     return TSS2_RC_SUCCESS;
 }
 
