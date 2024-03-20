@@ -718,7 +718,6 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
 
     TSS2_RC r;
     json_object *jso2;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -748,7 +747,6 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
     jso2 = NULL;
 
     if (in->keyPath) {
-        cond_cnt++;
         r = ifapi_json_char_serialize(in->keyPath, &jso2);
         return_if_error(r, "Serialize char");
 
@@ -758,7 +756,6 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
     }
     if (in->keyPublic.type != 0) {
         jso2 = NULL;
-        cond_cnt++;
         r = ifapi_json_TPMT_PUBLIC_serialize(&in->keyPublic, &jso2);
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
