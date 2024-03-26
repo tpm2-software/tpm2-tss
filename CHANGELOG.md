@@ -3,6 +3,34 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [3.2.3-rc0] - 2024-03-27
+### Fixed
+- build: fix build fail after make clean.
+- tss2-rc: fix unknown layer handler dropping bits.
+- fapi: Fix missing parameter encryption.
+- fapi: Fix flush of persistent handles.
+- build: Fix failed build with --disable-vendor.
+- fapi: Fix error in Fapi_GetInfo it TPM supports SHA3 hash algs.
+- fapi: Fix strange error messages if nv, ext, or policy path does not exits.
+- fapi: Fix segfault caused by wrong allocation of pcr policy.
+- esys: Add reference counting for Esys_TR_FromTPMPublic.
+- fapi: A segfault after the error handling of non existing keys.
+- esys: Fix leak in Esys_EvictControl for persistent handles.
+- fapi: The recreation of primaries (except EK) in the owner hierarchy instead the endorsement hierarchy is fixed.
+- fapi: Fix usage of persistent handles (should not be flushed)
+- fapi: Fix read large system eventlog (> UINT16_MAX).
+- esys tests: Fix layer check for TPM2_RC_COMMAND_CODE (for /dev/tpmrm0).
+- test: unit: tcti-libtpms: fix test failed at 32-bit platforms.
+- esys: close TR handle for input persistent handle in EvictControl_Finish.
+- Fix FormatStrings for non-32-bit platforms
+- fapi: Fix usage of wrong endorsement handle (TPM2_RH_EK).
+- fapi: Fix authorization session handling.
+- fapi: Fix possible null pointer dereferencing in Fapi_List.
+- sys: Fix size check in Tss2_Sys_GetCapability.
+- esys: Fix leak in Esys_TR_FromTPMPublic.
+- fapi: fix memset 0 in ifapi_json_TPMS_POLICYNV_deserialize.
+- tcti device: Fix possible unmarshalling from uninitialized variable.
+
 ## [3.2.2] - 2023-01-31
 ### Fixed:
  - A buffer overflow in tss2-rc as CVE-2023-22745.
