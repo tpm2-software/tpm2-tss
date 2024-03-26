@@ -3,6 +3,48 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.0.2] - 2024-03-26
+### Fixed
+- fapi: Fix deviation from CEL specification.
+- Makefile: Add tss2-tcti-swtpm.7.in to EXTRA_DIST to fix make clean.
+- MU: Fix unneeded size check in TPM2B unmarshaling.
+- fapi: Fix missing parameter encryption.
+- build: Fix failed build with --disable-vendor
+- fapi: Fix usage of persistent handles (should not be flushed)
+- fapi: Fix test provisioning with template (skip test without self generated certificate).
+- FAPI: Fix event logging for big endian machines.
+- FAPI: Fix pcr extension for EV_NO_ACTION event.
+- fapi: Fix error in Fapi_GetInfo it TPM supports SHA3 hash algs.
+- test: Fix usage of hashes in test cases.
+- test: Fix fapi-key-create-policy-signed-keyedhash with P_ECC384 profile
+- tcti_spi_helper_transmit: ensure FIFO is accessed only after TPM reports commandReady bit is set
+- fapi: Fix read large system eventlog (> UINT16_MAX).
+- fapi: Fix wrong allocation of pcr policy.
+- esys tests: Fix layer check for TPM2_RC_COMMAND_CODE (for /dev/tpmrm0)
+- test: unit: tcti-libtpms: fix test failed at 32-bit platforms.
+- esys: close TR handle for input persistent handle in EvictControl_Finish.
+- Fix FormatStrings for non-32-bit platforms.
+- esys: Add reference counting for Esys_TR_FromTPMPublic.
+- fapi: Fix usage of wrong endorsement handle (TPM2_RH_EK).
+- fapi: Fix authorization session handling.
+- Makefile.am add missing flags UUID cand CRYPTO flags which caused problems during
+  cross compilation.
+- esys: remove trailing zeros in auth value
+- aux_util: fix missing format specifier
+- esys: fix unchecked return value in esys crypto.
+- fapi: Fix possible null pointer dereferencing in Fapi_List.
+- sys: Fix size check in Tss2_Sys_GetCapability.
+- esys: Fix leak in Esys_TR_FromTPMPublic.
+- fapi: Fix wrong usage of local variable in provisioning.
+- fapi: fix memset 0 in ifapi_json_TPMS_POLICYNV_deserialize.
+- fapi: Fix possible out of bound array access in IMA parser.
+- tcti device: Fix possible unmarshalling from uninitialized variable.
+- fapi: Fix error checking authorization of signing key.
+- fapi: Fix cleanup of policy sessions.
+- fapi: Eventlog  H-CRTM events and different localities.
+- fapi: Fix missing synchronization of quote and eventlog.
+- faii: Fix invalid free in Fapi_Quote with empty eventlog.
+
 ## [4.0.1] - 2023-01-23
 ### Fixed:
  - A buffer overflow in tss2-rc as CVE-2023-22745.
