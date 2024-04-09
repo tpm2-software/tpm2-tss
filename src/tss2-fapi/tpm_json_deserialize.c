@@ -320,7 +320,7 @@ ifapi_json_pcr_selection_deserialize(
         r = get_number_from_json(json_object_array_get_idx(jso, i), &n);
         return_if_error(r, "Bad PCR value");
         n_byte = n / 8;
-        pcrSelect[n_byte] |= (BYTE)(1 << (n % 8));
+        pcrSelect[n_byte] |= ((BYTE)1) << (n % 8);
         if (n_byte > *sizeofSelect)
             *sizeofSelect = n_byte;
     }

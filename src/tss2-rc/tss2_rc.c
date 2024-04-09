@@ -117,7 +117,7 @@ tss2_rc_layer_number_get(TSS2_RC rc)
 static inline UINT8
 tpm2_rc_fmt1_N_get(TPM2_RC rc)
 {
-    return ((rc & (0xF << 8)) >> 8);
+    return ((rc & (((TPM2_RC)0xF) << 8)) >> 8);
 }
 
 /**
@@ -151,7 +151,7 @@ tpm2_rc_fmt1_N_is_handle(TPM2_RC rc)
 static inline UINT8
 tpm2_rc_fmt1_P_get(TPM2_RC rc)
 {
-    return ((rc & (1 << 6)) >> 6);
+    return ((rc & (((TPM2_RC)1) << 6)) >> 6);
 }
 
 static inline UINT8
@@ -169,19 +169,19 @@ tpm2_rc_fmt0_error_get(TPM2_RC rc)
 static inline UINT8
 tpm2_rc_tpm_fmt0_V_get(TPM2_RC rc)
 {
-    return ((rc & (1 << 8)) >> 8);
+    return ((rc & (((TPM2_RC)1) << 8)) >> 8);
 }
 
 static inline UINT8
 tpm2_rc_fmt0_T_get(TPM2_RC rc)
 {
-    return ((rc & (1 << 10)) >> 8);
+    return ((rc & (((TPM2_RC)1) << 10)) >> 8);
 }
 
 static inline UINT8
 tpm2_rc_fmt0_S_get(TSS2_RC rc)
 {
-    return ((rc & (1 << 11)) >> 8);
+    return ((rc & (((TPM2_RC)1) << 11)) >> 8);
 }
 
 /**
@@ -696,7 +696,7 @@ tpm2_err_handler_fmt0(TSS2_RC rc)
 static inline UINT8
 tss2_rc_layer_format_get(TSS2_RC rc)
 {
-    return ((rc & (1 << 7)) >> 7);
+    return ((rc & (((TPM2_RC)1) << 7)) >> 7);
 }
 
 /**

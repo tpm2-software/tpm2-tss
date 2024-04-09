@@ -35,28 +35,28 @@
 
 static inline uint16_t endian_conv_16(uint16_t value)
 {
-    return ((value & (0xff))      << 8) | \
-           ((value & (0xff << 8)) >> 8);
+    return ((value & (((uint16_t)0xffU)))      << 8) | \
+           ((value & (((uint16_t)0xffU) << 8)) >> 8);
 }
 
 static inline uint32_t endian_conv_32(uint32_t value)
 {
-    return ((value & (0xff))       << 24) | \
-           ((value & (0xff << 8))  << 8)  | \
-           ((value & (0xff << 16)) >> 8)  | \
-           ((value & (0xff << 24)) >> 24);
+    return ((value & (((uint32_t)0xffU)))       << 24) | \
+           ((value & (((uint32_t)0xffU) << 8))  << 8)  | \
+           ((value & (((uint32_t)0xffU) << 16)) >> 8)  | \
+           ((value & (((uint32_t)0xffU) << 24)) >> 24);
 }
 
 static inline uint64_t endian_conv_64(uint64_t value)
 {
-    return ((value & (0xffULL))       << 56) | \
-           ((value & (0xffULL << 8))  << 40) | \
-           ((value & (0xffULL << 16)) << 24) | \
-           ((value & (0xffULL << 24)) << 8)  | \
-           ((value & (0xffULL << 32)) >> 8)  | \
-           ((value & (0xffULL << 40)) >> 24) | \
-           ((value & (0xffULL << 48)) >> 40) | \
-           ((value & (0xffULL << 56)) >> 56);
+    return ((value & (((uint64_t)0xffU)))       << 56) | \
+           ((value & (((uint64_t)0xffU) << 8))  << 40) | \
+           ((value & (((uint64_t)0xffU) << 16)) << 24) | \
+           ((value & (((uint64_t)0xffU) << 24)) << 8)  | \
+           ((value & (((uint64_t)0xffU) << 32)) >> 8)  | \
+           ((value & (((uint64_t)0xffU) << 40)) >> 24) | \
+           ((value & (((uint64_t)0xffU) << 48)) >> 40) | \
+           ((value & (((uint64_t)0xffU) << 56)) >> 56);
 }
 
 #if defined(WORDS_BIGENDIAN)

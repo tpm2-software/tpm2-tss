@@ -2156,7 +2156,7 @@ ifapi_calculate_pcrs(
     for (i = 0; i < pcr_selection->count; i++) {
         for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
             uint8_t byte_idx = pcr / 8;
-            uint8_t flag = 1 << (pcr % 8);
+            uint8_t flag = ((uint8_t)1) << (pcr % 8);
             if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
                 hash_size = ifapi_hash_get_digest_size(pcr_selection->pcrSelections[i].hash);
                 pcrs[n_pcrs].pcr = pcr;
@@ -2393,10 +2393,10 @@ ifapi_filter_pcr_selection_by_index(
     UINT8 selection[] = { 0, 0, 0, 0 };
 
     for (i = 0; i < pcr_count; i++) {
-        selection[0] |= (1 << pcr_index[i]) % 256;
-        selection[1] |= (1 << (pcr_index[i] - 8)) % 256;
-        selection[2] |= (1 << (pcr_index[i] - 16)) % 256;
-        selection[3] |= (1 << (pcr_index[i] - 24)) % 256;
+        selection[0] |= (((UINT32)1) << pcr_index[i]) % 256;
+        selection[1] |= (((UINT32)1) << (pcr_index[i] - 8)) % 256;
+        selection[2] |= (((UINT32)1) << (pcr_index[i] - 16)) % 256;
+        selection[3] |= (((UINT32)1) << (pcr_index[i] - 24)) % 256;
     };
 
     /* Remove unselected PCRs */
@@ -2494,7 +2494,7 @@ ifapi_compute_policy_digest(
         if (pcrIndex + 1 > max_pcr)
             max_pcr = pcrIndex + 1;
         pcr_selection->pcrSelections[j].pcrSelect[pcrIndex / 8] |=
-            1 << pcrIndex % 8;
+            ((BYTE)1) << pcrIndex % 8;
         if ((pcrIndex / 8) + 1 > pcr_selection->pcrSelections[j].sizeofSelect)
             pcr_selection->pcrSelections[j].sizeofSelect = (pcrIndex / 8) + 1;
     }
@@ -2517,7 +2517,7 @@ ifapi_compute_policy_digest(
                        hashAlg);
         }
         for (pcr = 0; pcr < max_pcr; pcr++) {
-            if ((selection.pcrSelect[pcr / 8]) & (1 << (pcr % 8))) {
+            if ((selection.pcrSelect[pcr / 8]) & (((BYTE)1) << (pcr % 8))) {
                 /* pcr selected */
                 for (j = 0; j < pcrs->count; j++) {
                     if (pcrs->pcrs[j].pcr == pcr) {
@@ -2648,7 +2648,7 @@ TSS2_RC ifapi_pcr_selection_to_pcrvalues(
     for (i = 0; i < pcr_selection->count; i++) {
         for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
             uint8_t byte_idx = pcr / 8;
-            uint8_t flag = 1 << (pcr % 8);
+            uint8_t flag = ((uint8_t)1) << (pcr % 8);
             /* Check whether PCR is used. */
             if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx])
                 n_pcrs += 1;
@@ -2664,7 +2664,7 @@ TSS2_RC ifapi_pcr_selection_to_pcrvalues(
     for (i = 0; i < pcr_selection->count; i++) {
         for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
             uint8_t byte_idx = pcr / 8;
-            uint8_t flag = 1 << (pcr % 8);
+            uint8_t flag = ((uint8_t)1) << (pcr % 8);
             /* Check whether PCR is used. */
             if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
                 pcr_values->pcrs[i_pcr].pcr = pcr;

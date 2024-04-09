@@ -636,7 +636,7 @@ iesys_crypto_KDFa(ESYS_CRYPTO_CALLBACKS *crypto_cb,
         return_if_error(r, "Error");
     }
     if ((bitLength % 8) != 0)
-        outKey[0] &= ((1 << (bitLength % 8)) - 1);
+        outKey[0] &= ((((BYTE)1) << (bitLength % 8)) - 1);
     if (counterInOut != NULL)
         *counterInOut = counter;
     LOGBLOB_DEBUG(outKey, (bitLength + 7) / 8, "IESYS KDFa key");
@@ -733,7 +733,7 @@ iesys_crypto_KDFe(ESYS_CRYPTO_CALLBACKS *crypto_cb,
         }
     LOGBLOB_DEBUG(key, bit_size/8, "Result KDFe");
     if((bit_size % 8) != 0)
-        key[0] &= ((1 << (bit_size % 8)) - 1);
+        key[0] &= ((((BYTE)1) << (bit_size % 8)) - 1);
     return r;
 
  error:
