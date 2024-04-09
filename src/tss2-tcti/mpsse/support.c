@@ -257,11 +257,11 @@ int gpio_write (struct mpsse_context *mpsse, int pin, int direction)
     {
         if (direction == HIGH)
         {
-            mpsse->bitbang |= (1 << pin);
+            mpsse->bitbang |= (((uint8_t)1) << pin);
         }
         else
         {
-            mpsse->bitbang &= ~(1 << pin);
+            mpsse->bitbang &= ~(((uint8_t)1) << pin);
         }
 
         if (set_bits_high (mpsse, mpsse->bitbang) == MPSSE_OK)
@@ -299,11 +299,11 @@ int gpio_write (struct mpsse_context *mpsse, int pin, int direction)
 
             if (direction == HIGH)
             {
-                mpsse->gpioh |= (1 << pin);
+                mpsse->gpioh |= (((uint8_t)1) << pin);
             }
             else
             {
-                mpsse->gpioh &= ~(1 << pin);
+                mpsse->gpioh &= ~(((uint8_t)1) << pin);
             }
             retval = set_bits_high (mpsse, mpsse->gpioh);
         }
