@@ -440,6 +440,10 @@ ifapi_set_auth(
         return_if_error(r, "policyAuthCallback");
         if (auth != NULL) {
             authValue.size = strlen(auth);
+            if (authValue.size > sizeof(TPMU_HA)) {
+                return_error2(TSS2_FAPI_RC_BAD_VALUE, "Size of auth value %u > %lu",
+                              authValue.size, sizeof(TPMU_HA));
+            }
             memcpy(&authValue.buffer[0], auth, authValue.size);
         }
 
