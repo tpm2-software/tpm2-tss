@@ -328,7 +328,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
     ret = TSS2_RC_SUCCESS; \
     break; \
     default: \
-    LOG_DEBUG("wrong selector 0x%"PRIx32" return error", selector); \
+    LOG_ERROR("wrong selector 0x%"PRIx32" return error", selector); \
     break; \
     } \
     return ret; \
@@ -425,7 +425,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     ret = TSS2_RC_SUCCESS; \
     break; \
     default: \
-    LOG_DEBUG("wrong selector 0x%"PRIx32" return error", selector); \
+    LOG_ERROR("wrong selector 0x%"PRIx32" return error", selector); \
     break; \
     } \
     return ret; \
