@@ -3,7 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.0.2] - 2024-03-26
+## [4.0.2-rc1] - 2024-04-24
+### Fixed
+- fapi: Fix length check on FAPI auth callbacks
+
+## [4.0.2-rc0] - 2024-03-26
 ### Fixed
 - fapi: Fix deviation from CEL specification.
 - Makefile: Add tss2-tcti-swtpm.7.in to EXTRA_DIST to fix make clean.
