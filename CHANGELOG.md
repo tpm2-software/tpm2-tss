@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [3.2.3-rc1] - 2024-04-24
+### Fixed
+- fapi: Fix length check on FAPI auth callbacks
+
 ## [3.2.3-rc0] - 2024-03-27
 ### Fixed
 - build: fix build fail after make clean.
