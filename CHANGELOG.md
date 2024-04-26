@@ -3,12 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.0.2-rc1] - 2024-04-24
+## [4.0.2] - 2024-04-26
+### Security
+- Fixed CVE-2024-29040
+
 ### Fixed
 - fapi: Fix length check on FAPI auth callbacks
-
-## [4.0.2-rc0] - 2024-03-26
-### Fixed
 - fapi: Fix deviation from CEL specification.
 - Makefile: Add tss2-tcti-swtpm.7.in to EXTRA_DIST to fix make clean.
 - MU: Fix unneeded size check in TPM2B unmarshaling.
