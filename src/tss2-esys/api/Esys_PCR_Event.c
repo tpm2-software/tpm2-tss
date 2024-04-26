@@ -259,7 +259,7 @@ Esys_PCR_Event_Finish(
 
     /* Allocate memory for response parameters */
     if (digests != NULL) {
-        *digests = calloc(sizeof(TPML_DIGEST_VALUES), 1);
+        *digests = calloc(1, sizeof(TPML_DIGEST_VALUES));
         if (*digests == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

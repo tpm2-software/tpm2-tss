@@ -208,7 +208,7 @@ Esys_ContextSave_Finish(
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
     /* Allocate memory for response parameters */
-    lcontext = calloc(sizeof(TPMS_CONTEXT), 1);
+    lcontext = calloc(1, sizeof(TPMS_CONTEXT));
     if (lcontext == NULL) {
         return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
     }

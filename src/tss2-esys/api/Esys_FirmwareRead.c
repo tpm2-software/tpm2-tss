@@ -239,7 +239,7 @@ Esys_FirmwareRead_Finish(
 
     /* Allocate memory for response parameters */
     if (fuData != NULL) {
-        *fuData = calloc(sizeof(TPM2B_MAX_BUFFER), 1);
+        *fuData = calloc(1, sizeof(TPM2B_MAX_BUFFER));
         if (*fuData == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

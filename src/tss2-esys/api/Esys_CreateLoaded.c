@@ -325,12 +325,12 @@ Esys_CreateLoaded_Finish(
         return r;
 
     if (outPrivate != NULL) {
-        *outPrivate = calloc(sizeof(TPM2B_PRIVATE), 1);
+        *outPrivate = calloc(1, sizeof(TPM2B_PRIVATE));
         if (*outPrivate == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }
     }
-    loutPublic = calloc(sizeof(TPM2B_PUBLIC), 1);
+    loutPublic = calloc(1, sizeof(TPM2B_PUBLIC));
     if (loutPublic == NULL) {
         goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
     }

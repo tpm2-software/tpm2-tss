@@ -281,13 +281,13 @@ Esys_GetTime_Finish(
 
     /* Allocate memory for response parameters */
     if (timeInfo != NULL) {
-        *timeInfo = calloc(sizeof(TPM2B_ATTEST), 1);
+        *timeInfo = calloc(1, sizeof(TPM2B_ATTEST));
         if (*timeInfo == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (signature != NULL) {
-        *signature = calloc(sizeof(TPMT_SIGNATURE), 1);
+        *signature = calloc(1, sizeof(TPMT_SIGNATURE));
         if (*signature == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

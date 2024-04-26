@@ -277,7 +277,7 @@ Esys_EventSequenceComplete_Finish(
 
     /* Allocate memory for response parameters */
     if (results != NULL) {
-        *results = calloc(sizeof(TPML_DIGEST_VALUES), 1);
+        *results = calloc(1, sizeof(TPML_DIGEST_VALUES));
         if (*results == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

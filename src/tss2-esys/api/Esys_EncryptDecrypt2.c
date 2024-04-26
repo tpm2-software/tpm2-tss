@@ -276,13 +276,13 @@ Esys_EncryptDecrypt2_Finish(
 
     /* Allocate memory for response parameters */
     if (outData != NULL) {
-        *outData = calloc(sizeof(TPM2B_MAX_BUFFER), 1);
+        *outData = calloc(1, sizeof(TPM2B_MAX_BUFFER));
         if (*outData == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (ivOut != NULL) {
-        *ivOut = calloc(sizeof(TPM2B_IV), 1);
+        *ivOut = calloc(1, sizeof(TPM2B_IV));
         if (*ivOut == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

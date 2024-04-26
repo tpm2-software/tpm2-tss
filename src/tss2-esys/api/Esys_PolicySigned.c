@@ -297,13 +297,13 @@ Esys_PolicySigned_Finish(
 
     /* Allocate memory for response parameters */
     if (timeout != NULL) {
-        *timeout = calloc(sizeof(TPM2B_TIMEOUT), 1);
+        *timeout = calloc(1, sizeof(TPM2B_TIMEOUT));
         if (*timeout == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (policyTicket != NULL) {
-        *policyTicket = calloc(sizeof(TPMT_TK_AUTH), 1);
+        *policyTicket = calloc(1, sizeof(TPMT_TK_AUTH));
         if (*policyTicket == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

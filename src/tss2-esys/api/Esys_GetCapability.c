@@ -261,7 +261,7 @@ Esys_GetCapability_Finish(
 
     /* Allocate memory for response parameters */
     if (capabilityData != NULL) {
-        *capabilityData = calloc(sizeof(TPMS_CAPABILITY_DATA), 1);
+        *capabilityData = calloc(1, sizeof(TPMS_CAPABILITY_DATA));
         if (*capabilityData == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

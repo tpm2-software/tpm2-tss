@@ -271,7 +271,7 @@ Esys_Sign_Finish(
 
     /* Allocate memory for response parameters */
     if (signature != NULL) {
-        *signature = calloc(sizeof(TPMT_SIGNATURE), 1);
+        *signature = calloc(1, sizeof(TPMT_SIGNATURE));
         if (*signature == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

@@ -262,7 +262,7 @@ Esys_VerifySignature_Finish(
 
     /* Allocate memory for response parameters */
     if (validation != NULL) {
-        *validation = calloc(sizeof(TPMT_TK_VERIFIED), 1);
+        *validation = calloc(1, sizeof(TPMT_TK_VERIFIED));
         if (*validation == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

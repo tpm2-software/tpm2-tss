@@ -262,7 +262,7 @@ Esys_MAC_Finish(
 
     /* Allocate memory for response parameters */
     if (outMAC != NULL) {
-        *outMAC = calloc(sizeof(TPM2B_DIGEST), 1);
+        *outMAC = calloc(1, sizeof(TPM2B_DIGEST));
         if (*outMAC == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

@@ -260,13 +260,13 @@ Esys_Hash_Finish(
 
     /* Allocate memory for response parameters */
     if (outHash != NULL) {
-        *outHash = calloc(sizeof(TPM2B_DIGEST), 1);
+        *outHash = calloc(1, sizeof(TPM2B_DIGEST));
         if (*outHash == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (validation != NULL) {
-        *validation = calloc(sizeof(TPMT_TK_HASHCHECK), 1);
+        *validation = calloc(1, sizeof(TPMT_TK_HASHCHECK));
         if (*validation == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

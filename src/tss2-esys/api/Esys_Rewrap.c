@@ -285,13 +285,13 @@ Esys_Rewrap_Finish(
 
     /* Allocate memory for response parameters */
     if (outDuplicate != NULL) {
-        *outDuplicate = calloc(sizeof(TPM2B_PRIVATE), 1);
+        *outDuplicate = calloc(1, sizeof(TPM2B_PRIVATE));
         if (*outDuplicate == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (outSymSeed != NULL) {
-        *outSymSeed = calloc(sizeof(TPM2B_ENCRYPTED_SECRET), 1);
+        *outSymSeed = calloc(1, sizeof(TPM2B_ENCRYPTED_SECRET));
         if (*outSymSeed == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

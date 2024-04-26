@@ -286,19 +286,19 @@ Esys_Commit_Finish(
 
     /* Allocate memory for response parameters */
     if (K != NULL) {
-        *K = calloc(sizeof(TPM2B_ECC_POINT), 1);
+        *K = calloc(1, sizeof(TPM2B_ECC_POINT));
         if (*K == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (L != NULL) {
-        *L = calloc(sizeof(TPM2B_ECC_POINT), 1);
+        *L = calloc(1, sizeof(TPM2B_ECC_POINT));
         if (*L == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }
     }
     if (E != NULL) {
-        *E = calloc(sizeof(TPM2B_ECC_POINT), 1);
+        *E = calloc(1, sizeof(TPM2B_ECC_POINT));
         if (*E == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

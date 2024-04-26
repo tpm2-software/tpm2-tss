@@ -238,7 +238,7 @@ Esys_ReadClock_Finish(
 
     /* Allocate memory for response parameters */
     if (currentTime != NULL) {
-        *currentTime = calloc(sizeof(TPMS_TIME_INFO), 1);
+        *currentTime = calloc(1, sizeof(TPMS_TIME_INFO));
         if (*currentTime == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

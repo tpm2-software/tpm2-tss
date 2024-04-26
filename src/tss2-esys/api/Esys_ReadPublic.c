@@ -268,19 +268,19 @@ Esys_ReadPublic_Finish(
 
     /* Allocate memory for response parameters */
     if (outPublic != NULL) {
-        *outPublic = calloc(sizeof(TPM2B_PUBLIC), 1);
+        *outPublic = calloc(1, sizeof(TPM2B_PUBLIC));
         if (*outPublic == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (name != NULL) {
-        *name = calloc(sizeof(TPM2B_NAME), 1);
+        *name = calloc(1, sizeof(TPM2B_NAME));
         if (*name == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }
     }
     if (qualifiedName != NULL) {
-        *qualifiedName = calloc(sizeof(TPM2B_NAME), 1);
+        *qualifiedName = calloc(1, sizeof(TPM2B_NAME));
         if (*qualifiedName == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

@@ -252,7 +252,7 @@ TSS2_RC Esys_AC_GetCapability_Finish(
 
     /* Allocate memory for response parameters */
     if (capabilityData != NULL) {
-        *capabilityData = calloc(sizeof(TPML_AC_CAPABILITIES), 1);
+        *capabilityData = calloc(1, sizeof(TPML_AC_CAPABILITIES));
         if (*capabilityData == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

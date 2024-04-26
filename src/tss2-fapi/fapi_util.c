@@ -2322,7 +2322,7 @@ ifapi_nv_write(
         context->nv_cmd.data_idx = 0;
 
         /* Use calloc to ensure zero padding for write buffer. */
-        context->nv_cmd.write_data = calloc(size, 1);
+        context->nv_cmd.write_data = calloc(1, size);
         goto_if_null2(context->nv_cmd.write_data, "Out of memory.", r,
                       TSS2_FAPI_RC_MEMORY,
                       error_cleanup);
@@ -2762,7 +2762,7 @@ ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
     switch (context->get_random_state) {
     statecase(context->get_random_state, GET_RANDOM_INIT);
         context->get_random.numBytes = numBytes;
-        context->get_random.data = calloc(context->get_random.numBytes, 1);
+        context->get_random.data = calloc(1, context->get_random.numBytes);
         context->get_random.idx = 0;
         return_if_null(context->get_random.data, "FAPI out of memory.",
                        TSS2_FAPI_RC_MEMORY);

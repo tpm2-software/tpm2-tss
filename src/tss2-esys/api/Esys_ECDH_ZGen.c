@@ -255,7 +255,7 @@ Esys_ECDH_ZGen_Finish(
 
     /* Allocate memory for response parameters */
     if (outPoint != NULL) {
-        *outPoint = calloc(sizeof(TPM2B_ECC_POINT), 1);
+        *outPoint = calloc(1, sizeof(TPM2B_ECC_POINT));
         if (*outPoint == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

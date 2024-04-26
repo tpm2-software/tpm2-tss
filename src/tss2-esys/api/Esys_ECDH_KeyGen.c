@@ -256,13 +256,13 @@ Esys_ECDH_KeyGen_Finish(
 
     /* Allocate memory for response parameters */
     if (zPoint != NULL) {
-        *zPoint = calloc(sizeof(TPM2B_ECC_POINT), 1);
+        *zPoint = calloc(1, sizeof(TPM2B_ECC_POINT));
         if (*zPoint == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (pubPoint != NULL) {
-        *pubPoint = calloc(sizeof(TPM2B_ECC_POINT), 1);
+        *pubPoint = calloc(1, sizeof(TPM2B_ECC_POINT));
         if (*pubPoint == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

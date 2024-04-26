@@ -266,11 +266,11 @@ Esys_NV_ReadPublic_Finish(
     esysContext->state = _ESYS_STATE_INTERNALERROR;
 
     /* Allocate memory for response parameters */
-    lnvPublic = calloc(sizeof(TPM2B_NV_PUBLIC), 1);
+    lnvPublic = calloc(1, sizeof(TPM2B_NV_PUBLIC));
     if (lnvPublic == NULL) {
         return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
     }
-    lnvName = calloc(sizeof(TPM2B_NAME), 1);
+    lnvName = calloc(1, sizeof(TPM2B_NAME));
     if (lnvName == NULL) {
         goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
     }

@@ -293,19 +293,19 @@ Esys_CertifyX509_Finish(
 
     /* Allocate memory for response parameters */
     if (addedToCertificate != NULL) {
-        *addedToCertificate = calloc(sizeof(TPM2B_MAX_BUFFER), 1);
+        *addedToCertificate = calloc(1, sizeof(TPM2B_MAX_BUFFER));
         if (*addedToCertificate == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (tbsDigest != NULL) {
-        *tbsDigest = calloc(sizeof(TPM2B_DIGEST), 1);
+        *tbsDigest = calloc(1, sizeof(TPM2B_DIGEST));
         if (*tbsDigest == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
 		}
     }
     if (signature != NULL) {
-        *signature = calloc(sizeof(TPMT_SIGNATURE), 1);
+        *signature = calloc(1, sizeof(TPMT_SIGNATURE));
         if (*signature == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }
