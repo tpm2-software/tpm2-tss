@@ -243,13 +243,13 @@ Esys_FieldUpgradeData_Finish(
 
     /* Allocate memory for response parameters */
     if (nextDigest != NULL) {
-        *nextDigest = calloc(sizeof(TPMT_HA), 1);
+        *nextDigest = calloc(1, sizeof(TPMT_HA));
         if (*nextDigest == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (firstDigest != NULL) {
-        *firstDigest = calloc(sizeof(TPMT_HA), 1);
+        *firstDigest = calloc(1, sizeof(TPMT_HA));
         if (*firstDigest == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

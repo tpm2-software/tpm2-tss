@@ -231,7 +231,7 @@ Esys_Vendor_TCG_Test_Finish(
 
     /* Allocate memory for response parameters */
     if (outputData != NULL) {
-        *outputData = calloc(sizeof(TPM2B_DATA), 1);
+        *outputData = calloc(1, sizeof(TPM2B_DATA));
         if (*outputData == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

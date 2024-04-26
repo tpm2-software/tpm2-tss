@@ -253,7 +253,7 @@ Esys_PolicyGetDigest_Finish(
 
     /* Allocate memory for response parameters */
     if (policyDigest != NULL) {
-        *policyDigest = calloc(sizeof(TPM2B_DIGEST), 1);
+        *policyDigest = calloc(1, sizeof(TPM2B_DIGEST));
         if (*policyDigest == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

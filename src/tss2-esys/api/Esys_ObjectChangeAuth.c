@@ -284,7 +284,7 @@ Esys_ObjectChangeAuth_Finish(
 
     /* Allocate memory for response parameters */
     if (outPrivate != NULL) {
-        *outPrivate = calloc(sizeof(TPM2B_PRIVATE), 1);
+        *outPrivate = calloc(1, sizeof(TPM2B_PRIVATE));
         if (*outPrivate == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

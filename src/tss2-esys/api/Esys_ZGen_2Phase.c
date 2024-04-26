@@ -278,13 +278,13 @@ Esys_ZGen_2Phase_Finish(
 
     /* Allocate memory for response parameters */
     if (outZ1 != NULL) {
-        *outZ1 = calloc(sizeof(TPM2B_ECC_POINT), 1);
+        *outZ1 = calloc(1, sizeof(TPM2B_ECC_POINT));
         if (*outZ1 == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (outZ2 != NULL) {
-        *outZ2 = calloc(sizeof(TPM2B_ECC_POINT), 1);
+        *outZ2 = calloc(1, sizeof(TPM2B_ECC_POINT));
         if (*outZ2 == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

@@ -260,7 +260,7 @@ Esys_HMAC_Finish(
 
     /* Allocate memory for response parameters */
     if (outHMAC != NULL) {
-        *outHMAC = calloc(sizeof(TPM2B_DIGEST), 1);
+        *outHMAC = calloc(1, sizeof(TPM2B_DIGEST));
         if (*outHMAC == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

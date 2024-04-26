@@ -42,12 +42,12 @@ new_policy(
     IFAPI_POLICY_EXEC_CTX *pol_exec_ctx;
     IFAPI_POLICY_EXEC_CB_CTX *pol_exec_cb_ctx;
 
-    *current_policy = calloc(sizeof(IFAPI_POLICYUTIL_STACK), 1);
+    *current_policy = calloc(1, sizeof(IFAPI_POLICYUTIL_STACK));
     if (!*current_policy) {
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
     }
 
-    pol_exec_ctx = calloc(sizeof(IFAPI_POLICY_EXEC_CTX), 1);
+    pol_exec_ctx = calloc(1, sizeof(IFAPI_POLICY_EXEC_CTX));
     if (!pol_exec_ctx) {
         SAFE_FREE(*current_policy);
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
@@ -73,7 +73,7 @@ new_policy(
     pol_exec_ctx->callbacks.cbaction = ifapi_policy_action;
     pol_exec_ctx->callbacks.cbaction_userdata = context;
 
-    pol_exec_cb_ctx = calloc(sizeof(IFAPI_POLICY_EXEC_CB_CTX), 1);
+    pol_exec_cb_ctx = calloc(1, sizeof(IFAPI_POLICY_EXEC_CB_CTX));
     if (!pol_exec_cb_ctx) {
         SAFE_FREE(*current_policy);
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");

@@ -1132,7 +1132,7 @@ search_policy(
             }
         }
         /* Extend linked list.*/
-        policy_object = calloc(sizeof(struct POLICY_LIST), 1);
+        policy_object = calloc(1, sizeof(struct POLICY_LIST));
         return_if_null(policy_object, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
         strdup_check(policy_object->path, context->fsearch.current_path, r, cleanup);

@@ -581,7 +581,7 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
                 closedir(dir);
             return_if_error(r, "Out of memory");
 
-            NODE_OBJECT_T *file_obj = calloc(sizeof(NODE_OBJECT_T), 1);
+            NODE_OBJECT_T *file_obj = calloc(1, sizeof(NODE_OBJECT_T));
             if (!file_obj) {
                 LOG_ERROR("Out of memory.");
                 SAFE_FREE(path);

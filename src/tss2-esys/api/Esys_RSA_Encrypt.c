@@ -262,7 +262,7 @@ Esys_RSA_Encrypt_Finish(
 
     /* Allocate memory for response parameters */
     if (outData != NULL) {
-        *outData = calloc(sizeof(TPM2B_PUBLIC_KEY_RSA), 1);
+        *outData = calloc(1, sizeof(TPM2B_PUBLIC_KEY_RSA));
         if (*outData == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

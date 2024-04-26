@@ -258,13 +258,13 @@ Esys_PCR_Read_Finish(
 
     /* Allocate memory for response parameters */
     if (pcrSelectionOut != NULL) {
-        *pcrSelectionOut = calloc(sizeof(TPML_PCR_SELECTION), 1);
+        *pcrSelectionOut = calloc(1, sizeof(TPML_PCR_SELECTION));
         if (*pcrSelectionOut == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (pcrValues != NULL) {
-        *pcrValues = calloc(sizeof(TPML_DIGEST), 1);
+        *pcrValues = calloc(1, sizeof(TPML_DIGEST));
         if (*pcrValues == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

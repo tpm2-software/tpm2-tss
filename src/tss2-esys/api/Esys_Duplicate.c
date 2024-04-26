@@ -302,19 +302,19 @@ Esys_Duplicate_Finish(
 
     /* Allocate memory for response parameters */
     if (encryptionKeyOut != NULL) {
-        *encryptionKeyOut = calloc(sizeof(TPM2B_DATA), 1);
+        *encryptionKeyOut = calloc(1, sizeof(TPM2B_DATA));
         if (*encryptionKeyOut == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (duplicate != NULL) {
-        *duplicate = calloc(sizeof(TPM2B_PRIVATE), 1);
+        *duplicate = calloc(1, sizeof(TPM2B_PRIVATE));
         if (*duplicate == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }
     }
     if (outSymSeed != NULL) {
-        *outSymSeed = calloc(sizeof(TPM2B_ENCRYPTED_SECRET), 1);
+        *outSymSeed = calloc(1, sizeof(TPM2B_ENCRYPTED_SECRET));
         if (*outSymSeed == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

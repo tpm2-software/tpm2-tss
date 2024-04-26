@@ -243,7 +243,7 @@ Esys_ECC_Parameters_Finish(
 
     /* Allocate memory for response parameters */
     if (parameters != NULL) {
-        *parameters = calloc(sizeof(TPMS_ALGORITHM_DETAIL_ECC), 1);
+        *parameters = calloc(1, sizeof(TPMS_ALGORITHM_DETAIL_ECC));
         if (*parameters == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

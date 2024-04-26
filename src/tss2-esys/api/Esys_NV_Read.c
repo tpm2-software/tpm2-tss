@@ -275,7 +275,7 @@ Esys_NV_Read_Finish(
 
     /* Allocate memory for response parameters */
     if (data != NULL) {
-        *data = calloc(sizeof(TPM2B_MAX_NV_BUFFER), 1);
+        *data = calloc(1, sizeof(TPM2B_MAX_NV_BUFFER));
         if (*data == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

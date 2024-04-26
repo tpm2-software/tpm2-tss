@@ -241,7 +241,7 @@ Esys_EC_Ephemeral_Finish(
 
     /* Allocate memory for response parameters */
     if (Q != NULL) {
-        *Q = calloc(sizeof(TPM2B_ECC_POINT), 1);
+        *Q = calloc(1, sizeof(TPM2B_ECC_POINT));
         if (*Q == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

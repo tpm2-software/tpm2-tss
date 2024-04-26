@@ -261,7 +261,7 @@ TSS2_RC Esys_AC_Send_Finish(
 
     /* Allocate memory for response parameters */
     if (acDataOut != NULL) {
-        *acDataOut = calloc(sizeof(TPMS_AC_OUTPUT), 1);
+        *acDataOut = calloc(1, sizeof(TPMS_AC_OUTPUT));
         if (*acDataOut == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

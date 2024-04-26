@@ -264,13 +264,13 @@ Esys_MakeCredential_Finish(
 
     /* Allocate memory for response parameters */
     if (credentialBlob != NULL) {
-        *credentialBlob = calloc(sizeof(TPM2B_ID_OBJECT), 1);
+        *credentialBlob = calloc(1, sizeof(TPM2B_ID_OBJECT));
         if (*credentialBlob == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (secret != NULL) {
-        *secret = calloc(sizeof(TPM2B_ENCRYPTED_SECRET), 1);
+        *secret = calloc(1, sizeof(TPM2B_ENCRYPTED_SECRET));
         if (*secret == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

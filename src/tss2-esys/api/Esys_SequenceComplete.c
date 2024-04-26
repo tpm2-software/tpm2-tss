@@ -287,13 +287,13 @@ Esys_SequenceComplete_Finish(
 
     /* Allocate memory for response parameters */
     if (result != NULL) {
-        *result = calloc(sizeof(TPM2B_DIGEST), 1);
+        *result = calloc(1, sizeof(TPM2B_DIGEST));
         if (*result == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
     }
     if (validation != NULL) {
-        *validation = calloc(sizeof(TPMT_TK_HASHCHECK), 1);
+        *validation = calloc(1, sizeof(TPMT_TK_HASHCHECK));
         if (*validation == NULL) {
             goto_error(r, TSS2_ESYS_RC_MEMORY, "Out of memory", error_cleanup);
         }

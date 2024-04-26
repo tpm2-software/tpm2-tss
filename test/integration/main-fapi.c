@@ -1182,7 +1182,7 @@ get_pubkey_fingerprint(EVP_PKEY *key, char **fingerprint)
         goto error_cleanup;
     }
 #endif
-    *fingerprint = calloc(TPM2_SHA256_DIGEST_SIZE * 2 + 1, 1);
+    *fingerprint = calloc(1, TPM2_SHA256_DIGEST_SIZE * 2 + 1);
     if (!(*fingerprint)) {
         LOG_ERROR("Failed to allocate fingerprint.");
         goto error_cleanup;
@@ -1402,7 +1402,7 @@ test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx)
     int ret;
 
     size = sizeof(TSS2_TEST_FAPI_CONTEXT);
-    *test_ctx = calloc(size, 1);
+    *test_ctx = calloc(1, size);
     if (test_ctx == NULL) {
         LOG_ERROR("Failed to allocate 0x%zx bytes for the test context", size);
         goto error;

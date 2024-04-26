@@ -243,7 +243,7 @@ Esys_IncrementalSelfTest_Finish(
 
     /* Allocate memory for response parameters */
     if (toDoList != NULL) {
-        *toDoList = calloc(sizeof(TPML_ALG), 1);
+        *toDoList = calloc(1, sizeof(TPML_ALG));
         if (*toDoList == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

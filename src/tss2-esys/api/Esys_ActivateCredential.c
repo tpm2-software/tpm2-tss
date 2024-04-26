@@ -281,7 +281,7 @@ Esys_ActivateCredential_Finish(
 
     /* Allocate memory for response parameters */
     if (certInfo != NULL) {
-        *certInfo = calloc(sizeof(TPM2B_DIGEST), 1);
+        *certInfo = calloc(1, sizeof(TPM2B_DIGEST));
         if (*certInfo == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }

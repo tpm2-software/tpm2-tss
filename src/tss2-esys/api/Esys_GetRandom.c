@@ -237,7 +237,7 @@ Esys_GetRandom_Finish(
 
     /* Allocate memory for response parameters */
     if (randomBytes != NULL) {
-        *randomBytes = calloc(sizeof(TPM2B_DIGEST), 1);
+        *randomBytes = calloc(1, sizeof(TPM2B_DIGEST));
         if (*randomBytes == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
