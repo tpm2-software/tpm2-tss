@@ -3,13 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.1.0-rc1] - 2024-04-24
+## [4.1.0] - 2024-04-26
+### Security
+- Fixed CVE-2024-29040
+
 ### Fixed
 - fapi: Fix length check on FAPI auth callbacks
 - mu: Correct error message for errors
-
-## [4.1.0_rc0] - 2024-03-26
-### Fixed
 - tss2-rc: fix unknown laer handler dropping bits.
 - fapi: Fix deviation from CEL specification (template_value was used instead of template_data).
 - fapi: Fix json syntax error in FAPI profiles which was ignored by json-c.
