@@ -4,19 +4,16 @@
  *
  * All rights reserved.
  ***********************************************************************/
+#include <inttypes.h>         // for PRIxPTR, uintptr_t, uint8_t, PRIu8
+#include <string.h>           // for size_t, NULL, memset
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "tss2_mu.h"          // for Tss2_MU_UINT32_Marshal, Tss2_MU_UINT32_...
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_MU_RC_BA...
+#include "tss2_tpm2_types.h"  // for TPMS_ALGORITHM_DETAIL_ECC, TPMS_PCR_SEL...
+#include "util/aux_util.h"    // for UNUSED
 
-#include <inttypes.h>
-#include <string.h>
-
-#include "tss2_mu.h"
-
-#include "util/tss2_endian.h"
 #define LOGMODULE marshal
-#include "util/log.h"
+#include "util/log.h"         // for LOG_DEBUG, LOG_WARNING, LOG_ERROR
 
 #define ADDR &
 #define VAL
