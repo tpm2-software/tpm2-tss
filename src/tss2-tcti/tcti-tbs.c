@@ -6,7 +6,7 @@
  /* Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved. */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
 #include <inttypes.h>

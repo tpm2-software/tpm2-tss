@@ -5,7 +5,7 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
 #ifndef NO_DL
@@ -13,7 +13,7 @@
 #endif /* NO_DL */
 #include <stdlib.h>
 
-#include<unistd.h>
+#include <unistd.h>
 
 #include "tss2_fapi.h"
 #include "tss2_tctildr.h"
