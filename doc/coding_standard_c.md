@@ -275,6 +275,60 @@ some_long_variable_name = some_long_function_name (lots_of_parameters_1,
 ```
 These formatting conditions are contrary to Kernighan and Ritchie's "one true brace style" [3].
 
+## Include what you use
+
+In order to keep a clear include section in all files, we utilize the
+include-what-you-use tool.
+
+Since json-c changed their header-layout throughout its versions, we will
+just include json-c/json.h with a IWYU pragma keep.
+Also all occurrences of config.h had to be tagged with a keep pragma.
+Further, openssl/types.h was only introduced with OpenSSL 3.0 but is covered
+by openssl/evp.h in most cases.
+
+Given this, a lot of manual rework needs to be done after an iwyu run.
+Thus, we do not require it at the moment, but will run in every once in
+a while.
+```sh
+# Go for the .c files and .h files with corresponding .c files
+./bootstrap
+./configure --enable-integration --enable-unit
+make clean
+make -k CC=include-what-you-use CXXFLAGS="-Xixyu" 2>&1 | tee iwyu-changes
+make -k CC=include-what-you-use CXXFLAGS="-Xixyu" check-programs 2>&1 | tee -a iwyu-changes
+
+# Go to headers without corresponding .c files
+for i in $(find src -iname '*.h')
+do
+base=${i::-2}
+if test ! -f $base.c
+then
+include-what-you-use -I. -I./include/tss2 -I./src $base.h
+fi
+done 2>&1 | tee -a iwyu-changes
+
+# Apply the fixes
+fix_include --comments --update_comments --reorder --nosafe_headers <iwyu-changes
+
+# For some reason, IWYU has problems with the json-c headers. Thus, we fix this as follows.
+find \( -iname *.c -or -iname '*.h' \) -exec sed 's/\"json_object.h\"/<json-c\/json_object.h>/' -i {} \;
+find \( -iname *.c -or -iname '*.h' \) -exec sed 's/\"json_types.h\"/<json-c\/json_types.h>/' -i {} \;
+find \( -iname *.c -or -iname '*.h' \) -exec sed 's/\"json_tokener.h\"/<json-c\/json_tokener.h>/' -i {} \;
+find \( -iname *.c -or -iname '*.h' \) -exec sed 's/\"linkhash.h\"/<json-c\/linkhash.h>/' -i {} \;
+find test/unit test/integration \( -iname *.c -or -iname '*.h' \) -exec sed 's/cmocka.h/cmocka_all.h/' -i {} \;
+
+# From here we need to go back to the make clean step and go a few rounds of the .c files until we have a compile-ready thing.
+make clean
+make -k CC=include-what-you-use CXXFLAGS="-Xixyu" 2>&1 | tee iwyu-changes
+make -k CC=include-what-you-use CXXFLAGS="-Xixyu" check-programs 2>&1 | tee -a iwyu-changes
+fix_include --comments --update_comments --reorder --nosafe_headers <iwyu-changes
+
+# There will still be compiler errors, since IWYU does not detect the json_object_object_foreach makro.
+# In those cases, the json_object.h include needs to be added manually.
+
+# TODO: go for make check-programs
+```
+
 ## References
 1. GNOME C Coding Style : https://developer.gnome.org/programming-guidelines/stable/c-coding-style.html.en
 2. Alan Bridger, Mick Brooks, and Jim Pisano, C Coding Standards, 2001, http://www.alma.nrao.edu/development/computing/docs/joint/0009/2001-02-28.pdf
