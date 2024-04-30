@@ -16,31 +16,6 @@
 #define YES 1
 #define NO 0
 
-#define CHECK_IN_LIST(type, needle, ...) \
-    type tab[] = { __VA_ARGS__ }; \
-    size_t i; \
-    for(i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) \
-        if (needle == tab[i]) \
-            break; \
-    if (i == sizeof(tab) / sizeof(tab[0])) { \
-        LOG_ERROR("Bad value"); \
-        return TSS2_FAPI_RC_BAD_VALUE; \
-    }
-
-#define JSON_CLEAR(jso) \
-    if (jso) {                   \
-        json_object_put(jso); \
-    }
-
-#define return_if_jso_error(r,msg, jso)       \
-    if (r != TSS2_RC_SUCCESS) { \
-        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
-        if (jso) {                                                   \
-            json_object_put(jso);                                    \
-        } \
-        return r;  \
-    }
-
 TSS2_RC
 ifapi_json_TPM2_HANDLE_serialize(const TPM2_HANDLE in, json_object **jso);
 

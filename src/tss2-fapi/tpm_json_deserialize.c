@@ -18,6 +18,22 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+/* Deserialize according to the rules of parenttype and then filter against values
+   provided in the ... list. */
+#define SUBTYPE_FILTER(type, parenttype, ...) \
+    TSS2_RC r; \
+    type tab[] = { __VA_ARGS__ }; \
+    type v; \
+    r = ifapi_json_ ## parenttype ## _deserialize(jso, &v); \
+    return_if_error(r, "Bad value"); \
+    for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) { \
+        if (v == tab[i]) { \
+            *out = v; \
+            return TSS2_RC_SUCCESS; \
+        } \
+    } \
+    LOG_ERROR("Bad sub-value"); \
+    return TSS2_FAPI_RC_BAD_VALUE;
 
 /** Parse JSON data and create JSON object.
  *

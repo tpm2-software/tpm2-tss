@@ -29,6 +29,20 @@
 #include "util/log.h"
 #include "util/aux_util.h"
 
+#define JSON_CLEAR(jso) \
+    if (jso) {                   \
+        json_object_put(jso); \
+    }
+
+#define return_if_jso_error(r,msg, jso)       \
+    if (r != TSS2_RC_SUCCESS) { \
+        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
+        if (jso) {                                                   \
+            json_object_put(jso);                                    \
+        } \
+        return r;  \
+    }
+
 bool ifapi_pcr_used(uint32_t pcr, const uint32_t *pcr_list,  size_t pcr_list_size)
 {
     size_t i;
