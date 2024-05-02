@@ -8,20 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <stdbool.h>          // for bool, false, true
+#include <string.h>           // for memset, strcmp
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "fapi_policy.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_Key_Create, IFAPI_C...
+#include "fapi_util.h"        // for ifapi_create_primary, ifapi_get_key_pro...
+#include "ifapi_helpers.h"    // for free_string_list, ifapi_set_key_flags
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"     // for check_not_null, return_if_error_reset_s...
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"        // for Esys_SetTimeout
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_CreateKey, Fapi_Crea...
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPMA_OBJECT_DECRYPT, TPMA_OBJECT_SIGN_E...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_TRACE, goto_if_error, return_if_error
 
 /** One-Call function for Fapi_CreateKey
  *

@@ -7,19 +7,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
-
-#ifndef NO_DL
-#include <dlfcn.h>
-#endif /* NO_DL */
-#include <stdlib.h>
-
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
+#include "fapi_int.h"      // for FAPI_CONTEXT, IFAPI_CALLBACKS
+#include "ifapi_macros.h"  // for check_not_null
+#include "tss2_common.h"   // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_fapi.h"     // for FAPI_CONTEXT, Fapi_CB_Auth, Fapi_CB_Branch
 
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"      // for LOG_TRACE
 
 /**
  * This function registers a callback that will be invoked whenever the FAPI has

@@ -8,16 +8,25 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
+#include <inttypes.h>                // for int64_t, PRId64, PRIx64
+#include <json-c/json.h>             // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>                 // for bool, false, true
+#include <stdio.h>                   // for size_t, NULL, sscanf
+#include <stdlib.h>                  // for calloc
+#include <string.h>                  // for memset, strlen, strcmp, strncmp
+#include <strings.h>                 // for strncasecmp
 
-#include "ifapi_helpers.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_deserialize.h"
-#include "fapi_policy.h"
+#include "ifapi_helpers.h"           // for ifapi_check_json_object_fields
+#include "ifapi_json_deserialize.h"  // for ifapi_json_char_deserialize, GET...
+#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMI_POLICYTYP...
+#include "ifapi_policy_types.h"      // for TPMS_POLICYSIGNED, TPMU_POLICYEL...
+#include "tpm_json_deserialize.h"    // for ifapi_get_sub_object, ifapi_json...
+#include "tss2_common.h"             // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_policy.h"             // for TPMS_PCRVALUE, TPML_PCRVALUES
+#include "tss2_tpm2_types.h"         // for TPM2B_NAME, TPMT_RSA_SCHEME, TPM...
+
 #define LOGMODULE fapijson
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                // for return_if_error, LOG_TRACE, retu...
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 

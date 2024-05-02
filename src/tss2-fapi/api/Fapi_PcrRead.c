@@ -8,16 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
+#include <inttypes.h>         // for uint32_t, uint8_t, PRIu32
+#include <stdio.h>            // for NULL, size_t
+#include <stdlib.h>           // for malloc
+#include <string.h>           // for memcpy, memset
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"         // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"        // for ifapi_session_init
+#include "ifapi_eventlog.h"   // for ifapi_eventlog_get_async, ifapi_eventlo...
+#include "ifapi_helpers.h"    // for ifapi_filter_pcr_selection_by_index
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_macros.h"     // for check_not_null, return_if_error_reset_s...
+#include "ifapi_profiles.h"   // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_BA...
+#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR_NONE, Esys_PCR...
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_PcrRead, Fapi_PcrRea...
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPML_DIGEST, TPML_PCR_SEL...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_TRACE, return_if_error, SAFE_FREE
 
 /** One-Call function for Fapi_PcrRead
  *

@@ -6,9 +6,13 @@
 #ifndef IFAPI_EVENTLOG_SYSTEM_H
 #define IFAPI_EVENTLOG_SYSTEM_H
 
-#include <json-c/json.h>
-#include "efi_event.h"
-#include "util/aux_util.h"
+#include <json-c/json.h>        // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>            // for bool
+#include <stddef.h>             // for size_t
+
+#include "efi_event.h"          // for TCG_EVENT_HEADER2, TCG_DIGEST2, TCG_E...
+#include "fapi_types.h"         // for UINT8_ARY
+#include "tss2_common.h"        // for UINT32, BYTE, TSS2_RC
 
 typedef UINT32 TCG_EVENT_TYPE;
 

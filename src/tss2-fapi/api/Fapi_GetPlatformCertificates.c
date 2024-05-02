@@ -8,19 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <stdint.h>         // for uint8_t
+#include <stdlib.h>         // for NULL, malloc, size_t
+#include <string.h>         // for memcpy
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"       // for FAPI_CONTEXT, GET_PLATFORM_CERTIFICATE
+#include "fapi_types.h"     // for NODE_OBJECT_T
+#include "fapi_util.h"      // for ifapi_get_certificates, ifapi_session_init
+#include "ifapi_helpers.h"  // for ifapi_free_node_list
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TR...
+#include "tss2_esys.h"      // for Esys_SetTimeout
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetPlatformCertificates
+#include "tss2_tcti.h"      // for TSS2_TCTI_TIMEOUT_BLOCK
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"       // for LOG_TRACE, SAFE_FREE, return_if_error
 
 /** One-Call function for Fapi_GetPlatformCertificates
  *

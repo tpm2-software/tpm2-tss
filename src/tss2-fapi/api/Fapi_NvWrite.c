@@ -8,19 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
+#include <json-c/json.h>     // for json_object, json_object_put, json_object_to_js...
+#include <stdint.h>          // for uint8_t
+#include <stdlib.h>          // for NULL, malloc, size_t
+#include <string.h>          // for memcpy, memset
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "fapi_policy.h"
+#include "fapi_int.h"        // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_WRITE_READ
+#include "fapi_util.h"       // for ifapi_cleanup_session, ifapi_esys_serial...
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_esys.h"       // for Esys_SetTimeout
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_NvWrite, Fapi_NvWrite...
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"        // for LOG_TRACE, SAFE_FREE, return_if_error
 
 /** One-Call function for Fapi_NvWrite
  *

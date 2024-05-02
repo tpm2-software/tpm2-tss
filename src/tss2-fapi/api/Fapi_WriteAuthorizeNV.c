@@ -8,16 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_mu.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "fapi_policy.h"
-#include "fapi_crypto.h"
+#include <string.h>              // for memcpy, memset, size_t
+
+#include "fapi_int.h"            // for FAPI_CONTEXT, IFAPI_NV_Cmds, IFAPI_a...
+#include "fapi_util.h"           // for ifapi_cleanup_session, ifapi_esys_se...
+#include "ifapi_helpers.h"       // for ifapi_cleanup_policy
+#include "ifapi_io.h"            // for ifapi_io_poll
+#include "ifapi_keystore.h"      // for ifapi_cleanup_ifapi_object, IFAPI_OB...
+#include "ifapi_macros.h"        // for statecase, check_not_null, fallthrough
+#include "ifapi_policy.h"        // for ifapi_calculate_tree
+#include "ifapi_policy_store.h"  // for ifapi_policy_store_store_async, ifap...
+#include "ifapi_policy_types.h"  // for TPMS_POLICY
+#include "tss2_common.h"         // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
+#include "tss2_esys.h"           // for Esys_SetTimeout
+#include "tss2_fapi.h"           // for FAPI_CONTEXT, Fapi_WriteAuthorizeNv
+#include "tss2_mu.h"             // for Tss2_MU_TPMI_ALG_HASH_Marshal
+#include "tss2_tcti.h"           // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"     // for TPMI_ALG_HASH, TPM2B_NV_PUBLIC, TPMS...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"            // for LOG_TRACE, SAFE_FREE, return_if_error
 
 /** One-Call function for Fapi_WriteAuthorizeNv
  *

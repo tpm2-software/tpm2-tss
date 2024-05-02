@@ -8,22 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <inttypes.h>                  // for uint8_t, PRIu16
+#include <stdbool.h>                   // for true, false, bool
+#include <stdlib.h>                    // for size_t, NULL, calloc, malloc
+#include <string.h>                    // for memset, memcmp, memcpy, strcmp
 
-#include "fapi_util.h"
-#include "fapi_policy.h"
-#include "ifapi_helpers.h"
-#include "fapi_crypto.h"
-#include "ifapi_policy_instantiate.h"
-#include "ifapi_policyutil_execute.h"
-#include "ifapi_policy_execute.h"
+#include "fapi_crypto.h"               // for ifapi_get_tpm2b_public_from_pem
+#include "fapi_types.h"                // for UINT8_ARY
+#include "fapi_util.h"                 // for ifapi_get_object_path, ifapi_a...
+#include "ifapi_helpers.h"             // for ifapi_TPMT_PUBLIC_cmp, ifapi_c...
+#include "ifapi_macros.h"              // for statecase, fallthrough, return...
 #include "ifapi_policy_callbacks.h"
-#include "tss2_mu.h"
+#include "ifapi_policy_execute.h"      // for IFAPI_POLICY_EXEC_CTX, POLICY_...
+#include "ifapi_policy_store.h"        // for ifapi_policy_store_load_async
+#include "ifapi_policyutil_execute.h"  // for IFAPI_POLICYUTIL_STACK, ifapi_...
+#include "ifapi_profiles.h"            // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_fapi.h"                 // for FAPI_CONTEXT
+#include "tss2_mu.h"                   // for Tss2_MU_TPMT_HA_Unmarshal
 
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                  // for SAFE_FREE, goto_if_error, retu...
 
 /** Determine the auth object of a NV index.
  *

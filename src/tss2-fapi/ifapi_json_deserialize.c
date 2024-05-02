@@ -8,24 +8,29 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
+#include <inttypes.h>                       // for int64_t, uint8_t, PRId64
+#include <json-c/json.h>                    // for json_object, json_object_put, json_object_to_js...
+#include <stdio.h>                          // for NULL, size_t, sscanf
+#include <stdlib.h>                         // for calloc, malloc
+#include <string.h>                         // for memset, strlen, strdup
+#include <strings.h>                        // for strncasecmp, strcasecmp
 
-#include "ifapi_helpers.h"
-#include "ifapi_json_eventlog_deserialize.h"
-#include "efi_event.h"
-#include "tpm_json_deserialize.h"
+#include "fapi_crypto.h"                    // for ifapi_crypto_hash_abort
+#include "fapi_int.h"                       // for HASH_UPDATE_BUFFER
+#include "fapi_types.h"                     // for UINT8_ARY
+#include "ifapi_eventlog_system.h"          // for IFAPI_FIRMWARE_EVENT, ifa...
+#include "ifapi_helpers.h"                  // for ifapi_check_json_object_f...
+#include "ifapi_ima_eventlog.h"             // for IFAPI_IMA_EVENT, ifapi_ge...
 #include "ifapi_json_deserialize.h"
-#include "fapi_policy.h"
-#include "ifapi_config.h"
-#include "fapi_crypto.h"
-#include "ifapi_ima_eventlog.h"
-#include "ifapi_eventlog_system.h"
-#include "ifapi_helpers.h"
+#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_policy_types.h"             // for TPMS_POLICY
+#include "tpm_json_deserialize.h"           // for ifapi_get_sub_object, ifa...
+#include "tss2_esys.h"                      // for ESYS_TR_RH_OWNER
+#include "tss2_mu.h"                        // for Tss2_MU_TPM2B_PRIVATE_Unm...
+#include "tss2_tpm2_types.h"                // for TPMT_HA, TPM2_NO, TPML_DI...
+
 #define LOGMODULE fapijson
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "tss2_mu.h"
+#include "util/log.h"                       // for return_if_error, LOG_ERROR
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 

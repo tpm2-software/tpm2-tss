@@ -6,13 +6,15 @@
 #ifndef IFAPI_JSON_SERIALIZE_H
 #define IFAPI_JSON_SERIALIZE_H
 
-#include <stdbool.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <json-c/json.h>         // for json_object, json_object_put, json_object_to_js...
 
-#include "tss2_tpm2_types.h"
-#include "fapi_int.h"
-#include "ifapi_keystore.h"
+#include "fapi_int.h"            // for IFAPI_CAP_INFO, IFAPI_INFO
+#include "fapi_types.h"          // for UINT8_ARY
+#include "ifapi_config.h"        // for IFAPI_CONFIG
+#include "ifapi_eventlog.h"      // for IFAPI_EVENT_TYPE, FAPI_QUOTE_INFO
+#include "ifapi_ima_eventlog.h"  // for IFAPI_IMA_EVENT
+#include "ifapi_keystore.h"      // for IFAPI_DUPLICATE, IFAPI_EXT_PUB_KEY
+#include "tss2_common.h"         // for TSS2_RC, UINT32
 
 #define YES 1
 #define NO 0

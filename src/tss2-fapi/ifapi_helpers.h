@@ -6,16 +6,20 @@
 #ifndef IFAPI_HELPERS_H
 #define IFAPI_HELPERS_H
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <sys/stat.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <json-c/json.h>         // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>             // for bool
+#include <stddef.h>              // for size_t
+#include <stdint.h>              // for uint8_t
 
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
+#include "fapi_int.h"            // for IFAPI_KEY_TEMPLATE, IFAPI_NV_TEMPLATE
+#include "fapi_types.h"          // for NODE_STR_T, NODE_OBJECT_T
+#include "ifapi_eventlog.h"      // for FAPI_QUOTE_INFO
+#include "ifapi_keystore.h"      // for IFAPI_OBJECT
+#include "ifapi_policy_types.h"  // for TPMS_POLICY, TPMT_POLICYELEMENT
+#include "tss2_common.h"         // for TSS2_RC
+#include "tss2_esys.h"           // for ESYS_TR
+#include "tss2_policy.h"         // for TPML_PCRVALUES, TSS2_POLICY_PCR_SELE...
+#include "tss2_tpm2_types.h"     // for TPML_PCR_SELECTION, TPM2_HANDLE, TPM...
 
 /** Type for representing a external public key
  */

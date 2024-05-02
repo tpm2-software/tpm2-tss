@@ -6,15 +6,18 @@
 #ifndef FAPI_POLICY_EXECUTE_H
 #define FAPI_POLICY_EXECUTE_H
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <sys/stat.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <stdbool.h>             // for bool
+#include <stddef.h>              // for size_t
+#include <stdint.h>              // for uint8_t
 
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
+#include "fapi_int.h"            // for IFAPI_POLICY_EXEC_CTX
+#include "fapi_types.h"          // for NODE_OBJECT_T
+#include "ifapi_keystore.h"      // for IFAPI_OBJECT
+#include "ifapi_policy_types.h"  // for TPMS_POLICY, TPMS_POLICYAUTHORIZATION
+#include "tss2_common.h"         // for TSS2_RC
+#include "tss2_esys.h"           // for ESYS_TR, ESYS_CONTEXT
+#include "tss2_policy.h"         // for TSS2_POLICY_EXEC_CALLBACKS
+#include "tss2_tpm2_types.h"     // for TPMI_ALG_HASH, TPM2B_DIGEST, TPM2B_NAME
 
 TSS2_RC
 ifapi_extend_authorization(

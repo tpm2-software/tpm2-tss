@@ -6,13 +6,15 @@
 #ifndef IFAPI_EVENTLOG_H
 #define IFAPI_EVENTLOG_H
 
-#include <json-c/json.h>
+#include <json-c/json.h>            // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>                // for bool
+#include <stddef.h>                 // for size_t
 
-#include "tss2_tpm2_types.h"
-#include "ifapi_io.h"
-#include "efi_event.h"
-#include "ifapi_ima_eventlog.h"
-#include "ifapi_eventlog_system.h"
+#include "ifapi_eventlog_system.h"  // for IFAPI_FIRMWARE_EVENT
+#include "ifapi_ima_eventlog.h"     // for IFAPI_IMA_EVENT
+#include "ifapi_io.h"               // for IFAPI_IO
+#include "tss2_common.h"            // for TSS2_RC, UINT32, UINT16, UINT64
+#include "tss2_tpm2_types.h"        // for TPM2_HANDLE, TPM2B_EVENT, TPM2_MA...
 
 #define CONTENT_TYPE "content_type"
 #define CONTENT "content"

@@ -6,13 +6,13 @@
 #ifndef IFAPI_JSON_EVENTLOG_SERIALIZE_H
 #define IFAPI_JSON_EVENTLOG_SERIALIZE_H
 
-#include <stdbool.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <json-c/json.h>        // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>            // for bool
+#include <stddef.h>             // for size_t
+#include <stdint.h>             // for uint32_t
 
-#include "tss2_tpm2_types.h"
-#include "fapi_int.h"
-#include "ifapi_keystore.h"
+#include "tss2_common.h"        // for TSS2_RC, UINT8
+#include "tss2_tpm2_types.h"    // for TPM2_MAX_PCRS
 
 typedef struct {
 	json_object *jso_event_list;

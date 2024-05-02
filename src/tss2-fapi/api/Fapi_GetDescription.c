@@ -8,19 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include "fapi_int.h"        // for FAPI_CONTEXT, PATH_GET_DESCRIPTION_READ
+#include "fapi_util.h"       // for ifapi_get_description
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_GetDescription, Fapi_...
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"        // for LOG_TRACE, base_rc, return_error, return...
 
 /** One-Call function for Fapi_GetDescription
  *

@@ -8,20 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <dirent.h>
+#include <stdbool.h>         // for bool
+#include <stdlib.h>          // for size_t, malloc, NULL
+#include <string.h>          // for strcat, strcmp, strlen
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "ifapi_keystore.h"
+#include "fapi_int.h"        // for IFAPI_Entities_List, FAPI_CONTEXT, IFAPI...
+#include "fapi_util.h"       // for ifapi_non_tpm_mode_init
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_check_provisioned, ifapi_keystore_...
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_N...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_List, Fapi_List_Async
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"        // for LOG_TRACE, SAFE_FREE, LOG_WARNING, goto_...
 
 /** One-Call function for Fapi_List
  *

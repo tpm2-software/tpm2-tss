@@ -6,14 +6,12 @@
 #ifndef IFAPI_JSON_EVENTLOG_DESERIALIZE_H
 #define IFAPI_JSON_EVENTLOG_DESERIALIZE_H
 
-#include <stdbool.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <json-c/json.h>               // for json_object, json_object_put, json_object_to_js...
+#include <stddef.h>                    // for size_t
+#include <stdint.h>                    // for uint8_t
 
-#include "tss2_tpm2_types.h"
-#include "fapi_int.h"
-#include "ifapi_keystore.h"
-
+#include "tss2-fapi/ifapi_eventlog.h"  // for IFAPI_EVENT_TYPE
+#include "tss2_common.h"               // for TSS2_RC
 
 TSS2_RC
 ifapi_json_TCG_EVENT_TYPE_deserialize(

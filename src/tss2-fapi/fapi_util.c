@@ -8,29 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <dirent.h>
+#include <json-c/json.h>               // for json_object, json_object_put, json_object_to_js...
+#include <stdlib.h>                    // for free, calloc, malloc
+#include <string.h>                    // for memcpy, strcmp, memset, strlen
+#include <strings.h>                   // for strcasecmp
 
-#include "tss2_mu.h"
+#include "fapi_crypto.h"               // for ifapi_get_hash_alg_for_size
 #include "fapi_util.h"
-#include "fapi_crypto.h"
-#include "ifapi_helpers.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
-#include "fapi_policy.h"
-#include "ifapi_policyutil_execute.h"
+#include "ifapi_config.h"              // for IFAPI_CONFIG
+#include "ifapi_helpers.h"             // for free_string_list, ifapi_path_l...
+#include "ifapi_json_serialize.h"      // for ifapi_json_IFAPI_OBJECT_serialize
+#include "ifapi_macros.h"              // for statecase, fallthrough, goto_i...
+#include "ifapi_policy.h"              // for ifapi_calculate_tree
+#include "ifapi_policyutil_execute.h"  // for ifapi_policyutil_execute, ifap...
+#include "tss2_policy.h"               // for TSS2_OBJECT
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                  // for SAFE_FREE, goto_if_error, retu...
 
 /** State machine for flushing objects.
  *

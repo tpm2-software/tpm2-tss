@@ -8,16 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h>        // for size_t
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"      // for FAPI_CONTEXT, _FAPI_STATE_INIT
+#include "ifapi_io.h"      // for ifapi_io_poll_handles
+#include "ifapi_macros.h"  // for check_not_null
+#include "tss2_common.h"   // for TSS2_FAPI_RC_NO_HANDLE, TSS2_RC, TSS2_FAPI...
+#include "tss2_esys.h"     // for Esys_GetPollHandles
+#include "tss2_fapi.h"     // for FAPI_CONTEXT, FAPI_POLL_HANDLE, Fapi_GetPo...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"      // for LOG_DEBUG, LOG_TRACE, LOG_ERROR, return_if...
 
 /** Retrieve handles for polling
  *

@@ -8,29 +8,30 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <dirent.h>
+#include <errno.h>                   // for EEXIST, errno
+#include <inttypes.h>                // for PRIu16, SCNx32, PRIi32, PRIu32
+#include <json-c/json.h>             // for json_object, json_object_put, json_object_to_js...
+#include <stdarg.h>                  // for va_list, va_end, va_copy, va_start
+#include <stdio.h>                   // for sscanf, vsnprintf, vsprintf, vas...
+#include <stdlib.h>                  // for malloc, calloc, free
+#include <string.h>                  // for strcmp, strncmp, strlen, strcat
+#include <strings.h>                 // for strcasecmp, strncasecmp
+#include <sys/stat.h>                // for mkdir, mode_t
 
-#include "tss2_mu.h"
-#include "fapi_util.h"
-#include "fapi_policy.h"
-#include "fapi_crypto.h"
+#include "efi_event.h"               // for EV_NO_ACTION_STRUCT, EV_EFI_HCRT...
+#include "fapi_crypto.h"             // for ifapi_crypto_hash_abort, ifapi_c...
+#include "ifapi_eventlog.h"          // for IFAPI_EVENT, FAPI_QUOTE_INFO
+#include "ifapi_eventlog_system.h"   // for IFAPI_FIRMWARE_EVENT
 #include "ifapi_helpers.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_eventlog.h"
+#include "ifapi_json_deserialize.h"  // for ifapi_json_FAPI_QUOTE_INFO_deser...
+#include "ifapi_json_serialize.h"    // for ifapi_json_FAPI_QUOTE_INFO_seria...
+#include "ifapi_macros.h"            // for strdup_check, goto_if_error2
+#include "ifapi_policy.h"            // for ifapi_compute_policy_digest
+#include "tpm_json_deserialize.h"    // for ifapi_parse_json
+#include "tss2_mu.h"                 // for Tss2_MU_TPMI_ALG_HASH_Marshal
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                // for SAFE_FREE, goto_error, LOG_ERROR
 
 /** Create template for key creation based on type flags.
  *

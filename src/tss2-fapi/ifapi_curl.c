@@ -1,21 +1,33 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
-#include "config.h" // IWYU pragma: keep
+#include "config.h"             // for HAVE_CURL_URL_STRERROR
 #endif
 
-#include <string.h>
+#include <curl/curl.h>          // for curl_easy_strerror, CURLE_OK, curl_ea...
+#include <openssl/asn1.h>       // for asn1_string_st
+#include <openssl/bio.h>        // for BIO_free, BIO_new_mem_buf
+#include <openssl/obj_mac.h>    // for NID_crl_distribution_points, NID_info...
+#include <openssl/pem.h>        // for PEM_read_bio_X509
+#include <openssl/safestack.h>  // for STACK_OF
+#include <openssl/x509.h>       // for X509_free, X509_STORE_add_cert, X509_...
+#include <openssl/x509v3.h>     // for DIST_POINT_NAME, GENERAL_NAME, ACCESS...
+#include <stdbool.h>            // for bool, false, true
+#include <stdlib.h>             // for free, realloc
+#include <string.h>             // for memcpy, strdup, strlen
 
-#include <curl/curl.h>
-#include <openssl/x509v3.h>
-#include <openssl/err.h>
-#include <openssl/pem.h>
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#include <openssl/aes.h>
+#else
+#include <openssl/types.h>      // for X509, ASN1_IA5STRING, X509_CRL, DIST_...
+#endif
 
-#include "fapi_certificates.h"
-#include "fapi_util.h"
-#include "util/aux_util.h"
+#include "fapi_certificates.h"  // for root_cert_list
+#include "fapi_int.h"           // for OSSL_FREE
 #include "ifapi_curl.h"
+#include "ifapi_macros.h"       // for goto_if_null2
+
 #define LOGMODULE fapi
-#include "util/log.h"
+#include "util/log.h"           // for LOG_ERROR, goto_error, SAFE_FREE, got...
 
 static X509
 *get_cert_from_buffer(unsigned char *cert_buffer, size_t cert_buffer_size)

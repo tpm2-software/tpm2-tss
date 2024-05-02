@@ -8,25 +8,29 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#ifndef NO_DL
-#include <dlfcn.h>
-#endif /* NO_DL */
+#include <stdlib.h>              // for NULL, calloc, free, size_t
+#include <string.h>              // for memset
+#include <strings.h>             // for strcasecmp
 
-#include "tss2_tcti.h"
-#include "tss2_tctildr.h"
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "ifapi_json_deserialize.h"
-#include "ifapi_policy.h"
+#include "fapi_int.h"            // for FAPI_CONTEXT, IFAPI_INITIALIZE, IFAP...
+#include "ifapi_config.h"        // for IFAPI_CONFIG, ifapi_config_initializ...
+#include "ifapi_eventlog.h"      // for ifapi_eventlog_initialize
+#include "ifapi_helpers.h"       // for ifapi_null_primary_p
+#include "ifapi_io.h"            // for ifapi_io_poll
+#include "ifapi_keystore.h"      // for ifapi_cleanup_ifapi_object, ifapi_ke...
+#include "ifapi_macros.h"        // for statecase, fallthrough, check_not_null
+#include "ifapi_policy.h"        // for ifapi_policy_ctx_init
+#include "ifapi_policy_store.h"  // for ifapi_policy_store_initialize
+#include "ifapi_profiles.h"      // for ifapi_profiles_initialize_async, ifa...
+#include "tss2_common.h"         // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_...
+#include "tss2_esys.h"           // for ESYS_TR_NONE, Esys_Finalize, Esys_Ge...
+#include "tss2_fapi.h"           // for FAPI_CONTEXT, Fapi_Initialize, Fapi_...
+#include "tss2_tcti.h"           // for TSS2_TCTI_CONTEXT
+#include "tss2_tctildr.h"        // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_...
+#include "tss2_tpm2_types.h"     // for TPMS_CAPABILITY_DATA, TPMS_TAGGED_PR...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"            // for goto_if_error, LOG_TRACE, SAFE_FREE
 
 /** One-Call function for Fapi_Initialize
  *

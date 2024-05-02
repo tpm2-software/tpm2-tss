@@ -5,29 +5,31 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h" // IWYU pragma: keep
+#include "config.h"                 // for MAXLOGLEVEL
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <inttypes.h>
-#include <strings.h>
-#include <string.h>
-#include <uchar.h>
-#include <uuid/uuid.h>
-#include <uchar.h>
+#include <errno.h>                  // for errno
+#include <inttypes.h>               // for PRIu8, PRIu64, PRIu16, PRIu32
+#include <json-c/json.h>            // for json_object, json_object_put, json_object_to_js...
+#include <stdio.h>                  // for fclose, fread, fopen, sprintf, FILE
+#include <stdlib.h>                 // for free, calloc, malloc, realloc
+#include <string.h>                 // for strlen, memcpy, strerror, memset
+#include <uchar.h>                  // for char16_t, c16rtomb, mbstate_t
+#include <uuid/uuid.h>              // for uuid_unparse_lower, uuid_t
 
-#include "tss2_common.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_eventlog_system.h"
+#include "efi_event.h"              // for TCG_EVENT2, TCG_SPECID_EVENT, UEF...
+#include "fapi_crypto.h"            // for ifapi_hash_get_digest_size
+#include "ifapi_eventlog.h"         // for CONTENT, CONTENT_TYPE
+#include "ifapi_eventlog_system.h"  // for parse_eventlog, tpm2_eventlog_con...
 #include "ifapi_json_eventlog_serialize.h"
-#include "fapi_crypto.h"
-#include "tpm_json_serialize.h"
-#include "tss2_tpm2_types.h"
+#include "ifapi_macros.h"           // for return_error2
+#include "tpm_json_deserialize.h"   // for ifapi_get_sub_object
+#include "tpm_json_serialize.h"     // for ifapi_json_TPM2_ALG_ID_serialize
+#include "tss2_common.h"            // for TSS2_RC, TSS2_FAPI_RC_GENERAL_FAI...
+#include "tss2_tpm2_types.h"        // for TPM2_ALG_SHA1, TPM2_MAX_PCRS
+
 #define LOGMODULE fapifirmware
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"               // for return_if_null, return_error, LOG...
 
 #define JSON_CLEAR(jso) \
     if (jso) {                   \

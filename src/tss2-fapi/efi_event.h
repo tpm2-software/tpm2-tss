@@ -2,10 +2,10 @@
 #ifndef TCG_EFI_EVENT_H
 #define TCG_EFI_EVENT_H 1
 
-#include <uuid/uuid.h>
-#include <uchar.h>
+#include <uchar.h>        // for char16_t
+#include <uuid/uuid.h>    // for uuid_t
 
-#include "tss2_tpm2_types.h"
+#include "tss2_common.h"  // for UINT32, BYTE, UINT64, UINT8, UINT16
 
 /*
  * Log event types. These are spread out over 2 specs:

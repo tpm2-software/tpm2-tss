@@ -8,24 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <json-c/json.h>           // for json_object, json_object_put, json_object_to_js...
+#include <stdlib.h>                // for NULL
+#include <string.h>                // for memset, strdup
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "fapi_crypto.h"
-#include "fapi_policy.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
+#include "fapi_crypto.h"           // for ifapi_pub_pem_key_from_tpm
+#include "fapi_int.h"              // for IFAPI_ExportKey, FAPI_CONTEXT, EXP...
+#include "fapi_util.h"             // for ifapi_flush_object, ifapi_authoriz...
+#include "ifapi_io.h"              // for ifapi_io_poll
+#include "ifapi_json_serialize.h"  // for ifapi_json_IFAPI_OBJECT_serialize
+#include "ifapi_keystore.h"        // for ifapi_cleanup_ifapi_object, IFAPI_...
+#include "ifapi_macros.h"          // for statecase, check_not_null, fallthr...
+#include "tss2_common.h"           // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BAS...
+#include "tss2_esys.h"             // for ESYS_TR_NONE, Esys_SetTimeout, Esy...
+#include "tss2_fapi.h"             // for FAPI_CONTEXT, Fapi_ExportKey, Fapi...
+#include "tss2_policy.h"           // for TSS2_OBJECT
+#include "tss2_tcti.h"             // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"       // for TPM2B_DATA, TPMT_SYM_DEF_OBJECT
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"              // for SAFE_FREE, LOG_TRACE, goto_if_error
 
 /** One-Call function for Fapi_ExportKey
  *

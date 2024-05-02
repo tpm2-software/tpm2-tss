@@ -8,23 +8,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <stdint.h>           // for uint8_t
+#include <stdlib.h>           // for malloc, size_t, NULL
+#include <string.h>           // for memcpy, memset
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "fapi_crypto.h"
-#include "fapi_policy.h"
-#include "ifapi_policyutil_execute.h"
-#include "ifapi_json_deserialize.h"
+#include "fapi_int.h"         // for IFAPI_Data_EncryptDecrypt, FAPI_CONTEXT
+#include "fapi_util.h"        // for ifapi_authorize_object, ifapi_cleanup_s...
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"     // for check_not_null, return_try_again, state...
+#include "ifapi_profiles.h"   // for ifapi_profiles_get, IFAPI_PROFILE, IFAP...
+#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2_BA...
+#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_Decrypt, Fapi_Decryp...
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC_KEY_RSA, TPM2B_PUBLIC, TPM...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, LOG_TRACE, goto_if_error
 
 /** One-Call function for Fapi_Decrypt
  *

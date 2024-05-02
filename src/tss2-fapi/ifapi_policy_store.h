@@ -7,12 +7,9 @@
 #ifndef IFAPI_POLICY_STORE_H
 #define IFAPI_POLICY_STORE_H
 
-#include <stdlib.h>
-
-#include "tss2_common.h"
-#include "tss2_tpm2_types.h"
-#include "fapi_types.h"
-#include "ifapi_policy_types.h"
+#include "ifapi_io.h"            // for IFAPI_IO
+#include "ifapi_policy_types.h"  // for TPMS_POLICY
+#include "tss2_common.h"         // for TSS2_RC
 
 typedef struct IFAPI_POLICY_STORE {
     char *policydir;

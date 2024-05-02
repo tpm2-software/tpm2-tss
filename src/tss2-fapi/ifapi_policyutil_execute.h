@@ -6,15 +6,12 @@
 #ifndef FAPI_POLICYUTIL_EXECUTE_H
 #define FAPI_POLICYUTIL_EXECUTE_H
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <sys/stat.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
-
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
+#include "fapi_int.h"            // for IFAPI_POLICYUTIL_STACK, IFAPI_POLICY...
+#include "ifapi_policy_types.h"  // for TPMS_POLICY
+#include "tss2_common.h"         // for TSS2_RC
+#include "tss2_esys.h"           // for ESYS_TR
+#include "tss2_fapi.h"           // for FAPI_CONTEXT
+#include "tss2_tpm2_types.h"     // for TPMI_ALG_HASH
 
 
 /** The states for the FAPI's policy util execution */

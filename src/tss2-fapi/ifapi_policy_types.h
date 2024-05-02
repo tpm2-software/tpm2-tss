@@ -6,8 +6,13 @@
 #ifndef IFAPI_POLICY_TYPES_H
 #define IFAPI_POLICY_TYPES_H
 
-#include "tss2_tpm2_types.h"
-#include "fapi_types.h"
+#include <stdint.h>           // for uint8_t
+
+#include "fapi_types.h"       // for UINT8_ARY
+#include "tss2_common.h"      // for UINT32, INT32, UINT16
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2B_NAME, TPM2B_NONCE
+
+struct TPML_POLICYELEMENTS;
 
 typedef UINT32 TPMI_POLICYTYPE;
 #define POLICYELEMENTS                 0

@@ -8,17 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <dirent.h>
-#include <ctype.h>
-#include "ifapi_io.h"
-#include "ifapi_helpers.h"
+#include <ctype.h>                   // for isalnum
+#include <json-c/json.h>             // for json_object, json_object_put, json_object_to_js...
+#include <stdint.h>                  // for uint8_t
+#include <string.h>                  // for strcmp, strncmp, strlen, strdup
+#include <sys/stat.h>                // for stat
+
+#include "fapi_int.h"                // for IFAPI_POLICY_PATH, IFAPI_NV_PATH
+#include "ifapi_helpers.h"           // for free_string_list, ifapi_asprintf
+#include "ifapi_io.h"                // for ifapi_io_path_exists, IFAPI_IO
+#include "ifapi_json_deserialize.h"  // for ifapi_json_IFAPI_OBJECT_deserialize
+#include "ifapi_json_serialize.h"    // for ifapi_json_IFAPI_OBJECT_serialize
 #include "ifapi_keystore.h"
+#include "ifapi_macros.h"            // for goto_if_error2, strdup_check
+#include "tpm_json_deserialize.h"    // for ifapi_parse_json
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_deserialize.h"
-#include "ifapi_json_serialize.h"
+#include "util/log.h"                // for SAFE_FREE, goto_if_error, LOG_ERROR
 
 
 /** Check whether pathname is valid.
