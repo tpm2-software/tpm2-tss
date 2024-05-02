@@ -7,10 +7,11 @@
 #ifndef TCTI_SWTPM_H
 #define TCTI_SWTPM_H
 
-#include <limits.h>
+#include <stddef.h>       // for NULL
+#include <stdint.h>       // for uint16_t
 
-#include "tcti-common.h"
-#include "util-io/io.h"
+#include "tcti-common.h"  // for TSS2_TCTI_COMMON_CONTEXT
+#include "util-io/io.h"   // for _HOST_NAME_MAX, SOCKET
 
 /*
  * longest possible conf string:

@@ -3,19 +3,29 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#define LOGMODULE "policy"
-#include "util/log.h"
+#include <inttypes.h>                       // for PRIx16, PRIx32
+#include <json-c/json.h>                    // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>                        // for true, bool, false
+#include <stdlib.h>                         // for free, calloc
+#include <string.h>                         // for NULL, memcpy, size_t, memset
 
-#include "tss2_policy.h"
-#include "fapi_crypto.h"
-#include "fapi_int.h"
-#include "ifapi_macros.h"
-#include "ifapi_helpers.h"
-#include "ifapi_policy.h"
-#include "ifapi_policy_execute.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_policy_json_deserialize.h"
-#include "ifapi_policy_json_serialize.h"
+#include "fapi_crypto.h"                    // for ifapi_hash_get_digest_size
+#include "fapi_int.h"                       // for IFAPI_POLICY_EXEC_CTX
+#include "ifapi_helpers.h"                  // for ifapi_cleanup_policy
+#include "ifapi_io.h"                       // for ifapi_io_poll, IFAPI_IO
+#include "ifapi_policy.h"                   // for ifapi_calculate_tree_ex
+#include "ifapi_policy_execute.h"           // for IFAPI_POLICY_EXEC_CTX
+#include "ifapi_policy_instantiate.h"       // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_policy_json_serialize.h"    // for ifapi_json_TPMS_POLICY_se...
+#include "ifapi_policy_types.h"             // for TPMS_POLICY
+#include "tpm_json_deserialize.h"           // for ifapi_parse_json
+#include "tss2_common.h"                    // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"                      // for ESYS_CONTEXT, ESYS_TR
+#include "tss2_policy.h"                    // for TSS2_POLICY_CTX, TSS2_POL...
+#include "tss2_tpm2_types.h"                // for TPM2B_DIGEST, TPMT_HA
+#define LOGMODULE "policy"
+#include "util/log.h"                       // for LOG_ERROR, str, LOG_TRACE
 
 #define JSON_OBJECT_SAFE_PUT(o) do { json_object_put(o); o = NULL; } while(0)
 

@@ -1,17 +1,15 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-#include <assert.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <inttypes.h>
+#include <assert.h>           // for assert
+#include <inttypes.h>         // for PRIX32, PRIX8, PRIX16
+#include <stdarg.h>           // for va_end, va_list, va_start
+#include <stdbool.h>          // for bool
+#include <stdio.h>            // for NULL, size_t, snprintf, vsnprintf
+#include <string.h>           // for memset, strlen
 
-#include "tss2_rc.h"
-#include "tss2_sys.h"
-#include "util/aux_util.h"
+#include "tss2_common.h"      // for UINT8, TSS2_RC, TSS2_RC_LAYER_MASK, TSS...
+#include "tss2_rc.h"          // for TSS2_RC_INFO, TSS2_RC_HANDLER, Tss2_RC_...
+#include "tss2_tpm2_types.h"  // for TPM2_RC, TPM2_RC_FMT1, TPM2_RC_VER1
+#include "util/aux_util.h"    // for ARRAY_LEN, COMPILER_ATTR
 
 /**
  * The maximum size of a layer name.

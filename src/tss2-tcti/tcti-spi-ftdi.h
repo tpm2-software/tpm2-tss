@@ -22,16 +22,7 @@
  */
 #ifndef TCTI_SPI_FTDI_H
 #define TCTI_SPI_FTDI_H
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-#include <stdint.h>
-#include <sys/time.h>
-
-#include "tcti-common.h"
-#include "tss2_tcti_spi_helper.h"
-#include "mpsse/mpsse.h"
+#include <sys/time.h>  // for timeval
 
 typedef struct {
     struct timeval timeout;

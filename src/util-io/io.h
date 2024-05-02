@@ -6,25 +6,27 @@
 #ifndef UTIL_IO_H
 #define UTIL_IO_H
 
+#include <limits.h>       // for _POSIX_HOST_NAME_MAX
+#include <stdint.h>       // for uint8_t, uint16_t
+
+#include "tss2_common.h"  // for TSS2_RC
 #ifdef _WIN32
 #include <BaseTsd.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
 typedef SSIZE_T ssize_t;
 #define _HOST_NAME_MAX MAX_COMPUTERNAME_LENGTH
 
 #else
-#include <arpa/inet.h>
-#include <errno.h>
-#include <sys/socket.h>
-#include <sys/un.h>
+#include <errno.h>        // for EINTR, errno
+#include <sys/socket.h>   // for size_t, ssize_t
+
 #define _HOST_NAME_MAX _POSIX_HOST_NAME_MAX
 #define SOCKET int
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 #endif
-
-#include "tss2_tpm2_types.h"
 
 #ifdef _WIN32
 #define TEMP_RETRY(dest, exp) \

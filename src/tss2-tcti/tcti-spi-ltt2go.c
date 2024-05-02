@@ -2,24 +2,22 @@
 /*
  * Copyright 2020 Peter Huewe
  */
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <assert.h>
+#include <errno.h>                  // for errno
+#include <stdbool.h>                // for true, bool, false
+#include <stdio.h>                  // for NULL, size_t
+#include <stdlib.h>                 // for free, calloc
+#include <string.h>                 // for memset, memcpy
+#include <sys/select.h>             // for select
 
-#include "tss2_tcti.h"
 #include "tcti-spi-ltt2go.h"
-#include "tss2_tcti_spi_ltt2go.h"
-#include "tcti-spi-helper.h"
-#include "tss2_mu.h"
+#include "tss2-tcti/tcti-common.h"  // for TCTI_VERSION
+#include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...
+#include "tss2_tcti.h"              // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
+#include "tss2_tcti_spi_helper.h"   // for TSS2_TCTI_SPI_HELPER_PLATFORM
+#include "tss2_tcti_spi_ltt2go.h"   // for Tss2_Tcti_Spi_Ltt2go_Init
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"               // for LOG_ERROR, LOG_WARNING
 
 #define VID_PI3G 0x365Du
 #define PID_LTT2GO 0x1337u

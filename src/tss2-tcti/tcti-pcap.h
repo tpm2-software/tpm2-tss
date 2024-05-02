@@ -7,10 +7,9 @@
 #ifndef TCTI_PCAP_H
 #define TCTI_PCAP_H
 
-#include "tcti-pcap-builder.h"
-
-#include "tss2_tcti.h"
 #include "tcti-common.h"
+#include "tcti-pcap-builder.h"
+#include "tss2_tcti.h"
 
 #define TCTI_PCAP_MAGIC 0x9cf45c5d7d9d0d3fULL
 

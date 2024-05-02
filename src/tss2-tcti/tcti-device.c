@@ -32,30 +32,30 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+#include <errno.h>             // for errno
+#include <fcntl.h>             // for open, O_NONBLOCK, O_RDWR
+#include <inttypes.h>          // for uint8_t, int32_t
+#include <stdbool.h>           // for false, true
+#include <stdio.h>             // for NULL, size_t, ssize_t
+#include <string.h>            // for strerror, memcpy, memset
 #ifdef __VXWORKS__
 #include <sys/poll.h>
 #else
-#include <poll.h>
+#include <poll.h>              // for pollfd, poll, POLLIN, POLLOUT
 #endif
-#include <unistd.h>
+#include <unistd.h>            // for read, close
 
-#include "tss2_tcti.h"
-#include "tss2_tcti_device.h"
-#include "tss2_mu.h"
-#include "tcti-common.h"
+#include "tcti-common.h"       // for TSS2_TCTI_COMMON_CONTEXT, TPM_HEADER_SIZE
 #include "tcti-device.h"
-#include "util-io/io.h"
-#include "util/aux_util.h"
+#include "tss2_common.h"       // for TSS2_TCTI_RC_IO_ERROR, TSS2_RC_SUCCESS
+#include "tss2_mu.h"           // for Tss2_MU_UINT32_Unmarshal
+#include "tss2_tcti.h"         // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_HANDLE
+#include "tss2_tcti_device.h"  // for Tss2_Tcti_Device_Init
+#include "util-io/io.h"        // for write_all, TEMP_RETRY
+#include "util/aux_util.h"     // for UNUSED, ARRAY_LEN
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"          // for LOG_ERROR, LOG_DEBUG, LOG_WARNING, LOG...
 
 static char *default_conf[] = {
 #ifdef __VXWORKS__

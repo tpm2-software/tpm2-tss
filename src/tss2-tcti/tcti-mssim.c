@@ -8,25 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <errno.h>                 // for errno
+#include <inttypes.h>              // for PRIu32, PRIxPTR, uintptr_t, uint8_t
+#include <stdio.h>                 // for NULL, size_t, ssize_t, sscanf, EOF
+#include <stdlib.h>                // for free
+#include <string.h>                // for strcmp, strerror, memset, strdup
 
 #ifndef _WIN32
-#include <sys/time.h>
-#include <unistd.h>
+#include <poll.h>                  // for POLLIN, POLLOUT
+#include <unistd.h>                // for read
 #endif
 
-#include "tss2_mu.h"
-#include "tss2_tcti_mssim.h"
-
+#include "tcti-common.h"           // for TSS2_TCTI_COMMON_CONTEXT, tpm_head...
 #include "tcti-mssim.h"
-#include "tcti-common.h"
-#include "util/key-value-parse.h"
+#include "tss2_common.h"           // for TSS2_RC_SUCCESS, TSS2_RC, UINT32
+#include "tss2_mu.h"               // for Tss2_MU_UINT32_Marshal, Tss2_MU_UI...
+#include "tss2_tcti.h"             // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_...
+#include "tss2_tcti_mssim.h"       // for MS_SIM_CANCEL_OFF, MS_SIM_CANCEL_ON
+#include "util/key-value-parse.h"  // for key_value_t, parse_key_value_string
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"              // for LOG_DEBUG, LOG_ERROR, LOG_TRACE
 
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the

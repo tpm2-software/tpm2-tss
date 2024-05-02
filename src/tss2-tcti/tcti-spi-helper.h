@@ -4,12 +4,8 @@
  */
 #ifndef TCTI_SPI_HELPER_HELPER_H
 #define TCTI_SPI_HELPER_HELPER_H
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include "tcti-common.h"
+#include "tcti-common.h"           // for TSS2_TCTI_COMMON_CONTEXT
+#include "tss2_tcti_spi_helper.h"  // for TSS2_TCTI_SPI_HELPER_PLATFORM
 
 #define TCTI_SPI_HELPER_MAGIC 0x4D5C6E8BD4811477ULL
 

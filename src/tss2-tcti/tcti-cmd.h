@@ -4,13 +4,15 @@
 #define TCTI_CMD_H
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include <config.h>       // for UNIT
 #endif
 
-#include <limits.h>
+#include <signal.h>       // for sigset_t, pid_t
+#include <stdio.h>        // for FILE, size_t
 
-#include "tcti-common.h"
-#include "util-io/io.h"
+#include "tcti-common.h"  // for TSS2_TCTI_COMMON_CONTEXT
+
+struct TSS2_TCTI_CMD_CONTEXT;
 
 #define TCTI_CMD_NAME "tcti-cmd"
 #define TCTI_CMD_DESCRIPTION "TCTI module for using a process to send and receive data."

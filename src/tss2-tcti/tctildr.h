@@ -6,8 +6,12 @@
 #ifndef TCTILDR_H
 #define TCTILDR_H
 
-#include "tss2_tpm2_types.h"
-#include "tss2_tcti.h"
+#include <stddef.h>           // for size_t
+#include <stdint.h>           // for uint8_t, int32_t
+
+#include "tss2_common.h"      // for TSS2_RC
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO, TSS2...
+#include "tss2_tpm2_types.h"  // for TPM2_HANDLE
 
 #define FMT_LIB_PREFIX "lib"
 #define FMT_TSS_PREFIX FMT_LIB_PREFIX"tss2-"

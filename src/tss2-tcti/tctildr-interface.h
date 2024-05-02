@@ -6,9 +6,8 @@
 #ifndef     TCTI_INTERFACE_H
 #define     TCTI_INTERFACE_H
 
-#include "tss2_tpm2_types.h"
-#include "tss2_tcti.h"
-#include "tss2_tctildr.h"
+#include "tss2_common.h"  // for TSS2_RC
+#include "tss2_tcti.h"    // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
 
 TSS2_RC
 tctildr_get_tcti (const char *name,
