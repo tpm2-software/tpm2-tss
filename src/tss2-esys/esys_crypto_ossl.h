@@ -6,9 +6,16 @@
 #ifndef ESYS_CRYPTO_OSSL_H
 #define ESYS_CRYPTO_OSSL_H
 
-#include <stddef.h>
-#include "tss2_tpm2_types.h"
-#include "tss2-sys/sysapi_util.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"           // for HAVE_EVP_SM4_CFB
+#endif
+
+#include <stddef.h>           // for NULL, size_t
+#include <stdint.h>           // for uint8_t
+
+#include "tss2_common.h"      // for TSS2_RC, BYTE
+#include "tss2_esys.h"        // for ESYS_CRYPTO_CONTEXT_BLOB
+#include "tss2_tpm2_types.h"  // for TPM2_ALG_ID, TPM2B_PUBLIC, TPMI_AES_KEY...
 
 #ifdef __cplusplus
 extern "C" {

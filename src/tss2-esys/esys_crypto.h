@@ -6,11 +6,17 @@
 #ifndef ESYS_CRYPTO_H
 #define ESYS_CRYPTO_H
 
-#include <stddef.h>
-#include "tss2_tpm2_types.h"
-#include "tss2_esys.h"
-#include "util/tpm2b.h"
-#include "tss2-sys/sysapi_util.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"           // for OSSL
+#endif
+
+#include <stddef.h>           // for size_t, NULL
+#include <stdint.h>           // for uint8_t, uint32_t
+
+#include "tss2_common.h"      // for TSS2_RC, BYTE, BOOL, UINT32
+#include "tss2_esys.h"        // for ESYS_CRYPTO_CALLBACKS, ESYS_CRYPTO_CONT...
+#include "tss2_tpm2_types.h"  // for TPM2_ALG_ID, TPM2B_NONCE, TPM2B_ECC_PAR...
+#include "util/tpm2b.h"       // for TPM2B
 #if defined(OSSL)
 #include "esys_crypto_ossl.h"
 #elif defined(MBED)

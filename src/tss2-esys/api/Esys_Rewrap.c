@@ -8,16 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_mu.h"
-#include "tss2_sys.h"
-#include "tss2_esys.h"
+#include <inttypes.h>         // for PRIx32, int32_t
+#include <stdlib.h>           // for NULL, calloc
 
-#include "esys_types.h"
-#include "esys_iutil.h"
-#include "esys_mu.h"
+#include "esys_int.h"         // for ESYS_CONTEXT, RSRC_NODE_T, _ESYS_STATE_...
+#include "esys_iutil.h"       // for iesys_compute_session_value, esys_GetRe...
+#include "esys_types.h"       // for IESYS_RESOURCE
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_Rewrap, Esy...
+#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h"  // for TPM2B_ENCRYPTED_SECRET, TPM2B_PRIVATE
+
 #define LOGMODULE esys
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** One-Call function for TPM2_Rewrap
  *

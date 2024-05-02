@@ -8,16 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_mu.h"
-#include "tss2_sys.h"
-#include "tss2_esys.h"
+#include <inttypes.h>         // for PRIx32, int32_t
+#include <stddef.h>           // for NULL
 
-#include "esys_types.h"
-#include "esys_iutil.h"
-#include "esys_mu.h"
+#include "esys_int.h"         // for ESYS_CONTEXT, _ESYS_STATE_INIT, _ESYS_S...
+#include "esys_iutil.h"       // for esys_GetResourceObject, iesys_check_seq...
+#include "esys_types.h"       // for IESYS_RESOURCE
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_TR_Close
+#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, Tss2_Sys_Execute...
+#include "tss2_tpm2_types.h"  // for TPM2_RC_RETRY, TPM2_RC_TESTING, TPM2_RC...
+
 #define LOGMODULE esys
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (

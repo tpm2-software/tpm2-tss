@@ -8,16 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_mu.h"
-#include "tss2_sys.h"
-#include "tss2_esys.h"
+#include <inttypes.h>         // for PRIx32, PRIx16, int32_t
+#include <stddef.h>           // for NULL
 
-#include "esys_types.h"
-#include "esys_iutil.h"
-#include "esys_mu.h"
+#include "esys_int.h"         // for ESYS_CONTEXT, _ESYS_STATE_INTERNALERROR
+#include "esys_iutil.h"       // for iesys_check_sequence_async, iesys_tpm_e...
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"        // for ESYS_CONTEXT, Esys_Startup, Esys_Startu...
+#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, Tss2_Sys_Execute...
+#include "tss2_tpm2_types.h"  // for TPM2_RC_INITIALIZE, TPM2_SU, TPM2_RC_RETRY
+
 #define LOGMODULE esys
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_DEBUG, LOG_ERROR, LOG_WARNING, base_rc
 
 /** One-Call function for TPM2_Startup
  *

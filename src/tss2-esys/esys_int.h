@@ -6,9 +6,15 @@
 #ifndef ESYS_INT_H
 #define ESYS_INT_H
 
-#include <stdint.h>
-#include "esys_crypto.h"
-#include "esys_types.h"
+#include <stddef.h>           // for NULL, size_t
+#include <stdint.h>           // for int32_t
+
+#include "esys_types.h"       // for IESYS_RESOURCE, IESYS_SESSION
+#include "tss2_common.h"      // for TSS2_ESYS_RC_BAD_REFERENCE
+#include "tss2_esys.h"        // for ESYS_TR, ESYS_CRYPTO_CALLBACKS
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2B_SENSITIVE_CREATE, TPM2B_AUTH, TPM...
 
 #ifdef __cplusplus
 extern "C" {
