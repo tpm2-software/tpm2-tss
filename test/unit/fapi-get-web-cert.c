@@ -18,7 +18,7 @@
 #include <openssl/evp.h>
 
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 
 #include "tss2_fapi.h"
 #include "fapi_int.h"

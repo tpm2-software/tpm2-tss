@@ -15,7 +15,7 @@
 #include <string.h>
 
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 
 #include "util/key-value-parse.h"
 

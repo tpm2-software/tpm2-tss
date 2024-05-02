@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 #include "tss2_mu.h"
 #include "util/tss2_endian.h"
 

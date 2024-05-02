@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 
 #include <dlfcn.h>
 

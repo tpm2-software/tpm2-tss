@@ -19,7 +19,7 @@
 #include <json-c/json_tokener.h>
 
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 #include <errno.h>
 
 #include "ifapi_io.h"

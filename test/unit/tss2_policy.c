@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 
 #if defined(__linux__)
 #include <linux/limits.h>

@@ -11,7 +11,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 #include <stdio.h>
 #include "tss2_mu.h"
 #include "util/tss2_endian.h"

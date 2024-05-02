@@ -473,7 +473,8 @@ test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,--wrap=write -Wl,--wrap=poll
         -Wl,--wrap=open
 test_unit_tcti_device_SOURCES = test/unit/tcti-device.c \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h
+    src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_MSSIM
@@ -482,7 +483,8 @@ test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil) $(libutil
 test_unit_tcti_mssim_LDFLAGS = -Wl,--wrap=connect -Wl,--wrap=read -Wl,--wrap=write -Wl,--wrap=poll
 test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
+    src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_SWTPM
@@ -491,7 +493,8 @@ test_unit_tcti_swtpm_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil) $(libutil
 test_unit_tcti_swtpm_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
 test_unit_tcti_swtpm_SOURCES = test/unit/tcti-swtpm.c \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-swtpm.c src/tss2-tcti/tcti-swtpm.h
+    src/tss2-tcti/tcti-swtpm.c src/tss2-tcti/tcti-swtpm.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_LIBTPMS
@@ -502,7 +505,8 @@ test_unit_tcti_libtpms_LDFLAGS = -Wl,--wrap=dlopen,--wrap=dlclose,--wrap=dlsym \
     -Wl,--wrap=lseek,--wrap=posix_fallocate,--wrap=truncate
 test_unit_tcti_libtpms_SOURCES = test/unit/tcti-libtpms.c \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-libtpms.c src/tss2-tcti/tcti-libtpms.h
+    src/tss2-tcti/tcti-libtpms.c src/tss2-tcti/tcti-libtpms.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_PCAP
@@ -514,7 +518,8 @@ test_unit_tcti_pcap_LDFLAGS = -Wl,--wrap=getenv -Wl,--wrap=rand -Wl,--wrap=clock
 test_unit_tcti_pcap_SOURCES = test/unit/tcti-pcap.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-pcap.c src/tss2-tcti/tcti-pcap.h \
-    src/tss2-tcti/tcti-pcap-builder.c src/tss2-tcti/tcti-pcap-builder.h
+    src/tss2-tcti/tcti-pcap-builder.c src/tss2-tcti/tcti-pcap-builder.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_CMD
@@ -522,13 +527,15 @@ test_unit_tcti_cmd_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_cmd_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_cmd_SOURCES = test/unit/tcti-cmd.c \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-cmd.c src/tss2-tcti/tcti-cmd.h test/unit/tcti-cmd-test.h
+    src/tss2-tcti/tcti-cmd.c src/tss2-tcti/tcti-cmd.h test/unit/tcti-cmd-test.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_SPI_HELPER
 test_unit_tcti_spi_helper_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_spi_helper_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
-test_unit_tcti_spi_helper_SOURCES = test/unit/tcti-spi-helper.c
+test_unit_tcti_spi_helper_SOURCES = test/unit/tcti-spi-helper.c \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_SPI_LTT2GO
@@ -552,7 +559,7 @@ test_unit_tcti_spi_ltt2go_LDFLAGS = -Wl,--wrap=libusb_bulk_transfer \
                                    -Wl,--wrap=select \
                                    -Wl,--wrap=gettimeofday
 test_unit_tcti_spi_ltt2go_SOURCES = test/unit/tcti-spi-ltt2go.c \
-                                   src/tss2-tcti/tcti-spi-ltt2go.c
+    src/tss2-tcti/tcti-spi-ltt2go.c test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_SPIDEV
@@ -564,7 +571,7 @@ test_unit_tcti_spidev_LDFLAGS = -Wl,--wrap=open \
                                 -Wl,--wrap=select \
                                 -Wl,--wrap=gettimeofday
 test_unit_tcti_spidev_SOURCES = test/unit/tcti-spidev.c \
-                                src/tss2-tcti/tcti-spidev.c
+    src/tss2-tcti/tcti-spidev.c test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_SPI_FTDI
@@ -580,13 +587,14 @@ test_unit_tcti_spi_ftdi_LDFLAGS = -Wl,--wrap=Close \
                                   -Wl,--wrap=select \
                                   -Wl,--wrap=gettimeofday
 test_unit_tcti_spi_ftdi_SOURCES = test/unit/tcti-spi-ftdi.c \
-                                  src/tss2-tcti/tcti-spi-ftdi.c
+    src/tss2-tcti/tcti-spi-ftdi.c test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_I2C_HELPER
 test_unit_tcti_i2c_helper_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_i2c_helper_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_i2c_helper)
-test_unit_tcti_i2c_helper_SOURCES = test/unit/tcti-i2c-helper.c
+test_unit_tcti_i2c_helper_SOURCES = test/unit/tcti-i2c-helper.c \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_I2C_FTDI
@@ -604,7 +612,7 @@ test_unit_tcti_i2c_ftdi_LDFLAGS = -Wl,--wrap=MPSSE \
                                   -Wl,--wrap=select \
                                   -Wl,--wrap=gettimeofday
 test_unit_tcti_i2c_ftdi_SOURCES = test/unit/tcti-i2c-ftdi.c \
-                                  src/tss2-tcti/tcti-i2c-ftdi.c
+    src/tss2-tcti/tcti-i2c-ftdi.c test/helper/cmocka_all.h
 endif
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
@@ -613,7 +621,7 @@ test_unit_tctildr_LDFLAGS = -Wl,--wrap=calloc,--wrap=free \
     -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti \
     -Wl,--wrap=tctildr_get_info
 test_unit_tctildr_SOURCES = test/unit/tctildr.c \
-    src/tss2-tcti/tctildr.c
+    src/tss2-tcti/tctildr.c test/helper/cmocka_all.h
 
 test_unit_tctildr_dl_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
         -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
@@ -621,7 +629,7 @@ test_unit_tctildr_dl_LDADD = $(CMOCKA_LIBS) $(TESTS_LDADD) $(LIBADD_DL)
 test_unit_tctildr_dl_LDFLAGS = -Wl,--wrap=dlopen,--wrap=dlclose,--wrap=dlsym \
     -Wl,--wrap=tcti_from_init,--wrap=tcti_from_info,--wrap=__dlsym_time64
 test_unit_tctildr_dl_SOURCES = test/unit/tctildr-dl.c \
-        src/tss2-tcti/tctildr-dl.c
+        src/tss2-tcti/tctildr-dl.c test/helper/cmocka_all.h
 
 test_unit_tctildr_nodl_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
         -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
@@ -629,7 +637,7 @@ test_unit_tctildr_nodl_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_tctildr_nodl_LDFLAGS = -Wl,--wrap=Tss2_Tcti_Device_Init \
         -Wl,--wrap=Tss2_Tcti_Mssim_Init,--wrap=tcti_from_init
 test_unit_tctildr_nodl_SOURCES = test/unit/tctildr-nodl.c \
-        src/tss2-tcti/tctildr-nodl.c
+        src/tss2-tcti/tctildr-nodl.c test/helper/cmocka_all.h
 
 test_unit_tctildr_tcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_tcti_LDADD = $(CMOCKA_LIBS) $(libutil) \
@@ -637,7 +645,7 @@ test_unit_tctildr_tcti_LDADD = $(CMOCKA_LIBS) $(libutil) \
 test_unit_tctildr_tcti_LDFLAGS = -Wl,--wrap=tctildr_get_info \
     -Wl,--wrap=tctildr_get_tcti,--wrap=tctildr_finalize_data
 test_unit_tctildr_tcti_SOURCES = test/unit/tctildr-tcti.c \
-    src/tss2-tcti/tctildr.c
+    src/tss2-tcti/tctildr.c test/helper/cmocka_all.h
 
 test_unit_tctildr_getinfo_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_getinfo_LDADD = $(CMOCKA_LIBS) $(libutil) \
@@ -646,27 +654,33 @@ test_unit_tctildr_getinfo_LDFLAGS = -Wl,--wrap=strndup,--wrap=free \
     -Wl,--wrap=calloc,--wrap=tctildr_finalize_data \
     -Wl,--wrap=tctildr_get_info,--wrap=tctildr_get_tcti
 test_unit_tctildr_getinfo_SOURCES = test/unit/tctildr-getinfo.c \
-    src/tss2-tcti/tctildr.c
+    src/tss2-tcti/tctildr.c test/helper/cmocka_all.h
 
 test_unit_io_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_io_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil) $(libutilio)
 test_unit_io_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=socket,--wrap=write
+test_unit_io_SOURCES = test/unit/io.c \
+    test/helper/cmocka_all.h
 
 test_unit_key_value_parse_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_key_value_parse_LDADD   = $(CMOCKA_LIBS) $(libutil)
+test_unit_key_value_parse_SOURCES = test/unit/key-value-parse.c \
+    test/helper/cmocka_all.h
 
 test_unit_log_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_log_LDADD   = $(CMOCKA_LIBS) $(libutil)
+test_unit_log_SOURCES = test/unit/log.c \
+    test/helper/cmocka_all.h
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libtss2_sys) $(libtss2_mu)
 test_unit_CommonPreparePrologue_SOURCES = test/unit/CommonPreparePrologue.c \
-    src/tss2-sys/sysapi_util.c
+    src/tss2-sys/sysapi_util.c test/helper/cmocka_all.h
 
 test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libtss2_sys) $(libtss2_mu)
 test_unit_CopyCommandHeader_SOURCES = test/unit/CopyCommandHeader.c \
-    src/tss2-sys/sysapi_util.c
+    src/tss2-sys/sysapi_util.c test/helper/cmocka_all.h
 
 test_unit_dlopen_fail_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_dlopen_fail_LDADD   = $(CMOCKA_LIBS)
@@ -676,72 +690,93 @@ test_unit_dlopen_fail_SOURCES = test/unit/dlopen-fail.c \
     tss2-dlopen/tss2-dlopen-rc.c \
     tss2-dlopen/tss2-dlopen-mu.c \
     tss2-dlopen/tss2-dlopen-esys.c \
-    tss2-dlopen/tss2-dlopen-fapi.c
+    tss2-dlopen/tss2-dlopen-fapi.c \
+    test/helper/cmocka_all.h
 
 test_unit_dlopen_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_dlopen_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(LIBADD_DL) $(libtss2_mu)
 test_unit_dlopen_UINT8_marshal_SOURCES = test/unit/UINT8-marshal.c \
-    tss2-dlopen/tss2-dlopen-mu.c
+    tss2-dlopen/tss2-dlopen-mu.c test/helper/cmocka_all.h
 
 test_unit_dlopen_TPM2B_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_dlopen_TPM2B_marshal_LDADD   = $(CMOCKA_LIBS) $(LIBADD_DL) $(libtss2_mu)
 test_unit_dlopen_TPM2B_marshal_SOURCES = test/unit/TPM2B-marshal.c \
-    tss2-dlopen/tss2-dlopen-mu.c
+    tss2-dlopen/tss2-dlopen-mu.c test/helper/cmocka_all.h
 
 test_unit_dlopen_TPMU_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_dlopen_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(LIBADD_DL) $(libtss2_mu)
 test_unit_dlopen_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c \
-    tss2-dlopen/tss2-dlopen-mu.c
+    tss2-dlopen/tss2-dlopen-mu.c test/helper/cmocka_all.h
 
 test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_UINT8_marshal_SOURCES = test/unit/UINT8-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_UINT16_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT16_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_UINT16_marshal_SOURCES = test/unit/UINT16-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_UINT32_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT32_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_UINT32_marshal_SOURCES = test/unit/UINT32-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_UINT64_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT64_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_UINT64_marshal_SOURCES = test/unit/UINT64-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPMA_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMA_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPMA_marshal_SOURCES = test/unit/TPMA-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPM2B_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPM2B_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPM2B_marshal_SOURCES = test/unit/TPM2B-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPMS_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMS_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPMS_marshal_SOURCES = test/unit/TPMS-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPML_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPML_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPML_marshal_SOURCES = test/unit/TPML-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPMT_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMT_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPMT_marshal_SOURCES = test/unit/TPMT-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPMU_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_sys_execute_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_sys_execute_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libtss2_sys)
 test_unit_sys_execute_SOURCES = test/unit/sys-execute.c \
-                                src/tss2-tcti/tcti-common.c src/util/log.c
+    src/tss2-tcti/tcti-common.c src/util/log.c test/helper/cmocka_all.h
 
 test_unit_tss2_rc_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tss2_rc_LDADD   = $(CMOCKA_LIBS) $(libtss2_rc) $(libtss2_sys)
-test_unit_tss2_rc_SOURCES = test/unit/test_tss2_rc.c
+test_unit_tss2_rc_SOURCES = test/unit/test_tss2_rc.c test/helper/cmocka_all.h
 
 test_unit_dlopen_tss2_rc_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_dlopen_tss2_rc_LDADD   = $(CMOCKA_LIBS) $(LIBADD_DL) $(libtss2_rc) $(libtss2_sys)
 test_unit_dlopen_tss2_rc_SOURCES = test/unit/test_tss2_rc.c \
-    tss2-dlopen/tss2-dlopen-rc.c
+    tss2-dlopen/tss2-dlopen-rc.c test/helper/cmocka_all.h
 
 if ESYS
 test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_context_null_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti
-
+test_unit_esys_context_null_SOURCES = test/unit/esys-context-null.c test/helper/cmocka_all.h
 
 test_unit_esys_resubmissions_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_resubmissions_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
@@ -750,11 +785,14 @@ test_unit_esys_resubmissions_SOURCES = test/unit/esys-resubmissions.c \
                                        test/unit/esys-dummy-defs.h \
                                        src/tss2-esys/esys_iutil.c \
                                        src/tss2-esys/esys_crypto.c \
-                                       $(TSS2_ESYS_SRC_CRYPTO)
+                                       $(TSS2_ESYS_SRC_CRYPTO) \
+                                       test/helper/cmocka_all.h
 
 test_unit_esys_sequence_finish_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_sequence_finish_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_sequence_finish_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_sequence_finish_SOURCES = test/unit/esys-sequence-finish.c \
+    test/helper/cmocka_all.h
 
 test_unit_esys_tcti_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_tcti_rcs_LDADD = $(CMOCKA_LIBS) $(TESTS_LDADD)
@@ -763,7 +801,8 @@ test_unit_esys_tcti_rcs_SOURCES = test/unit/esys-tcti-rcs.c \
                                   test/unit/esys-dummy-defs.h \
                                   src/tss2-esys/esys_iutil.c \
                                   src/tss2-esys/esys_crypto.c \
-                                  $(TSS2_ESYS_SRC_CRYPTO)
+                                  $(TSS2_ESYS_SRC_CRYPTO) \
+                                  test/helper/cmocka_all.h
 
 test_unit_esys_tpm_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_tpm_rcs_LDADD = $(CMOCKA_LIBS) $(TESTS_LDADD)
@@ -772,23 +811,32 @@ test_unit_esys_tpm_rcs_SOURCES = test/unit/esys-tpm-rcs.c \
                                  test/unit/esys-dummy-defs.h \
                                  src/tss2-esys/esys_iutil.c \
                                  src/tss2-esys/esys_crypto.c \
-                                 $(TSS2_ESYS_SRC_CRYPTO)
+                                 $(TSS2_ESYS_SRC_CRYPTO) \
+                                 test/helper/cmocka_all.h
 
 test_unit_esys_getpollhandles_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_getpollhandles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_getpollhandles_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_getpollhandles_SOURCES = test/unit/esys-getpollhandles.c \
+    test/helper/cmocka_all.h
 
 test_unit_esys_ac_getcapability_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_ac_getcapability_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_ac_getcapability_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_ac_getcapability_SOURCES = test/unit/esys-ac-getcapability.c \
+    test/helper/cmocka_all.h
 
 test_unit_esys_ac_send_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_ac_send_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_ac_send_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_ac_send_SOURCES = test/unit/esys-ac-send.c \
+    test/helper/cmocka_all.h
 
 test_unit_esys_policy_ac_sendselect_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_policy_ac_sendselect_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_policy_ac_sendselect_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_policy_ac_sendselect_SOURCES = test/unit/esys-policy-ac-sendselect.c \
+    test/helper/cmocka_all.h
 
 test_unit_esys_nulltcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_nulltcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD) $(LIBADD_DL)
@@ -798,7 +846,8 @@ test_unit_esys_nulltcti_SOURCES = test/unit/esys-nulltcti.c \
                                   src/tss2-esys/esys_context.c \
                                   src/tss2-esys/esys_iutil.c \
                                   src/tss2-esys/esys_crypto.c \
-                                  $(TSS2_ESYS_SRC_CRYPTO)
+                                  $(TSS2_ESYS_SRC_CRYPTO) \
+                                  test/helper/cmocka_all.h
 
 test_unit_esys_crypto_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_crypto_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD) $(LIBADD_DL)
@@ -807,7 +856,8 @@ test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
                                 src/tss2-esys/esys_context.c \
                                 src/tss2-esys/esys_iutil.c \
                                 src/tss2-esys/esys_crypto.c \
-                                $(TSS2_ESYS_SRC_CRYPTO)
+                                $(TSS2_ESYS_SRC_CRYPTO) \
+                                test/helper/cmocka_all.h
 
 if VENDOR
 test_unit_esys_vendor_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -817,7 +867,8 @@ test_unit_esys_vendor_SOURCES = test/unit/esys-vendor.c \
                                 src/tss2-esys/esys_context.c \
                                 src/tss2-esys/esys_iutil.c \
                                 src/tss2-esys/esys_crypto.c \
-                                $(TSS2_ESYS_SRC_CRYPTO)
+                                $(TSS2_ESYS_SRC_CRYPTO) \
+                                test/helper/cmocka_all.h
 endif # VENDOR
 endif # ESYS
 
@@ -840,7 +891,8 @@ test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi/fapi_crypto.c \
                               src/tss2-fapi/ifapi_eventlog.c \
                               src/tss2-fapi/ifapi_keystore.c  \
-                              src/tss2-fapi/ifapi_io.c
+                              src/tss2-fapi/ifapi_io.c \
+                              test/helper/cmocka_all.h
 
 test_unit_fapi_helpers_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_helpers_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
@@ -861,7 +913,8 @@ test_unit_fapi_helpers_SOURCES = test/unit/fapi-helpers.c \
                                  src/tss2-fapi/ifapi_eventlog.c \
                                  src/tss2-fapi/ifapi_helpers.c \
                                  src/tss2-fapi/ifapi_keystore.c  \
-                                 src/tss2-fapi/ifapi_io.c
+                                 src/tss2-fapi/ifapi_io.c \
+                                 test/helper/cmocka_all.h
 
 test_unit_fapi_io_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_io_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
@@ -890,7 +943,8 @@ test_unit_fapi_io_SOURCES = test/unit/fapi-io.c \
                             src/tss2-fapi/ifapi_eventlog.c \
                             src/tss2-fapi/ifapi_helpers.c \
                             src/tss2-fapi/ifapi_keystore.c  \
-                            src/tss2-fapi/ifapi_io.c
+                            src/tss2-fapi/ifapi_io.c \
+                            test/helper/cmocka_all.h
 
 test_unit_fapi_profiles_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_profiles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
@@ -911,7 +965,8 @@ test_unit_fapi_profiles_SOURCES = test/unit/fapi-profiles.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_keystore.c  \
-                                  src/tss2-fapi/ifapi_io.c
+                                  src/tss2-fapi/ifapi_io.c \
+                                  test/helper/cmocka_all.h
 
 test_unit_fapi_config_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_config_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
@@ -932,7 +987,8 @@ test_unit_fapi_config_SOURCES = test/unit/fapi-config.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_keystore.c  \
-                                  src/tss2-fapi/ifapi_io.c
+                                  src/tss2-fapi/ifapi_io.c \
+                                  test/helper/cmocka_all.h
 
 test_unit_fapi_get_web_cert_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_get_web_cert_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
@@ -954,7 +1010,8 @@ test_unit_fapi_get_web_cert_SOURCES = test/unit/fapi-get-web-cert.c \
                                        src/tss2-fapi/ifapi_eventlog.c \
                                        src/tss2-fapi/ifapi_helpers.c \
                                        src/tss2-fapi/ifapi_keystore.c  \
-                                       src/tss2-fapi/ifapi_io.c
+                                       src/tss2-fapi/ifapi_io.c \
+                                       test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_eventlog_DEPENDENCIES = $(FAPI_TEST_BINS)
 
@@ -975,7 +1032,8 @@ test_unit_fapi_eventlog_SOURCES = test/unit/fapi-eventlog.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
-                                  src/tss2-fapi/ifapi_io.c
+                                  src/tss2-fapi/ifapi_io.c \
+                                  test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_ima_eventlog_DEPENDENCIES = $(FAPI_TEST_BINS)
 
@@ -996,7 +1054,8 @@ test_unit_fapi_ima_eventlog_SOURCES = test/unit/fapi-ima-eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
-                                  src/tss2-fapi/ifapi_io.c
+                                  src/tss2-fapi/ifapi_io.c \
+                                  test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_check_ima_log_DEPENDENCIES = $(FAPI_TEST_BINS)
 
@@ -1017,7 +1076,8 @@ test_unit_fapi_check_ima_log_SOURCES = test/unit/fapi-check-ima-log.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
-                                  src/tss2-fapi/ifapi_io.c
+                                  src/tss2-fapi/ifapi_io.c \
+                                  test/helper/cmocka_all.h
 
 test_unit_fapi_ima_fuzzing_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_ima_fuzzing_CXXFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
@@ -1038,7 +1098,8 @@ test_unit_fapi_ima_fuzzing_SOURCES = test/unit/fapi-ima-fuzzing.c \
                          src/tss2-fapi/ifapi_helpers.c \
                          src/tss2-fapi/ifapi_eventlog_system.c\
                          src/tss2-fapi/ifapi_keystore.c  \
-                         src/tss2-fapi/ifapi_io.c
+                         src/tss2-fapi/ifapi_io.c \
+                         test/helper/cmocka_all.h
 
 noinst_PROGRAMS += test/unit/fapi-ima-fuzzing
 
@@ -1061,7 +1122,8 @@ test_unit_fapi_system_fuzzing_SOURCES = test/unit/fapi-system-fuzzing.c \
                           src/tss2-fapi/ifapi_eventlog.c \
                           src/tss2-fapi/ifapi_helpers.c\
                           src/tss2-fapi/ifapi_keystore.c  \
-                          src/tss2-fapi/ifapi_io.c
+                          src/tss2-fapi/ifapi_io.c \
+                          test/helper/cmocka_all.h
 
 noinst_PROGRAMS += test/unit/fapi-system-fuzzing
 
@@ -1073,7 +1135,7 @@ TESTS_UNIT += test/unit/tss2_policy
 test_unit_tss2_policy_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tss2_policy_LDADD   = $(CMOCKA_LIBS) $(libtss2_policy) $(libtss2_esys)
 test_unit_tss2_policy_SOURCES = test/unit/tss2_policy.c src/util/log.c \
-    test/data/test-fapi-policies.h
+    test/data/test-fapi-policies.h test/helper/cmocka_all.h
 endif # POLICY
 
 endif # UNIT
