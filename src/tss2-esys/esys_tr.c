@@ -8,13 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_esys.h"
-#include "esys_mu.h"
+#include <inttypes.h>         // for PRIx32, uint8_t, SIZE_MAX, int32_t
+#include <stdbool.h>          // for bool, false, true
+#include <stdlib.h>           // for NULL, malloc, size_t, calloc
+#include <string.h>           // for memcmp
 
-#include "esys_iutil.h"
+#include "esys_int.h"         // for RSRC_NODE_T, ESYS_CONTEXT, _ESYS_ASSERT...
+#include "esys_iutil.h"       // for esys_GetResourceObject, iesys_compute_s...
+#include "esys_mu.h"          // for iesys_MU_IESYS_RESOURCE_Marshal, iesys_...
+#include "esys_types.h"       // for IESYS_RESOURCE, IESYS_RSRC_UNION, IESYS...
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_ESYS_RC_...
+#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, ESYS_TR_NONE
+#include "tss2_mu.h"          // for Tss2_MU_TPM2_HANDLE_Marshal
+#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2_HANDLE, TPM2_HR_SHIFT
+
 #define LOGMODULE esys
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for return_if_error, SAFE_FREE, goto_if_error
 
 /** Serialization of an ESYS_TR into a byte buffer.
  *

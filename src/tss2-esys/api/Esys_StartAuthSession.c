@@ -8,16 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_mu.h"
-#include "tss2_sys.h"
-#include "tss2_esys.h"
+#include <inttypes.h>         // for PRIx32, uint8_t, PRIx16, PRIx8, int32_t
+#include <stdlib.h>           // for free, malloc
+#include <string.h>           // for NULL, memcpy, size_t, memset
 
-#include "esys_types.h"
-#include "esys_iutil.h"
-#include "esys_mu.h"
+#include "esys_crypto.h"      // for iesys_crypto_hash_get_digest_size, iesy...
+#include "esys_int.h"         // for ESYS_CONTEXT, RSRC_NODE_T, IESYS_CMD_IN...
+#include "esys_iutil.h"       // for esys_GetResourceObject, iesys_compute_s...
+#include "esys_mu.h"          // for FALSE
+#include "esys_types.h"       // for IESYS_RESOURCE, IESYS_RSRC_UNION, IESYS...
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, BYTE, TSS2_BA...
+#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, ESYS_TR_NONE
+#include "tss2_mu.h"          // for Tss2_MU_TPM2_HANDLE_Marshal
+#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2B_AUTH, TPM2B_NONCE
+
 #define LOGMODULE esys
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for return_state_if_error, LOG_ERROR, LOG_D...
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
 static void store_input_parameters (

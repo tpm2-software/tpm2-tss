@@ -6,9 +6,11 @@
 #ifndef ESYS_MU_H
 #define ESYS_MU_H
 
-#include "tss2_mu.h"
+#include <stddef.h>       // for size_t
+#include <stdint.h>       // for uint8_t
 
-#include "esys_types.h"
+#include "esys_types.h"   // for IESYSC_PARAM_DECRYPT, IESYSC_PARAM_ENCRYPT
+#include "tss2_common.h"  // for TSS2_RC, UINT32
 
 #ifndef FALSE
 #define FALSE 0

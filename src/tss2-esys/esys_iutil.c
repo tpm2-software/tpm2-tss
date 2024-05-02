@@ -7,16 +7,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
+#include <inttypes.h>     // for uint8_t, PRIx32, PRIx8, PRIx16
+#include <stdlib.h>       // for calloc
 
-#include "tss2_esys.h"
-#include "esys_mu.h"
-
+#include "esys_crypto.h"  // for iesys_crypto_hash_get_digest_size, iesys_cr...
+#include "esys_int.h"     // for RSRC_NODE_T, ESYS_CONTEXT, _ESYS_STATE_INIT
 #include "esys_iutil.h"
-#include "esys_int.h"
+#include "esys_mu.h"      // for FALSE
+#include "esys_types.h"   // for IESYS_SESSION, IESYS_RESOURCE, IESYS_RSRC_U...
+#include "tss2_esys.h"    // for ESYS_CONTEXT, ESYS_TR, ESYS_TR_NONE, ESYS_C...
+#include "tss2_mu.h"      // for Tss2_MU_TPMI_ALG_HASH_Marshal, Tss2_MU_TPM2...
+
 #define LOGMODULE esys
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"     // for return_if_error, LOG_ERROR, LOG_TRACE, goto...
 
 /**
  * Compare variables of type UINT16.

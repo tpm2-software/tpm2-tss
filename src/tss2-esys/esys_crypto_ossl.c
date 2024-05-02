@@ -5,33 +5,35 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h" // IWYU pragma: keep
+#include "config.h"               // for HAVE_EVP_SM4_CFB
 #endif
 
-#include <openssl/rand.h>
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
-#include <openssl/ec.h>
+#include <inttypes.h>             // for uint8_t, PRIu16
+#include <openssl/bn.h>           // for BN_free, BN_bin2bn, BN_bn2bin, BN_n...
+#include <openssl/crypto.h>       // for OSSL_LIB_CTX_free, OSSL_LIB_CTX_new
+#include <openssl/ec.h>           // for EC_POINT_free, EC_POINT_new, EC_GRO...
+#include <openssl/evp.h>          // for EVP_CIPHER_CTX_free, EVP_CIPHER_CTX...
+#include <openssl/obj_mac.h>      // for NID_sm2, NID_X9_62_prime192v1, NID_...
+#include <openssl/opensslv.h>     // for OPENSSL_VERSION_NUMBER
+#include <openssl/rand.h>         // for RAND_bytes_ex
+#include <openssl/rsa.h>          // for EVP_PKEY_CTX_set0_rsa_oaep_label
+#include <stdlib.h>               // for calloc
+#include <string.h>               // for memset, strlen
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/aes.h>
 #else
-#include <openssl/core_names.h>
-#include <openssl/params.h>
-#include <openssl/param_build.h>
+#include <openssl/core_names.h>   // for OSSL_PKEY_PARAM_EC_PUB_X, OSSL_PKEY...
+#include <openssl/param_build.h>  // for OSSL_PARAM_BLD_free, OSSL_PARAM_BLD...
+#include <openssl/params.h>       // for OSSL_PARAM_free
+#include <openssl/types.h>        // for BIGNUM, EVP_CIPHER, EVP_CIPHER_CTX
 #endif
-#include <openssl/engine.h>
-#include <stdio.h>
-
-#include "tss2_esys.h"
-
-#include "esys_crypto.h"
+#include "esys_crypto.h"          // for iesys_crypto_hash_get_digest_size
 #include "esys_crypto_ossl.h"
+#include "tss2_esys.h"            // for ESYS_CRYPTO_CONTEXT_BLOB
+#include "tss2_mu.h"              // for Tss2_MU_TPMS_ECC_POINT_Marshal
 
-#include "esys_iutil.h"
-#include "esys_mu.h"
 #define LOGMODULE esys_crypto
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"             // for goto_error, return_error, UNUSED
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101000L
 #define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \

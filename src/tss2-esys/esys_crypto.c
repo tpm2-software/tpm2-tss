@@ -8,16 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-
-#include "tss2_esys.h"
+#include <inttypes.h>          // for uint8_t, uint32_t, PRIu16
+#include <string.h>            // for strlen
 
 #include "esys_crypto.h"
-#include "esys_iutil.h"
-#include "esys_mu.h"
+#include "esys_mu.h"           // for TRUE
+#include "tss2_esys.h"         // for ESYS_CRYPTO_CALLBACKS, ESYS_CRYPTO_CON...
+#include "tss2_mu.h"           // for Tss2_MU_UINT32_Marshal, Tss2_MU_TPMA_S...
+
 #define LOGMODULE esys_crypto
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"          // for LOG_ERROR, goto_if_error, str, xstr
 
 /** Provide the digest size for a given hash algorithm.
  *

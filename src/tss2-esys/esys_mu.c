@@ -8,16 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <string.h>
-
-#include "tss2_esys.h"
+#include <inttypes.h>         // for uint8_t, PRIx32, PRIu32
+#include <string.h>           // for NULL, size_t, memset, memcpy
 
 #include "esys_mu.h"
-#include "esys_iutil.h"
+#include "tss2_mu.h"          // for Tss2_MU_UINT32_Marshal, Tss2_MU_UINT32_...
+#include "tss2_tpm2_types.h"  // for TPM2_HANDLE, TPM2_SE, TPMA_SESSION, TPM...
+
 #define LOGMODULE esys
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for return_if_error, LOG_TRACE, LOG_ERROR
 
 /** Marshal an array of BYTE structures into a byte buffer.
  *

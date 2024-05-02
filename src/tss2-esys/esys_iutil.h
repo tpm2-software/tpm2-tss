@@ -6,13 +6,15 @@
 #ifndef ESYS_IUTIL_H
 #define ESYS_IUTIL_H
 
-#include <stdbool.h>
-#include <inttypes.h>
-#include <string.h>
-#include "tss2_esys.h"
+#include <inttypes.h>         // for uint8_t
+#include <stdbool.h>          // for bool
+#include <string.h>           // for size_t
 
-#include "esys_int.h"
-#include "esys_crypto.h"
+#include "esys_int.h"         // for RSRC_NODE_T
+#include "tss2_common.h"      // for TSS2_RC
+#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, ESYS_CRYPTO_CALL...
+#include "tss2_sys.h"         // for TSS2L_SYS_AUTH_COMMAND, TSS2L_SYS_AUTH_...
+#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2B_AUTH, TPM2_RH_LAST
 
 #ifdef __cplusplus
 extern "C" {
