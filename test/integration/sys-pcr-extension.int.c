@@ -8,16 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h>           // for exit
+#include <string.h>           // for memcpy, memcmp
 
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for BYTE, UINT8, TSS2_RC_SUCCESS, UINT16
+#include "tss2_sys.h"         // for Tss2_Sys_PCR_Read, Tss2_Sys_GetCapability
+#include "tss2_tpm2_types.h"  // for TPMS_PCR_SELECTION, TPML_PCR_SELECTION
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
-#include "sys-util.h"
+#include "sys-util.h"         // for GetDigestSize
+#include "test.h"             // for test_invoke
+#include "util/log.h"         // for LOG_ERROR, LOG_INFO
+
 #define PCR_8   8
 #define EXIT_SKIP 77
 /**

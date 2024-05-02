@@ -8,22 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_sys.h"
-#include "util/tpm2b.h"
+#include <stdio.h>            // for NULL
+#include <stdlib.h>           // for exit
+#include <string.h>           // for memcpy
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-
-#include "tss2_tcti.h"
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_BASE_RC_BAD_REFER...
+#include "tss2_sys.h"         // for Tss2_Sys_CreatePrimary, Tss2_Sys_FlushC...
+#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPM2B_DIGEST, TPMT_PUBLIC
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
-#include "sys-util.h"
+#include "sys-util.h"         // for TSS2_RETRY_EXP
+#include "test.h"             // for test_invoke
+#include "util/log.h"         // for LOG_ERROR
 
 int
 test_sys_mac(TSS2_SYS_CONTEXT * sys_context)

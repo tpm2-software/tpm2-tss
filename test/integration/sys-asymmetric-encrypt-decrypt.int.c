@@ -8,18 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
+#include <inttypes.h>         // for PRIx32
+#include <stdlib.h>           // for exit
+#include <string.h>           // for memcpy, strlen
 
-#include "tss2_tcti.h"
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, UINT32, TSS2_RC
+#include "tss2_sys.h"         // for Tss2_Sys_FlushContext, Tss2_Sys_Create
+#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPMT_PUBLIC, TPM2B_PUBLIC...
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
-#include "sys-util.h"
+#include "sys-util.h"         // for TSS2_RETRY_EXP
+#include "test.h"             // for test_invoke
+#include "util/log.h"         // for LOG_ERROR, LOG_INFO
+
 /**
  * This program contains integration test for asymmetric encrypt and
  * decrypt use case that has SYSs Tss2_Sys_CreatePrimary,

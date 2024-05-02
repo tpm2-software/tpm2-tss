@@ -8,15 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, size_t
+#include <stdlib.h>           // for exit
 
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_SYS_RC_BAD_SEQUENCE
+#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, Tss2_Sys_GetTest...
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPM2B_MAX_BUFFER, TPM2B_NAME, TPM2B_PUBLIC
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
-#include "sys-util.h"
+#include "sys-util.h"         // for TPM2B_NAMED_INIT, TPM2B_NAME_INIT
+#include "test.h"             // for test_invoke
+#include "util/log.h"         // for LOG_ERROR, LOG_INFO
 
 /*
  * System API tests including invalid cases

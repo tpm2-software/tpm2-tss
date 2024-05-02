@@ -8,15 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdio.h>        // for NULL
+#include <stdlib.h>       // for exit
 
-#include "tss2_sys.h"
+#include "tss2_common.h"  // for TSS2_ABI_VERSION, TSS2_SYS_RC_ABI_MISMATCH
+#include "tss2_sys.h"     // for Tss2_Sys_Initialize, Tss2_Sys_GetContextSize
+#include "tss2_tcti.h"    // for TSS2_TCTI_CONTEXT
 
-#include <stdio.h>
 #define LOGMODULE test
-#include "util/log.h"
-#include "test-common.h"
-#include "test.h"
+#include "test-common.h"  // for TEST_ABI_VERSION, TSSWG_INTEROP, TSS_SYS_FI...
+#include "test.h"         // for test_invoke
+#include "util/log.h"     // for LOG_ERROR, LOG_INFO
 
 /**
  */

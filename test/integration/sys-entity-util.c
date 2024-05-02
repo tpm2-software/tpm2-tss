@@ -8,9 +8,13 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "sys-util.h"
-#include "session-util.h"
+#include <stdlib.h>           // for calloc, free, NULL
+#include <uthash.h>           // for UT_hash_handle, HASH_FIND_INT, HASH_ADD...
+
+#include "session-util.h"     // for ENTITY, AddEntity, DeleteEntity, GetEntity
+#include "sys-util.h"         // for CopySizedByteBuffer
+#include "tss2_tpm2_types.h"  // for TPM2_HANDLE, TPM2B_AUTH
+#include "util/tpm2b.h"       // for TPM2B
 
 static ENTITY *entities = NULL;
 
