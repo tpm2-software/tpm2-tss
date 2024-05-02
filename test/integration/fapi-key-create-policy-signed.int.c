@@ -8,24 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <openssl/bio.h>      // for BIO_free, BIO_new_mem_buf
+#include <openssl/evp.h>      // for EVP_DigestSignFinal, EVP_DigestSignInit
+#include <openssl/pem.h>      // for PEM_read_bio_PrivateKey
+#include <openssl/rsa.h>      // for EVP_PKEY_CTX_set_rsa_padding, RSA_PKCS1...
+#include <stdint.h>           // for uint8_t, uint32_t
+#include <stdio.h>            // for NULL, fclose, fopen, fileno, fprintf
+#include <stdlib.h>           // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strlen, strstr
+#include <unistd.h>           // for read
 
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
-#include <openssl/engine.h>
-#include <openssl/pem.h>
+#include "test-fapi.h"        // for ASSERT, pcr_reset, ASSERT_SIZE, test_in...
+#include "tss2_common.h"      // for TSS2_FAPI_RC_GENERAL_FAILURE, TSS2_RC
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_Import
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2_ALG_SHA256
 
-#include "tss2_fapi.h"
-
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, LOG_ERROR, goto_if_error
 
 #ifdef TEST_ECC
 const char *priv_pem =

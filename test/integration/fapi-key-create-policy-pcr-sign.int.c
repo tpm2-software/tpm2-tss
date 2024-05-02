@@ -8,23 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <ctype.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <json-c/json.h>          // for json_object, json_object_put, json_object_to_js...
+#include <stdint.h>               // for uint8_t
+#include <stdio.h>                // for NULL, fopen, fclose, fileno, fseek
+#include <stdlib.h>               // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>               // for strcmp, strstr, strlen
+#include <unistd.h>               // for read
 
+#include "test-fapi.h"            // for ASSERT, CHECK_JSON, FAPI_PROFILE
+#include "tss2_common.h"          // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_RC
+#include "tss2_fapi.h"            // for Fapi_Delete, Fapi_ExportPolicy, Fap...
+#include "tss2_tpm2_types.h"      // for TPM2B_DIGEST
 
-#include "tss2_fapi.h"
-
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"             // for SAFE_FREE, goto_if_error, LOG_ERROR
 
 #define PASSWORD NULL
 #define SIGN_TEMPLATE  "sign,noDa"

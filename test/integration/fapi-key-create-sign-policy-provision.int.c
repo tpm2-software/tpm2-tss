@@ -8,15 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#include <stdint.h>           // for uint8_t
+#include <stdlib.h>           // for NULL, size_t, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strlen, strncmp
 
-#include "tss2_fapi.h"
+#include "test-fapi.h"        // for ASSERT, ASSERT_SIZE, fapi_profile, test...
+#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_GetTp...
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, goto_if_error, UNUSED, LOG_INFO
 
 #define PASSWORD NULL
 #define SIGN_TEMPLATE  "sign,noDa"

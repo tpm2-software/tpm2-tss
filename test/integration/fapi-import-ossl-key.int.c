@@ -8,20 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include <json-c/json.h>          // for json_object, json_object_put, json_object_to_js...
+#include <stdio.h>                // for NULL
+#include <stdlib.h>               // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>               // for strcmp, strdup, strlen, strncmp
 
-#include "tss2_fapi.h"
+#include "test-fapi.h"            // for ASSERT, ASSERT_SIZE, test_invoke_fapi
+#include "tss2_common.h"          // for TSS2_RC
+#include "tss2_fapi.h"            // for Fapi_Delete, Fapi_ExportKey, Fapi_I...
 
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"             // for LOG_ERROR, SAFE_FREE, goto_if_error
 
 #define SIZE 2000
 

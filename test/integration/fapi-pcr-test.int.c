@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <inttypes.h>
+#include <inttypes.h>        // for uint8_t
+#include <stdio.h>           // for NULL, fprintf, size_t, stderr
+#include <stdlib.h>          // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>          // for strlen, strcmp
 
-#include "tss2_fapi.h"
+#include "ifapi_eventlog.h"  // for CONTENT, CONTENT_TYPE
+#include "test-fapi.h"       // for ASSERT, pcr_reset, ASSERT_SIZE, CHECK_JS...
+#include "tss2_common.h"     // for TSS2_RC
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_PcrRead, Fapi_PcrExtend
 
-#include "test-fapi.h"
-#include "ifapi_eventlog.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"        // for goto_if_error, SAFE_FREE, LOG_ERROR, LOG...
 
 #define EVENT_SIZE 10
 

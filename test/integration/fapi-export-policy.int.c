@@ -8,26 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <json-c/json.h>          // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>              // for bool, false, true
+#include <stdio.h>                // for NULL, fopen, fprintf, fclose, fileno
+#include <stdlib.h>               // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>               // for strlen, strcmp
+#include <unistd.h>               // for read
 
-#include "tss2_fapi.h"
-#include "tss2_esys.h"
-#include "tss2_tcti.h"
-
-#include "test-fapi.h"
-#include "test-fapi-policies.h"
+#include "test-fapi-policies.h"   // for policy_digests, _test_fapi_policy_p...
+#include "test-fapi.h"            // for pcr_reset, ASSERT, ASSERT_SIZE, tes...
+#include "tss2_common.h"          // for TSS2_RC
+#include "tss2_fapi.h"            // for Fapi_Delete, FAPI_CONTEXT, Fapi_Exp...
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"             // for LOG_ERROR, goto_if_error, SAFE_FREE
 
 /** Check the digest values from result table for sha1 and sha256. */
 static bool
