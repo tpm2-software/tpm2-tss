@@ -7,19 +7,18 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <stdbool.h>      // for bool
+#include <stdint.h>       // for uint8_t, uint32_t
+#include <stdio.h>        // for NULL, size_t
+#include <stdlib.h>       // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>       // for strlen
 
-#include "tss2_fapi.h"
+#include "test-fapi.h"    // for ASSERT, pcr_reset, ASSERT_SIZE, EXIT_SKIP
+#include "tss2_common.h"  // for TSS2_RC
+#include "tss2_fapi.h"    // for Fapi_PcrExtend, Fapi_Delete, Fapi_CreateKey
 
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"     // for SAFE_FREE, goto_if_error, LOG_INFO
 
 #define EVENT_SIZE 10
 

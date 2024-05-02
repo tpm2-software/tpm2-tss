@@ -3,20 +3,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
+#include <stdbool.h>          // for bool, false, true
+#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>           // for getenv, malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strcmp, strstr
+#include <unistd.h>           // for read
 
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-#include "tss2_mu.h"
+#include "test-fapi.h"        // for EXIT_SKIP, test_invoke_fapi
+#include "tss2_common.h"      // for BYTE, TSS2_RC_SUCCESS, TSS2_FAPI_RC_NO_...
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_NV_UndefineSpace
+#include "tss2_fapi.h"        // for Fapi_Provision, Fapi_Delete, Fapi_GetTcti
+#include "tss2_mu.h"          // for Tss2_MU_TPMT_PUBLIC_Marshal
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2_HANDLE, TPM2B_MAX_NV_BUFFER, TPM2B...
 
-#include "test-fapi.h"
-#include "esys_iutil.h"
 #define LOGMODULE test
 #define LOGDEFAULT LOGLEVEL_INFO
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOGLEVEL_INFO, goto_if_error, LOG_ERROR
 
 /** This test is intended to test Fapi_Provision with a template and a nonce
  *  stored in NV ram.

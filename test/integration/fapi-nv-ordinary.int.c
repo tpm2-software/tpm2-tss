@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#include <unistd.h>
+#include <inttypes.h>     // for uint8_t
+#include <stdio.h>        // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>       // for exit, malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>       // for strlen, memcmp, strcmp, memset
+#include <unistd.h>       // for read
 
-#include "tss2_fapi.h"
+#include "test-fapi.h"    // for ASSERT, pcr_reset, test_invoke_fapi
+#include "tss2_common.h"  // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SU...
+#include "tss2_fapi.h"    // for Fapi_Delete, Fapi_CreateNv, Fapi_NvRead
 
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"     // for goto_if_error, SAFE_FREE, LOG_ERROR, UNUSED
 
 #define NV_SIZE 1200
 

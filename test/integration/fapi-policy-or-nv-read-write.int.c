@@ -8,22 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <assert.h>
+#include <assert.h>       // for assert
+#include <stdbool.h>      // for bool, false, true
+#include <stdint.h>       // for uint8_t
+#include <stdio.h>        // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>       // for EXIT_FAILURE, malloc, EXIT_SUCCESS
+#include <string.h>       // for strcmp, memcmp
+#include <unistd.h>       // for read
 
-#include "tss2_fapi.h"
-
-#include "test-fapi.h"
+#include "test-fapi.h"    // for pcr_reset, test_invoke_fapi
+#include "tss2_common.h"  // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SU...
+#include "tss2_fapi.h"    // for Fapi_CreateNv, Fapi_Delete, Fapi_Import
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"     // for goto_if_error, LOG_ERROR, UNUSED, SAFE_FREE
 
 #define PASSWORD1 "abc"
 #define PASSWORD2 "def"

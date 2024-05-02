@@ -8,19 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#include <json-c/json.h>         // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>             // for bool, false, true
+#include <stdint.h>              // for uint8_t
+#include <stdio.h>               // for NULL, size_t, fopen, fclose, fileno
+#include <stdlib.h>              // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>              // for strcmp, strlen, strncmp
+#include <unistd.h>              // for read
 
-#include "tss2_fapi.h"
+#include "ifapi_macros.h"        // for goto_if_null2
+#include "test-fapi.h"           // for ASSERT, pcr_reset, ASSERT_SIZE, FAPI...
+#include "tss2_common.h"         // for BYTE, TSS2_FAPI_RC_GENERAL_FAILURE
+#include "tss2_fapi.h"           // for Fapi_CreateKey, Fapi_Import, Fapi_Ve...
+#include "tss2_tpm2_types.h"     // for TPM2B_DIGEST
 
-#include "test-fapi.h"
-#include "fapi_util.h"
-#include "fapi_int.h"
-
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"            // for goto_if_error, SAFE_FREE, LOG_ERROR
 
 #define PASSWORD "abc"
 #define SIGN_TEMPLATE  "sign,noDa"

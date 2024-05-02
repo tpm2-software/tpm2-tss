@@ -8,16 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#include <stdint.h>           // for uint8_t
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS, size_t
+#include <string.h>           // for memcmp
 
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
+#include "test-fapi.h"        // for ASSERT, test_invoke_fapi
+#include "tss2_common.h"      // for BYTE, TSS2_FAPI_RC_BAD_PATH, TSS2_RC
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateSeal, Fapi_Unseal
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, SAFE_FREE, LOG_ERROR
 
 
 /** Test the FAPI functions for sealing.

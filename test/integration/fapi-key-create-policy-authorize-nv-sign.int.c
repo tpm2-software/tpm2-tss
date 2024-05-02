@@ -8,25 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <inttypes.h>         // for uint8_t
+#include <stdio.h>            // for NULL, fopen, snprintf, fclose, fileno
+#include <stdlib.h>           // for free, EXIT_FAILURE, malloc, EXIT_SUCCESS
+#include <string.h>           // for strcmp, strstr
+#include <unistd.h>           // for read
 
-
-#include "tss2_fapi.h"
-#include "tss2_esys.h"
-#include "tss2_tcti.h"
-
-#include "test-fapi.h"
+#include "test-fapi.h"        // for ASSERT, FAPI_PROFILE, pcr_reset, EXIT_SKIP
+#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_FAPI_RC_NOT_IMPLEME...
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_Finalize, Esys_GetCa...
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_Import
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPMS_CAPABILITY_DATA, TPM...
 
 #define LOGMODULE test
 #define LOGDEFAULT LOGLEVEL_INFO
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOGLEVEL_INFO, goto_if_error, SAFE_FREE
 
 #define NV_SIZE 34
 #define PASSWORD ""

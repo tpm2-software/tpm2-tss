@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>           // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strstr
+#include <unistd.h>           // for read
 
-#include "tss2_fapi.h"
+#include "tss2_common.h"      // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_RC
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_CreateNv
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "test-fapi.h"
+#include "test-fapi.h"        // for ASSERT, test_invoke_fapi
+#include "util/log.h"         // for goto_if_error, SAFE_FREE, LOG_ERROR
 
 #define SIGN_TEMPLATE  "sign,noDa"
 #define PASSWORD NULL

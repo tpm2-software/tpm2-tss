@@ -5,7 +5,7 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h" // IWYU pragma: keep
+#include "config.h"                        // for NDEBUG
 #endif
 
 /*
@@ -17,31 +17,31 @@
 #undef NDEBUG
 #endif
 
-#include <assert.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <assert.h>                        // for assert
+#include <limits.h>                        // for PATH_MAX
+#include <openssl/bio.h>                   // for BIO_free, BIO_new_mem_buf
+#include <openssl/bn.h>                    // for BN_bn2bin, BN_num_bytes
+#include <openssl/ec.h>                    // for ECDSA_SIG_free, ECDSA_SIG_...
+#include <openssl/evp.h>                   // for EVP_DigestSignFinal, EVP_P...
+#include <openssl/pem.h>                   // for PEM_read_bio_PUBKEY, PEM_r...
+#include <openssl/rsa.h>                   // for EVP_PKEY_CTX_set_rsa_padding
+#include <stdbool.h>                       // for false, bool, true
+#include <stdint.h>                        // for uint8_t
+#include <stdio.h>                         // for NULL, size_t, fclose, fopen
+#include <stdlib.h>                        // for calloc, free, malloc, EXIT...
+#include <string.h>                        // for memcpy, strcmp, strlen
 
-#if defined(__linux__)
-#include <linux/limits.h>
-#endif
+#include "tss2_common.h"                   // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"                     // for ESYS_TR_NONE, Esys_PolicyG...
+#include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMS_PCR_SEL...
 
-#include <openssl/ec.h>
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
-
-#include "tss2_esys.h"
-
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
+#include "test/data/test-fapi-policies.h"  // for policy_digests, _test_fapi...
+#include "tss2_policy.h"                   // for TSS2_POLICY_PCR_SELECTION
+#include "util/log.h"                      // for LOG_ERROR, goto_if_error
+#include "util/tss2_endian.h"              // for HOST_TO_BE_32
 
-#include "tss2_policy.h"
-#include "test/data/test-fapi-policies.h"
-#include "util/aux_util.h"
-#include "util/tss2_endian.h"
+struct mycb_data;
 
 #define TEST_LAYER        TSS2_RC_LAYER(0)
 #define TSS2_RC_TEST_FAIL ((TSS2_RC)(TEST_LAYER | \

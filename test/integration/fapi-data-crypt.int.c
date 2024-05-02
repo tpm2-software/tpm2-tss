@@ -8,23 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
+#include <openssl/bio.h>      // for BIO_free, BIO_new_mem_buf
+#include <openssl/evp.h>      // for EVP_DigestSignFinal, EVP_PKEY_free, EVP...
+#include <openssl/pem.h>      // for PEM_read_bio_PrivateKey
+#include <openssl/rsa.h>      // for EVP_PKEY_CTX_set_rsa_padding, RSA_PKCS1...
+#include <stdint.h>           // for uint8_t, uint32_t
+#include <stdio.h>            // for NULL, fopen, size_t, fclose, fileno, fseek
+#include <stdlib.h>           // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memcmp, strlen, strcmp, strncmp
+#include <unistd.h>           // for read
 
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
-#include <openssl/engine.h>
-#include <openssl/pem.h>
-
-#include "tss2_fapi.h"
-
-#include "test-fapi.h"
+#include "test-fapi.h"        // for pcr_reset, EXIT_SKIP, test_invoke_fapi
+#include "tss2_common.h"      // for TSS2_FAPI_RC_GENERAL_FAILURE, TSS2_RC
+#include "tss2_fapi.h"        // for Fapi_Free, Fapi_Delete, Fapi_Decrypt
+#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_ERROR, goto_if_error, SAFE_FREE
 
 #define SIZE 128
 

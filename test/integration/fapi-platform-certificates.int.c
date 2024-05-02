@@ -8,17 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdbool.h>          // for bool, false, true
+#include <stdint.h>           // for uint8_t
+#include <stdlib.h>           // for NULL, size_t, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-
-#include "test-fapi.h"
-#include "fapi_util.h"
+#include "fapi_int.h"         // for FAPI_CONTEXT
+#include "test-fapi.h"        // for ASSERT, EXIT_SKIP, test_invoke_fapi
+#include "tss2_common.h"      // for INT32, TSS2_FAPI_RC_NO_CERT, TSS2_RC
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_NV_UndefineSpace
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_Delete, Fapi_Free
+#include "tss2_tpm2_types.h"  // for TPM2B_NV_PUBLIC, TPMS_CAPABILITY_DATA
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_INFO, number_rc, LOG...
 
 #define MIN_PLATFORM_CERT_HANDLE 0x01C08000
 #define CERTIFICATE_SIZE 15

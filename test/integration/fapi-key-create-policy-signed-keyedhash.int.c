@@ -8,24 +8,29 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <inttypes.h>          // for uint8_t, PRIu16, uint32_t
+#include <openssl/evp.h>       // for EVP_MAC_CTX_free, EVP_MAC_free, EVP_MD...
+#include <openssl/opensslv.h>  // for OPENSSL_VERSION_NUMBER
+#include <openssl/sha.h>       // for SHA512_DIGEST_LENGTH
+#include <stdio.h>             // for NULL, fclose, fopen, size_t, fileno
+#include <stdlib.h>            // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>            // for strcmp, strstr
+#include <unistd.h>            // for read
 
-#include <openssl/evp.h>
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/hmac.h>
-#include <openssl/engine.h>
-#include <openssl/pem.h>
+#else
+#include <openssl/core_names.h>  // for OSSL_ALG_PARAM_DIGEST
+#include <openssl/types.h>       // for EVP_MD, OSSL_PARAM, EVP_CIPHER, EVP_...
+#endif
 
-#include "tss2_fapi.h"
+#include "test-fapi.h"         // for ASSERT, pcr_reset, FAPI_PROFILE, test_...
+#include "tss2_common.h"       // for TSS2_FAPI_RC_GENERAL_FAILURE, TSS2_FAP...
+#include "tss2_fapi.h"         // for Fapi_Delete, Fapi_CreateKey, Fapi_Crea...
+#include "tss2_tpm2_types.h"   // for TPM2B_DIGEST, TPM2_ALG_SHA1, TPM2_ALG_...
 
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"          // for SAFE_FREE, goto_if_error, LOG_ERROR
 
 
 char *userDataTest = "test";
