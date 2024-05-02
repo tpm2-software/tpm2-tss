@@ -7,25 +7,25 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <string.h>
-#include <stdio.h>
+#include <errno.h>       // for errno
+#include <fcntl.h>       // for fcntl, F_GETFL, F_SETFL, O_NONBLOCK
+#include <inttypes.h>    // for uint8_t, PRIxPTR, uintptr_t, uint16_t
+#include <stdio.h>       // for NULL, snprintf
+#include <string.h>      // for strerror
 
 #ifndef _WIN32
-#include <poll.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <unistd.h>
+#include <arpa/inet.h>   // for inet_ntop
+#include <netdb.h>       // for addrinfo, freeaddrinfo, gai_strerror, getadd...
+#include <netinet/in.h>  // for IPPROTO_TCP, sockaddr_in, sockaddr_in6
+#include <poll.h>        // for pollfd, poll, POLLIN
+#include <sys/un.h>      // for sockaddr_un
+#include <unistd.h>      // for close, read, write
 #endif
 
-#include "tss2_tpm2_types.h"
-
 #include "io.h"
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"    // for LOG_WARNING, LOG_DEBUG, LOG_ERROR, LOGBLOB_D...
 
 #define MAX_PORT_STR_LEN    sizeof("65535")
 

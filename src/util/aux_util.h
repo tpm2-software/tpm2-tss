@@ -6,12 +6,14 @@
 #ifndef AUX_UTIL_H
 #define AUX_UTIL_H
 
-#include <stdbool.h>
+#include <stdbool.h>          // for true, bool, false
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <inttypes.h>
-#include "tss2_tpm2_types.h"
+#include <inttypes.h>         // for PRIx32
+
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC_LAYER_MASK
+#include "tss2_tpm2_types.h"  // for TPM2_RC_1, TPM2_RC_ASYMMETRIC, TPM2_RC_...
 #ifdef __cplusplus
 extern "C" {
 #endif

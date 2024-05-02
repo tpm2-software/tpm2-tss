@@ -4,33 +4,34 @@
  * All rights reserved.
  */
 #ifdef HAVE_CONFIG_H
-#include "config.h" // IWYU pragma: keep
+#include "config.h"         // for UNIT
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <unistd.h>
-#include <signal.h>
+#include <errno.h>          // for errno, ECHILD, EFAULT
+#include <inttypes.h>       // for PRIu32, int32_t, uint8_t
+#include <poll.h>           // for POLLIN, POLLOUT
+#include <signal.h>         // for size_t, sigaddset, sigemptyset, pid_t
+#include <stdbool.h>        // for bool, false, true
+#include <stdio.h>          // for NULL, fclose, FILE, setvbuf, fdopen, ferror
+#include <stdlib.h>         // for exit
+#include <string.h>         // for strerror, memset
+#include <unistd.h>         // for close, dup2, execlp, fork, getpid, pipe
 
 #if defined (__FreeBSD__)
 #include <sys/procctl.h>
 #else
-#include <sys/prctl.h>
+#include <sys/prctl.h>      // for prctl, PR_SET_PDEATHSIG
 #endif
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-
-#include "tss2_tcti_cmd.h"
+#include <sys/wait.h>       // for waitpid, WNOHANG
 
 #include "tcti-cmd.h"
-#include "tcti-common.h"
+#include "tcti-common.h"    // for TSS2_TCTI_COMMON_CONTEXT, TPM_HEADER_SIZE
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_RC_IO...
+#include "tss2_tcti.h"      // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_HANDLE
+#include "tss2_tcti_cmd.h"  // for Tss2_Tcti_Cmd_Init
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"       // for LOG_ERROR, LOG_WARNING, LOG_DEBUG, LOG_TRACE
 
 #define PIPE_READ_END  0
 #define PIPE_WRITE_END 1

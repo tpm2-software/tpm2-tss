@@ -4,15 +4,9 @@
  */
 #ifndef TCTI_SPI_LTT2GO_H
 #define TCTI_SPI_LTT2GO_H
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-#include <stdint.h>
-#include <libusb-1.0/libusb.h>
-
-#include "tcti-common.h"
-#include "tss2_tcti_spi_helper.h"
+#include <libusb-1.0/libusb.h>  // for libusb_context, libusb_device_handle
+#include <stdint.h>             // for uint8_t
+#include <sys/time.h>           // for timeval
 
 typedef struct {
     struct timeval timeout;

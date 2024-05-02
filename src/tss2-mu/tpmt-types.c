@@ -9,14 +9,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <string.h>
+#include <inttypes.h>         // for PRIxPTR, uintptr_t, uint8_t
+#include <string.h>           // for size_t, NULL, memset
 
-#include "tss2_mu.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_MU_RC_BA...
+#include "tss2_mu.h"          // for Tss2_MU_UINT16_Marshal, Tss2_MU_UINT16_...
+#include "tss2_tpm2_types.h"  // for TPMT_PUBLIC, TPMT_SENSITIVE, TPMT_SYM_DEF
 
-#include "util/tss2_endian.h"
 #define LOGMODULE marshal
-#include "util/log.h"
+#include "util/log.h"         // for LOG_DEBUG
 
 #define ADDR &
 #define VAL

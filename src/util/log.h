@@ -2,12 +2,21 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include <stdint.h>
-#include <stddef.h>
-#include "util/aux_util.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"         // for MAXLOGLEVEL
+#endif
+
+#include <stddef.h>         // for size_t
+#include <stdint.h>         // for uint8_t
+
+#include "util/aux_util.h"  // for COMPILER_ATTR
 
 #ifndef LOGMODULE
 #error "LOGMODULE must be set before including log/log.h"
+#endif
+
+#ifndef MAXLOGLEVEL
+#define MAXLOGLEVEL LOGLEVEL_TRACE
 #endif
 
 #ifndef LOGDEFAULT

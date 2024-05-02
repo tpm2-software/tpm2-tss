@@ -9,18 +9,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-#include <dlfcn.h>
-#include <limits.h>
-#include <stdio.h>
+#include <dlfcn.h>              // for dlclose, dlerror, dlsym, dlopen, RTLD...
+#include <limits.h>             // for PATH_MAX
+#include <stdio.h>              // for NULL, size_t, snprintf
 
-#include "tss2_tcti.h"
-#include "tctildr-interface.h"
-#include "tctildr.h"
+#include "tctildr-interface.h"  // for tctildr_finalize_data, tctildr_get_info
+#include "tctildr.h"            // for tcti_from_info, FMT_LIB_SUFFIX, FMT_L...
+#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_R...
+#include "tss2_tcti.h"          // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"           // for LOG_ERROR, LOG_DEBUG, LOG_TRACE
 
 #define ARRAY_SIZE(X) (sizeof(X)/sizeof(X[0]))
 

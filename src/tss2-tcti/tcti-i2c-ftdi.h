@@ -22,16 +22,7 @@
  */
 #ifndef TCTI_I2C_FTDI_H
 #define TCTI_I2C_FTDI_H
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-#include <stdint.h>
-#include <sys/time.h>
-
-#include "tcti-common.h"
-#include "tss2_tcti_i2c_helper.h"
-#include "mpsse/mpsse.h"
+#include <sys/time.h>  // for timeval
 
 /* The default 7-bit I2C device address defined by TCG */
 #define I2C_DEV_ADDR_DEFAULT 0x2E

@@ -20,24 +20,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE
  */
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <assert.h>
+#include <errno.h>                  // for errno
+#include <stdbool.h>                // for true, bool, false
+#include <stdint.h>                 // for uint8_t, int32_t
+#include <stdio.h>                  // for NULL, size_t
+#include <stdlib.h>                 // for free, malloc
+#include <string.h>                 // for memset, memcpy
+#include <sys/select.h>             // for select
 
-#include "tss2_tcti.h"
 #include "tcti-i2c-ftdi.h"
-#include "tss2_tcti_i2c_ftdi.h"
-#include "tcti-i2c-helper.h"
-#include "tss2_mu.h"
+#include "tss2-tcti/mpsse/mpsse.h"  // for Write, MPSSE_OK, GetAck, Start, Stop
+#include "tss2-tcti/tcti-common.h"  // for TCTI_VERSION
+#include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...
+#include "tss2_tcti.h"              // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
+#include "tss2_tcti_i2c_ftdi.h"     // for Tss2_Tcti_I2c_Ftdi_Init
+#include "tss2_tcti_i2c_helper.h"   // for TSS2_TCTI_I2C_HELPER_PLATFORM
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"               // for LOG_ERROR
 
 TSS2_RC
 platform_sleep_us (void *user_data, int32_t microseconds)

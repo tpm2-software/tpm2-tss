@@ -9,15 +9,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>
-#include <inttypes.h>
-#include <stddef.h>
-#include <stdlib.h>
+#include <errno.h>              // for errno
+#include <inttypes.h>           // for uint8_t, PRIx32, PRIxPTR, uintptr_t
+#include <limits.h>             // for PATH_MAX
+#include <stddef.h>             // for NULL, size_t
+#include <stdlib.h>             // for free, calloc
 #if defined(__linux__)
-#include <linux/limits.h>
 #elif defined(_MSC_VER)
+#include <limits.h>             // for PATH_MAX
 #include <windows.h>
-#include <limits.h>
 #ifndef PATH_MAX
 #define PATH_MAX MAX_PATH
 
@@ -38,22 +38,23 @@ static char *strndup(const char* s, size_t n)
 }
 #endif
 #else
-#include <limits.h>
+#include <limits.h>             // for PATH_MAX
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif
 #endif
-#include <stdlib.h>
-#include <string.h>
+#include <string.h>             // for strerror, strcmp, strndup, strcpy
 
-#include "tss2_tpm2_types.h"
-#include "tss2_tcti.h"
-
-#include "tcti-common.h"
+#include "tcti-common.h"        // for TCTI_VERSION
+#include "tctildr-interface.h"  // for tctildr_finalize_data, tctildr_get_info
 #include "tctildr.h"
-#include "tctildr-interface.h"
+#include "tss2_tcti.h"          // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
+#include "tss2_tctildr.h"       // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_F...
+#include "tss2_tpm2_types.h"    // for TPM2_HANDLE
+#include "util/aux_util.h"      // for SAFE_FREE
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"           // for LOG_ERROR, LOG_DEBUG, LOG_TRACE, LOGM...
 
 TSS2_RC
 tcti_from_init(TSS2_TCTI_INIT_FUNC init,
