@@ -17,7 +17,7 @@
 #include <json-c/json_tokener.h>
 
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 
 #include "tss2_fapi.h"
 #include "ifapi_eventlog.h"

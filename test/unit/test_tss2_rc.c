@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 
 #include "tss2_rc.h"
 #include "util/aux_util.h"

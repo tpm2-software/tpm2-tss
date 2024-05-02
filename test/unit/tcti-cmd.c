@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 #include <unistd.h>
 #include <signal.h>
 

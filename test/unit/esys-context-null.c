@@ -22,7 +22,7 @@
 #include "esys_iutil.h"
 
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 
 /**
  * This unit test checks whether all  Esys_<cmd>() functions (one call, async,

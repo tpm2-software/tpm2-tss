@@ -16,7 +16,7 @@
 #include <string.h>
 
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 #include <sys/select.h>
 #include <sys/time.h>
 #include <fcntl.h>

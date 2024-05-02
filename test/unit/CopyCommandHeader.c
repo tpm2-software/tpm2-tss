@@ -13,7 +13,7 @@
 #include <arpa/inet.h>
 
 #include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"
 
 #include "tss2_sys.h"
 #include "sysapi_util.h"
