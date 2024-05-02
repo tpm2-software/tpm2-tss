@@ -6,6 +6,8 @@
 #ifndef IFAPI_MACROS_H
 #define IFAPI_MACROS_H
 
+#include <string.h> // IWYU pragma: keep
+
 #define strdup_check(dest, str, r, label) \
     if (str) {                             \
        dest = strdup(str); \

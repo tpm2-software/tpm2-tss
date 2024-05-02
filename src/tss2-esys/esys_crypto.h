@@ -8,6 +8,8 @@
 
 #include <stddef.h>
 #include "tss2_tpm2_types.h"
+#include "tss2_esys.h"
+#include "util/tpm2b.h"
 #include "tss2-sys/sysapi_util.h"
 #if defined(OSSL)
 #include "esys_crypto_ossl.h"
