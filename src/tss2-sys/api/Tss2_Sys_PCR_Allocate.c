@@ -8,9 +8,11 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"      // for TSS2_RC, UINT32, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"          // for Tss2_MU_UINT32_Unmarshal, Tss2_MU_TPML_...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h"  // for TPMI_RH_PLATFORM, TPMI_YES_NO, TPML_PCR...
 
 TSS2_RC Tss2_Sys_PCR_Allocate_Prepare(
     TSS2_SYS_CONTEXT *sysContext,

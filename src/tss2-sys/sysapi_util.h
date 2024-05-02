@@ -6,12 +6,12 @@
 
 #ifndef TSS2_SYSAPI_UTIL_H
 #define TSS2_SYSAPI_UTIL_H
-#include <stdbool.h>
+#include <stddef.h>           // for size_t
 
-#include "tss2_tpm2_types.h"
-#include "tss2_tcti.h"
-#include "tss2_sys.h"
-#include "util/tpm2b.h"
+#include "tss2_common.h"      // for UINT32, TSS2_RC, UINT8, TSS2_RC_SUCCESS
+#include "tss2_sys.h"         // for TSS2L_SYS_AUTH_COMMAND, TSS2L_SYS_AUTH_...
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2_CC, TPM2_ST
 
 enum cmdStates {CMD_STAGE_INITIALIZE,
                 CMD_STAGE_PREPARE,

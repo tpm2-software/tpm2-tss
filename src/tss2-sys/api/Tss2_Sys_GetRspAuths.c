@@ -9,11 +9,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "util/tss2_endian.h"
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
-#include <string.h>
+#include <string.h>            // for memcpy, size_t
+
+#include "sysapi_util.h"       // for _TSS2_SYS_CONTEXT_BLOB, TPM20_Header_Out
+#include "tss2_common.h"       // for UINT16, TSS2_SYS_RC_MALFORMED_RESPONSE
+#include "tss2_mu.h"           // for Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal
+#include "tss2_sys.h"          // for TSS2L_SYS_AUTH_RESPONSE, TSS2_SYS_CONTEXT
+#include "tss2_tpm2_types.h"   // for TPM2_HANDLE, TPM2_ST_SESSIONS, TPMS_AU...
+#include "util/tss2_endian.h"  // for BE_TO_HOST_16, BE_TO_HOST_32
 
 TSS2_RC Tss2_Sys_GetRspAuths(
     TSS2_SYS_CONTEXT *sysContext,
