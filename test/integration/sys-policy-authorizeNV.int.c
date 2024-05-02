@@ -8,21 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <inttypes.h>         // for PRIx32, uint8_t
+#include <openssl/rand.h>     // for RAND_bytes
+#include <stdio.h>            // for NULL, size_t
+#include <stdlib.h>           // for exit
+#include <string.h>           // for memcpy, memset
 
-#include <openssl/rand.h>
-
-#include "tss2_mu.h"
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_mu.h"          // for Tss2_MU_INT16_Marshal, Tss2_MU_TPMT_PUB...
+#include "tss2_sys.h"         // for TSS2L_SYS_AUTH_COMMAND, Tss2_Sys_FlushC...
+#include "tss2_tpm2_types.h"  // for TPMS_AUTH_COMMAND, TPMT_PUBLIC, TPM2B_N...
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test-esys.h"
-#include "test.h"
-#include "sys-util.h"
+#include "sys-util.h"         // for TSS2_RETRY_EXP, TPM2B_IV_INIT, TPM2B_MA...
+#include "test-esys.h"        // for EXIT_SKIP
+#include "test.h"             // for NO, test_invoke
+#include "util/log.h"         // for LOG_INFO, LOG_ERROR, LOGBLOB_DEBUG, LOG...
 
 int
 test_invoke (TSS2_SYS_CONTEXT *sys_context)

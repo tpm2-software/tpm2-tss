@@ -5,26 +5,28 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include "config.h" // IWYU pragma: keep
+#include "config.h"              // for HAVE_EVP_SM3
 #endif
 
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-
-#include <openssl/evp.h>
-#include <openssl/sha.h>
+#include <assert.h>              // for assert
+#include <inttypes.h>            // for uint8_t, uint32_t
+#include <openssl/evp.h>         // for EVP_MD_CTX_free, EVP_sm3, EVP_CIPHER...
+#include <openssl/opensslv.h>    // for OPENSSL_VERSION_NUMBER
+#include <openssl/sha.h>         // for SHA1, SHA256, SHA384, SHA512
+#include <stdlib.h>              // for NULL, calloc, exit, free, size_t
+#include <string.h>              // for memcpy, memcmp, memmove
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/hmac.h>
 #else
-#include <openssl/core_names.h>
+#include <openssl/core_names.h>  // for OSSL_ALG_PARAM_DIGEST
+#include <openssl/types.h>       // for EVP_MD, OSSL_PARAM, EVP_CIPHER, EVP_...
 #endif
 
 #define LOGMODULE testintegration
-#include "util/log.h"
 #include "sys-util.h"
-#include "test.h"
+#include "test.h"                // for NO, YES
+#include "util/log.h"            // for LOG_INFO, LOG_ERROR
+
 /*
  * Use te provide SYS context to create & load a primary key. The key will
  * be a 2048 bit (restricted decryption) RSA key. The associated symmetric

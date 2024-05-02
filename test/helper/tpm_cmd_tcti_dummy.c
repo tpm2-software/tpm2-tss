@@ -4,24 +4,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>
-#include <inttypes.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include <errno.h>          // for errno, EINTR
+#include <inttypes.h>       // for uint8_t, PRIu32
+#include <stdbool.h>        // for true, bool, false
+#include <stdio.h>          // for ferror, fread, setvbuf, stdin, size_t
+#include <stdlib.h>         // for exit, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>         // for strcmp, strerror, memcmp
+#include <unistd.h>         // for getpid
 
-#include <unistd.h>
-
-#include "tss2_sys.h"
-#include "tss2_mu.h"
-
-#include "tcti-common.h"
-#include "tcti-cmd-test.h"
+#include "tcti-cmd-test.h"  // for getcap_command, getcap_good_resp
+#include "tcti-common.h"    // for tpm_header_t, TPM_HEADER_SIZE, header_unm...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS
 
 #define LOGMODULE test
-#include "util/log.h"
+#include "util/log.h"       // for LOG_ERROR, LOG_DEBUG, LOGBLOB_DEBUG
 
 /*
  * A malformed header response. The header reports smaller than the actual

@@ -8,17 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
+#include <inttypes.h>         // for PRIx32, uint8_t
+#include <stdio.h>            // for size_t
+#include <string.h>           // for memcpy, memcmp
 
-#include "tss2_sys.h"
-#include "sys-util.h"
-#include "session-util.h"
+#include "session-util.h"     // for roll_nonces, end_auth_session, SESSION
+#include "sys-util.h"         // for CopySizedByteBuffer
+#include "tss2_common.h"      // for TSS2_RC, UINT32
+#include "tss2_sys.h"         // for TSS2L_SYS_AUTH_COMMAND, Tss2_Sys_Execute
+#include "tss2_tpm2_types.h"  // for TPMS_AUTH_COMMAND, TPM2B_MAX_NV_BUFFER
+#include "util/tpm2b.h"       // for TPM2B
+
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
+#include "test.h"             // for test_invoke
+#include "util/log.h"         // for LOG_ERROR, LOG_INFO, LOGBLOB_ERROR, LOG...
 
 #define TEST_DATA "test data to encrypt"
 #define TEST_DATA_LEN 21

@@ -8,14 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h>           // for exit
 
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_sys.h"         // for Tss2_Sys_GetCapability, TSS2_SYS_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPMS_TAGGED_PROPERTY, TPMS_CAPABILITY_DATA
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
+#include "test.h"             // for test_invoke
+#include "util/log.h"         // for LOG_INFO, LOG_ERROR
 
 int
 test_invoke (TSS2_SYS_CONTEXT *sys_context)

@@ -8,18 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <inttypes.h>         // for PRIx32, uint8_t
+#include <stdio.h>            // for NULL, size_t
+#include <stdlib.h>           // for exit
+#include <string.h>           // for memcpy, memset
 
-#include "tss2_mu.h"
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_mu.h"          // for Tss2_MU_TPM2B_PUBLIC_Marshal
+#include "tss2_sys.h"         // for TSS2L_SYS_AUTH_COMMAND, Tss2_Sys_Create...
+#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPMS_AUTH_COMMAND, TPMT_P...
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
-#include "sys-util.h"
+#include "sys-util.h"         // for hash, TPM2B_DIGEST_INIT, TPM2B_NAME_INIT
+#include "test.h"             // for test_invoke
+#include "util/log.h"         // for LOG_ERROR, LOG_INFO, LOGBLOB_DEBUG
 
 int
 test_invoke (TSS2_SYS_CONTEXT *sys_context)

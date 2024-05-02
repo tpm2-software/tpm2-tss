@@ -6,34 +6,37 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h" // IWYU pragma: keep
+#include "config.h"                       // for TCTI_MSSIM, TCTI_SWTPM
 #endif
 
-#include <stdbool.h>
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <inttypes.h>                     // for uint8_t, uint64_t, PRIx32
+#include <stdbool.h>                      // for bool, false, true
+#include <stdio.h>                        // for size_t, NULL, fprintf, printf
+#include <stdlib.h>                       // for free, calloc, exit
+#include <string.h>                       // for memcpy, strcpy, memcmp, strlen
 
-#include "tss2_sys.h"
-#include "tss2-tcti/tctildr.h"
-#include "tss2-tcti/tcti-pcap.h"
-#include "tss2_tcti_device.h"
-#include "tss2_tcti_libtpms.h"
+#include "tss2-tcti/tcti-pcap.h"          // for TCTI_PCAP_MAGIC, TSS2_TCTI_...
+#include "tss2-tcti/tctildr.h"            // for TCTILDR_MAGIC, TSS2_TCTILDR...
+#include "tss2_common.h"                  // for BYTE, UINT32, TSS2_RC, UINT8
+#include "tss2_sys.h"                     // for TSS2L_SYS_AUTH_COMMAND, Tss...
+#include "tss2_tcti.h"                    // for TSS2_TCTI_CONTEXT, Tss2_Tct...
+#include "tss2_tpm2_types.h"              // for TPM2_RC_SUCCESS, TPMS_PCR_S...
+#include "util/tpm2b.h"                   // for TPM2B
 #ifdef TCTI_MSSIM
-#include "tss2_tcti_mssim.h"
+#include "tss2_tcti_mssim.h"              // for tcti_platform_command, MS_S...
 #endif /* TCTI_MSSIM */
 #ifdef TCTI_SWTPM
-#include "tss2_tcti_swtpm.h"
+#include "tss2_tcti_swtpm.h"              // for Tss2_Tcti_Swtpm_Reset
 #endif /* TCTI_SWTPM */
 
-#include "../integration/test-common.h"
-#include "../integration/sys-util.h"
-#include "../integration/session-util.h"
-#include "util/tss2_endian.h"
-#include "sysapi_util.h"
+#include "../integration/session-util.h"  // for SESSION, create_auth_session
+#include "../integration/sys-util.h"      // for CopySizedByteBuffer, Define...
+#include "../integration/test-common.h"   // for TEST_ABI_VERSION
+#include "sysapi_util.h"                  // for _TSS2_SYS_CONTEXT_BLOB, res...
+#include "util/tss2_endian.h"             // for BE_TO_HOST_32
+
 #define LOGMODULE testtpmclient
-#include "util/log.h"
+#include "util/log.h"                     // for LOG_INFO, LOG_ERROR, LOGBLO...
 
 /*
  * TPM indices and sizes

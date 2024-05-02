@@ -8,23 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <inttypes.h>         // for PRIx32, uint8_t, int32_t, uint32_t, uin...
+#include <stdbool.h>          // for bool
+#include <stdio.h>            // for NULL, size_t
+#include <stdlib.h>           // for free, malloc, EXIT_SUCCESS, getenv
+#include <string.h>           // for memset, memcmp, memcpy
 
-
-#include "tss2_tpm2_types.h"
-#include "tss2_tctildr.h"
-#include "tss2_mu.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, UINT32, TSS2_...
+#include "tss2_mu.h"          // for Tss2_MU_TPMS_CAPABILITY_DATA_Marshal
+#include "tss2_tctildr.h"     // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_Ini...
+#include "tss2_tpm2_types.h"  // for TPMS_CAPABILITY_DATA, TPM2_CAP_HANDLES
 #ifdef TEST_ESYS
-#include "tss2_esys.h"
+#include "tss2_esys.h"        // for Esys_Finalize, Esys_GetSysContext, Esys...
 #endif
 #define LOGMODULE test
-#include "util/log.h"
-
 #include "test-common.h"
+#include "util/log.h"         // for LOG_ERROR, LOG_DEBUG, LOGBLOB_ERROR
 
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
