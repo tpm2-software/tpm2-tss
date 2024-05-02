@@ -7,14 +7,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for free, NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memcmp
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for BYTE, TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_TR_FromTPMPublic
+#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2_NV_INDEX_FIRST, TPMA_S...
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR
 
 /** This tests the Esys_TR_FromTPMPublic and Esys_TR_GetName functions by
  *  creating an NV Index and then attempting to retrieve an ESYS_TR object for

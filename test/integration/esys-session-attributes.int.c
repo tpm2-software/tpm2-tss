@@ -8,16 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdint.h>           // for uint8_t
+#include <stdlib.h>           // for NULL, size_t, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
-#include "tss2_mu.h"
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_RC_...
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_FlushContext, Esys_Free
+#include "tss2_mu.h"          // for Tss2_MU_TPMS_AUTH_COMMAND_Unmarshal
+#include "tss2_tpm2_types.h"  // for TPMA_SESSION_ENCRYPT, TPM2_ALG_SHA256
 
-#include "esys_iutil.h"
 #define LOGDEFAULT LOGLEVEL_INFO
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOGLEVEL_INFO, goto_if_error, LOG_ERROR
 
 extern TSS2_RC
 (*transmit_hook) (const uint8_t *command_buffer, size_t command_size);

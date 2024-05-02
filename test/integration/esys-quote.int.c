@@ -8,14 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
+#include "esys_int.h"         // for RSRC_NODE_T
+#include "esys_iutil.h"       // for esys_GetResourceObject
+#include "esys_types.h"       // for IESYS_RESOURCE
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256, TPM2B_AUTH, TPM2B_DATA
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_INFO, LOG_ERROR
 
 /** This test is intended to test the quote command with password
  *  authentication.

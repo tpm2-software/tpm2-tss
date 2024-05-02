@@ -8,16 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS, size_t
 
-#include "tss2_esys.h"
-#include "tss2_mu.h"
+#include "test-esys.h"        // for test_invoke_esys
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, BYTE, INT32, TSS2_RC
+#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_mu.h"          // for Tss2_MU_INT32_Marshal
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2_ALG_SHA256, TPM2B_NONCE
 
-#include "esys_iutil.h"
-#include "test-esys.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_INFO, LOG...
 
 /** This test is intended to test the ESYS policy commands related to
  *  signed authorization actions.

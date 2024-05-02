@@ -8,14 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_SUCCESS, EXIT_FAILURE
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"        // for Esys_TR_SetAuth, ESYS_TR_NONE, Esys_Flu...
+#include "tss2_tpm2_types.h"  // for TPM2B_AUTH, TPM2B_PUBLIC, TPM2B_SENSITI...
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, goto_if_error, return_if_error
 
 /** This test is intended to test the ESYS command ObjectChangeAuth.
  *

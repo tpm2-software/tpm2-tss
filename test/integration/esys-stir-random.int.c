@@ -8,14 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for TSS2_RC
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_StirRandom, ESYS_CON...
+#include "tss2_tpm2_types.h"  // for TPM2B_SENSITIVE_DATA
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error
 
 /** Test the ESYS function Esys_StirRandom.
  *

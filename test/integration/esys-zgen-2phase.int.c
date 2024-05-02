@@ -8,15 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memset
 
-#include "tss2_esys.h"
+#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RESMGR_RC_LAYER
+#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h"  // for TPM2_RC_COMMAND_CODE, TPM2B_ECC_POINT
 
-#include "esys_iutil.h"
-#include "test-esys.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_WARNING
 
 /** This test is intended to test Esys_ECDH_ZGen.
  *
