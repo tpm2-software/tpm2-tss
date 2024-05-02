@@ -3,14 +3,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_EvictControl, Esys_T...
+#include "tss2_tpm2_types.h"  // for TPM2B_SENSITIVE_CREATE, TPM2_PERSISTENT...
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_ERROR, goto_if_error, LOG_INFO
 
 /** This tests the Esys_TR_ToTPMPublic function by
  *  creating a Primary Object Key and then attempting to retrieve

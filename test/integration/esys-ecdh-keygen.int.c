@@ -8,14 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memset
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPM2_ALG_NULL, TPM2B_ECC_...
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_INFO
 
 /** This test is intended to test Esys_ECDH_KeyGen based on an ECC key
  *  created with Esys_CreatePrimary.

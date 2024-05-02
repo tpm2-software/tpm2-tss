@@ -8,17 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>
-#include <stdlib.h>
+#include <stdbool.h>          // for bool, false
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS, size_t
+#include <string.h>           // for memcmp, memset
 
-#include "tss2_esys.h"
-#include "tss2_mu.h"
+#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, BYTE, TSS2_RE...
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_FlushContext, Esys_Free
+#include "tss2_mu.h"          // for Tss2_MU_TPMT_PUBLIC_Marshal
+#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2_ALG_SHA256, TPM2B_AUTH
 
-#include "esys_iutil.h"
-#include "test-esys.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, goto_if_error, LOG_ERROR
 
 static bool check_name(ESYS_CONTEXT * esys_context, ESYS_TR object_handle)
 {

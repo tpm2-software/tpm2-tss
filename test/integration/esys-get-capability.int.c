@@ -8,14 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for UINT32, TSS2_RC
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_GetCapability, ESYS_...
+#include "tss2_tpm2_types.h"  // for TPM2_CAP, TPM2_CAP_TPM_PROPERTIES, TPM2...
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, goto_if_error
 
 /** This test is intended to test the ESYS get capability command.
  *

@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
+#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, UINT32, TSS2_RC, TSS2_...
+#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256, TPM2_ALG_NULL, TPM2_RC...
 
-#include "esys_iutil.h"
-#include "test-esys.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_WARNING
 
 /** This test is intended to test the ESYS audit commands.
  *

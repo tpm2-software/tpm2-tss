@@ -8,14 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memcmp, memset
 
-#include "tss2_esys.h"
+#include "esys_int.h"         // for RSRC_NODE_T
+#include "esys_iutil.h"       // for esys_GetResourceObject
+#include "esys_types.h"       // for IESYS_RESOURCE
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_NV_ReadPu...
+#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2B_MAX_NV_BUFFER, TPM2B_...
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR
 
 /** This test is intended to test the ESYS nv define space, nv extend, and
  *  nv read command.

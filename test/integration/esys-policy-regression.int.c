@@ -8,14 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_esys.h"
-#include "tss2_mu.h"
+#include <stdbool.h>          // for true, false, bool
+#include <stdlib.h>           // for free, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memcmp
 
-#include "esys_iutil.h"
-#include "test-esys.h"
+#include "test-esys.h"        // for test_invoke_esys
+#include "tss2_common.h"      // for BYTE, TSS2_RC_SUCCESS, TSS2_RC, TSS2_RE...
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_StartAuthSession
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2_ALG_SHA256, TPM2_SE_...
+
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOGBLOB_DEBUG
 
 #define FLUSH true
 #define NOT_FLUSH false

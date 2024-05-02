@@ -3,15 +3,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include "tss2_mu.h"
-#include "tss2_esys.h"
+#include <stdlib.h>           // for size_t, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memcmp
 
-#include "esys_iutil.h"
+#include "tss2_common.h"      // for BYTE, TSS2_RC
+#include "tss2_esys.h"        // for Esys_Free, Esys_TR_GetName, Esys_TR_Get...
+#include "tss2_mu.h"          // for Tss2_MU_TPM2_HANDLE_Marshal
+#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2_NV_AC_FIRST, TPM2_HANDLE
+
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR
 
 /** This tests the Esys_TR_GetTpmHandle and Esys_TR_GetName functions by
  *  using a dummy AC, ACT handle and validating it against the expected TPM

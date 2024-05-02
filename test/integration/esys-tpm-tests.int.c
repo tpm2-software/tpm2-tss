@@ -7,14 +7,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for free, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
+#include "esys_int.h"         // for ESYS_CONTEXT, _ESYS_STATE_INIT
+#include "tss2_common.h"      // for TSS2_RC
+#include "tss2_esys.h"        // for ESYS_TR_NONE, ESYS_CONTEXT, Esys_GetTes...
+#include "tss2_tpm2_types.h"  // for TPML_ALG, TPM2B_MAX_BUFFER, TPM2_ALG_SH...
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error
 
 /** Test the ESYS functions for TPM tests.
  *

@@ -8,15 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memset
 
-#include "tss2_esys.h"
+#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"      // for TSS2_RC
+#include "tss2_esys.h"        // for Esys_Clear, ESYS_CONTEXT, ESYS_TR_NONE
+#include "tss2_tpm2_types.h"  // for TPM2_RC_BAD_AUTH
 
-#include "esys_iutil.h"
-#include "test-esys.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_WARNING, goto_if_error, number_rc
 
 /** Test of the ESYS function Esys_Clear.
  *
