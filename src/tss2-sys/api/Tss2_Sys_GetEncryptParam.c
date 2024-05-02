@@ -8,10 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
-#include "util/tss2_endian.h"
+#include <stddef.h>            // for size_t
+#include <stdint.h>            // for uint8_t
+
+#include "sysapi_util.h"       // for _TSS2_SYS_CONTEXT_BLOB, resp_header_fr...
+#include "tss2_common.h"       // for UINT8, TSS2_SYS_RC_NO_ENCRYPT_PARAM
+#include "tss2_sys.h"          // for TSS2_SYS_CONTEXT, Tss2_Sys_GetEncryptP...
+#include "tss2_tpm2_types.h"   // for TPM2_HANDLE, TPM2_PARAMETER_SIZE, TPM2...
+#include "util/tss2_endian.h"  // for BE_TO_HOST_16
 
 TSS2_RC Tss2_Sys_GetEncryptParam(
     TSS2_SYS_CONTEXT *sysContext,

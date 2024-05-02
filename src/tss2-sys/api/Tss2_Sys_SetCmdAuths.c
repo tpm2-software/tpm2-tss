@@ -8,12 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
+#include <stdint.h>            // for uint16_t
+#include <string.h>            // for memmove, memset, size_t
 
-#include "util/tss2_endian.h"
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
+#include "sysapi_util.h"       // for _TSS2_SYS_CONTEXT_BLOB, req_header_fro...
+#include "tss2_common.h"       // for UINT32, UINT8, TSS2_RC, TSS2_SYS_RC_IN...
+#include "tss2_mu.h"           // for Tss2_MU_TPMS_AUTH_COMMAND_Marshal, Tss...
+#include "tss2_sys.h"          // for TSS2L_SYS_AUTH_COMMAND, TSS2_SYS_CONTEXT
+#include "tss2_tpm2_types.h"   // for TPMS_AUTH_COMMAND, TPM2B_AUTH, TPM2B_N...
+#include "util/tss2_endian.h"  // for BE_TO_HOST_32, HOST_TO_BE_16, HOST_TO_...
 
 TSS2_RC Tss2_Sys_SetCmdAuths(
     TSS2_SYS_CONTEXT *sysContext,
