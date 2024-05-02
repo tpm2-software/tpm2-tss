@@ -8,21 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
+#include <stdbool.h>          // for true
+#include <stdint.h>           // for uint8_t, SIZE_MAX
+#include <stdlib.h>           // for NULL, malloc, size_t
+#include <string.h>           // for memset
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_json_deserialize.h"
+#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_GetEsysBlob, IFAPI_...
+#include "fapi_util.h"        // for ifapi_session_clean, ifapi_cleanup_session
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"     // for statecase, check_not_null, fallthrough
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_...
+#include "tss2_esys.h"        // for Esys_SetTimeout, Esys_ContextSave_Async
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, FAPI_ESYSBLOB_DESERIALIZE
+#include "tss2_policy.h"      // for TSS2_OBJECT
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPMS_CONTEXT
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "tss2_mu.h"
+#include "tss2_mu.h"          // for Tss2_MU_TPMS_CONTEXT_Marshal
+#include "util/log.h"         // for goto_if_error, LOG_TRACE, SAFE_FREE
 
 /** One-Call function for Fapi_GetEsysBlob
  *

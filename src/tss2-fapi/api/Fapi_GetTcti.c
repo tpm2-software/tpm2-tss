@@ -8,14 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_fapi.h"
-#include "tss2_esys.h"
-#include "tss2_tcti.h"
+#include "fapi_int.h"      // for FAPI_CONTEXT
+#include "ifapi_macros.h"  // for check_not_null
+#include "tss2_common.h"   // for TSS2_RC, TSS2_FAPI_RC_NO_TPM
+#include "tss2_esys.h"     // for Esys_GetTcti
+#include "tss2_fapi.h"     // for FAPI_CONTEXT, Fapi_GetTcti
+#include "tss2_tcti.h"     // for TSS2_TCTI_CONTEXT
 
-#include "fapi_int.h"
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"      // for LOG_DEBUG, LOG_TRACE, return_error, return...
 
 /** One-Call function for Fapi_GetTcti
  *

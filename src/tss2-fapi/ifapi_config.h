@@ -6,11 +6,9 @@
 #ifndef IFAPI_CONFIG_H
 #define IFAPI_CONFIG_H
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include "tss2_tpm2_types.h"
-#include "ifapi_io.h"
+#include "ifapi_io.h"         // for IFAPI_IO
+#include "tss2_common.h"      // for TSS2_RC
+#include "tss2_tpm2_types.h"  // for TPMI_YES_NO, TPML_PCR_SELECTION, TPMT_HA
 
 #define ENV_FAPI_CONFIG "TSS2_FAPICONF"
 

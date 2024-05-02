@@ -6,33 +6,26 @@
 #ifndef FAPI_INT_H
 #define FAPI_INT_H
 
-#include "fapi_types.h"
-#include "ifapi_policy_types.h"
-#include "ifapi_policy_instantiate.h"
-#include "ifapi_eventlog.h"
-#include "ifapi_io.h"
-#include "ifapi_profiles.h"
-#include "ifapi_macros.h"
-#include "ifapi_keystore.h"
-#include "ifapi_policy_store.h"
-#include "ifapi_config.h"
+#include <json-c/json.h>               // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>                   // for bool, false, true
+#include <stdint.h>                    // for uint8_t, uint32_t, uint64_t
+#include <stdio.h>                     // for size_t, NULL
+#include <unistd.h>                    // for R_OK, W_OK
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <string.h>
-#include <inttypes.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <json-c/json.h>
-#include <poll.h>
-
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
+#include "fapi_types.h"                // for NODE_STR_T, NODE_OBJECT_T, UIN...
+#include "ifapi_config.h"              // for IFAPI_CONFIG
+#include "ifapi_eventlog.h"            // for IFAPI_EVENT, FAPI_QUOTE_INFO
+#include "ifapi_io.h"                  // for IFAPI_IO
+#include "ifapi_keystore.h"            // for IFAPI_OBJECT, IFAPI_IO_STATE
+#include "ifapi_policy_instantiate.h"  // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ifapi_policy_store.h"        // for IFAPI_POLICY_STORE
+#include "ifapi_policy_types.h"        // for TPMS_POLICY, TPMS_POLICYAUTHOR...
+#include "ifapi_profiles.h"            // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_common.h"               // for UINT32, UINT16, BYTE, TSS2_BAS...
+#include "tss2_esys.h"                 // for ESYS_TR, ESYS_TR_NONE, ESYS_CO...
+#include "tss2_fapi.h"                 // for Fapi_CB_Auth, Fapi_CB_Branch
+#include "tss2_tpm2_types.h"           // for TPM2_HANDLE, TPMS_CAPABILITY_DATA
+#include "util/aux_util.h"             // for goto_if_error, TPM2_ERROR_FORMAT
 
 #define DEFAULT_LOG_DIR "/run/tpm2_tss"
 #define IFAPI_PCR_LOG_FILE "pcr.log"

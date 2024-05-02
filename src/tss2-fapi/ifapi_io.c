@@ -8,28 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <poll.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <limits.h>
-/* Need for some libc-versions */
-#ifndef __FreeBSD__
-#include <malloc.h>
-#endif
+#include <dirent.h>         // for closedir, dirent, opendir, readdir, scandir
+#include <errno.h>          // for errno, EAGAIN, EINTR
+#include <fcntl.h>          // for fcntl, flock, F_GETFL, F_SETFL, F_SETLK
+#include <limits.h>         // for LONG_MAX
+#include <poll.h>           // for pollfd, poll, POLLIN, POLLOUT
+#include <stdio.h>          // for fclose, fileno, size_t, NULL, fopen, remove
+#include <stdlib.h>         // for free, calloc, malloc
+#include <string.h>         // for strcmp, strerror, strlen, strdup, memcpy
+#include <sys/stat.h>       // for stat, fstat, S_ISDIR
+#include <unistd.h>         // for access, read, rmdir, write
 
-#include "tss2_common.h"
+#include "fapi_int.h"       // for FAPI_WRITE
+#include "fapi_types.h"     // for NODE_OBJECT_T
+#include "ifapi_helpers.h"  // for ifapi_asprintf, ifapi_create_dirs
 #include "ifapi_io.h"
-#include "ifapi_helpers.h"
-#include "ifapi_macros.h"
+#include "ifapi_macros.h"   // for check_not_null, return_error2, check_oom
+#include "tss2_common.h"    // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_RC_S...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"       // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
 
 /** Start reading a file's complete content into memory in an asynchronous way.
  *

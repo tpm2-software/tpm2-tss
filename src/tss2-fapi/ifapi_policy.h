@@ -6,17 +6,20 @@
 #ifndef IFAPI_POLICY_H
 #define IFAPI_POLICY_H
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <sys/stat.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <stdbool.h>                   // for bool
+#include <stddef.h>                    // for size_t
 
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "ifapi_policy_callbacks.h"
+#include "fapi_int.h"                  // for FAPI_CONTEXT, IFAPI_POLICY_CTX
+#include "ifapi_io.h"                  // for IFAPI_IO
+#include "ifapi_policy_callbacks.h"    // for ifapi_get_key_public, ifapi_ge...
+#include "ifapi_policy_instantiate.h"  // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ifapi_policy_store.h"        // for IFAPI_POLICY_STORE
+#include "ifapi_policy_types.h"        // for TPMS_POLICY
+#include "tss2_common.h"               // for TSS2_RC
+#include "tss2_esys.h"                 // for ESYS_CONTEXT
+#include "tss2_fapi.h"                 // for FAPI_CONTEXT
+#include "tss2_policy.h"               // for TSS2_POLICY_CALC_CALLBACKS
+#include "tss2_tpm2_types.h"           // for TPMI_ALG_HASH, TPM2B_DIGEST
 
 TSS2_RC
 get_policy_digest_idx(

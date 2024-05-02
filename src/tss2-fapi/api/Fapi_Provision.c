@@ -8,27 +8,32 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <inttypes.h>            // for uint8_t, PRIu16
+#include <stdbool.h>             // for false, true
+#include <stdlib.h>              // for NULL, size_t, calloc, getenv
+#include <string.h>              // for strlen, memset, memcpy, strcmp, memcmp
 
-#include "fapi_util.h"
-#include "tss2_tcti.h"
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_crypto.h"
-#include "fapi_policy.h"
-#include "ifapi_curl.h"
-#include "ifapi_get_web_cert.h"
-#include "ifapi_helpers.h"
-#include "tss2_mu.h"
+#include "fapi_crypto.h"         // for ifapi_cert_to_pem, ifapi_get_public_...
+#include "fapi_int.h"            // for IFAPI_Provision, FAPI_CONTEXT, IFAPI...
+#include "fapi_util.h"           // for ifapi_change_auth_hierarchy, ifapi_c...
+#include "ifapi_config.h"        // for IFAPI_CONFIG
+#include "ifapi_curl.h"          // for ifapi_curl_verify_ek_cert, ifapi_get...
+#include "ifapi_get_web_cert.h"  // for ifapi_get_web_ek_certificate
+#include "ifapi_helpers.h"       // for ifapi_init_hierarchy_object, ifapi_c...
+#include "ifapi_io.h"            // for ifapi_io_read_async, ifapi_io_read_f...
+#include "ifapi_keystore.h"      // for IFAPI_OBJECT, IFAPI_OBJECT_UNION
+#include "ifapi_macros.h"        // for statecase, fallthrough, goto_if_erro...
+#include "ifapi_profiles.h"      // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_common.h"         // for TSS2_FAPI_RC_TRY_AGAIN, BYTE, TSS2_RC
+#include "tss2_esys.h"           // for ESYS_TR_NONE, Esys_GetCapability_Async
+#include "tss2_fapi.h"           // for FAPI_CONTEXT, Fapi_Provision, Fapi_P...
+#include "tss2_mu.h"             // for Tss2_MU_TPMT_PUBLIC_Unmarshal
+#include "tss2_policy.h"         // for TSS2_OBJECT
+#include "tss2_tcti.h"           // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"     // for TPMS_CAPABILITY_DATA, TPMU_CAPABILITIES
 
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"            // for goto_if_error, SAFE_FREE, goto_error
 
 #define EK_CERT_RANGE (0x01c07fff)
 #define RSA_EK_NONCE_NV_INDEX 0x01c00003

@@ -7,15 +7,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
+#include <inttypes.h>              // for PRIx32
+#include <json-c/json.h>           // for json_object, json_object_put, json_object_to_js...
+#include <stdio.h>                 // for NULL, size_t
+#include <string.h>                // for strcmp, strlen
 
-#include "tpm_json_serialize.h"
-#include "fapi_policy.h"
+#include "ifapi_json_serialize.h"  // for ifapi_json_UINT8_ARY_serialize
 #include "ifapi_policy_json_serialize.h"
+#include "tpm_json_serialize.h"    // for ifapi_json_TPM2B_DIGEST_serialize
+#include "tss2_tpm2_types.h"       // for TPM2B_NAME, TPMT_PUBLIC, TPM2B_DIGEST
 
 #define LOGMODULE fapijson
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"              // for return_error, return_if_error, ret...
 
 
 /** Serialize a character string to json.

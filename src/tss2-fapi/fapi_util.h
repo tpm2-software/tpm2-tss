@@ -6,18 +6,19 @@
 #ifndef FAPI_UTIL_H
 #define FAPI_UTIL_H
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <sys/stat.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <stdbool.h>             // for bool
+#include <stddef.h>              // for size_t
+#include <stdint.h>              // for uint8_t
 
-#include "util/aux_util.h"
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "ifapi_helpers.h"
+#include "fapi_int.h"            // for IFAPI_KEY_TEMPLATE, TSS2_KEY_TYPE
+#include "fapi_types.h"          // for NODE_OBJECT_T
+#include "ifapi_keystore.h"      // for IFAPI_OBJECT
+#include "ifapi_policy_types.h"  // for TPMS_POLICY
+#include "ifapi_profiles.h"      // for IFAPI_PROFILE
+#include "tss2_common.h"         // for TSS2_RC, UINT32
+#include "tss2_esys.h"           // for ESYS_TR, ESYS_CONTEXT
+#include "tss2_fapi.h"           // for FAPI_CONTEXT
+#include "tss2_tpm2_types.h"     // for TPM2_HANDLE, TPMA_SESSION, TPM2B_DIGEST
 
 TSS2_RC
 ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR session);

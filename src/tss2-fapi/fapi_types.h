@@ -6,9 +6,9 @@
 #ifndef FAPI_TYPES_H
 #define FAPI_TYPES_H
 
-#include <stdlib.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 /** The data structure representing an unit8_t array.
   */

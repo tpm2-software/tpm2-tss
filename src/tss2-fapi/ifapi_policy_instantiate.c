@@ -8,20 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <stdlib.h>           // for size_t, NULL
+#include <string.h>           // for strlen
 
-#include "tss2_mu.h"
-#include "fapi_util.h"
-#include "fapi_crypto.h"
+#include "fapi_crypto.h"      // for ifapi_get_signature_algorithm_from_pem
 //#include "fapi_policy.h"
-#include "ifapi_helpers.h"
+#include "ifapi_helpers.h"    // for ifapi_get_name, ifapi_free_node_list
+#include "ifapi_macros.h"     // for return_error2, return_try_again
 #include "ifapi_policy_instantiate.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
+#include "tss2_tpm2_types.h"  // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for return_if_error, SAFE_FREE, goto_if_error
 
 static TSS2_RC
 get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list);

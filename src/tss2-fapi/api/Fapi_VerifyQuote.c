@@ -8,20 +8,25 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <json-c/json.h>      // for json_object, json_object_put, json_object_to_js...
+#include <stdint.h>           // for uint8_t
+#include <stdlib.h>           // for NULL, size_t, malloc
+#include <string.h>           // for memset, memcmp, memcpy
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "fapi_crypto.h"
+#include "fapi_crypto.h"      // for ifapi_verify_signature_quote
+#include "fapi_int.h"         // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"        // for ifapi_non_tpm_mode_init
+#include "ifapi_eventlog.h"   // for FAPI_QUOTE_INFO
+#include "ifapi_helpers.h"    // for ifapi_calculate_pcr_digest, ifapi_get_q...
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"     // for check_not_null, strdup_check, return_if...
+#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_VerifyQuote, Fapi_Ve...
+#include "tss2_tpm2_types.h"  // for TPM2B_DATA, TPM2B_ATTEST, TPMS_ATTEST
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_TRACE, SAFE_FREE, goto_if_error
 
 /** One-Call function for Fapi_VerifyQuote
  *

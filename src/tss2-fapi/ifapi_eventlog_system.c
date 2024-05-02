@@ -8,19 +8,25 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
+#include <inttypes.h>              // for uintptr_t, uint8_t, int64_t, PRId64
+#include <json-c/json.h>           // for json_object, json_object_put, json_object_to_js...
+#include <stdio.h>                 // for sscanf
+#include <stdlib.h>                // for calloc
+#include <string.h>                // for strlen, strncmp, memcmp, strcmp
+#include <strings.h>               // for strncasecmp
+#include <sys/types.h>             // for uint
+#include <uchar.h>                 // for char16_t
 
-#include "ifapi_helpers.h"
+#include "efi_event.h"             // for TCG_EVENT, TCG_EVENT2, TCG_EVENT_H...
+#include "fapi_crypto.h"           // for ifapi_hash_get_digest_size
+#include "ifapi_eventlog.h"        // for IFAPI_EVENT_TYPE
 #include "ifapi_eventlog_system.h"
-#include "ifapi_json_serialize.h"
-#include "tpm_json_deserialize.h"
-#include "efi_event.h"
+#include "ifapi_macros.h"          // for check_oom, return_error2
+#include "tpm_json_deserialize.h"  // for ifapi_get_sub_object, ifapi_json_U...
+#include "tss2_tpm2_types.h"       // for TPM2_MAX_PCRS, TPMI_ALG_HASH
 
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "ifapi_macros.h"
-#include "fapi_crypto.h"
+#include "util/log.h"              // for LOG_ERROR, LOG_TRACE, SAFE_FREE
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 

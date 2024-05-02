@@ -5,29 +5,42 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h" // IWYU pragma: keep
+#include "config.h"               // for HAVE_EVP_SM3
 #endif
 
-#include <string.h>
-
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
+#include <inttypes.h>             // for PRIu16
+#include <openssl/bio.h>          // for BIO_free, BIO_new_mem_buf, BIO_free...
+#include <openssl/bn.h>           // for BN_free, BN_bin2bn, BN_bn2bin, BN_b...
+#include <openssl/buffer.h>       // for buf_mem_st
+#include <openssl/crypto.h>       // for OSSL_LIB_CTX_free, OSSL_LIB_CTX_new
+#include <openssl/ec.h>           // for ECDSA_SIG_free, i2d_ECDSA_SIG, ECDS...
+#include <openssl/evp.h>          // for EVP_PKEY_type, EVP_PKEY_free, EVP_P...
+#include <openssl/obj_mac.h>      // for NID_sm2, NID_X9_62_prime192v1, NID_...
+#include <openssl/objects.h>      // for OBJ_nid2sn, OBJ_txt2nid
+#include <openssl/opensslv.h>     // for OPENSSL_VERSION_NUMBER
+#include <openssl/pem.h>          // for PEM_read_bio_PUBKEY, PEM_read_bio_P...
+#include <openssl/rsa.h>          // for EVP_PKEY_CTX_set_rsa_padding, EVP_P...
+#include <openssl/x509.h>         // for X509_free, X509_get_pubkey, d2i_X509
+#include <stdbool.h>              // for bool, false, true
+#include <stdio.h>                // for stderr
+#include <stdlib.h>               // for malloc, calloc, free
+#include <string.h>               // for memcpy, strlen, memset, strdup
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/aes.h>
 #else
-#include <openssl/core_names.h>
-#include <openssl/params.h>
-#include <openssl/param_build.h>
+#include <openssl/core_names.h>   // for OSSL_PKEY_PARAM_GROUP_NAME, OSSL_PK...
+#include <openssl/param_build.h>  // for OSSL_PARAM_BLD_free, OSSL_PARAM_BLD...
+#include <openssl/params.h>       // for OSSL_PARAM_free
+#include <openssl/types.h>        // for EVP_PKEY, BIGNUM, BIO, EVP_PKEY_CTX
 #endif
-#include <openssl/x509v3.h>
-#include <openssl/err.h>
+#include <openssl/err.h>          // for ERR_print_errors_fp
 
-#include "fapi_util.h"
-#include "util/aux_util.h"
 #include "fapi_crypto.h"
+#include "fapi_int.h"             // for OSSL_FREE, HASH_UPDATE_BUFFER
+#include "ifapi_macros.h"         // for goto_if_null2, check_oom
+
 #define LOGMODULE fapi
-#include "util/log.h"
+#include "util/log.h"             // for return_if_null, goto_error, goto_if...
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101000L
 #define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \

@@ -6,12 +6,14 @@
 #ifndef FAPI_TPM_JSON_DESERIALIZE_H
 #define FAPI_TPM_JSON_DESERIALIZE_H
 
-#include <stdbool.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <json-c/json.h>        // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>            // for bool
+#include <stddef.h>             // for size_t
 
-#include "tss2_tpm2_types.h"
-#include "fapi_int.h"
+#include "fapi_types.h"         // for UINT8_ARY
+#include "tss2_common.h"        // for TSS2_RC, UINT32, BYTE, UINT16, UINT64
+#include "tss2_tpm2_types.h"    // for TPM2B_CREATION_DATA, TPM2B_DATA, TPM2...
+
 #define YES 1
 #define NO 0
 

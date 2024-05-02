@@ -7,22 +7,23 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
+#include <stdlib.h>              // for NULL, free
 
-#ifndef NO_DL
-#include <dlfcn.h>
-#endif /* NO_DL */
-#include <stdlib.h>
+#include "fapi_int.h"            // for FAPI_CONTEXT, IFAPI_CMD_STATE, IFAPI...
+#include "fapi_util.h"           // for ifapi_free_objects
+#include "ifapi_config.h"        // for IFAPI_CONFIG
+#include "ifapi_eventlog.h"      // for IFAPI_EVENTLOG
+#include "ifapi_keystore.h"      // for ifapi_cleanup_ifapi_keystore
+#include "ifapi_policy_store.h"  // for IFAPI_POLICY_STORE
+#include "ifapi_profiles.h"      // for ifapi_profiles_finalize
+#include "tss2_esys.h"           // for Esys_Finalize, Esys_GetTcti
+#include "tss2_fapi.h"           // for FAPI_CONTEXT, Fapi_Finalize
+#include "tss2_tcti.h"           // for TSS2_TCTI_CONTEXT
+#include "tss2_tctildr.h"        // for Tss2_TctiLdr_Finalize
 
-#include <unistd.h>
-
-#include "tss2_fapi.h"
-#include "tss2_tctildr.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/aux_util.h"       // for SAFE_FREE
+#include "util/log.h"            // for LOG_DEBUG, LOG_TRACE
 
 /** One-Call function for Fapi_Finalize
  *

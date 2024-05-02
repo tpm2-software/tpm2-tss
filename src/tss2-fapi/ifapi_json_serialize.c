@@ -8,20 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
+#include <inttypes.h>                     // for PRIx32, uint8_t
+#include <json-c/json.h>                  // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>                      // for true
+#include <stdio.h>                        // for NULL, size_t, sprintf
+#include <stdlib.h>                       // for malloc
 
+#include "ifapi_config.h"                 // for IFAPI_CONFIG
 #include "ifapi_json_serialize.h"
-#include "tpm_json_serialize.h"
-#include "fapi_policy.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_policy_json_serialize.h"
-#include "ifapi_config.h"
-#include "ifapi_helpers.h"
+#include "ifapi_macros.h"                 // for check_oom, goto_if_null2
+#include "ifapi_policy_json_serialize.h"  // for ifapi_json_TPMS_POLICY_seri...
+#include "tpm_json_deserialize.h"         // for ifapi_parse_json
+#include "tpm_json_serialize.h"           // for ifapi_json_TPMI_YES_NO_seri...
+#include "tss2_tpm2_types.h"              // for TPM2B_DIGEST, TPM2B_PUBLIC
 
 #define LOGMODULE fapijson
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                     // for return_error, return_if_error
 
 #define CHECK_IN_LIST(type, needle, ...) \
     type tab[] = { __VA_ARGS__ }; \

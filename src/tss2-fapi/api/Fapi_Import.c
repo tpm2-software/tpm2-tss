@@ -8,25 +8,35 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <libgen.h>
+#include <json-c/json.h>                    // for json_object, json_object_put, json_object_to_js...
+#include <stdint.h>                         // for uint16_t
+#include <stdlib.h>                         // for NULL, size_t
+#include <string.h>                         // for strncmp, memset, memcpy
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "tss2_mu.h"
-#include "ifapi_json_deserialize.h"
-#include "ifapi_policy_json_deserialize.h"
-#include "tpm_json_deserialize.h"
+#include "fapi_crypto.h"                    // for ifapi_get_profile_sig_scheme
+#include "fapi_int.h"                       // for FAPI_CONTEXT, IFAPI_Impor...
+#include "fapi_types.h"                     // for UINT8_ARY, NODE_STR_T
+#include "fapi_util.h"                      // for ifapi_non_tpm_mode_init
+#include "ifapi_helpers.h"                  // for ifapi_cleanup_policy, ifa...
+#include "ifapi_io.h"                       // for ifapi_io_poll
+#include "ifapi_json_deserialize.h"         // for ifapi_json_IFAPI_OBJECT_d...
+#include "ifapi_keystore.h"                 // for IFAPI_OBJECT, ifapi_clean...
+#include "ifapi_macros.h"                   // for goto_if_error_reset_state
+#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_policy_store.h"             // for ifapi_policy_store_store_...
+#include "ifapi_policy_types.h"             // for TPMS_POLICY
+#include "ifapi_profiles.h"                 // for ifapi_profiles_get, IFAPI...
+#include "tpm_json_deserialize.h"           // for ifapi_get_sub_object
+#include "tss2_common.h"                    // for TSS2_RC, BYTE, TSS2_RC_SU...
+#include "tss2_esys.h"                      // for Esys_SetTimeout, Esys_Flu...
+#include "tss2_fapi.h"                      // for FAPI_CONTEXT, Fapi_Import
+#include "tss2_mu.h"                        // for Tss2_MU_TPMT_SENSITIVE_Ma...
+#include "tss2_policy.h"                    // for TSS2_OBJECT
+#include "tss2_tcti.h"                      // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"                // for TPM2B_PRIVATE, TPM2B_PUBLIC
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "fapi_crypto.h"
+#include "util/log.h"                       // for goto_if_error, SAFE_FREE
 
 /** One-Call function for Fapi_Import
  *

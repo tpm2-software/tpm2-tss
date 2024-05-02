@@ -8,15 +8,25 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "ifapi_json_serialize.h"
-#include "fapi_crypto.h"
+#include <stdint.h>           // for uint32_t, uint8_t
+#include <string.h>           // for NULL, memcpy, memset, size_t
+
+#include "fapi_int.h"         // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"        // for ifapi_cleanup_session, ifapi_get_sessio...
+#include "ifapi_eventlog.h"   // for IFAPI_TSS_EVENT, IFAPI_EVENT, IFAPI_EVE...
+#include "ifapi_helpers.h"    // for ifapi_asprintf
+#include "ifapi_io.h"         // for ifapi_io_path_exists, ifapi_io_poll
+#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"     // for statecase, check_not_null, fallthrough
+#include "ifapi_profiles.h"   // for IFAPI_PROFILES, IFAPI_PROFILE
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_BA...
+#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Get...
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_PcrExtend, Fapi_PcrE...
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPM2B_EVENT, TPM2_CAP_PCRS, TPMI_YES_NO
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_TRACE, SAFE_FREE, goto_if_error
 
 /** One-Call function for Fapi_PcrExtend
  *

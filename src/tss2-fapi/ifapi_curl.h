@@ -2,7 +2,9 @@
 #ifndef IFAPI_CURL_H
 #define IFAPI_CURL_H
 
-#include "fapi_int.h"
+#include <stddef.h>       // for size_t
+
+#include "tss2_common.h"  // for TSS2_RC
 
 TSS2_RC
 ifapi_curl_verify_ek_cert(

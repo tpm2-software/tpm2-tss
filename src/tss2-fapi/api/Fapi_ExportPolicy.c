@@ -8,15 +8,31 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "fapi_policy.h"
-#include "fapi_crypto.h"
+#include <inttypes.h>                     // for PRIu16
+#include <json-c/json.h>                  // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>                      // for false, true
+#include <string.h>                       // for memset, size_t, NULL
+
+#include "fapi_crypto.h"                  // for ifapi_hash_get_digest_size
+#include "fapi_int.h"                     // for IFAPI_ExportPolicy, FAPI_CO...
+#include "fapi_util.h"                    // for ifapi_session_init
+#include "ifapi_helpers.h"                // for ifapi_cleanup_policy, ifapi...
+#include "ifapi_io.h"                     // for ifapi_io_poll
+#include "ifapi_keystore.h"               // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"                 // for check_not_null, statecase
+#include "ifapi_policy.h"                 // for ifapi_calculate_tree
+#include "ifapi_policy_json_serialize.h"  // for ifapi_json_TPMS_POLICY_seri...
+#include "ifapi_policy_store.h"           // for ifapi_policy_store_load_async
+#include "ifapi_policy_types.h"           // for TPMS_POLICY
+#include "ifapi_profiles.h"               // for IFAPI_PROFILES, IFAPI_PROFILE
+#include "tss2_common.h"                  // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"                    // for Esys_SetTimeout
+#include "tss2_fapi.h"                    // for FAPI_CONTEXT, Fapi_ExportPo...
+#include "tss2_tcti.h"                    // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"              // for TPML_DIGEST_VALUES, TPMT_HA
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                     // for LOG_TRACE, SAFE_FREE, goto_...
 
 /** One-Call function for Fapi_ExportPolicy
  *

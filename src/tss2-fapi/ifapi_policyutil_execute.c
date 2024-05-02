@@ -8,23 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <stdbool.h>                 // for true
+#include <stdlib.h>                  // for calloc, NULL
 
-#include "tss2_mu.h"
-#include "fapi_util.h"
-#include "fapi_crypto.h"
+#include "ifapi_macros.h"            // for statecase, fallthrough, statecas...
+#include "ifapi_policy_callbacks.h"  // for IFAPI_POLICY_EXEC_CB_CTX, ifapi_...
 //#include "fapi_policy.h"
-#include "ifapi_policy_execute.h"
+#include "ifapi_policy_execute.h"    // for IFAPI_POLICY_EXEC_CTX, ifapi_pol...
 #include "ifapi_policyutil_execute.h"
-#include "ifapi_helpers.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_policy_callbacks.h"
-#include "ifapi_policyutil_execute.h"
+#include "ifapi_profiles.h"          // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_policy.h"             // for TSS2_POLICY_EXEC_CALLBACKS
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                // for SAFE_FREE, return_error, goto_if...
 
 /** Create a new policy on policy stack.
  *

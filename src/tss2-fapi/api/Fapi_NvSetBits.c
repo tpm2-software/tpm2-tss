@@ -8,18 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
+#include <inttypes.h>         // for uint64_t, PRIx64
+#include <json-c/json.h>      // for json_object, json_object_put, json_object_to_js...
+#include <stdlib.h>           // for NULL
+#include <string.h>           // for memset
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_NV_Cmds, NV_SET_BIT...
+#include "fapi_util.h"        // for ifapi_authorize_object, ifapi_cleanup_s...
+#include "ifapi_helpers.h"    // for ifapi_init_hierarchy_object
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"     // for goto_if_error_reset_state, statecase
+#include "ifapi_profiles.h"   // for IFAPI_PROFILES
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR, Esys_NV_SetBi...
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_NvSetBits, Fapi_NvSe...
+#include "tss2_policy.h"      // for TSS2_OBJECT
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_TRACE, SAFE_FREE, goto_if_error
 
 /** One-Call function for Fapi_NvSetBits
  *

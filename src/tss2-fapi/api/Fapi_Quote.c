@@ -8,16 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
+#include <stdint.h>           // for uint8_t, uint32_t
+#include <stdio.h>            // for size_t, NULL
+#include <stdlib.h>           // for malloc
+#include <string.h>           // for memcpy, memset, strcmp
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"         // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"        // for ifapi_authorize_object, ifapi_cleanup_s...
+#include "ifapi_eventlog.h"   // for ifapi_eventlog_get_async, ifapi_eventlo...
+#include "ifapi_helpers.h"    // for ifapi_compute_quote_info, ifapi_filter_...
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"     // for check_not_null, statecase, fallthrough
+#include "ifapi_profiles.h"   // for IFAPI_PROFILE, ifapi_profiles_get, IFAP...
+#include "tss2_common.h"      // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_R...
+#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_Quote, Fapi_Quote_Async
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPM2B_DATA, TPM2_HANDLE, TPMA_SESSION_D...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, LOG_TRACE, goto_if_error
 
 /** One-Call function for Fapi_Quote
  *
