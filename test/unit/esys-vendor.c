@@ -4,19 +4,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <ctype.h>
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
+#include "../helper/cmocka_all.h"           // for assert_int_equal, assert_true, will_ret...
+#include <inttypes.h>         // for uint8_t, int32_t
+#include <stdbool.h>          // for false
+#include <stdlib.h>           // for NULL, size_t, calloc, free, strtol
+#include <string.h>           // for strcmp, strlen
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, UINT16, TSS2_...
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_Finalize, Esys_Free
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CANCEL
+#include "tss2_tpm2_types.h"  // for TPM2B_MAX_CAP_BUFFER, TPMS_CAPABILITY_DATA
+#include "util/aux_util.h"    // for UNUSED
 
 #define LOGMODULE tests
 #include "util/log.h"
+
+struct vendor_tests;
 
 typedef struct vendor_tests vendor_tests;
 struct vendor_tests {

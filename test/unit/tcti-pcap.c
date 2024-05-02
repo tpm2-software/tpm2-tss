@@ -8,27 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <sys/stat.h>
-#include <netinet/in.h>
+#include "../helper/cmocka_all.h"                       // for will_return, assert_int_equal
+#include <inttypes.h>                     // for uint8_t, uint32_t, uint64_t
+#include <netinet/in.h>                   // for htonl, ntohl
+#include <stdio.h>                        // for NULL, size_t, fprintf, ssize_t
+#include <stdlib.h>                       // for calloc, free, EXIT_SUCCESS
+#include <string.h>                       // for strcmp, memcpy
+#include <sys/stat.h>                     // for mode_t
+#include <time.h>                         // for clockid_t, timespec, CLOCK_...
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_tcti.h"
-#include "tss2_tcti_pcap.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-pcap.h"
+#include "tss2-tcti/tcti-common.h"        // for TSS2_TCTI_COMMON_CONTEXT
+#include "tss2-tcti/tcti-pcap-builder.h"  // for ENV_PCAP_FILE, pcap_buider_ctx
+#include "tss2-tcti/tcti-pcap.h"          // for TSS2_TCTI_PCAP_CONTEXT, TCT...
+#include "tss2_common.h"                  // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_tcti.h"                    // for TSS2_TCTI_CONTEXT, TSS2_TCT...
+#include "tss2_tcti_pcap.h"               // for Tss2_Tcti_Pcap_Init
+#include "tss2_tpm2_types.h"              // for TPM2_RC_SUCCESS
 
 #define LOGMODULE tests
 #include "util/log.h"
+
+struct timespec;
 
 #define EXIT_SKIP 77
 

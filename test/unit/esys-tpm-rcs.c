@@ -8,21 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
+#include "../helper/cmocka_all.h"                // for assert_int_equal, cmocka_unit_test...
+#include <inttypes.h>              // for uint8_t, int32_t, uint32_t, uint64_t
+#include <stdlib.h>                // for NULL, size_t, free, malloc
+#include <string.h>                // for memcpy, memset
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
+#include "esys_int.h"              // for RSRC_NODE_T
+#include "esys_types.h"            // for IESYS_RESOURCE, IESYSC_WITHOUT_MIS...
+#include "tss2-esys/esys_iutil.h"  // for esys_CreateResourceObject
+#include "tss2_common.h"           // for TSS2_RC, UINT32, UINT16, TSS2_RC_S...
+#include "tss2_esys.h"             // for Esys_GetTcti, ESYS_TR_NONE, ESYS_C...
+#include "tss2_tcti.h"             // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CANCEL
+#include "tss2_tpm2_types.h"       // for TPM2B_DIGEST, TPM2B_DATA, TPM2B_MA...
 
-#include "tss2_esys.h"
-
-#include "tss2-esys/esys_iutil.h"
 #define LOGMODULE tests
+#include "esys-dummy-defs.h"       // for DUMMY_2B_DATA, DUMMY_TR_HANDLE_KEY
+#include "util/aux_util.h"         // for UNUSED
 #include "util/log.h"
-#include "util/aux_util.h"
-#include "esys-dummy-defs.h"
 
 /**
  * This unit test looks into a set of Esys_<cmd>() functions and tests the

@@ -3,25 +3,13 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
-#include <openssl/sha.h>
-#include <openssl/evp.h>
+#include <inttypes.h>            // for uint32_t
+#include <json-c/json.h>         // for json_object, json_object_put, json_object_to_js...
+#include <stdio.h>               // for NULL
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_fapi.h"
-#include "ifapi_eventlog.h"
-#include "ifapi_ima_eventlog.h"
-#include "fapi_policy.h"
-
-#include "util/aux_util.h"
+#include "ifapi_ima_eventlog.h"  // for ifapi_read_ima_event_log
+#include "tss2_common.h"         // for TSS2_RC
+#include "util/aux_util.h"       // for UNUSED
 
 #define LOGMODULE tests
 #include "util/log.h"

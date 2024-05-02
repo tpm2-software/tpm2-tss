@@ -8,25 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
-#include <openssl/sha.h>
-#include <openssl/evp.h>
+#include "../helper/cmocka_all.h"    // for assert_int_equal, assert_non_null
+#include <inttypes.h>                // for uint32_t
+#include <json-c/json.h>             // for json_object, json_object_put, json_object_to_js...
+#include <openssl/evp.h>             // for OpenSSL_add_all_digests
+#include <stdio.h>                   // for NULL, fprintf, stderr
+#include <string.h>                  // for strdup
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_fapi.h"
-#include "ifapi_eventlog.h"
-#include "ifapi_ima_eventlog.h"
-#include "fapi_policy.h"
-
-#include "util/aux_util.h"
+#include "ifapi_eventlog.h"          // for ifapi_cleanup_event, IFAPI_EVENT
+#include "ifapi_ima_eventlog.h"      // for ifapi_get_ima_eventname, ifapi_r...
+#include "ifapi_json_deserialize.h"  // for ifapi_json_IFAPI_EVENT_deserialize
+#include "tss2_common.h"             // for TSS2_RC_SUCCESS, TSS2_RC
+#include "util/aux_util.h"           // for SAFE_FREE
 
 #define LOGMODULE tests
 #include "util/log.h"

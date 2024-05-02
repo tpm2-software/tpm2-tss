@@ -8,29 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include "../helper/cmocka_all.h"           // for cmocka_unit_test, assert_...
+#include <inttypes.h>                       // for uint32_t, uint8_t, UINT16...
+#include <json-c/json.h>                    // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>                        // for bool
+#include <stdio.h>                          // for NULL, size_t, fread, fopen
+#include <stdlib.h>                         // for calloc, free
+#include <string.h>                         // for memcmp, memcpy, strdup
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_fapi.h"
-#include "tpm_json_serialize.h"
-#include "ifapi_json_eventlog_serialize.h"
-#include "ifapi_json_eventlog_deserialize.h"
-#include "ifapi_eventlog.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_json_deserialize.h"
-#include "fapi_policy.h"
-#include "ifapi_helpers.h"
-
-#include "util/aux_util.h"
+#include "ifapi_eventlog.h"                 // for ifapi_cleanup_event, IFAP...
+#include "ifapi_helpers.h"                  // for IFAPI_PCR_REG, ifapi_calc...
+#include "ifapi_json_deserialize.h"         // for ifapi_json_IFAPI_EVENT_de...
+#include "ifapi_json_eventlog_serialize.h"  // for ifapi_get_tcg_firmware_ev...
+#include "tss2_common.h"                    // for TSS2_RC_SUCCESS, BYTE
+#include "tss2_tpm2_types.h"                // for TPM2B_DIGEST, TPM2_ALG_SHA1
+#include "util/aux_util.h"                  // for SAFE_FREE
 
 #define LOGMODULE tests
 #include "util/log.h"

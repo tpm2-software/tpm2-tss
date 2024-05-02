@@ -8,23 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include "../helper/cmocka_all.h"    // for cmocka_unit_test, assert_int_equal
+#include <inttypes.h>                // for uint32_t, uint8_t
+#include <json-c/json.h>             // for json_object, json_object_put, json_object_to_js...
+#include <stdbool.h>                 // for bool
+#include <stdio.h>                   // for NULL, fprintf, stderr
+#include <string.h>                  // for strdup
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_fapi.h"
-#include "ifapi_eventlog.h"
-#include "ifapi_ima_eventlog.h"
-#include "fapi_policy.h"
-
-#include "util/aux_util.h"
+#include "ifapi_eventlog.h"          // for ifapi_cleanup_event, IFAPI_EVENT
+#include "ifapi_ima_eventlog.h"      // for ifapi_read_ima_event_log
+#include "ifapi_json_deserialize.h"  // for ifapi_json_IFAPI_EVENT_deserialize
+#include "tss2_common.h"             // for TSS2_RC_SUCCESS, TSS2_RC
+#include "util/aux_util.h"           // for SAFE_FREE
 
 #define LOGMODULE tests
 #include "util/log.h"

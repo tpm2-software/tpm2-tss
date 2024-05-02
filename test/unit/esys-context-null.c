@@ -8,21 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <stdint.h>
-#define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "tss2-sys/sysapi_util.h"
-#include <tss2_esys.h>
-#include "esys_types.h"
-#include "esys_iutil.h"
+#include "../helper/cmocka_all.h"       // for assert_int_equal, cmocka_unit_test, CMUnitTest
+#include <stdio.h>        // for NULL
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
+#define LOGMODULE test
+#include <tss2_esys.h>    // for ESYS_TR_NONE, ESYS_TR_PASSWORD, Esys_AC_Get...
+
+#include "tss2_common.h"  // for TSS2_ESYS_RC_BAD_REFERENCE, TSS2_RC
+#include "util/log.h"
 
 /**
  * This unit test checks whether all  Esys_<cmd>() functions (one call, async,

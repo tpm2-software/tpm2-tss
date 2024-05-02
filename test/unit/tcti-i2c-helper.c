@@ -24,22 +24,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include "../helper/cmocka_all.h"                     // for assert_int_equal, assert_stri...
+#include <inttypes.h>                   // for uint8_t, int32_t
+#include <stdbool.h>                    // for false, bool, true
+#include <stdio.h>                      // for NULL, size_t
+#include <stdlib.h>                     // for free, calloc, malloc
+#include <string.h>                     // for memcpy, strncmp
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_tcti.h"
-#include "tss2_tcti_i2c_helper.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-i2c-helper.h"
-#include "util/key-value-parse.h"
+#include "tss2-tcti/tcti-common.h"      // for TCTI_STATE_RECEIVE, TCTI_VERSION
+#include "tss2-tcti/tcti-i2c-helper.h"  // for TCTI_I2C_HELPER_TPM_STS_REG
+#include "tss2_common.h"                // for TSS2_RC_SUCCESS, TSS2_RC, TSS...
+#include "tss2_tcti.h"                  // for TSS2_TCTI_CONTEXT, TSS2_TCTI_...
+#include "tss2_tcti_i2c_helper.h"       // for TSS2_TCTI_I2C_HELPER_PLATFORM
 
 #define DUMMY_PLATFORM_DATA "my platform data"
 

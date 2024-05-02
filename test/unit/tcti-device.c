@@ -8,22 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>
-#include <inttypes.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <poll.h>
+#include "../helper/cmocka_all.h"                 // for will_return, assert_true, assert_...
+#include <errno.h>                  // for errno, EACCES, ENOENT
+#include <inttypes.h>               // for uint8_t
+#include <poll.h>                   // for pollfd, nfds_t
+#include <stdio.h>                  // for NULL, size_t, ssize_t
+#include <stdlib.h>                 // for calloc, free
+#include <string.h>                 // for memcpy, strlen, strncmp
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_mu.h"
-#include "tss2_tcti_device.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-device.h"
+#include "tss2-tcti/tcti-common.h"  // for tcti_common_context_cast, TSS2_TC...
+#include "tss2_common.h"            // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TC...
+#include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, TSS2_TCTI_TIME...
+#include "tss2_tcti_device.h"       // for Tss2_Tcti_Device_Init
 
 #define LOGMODULE tests
 #include "util/log.h"

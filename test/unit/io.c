@@ -8,19 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
+#include "../helper/cmocka_all.h"       // for will_return, assert_int_equal, cmocka_unit_...
+#include <errno.h>        // for EINVAL, ENOTSOCK, errno
+#include <inttypes.h>     // for uint8_t, PRIxPTR, uintptr_t
+#include <stdio.h>        // for ssize_t, NULL, size_t
+#include <string.h>       // for memset
+#include <sys/socket.h>   // for socklen_t
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
+#include "tss2_common.h"  // for TSS2_RC, TSS2_TCTI_RC_IO_ERROR, TSS2_RC_SUC...
+#include "util-io/io.h"   // for socket_connect, SOCKET, socket_connect_unix
 
-#include "tss2_tpm2_types.h"
-
-#include "util-io/io.h"
 #define LOGMODULE test
-#include "util/log.h"
+#include "util/log.h"     // for LOG_DEBUG
 
 int
 __wrap_socket (

@@ -8,14 +8,13 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
+#include "../helper/cmocka_all.h"            // for assert_int_equal, cmocka_unit_test
+#include <stdint.h>            // for uint8_t
+#include <stdio.h>             // for NULL, size_t
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_mu.h"
-#include "util/tss2_endian.h"
+#include "tss2_common.h"       // for UINT64, TSS2_RC, TSS2_RC_SUCCESS, TSS2...
+#include "tss2_mu.h"           // for Tss2_MU_UINT64_Marshal, Tss2_MU_UINT64...
+#include "util/tss2_endian.h"  // for HOST_TO_BE_64
 
 /*
  * Test case for successful UINT64 marshaling with NULL offset.

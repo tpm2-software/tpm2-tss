@@ -8,27 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <limits.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
+#include "../helper/cmocka_all.h"                        // for assert_int_equal, assert_s...
+#include <limits.h>                        // for PATH_MAX
+#include <stddef.h>                        // for NULL, size_t
+#include <stdio.h>                         // for fclose, fopen, fprintf, fread
+#include <stdlib.h>                        // for calloc
+#include <string.h>                        // for memcpy, memset
 
-#if defined(__linux__)
-#include <linux/limits.h>
-#endif
-
-#include "tss2_policy.h"
+#include "tss2_common.h"                   // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_policy.h"                   // for TSS2_POLICY_PCR_SELECTION
+#include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMS_PCR_SEL...
 
 #define LOGMODULE test
-#include "util/log.h"
-
-#include "test/data/test-fapi-policies.h"
-#include "util/aux_util.h"
+#include "test/data/test-fapi-policies.h"  // for policy_digests, _test_fapi...
+#include "util/aux_util.h"                 // for UNUSED, SAFE_FREE, ARRAY_LEN
+#include "util/log.h"                      // for LOG_ERROR
 
 #define TEST_LAYER        TSS2_RC_LAYER(19)
 #define TSS2_RC_TEST_NOT_SUPPORTED ((TSS2_RC)(TEST_LAYER | \
