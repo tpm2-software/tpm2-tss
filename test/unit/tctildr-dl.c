@@ -9,22 +9,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
+#include "../helper/cmocka_all.h"                       // for expect_value, will_return
+#include <dlfcn.h>                        // for RTLD_NOW
+#include <stddef.h>                       // for NULL
+#include <stdio.h>                        // for printf
 
-#include <dlfcn.h>
+#include "tss2-tcti/tctildr-dl.h"         // for handle_from_name, tctildr_g...
+#include "tss2-tcti/tctildr-interface.h"  // for tctildr_get_tcti, tctildr_g...
+#include "tss2_common.h"                  // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_tcti.h"                    // for TSS2_TCTI_INFO, TSS2_TCTI_I...
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_tcti.h"
-
-#include "tss2-tcti/tctildr-interface.h"
-#include "tss2-tcti/tctildr-dl.h"
-#include "tss2-tcti/tctildr.h"
 #define LOGMODULE test
-#include "util/log.h"
+#include "util/log.h"                     // for LOG_TRACE
 
 /* global TCTI object, use to return reference from */
 static TSS2_TCTI_CONTEXT_COMMON_V2 tcti_instance = { 0, };

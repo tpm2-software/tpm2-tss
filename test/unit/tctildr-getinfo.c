@@ -3,23 +3,14 @@
  * Copyright 2019, Intel Corporation
  */
 
-#include <errno.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "../helper/cmocka_all.h"             // for will_return, mock_type, cmocka_unit_test
+#include <errno.h>              // for ENOMEM, errno
+#include <stdio.h>              // for printf, NULL, size_t
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_tcti.h"
-#include "tss2_tctildr.h"
-
-#include "tss2-tcti/tctildr.h"
-#include "tss2-tcti/tcti-common.h"
+#include "tss2-tcti/tctildr.h"  // for copy_info
+#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_R...
+#include "tss2_tcti.h"          // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
+#include "tss2_tctildr.h"       // for Tss2_TctiLdr_GetInfo, Tss2_TctiLdr_Fr...
 
 static char* name_dup = "name_dup";
 static char* description_dup = "description_dup";

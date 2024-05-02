@@ -8,19 +8,12 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
+#include "../helper/cmocka_all.h"    // for CMUnitTest, cmocka_run_group_tests, cmocka_uni...
+#include <stdio.h>     // for NULL
+#include <stdlib.h>    // for setenv
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "tss2_tpm2_types.h"
-
-#include "util-io/io.h"
 #define LOGMODULE test
-#include "util/log.h"
+#include "util/log.h"  // for LOG_INFO, LOGLEVEL_UNDEFINED, LOGMODULE_status
 
 
 static void

@@ -8,23 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include "../helper/cmocka_all.h"                     // for assert_int_equal, assert_ptr_...
+#include <inttypes.h>                   // for uint16_t, uint8_t
+#include <libusb-1.0/libusb.h>          // for libusb_device_handle, libusb_...
+#include <stdbool.h>                    // for false
+#include <stdio.h>                      // for NULL, size_t
+#include <stdlib.h>                     // for free, malloc, calloc
+#include <string.h>                     // for memcmp, memcpy
+#include <sys/select.h>                 // for fd_set, timeval
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
+#include "tss2-tcti/tcti-spi-helper.h"  // for TSS2_TCTI_SPI_HELPER_CONTEXT
+#include "tss2_common.h"                // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_tcti.h"                  // for TSS2_TCTI_CONTEXT
+#include "tss2_tcti_spi_helper.h"       // for TSS2_TCTI_SPI_HELPER_PLATFORM
+#include "tss2_tcti_spi_ltt2go.h"       // for Tss2_Tcti_Spi_Ltt2go_Init
 
-#include "tss2_tcti.h"
-#include "tss2_tcti_spi_ltt2go.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-spi-ltt2go.h"
-#include "tss2-tcti/tcti-spi-helper.h"
-#include "util/key-value-parse.h"
+struct timeval;
+struct timezone;
 
 #define VID_PI3G 0x365Du
 #define PID_LTT2GO 0x1337u

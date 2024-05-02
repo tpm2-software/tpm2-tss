@@ -8,23 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include "../helper/cmocka_all.h"                 // for assert_int_equal, assert_ptr_equal
+#include <stdbool.h>                // for false
+#include <stdio.h>                  // for NULL, size_t
+#include <stdlib.h>                 // for free, malloc, calloc
+#include <string.h>                 // for memcmp, memcpy
+#include <sys/select.h>             // for fd_set, timeval
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
+#include "tss2-tcti/mpsse/mpsse.h"  // for MPSSE_OK, GPIOL0, FIFTEEN_MHZ, MSB
+#include "tss2_common.h"            // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, TSS2_TCTI_FINA...
+#include "tss2_tcti_spi_ftdi.h"     // for Tss2_Tcti_Spi_Ftdi_Init
 
-#include "tss2_tcti.h"
-#include "tss2_tcti_spi_ftdi.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-spi-ftdi.h"
-#include "tss2-tcti/tcti-spi-helper.h"
-#include "util/key-value-parse.h"
+struct timeval;
+struct timezone;
 
 typedef enum {
     TPM_DID_VID = 0,

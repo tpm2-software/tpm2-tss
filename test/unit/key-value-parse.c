@@ -9,15 +9,13 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "../helper/cmocka_all.h"                // for cmocka_unit_test, assert_false
+#include <stdbool.h>               // for bool
+#include <stdio.h>                 // for NULL
+#include <string.h>                // for strcmp
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-
-#include "util/key-value-parse.h"
+#include "tss2_common.h"           // for TSS2_RC, TSS2_TCTI_RC_BAD_VALUE
+#include "util/key-value-parse.h"  // for parse_key_value, parse_key_value_s...
 
 /*
  * Ensure that a simple key / value string is parsed into its component parts.

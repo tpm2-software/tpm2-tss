@@ -8,25 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include "../helper/cmocka_all.h"       // for will_return, assert_int_equal, mock_type
+#include <errno.h>        // for errno, EAGAIN
+#include <inttypes.h>     // for uint8_t
+#include <stdbool.h>      // for false, true, bool
+#include <stdio.h>        // for FILE, NULL, size_t, ssize_t
+#include <string.h>       // for memset, strcmp
+#include <sys/stat.h>     // for stat
+#include <unistd.h>       // for R_OK
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-#include <errno.h>
-
-#include "ifapi_io.h"
-#include "util/aux_util.h"
+#include "ifapi_io.h"     // for IFAPI_IO, ifapi_io_read_async, ifapi_io_rea...
+#include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_FAPI_R...
 
 #define LOGMODULE tests
 #include "util/log.h"
+
+struct stat;
 
 #define EXIT_SKIP 77
 /*

@@ -4,35 +4,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <setjmp.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "../helper/cmocka_all.h"
-#include <unistd.h>
-#include <signal.h>
+#include "../helper/cmocka_all.h"                 // for assert_int_equal, will_return_always
+#include <errno.h>                  // for errno, EINVAL, EFAULT, EBADF, ENOMEM
+#include <signal.h>                 // for size_t, sigprocmask, sigset_t
+#include <stdint.h>                 // for uint8_t
+#include <stdio.h>                  // for NULL, FILE, fdopen, ferror, fwrite
+#include <stdlib.h>                 // for calloc, free
+#include <unistd.h>                 // for fork, pipe
 
 #if defined (__FreeBSD__)
 #include <sys/procctl.h>
 #else
-#include <sys/prctl.h>
 #endif
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-
-#include "tss2_tcti.h"
-#include "tss2_tcti_cmd.h"
-#include "tcti-cmd-test.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-cmd.h"
+#include "tcti-cmd-test.h"          // for getcap_command, getcap_good_resp
+#include "tss2-tcti/tcti-cmd.h"     // for TCTI_CMD_DESCRIPTION, TCTI_CMD_HELP
+#include "tss2-tcti/tcti-common.h"  // for TCTI_VERSION
+#include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...
+#include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
+#include "tss2_tcti_cmd.h"          // for Tss2_Tcti_Cmd_Init
 
 #define LOGMODULE tests
 #include "util/log.h"

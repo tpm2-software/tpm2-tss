@@ -8,28 +8,25 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include "../helper/cmocka_all.h"                     // for assert_int_equal, assert_memo...
+#include <fcntl.h>                      // for O_RDWR
+#include <inttypes.h>                   // for uint8_t
+#include <stdbool.h>                    // for false
+#include <stdio.h>                      // for NULL, size_t
+#include <stdlib.h>                     // for free, calloc
+#include <string.h>                     // for memcpy, strncmp
+#include <sys/select.h>                 // for fd_set, timeval
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-#include <sys/select.h>
-#include <sys/time.h>
-#include <fcntl.h>
+#include <linux/spi/spidev.h>           // for spi_ioc_transfer
 
-#include <linux/spi/spidev.h>
+#include "tss2-tcti/tcti-spi-helper.h"  // for TSS2_TCTI_SPI_HELPER_CONTEXT
+#include "tss2_common.h"                // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_tcti.h"                  // for TSS2_TCTI_CONTEXT
+#include "tss2_tcti_spi_helper.h"       // for TSS2_TCTI_SPI_HELPER_PLATFORM
+#include "tss2_tcti_spidev.h"           // for Tss2_Tcti_Spidev_Init
 
-#include "tss2_tcti.h"
-#include "tss2_tcti_spidev.h"
-#include "tss2_tcti_spi_helper.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-spi-helper.h"
-#include "util/key-value-parse.h"
+struct timeval;
+struct timezone;
 
 typedef enum {
     TPM_DID_VID_HEAD = 0,
