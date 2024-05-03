@@ -55,12 +55,12 @@ sanity_test ()
         exit 1
     fi
 
-    if [ -z "$(which ${sock_tool})" ]; then
+    if ! command -v ${sock_tool} > /dev/null ; then
         echo "ss not on PATH; exiting"
         exit 1
     fi
 
-    if [[ ! -z ${simulator_bin} && -z "$(which ${simulator_bin})" ]]; then
+    if [[ ! -z ${simulator_bin} && -z "$(command -v ${simulator_bin})" ]]; then
         echo "${simulator_bin} not on PATH; exiting"
         exit 1
     fi
