@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_PolicyRestart_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY sessionHandle)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -44,7 +44,7 @@ TSS2_RC Tss2_Sys_PolicyRestart_Prepare(
 TSS2_RC Tss2_Sys_PolicyRestart_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -58,7 +58,7 @@ TSS2_RC Tss2_Sys_PolicyRestart(
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_PolicyRestart_Prepare(sysContext, sessionHandle);

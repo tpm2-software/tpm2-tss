@@ -21,7 +21,7 @@ TSS2_RC Tss2_Sys_ActivateCredential_Prepare(
     const TPM2B_ID_OBJECT *credentialBlob,
     const TPM2B_ENCRYPTED_SECRET *secret)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -87,7 +87,7 @@ TSS2_RC Tss2_Sys_ActivateCredential_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *certInfo)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -114,7 +114,7 @@ TSS2_RC Tss2_Sys_ActivateCredential(
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     TSS2_RC rval;
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     rval = Tss2_Sys_ActivateCredential_Prepare(sysContext, activateHandle,
                                                keyHandle, credentialBlob,

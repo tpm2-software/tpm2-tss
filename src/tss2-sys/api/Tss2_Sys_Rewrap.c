@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_Rewrap_Prepare(
     const TPM2B_NAME *name,
     const TPM2B_ENCRYPTED_SECRET *inSymSeed)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -103,7 +103,7 @@ TSS2_RC Tss2_Sys_Rewrap_Complete(
     TPM2B_PRIVATE *outDuplicate,
     TPM2B_ENCRYPTED_SECRET *outSymSeed)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -137,7 +137,7 @@ TSS2_RC Tss2_Sys_Rewrap(
     TPM2B_ENCRYPTED_SECRET *outSymSeed,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_Rewrap_Prepare(sysContext, oldParent, newParent, inDuplicate, name, inSymSeed);

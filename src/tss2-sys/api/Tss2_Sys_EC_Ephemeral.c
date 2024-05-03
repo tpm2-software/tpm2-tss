@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_EC_Ephemeral_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_ECC_CURVE curveID)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -46,7 +46,7 @@ TSS2_RC Tss2_Sys_EC_Ephemeral_Complete(
     TPM2B_ECC_POINT *Q,
     UINT16 *counter)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -74,7 +74,7 @@ TSS2_RC Tss2_Sys_EC_Ephemeral(
     UINT16 *counter,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_EC_Ephemeral_Prepare(sysContext, curveID);

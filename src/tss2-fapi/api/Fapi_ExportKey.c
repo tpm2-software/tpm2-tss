@@ -468,7 +468,7 @@ cleanup:
     if (r)
         SAFE_FREE(command->exportedData);
     context->duplicate_key = NULL;
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     ifapi_cleanup_ifapi_object(&parentKeyObject);
     ifapi_cleanup_ifapi_object(&commandObject);
     ifapi_session_clean(context);

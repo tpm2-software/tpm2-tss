@@ -120,7 +120,7 @@ Fapi_GetDescription_Async(
     check_not_null(context);
     check_not_null(path);
 
-    if (context->state != _FAPI_STATE_INIT) {
+    if (context->state != FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
     }
 
@@ -181,7 +181,7 @@ Fapi_GetDescription_Finish(
             ifapi_cleanup_ifapi_object(&object);
             return_if_error_reset_state(r, "Get description");
 
-            context->state = _FAPI_STATE_INIT;
+            context->state = FAPI_STATE_INIT;
             r = TSS2_RC_SUCCESS;
             break;
 

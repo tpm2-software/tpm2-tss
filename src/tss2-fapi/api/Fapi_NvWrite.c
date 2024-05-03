@@ -310,7 +310,7 @@ error_cleanup:
     SAFE_FREE(command->data);
     SAFE_FREE(jso);
     ifapi_session_clean(context);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

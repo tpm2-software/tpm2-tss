@@ -31,14 +31,14 @@ CommonPreparePrologue_null_sys_context_unit (void **state)
 }
 
 /**
- * Accessing the _TSS2_SYS_CONTEXT_BLOB directly like this isn't allowed
+ * Accessing the TSS2_SYS_CONTEXT_BLOB directly like this isn't allowed
  * in normal code. Use the opaque TSS2_SYS_CONTEXT in user space
  * applications. In the test cases we do this to induce error conditions.
  */
 static int
 CommonPreparePrologue_sys_setup (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB  *sys_ctx;
+    TSS2_SYS_CONTEXT_BLOB  *sys_ctx;
     UINT32 size_ctx;
 
     size_ctx = Tss2_Sys_GetContextSize (MAX_SIZE_CTX);
@@ -52,7 +52,7 @@ CommonPreparePrologue_sys_setup (void **state)
 static int
 CommonPreparePrologue_sys_teardown (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
 
     if (sys_ctx)
         free (sys_ctx);
@@ -68,7 +68,7 @@ CommonPreparePrologue_sys_teardown (void **state)
 static void
 CommonPreparePrologue_previous_stage_initialize (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
     TSS2_RC rc;
 
     sys_ctx->previousStage |= ~CMD_STAGE_INITIALIZE;
@@ -78,7 +78,7 @@ CommonPreparePrologue_previous_stage_initialize (void **state)
 static void
 CommonPreparePrologue_previous_stage_prepare (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
     TSS2_RC rc;
 
     sys_ctx->previousStage |= ~CMD_STAGE_RECEIVE_RESPONSE;
@@ -88,7 +88,7 @@ CommonPreparePrologue_previous_stage_prepare (void **state)
 static void
 CommonPreparePrologue_previous_stage_response (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
     TSS2_RC rc;
 
     sys_ctx->previousStage |= ~CMD_STAGE_PREPARE;

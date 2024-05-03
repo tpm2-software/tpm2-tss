@@ -19,7 +19,7 @@ TSS2_RC Tss2_Sys_HierarchyChangeAuth_Prepare(
     TPMI_RH_HIERARCHY_AUTH authHandle,
     const TPM2B_AUTH *newAuth)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -60,7 +60,7 @@ TSS2_RC Tss2_Sys_HierarchyChangeAuth_Prepare(
 TSS2_RC Tss2_Sys_HierarchyChangeAuth_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -75,7 +75,7 @@ TSS2_RC Tss2_Sys_HierarchyChangeAuth(
     const TPM2B_AUTH *newAuth,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_HierarchyChangeAuth_Prepare(sysContext, authHandle, newAuth);

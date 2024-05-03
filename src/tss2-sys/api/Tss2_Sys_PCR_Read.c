@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_PCR_Read_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     const TPML_PCR_SELECTION *pcrSelectionIn)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !pcrSelectionIn)
@@ -48,7 +48,7 @@ TSS2_RC Tss2_Sys_PCR_Read_Complete(
     TPML_PCR_SELECTION *pcrSelectionOut,
     TPML_DIGEST *pcrValues)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -86,7 +86,7 @@ TSS2_RC Tss2_Sys_PCR_Read(
     TPML_DIGEST *pcrValues,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!pcrSelectionIn)

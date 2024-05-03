@@ -20,7 +20,7 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
     const TPM2B_PUBLIC *inPublic,
     TPMI_RH_HIERARCHY hierarchy)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -85,7 +85,7 @@ TSS2_RC Tss2_Sys_LoadExternal_Complete(
     TPM2_HANDLE *objectHandle,
     TPM2B_NAME *name)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -117,7 +117,7 @@ TSS2_RC Tss2_Sys_LoadExternal(
     TPM2B_NAME *name,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_LoadExternal_Prepare(sysContext, inPrivate, inPublic, hierarchy);

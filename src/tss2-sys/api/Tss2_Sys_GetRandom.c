@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_GetRandom_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     UINT16 bytesRequested)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -44,7 +44,7 @@ TSS2_RC Tss2_Sys_GetRandom_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *randomBytes)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -66,7 +66,7 @@ TSS2_RC Tss2_Sys_GetRandom(
     TPM2B_DIGEST *randomBytes,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_GetRandom_Prepare(sysContext, bytesRequested);

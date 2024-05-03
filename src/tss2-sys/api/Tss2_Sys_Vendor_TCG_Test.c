@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_Vendor_TCG_Test_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     const TPM2B_DATA *inputData)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -54,7 +54,7 @@ TSS2_RC Tss2_Sys_Vendor_TCG_Test_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DATA *outputData)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -76,7 +76,7 @@ TSS2_RC Tss2_Sys_Vendor_TCG_Test(
     TPM2B_DATA *outputData,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_Vendor_TCG_Test_Prepare(sysContext, inputData);

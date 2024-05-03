@@ -21,7 +21,7 @@ TSS2_RC Tss2_Sys_AC_Send_Prepare(
     TPMI_RH_AC ac,
     TPM2B_MAX_BUFFER *acDataIn)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -75,7 +75,7 @@ TSS2_RC Tss2_Sys_AC_Send_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_AC_OUTPUT *acDataOut)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -101,7 +101,7 @@ TSS2_RC Tss2_Sys_AC_Send(
     TPMS_AC_OUTPUT *acDataOut,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_AC_Send_Prepare(sysContext, sendObject, authHandle, ac,

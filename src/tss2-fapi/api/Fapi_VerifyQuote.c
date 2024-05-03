@@ -183,7 +183,7 @@ Fapi_VerifyQuote_Async(
     /* Cleanup command context. */
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
-    if (context->state != _FAPI_STATE_INIT) {
+    if (context->state != FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
     }
 
@@ -313,14 +313,14 @@ Fapi_VerifyQuote_Finish(
                 memcmp(&command->qualifyingData.buffer[0],
                        &command->fapi_quote_info.attest.extraData.buffer[0],
                        command->qualifyingData.size) != 0) {
-                context->state = _FAPI_STATE_INIT;
+                context->state = FAPI_STATE_INIT;
                 goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
                            "Invalid qualifying data for quote", error_cleanup);
             }
 
             /* If no logData was provided then the operation is done. */
             if (!command->logData) {
-                context->state = _FAPI_STATE_INIT;
+                context->state = FAPI_STATE_INIT;
                 break;
             }
 
@@ -357,7 +357,7 @@ error_cleanup:
     SAFE_FREE(command->signature);
     SAFE_FREE(command->quoteInfo);
     SAFE_FREE(command->logData);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_GetCapability_Prepare(
     UINT32 property,
     UINT32 propertyCount)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -62,7 +62,7 @@ TSS2_RC Tss2_Sys_GetCapability_Complete(
     TPMI_YES_NO *moreData,
     TPMS_CAPABILITY_DATA *capabilityData)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
     TPM2_CAP cap;
 
@@ -137,7 +137,7 @@ TSS2_RC Tss2_Sys_GetCapability(
     TPMS_CAPABILITY_DATA *capabilityData,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_GetCapability_Prepare(sysContext, capability, property,

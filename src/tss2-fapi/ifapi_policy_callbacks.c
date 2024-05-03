@@ -1165,7 +1165,7 @@ search_policy(
         break;
 
     default:
-        context->state = _FAPI_STATE_INTERNALERROR;
+        context->state = FAPI_STATE_INTERNALERROR;
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid state for load key.", cleanup);
     }
     context->fsearch.state = FSEARCH_INIT;

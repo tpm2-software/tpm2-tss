@@ -28,8 +28,8 @@
  * All rights reserved.
  * SPDX short identifier: BSD-2-Clause
  */
-#ifndef _SUPPORT_H_
-#define _SUPPORT_H_
+#ifndef SUPPORT_H_
+#define SUPPORT_H_
 
 #include <stdint.h>  // for uint32_t, uint16_t, uint8_t
 

@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_PolicyGetDigest_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -45,7 +45,7 @@ TSS2_RC Tss2_Sys_PolicyGetDigest_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *policyDigest)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -68,7 +68,7 @@ TSS2_RC Tss2_Sys_PolicyGetDigest(
     TPM2B_DIGEST *policyDigest,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_PolicyGetDigest_Prepare(sysContext, policySession);

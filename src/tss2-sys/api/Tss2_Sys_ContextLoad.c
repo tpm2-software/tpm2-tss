@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_ContextLoad_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     const TPMS_CONTEXT *context)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !context)
@@ -45,7 +45,7 @@ TSS2_RC Tss2_Sys_ContextLoad_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_CONTEXT *loadedHandle)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -66,7 +66,7 @@ TSS2_RC Tss2_Sys_ContextLoad(
     const TPMS_CONTEXT *context,
     TPMI_DH_CONTEXT *loadedHandle)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!context)

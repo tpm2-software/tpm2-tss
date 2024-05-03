@@ -21,7 +21,7 @@ TSS2_RC Tss2_Sys_Quote_Prepare(
     const TPMT_SIG_SCHEME *inScheme,
     const TPML_PCR_SELECTION *PCRselect)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !inScheme || !PCRselect)
@@ -81,7 +81,7 @@ TSS2_RC Tss2_Sys_Quote_Complete(
     TPM2B_ATTEST *quoted,
     TPMT_SIGNATURE *signature)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -113,7 +113,7 @@ TSS2_RC Tss2_Sys_Quote(
     TPMT_SIGNATURE *signature,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!inScheme || !PCRselect)

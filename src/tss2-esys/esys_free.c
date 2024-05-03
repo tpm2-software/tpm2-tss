@@ -11,8 +11,8 @@
  * of the C runtime to free memory that has been allocated by the
  * esys library on Windows.
  */
-void Esys_Free(void *__ptr) {
-    if (__ptr != NULL) {
-        free(__ptr);
+void Esys_Free(void *ptr) {
+    if (ptr != NULL) {
+        free(ptr);
     }
 }

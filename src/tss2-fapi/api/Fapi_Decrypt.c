@@ -379,7 +379,7 @@ Fapi_Decrypt_Finish(
         statecasedefault(context->state);
     }
 
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
 
     /* Cleanup of local objects */
     SAFE_FREE(tpmPlainText);
@@ -413,6 +413,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     return r;
 }

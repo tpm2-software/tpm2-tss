@@ -73,27 +73,27 @@
 #define return_if_error_reset_state(r,msg, ...)     \
     if (r != TSS2_RC_SUCCESS) { \
         LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ## __VA_ARGS__); \
-        context->state = _FAPI_STATE_INIT; \
+        context->state = FAPI_STATE_INIT; \
         return r;  \
     }
 
 #define goto_if_error_reset_state(r,msg,label, ...) \
     if (r != TSS2_RC_SUCCESS) { \
         LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ## __VA_ARGS__); \
-        context->state = _FAPI_STATE_INIT; \
+        context->state = FAPI_STATE_INIT; \
         goto label;  \
     }
 
 #define goto_error_reset_state(r,v,msg,label) {  \
     (r) = v; \
     LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r));    \
-    context->state = _FAPI_STATE_INIT;                              \
+    context->state = FAPI_STATE_INIT;                              \
     goto label; }
 
 #define goto_if_null_reset_state(p,msg,r,ec,label)  \
     if ((p) == NULL) { \
         LOG_ERROR("%s ", (msg)); \
-        context->state = _FAPI_STATE_INIT;      \
+        context->state = FAPI_STATE_INIT;      \
         (r) = (ec);                             \
         goto label;  \
     }

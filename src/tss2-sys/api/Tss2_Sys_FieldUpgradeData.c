@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_FieldUpgradeData_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_BUFFER const *fuData)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -56,7 +56,7 @@ TSS2_RC Tss2_Sys_FieldUpgradeData_Complete(
     TPMT_HA *nextDigest,
     TPMT_HA *firstDigest)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -87,7 +87,7 @@ TSS2_RC Tss2_Sys_FieldUpgradeData(
     TPMT_HA *firstDigest,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_FieldUpgradeData_Prepare(sysContext, fuData);

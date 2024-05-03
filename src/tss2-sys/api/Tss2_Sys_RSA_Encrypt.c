@@ -21,7 +21,7 @@ TSS2_RC Tss2_Sys_RSA_Encrypt_Prepare(
     const TPMT_RSA_DECRYPT *inScheme,
     const TPM2B_DATA *label)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !inScheme)
@@ -85,7 +85,7 @@ TSS2_RC Tss2_Sys_RSA_Encrypt_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PUBLIC_KEY_RSA *outData)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -110,7 +110,7 @@ TSS2_RC Tss2_Sys_RSA_Encrypt(
     TPM2B_PUBLIC_KEY_RSA *outData,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!inScheme)

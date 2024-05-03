@@ -21,7 +21,7 @@ TSS2_RC Tss2_Sys_Sign_Prepare(
     const TPMT_SIG_SCHEME *inScheme,
     const TPMT_TK_HASHCHECK *validation)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !inScheme || !validation)
@@ -76,7 +76,7 @@ TSS2_RC Tss2_Sys_Sign_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMT_SIGNATURE *signature)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -101,7 +101,7 @@ TSS2_RC Tss2_Sys_Sign(
     TPMT_SIGNATURE *signature,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!inScheme || !validation)

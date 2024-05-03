@@ -20,7 +20,7 @@ TSS2_RC Tss2_Sys_MAC_Prepare(
     const TPM2B_MAX_BUFFER *buffer,
     TPMI_ALG_MAC_SCHEME inScheme)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -72,7 +72,7 @@ TSS2_RC Tss2_Sys_MAC_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *outMAC)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -97,7 +97,7 @@ TSS2_RC Tss2_Sys_MAC(
     TPM2B_DIGEST *outMAC,
     TSS2L_SYS_AUTH_RESPONSE *rspAuths)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_MAC_Prepare(sysContext, handle, buffer, inScheme);

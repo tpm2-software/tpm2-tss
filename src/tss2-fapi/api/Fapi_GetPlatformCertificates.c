@@ -264,13 +264,13 @@ Fapi_GetPlatformCertificates_Finish(
 
     /* Cleanup any intermediate results and state stored in the context. */
     ifapi_free_node_list(cert_list);
-    context->state =  _FAPI_STATE_INIT;
+    context->state =  FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error:
     /* Cleanup any intermediate results and state stored in the context. */
-    context->state =  _FAPI_STATE_INIT;
+    context->state =  FAPI_STATE_INIT;
     NODE_OBJECT_T *cert = cert_list;
     while (cert) {
         SAFE_FREE(cert->object);

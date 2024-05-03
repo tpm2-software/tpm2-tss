@@ -22,22 +22,22 @@
 #elif defined(MBED)
 #include "esys_crypto_mbed.h"
 #else
-#define _iesys_crypto_aes_decrypt NULL;
-#define _iesys_crypto_aes_encrypt NULL;
-#define _iesys_crypto_sm4_decrypt NULL;
-#define _iesys_crypto_sm4_encrypt NULL;
-#define _iesys_crypto_get_ecdh_point NULL;
-#define _iesys_crypto_hash_abort NULL;
-#define _iesys_crypto_hash_finish NULL;
-#define _iesys_crypto_hash_start NULL;
-#define _iesys_crypto_hash_update NULL;
-#define _iesys_crypto_hmac_abort NULL;
-#define _iesys_crypto_hmac_finish NULL;
-#define _iesys_crypto_hmac_start NULL;
-#define _iesys_crypto_hmac_update NULL;
-#define _iesys_crypto_init NULL;
-#define _iesys_crypto_get_random2b NULL;
-#define _iesys_crypto_rsa_pk_encrypt NULL;
+#define iesys_crypto_aes_decrypt_internal NULL;
+#define iesys_crypto_aes_encrypt_internal NULL;
+#define iesys_crypto_sm4_decrypt_internal NULL;
+#define iesys_crypto_sm4_encrypt_internal NULL;
+#define iesys_crypto_get_ecdh_point_internal NULL;
+#define iesys_crypto_hash_abort_internal NULL;
+#define iesys_crypto_hash_finish_internal NULL;
+#define iesys_crypto_hash_start_internal NULL;
+#define iesys_crypto_hash_update_internal NULL;
+#define iesys_crypto_hmac_abort_internal NULL;
+#define iesys_crypto_hmac_finish_internal NULL;
+#define iesys_crypto_hmac_start_internal NULL;
+#define iesys_crypto_hmac_update_internal NULL;
+#define iesys_crypto_init_internal NULL;
+#define iesys_crypto_get_random2b_internal NULL;
+#define iesys_crypto_rsa_pk_encrypt_internal NULL;
 #endif
 
 #ifdef __cplusplus

@@ -25,7 +25,7 @@
 static int
 CopyCommandHeader_sys_setup (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB *sys_ctx;
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx;
     UINT32 size_ctx;
 
     size_ctx = Tss2_Sys_GetContextSize (MAX_SIZE_CTX);
@@ -36,7 +36,7 @@ CopyCommandHeader_sys_setup (void **state)
      *  the command buffer in the memory pointed to by tpmInitBuffPtr. This
      *  must point to the data after the context structure.
      */
-    sys_ctx->cmdBuffer = (UINT8*) (sys_ctx + sizeof (_TSS2_SYS_CONTEXT_BLOB));
+    sys_ctx->cmdBuffer = (UINT8*) (sys_ctx + sizeof (TSS2_SYS_CONTEXT_BLOB));
     InitSysContextFields (sys_ctx);
     InitSysContextPtrs (sys_ctx, size_ctx);
 
@@ -64,7 +64,7 @@ CopyCommandHeader_sys_teardown (void **state)
 static void
 CopyCommandHeader_nextData_unit (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB *)*state;
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB *)*state;
     TPM2_CC cc = TPM2_CC_GetCapability;
 
     CopyCommandHeader (sys_ctx, cc);
@@ -79,7 +79,7 @@ CopyCommandHeader_nextData_unit (void **state)
 static void
 CopyCommandHeader_tag_unit (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
     TPM2_CC cc = TPM2_CC_GetCapability;
     TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->cmdBuffer;
     /* The TSS code uses a custom function to convert stuff to network byte
@@ -99,7 +99,7 @@ CopyCommandHeader_tag_unit (void **state)
 static void
 CopyCommandHeader_commandcode_unit (void **state)
 {
-    _TSS2_SYS_CONTEXT_BLOB *sys_ctx = (_TSS2_SYS_CONTEXT_BLOB*)*state;
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
     TPM2_CC cc = TPM2_CC_GetCapability;
     TPM2_CC cc_net = htonl (cc);
     TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->cmdBuffer;

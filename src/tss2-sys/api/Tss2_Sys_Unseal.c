@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_Unseal_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT itemHandle)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -45,7 +45,7 @@ TSS2_RC Tss2_Sys_Unseal_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_SENSITIVE_DATA *outData)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -68,7 +68,7 @@ TSS2_RC Tss2_Sys_Unseal(
     TPM2B_SENSITIVE_DATA *outData,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_Unseal_Prepare(sysContext, itemHandle);

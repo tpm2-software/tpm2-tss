@@ -117,18 +117,18 @@ Fapi_Finalize(FAPI_CONTEXT **ctx)
 }
 
 void
-Fapi_Free(void *__ptr)
+Fapi_Free(void *ptr)
 {
-    if (!__ptr)
+    if (!ptr)
         return;
-    static TSS2_RC (*sym) (void *__ptr) = NULL;
+    static TSS2_RC (*sym) (void *ptr) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Fapi_Free");
     if (!sym) {
         WARN("Function Fapi_Free not found.");
         return;
     }
-    sym(__ptr);
+    sym(ptr);
 }
 
 #define MAKE_FAPI_0(fun) \

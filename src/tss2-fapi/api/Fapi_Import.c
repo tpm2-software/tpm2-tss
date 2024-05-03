@@ -177,7 +177,7 @@ Fapi_Import_Async(
     command->private = NULL;
     command->parent_path = NULL;
 
-    if (context->state != _FAPI_STATE_INIT) {
+    if (context->state != FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
     }
 
@@ -378,7 +378,7 @@ Fapi_Import_Async(
 cleanup_error:
     if (jso)
         json_object_put(jso);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     ifapi_cleanup_policy(&policy);
     ifapi_cleanup_ifapi_object(object);
     SAFE_FREE(command->jso_string);
@@ -583,7 +583,7 @@ Fapi_Import_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-            context->state = _FAPI_STATE_INIT;
+            context->state = FAPI_STATE_INIT;
             break;
 
         statecase(context->state, IMPORT_KEY_WRITE_POLICY);
@@ -591,7 +591,7 @@ Fapi_Import_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 
-            context->state = _FAPI_STATE_INIT;
+            context->state = FAPI_STATE_INIT;
             break;
 
         statecase(context->state, IMPORT_KEY_WRITE);
@@ -599,7 +599,7 @@ Fapi_Import_Finish(
             return_try_again(r);
             return_if_error_reset_state(r, "write_finish failed");
 
-            context->state = _FAPI_STATE_INIT;
+            context->state = FAPI_STATE_INIT;
             break;
 
         statecase(context->state, IMPORT_KEY_SEARCH);
@@ -732,7 +732,7 @@ Fapi_Import_Finish(
         goto_if_error(r, "Set Timeout to non-blocking", error_cleanup);
     }
 
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     SAFE_FREE(command->out_path);
 
     /* Cleanup policy for key objects.*/
@@ -770,6 +770,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     return r;
 }

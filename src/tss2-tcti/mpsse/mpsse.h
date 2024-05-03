@@ -28,8 +28,8 @@
  * All rights reserved.
  * SPDX short identifier: BSD-2-Clause
  */
-#ifndef _LIBMPSSE_H_
-#define _LIBMPSSE_H_
+#ifndef LIBMPSSE_H_
+#define LIBMPSSE_H_
 
 #include <stdint.h>
 

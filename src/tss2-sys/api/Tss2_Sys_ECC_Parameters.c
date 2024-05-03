@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_ECC_Parameters_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_ECC_CURVE curveID)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -45,7 +45,7 @@ TSS2_RC Tss2_Sys_ECC_Parameters_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_ALGORITHM_DETAIL_ECC *parameters)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -68,7 +68,7 @@ TSS2_RC Tss2_Sys_ECC_Parameters(
     TPMS_ALGORITHM_DETAIL_ECC *parameters,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ECC_Parameters_Prepare(sysContext, curveID);

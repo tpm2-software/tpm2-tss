@@ -434,7 +434,7 @@ Fapi_Encrypt_Finish(
         statecasedefault(context->state);
     }
 
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
 
 error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */

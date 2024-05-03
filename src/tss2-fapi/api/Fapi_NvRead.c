@@ -355,7 +355,7 @@ error_cleanup:
     SAFE_FREE(command->nvPath);
     //SAFE_FREE(context->nv_cmd.tes);
     ifapi_session_clean(context);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

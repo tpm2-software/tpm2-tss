@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_CreatePrimary_Prepare(
     const TPM2B_DATA *outsideInfo,
     const TPML_PCR_SELECTION *creationPCR)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -115,7 +115,7 @@ TSS2_RC Tss2_Sys_CreatePrimary_Complete(
     TPMT_TK_CREATION *creationTicket,
     TPM2B_NAME *name)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -180,7 +180,7 @@ TSS2_RC Tss2_Sys_CreatePrimary(
     TPM2B_NAME *name,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !creationPCR)

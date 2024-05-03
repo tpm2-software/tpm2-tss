@@ -144,10 +144,10 @@ ifapi_io_read_finish(
     size_t *length)
 {
     io->pollevents = POLLIN;
-    if (_ifapi_io_retry-- > 0)
+    if (ifapi_io_retry-- > 0)
         return TSS2_FAPI_RC_TRY_AGAIN;
     else
-        _ifapi_io_retry = _IFAPI_IO_RETRIES;
+        ifapi_io_retry = IFAPI_IO_RETRIES;
 
     ssize_t ret = read(fileno(io->stream),
                        &io->char_rbuffer[io->buffer_idx],
@@ -269,10 +269,10 @@ ifapi_io_write_finish(
     struct IFAPI_IO *io)
 {
     io->pollevents = POLLOUT;
-    if (_ifapi_io_retry-- > 0)
+    if (ifapi_io_retry-- > 0)
         return TSS2_FAPI_RC_TRY_AGAIN;
     else
-        _ifapi_io_retry = _IFAPI_IO_RETRIES;
+        ifapi_io_retry = IFAPI_IO_RETRIES;
 
     ssize_t ret = write(fileno(io->stream),
                         &io->char_rbuffer[io->buffer_idx],

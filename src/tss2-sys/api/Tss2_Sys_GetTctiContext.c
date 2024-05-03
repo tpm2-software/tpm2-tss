@@ -17,7 +17,7 @@ TSS2_RC Tss2_Sys_GetTctiContext(
     TSS2_SYS_CONTEXT *sysContext,
     TSS2_TCTI_CONTEXT **tctiContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx || !tctiContext)
         return TSS2_SYS_RC_BAD_REFERENCE;

@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
     size_t *encryptParamSize,
     const uint8_t **encryptParamBuffer)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     uint8_t *offset;
 
     if (!encryptParamSize || !encryptParamBuffer || !ctx)

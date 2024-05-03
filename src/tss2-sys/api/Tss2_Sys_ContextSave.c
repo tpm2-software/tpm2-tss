@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_ContextSave_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_CONTEXT saveHandle)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -45,7 +45,7 @@ TSS2_RC Tss2_Sys_ContextSave_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_CONTEXT *context)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -66,7 +66,7 @@ TSS2_RC Tss2_Sys_ContextSave(
     TPMI_DH_CONTEXT saveHandle,
     TPMS_CONTEXT *context)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ContextSave_Prepare(sysContext, saveHandle);

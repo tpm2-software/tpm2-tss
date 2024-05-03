@@ -17,7 +17,7 @@
 TSS2_RC Tss2_Sys_GetTestResult_Prepare(
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -39,7 +39,7 @@ TSS2_RC Tss2_Sys_GetTestResult_Complete(
     TPM2B_MAX_BUFFER *outData,
     TSS2_RC *testResult)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -69,7 +69,7 @@ TSS2_RC Tss2_Sys_GetTestResult(
     TSS2_RC *testResult,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_GetTestResult_Prepare(sysContext);
