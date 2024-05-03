@@ -1,0 +1,18 @@
+# -clang-analyzer-optin.performance.Padding
+#   We prefer logical/semantic order over (potentially insignificant)
+#   optimization.
+# -clang-analyzer-security.insecureAPI
+#   There is no real alternative to strcat etc. in C99.
+# -clang-analyzer-valist.Uninitialized
+#   Bugged: https://bugs.llvm.org/show_bug.cgi?id=41311
+
+---
+Checks: "\
+  clang-analyzer, \
+  -clang-analyzer-optin.performance.Padding, \
+  -clang-analyzer-security.insecureAPI.*, \
+  -clang-analyzer-valist.Uninitialized, \
+  \
+  clang-diagnostic*, \
+"
+HeaderFilterRegex: "(src|include)/.*"
