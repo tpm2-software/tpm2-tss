@@ -28,10 +28,10 @@
 #define LOGMODULE "policy"
 #include "util/log.h"                       // for LOG_ERROR, str, LOG_TRACE
 
-#define JSON_OBJECT_SAFE_PUT(o) do { json_object_put(o); o = NULL; } while(0)
+#define JSON_OBJECT_SAFE_PUT(o) do { json_object_put(o); (o) = NULL; } while(0)
 
 #define policy_check_not_null(X) \
-    if (X == NULL) { \
+    if ((X) == NULL) { \
         LOG_ERROR(str(X) " is NULL: BAD_REFERENCE"); \
         return TSS2_POLICY_RC_BAD_REFERENCE; \
     }

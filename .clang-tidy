@@ -1,3 +1,27 @@
+# -bugprone-assignment-in-if-condition
+#   [TODO] opinionated, we might want to enable that at some point
+# -bugprone-branch-clone
+#   In some cases it is more readable to have identical branch blocks
+# -bugprone-easily-swappable-parameters:
+#   We have a lot integer-liky types (e.g. TPMI_RH_NV_INDEX) which we do not
+#   want to turn into opaque or strong types. They are part of the API.
+# -bugprone-implicit-widening-of-multiplication-result
+#   [TODO]
+# -bugprone-narrowing-conversions
+#   [TODO]
+# -bugprone-not-null-terminated-result
+#   [TODO]
+#  -bugprone-reserved-identifier
+#   [TODO]
+#  -bugprone-sizeof-expression
+#   [TODO]
+#  -bugprone-suspicious-missing-comma
+#   [TODO]
+#  -bugprone-suspicious-string-compare
+#   [TODO]
+#  -bugprone-too-small-loop-variable
+#   [TODO]
+#
 # -clang-analyzer-optin.performance.Padding
 #   We prefer logical/semantic order over (potentially insignificant)
 #   optimization.
@@ -8,6 +32,19 @@
 
 ---
 Checks: "\
+  bugprone*, \
+  -bugprone-assignment-in-if-condition, \
+  -bugprone-branch-clone, \
+  -bugprone-easily-swappable-parameters, \
+  -bugprone-implicit-widening-of-multiplication-result, \
+  -bugprone-narrowing-conversions, \
+  -bugprone-not-null-terminated-result, \
+  -bugprone-reserved-identifier, \
+  -bugprone-sizeof-expression, \
+  -bugprone-suspicious-missing-comma, \
+  -bugprone-suspicious-string-compare, \
+  -bugprone-too-small-loop-variable, \
+  \
   clang-analyzer, \
   -clang-analyzer-optin.performance.Padding, \
   -clang-analyzer-security.insecureAPI.*, \

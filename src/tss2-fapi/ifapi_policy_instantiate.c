@@ -147,12 +147,12 @@ set_pem_key_param(
 }
 
 #define CHECK_TEMPLATE_PATH(path, template) \
-     if (!path) { \
+     if (!(path)) { \
          return_error2(TSS2_FAPI_RC_BAD_TEMPLATE, "No path for policy %s", template); \
      }
 
 #define CHECK_CALLBACK(callback, name) \
-    if (!callback) { \
+    if (!(callback)) { \
         return_error2(TSS2_FAPI_RC_NULL_CALLBACK, "Callback %s was NULL", name) \
     }
 

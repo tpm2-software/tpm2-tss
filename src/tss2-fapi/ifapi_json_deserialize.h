@@ -35,7 +35,7 @@
     if (!ifapi_get_sub_object(jso, json_name, &jso2)) { \
         memset(&out->name, 0, sizeof(type)); \
     } else { \
-        cond_cnt++; \
+        (cond_cnt)++; \
         json_object* jso_size; \
         if (ifapi_get_sub_object(jso2, "size", &jso_size)) { \
             tpm2b_type tmp = { 0 }; \

@@ -34,7 +34,7 @@
     }
 
 #define return_if_jso_error(r,msg, jso)       \
-    if (r != TSS2_RC_SUCCESS) { \
+    if ((r) != TSS2_RC_SUCCESS) { \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         if (jso) {                                                   \
             json_object_put(jso);                                    \

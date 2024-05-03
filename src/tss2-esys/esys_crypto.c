@@ -801,8 +801,8 @@ iesys_xor_parameter_obfuscation(ESYS_CRYPTO_CALLBACKS *crypto_cb,
 }
 
 #define TEST_AND_SET_CALLBACK(crypto_cb, callbacks, fn) \
-    if (callbacks->fn) { \
-        crypto_cb->fn = callbacks->fn; \
+    if ((callbacks)->fn) { \
+        (crypto_cb)->fn = (callbacks)->fn; \
     } else { \
         LOG_ERROR("Callback \"%s\" not set", xstr(fn)); \
         return TSS2_ESYS_RC_CALLBACK_NULL; \

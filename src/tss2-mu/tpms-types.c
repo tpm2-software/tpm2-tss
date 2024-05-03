@@ -15,9 +15,9 @@
 #define LOGMODULE marshal
 #include "util/log.h"         // for LOG_DEBUG, LOG_WARNING, LOG_ERROR
 
-#define ADDR &
+#define ADDR &  // NOLINT(bugprone-macro-parentheses)
 #define VAL
-#define TAB_SIZE(tab) (sizeof(tab) / sizeof(tab[0]))
+#define TAB_SIZE(tab) (sizeof(tab) / sizeof((tab)[0]))
 
 static TSS2_RC
 TPM2_GENERATED_Unmarshal(
@@ -101,6 +101,7 @@ TPMS_PCR_MARSHAL(TPMS_PCR_SELECTION, \
 TPMS_PCR_MARSHAL(TPMS_TAGGED_PCR_SELECT, \
     Tss2_MU_UINT32_Marshal(src->tag, buffer, buffer_size, &local_offset))
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_PCR_UNMARSHAL(type, firstFieldUnmarshal) \
 TSS2_RC \
 Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
@@ -108,7 +109,8 @@ Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 { \
     TSS2_RC ret = TSS2_RC_SUCCESS; \
     size_t local_offset = 0; \
-    UINT8 i, tmp; \
+    size_t i; \
+    UINT8 tmp; \
 \
     LOG_DEBUG( \
          "Unmarshaling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
@@ -153,6 +155,7 @@ Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return TSS2_RC_SUCCESS; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 TPMS_PCR_UNMARSHAL(TPMS_PCR_SELECT, TSS2_RC_SUCCESS)
 
@@ -185,6 +188,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, \
     return TSS2_RC_SUCCESS; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_UNMARSHAL_0(type) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -204,6 +208,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return TSS2_RC_SUCCESS; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMS_MARSHAL_1(type, m, op, fn) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -221,6 +226,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return fn(op src->m, buffer, buffer_size, offset); \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_UNMARSHAL_1(type, m, fn) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -265,7 +271,9 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_UNMARSHAL_2_U(type, m1, fn1, m2, fn2) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -298,6 +306,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMS_MARSHAL_2(type, m1, op1, fn1, m2, op2, fn2) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -333,6 +342,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_UNMARSHAL_2(type, m1, fn1, m2, fn2) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -364,6 +374,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMS_MARSHAL_3(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -403,6 +414,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_UNMARSHAL_3(type, m1, fn1, m2, fn2, m3, fn3) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -438,6 +450,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMS_MARSHAL_4(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, m4, op4, fn4) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -481,6 +494,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_UNMARSHAL_4(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -520,6 +534,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMS_MARSHAL_5(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
                        m4, op4, fn4, m5, op5, fn5) \
@@ -568,6 +583,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_UNMARSHAL_5(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4, m5, fn5) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -611,6 +627,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMS_MARSHAL_7(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
                        m4, op4, fn4, m5, op5, fn5, m6, op6, fn6, m7, op7, fn7) \
@@ -667,6 +684,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_UNMARSHAL_7(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4, m5, fn5, m6, fn6, m7, fn7) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -718,6 +736,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMS_MARSHAL_7_U(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
                        m4, op4, fn4, m5, op5, fn5, m6, op6, fn6, m7, op7, fn7) \
@@ -774,6 +793,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_UNMARSHAL_7_U(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4, m5, fn5, m6, fn6, m7, fn7) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -825,6 +845,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMS_MARSHAL_11(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
                        m4, op4, fn4, m5, op5, fn5, m6, op6, fn6, m7, op7, fn7, \
@@ -898,6 +919,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMS_UNMARSHAL_11(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4, m5, fn5, m6, fn6, m7, fn7, \
                           m8, fn8, m9, fn9, m10, fn10, m11, fn11) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
@@ -966,6 +988,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*
  * These macros expand to (un)marshal functions for each of the TPMS types

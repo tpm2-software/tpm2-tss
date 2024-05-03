@@ -24,7 +24,7 @@
 #define LOGMODULE fapi
 #include "util/log.h"        // for LOG_TRACE, SAFE_FREE, return_error, LOGB...
 
-#define FAPI_MAX_APP_DATA_SIZE 10*1024*1024
+#define FAPI_MAX_APP_DATA_SIZE (10*1024*1024)
 
 /** One-Call function for Fapi_SetAppData
  *

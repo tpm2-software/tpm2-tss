@@ -145,7 +145,7 @@ enum IFAPI_IO_STATE {
     IO_ACTIVE,
 };
 
-#define TSS2_OBJECT_TO_IFAPI_OBJECT(p) ((IFAPI_OBJECT *)p)
+#define TSS2_OBJECT_TO_IFAPI_OBJECT(p) ((IFAPI_OBJECT *)(p))
 
 /** Type for representing TPM-Resource
  */
