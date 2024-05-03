@@ -51,7 +51,7 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
     TSS2_RC r;
     size_t syssize;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     *esys_context = NULL;
 
     /* Allocate memory for the ESYS context
@@ -166,8 +166,8 @@ Esys_Finalize(ESYS_CONTEXT ** esys_context)
 TSS2_RC
 Esys_GetTcti(ESYS_CONTEXT * esys_context, TSS2_TCTI_CONTEXT ** tcti)
 {
-    _ESYS_ASSERT_NON_NULL(esys_context);
-    _ESYS_ASSERT_NON_NULL(tcti);
+    ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(tcti);
     *tcti = esys_context->tcti_app_param;
     return TSS2_RC_SUCCESS;
 }
@@ -191,9 +191,9 @@ Esys_GetPollHandles(ESYS_CONTEXT * esys_context,
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti_context;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
-    _ESYS_ASSERT_NON_NULL(handles);
-    _ESYS_ASSERT_NON_NULL(count);
+    ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(handles);
+    ESYS_ASSERT_NON_NULL(count);
 
     /* Get the tcti-context to use */
     r = Tss2_Sys_GetTctiContext(esys_context->sys, &tcti_context);
@@ -223,7 +223,7 @@ Esys_GetPollHandles(ESYS_CONTEXT * esys_context,
 TSS2_RC
 Esys_SetTimeout(ESYS_CONTEXT * esys_context, int32_t timeout)
 {
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     esys_context->timeout = timeout;
     return TSS2_RC_SUCCESS;
 }

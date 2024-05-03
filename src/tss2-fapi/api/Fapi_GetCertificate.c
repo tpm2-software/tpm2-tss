@@ -132,7 +132,7 @@ Fapi_GetCertificate_Async(
     check_not_null(context);
     check_not_null(path);
 
-    if (context->state != _FAPI_STATE_INIT) {
+    if (context->state != FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
     }
 
@@ -210,7 +210,7 @@ Fapi_GetCertificate_Finish(
                              r, error_cleanup);
             }
 
-            context->state = _FAPI_STATE_INIT;
+            context->state = FAPI_STATE_INIT;
             r = TSS2_RC_SUCCESS;
             break;
 

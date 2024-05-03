@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_PolicyAuthorize_Prepare(
     const TPM2B_NAME *keySign,
     const TPMT_TK_VERIFIED *checkTicket)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !checkTicket)
@@ -100,7 +100,7 @@ TSS2_RC Tss2_Sys_PolicyAuthorize_Prepare(
 TSS2_RC Tss2_Sys_PolicyAuthorize_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -118,7 +118,7 @@ TSS2_RC Tss2_Sys_PolicyAuthorize(
     const TPMT_TK_VERIFIED *checkTicket,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!checkTicket)

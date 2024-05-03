@@ -19,7 +19,7 @@ TSS2_RC Tss2_Sys_ClearControl_Prepare(
     TPMI_RH_CLEAR auth,
     TPMI_YES_NO disable)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -51,7 +51,7 @@ TSS2_RC Tss2_Sys_ClearControl_Prepare(
 TSS2_RC Tss2_Sys_ClearControl_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -66,7 +66,7 @@ TSS2_RC Tss2_Sys_ClearControl(
     TPMI_YES_NO disable,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ClearControl_Prepare(sysContext, auth, disable);

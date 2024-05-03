@@ -828,22 +828,22 @@ TSS2_RC
          * userdata pointer it must be saved and restored.
          */
         crypto_cb->userdata = NULL;
-        crypto_cb->aes_decrypt = _iesys_crypto_aes_decrypt;
-        crypto_cb->aes_encrypt = _iesys_crypto_aes_encrypt;
-        crypto_cb->sm4_decrypt = _iesys_crypto_sm4_decrypt;
-        crypto_cb->sm4_encrypt = _iesys_crypto_sm4_encrypt;
-        crypto_cb->get_ecdh_point = _iesys_crypto_get_ecdh_point;
-        crypto_cb->hash_abort = _iesys_crypto_hash_abort;
-        crypto_cb->hash_finish = _iesys_crypto_hash_finish;
-        crypto_cb->hash_start = _iesys_crypto_hash_start;
-        crypto_cb->hash_update = _iesys_crypto_hash_update;
-        crypto_cb->hmac_abort = _iesys_crypto_hmac_abort;
-        crypto_cb->hmac_finish = _iesys_crypto_hmac_finish;
-        crypto_cb->hmac_start = _iesys_crypto_hmac_start;
-        crypto_cb->hmac_update = _iesys_crypto_hmac_update;
-        crypto_cb->init = _iesys_crypto_init;
-        crypto_cb->get_random2b = _iesys_crypto_get_random2b;
-        crypto_cb->rsa_pk_encrypt = _iesys_crypto_rsa_pk_encrypt;
+        crypto_cb->aes_decrypt = iesys_crypto_aes_decrypt_internal;
+        crypto_cb->aes_encrypt = iesys_crypto_aes_encrypt_internal;
+        crypto_cb->sm4_decrypt = iesys_crypto_sm4_decrypt_internal;
+        crypto_cb->sm4_encrypt = iesys_crypto_sm4_encrypt_internal;
+        crypto_cb->get_ecdh_point = iesys_crypto_get_ecdh_point_internal;
+        crypto_cb->hash_abort = iesys_crypto_hash_abort_internal;
+        crypto_cb->hash_finish = iesys_crypto_hash_finish_internal;
+        crypto_cb->hash_start = iesys_crypto_hash_start_internal;
+        crypto_cb->hash_update = iesys_crypto_hash_update_internal;
+        crypto_cb->hmac_abort = iesys_crypto_hmac_abort_internal;
+        crypto_cb->hmac_finish = iesys_crypto_hmac_finish_internal;
+        crypto_cb->hmac_start = iesys_crypto_hmac_start_internal;
+        crypto_cb->hmac_update = iesys_crypto_hmac_update_internal;
+        crypto_cb->init = iesys_crypto_init_internal;
+        crypto_cb->get_random2b = iesys_crypto_get_random2b_internal;
+        crypto_cb->rsa_pk_encrypt = iesys_crypto_rsa_pk_encrypt_internal;
 
     } else {
 
@@ -853,12 +853,12 @@ TSS2_RC
         if (user_cb->sm4_encrypt) {
             crypto_cb->sm4_encrypt = user_cb->sm4_encrypt;
         } else {
-            crypto_cb->sm4_encrypt = _iesys_crypto_sm4_encrypt;
+            crypto_cb->sm4_encrypt = iesys_crypto_sm4_encrypt_internal;
         }
         if (user_cb->sm4_decrypt) {
             crypto_cb->sm4_decrypt = user_cb->sm4_decrypt;
         } else {
-            crypto_cb->sm4_decrypt = _iesys_crypto_sm4_decrypt;
+            crypto_cb->sm4_decrypt = iesys_crypto_sm4_decrypt_internal;
         }
         TEST_AND_SET_CALLBACK(crypto_cb, user_cb, get_ecdh_point);
         TEST_AND_SET_CALLBACK(crypto_cb, user_cb, get_random2b);

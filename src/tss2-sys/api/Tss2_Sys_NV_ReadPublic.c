@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_NV_ReadPublic_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_RH_NV_INDEX nvIndex)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -46,7 +46,7 @@ TSS2_RC Tss2_Sys_NV_ReadPublic_Complete(
     TPM2B_NV_PUBLIC *nvPublic,
     TPM2B_NAME *nvName)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -77,7 +77,7 @@ TSS2_RC Tss2_Sys_NV_ReadPublic(
     TPM2B_NAME *nvName,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_NV_ReadPublic_Prepare(sysContext, nvIndex);

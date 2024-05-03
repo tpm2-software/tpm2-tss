@@ -23,7 +23,7 @@ TSS2_RC Tss2_Sys_PolicyTicket_Prepare(
     const TPM2B_NAME *authName,
     const TPMT_TK_AUTH *ticket)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !ticket)
@@ -116,7 +116,7 @@ TSS2_RC Tss2_Sys_PolicyTicket_Prepare(
 TSS2_RC Tss2_Sys_PolicyTicket_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -135,7 +135,7 @@ TSS2_RC Tss2_Sys_PolicyTicket(
     const TPMT_TK_AUTH *ticket,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ticket)

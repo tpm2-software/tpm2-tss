@@ -263,7 +263,7 @@ Fapi_GetRandom_Finish(
     }
 
     /* Cleanup any intermediate results and state stored in the context. */
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_session_clean(context);
     LOG_TRACE("finished");
@@ -274,7 +274,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_session_clean(context);
     SAFE_FREE(context->get_random.data);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

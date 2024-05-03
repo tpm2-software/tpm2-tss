@@ -20,7 +20,7 @@ TSS2_RC Tss2_Sys_MakeCredential_Prepare(
     const TPM2B_DIGEST *credential,
     const TPM2B_NAME *objectName)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -79,7 +79,7 @@ TSS2_RC Tss2_Sys_MakeCredential_Complete(
     TPM2B_ID_OBJECT *credentialBlob,
     TPM2B_ENCRYPTED_SECRET *secret)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -112,7 +112,7 @@ TSS2_RC Tss2_Sys_MakeCredential(
     TPM2B_ENCRYPTED_SECRET *secret,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_MakeCredential_Prepare(sysContext, handle, credential, objectName);

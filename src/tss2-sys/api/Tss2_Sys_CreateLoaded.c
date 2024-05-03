@@ -20,7 +20,7 @@ TSS2_RC Tss2_Sys_CreateLoaded_Prepare(
     const TPM2B_SENSITIVE_CREATE *inSensitive,
     const TPM2B_TEMPLATE *inPublic)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -76,7 +76,7 @@ TSS2_RC Tss2_Sys_CreateLoaded_Complete(
     TPM2B_PUBLIC *outPublic,
     TPM2B_NAME *name)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -122,7 +122,7 @@ TSS2_RC Tss2_Sys_CreateLoaded(
     TPM2B_NAME *name,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !objectHandle || !outPrivate || !outPublic || !name)

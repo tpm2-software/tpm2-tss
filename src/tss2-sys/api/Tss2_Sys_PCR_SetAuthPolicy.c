@@ -21,7 +21,7 @@ TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
     TPMI_ALG_HASH hashAlg,
     TPMI_DH_PCR pcrNum)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -78,7 +78,7 @@ TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Prepare(
 TSS2_RC Tss2_Sys_PCR_SetAuthPolicy_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -95,7 +95,7 @@ TSS2_RC Tss2_Sys_PCR_SetAuthPolicy(
     TPMI_DH_PCR pcrNum,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_PCR_SetAuthPolicy_Prepare(sysContext, authHandle, authPolicy, hashAlg, pcrNum);

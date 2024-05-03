@@ -16,13 +16,13 @@
 #include <ws2tcpip.h>
 
 typedef SSIZE_T ssize_t;
-#define _HOST_NAME_MAX MAX_COMPUTERNAME_LENGTH
+#define POSIX_HOST_NAME_MAX MAX_COMPUTERNAME_LENGTH
 
 #else
 #include <errno.h>        // for EINTR, errno
 #include <sys/socket.h>   // for size_t, ssize_t
 
-#define _HOST_NAME_MAX _POSIX_HOST_NAME_MAX
+#define POSIX_HOST_NAME_MAX _POSIX_HOST_NAME_MAX
 #define SOCKET int
 #define INVALID_SOCKET ((-1))
 #define SOCKET_ERROR ((-1))

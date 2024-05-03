@@ -30,7 +30,7 @@
  *   The format specifier as understood by printf followed by the variadic
  *   parameters for the specifier.
  */
-#define catbuf(b, fmt, ...) _catbuf(b, sizeof(b), fmt, ##__VA_ARGS__)
+#define catbuf(b, fmt, ...) catbuf_internal(b, sizeof(b), fmt, ##__VA_ARGS__)
 
 /**
  * Clears out a static buffer by setting index 0 to the null byte.
@@ -56,7 +56,7 @@ clearbuf(char *buffer)
  *  DO NOT CALL DIRECTLY, use the catbuf() macro.
  */
 static void COMPILER_ATTR(format (printf, 3, 4))
-_catbuf(char *buf, size_t len, const char *fmt, ...)
+catbuf_internal(char *buf, size_t len, const char *fmt, ...)
 {
     va_list argptr;
     va_start(argptr, fmt);

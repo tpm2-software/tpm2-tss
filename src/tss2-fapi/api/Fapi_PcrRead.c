@@ -259,7 +259,7 @@ Fapi_PcrRead_Finish(
                     *pcrValue = command->pcrValue;
                 if (pcrValueSize)
                     *pcrValueSize = command->pcrValueSize;
-                context->state = _FAPI_STATE_INIT;
+                context->state = FAPI_STATE_INIT;
                 break;
             }
 
@@ -291,7 +291,7 @@ cleanup:
         SAFE_FREE(command->pcrValue);
     }
     SAFE_FREE(command->pcrValues);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

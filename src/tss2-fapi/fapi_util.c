@@ -1117,7 +1117,7 @@ ifapi_session_init(FAPI_CONTEXT *context)
 
     return_if_null(context->esys, "No context", TSS2_FAPI_RC_NO_TPM);
 
-    if (context->state != _FAPI_STATE_INIT) {
+    if (context->state != FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
     }
 
@@ -1145,7 +1145,7 @@ ifapi_non_tpm_mode_init(FAPI_CONTEXT *context)
     LOG_TRACE("call");
     return_if_null(context, "No context", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    if (context->state != _FAPI_STATE_INIT) {
+    if (context->state != FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
     }
 
@@ -4311,12 +4311,12 @@ ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
         context->state = GET_INFO_GET_CAP_MORE;
         return TSS2_FAPI_RC_TRY_AGAIN;
     } else {
-        context->state = _FAPI_STATE_INIT;
+        context->state = FAPI_STATE_INIT;
         return TSS2_RC_SUCCESS;
     }
 
 error_cleanup:
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     SAFE_FREE(context->cmd.GetInfo.capability_data);
     SAFE_FREE(context->cmd.GetInfo.fetched_data);
     return r;

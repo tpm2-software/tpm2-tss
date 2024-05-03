@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt_Prepare(
     const TPM2B_IV *ivIn,
     const TPM2B_MAX_BUFFER *inData)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -92,7 +92,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt_Complete(
     TPM2B_MAX_BUFFER *outData,
     TPM2B_IV *ivOut)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -127,7 +127,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt(
     TPM2B_IV *ivOut,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_EncryptDecrypt_Prepare(sysContext, keyHandle, decrypt,

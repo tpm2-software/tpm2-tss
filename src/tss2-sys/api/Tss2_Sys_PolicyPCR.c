@@ -20,7 +20,7 @@ TSS2_RC Tss2_Sys_PolicyPCR_Prepare(
     const TPM2B_DIGEST *pcrDigest,
     const TPML_PCR_SELECTION *pcrs)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !pcrs)
@@ -72,7 +72,7 @@ TSS2_RC Tss2_Sys_PolicyPCR_Prepare(
 TSS2_RC Tss2_Sys_PolicyPCR_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -88,7 +88,7 @@ TSS2_RC Tss2_Sys_PolicyPCR(
     const TPML_PCR_SELECTION *pcrs,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!pcrs)

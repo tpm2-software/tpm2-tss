@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_GetRpBuffer(
     size_t *rpBufferUsedSize,
     const uint8_t **rpBuffer)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !rpBufferUsedSize || !rpBuffer)

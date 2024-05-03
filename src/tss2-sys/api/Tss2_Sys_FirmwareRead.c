@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_FirmwareRead_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     UINT32 sequenceNumber)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -45,7 +45,7 @@ TSS2_RC Tss2_Sys_FirmwareRead_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_MAX_BUFFER *fuData)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -67,7 +67,7 @@ TSS2_RC Tss2_Sys_FirmwareRead(
     TPM2B_MAX_BUFFER *fuData,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_FirmwareRead_Prepare(sysContext, sequenceNumber);

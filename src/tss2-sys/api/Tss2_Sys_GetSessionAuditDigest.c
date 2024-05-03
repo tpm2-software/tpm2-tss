@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_GetSessionAuditDigest_Prepare(
     const TPM2B_DATA *qualifyingData,
     const TPMT_SIG_SCHEME *inScheme)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !inScheme)
@@ -84,7 +84,7 @@ TSS2_RC Tss2_Sys_GetSessionAuditDigest_Complete(
     TPM2B_ATTEST *auditInfo,
     TPMT_SIGNATURE *signature)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -117,7 +117,7 @@ TSS2_RC Tss2_Sys_GetSessionAuditDigest(
     TPMT_SIGNATURE *signature,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!inScheme)

@@ -20,7 +20,7 @@ TSS2_RC Tss2_Sys_GetCpBuffer(
     size_t *cpBufferUsedSize,
     const uint8_t **cpBuffer)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx || !cpBufferUsedSize || !cpBuffer)
         return TSS2_SYS_RC_BAD_REFERENCE;

@@ -1905,7 +1905,7 @@ static void GetSetDecryptParamTests()
     /* Test for insufficient size. */
     /* Create a buffer that is too large */
     size_t testBufferSize = TPM2_MAX_COMMAND_SIZE -
-            BE_TO_HOST_32(((TPM20_Header_In *)(((_TSS2_SYS_CONTEXT_BLOB *)decryptParamTestSysContext)->cmdBuffer))->commandSize) + 1;
+            BE_TO_HOST_32(((TPM20_Header_In *)(((TSS2_SYS_CONTEXT_BLOB *)decryptParamTestSysContext)->cmdBuffer))->commandSize) + 1;
     UINT8 testBuffer [testBufferSize];
     memset(testBuffer, 0, testBufferSize);
     memcpy(testBuffer, nvWriteData.buffer, nvWriteData.size);
@@ -2037,7 +2037,7 @@ static void GetSetEncryptParamTests()
 
     TPM2B_MAX_NV_BUFFER nvReadData;
     const uint8_t       *cpBuffer;
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     LOG_INFO("GET/SET ENCRYPT PARAM TESTS:" );
 

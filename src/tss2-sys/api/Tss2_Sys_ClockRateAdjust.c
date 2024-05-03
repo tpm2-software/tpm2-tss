@@ -19,7 +19,7 @@ TSS2_RC Tss2_Sys_ClockRateAdjust_Prepare(
     TPMI_RH_PROVISION auth,
     TPM2_CLOCK_ADJUST rateAdjust)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -50,7 +50,7 @@ TSS2_RC Tss2_Sys_ClockRateAdjust_Prepare(
 TSS2_RC Tss2_Sys_ClockRateAdjust_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -65,7 +65,7 @@ TSS2_RC Tss2_Sys_ClockRateAdjust(
     TPM2_CLOCK_ADJUST rateAdjust,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ClockRateAdjust_Prepare(sysContext, auth, rateAdjust);

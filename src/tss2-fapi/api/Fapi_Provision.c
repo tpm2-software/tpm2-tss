@@ -1541,7 +1541,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-            context->state =_FAPI_STATE_INIT;
+            context->state =FAPI_STATE_INIT;
             break;
 
         statecase(context->state, PROVISION_WRITE_HIERARCHIES);
@@ -1676,7 +1676,7 @@ error_cleanup:
         }
         SAFE_FREE(command->pathlist);
     }
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

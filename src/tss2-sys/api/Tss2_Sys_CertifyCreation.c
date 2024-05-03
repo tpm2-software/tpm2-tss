@@ -25,7 +25,7 @@ TSS2_RC Tss2_Sys_CertifyCreation_Prepare(
     const TPMT_SIG_SCHEME *inScheme,
     const TPMT_TK_CREATION *creationTicket)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !inScheme || !creationTicket)
@@ -93,7 +93,7 @@ TSS2_RC Tss2_Sys_CertifyCreation_Complete(
     TPM2B_ATTEST *certifyInfo,
     TPMT_SIGNATURE *signature)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -129,7 +129,7 @@ TSS2_RC Tss2_Sys_CertifyCreation(
     TPMT_SIGNATURE *signature,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if( inScheme == NULL  || creationTicket == NULL  )

@@ -752,7 +752,7 @@ Fapi_Delete_Finish(
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-            context->state = _FAPI_STATE_INIT;
+            context->state = FAPI_STATE_INIT;
 
             LOG_DEBUG("success");
             r = TSS2_RC_SUCCESS;
@@ -796,6 +796,6 @@ error_cleanup:
     SAFE_FREE(command->pathlist);
     ifapi_session_clean(context);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     return r;
 }

@@ -614,6 +614,6 @@ error_cleanup:
         SAFE_FREE(command->pathlist);
     }
     LOG_TRACE("finished");
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     return r;
 }

@@ -130,7 +130,7 @@ create_session(
         break;
 
     default:
-        context->state = _FAPI_STATE_INTERNALERROR;
+        context->state = FAPI_STATE_INTERNALERROR;
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid state for create session.",
                    cleanup);
     }

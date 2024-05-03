@@ -87,18 +87,18 @@ Esys_Finalize(ESYS_CONTEXT **ctx)
 }
 
 void
-Esys_Free(void *__ptr)
+Esys_Free(void *ptr)
 {
-    if (!__ptr)
+    if (!ptr)
         return;
-    static TSS2_RC (*sym) (void *__ptr) = NULL;
+    static TSS2_RC (*sym) (void *ptr) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Esys_Free");
     if (!sym) {
         WARN("Function Esys_Free not found.");
         return;
     }
-    sym(__ptr);
+    sym(ptr);
 }
 
 #define MAKE_ESYS_0(fun) \

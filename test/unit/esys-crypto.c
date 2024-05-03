@@ -349,7 +349,7 @@ check_get_sys_context(void **state)
 }
 
 #define CHECK_BACKEND_FN(backend, fn) \
-    assert_int_equal(backend.fn, _iesys_crypto_##fn)
+    assert_int_equal(backend.fn, iesys_crypto_##fn##_internal)
 
 static TSS2_RC
     crypto_init(void *userdata)

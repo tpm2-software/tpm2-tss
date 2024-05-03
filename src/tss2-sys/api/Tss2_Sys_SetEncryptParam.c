@@ -19,7 +19,7 @@ TSS2_RC Tss2_Sys_SetEncryptParam(
     size_t encryptParamSize,
     const uint8_t *encryptParamBuffer)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     size_t currEncryptParamSize;
     const uint8_t *currEncryptParamBuffer;
     TSS2_RC rval;

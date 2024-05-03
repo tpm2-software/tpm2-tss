@@ -395,7 +395,7 @@ cleanup:
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     SAFE_FREE(command->policyPath);
     SAFE_FREE(command->signingKeyPath);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

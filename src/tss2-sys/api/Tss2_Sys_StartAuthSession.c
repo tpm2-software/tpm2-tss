@@ -24,7 +24,7 @@ TSS2_RC Tss2_Sys_StartAuthSession_Prepare(
     const TPMT_SYM_DEF *symmetric,
     TPMI_ALG_HASH authHash)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !symmetric)
@@ -111,7 +111,7 @@ TSS2_RC Tss2_Sys_StartAuthSession_Complete(
     TPMI_SH_AUTH_SESSION *sessionHandle,
     TPM2B_NONCE *nonceTPM)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -147,7 +147,7 @@ TSS2_RC Tss2_Sys_StartAuthSession(
     TPM2B_NONCE *nonceTPM,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!symmetric)

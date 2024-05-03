@@ -57,7 +57,7 @@
 #endif /* OPENSSL_VERSION_NUMBER >= 0x10101000L */
 
 /** Context to hold temporary values for ifapi_crypto */
-typedef struct _IFAPI_CRYPTO_CONTEXT {
+typedef struct IFAPI_CRYPTO_CONTEXT {
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     /** The currently used hash algorithm */
     const EVP_MD *osslHashAlgorithm;

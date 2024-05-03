@@ -20,13 +20,13 @@ enum cmdStates {CMD_STAGE_INITIALIZE,
                 CMD_STAGE_ALL = 0xff };
 
 #pragma pack(push, 1)
-typedef struct _TPM20_Header_In {
+typedef struct TPM20_Header_In {
   TPM2_ST tag;
   UINT32 commandSize;
   UINT32 commandCode;
 } TPM20_Header_In;
 
-typedef struct _TPM20_Header_Out {
+typedef struct TPM20_Header_Out {
   TPM2_ST tag;
   UINT32 responseSize;
   UINT32 responseCode;
@@ -58,22 +58,22 @@ typedef struct {
 
     /* Offset to next data in command/response buffer. */
     size_t nextData;
-} _TSS2_SYS_CONTEXT_BLOB;
+} TSS2_SYS_CONTEXT_BLOB;
 
-static inline _TSS2_SYS_CONTEXT_BLOB *
+static inline TSS2_SYS_CONTEXT_BLOB *
 syscontext_cast(TSS2_SYS_CONTEXT *ctx)
 {
-    return (_TSS2_SYS_CONTEXT_BLOB*) ctx;
+    return (TSS2_SYS_CONTEXT_BLOB*) ctx;
 }
 
 static inline TPM20_Header_Out *
-resp_header_from_cxt(_TSS2_SYS_CONTEXT_BLOB *ctx)
+resp_header_from_cxt(TSS2_SYS_CONTEXT_BLOB *ctx)
 {
     return (TPM20_Header_Out *)ctx->cmdBuffer;
 }
 
 static inline TPM20_Header_In *
-req_header_from_cxt(_TSS2_SYS_CONTEXT_BLOB *ctx)
+req_header_from_cxt(TSS2_SYS_CONTEXT_BLOB *ctx)
 {
     return (TPM20_Header_In *)ctx->cmdBuffer;
 }
@@ -88,23 +88,23 @@ typedef struct {
 extern "C" {
 #endif
 
-TSS2_RC CopyCommandHeader(_TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode);
-UINT32 GetCommandSize(_TSS2_SYS_CONTEXT_BLOB *ctx);
-void InitSysContextFields(_TSS2_SYS_CONTEXT_BLOB *ctx);
-void InitSysContextPtrs(_TSS2_SYS_CONTEXT_BLOB *ctx, size_t contextSize);
-TSS2_RC CompleteChecks(_TSS2_SYS_CONTEXT_BLOB *ctx);
-TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx);
+TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode);
+UINT32 GetCommandSize(TSS2_SYS_CONTEXT_BLOB *ctx);
+void InitSysContextFields(TSS2_SYS_CONTEXT_BLOB *ctx);
+void InitSysContextPtrs(TSS2_SYS_CONTEXT_BLOB *ctx, size_t contextSize);
+TSS2_RC CompleteChecks(TSS2_SYS_CONTEXT_BLOB *ctx);
+TSS2_RC CommonComplete(TSS2_SYS_CONTEXT_BLOB *ctx);
 
 TSS2_RC CommonOneCall(
-    _TSS2_SYS_CONTEXT_BLOB *ctx,
+    TSS2_SYS_CONTEXT_BLOB *ctx,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
 
 TSS2_RC CommonPreparePrologue(
-    _TSS2_SYS_CONTEXT_BLOB *ctx,
+    TSS2_SYS_CONTEXT_BLOB *ctx,
     TPM2_CC commandCode);
 
-TSS2_RC CommonPrepareEpilogue(_TSS2_SYS_CONTEXT_BLOB *ctx);
+TSS2_RC CommonPrepareEpilogue(TSS2_SYS_CONTEXT_BLOB *ctx);
 
 #ifdef DISABLE_WEAK_CRYPTO
 bool IsAlgorithmWeak(TPM2_ALG_ID algorith, TPM2_KEY_SIZE key_size);

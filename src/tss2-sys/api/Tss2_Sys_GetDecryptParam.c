@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_GetDecryptParam(
     size_t *decryptParamSize,
     const uint8_t **decryptParamBuffer)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TPM2B *decryptParam;
 
     if (!decryptParamSize || !decryptParamBuffer || !ctx)

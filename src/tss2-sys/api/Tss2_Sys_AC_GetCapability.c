@@ -20,7 +20,7 @@ TSS2_RC Tss2_Sys_AC_GetCapability_Prepare(
     TPM_AT capability,
     UINT32 count)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -60,7 +60,7 @@ TSS2_RC Tss2_Sys_AC_GetCapability_Complete(
     TPMI_YES_NO *moreData,
     TPML_AC_CAPABILITIES *capabilityData)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -93,7 +93,7 @@ TSS2_RC Tss2_Sys_AC_GetCapability(
     TPML_AC_CAPABILITIES *capabilityData,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_AC_GetCapability_Prepare(sysContext, ac, capability, count);

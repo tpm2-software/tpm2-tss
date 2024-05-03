@@ -285,7 +285,7 @@ Fapi_GetInfo_Finish(
 #endif
         goto_if_null2(*info, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
-        context->state = _FAPI_STATE_INIT;
+        context->state = FAPI_STATE_INIT;
         r = TSS2_RC_SUCCESS;
         break;
 

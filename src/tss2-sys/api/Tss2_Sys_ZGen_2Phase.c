@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_ZGen_2Phase_Prepare(
     TPMI_ECC_KEY_EXCHANGE inScheme,
     UINT16 counter)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -93,7 +93,7 @@ TSS2_RC Tss2_Sys_ZGen_2Phase_Complete(
     TPM2B_ECC_POINT *outZ1,
     TPM2B_ECC_POINT *outZ2)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -126,7 +126,7 @@ TSS2_RC Tss2_Sys_ZGen_2Phase(
     TPM2B_ECC_POINT *outZ2,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ZGen_2Phase_Prepare(sysContext, keyA, inQsB, inQeB,

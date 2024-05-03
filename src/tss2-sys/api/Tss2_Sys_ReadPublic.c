@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_ReadPublic_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT objectHandle)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -47,7 +47,7 @@ TSS2_RC Tss2_Sys_ReadPublic_Complete(
     TPM2B_NAME *name,
     TPM2B_NAME *qualifiedName)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -83,7 +83,7 @@ TSS2_RC Tss2_Sys_ReadPublic(
     TPM2B_NAME *qualifiedName,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ReadPublic_Prepare(sysContext, objectHandle);

@@ -188,7 +188,7 @@ typedef struct {
 
 
 /** The states for the FAPI's NV read state */
-enum _FAPI_STATE_NV_READ {
+enum FAPI_STATE_NV_READ {
     NV_READ_INIT = 0,
     NV_READ_AUTHORIZE,
     NV_READ_AUTHORIZE2,
@@ -200,7 +200,7 @@ enum _FAPI_STATE_NV_READ {
 };
 
 /** The states for the FAPI's NV write state */
-enum _FAPI_STATE_NV_WRITE {
+enum FAPI_STATE_NV_WRITE {
     NV2_WRITE_INIT = 0,
     NV2_WRITE_READ,
     NV2_WRITE_WAIT_FOR_SESSSION,
@@ -237,8 +237,8 @@ typedef struct {
     uint64_t bitmap;            /**< The bitmask for the SetBits command */
     IFAPI_NV_TEMPLATE public_templ; /**< The template for nv creation, adjusted
                                          appropriate by the passed flags */
-    enum _FAPI_STATE_NV_READ nv_read_state; /**< The current state of NV read */
-    enum _FAPI_STATE_NV_WRITE nv_write_state; /**< The current state of NV write*/
+    enum FAPI_STATE_NV_READ nv_read_state; /**< The current state of NV read */
+    enum FAPI_STATE_NV_WRITE nv_write_state; /**< The current state of NV write*/
     uint8_t *write_data;
     char *logData;               /**< The event log for NV objects of type pcr */
     json_object *jso_event_log;  /**< logData in JSON format */
@@ -649,7 +649,7 @@ typedef struct {
 } IFAPI_FILE_SEARCH_CTX;
 
 /** The states for the FAPI's prepare key loading */
-enum _FAPI_STATE_PREPARE_LOAD_KEY {
+enum FAPI_STATE_PREPARE_LOAD_KEY {
     PREPARE_LOAD_KEY_INIT = 0,
     PREPARE_LOAD_KEY_WAIT_FOR_SESSION,
     PREPARE_LOAD_KEY_INIT_KEY,
@@ -657,7 +657,7 @@ enum _FAPI_STATE_PREPARE_LOAD_KEY {
 };
 
 /** The states for the FAPI's key loading */
-enum _FAPI_STATE_LOAD_KEY {
+enum FAPI_STATE_LOAD_KEY {
     LOAD_KEY_GET_PATH = 0,
     LOAD_KEY_READ_KEY,
     LOAD_KEY_WAIT_FOR_PRIMARY,
@@ -716,8 +716,8 @@ typedef struct {
 /** The data structure holding internal state of loading keys.
  */
 typedef struct {
-    enum _FAPI_STATE_LOAD_KEY state;   /**< The current state of key  loading */
-    enum  _FAPI_STATE_PREPARE_LOAD_KEY prepare_state;
+    enum FAPI_STATE_LOAD_KEY state;   /**< The current state of key  loading */
+    enum  FAPI_STATE_PREPARE_LOAD_KEY prepare_state;
     NODE_STR_T *path_list;        /**< The current used hierarchy for CreatePrimary */
     NODE_OBJECT_T *key_list;
     IFAPI_OBJECT auth_object;
@@ -797,7 +797,7 @@ typedef union {
 } IFAPI_CMD_STATE;
 
 /** The states for the FAPI's primary key regeneration */
-enum _FAPI_STATE_PRIMARY {
+enum FAPI_STATE_PRIMARY {
     PRIMARY_INIT = 0,
     PRIMARY_READ_KEY,
     PRIMARY_READ_HIERARCHY,
@@ -812,7 +812,7 @@ enum _FAPI_STATE_PRIMARY {
 };
 
 /** The states for the FAPI's primary key regeneration */
-enum _FAPI_STATE_SESSION {
+enum FAPI_STATE_SESSION {
     SESSION_INIT = 0,
     SESSION_WAIT_FOR_PRIMARY,
     SESSION_CREATE_SESSION,
@@ -821,23 +821,23 @@ enum _FAPI_STATE_SESSION {
 };
 
 /** The states for the FAPI's get random  state */
-enum _FAPI_STATE_GET_RANDOM {
+enum FAPI_STATE_GET_RANDOM {
     GET_RANDOM_INIT = 0,
     GET_RANDOM_SENT
 };
 
 /** The states for flushing objects */
-enum _FAPI_FLUSH_STATE {
+enum FAPI_FLUSH_STATE {
     FLUSH_INIT = 0,
     WAIT_FOR_FLUSH
 };
 
 /** The states for the FAPI's internal state machine */
-enum _FAPI_STATE {
-    _FAPI_STATE_INIT = 0,         /**< The initial state after creation or after
+enum FAPI_STATE {
+    FAPI_STATE_INIT = 0,         /**< The initial state after creation or after
                                      finishing a command. A new command can only
                                      be issued in this state. */
-    _FAPI_STATE_INTERNALERROR,     /**< A non-recoverable error occurred within the
+    FAPI_STATE_INTERNALERROR,     /**< A non-recoverable error occurred within the
                                       ESAPI code. */
     INITIALIZE_READ,
     INITIALIZE_INIT_TCTI,
@@ -1165,14 +1165,14 @@ struct FAPI_CONTEXT {
     struct IFAPI_PROFILES profiles;
     TPMS_TIME_INFO init_time;        /**< The current time during FAPI initialization. **/
 
-    enum _FAPI_STATE state;          /**< The current state of the command execution */
-    enum _FAPI_STATE_PRIMARY primary_state; /**< The current state of the primary regeneration */
-    enum _FAPI_STATE_SESSION session_state; /**< The current state of the session creation */
-    enum _FAPI_STATE_GET_RANDOM get_random_state; /**< The current state of get random */
+    enum FAPI_STATE state;          /**< The current state of the command execution */
+    enum FAPI_STATE_PRIMARY primary_state; /**< The current state of the primary regeneration */
+    enum FAPI_STATE_SESSION session_state; /**< The current state of the session creation */
+    enum FAPI_STATE_GET_RANDOM get_random_state; /**< The current state of get random */
     enum IFAPI_HIERACHY_AUTHORIZATION_STATE hierarchy_state;
     enum IFAPI_HIERACHY_POLICY_AUTHORIZATION_STATE hierarchy_policy_state;
     enum IFAPI_GET_CERT_STATE get_cert_state;
-    enum _FAPI_FLUSH_STATE flush_object_state;  /**< The current state of a flush operation */
+    enum FAPI_FLUSH_STATE flush_object_state;  /**< The current state of a flush operation */
     enum IFAPI_CLEANUP_STATE cleanup_state;     /**< The state of cleanup after command execution */
     enum IFAPI_READ_NV_PUBLIC_STATE read_nv_public_state;
     IFAPI_CONFIG config;             /**< The profile independent configuration data */

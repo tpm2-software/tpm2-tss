@@ -58,7 +58,7 @@ ifapi_verify_signature_quote(
     const TPMT_SIG_SCHEME       *signatureScheme);
 
 
-typedef struct _IFAPI_CRYPTO_CONTEXT IFAPI_CRYPTO_CONTEXT_BLOB;
+typedef struct IFAPI_CRYPTO_CONTEXT IFAPI_CRYPTO_CONTEXT_BLOB;
 
 TSS2_RC
 ifapi_crypto_hash_start(

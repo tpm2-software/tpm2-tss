@@ -23,7 +23,7 @@ TSS2_RC Tss2_Sys_Import_Prepare(
     const TPM2B_ENCRYPTED_SECRET *inSymSeed,
     const TPMT_SYM_DEF_OBJECT *symmetricAlg)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !symmetricAlg)
@@ -122,7 +122,7 @@ TSS2_RC Tss2_Sys_Import_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outPrivate)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -150,7 +150,7 @@ TSS2_RC Tss2_Sys_Import(
     TPM2B_PRIVATE *outPrivate,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!symmetricAlg)

@@ -19,7 +19,7 @@ TSS2_RC Tss2_Sys_PCR_Event_Prepare(
     TPMI_DH_PCR pcrHandle,
     const TPM2B_EVENT *eventData)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -61,7 +61,7 @@ TSS2_RC Tss2_Sys_PCR_Event_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_DIGEST_VALUES *digests)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -85,7 +85,7 @@ TSS2_RC Tss2_Sys_PCR_Event(
     TPML_DIGEST_VALUES *digests,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_PCR_Event_Prepare(sysContext, pcrHandle, eventData);

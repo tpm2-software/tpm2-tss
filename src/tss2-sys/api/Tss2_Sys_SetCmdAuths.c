@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_SetCmdAuths(
     TSS2_SYS_CONTEXT *sysContext,
     const TSS2L_SYS_AUTH_COMMAND *cmdAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     uint16_t i;
     UINT32 authSize = 0;
     UINT32 newCmdSize = 0;

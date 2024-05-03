@@ -20,7 +20,7 @@ TSS2_RC Tss2_Sys_SetDecryptParam(
     size_t param_size,
     const uint8_t *param_buffer)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     size_t curr_param_size;
     const uint8_t *curr_param_buffer;
     UINT32 command_size;

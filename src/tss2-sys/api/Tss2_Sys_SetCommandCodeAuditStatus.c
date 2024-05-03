@@ -21,7 +21,7 @@ TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
     const TPML_CC *setList,
     const TPML_CC *clearList)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !setList  || !clearList)
@@ -68,7 +68,7 @@ TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Prepare(
 TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -85,7 +85,7 @@ TSS2_RC Tss2_Sys_SetCommandCodeAuditStatus(
     const TPML_CC *clearList,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!setList || !clearList)

@@ -19,7 +19,7 @@ TSS2_RC Tss2_Sys_ECDH_ZGen_Prepare(
     TPMI_DH_OBJECT keyHandle,
     const TPM2B_ECC_POINT *inPoint)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -61,7 +61,7 @@ TSS2_RC Tss2_Sys_ECDH_ZGen_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_ECC_POINT *outPoint)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -85,7 +85,7 @@ TSS2_RC Tss2_Sys_ECDH_ZGen(
     TPM2B_ECC_POINT *outPoint,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ECDH_ZGen_Prepare(sysContext, keyHandle, inPoint);

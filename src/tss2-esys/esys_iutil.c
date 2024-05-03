@@ -1234,7 +1234,7 @@ esys_GetResourceObject(ESYS_CONTEXT * esys_context,
  *
  * This function will check that the sequence of invocations to the esys context
  * was such that an _async function can be called. This means that the internal
- * @state field is either @_ESYS_STATE_INIT, @_ESYS_STATE_ERRORRESPONSE,
+ * @state field is either @ESYS_STATE_INIT, @_ESYS_STATE_ERRORRESPONSE,
  * @_ESYS_STATE_FINISHED.
  * @param[in,out] esys_context The esys context to issue the command on.
  * @retval TSS2_RC_SUCCESS on success.
@@ -1248,8 +1248,8 @@ iesys_check_sequence_async(ESYS_CONTEXT * esys_context)
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
-    if (esys_context->state != _ESYS_STATE_INIT &&
-        esys_context->state != _ESYS_STATE_RESUBMISSION) {
+    if (esys_context->state != ESYS_STATE_INIT &&
+        esys_context->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }

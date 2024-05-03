@@ -158,25 +158,25 @@ Esys_Clear_Async(
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
         return r;
-    esysContext->state = _ESYS_STATE_INTERNALERROR;
+    esysContext->state = ESYS_STATE_INTERNALERROR;
 
     /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    return_state_if_error(r, ESYS_STATE_INIT, "Check session usage");
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, authHandle, &authHandleNode);
-    return_state_if_error(r, _ESYS_STATE_INIT, "authHandle unknown.");
+    return_state_if_error(r, ESYS_STATE_INIT, "authHandle unknown.");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_Clear_Prepare(esysContext->sys,
                                (authHandleNode == NULL) ? TPM2_RH_NULL
                                 : authHandleNode->rsrc.handle);
-    return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
+    return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Initialize session resources");
+    return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
     if (authHandleNode != NULL)
         iesys_compute_session_value(esysContext->session_tab[0],
                 &authHandleNode->rsrc.name, &authHandleNode->auth);
@@ -188,18 +188,18 @@ Esys_Clear_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, authHandleNode, NULL, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT,
+    return_state_if_error(r, ESYS_STATE_INIT,
                           "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
         r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
-        return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
+        return_state_if_error(r, ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
     }
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
                           "Finish (Execute Async)");
 
     /* If the command authorization is LOCKOUT we need to
@@ -207,7 +207,7 @@ Esys_Clear_Async(
     if (authHandle == ESYS_TR_RH_LOCKOUT)
         iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
 
-    esysContext->state = _ESYS_STATE_SENT;
+    esysContext->state = ESYS_STATE_SENT;
 
     return r;
 }
@@ -253,18 +253,18 @@ Esys_Clear_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != _ESYS_STATE_SENT &&
-        esysContext->state != _ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT &&
+        esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    esysContext->state = _ESYS_STATE_INTERNALERROR;
+    esysContext->state = ESYS_STATE_INTERNALERROR;
 
     /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);
-        esysContext->state = _ESYS_STATE_SENT;
+        esysContext->state = ESYS_STATE_SENT;
         return r;
     }
     /* This block handle the resubmission of TPM commands given a certain set of
@@ -272,12 +272,12 @@ Esys_Clear_Finish(
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
-        if (esysContext->submissionCount++ >= _ESYS_MAX_SUBMISSIONS) {
+        if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
-            esysContext->state = _ESYS_STATE_INIT;
+            esysContext->state = ESYS_STATE_INIT;
             return r;
         }
-        esysContext->state = _ESYS_STATE_RESUBMISSION;
+        esysContext->state = ESYS_STATE_RESUBMISSION;
         r = Tss2_Sys_ExecuteAsync(esysContext->sys);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
@@ -292,11 +292,11 @@ Esys_Clear_Finish(
     /* The following is the "regular error" handling. */
     if (iesys_tpm_error(r)) {
         LOG_WARNING("Received TPM Error");
-        esysContext->state = _ESYS_STATE_INIT;
+        esysContext->state = ESYS_STATE_INIT;
         return r;
     } else if (r != TSS2_RC_SUCCESS) {
         LOG_ERROR("Received a non-TPM Error");
-        esysContext->state = _ESYS_STATE_INTERNALERROR;
+        esysContext->state = ESYS_STATE_INTERNALERROR;
         return r;
     }
 
@@ -305,7 +305,7 @@ Esys_Clear_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
                           "Error: check response");
 
     /*
@@ -313,10 +313,10 @@ Esys_Clear_Finish(
      * to deliver the result.
      */
     r = Tss2_Sys_Clear_Complete(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
                           "Received error from SAPI unmarshaling" );
 
-    esysContext->state = _ESYS_STATE_INIT;
+    esysContext->state = ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
 }

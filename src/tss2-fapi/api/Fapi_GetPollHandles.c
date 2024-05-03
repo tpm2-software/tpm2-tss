@@ -59,7 +59,7 @@ Fapi_GetPollHandles(
     check_not_null(num_handles);
 
     /* Check the correct state for poll handle retrieval. */
-    if (context->state == _FAPI_STATE_INIT) {
+    if (context->state == FAPI_STATE_INIT) {
         LOG_ERROR("PollHandles can only be returned while an operation is running");
         return TSS2_FAPI_RC_BAD_SEQUENCE;
     }

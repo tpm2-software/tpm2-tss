@@ -334,7 +334,7 @@ Fapi_ExportPolicy_Finish(
     }
 
     /* Cleanup any intermediate results and state stored in the context. */
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     if (jso)
         json_object_put(jso);
     ifapi_cleanup_ifapi_object(&command->object);
@@ -357,6 +357,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     SAFE_FREE(command->path);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     return r;
 }

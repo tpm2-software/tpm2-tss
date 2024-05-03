@@ -34,12 +34,12 @@ TSS2_RC Tss2_Sys_Initialize(
     TSS2_TCTI_CONTEXT *tctiContext,
     TSS2_ABI_VERSION *abiVersion)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx || !tctiContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (contextSize < sizeof(_TSS2_SYS_CONTEXT_BLOB))
+    if (contextSize < sizeof(TSS2_SYS_CONTEXT_BLOB))
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
     if (!TSS2_TCTI_TRANSMIT (tctiContext) ||

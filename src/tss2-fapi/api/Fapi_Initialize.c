@@ -371,7 +371,7 @@ Fapi_Initialize_Finish(
     statecasedefault((*context)->state);
     }
 
-    (*context)->state = _FAPI_STATE_INIT;
+    (*context)->state = FAPI_STATE_INIT;
     SAFE_FREE(*capability);
     for (size_t i = 0; i < command->numPaths; i++) {
         SAFE_FREE(command->pathlist[i]);

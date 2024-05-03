@@ -21,7 +21,7 @@ TSS2_RC Tss2_Sys_Commit_Prepare(
     const TPM2B_SENSITIVE_DATA *s2,
     const TPM2B_ECC_PARAMETER *y2)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -96,7 +96,7 @@ TSS2_RC Tss2_Sys_Commit_Complete(
     TPM2B_ECC_POINT *E,
     UINT16 *counter)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -142,7 +142,7 @@ TSS2_RC Tss2_Sys_Commit(
     UINT16 *counter,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_Commit_Prepare(sysContext, signHandle, P1, s2, y2);

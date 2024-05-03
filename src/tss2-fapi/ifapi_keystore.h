@@ -149,7 +149,7 @@ enum IFAPI_IO_STATE {
 
 /** Type for representing TPM-Resource
  */
-typedef struct _IFAPI_OBJECT {
+typedef struct IFAPI_OBJECT {
     /* TSS2_OBJECT MUST GO FIRST. In C pointer of first element
      * is equal to pointer of base type, use this to hide data by
      * only passing pointer to public in callbacks, however, internal

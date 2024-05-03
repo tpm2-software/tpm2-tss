@@ -499,6 +499,6 @@ error_cleanup:
     SAFE_FREE(object->misc.nv.event_log);
     ifapi_session_clean(context);
     LOG_TRACE("finished");
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     return r;
 }

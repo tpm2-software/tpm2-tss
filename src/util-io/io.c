@@ -197,7 +197,7 @@ socket_connect (
     char port_str[MAX_PORT_STR_LEN];
     int ret = 0;
 #ifdef _WIN32
-    char host_buff[_HOST_NAME_MAX];
+    char host_buff[POSIX_HOST_NAME_MAX];
     const char *h = hostname;
     WSADATA wsaData;
     int iResult;
@@ -207,7 +207,7 @@ socket_connect (
         return TSS2_TCTI_RC_IO_ERROR;
     }
 #else
-    char host_buff[_HOST_NAME_MAX] __attribute__((unused));
+    char host_buff[POSIX_HOST_NAME_MAX] __attribute__((unused));
     const char *h __attribute__((unused)) = hostname;
 #endif
 

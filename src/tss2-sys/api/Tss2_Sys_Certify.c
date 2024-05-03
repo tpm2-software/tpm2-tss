@@ -21,7 +21,7 @@ TSS2_RC Tss2_Sys_Certify_Prepare(
     const TPM2B_DATA *qualifyingData,
     const TPMT_SIG_SCHEME *inScheme)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !inScheme)
@@ -76,7 +76,7 @@ TSS2_RC Tss2_Sys_Certify_Complete(
     TPM2B_ATTEST *certifyInfo,
     TPMT_SIGNATURE *signature)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -111,7 +111,7 @@ TSS2_RC Tss2_Sys_Certify(
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
     TSS2_RC rval;
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!inScheme)
         return TSS2_SYS_RC_BAD_REFERENCE;

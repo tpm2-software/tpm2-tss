@@ -3796,7 +3796,7 @@ Esys_Vendor_TCG_Test_Finish(
  */
 void
 Esys_Free(
-    void *__ptr);
+    void *ptr);
 
 TSS2_RC
 Esys_GetSysContext(

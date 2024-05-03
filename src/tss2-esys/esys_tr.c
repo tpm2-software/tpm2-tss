@@ -95,7 +95,7 @@ Esys_TR_Deserialize(ESYS_CONTEXT * esys_context,
     RSRC_NODE_T *esys_object;
     size_t offset = 0;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     *esys_handle = esys_context->esys_handle_cnt++;
     r = esys_CreateResourceObject(esys_context, *esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
@@ -139,7 +139,7 @@ Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
                             ESYS_TR shandle2, ESYS_TR shandle3)
 {
     TSS2_RC r;
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     ESYS_TR esys_handle = esys_context->esys_handle_cnt++;
     RSRC_NODE_T *esysHandleNode = NULL;
     RSRC_NODE_T *node_rsrc = NULL;
@@ -229,7 +229,7 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
     RSRC_NODE_T *objectHandleNode;
     bool first_call;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
 
     objectHandle = esys_context->esys_handle;
 
@@ -384,7 +384,7 @@ Esys_TR_FromTPMPublic(ESYS_CONTEXT * esys_context,
 {
     TSS2_RC r;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     r = Esys_TR_FromTPMPublic_Async(esys_context, tpm_handle,
                                     shandle1, shandle2, shandle3);
     return_if_error(r, "Error TR FromTPMPublic");
@@ -432,7 +432,7 @@ Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
     RSRC_NODE_T *node;
     RSRC_NODE_T **update_ptr;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     for (node = esys_context->rsrc_list,
          update_ptr = &esys_context->rsrc_list;
          node != NULL;
@@ -477,7 +477,7 @@ Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     TSS2_RC r;
     TPMI_ALG_HASH name_alg = TPM2_ALG_NULL;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     if (esys_handle == ESYS_TR_NONE) {
       return_error(TSS2_ESYS_RC_BAD_TR, "esys_handle can't be ESYS_TR_NONE.");
     }
@@ -534,7 +534,7 @@ Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 {
     RSRC_NODE_T *esys_object;
     TSS2_RC r;
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
 
     if (esys_handle == ESYS_TR_NONE) {
         return_error(TSS2_ESYS_RC_BAD_TR, "Name for ESYS_TR_NONE can't be determined.");
@@ -594,7 +594,7 @@ Esys_TRSess_GetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 {
     RSRC_NODE_T *esys_object;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     TSS2_RC r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
 
@@ -624,7 +624,7 @@ Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 {
     RSRC_NODE_T *esys_object;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     TSS2_RC r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
 
@@ -660,8 +660,8 @@ Esys_TRSess_GetNonceTPM(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 {
     RSRC_NODE_T *esys_object;
     TSS2_RC r;
-    _ESYS_ASSERT_NON_NULL(esys_context);
-    _ESYS_ASSERT_NON_NULL(nonceTPM);
+    ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(nonceTPM);
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
@@ -709,8 +709,8 @@ Esys_TR_GetTpmHandle(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
     TSS2_RC r = TSS2_RC_SUCCESS;
     RSRC_NODE_T *esys_object;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
-    _ESYS_ASSERT_NON_NULL(tpm_handle);
+    ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(tpm_handle);
 
     if (esys_handle == ESYS_TR_NONE) {
         return TSS2_ESYS_RC_BAD_TR;
@@ -743,7 +743,7 @@ Esys_TRSess_GetAuthRequired(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 {
     RSRC_NODE_T *esys_object;
     TSS2_RC r;
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");

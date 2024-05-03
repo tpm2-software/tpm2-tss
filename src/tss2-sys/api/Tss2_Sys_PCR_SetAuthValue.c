@@ -19,7 +19,7 @@ TSS2_RC Tss2_Sys_PCR_SetAuthValue_Prepare(
     TPMI_DH_PCR pcrHandle,
     const TPM2B_DIGEST *auth)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -60,7 +60,7 @@ TSS2_RC Tss2_Sys_PCR_SetAuthValue_Prepare(
 TSS2_RC Tss2_Sys_PCR_SetAuthValue_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -75,7 +75,7 @@ TSS2_RC Tss2_Sys_PCR_SetAuthValue(
     const TPM2B_DIGEST *auth,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_PCR_SetAuthValue_Prepare(sysContext, pcrHandle, auth);

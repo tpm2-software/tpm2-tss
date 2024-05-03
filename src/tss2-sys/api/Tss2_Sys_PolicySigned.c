@@ -24,7 +24,7 @@ TSS2_RC Tss2_Sys_PolicySigned_Prepare(
     INT32 expiration,
     const TPMT_SIGNATURE *auth)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !auth)
@@ -116,7 +116,7 @@ TSS2_RC Tss2_Sys_PolicySigned_Complete(
     TPM2B_TIMEOUT *timeout,
     TPMT_TK_AUTH *policyTicket)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -151,7 +151,7 @@ TSS2_RC Tss2_Sys_PolicySigned(
     TPMT_TK_AUTH *policyTicket,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!auth)

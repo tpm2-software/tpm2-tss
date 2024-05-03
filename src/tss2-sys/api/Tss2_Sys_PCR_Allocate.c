@@ -19,7 +19,7 @@ TSS2_RC Tss2_Sys_PCR_Allocate_Prepare(
     TPMI_RH_PLATFORM authHandle,
     const TPML_PCR_SELECTION *pcrAllocation)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !pcrAllocation)
@@ -60,7 +60,7 @@ TSS2_RC Tss2_Sys_PCR_Allocate_Complete(
     UINT32 *sizeNeeded,
     UINT32 *sizeAvailable)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -108,7 +108,7 @@ TSS2_RC Tss2_Sys_PCR_Allocate(
     UINT32 *sizeAvailable,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!pcrAllocation)

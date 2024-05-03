@@ -20,7 +20,7 @@ TSS2_RC Tss2_Sys_ObjectChangeAuth_Prepare(
     TPMI_DH_OBJECT parentHandle,
     const TPM2B_AUTH *newAuth)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -68,7 +68,7 @@ TSS2_RC Tss2_Sys_ObjectChangeAuth_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_PRIVATE *outPrivate)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -93,7 +93,7 @@ TSS2_RC Tss2_Sys_ObjectChangeAuth(
     TPM2B_PRIVATE *outPrivate,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ObjectChangeAuth_Prepare(sysContext, objectHandle, parentHandle, newAuth);

@@ -18,7 +18,7 @@ TSS2_RC Tss2_Sys_ECDH_KeyGen_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_OBJECT keyHandle)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -46,7 +46,7 @@ TSS2_RC Tss2_Sys_ECDH_KeyGen_Complete(
     TPM2B_ECC_POINT *zPoint,
     TPM2B_ECC_POINT *pubPoint)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -77,7 +77,7 @@ TSS2_RC Tss2_Sys_ECDH_KeyGen(
     TPM2B_ECC_POINT *pubPoint,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ECDH_KeyGen_Prepare(sysContext, keyHandle);

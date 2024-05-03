@@ -20,7 +20,7 @@ TSS2_RC Tss2_Sys_EventSequenceComplete_Prepare(
     TPMI_DH_OBJECT sequenceHandle,
     const TPM2B_MAX_BUFFER *buffer)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -68,7 +68,7 @@ TSS2_RC Tss2_Sys_EventSequenceComplete_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPML_DIGEST_VALUES *results)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -92,7 +92,7 @@ TSS2_RC Tss2_Sys_EventSequenceComplete(
     TPML_DIGEST_VALUES *results,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_EventSequenceComplete_Prepare(sysContext, pcrHandle,

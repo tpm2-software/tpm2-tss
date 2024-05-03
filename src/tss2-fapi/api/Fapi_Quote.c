@@ -500,7 +500,7 @@ error_cleanup:
     if (command->handle != ESYS_TR_NONE) {
         Esys_FlushContext(context->esys, command->handle);
     }
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

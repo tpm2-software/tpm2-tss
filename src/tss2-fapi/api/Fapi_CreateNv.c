@@ -484,7 +484,7 @@ Fapi_CreateNv_Finish(
         statecasedefault(context->state);
     }
 
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_DEBUG("success");
     r = TSS2_RC_SUCCESS;
 

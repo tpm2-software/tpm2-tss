@@ -22,7 +22,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2_Prepare (
     TPMI_ALG_CIPHER_MODE mode,
     const TPM2B_IV *ivIn)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -97,7 +97,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2_Complete (
     TPM2B_MAX_BUFFER *outData,
     TPM2B_IV *ivOut)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -132,7 +132,7 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2 (
     TPM2B_IV *ivOut,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_EncryptDecrypt2_Prepare (sysContext,

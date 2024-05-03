@@ -71,7 +71,7 @@ fuzz_fill (
     void *copy_into_type;
     size_t copy_into_length = 0U;
     size_t data_used = 0U;
-    _TSS2_SYS_CONTEXT_BLOB *ctx = NULL;
+    TSS2_SYS_CONTEXT_BLOB *ctx = NULL;
     TSS2_TCTI_FUZZING_CONTEXT *tcti_fuzzing = NULL;
 
     ctx = syscontext_cast (sysContext);

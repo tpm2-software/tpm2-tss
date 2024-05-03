@@ -16,9 +16,9 @@
 
 /*
  * longest possible conf string:
- * HOST_NAME_MAX + max char uint16 (5) + strlen ("host=,port=") (11)
+ * POSIX_HOST_NAME_MAX + max char uint16 (5) + strlen ("host=,port=") (11)
  */
-#define TCTI_MSSIM_CONF_MAX (_HOST_NAME_MAX + 16)
+#define TCTI_MSSIM_CONF_MAX (POSIX_HOST_NAME_MAX + 16)
 #define TCTI_MSSIM_DEFAULT_HOST "localhost"
 #define TCTI_MSSIM_DEFAULT_PORT 2321
 #define TCTI_MSSIM_DEFAULT_PATH NULL
