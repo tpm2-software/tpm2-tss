@@ -20,7 +20,7 @@
 #define LOGMODULE marshal
 #include "util/log.h"         // for LOG_DEBUG, LOG_ERROR, LOG_WARNING, LOG_...
 
-#define ADDR &
+#define ADDR &  // NOLINT(bugprone-macro-parentheses)
 #define VAL
 
 static TSS2_RC marshal_tab(BYTE const *src, uint8_t buffer[],
@@ -375,6 +375,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
  * needed because the first parameter to the function element is always a
  * reference (never a value).
  */
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMU_UNMARSHAL(type, sel, m, fn, sel2, m2, fn2, sel3, m3, fn3, \
                        sel4, m4, fn4, sel5, m5, fn5, sel6, m6, fn6, sel7, m7, fn7, \
                        sel8, m8, fn8, sel9, m9, fn9, sel10, m10, fn10, sel11, m11, fn11, \
@@ -432,6 +433,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*
  * The TPMU_UNMARSHAL2 operates on the same principles as the TPMU_MARSHAL2

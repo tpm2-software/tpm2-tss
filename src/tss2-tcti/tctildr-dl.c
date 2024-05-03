@@ -21,7 +21,7 @@
 #define LOGMODULE tcti
 #include "util/log.h"           // for LOG_ERROR, LOG_DEBUG, LOG_TRACE
 
-#define ARRAY_SIZE(X) (sizeof(X)/sizeof(X[0]))
+#define ARRAY_SIZE(X) (sizeof(X)/sizeof((X)[0]))
 
 struct {
     char *file;

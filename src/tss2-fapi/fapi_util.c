@@ -2697,7 +2697,7 @@ error_cleanup:
     return r;
 }
 
-#define min(X,Y) (X>Y)?Y:X
+#define min(X,Y) ((X)>(Y))?(Y):X
 
 /** State machine to retrieve random data from TPM.
  *
@@ -4128,28 +4128,29 @@ ifapi_free_objects(FAPI_CONTEXT *context)
     }
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define ADD_CAPABILITY_INFO(capability, field, subfield, max_count, property_count) \
-    if (context->cmd.GetInfo.fetched_data->data.capability.count > max_count - property_count) { \
-        context->cmd.GetInfo.fetched_data->data.capability.count = max_count - property_count; \
+    if (context->cmd.GetInfo.fetched_data->data.capability.count > (max_count) - (property_count)) { \
+        context->cmd.GetInfo.fetched_data->data.capability.count = (max_count) - (property_count); \
     } \
 \
     memmove(&context->cmd.GetInfo.capability_data->data.capability.field[property_count], \
             context->cmd.GetInfo.fetched_data->data.capability.field, \
             context->cmd.GetInfo.fetched_data->data.capability.count \
             * sizeof(context->cmd.GetInfo.fetched_data->data.capability.field[0]));       \
-    property_count += context->cmd.GetInfo.fetched_data->data.capability.count; \
+    (property_count) += context->cmd.GetInfo.fetched_data->data.capability.count; \
 \
     context->cmd.GetInfo.capability_data->data.capability.count = property_count; \
 \
-    if (more_data && property_count < count \
+    if (more_data && (property_count) < count \
         && context->cmd.GetInfo.fetched_data->data.capability.count) {  \
         context->cmd.GetInfo.property \
             = context->cmd.GetInfo.capability_data->data. \
-            capability.field[property_count - 1]subfield + 1;   \
+            capability.field[(property_count) - 1]subfield + 1;   \
     } else { \
         more_data = false; \
     }
-
+// NOLINTEND(bugprone-macro-parentheses)
 
 /** Prepare the receiving of capability data.
  *

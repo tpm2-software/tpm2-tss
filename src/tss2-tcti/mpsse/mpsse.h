@@ -44,7 +44,7 @@
 #endif
 
 #define MPSSE_OK            0
-#define MPSSE_FAIL          -1
+#define MPSSE_FAIL          (-1)
 
 #define MSB                 0x00
 #define LSB                 0x08

@@ -24,8 +24,8 @@ typedef SSIZE_T ssize_t;
 
 #define _HOST_NAME_MAX _POSIX_HOST_NAME_MAX
 #define SOCKET int
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
+#define INVALID_SOCKET ((-1))
+#define SOCKET_ERROR ((-1))
 #endif
 
 #ifdef _WIN32
@@ -48,7 +48,7 @@ typedef SSIZE_T ssize_t;
     do { \
         __ret = exp; \
     } while (__ret == SOCKET_ERROR && errno == EINTR); \
-    dest =__ret; }
+    ((dest)) =__ret; }
 #endif
 
 #ifdef __cplusplus

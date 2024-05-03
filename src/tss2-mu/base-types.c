@@ -85,6 +85,7 @@ Tss2_MU_##type##_Marshal ( \
     return TSS2_RC_SUCCESS; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define BASE_UNMARSHAL(type) \
 TSS2_RC \
 Tss2_MU_##type##_Unmarshal ( \
@@ -153,6 +154,7 @@ Tss2_MU_##type##_Unmarshal ( \
 \
     return TSS2_RC_SUCCESS; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*
  * These macros expand to (un)marshal functions for each of the base types

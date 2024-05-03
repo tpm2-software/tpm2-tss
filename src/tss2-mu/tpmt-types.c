@@ -19,7 +19,7 @@
 #define LOGMODULE marshal
 #include "util/log.h"         // for LOG_DEBUG
 
-#define ADDR &
+#define ADDR &  // NOLINT(bugprone-macro-parentheses)
 #define VAL
 
 #define TPMT_MARSHAL_2(type, m1, op1, fn1, m2, op2, sel, fn2) \
@@ -54,6 +54,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMT_UNMARSHAL_2(type, m1, fn1, m2, sel, fn2) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -85,6 +86,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMT_MARSHAL_3(type, m1, op1, fn1, m2, op2, sel2, fn2, m3, op3, sel3, fn3) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -122,6 +124,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMT_UNMARSHAL_3(type, m1, fn1, m2, sel2, fn2, m3, sel3, fn3) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -157,6 +160,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMT_MARSHAL_TK(type, m1, fn1, m2, fn2, m3, fn3) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -194,6 +198,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMT_UNMARSHAL_TK(type, m1, fn1, m2, fn2, m3, fn3) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -226,6 +231,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMT_MARSHAL_4(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
                        m4, sel4, op4, fn4) \
@@ -268,6 +274,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMT_UNMARSHAL_4(type, m1, fn1, m2, fn2, m3, fn3, m4, sel4, fn4) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -307,6 +314,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMT_MARSHAL_5(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
                        m4, op4, fn4, m5, op5, fn5) \
@@ -353,6 +361,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMT_UNMARSHAL_5(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4, m5, fn5) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -393,6 +402,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPMT_MARSHAL_6(type, m1, op1, fn1, m2, op2, fn2, m3, op3, fn3, \
                        m4, op4, fn4, m5, op5, sel5, fn5, m6, op6, sel6, fn6) \
@@ -443,6 +453,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return ret; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMT_UNMARSHAL_6(type, m1, fn1, m2, fn2, m3, fn3, m4, fn4, m5, sel5, fn5, m6, sel6, fn6) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -490,6 +501,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*
  * These macros expand to (un)marshal functions for each of the TPMT types

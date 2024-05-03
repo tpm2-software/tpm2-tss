@@ -50,7 +50,7 @@ typedef uint32_t TSS2_RC;
  * layer that generated the error.
  */
 #define TSS2_RC_LAYER_SHIFT      (16)
-#define TSS2_RC_LAYER(level)     ((TSS2_RC)level << TSS2_RC_LAYER_SHIFT)
+#define TSS2_RC_LAYER(level)     ((TSS2_RC)(level) << TSS2_RC_LAYER_SHIFT)
 #define TSS2_RC_LAYER_MASK       TSS2_RC_LAYER(0xff)
 
 /* These layer codes are reserved for software layers defined in the TCG

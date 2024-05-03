@@ -91,27 +91,27 @@ typedef struct {
 
 
 #define FAPI_COPY_DIGEST(dest_buffer, dest_size, src, src_size) \
-    if (src_size > sizeof(TPMU_HA)) { \
+    if ((src_size) > sizeof(TPMU_HA)) { \
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Digest size too large."); \
     } \
     memcpy(dest_buffer, (src), (src_size));  \
-    dest_size = src_size
+    (dest_size) = src_size
 
 #define HASH_UPDATE(CONTEXT, TYPE, OBJECT, R, LABEL)    \
     { \
         uint8_t buffer[sizeof(TYPE)]; \
         size_t offset = 0; \
-        R = Tss2_MU_ ## TYPE ## _Marshal(OBJECT, \
+        (R) = Tss2_MU_ ## TYPE ## _Marshal(OBJECT, \
                                          &buffer[0], sizeof(TYPE), &offset); \
         goto_if_error(R, "Marshal for hash update", LABEL); \
-        R = ifapi_crypto_hash_update(CONTEXT, \
+        (R) = ifapi_crypto_hash_update(CONTEXT, \
                                      (const uint8_t *) &buffer[0], \
                                      offset);                     \
         goto_if_error(R, "crypto hash update", LABEL); }
 
 #define HASH_UPDATE_BUFFER(CONTEXT, BUFFER, SIZE, R, LABEL) \
     R = ifapi_crypto_hash_update(CONTEXT, \
-                                 (const uint8_t *) BUFFER, SIZE) ; \
+                                 (const uint8_t *) (BUFFER), SIZE) ; \
     goto_if_error(R, "crypto hash update", LABEL);
 
 #define FAPI_SYNC(r,msg,label, ...)             \
@@ -123,8 +123,8 @@ typedef struct {
     }
 
 #define ENC_SESSION_IF_POLICY(auth_session)             \
-    (auth_session == ESYS_TR_PASSWORD || auth_session == ESYS_TR_NONE || \
-     auth_session == context->session2 || \
+    ((auth_session) == ESYS_TR_PASSWORD || (auth_session) == ESYS_TR_NONE || \
+     (auth_session) == context->session2 || \
      !context->session2) ? ESYS_TR_NONE : context->session2
 
 /** The states for the FAPI's object authorization state*/

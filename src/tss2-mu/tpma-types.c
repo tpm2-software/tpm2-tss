@@ -81,6 +81,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \
     return TSS2_RC_SUCCESS; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMA_UNMARSHAL(type) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -145,6 +146,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return TSS2_RC_SUCCESS; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*
  * These macros expand to (un)marshal functions for each of the TPMA types

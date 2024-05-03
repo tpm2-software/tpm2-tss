@@ -19,9 +19,9 @@
 #define LOGMODULE marshal
 #include "util/log.h"         // for LOG_DEBUG, LOG_ERROR, LOG_TRACE, LOG_WA...
 
-#define ADDR &
+#define ADDR &  // NOLINT(bugprone-macro-parentheses)
 #define VAL
-#define TAB_SIZE(tab) (sizeof(tab) / sizeof(tab[0]))
+#define TAB_SIZE(tab) (sizeof(tab) / sizeof((tab)[0]))
 
 #define TPML_MARSHAL(type, marshal_func, buf_name, op) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -85,6 +85,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return TSS2_RC_SUCCESS; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPML_UNMARSHAL(type, unmarshal_func, buf_name) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -149,6 +150,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return TSS2_RC_SUCCESS; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*
  * These macros expand to (un)marshal functions for each of the TPML types
