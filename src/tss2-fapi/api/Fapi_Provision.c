@@ -512,6 +512,16 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             command->auth_state =  (*capabilityData)->data.tpmProperties.tpmProperty[0].value;
             SAFE_FREE(*capabilityData);
 
+            if (command->auth_state & TPMA_PERMANENT_ENDORSEMENTAUTHSET) {
+                hierarchy_he->misc.hierarchy.with_auth = TPM2_YES;
+            }
+            if (command->auth_state & TPMA_PERMANENT_OWNERAUTHSET) {
+                hierarchy_hs->misc.hierarchy.with_auth = TPM2_YES;
+            }
+            if (command->auth_state & TPMA_PERMANENT_LOCKOUTAUTHSET) {
+                hierarchy_lockout->misc.hierarchy.with_auth = TPM2_YES;
+            }
+
             /* Check the TPM capabilities for the persistent handle. */
             if (command->public_templ.persistent_handle) {
                 r = Esys_GetCapability_Async(context->esys,
