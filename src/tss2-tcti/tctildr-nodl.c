@@ -196,7 +196,7 @@ tctildr_get_tcti (const char *name,
     for (size_t i = 0; i < ARRAY_SIZE(tctis); ++i) {
 #pragma GCC diagnostic pop
         for (size_t j = 0; j < NAME_ARRAY_SIZE; ++j) {
-            if (strcmp (name, tctis[i].names[j]))
+            if (strcmp (name, tctis[i].names[j]) != 0)
                 continue;
             LOG_DEBUG("initializing TCTI with name \"%s\"",
                       tctis[i].names[j]);

@@ -512,10 +512,10 @@ Tss2_TctiLdr_Initialize_Ex (const char *name,
     }
     *tctiContext = NULL;
     /* Ignore 'name' and 'conf' if they're NULL or empty string */
-    if (name != NULL && strcmp (name, "")) {
+    if (name != NULL && strcmp (name, "") != 0) {
         local_name = name;
     }
-    if (conf != NULL && strcmp (conf, "")) {
+    if (conf != NULL && strcmp (conf, "") != 0) {
         local_conf = conf;
     }
     ldr_ctx = calloc (1, sizeof (TSS2_TCTILDR_CONTEXT));

@@ -1010,7 +1010,7 @@ compare_policy_digest(
             if (digest_values->digests[i].hashAlg == hash_alg) {
                 if (memcmp(&digest_values->digests[i].digest,
                            &authPolicy->buffer[0],
-                           authPolicy->size))
+                           authPolicy->size) != 0)
                     continue;
                 *equal = true;
                 return TSS2_RC_SUCCESS;
