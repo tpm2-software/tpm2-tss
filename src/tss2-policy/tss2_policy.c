@@ -415,7 +415,8 @@ Tss2_PolicyGetDescription(
             policy_ctx->path);
 
     const char *description = policy_ctx->policy.description;
-    size_t len = strlen(description);
+    /* length including null termination */
+    size_t len = strlen(description) + 1;
 
     /* NULL buffer let calller know size */
     if (!buffer) {
@@ -429,9 +430,9 @@ Tss2_PolicyGetDescription(
         return_if_error(TSS2_POLICY_RC_BUFFER_TOO_SMALL, "Specified buffer is too small");
     }
 
-    /* all is well, copy it to user and let them know size */
+    /* all is well, copy it to user (including null termination) and let them know size */
     *size = len;
-    memcpy(buffer, description, len);
+    strcpy(buffer, description);
 
     LOG_TRACE("finished, returning: 0x0");
     return TSS2_RC_SUCCESS;

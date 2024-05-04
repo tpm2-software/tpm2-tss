@@ -9,8 +9,6 @@
 #   [TODO]
 # -bugprone-narrowing-conversions
 #   [TODO]
-# -bugprone-not-null-terminated-result
-#   [TODO]
 #  -bugprone-reserved-identifier
 #   [TODO]
 #
@@ -30,7 +28,6 @@ Checks: "\
   -bugprone-easily-swappable-parameters, \
   -bugprone-implicit-widening-of-multiplication-result, \
   -bugprone-narrowing-conversions, \
-  -bugprone-not-null-terminated-result, \
   -bugprone-reserved-identifier, \
   \
   clang-analyzer, \
