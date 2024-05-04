@@ -1623,7 +1623,7 @@ ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal)
     }
     if (obj_name->size != ((TPM2B_NAME *)name)->size)
         return TSS2_RC_SUCCESS;
-    if (memcmp(&obj_name->name[0], &((TPM2B_NAME *)name)->name[0], obj_name->size))
+    if (memcmp(&obj_name->name[0], &((TPM2B_NAME *)name)->name[0], obj_name->size) != 0)
         /* The names are not equal */
         return TSS2_RC_SUCCESS;
     /* The two names are equal */

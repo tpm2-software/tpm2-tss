@@ -17,8 +17,6 @@
 #   [TODO]
 #  -bugprone-suspicious-missing-comma
 #   [TODO]
-#  -bugprone-suspicious-string-compare
-#   [TODO]
 #
 # -clang-analyzer-optin.performance.Padding
 #   We prefer logical/semantic order over (potentially insignificant)
@@ -40,7 +38,6 @@ Checks: "\
   -bugprone-reserved-identifier, \
   -bugprone-sizeof-expression, \
   -bugprone-suspicious-missing-comma, \
-  -bugprone-suspicious-string-compare, \
   \
   clang-analyzer, \
   -clang-analyzer-optin.performance.Padding, \

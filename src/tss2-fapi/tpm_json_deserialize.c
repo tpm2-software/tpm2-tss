@@ -299,9 +299,9 @@ get_boolean_from_json(json_object *jso, TPMI_YES_NO *value)
     TSS2_RC r = ifapi_json_TPMI_YES_NO_deserialize(jso, value);
     if (r != TSS2_RC_SUCCESS) {
         const char *token = json_object_get_string(jso);
-        if (strcasecmp(token, "set") || strcasecmp(token, "on")) {
+        if (strcasecmp(token, "set") != 0 || strcasecmp(token, "on") != 0) {
             *value = 1;
-        } else if (strcasecmp(token, "off")) {
+        } else if (strcasecmp(token, "off") != 0) {
             *value = 0;
         } else {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "No boolean value");

@@ -216,7 +216,7 @@ bool parse_event2body(TCG_EVENT2 const *event, UINT32 type) {
             size_t len = strlen(hcrtm_data);
             BYTE *data = (BYTE *)event->Event;
             if (event->EventSize != len ||
-                    strncmp((const char *)data, hcrtm_data, len)) {
+                    strncmp((const char *)data, hcrtm_data, len) != 0) {
                 LOG_ERROR("HCRTM Event Data MUST be the string: \"%s\"", hcrtm_data);
                 return false;
             }
@@ -449,7 +449,7 @@ bool specid_event(TCG_EVENT const *event, size_t size,
     TCG_SPECID_EVENT *event_specid = (TCG_SPECID_EVENT*)event->event;
 
     /* Check the signature */
-    if (strcmp((char *)&event_specid->Signature[0], "Spec ID Event03")) {
+    if (strcmp((char *)&event_specid->Signature[0], "Spec ID Event03") != 0) {
         LOG_ERROR("Check of signature \"Spec ID Event03\" failed.");
         return false;
     }
