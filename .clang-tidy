@@ -19,8 +19,6 @@
 #   [TODO]
 #  -bugprone-suspicious-string-compare
 #   [TODO]
-#  -bugprone-too-small-loop-variable
-#   [TODO]
 #
 # -clang-analyzer-optin.performance.Padding
 #   We prefer logical/semantic order over (potentially insignificant)
@@ -43,7 +41,6 @@ Checks: "\
   -bugprone-sizeof-expression, \
   -bugprone-suspicious-missing-comma, \
   -bugprone-suspicious-string-compare, \
-  -bugprone-too-small-loop-variable, \
   \
   clang-analyzer, \
   -clang-analyzer-optin.performance.Padding, \

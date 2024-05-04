@@ -1053,7 +1053,7 @@ void
 iesys_compute_bound_entity(const TPM2B_NAME * name,
                            const TPM2B_AUTH * auth, TPM2B_NAME * bound_entity)
 {
-    UINT16 i;
+    size_t i;
     UINT16 j = 0;
     *bound_entity = *name;
     memset(&bound_entity->name[bound_entity->size], 0,

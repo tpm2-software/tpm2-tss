@@ -293,7 +293,7 @@ static int GetNumHandles(TPM2_CC commandCode, bool req)
         { TPM2_CC_CertifyX509, 2, 0 }
     };
 
-    uint8_t i;
+    size_t i;
 
     for (i = 0; i < sizeof(commandArray) / sizeof(COMMAND_HANDLES); i++) {
         if (commandCode == commandArray[i].commandCode) {
