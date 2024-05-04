@@ -228,8 +228,7 @@ tss2_fmt1_err_strs_get(TSS2_RC error)
         /* 0xB - TPM2_RC_HANDLE */
         "the handle is not correct for the use",
         /* 0xC - TPM2_RC_KDF */
-        "unsupported key derivation function or function not appropriate for "
-        "use",
+        "unsupported key derivation function or function not appropriate for use",
         /* 0xD - TPM2_RC_RANGE */
         "value was out of allowed range",
         /* 0xE - TPM2_RC_AUTH_FAIL */
@@ -249,8 +248,7 @@ tss2_fmt1_err_strs_get(TSS2_RC error)
         /* 0x15 - TPM2_RC_SIZE */
         "structure is the wrong size",
         /* 0x16 - TPM2_RC_SYMMETRIC */
-        "unsupported symmetric algorithm or key size or not appropriate for"
-        " instance",
+        "unsupported symmetric algorithm or key size or not appropriate for instance",
         /* 0x17 - TPM2_RC_TAG */
         "incorrect structure tag",
         /* 0x18 - TPM2_RC_SELECTOR */
@@ -258,8 +256,7 @@ tss2_fmt1_err_strs_get(TSS2_RC error)
         /* 0x19 - EMPTY */
         NULL,
         /* 0x1A - TPM2_RC_INSUFFICIENT */
-        "the TPM was unable to unmarshal a value because there were not enough"
-        " octets in the input buffer",
+        "the TPM was unable to unmarshal a value because there were not enough octets in the input buffer",
         /* 0x1B - TPM2_RC_SIGNATURE */
         "the signature is not valid",
         /* 0x1C - TPM2_RC_KEY */
@@ -279,6 +276,7 @@ tss2_fmt1_err_strs_get(TSS2_RC error)
         /* 0x23 - TPM2_RC_EXPIRED */
         "the policy has expired",
         /* 0x24 - TPM2_RC_POLICY_CC */
+        // NOLINTNEXTLINE(bugprone-suspicious-missing-comma)
         "the commandCode in the policy is not the commandCode of the command"
         " or the command code in a policy command references a command that"
         " is not implemented",
@@ -484,8 +482,7 @@ tss2_fmt0_err_strs_get(TSS2_RC rc)
         /* 0x24 - TPM2_RC_AUTH_TYPE */
         "authorization handle is not correct for command",
         /* 0x25 - TPM2_RC_AUTH_MISSING */
-        "command requires an authorization session for handle and it is"
-        " not present",
+        "command requires an authorization session for handle and it is not present",
         /* 0x26 - TPM2_RC_POLICY */
         "policy failure in math operation or an invalid authPolicy value",
         /* 0x27 - TPM2_RC_PCR */
@@ -501,6 +498,7 @@ tss2_fmt0_err_strs_get(TSS2_RC rc)
         /* 0x2C - EMPTY */
         NULL,
         /* 0x2D - TPM2_RC_UPGRADE */
+        // NOLINTNEXTLINE(bugprone-suspicious-missing-comma)
         "For all commands, other than TPM2_FieldUpgradeData, "
         "this code indicates that the TPM is in field upgrade mode. "
         "For TPM2_FieldUpgradeData, this code indicates that the TPM "
@@ -759,6 +757,7 @@ tss_err_handler (TSS2_RC rc)
         /* 12 - TSS2_BASE_RC_NOT_PERMITTED */
         "Operation not permitted.",
         /* 13 - TSS2_BASE_RC_INVALID_SESSIONS */
+        // NOLINTNEXTLINE(bugprone-suspicious-missing-comma)
         "Session structures were sent, but command doesn't use them or doesn't"
         " use the specified number of them",
         /* 14 - TSS2_BASE_RC_NO_DECRYPT_PARAM */
