@@ -13,8 +13,6 @@
 #   [TODO]
 #  -bugprone-reserved-identifier
 #   [TODO]
-#  -bugprone-sizeof-expression
-#   [TODO]
 #
 # -clang-analyzer-optin.performance.Padding
 #   We prefer logical/semantic order over (potentially insignificant)
@@ -34,7 +32,6 @@ Checks: "\
   -bugprone-narrowing-conversions, \
   -bugprone-not-null-terminated-result, \
   -bugprone-reserved-identifier, \
-  -bugprone-sizeof-expression, \
   \
   clang-analyzer, \
   -clang-analyzer-optin.performance.Padding, \
