@@ -15,8 +15,6 @@
 #   [TODO]
 #  -bugprone-sizeof-expression
 #   [TODO]
-#  -bugprone-suspicious-missing-comma
-#   [TODO]
 #
 # -clang-analyzer-optin.performance.Padding
 #   We prefer logical/semantic order over (potentially insignificant)
@@ -37,7 +35,6 @@ Checks: "\
   -bugprone-not-null-terminated-result, \
   -bugprone-reserved-identifier, \
   -bugprone-sizeof-expression, \
-  -bugprone-suspicious-missing-comma, \
   \
   clang-analyzer, \
   -clang-analyzer-optin.performance.Padding, \
@@ -46,4 +43,5 @@ Checks: "\
   \
   clang-diagnostic*, \
 "
+WarningsAsErrors: "*"
 HeaderFilterRegex: "(src|include)/.*"
