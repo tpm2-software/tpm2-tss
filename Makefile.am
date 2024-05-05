@@ -421,8 +421,6 @@ libtss2_tcti_spi_helper = src/tss2-tcti/libtss2-tcti-spi-helper.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spi_helper.h
 lib_LTLIBRARIES += $(libtss2_tcti_spi_helper)
 pkgconfig_DATA += lib/tss2-tcti-spi-helper.pc
-EXTRA_DIST += lib/tss2-tcti-spi-helper.map \
-              lib/tss2-tcti-spi-helper.def
 
 if HAVE_LD_VERSION_SCRIPT
 if !UNIT
@@ -435,6 +433,8 @@ src_tss2_tcti_libtss2_tcti_spi_helper_la_SOURCES  = \
     src/tss2-tcti/tcti-spi-helper.c \
     src/tss2-tcti/tcti-spi-helper.h
 endif # ENABLE_TCTI_SPI_HELPER
+EXTRA_DIST += lib/tss2-tcti-spi-helper.map \
+              lib/tss2-tcti-spi-helper.def
 
 # tcti library for letstrust-tpm2go usb tpm
 if ENABLE_TCTI_SPI_LTT2GO
@@ -483,8 +483,6 @@ libtss2_tcti_spi_ftdi = src/tss2-tcti/libtss2-tcti-spi-ftdi.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spi_ftdi.h
 lib_LTLIBRARIES += $(libtss2_tcti_spi_ftdi)
 pkgconfig_DATA += lib/tss2-tcti-spi-ftdi.pc
-EXTRA_DIST += lib/tss2-tcti-spi-ftdi.map \
-              lib/tss2-tcti-spi-ftdi.def
 
 src_tss2_tcti_libtss2_tcti_spi_ftdi_la_CFLAGS  = $(AM_CFLAGS) $(LIBFTDI_CFLAGS) -Wno-deprecated-declarations
 src_tss2_tcti_libtss2_tcti_spi_ftdi_la_LDFLAGS  = $(LIBFTDI_LIBS)
@@ -501,6 +499,8 @@ src_tss2_tcti_libtss2_tcti_spi_ftdi_la_SOURCES  = \
     src/tss2-tcti/tcti-spi-ftdi.c \
     src/tss2-tcti/tcti-spi-ftdi.h
 endif # ENABLE_TCTI_SPI_FTDI
+EXTRA_DIST += lib/tss2-tcti-spi-ftdi.map \
+              lib/tss2-tcti-spi-ftdi.def
 
 # tcti library for i2c connected tpms
 if ENABLE_TCTI_I2C_HELPER
@@ -508,8 +508,6 @@ libtss2_tcti_i2c_helper = src/tss2-tcti/libtss2-tcti-i2c-helper.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_i2c_helper.h
 lib_LTLIBRARIES += $(libtss2_tcti_i2c_helper)
 pkgconfig_DATA += lib/tss2-tcti-i2c-helper.pc
-EXTRA_DIST += lib/tss2-tcti-i2c-helper.map \
-              lib/tss2-tcti-i2c-helper.def
 
 if HAVE_LD_VERSION_SCRIPT
 if !UNIT
@@ -522,6 +520,8 @@ src_tss2_tcti_libtss2_tcti_i2c_helper_la_SOURCES  = \
     src/tss2-tcti/tcti-i2c-helper.c \
     src/tss2-tcti/tcti-i2c-helper.h
 endif # ENABLE_TCTI_I2C_HELPER
+EXTRA_DIST += lib/tss2-tcti-i2c-helper.map \
+              lib/tss2-tcti-i2c-helper.def
 
 # tcti library for ftdi connected tpm
 if ENABLE_TCTI_I2C_FTDI
@@ -529,8 +529,6 @@ libtss2_tcti_i2c_ftdi = src/tss2-tcti/libtss2-tcti-i2c-ftdi.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_i2c_ftdi.h
 lib_LTLIBRARIES += $(libtss2_tcti_i2c_ftdi)
 pkgconfig_DATA += lib/tss2-tcti-i2c-ftdi.pc
-EXTRA_DIST += lib/tss2-tcti-i2c-ftdi.map \
-              lib/tss2-tcti-i2c-ftdi.def
 
 src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_CFLAGS  = $(AM_CFLAGS) $(LIBFTDI_CFLAGS) -Wno-deprecated-declarations
 src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_LDFLAGS  = $(LIBFTDI_LIBS)
@@ -547,6 +545,8 @@ src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_SOURCES  = \
     src/tss2-tcti/tcti-i2c-ftdi.c \
     src/tss2-tcti/tcti-i2c-ftdi.h
 endif # ENABLE_TCTI_I2C_FTDI
+EXTRA_DIST += lib/tss2-tcti-i2c-ftdi.map \
+              lib/tss2-tcti-i2c-ftdi.def
 
 ### TCG TSS SYS spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
@@ -608,10 +608,10 @@ else
 src_tss2_esys_libtss2_esys_la_LIBADD += $(LIBADD_DL)
 src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-dl.c src/tss2-tcti/tctildr-dl.h
 endif
+endif # ESYS
 EXTRA_DIST += lib/tss2-esys.map \
               lib/tss2-esys.def \
               src/tss2-esys/tss2-esys.vcxproj
-endif #ESYS
 
 ### TCG TSS error decoding spec library ###
 libtss2_rc = src/tss2-rc/libtss2-rc.la
@@ -661,9 +661,8 @@ src_tss2_policy_libtss2_policy_la_SOURCES = $(TSS2_POLICY_SRC) \
     src/tss2-fapi/ifapi_policy_json_serialize.c \
     src/tss2-fapi/ifapi_keystore.c \
     src/tss2-fapi/ifapi_policy_store.c
-
+endif # POLICY
 EXTRA_DIST += lib/tss2-policy.map lib/tss2-policy.def
-endif
 
 ### TCG TSS FAPI spec library ###
 if FAPI
