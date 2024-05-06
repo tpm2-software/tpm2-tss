@@ -589,7 +589,7 @@ static TSS2_RC
 read_event_buffer(IFAPI_IMA_TEMPLATE *template, FILE *fp)
 {
     bool old_ima_format;
-    int size, rsize;
+    size_t size, rsize;
 
     /* Check IMA  legacy format. */
     if (strcmp(template->ima_type, "ima") == 0) {

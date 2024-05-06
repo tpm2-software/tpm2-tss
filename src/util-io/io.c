@@ -41,7 +41,7 @@
  * once all of the requested data has been read, an error occurs, or EOF.
  * On error or EOF, the number of bytes read (if any) will be returned.
  */
-ssize_t
+size_t
 read_all (
     SOCKET fd,
     uint8_t *data,
@@ -81,7 +81,7 @@ read_all (
     return recvd_total;
 }
 
-ssize_t
+size_t
 write_all (
     SOCKET fd,
     const uint8_t *buf,
@@ -117,10 +117,10 @@ write_all (
         }
     } while (written_total < size);
 
-    return (ssize_t)written_total;
+    return written_total;
 }
 
-ssize_t
+size_t
 socket_recv_buf (
     SOCKET sock,
     uint8_t *data,
@@ -135,11 +135,11 @@ socket_xmit_buf (
     const void *buf,
     size_t size)
 {
-    int ret;
+    size_t ret;
 
     LOGBLOB_DEBUG (buf, size, "Writing %zu bytes to socket %d:", size, sock);
     ret = write_all (sock, buf, size);
-    if (ret < (ssize_t) size) {
+    if (ret < size) {
 #ifdef _WIN32
         LOG_ERROR ("write to fd %d failed, errno %d: %s", sock, WSAGetLastError(), strerror (WSAGetLastError()));
 #else

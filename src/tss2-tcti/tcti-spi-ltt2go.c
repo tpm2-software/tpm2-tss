@@ -73,7 +73,7 @@ platform_spi_transfer (void *user_data, const void *data_out, void *data_in, siz
     }
 
     while (transfered != cnt){
-        ret = libusb_bulk_transfer (dev_handle, EP_OUT, spi_dma_buffer+transfered, length, &act_len, TIMEOUT);
+        ret = libusb_bulk_transfer (dev_handle, EP_OUT, spi_dma_buffer+transfered, (int) length, &act_len, TIMEOUT);
         if (ret) {
             LOG_ERROR ("libusb_bulk_transfer write failed with error: %s.", libusb_strerror(ret));
             ret = TSS2_TCTI_RC_IO_ERROR;
@@ -86,7 +86,7 @@ platform_spi_transfer (void *user_data, const void *data_out, void *data_in, siz
     transfered = 0;
     length = cnt;
     while(transfered != cnt){
-        ret = libusb_bulk_transfer (dev_handle, EP_IN, spi_dma_buffer+transfered, length, &act_len, TIMEOUT);
+        ret = libusb_bulk_transfer (dev_handle, EP_IN, spi_dma_buffer+transfered, (int) length, &act_len, TIMEOUT);
         if (ret) {
             if (retry++ > 5) {
                 LOG_ERROR ("libusb_bulk_transfer read failed with error: %s.", libusb_strerror(ret));

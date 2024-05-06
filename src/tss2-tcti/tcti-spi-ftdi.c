@@ -97,7 +97,7 @@ platform_timeout_expired (void *user_data, bool *is_timeout_expired)
 TSS2_RC
 platform_spi_transfer (void *user_data, const void *data_out, void *data_in, size_t cnt)
 {
-    int length = cnt;
+    size_t length = cnt;
     PLATFORM_USERDATA *platform_data = (PLATFORM_USERDATA *) user_data;
     struct mpsse_context *mpsse = platform_data->mpsse;
     char *data = NULL;
@@ -106,7 +106,7 @@ platform_spi_transfer (void *user_data, const void *data_out, void *data_in, siz
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
-    if ((data = Transfer (mpsse, (char *)data_out, length)) == NULL) {
+    if ((data = Transfer (mpsse, (char *)data_out, (int) length)) == NULL) {
         Stop (mpsse);
         return TSS2_TCTI_RC_IO_ERROR;
     }

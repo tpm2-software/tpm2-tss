@@ -85,7 +85,7 @@ ifapi_json_pcr_select_serialize(
     for (i1 = 0; i1 < TPM2_PCR_LAST - TPM2_PCR_FIRST; i1++) {
         i2 = i1 + TPM2_PCR_FIRST;
         if (pcrSelect[i2 / 8] & (((BYTE)1) << (i2 % 8))) {
-            jso2 = json_object_new_int(i2);
+            jso2 = json_object_new_int64(i2);
             return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
             if (json_object_array_add(*jso, jso2)) {
                 return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -321,7 +321,7 @@ ifapi_json_UINT64_serialize(UINT64 in, json_object **jso)
 {
     json_object *jso1 = NULL, *jso2 = NULL;
     if (in < 0x1000000000000) {
-        *jso = json_object_new_int64(in);
+        *jso = json_object_new_int64((int64_t) in);
         if (*jso == NULL) {
             LOG_ERROR("Bad value %"PRIu32 "", (uint32_t)in);
             return TSS2_FAPI_RC_BAD_VALUE;
@@ -329,12 +329,12 @@ ifapi_json_UINT64_serialize(UINT64 in, json_object **jso)
         return TSS2_RC_SUCCESS;
     }
 
-    jso1 = json_object_new_int64(in / 0x100000000);
+    jso1 = json_object_new_int64((int64_t) (in / 0x100000000));
     return_if_null(jso1, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     in %= 0x100000000;
 
-    jso2 = json_object_new_int64(in);
+    jso2 = json_object_new_int64((int64_t) in);
     if (!jso2) json_object_put(jso1);
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
@@ -873,7 +873,7 @@ ifapi_json_TPM2_PT_PCR_serialize(const TPM2_PT_PCR in, json_object **jso)
 TSS2_RC
 ifapi_json_TPM2_HANDLE_serialize(const TPM2_HANDLE in, json_object **jso)
 {
-    *jso = json_object_new_int(in);
+    *jso = json_object_new_int((int32_t) in);
     if (*jso == NULL) {
         LOG_ERROR("Bad value %"PRIx32 "", in);
         return TSS2_FAPI_RC_BAD_VALUE;

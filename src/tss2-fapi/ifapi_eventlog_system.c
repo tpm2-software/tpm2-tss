@@ -65,7 +65,7 @@ get_number(const char *token, int64_t *num)
  * @retval the position of the sub string after the prefix.
  * @retval 0 if no prefix is found.
  */
-static int
+static unsigned int
 get_token_start_idx(const char *token)
 {
     uint itoken = 0;
@@ -552,7 +552,7 @@ ifapi_json_TCG_EVENT_TYPE_deserialize_txt(json_object *jso,
         return TSS2_RC_SUCCESS;
 
     } else {
-        int itoken = get_token_start_idx(token);
+        unsigned int itoken = get_token_start_idx(token);
         size_t i;
         size_t n = sizeof(deserialize_TCG_EVENT_TYPE_tab) /
                    sizeof(deserialize_TCG_EVENT_TYPE_tab[0]);

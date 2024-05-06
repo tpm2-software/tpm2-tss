@@ -86,8 +86,8 @@ static const uint16_t crc16_kermit_lookup[256]= {
     0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
 };
 
-static uint16_t crc_ccitt (const uint8_t *buffer, int size) {
-    int i;
+static uint16_t crc_ccitt (const uint8_t *buffer, size_t size) {
+    size_t i;
     uint16_t result = 0;
 
     for (i = 0; i < size; i++) {
@@ -475,8 +475,6 @@ static TSS2_RC i2c_tpm_helper_wait_for_status (TSS2_TCTI_I2C_HELPER_CONTEXT* ctx
 
 static TSS2_RC i2c_tpm_helper_verify_crc (TSS2_TCTI_I2C_HELPER_CONTEXT* ctx, const uint8_t* buffer, size_t size)
 {
-    (void) buffer;
-    (void) size;
     TSS2_RC rc;
     uint16_t crc_tpm = 0;
     uint16_t crc_host = 0;

@@ -226,27 +226,27 @@ unsigned char *build_block_buffer (struct mpsse_context *mpsse, uint8_t cmd, uns
 }
 
 /* Set the low bit pins high/low */
-int set_bits_low (struct mpsse_context *mpsse, int port)
+int set_bits_low (struct mpsse_context *mpsse, uint8_t port)
 {
-    char buf[CMD_SIZE] = { 0 };
+    uint8_t buf[CMD_SIZE] = { 0 };
 
     buf[0] = SET_BITS_LOW;
     buf[1] = port;
     buf[2] = mpsse->tris;
 
-    return raw_write (mpsse, (unsigned char *) &buf, sizeof (buf));
+    return raw_write (mpsse, buf, sizeof (buf));
 }
 
 /* Set the high bit pins high/low */
-int set_bits_high (struct mpsse_context *mpsse, int port)
+int set_bits_high (struct mpsse_context *mpsse, uint8_t port)
 {
-    char buf[CMD_SIZE] = { 0 };
+    uint8_t buf[CMD_SIZE] = { 0 };
 
     buf[0] = SET_BITS_HIGH;
     buf[1] = port;
     buf[2] = mpsse->trish;
 
-    return raw_write (mpsse, (unsigned char *)&buf, sizeof (buf));
+    return raw_write (mpsse, buf, sizeof (buf));
 }
 
 /* Set the GPIO pins high/low */

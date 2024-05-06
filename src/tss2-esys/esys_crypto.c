@@ -615,25 +615,28 @@ iesys_crypto_KDFa(ESYS_CRYPTO_CALLBACKS *crypto_cb,
                   "IESYS KDFa contextV key");
     BYTE *subKey = outKey;
     UINT32 counter = 0;
-    INT32 bytes = 0;
+    size_t bytes = 0;
     size_t hlen = 0;
     TSS2_RC r = iesys_crypto_hash_get_digest_size(hashAlg, &hlen);
     return_if_error(r, "Error");
     if (counterInOut != NULL)
         counter = *counterInOut;
     bytes = use_digest_size ? hlen : (bitLength + 7) / 8;
-    LOG_DEBUG("IESYS KDFa hmac key bytes: %i", bytes);
+    LOG_DEBUG("IESYS KDFa hmac key bytes: %zu", bytes);
 
      /* Fill outKey with results from KDFaHmac */
-    for (; bytes > 0; subKey = &subKey[hlen], bytes = bytes - hlen) {
-        LOG_TRACE("IESYS KDFa hmac key bytes: %i", bytes);
-        //if(bytes < (INT32)hlen)
-        //    hlen = bytes;
+    for (;; subKey = &subKey[hlen], bytes = bytes - hlen) {
+        LOG_TRACE("IESYS KDFa hmac key bytes: %zu", bytes);
         counter++;
         r = iesys_crypto_KDFaHmac(crypto_cb, hashAlg, hmacKey,
                                   hmacKeySize, counter, label, contextU,
                                   contextV, bitLength, &subKey[0], &hlen);
         return_if_error(r, "Error");
+
+        if (bytes <= hlen) {
+            /* no bytes remaining */
+            break;
+        }
     }
     if ((bitLength % 8) != 0)
         outKey[0] &= ((((BYTE)1) << (bitLength % 8)) - 1);
@@ -669,7 +672,7 @@ iesys_crypto_KDFe(ESYS_CRYPTO_CALLBACKS *crypto_cb,
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     size_t hash_len;
-    INT16 byte_size = (INT16)((bit_size +7) / 8);
+    size_t byte_size = ((bit_size +7) / 8);
     BYTE *stream = key;
     ESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
     BYTE counter_buffer[4];
@@ -691,7 +694,7 @@ iesys_crypto_KDFe(ESYS_CRYPTO_CALLBACKS *crypto_cb,
     }
 
     /* Fill seed key with hash of counter, Z, label, partyUInfo, and partyVInfo */
-    for (; byte_size > 0; stream = &stream[hash_len], byte_size = byte_size - hash_len)
+    for (;; stream = &stream[hash_len], byte_size = byte_size - hash_len)
         {
             counter ++;
             r = iesys_crypto_hash_start(crypto_cb,
@@ -730,6 +733,11 @@ iesys_crypto_KDFe(ESYS_CRYPTO_CALLBACKS *crypto_cb,
             r = iesys_crypto_hash_finish(crypto_cb,
                 &cryptoContext, (uint8_t *) stream, &hash_len);
             goto_if_error(r, "Error", error);
+
+            if (byte_size <= hash_len) {
+                /* no bytes remaining */
+                break;
+            }
         }
     LOGBLOB_DEBUG(key, bit_size/8, "Result KDFe");
     if((bit_size % 8) != 0)

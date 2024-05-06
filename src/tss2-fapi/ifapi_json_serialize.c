@@ -596,7 +596,7 @@ TSS2_RC
 ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_serialize(const IFAPI_OBJECT_TYPE_CONSTANT
         in, json_object **jso)
 {
-    *jso = json_object_new_int(in);
+    *jso = json_object_new_int64((int64_t) in);
     if (*jso == NULL) {
         LOG_ERROR("Bad value %"PRIx32 "", in);
         return TSS2_FAPI_RC_BAD_VALUE;

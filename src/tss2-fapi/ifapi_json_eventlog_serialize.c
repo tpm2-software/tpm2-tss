@@ -297,7 +297,7 @@ TSS2_RC trace_unicodename(
     const char16_t *UnicodeName,
     UINT64 UnicodeNameLength)
 {
-    int ret = 0;
+    size_t ret = 0;
     char *mbstr = NULL, *tmp = NULL;
     mbstate_t st;
 
@@ -311,7 +311,7 @@ TSS2_RC trace_unicodename(
 
     for(size_t i = 0; i < UnicodeNameLength; ++i, tmp += ret) {
         ret = c16rtomb(tmp, UnicodeName[i], &st);
-        if (ret < 0) {
+        if (ret == (size_t) -1) {
             LOG_ERROR("c16rtomb failed: %s", strerror(errno));
             free(mbstr);
             return TSS2_FAPI_RC_BAD_VALUE;
@@ -528,7 +528,7 @@ TSS2_RC ifapi_json_TCG_EVENT_HEADER2_serialize(
     }
     jso2 = NULL;
 
-    jso2 = json_object_new_int64(recnum);
+    jso2 = json_object_new_int64((int64_t) recnum);
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     if (json_object_object_add(*jso, "recnum", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -632,7 +632,7 @@ TSS2_RC ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_
     if (json_object_object_add(*jso, "pcr", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
-    jso2 = json_object_new_int64(recnum);
+    jso2 = json_object_new_int64((int64_t) recnum);
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     if (json_object_object_add(*jso, "recnum", jso2)) {

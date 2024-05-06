@@ -257,7 +257,7 @@ ifapi_get_sub_object(json_object *jso, char *name, json_object **sub_jso)
     } else {
         char name2[strlen(name) + 1];
         for (i = 0; name[i]; i++)
-            name2[i] = tolower(name[i]);
+            name2[i] = (char) tolower(name[i]);
         name2[strlen(name)] = '\0';
         return json_object_object_get_ex(jso, name2, sub_jso);
     }
@@ -331,7 +331,7 @@ ifapi_json_pcr_selection_deserialize(
     TSS2_RC r;
     size_t i;
     int64_t n;
-    int n_byte = 0;
+    int64_t n_byte = 0;
     json_type jso_type = json_object_get_type(jso);
 
     if (jso_type != json_type_array) {
@@ -543,11 +543,11 @@ ifapi_json_BYTE_array_deserialize(size_t max, json_object *jso, BYTE *out)
     LOG_TRACE("call");
     json_type jso_type = json_object_get_type(jso);
     if (jso_type == json_type_array) {
-        int size = json_object_array_length(jso);
-        if (size > (int)max) {
-            LOG_ERROR("Array of BYTE too large (%i > %zu)", size, max);
+        size_t size = json_object_array_length(jso);
+        if (size > max) {
+            LOG_ERROR("Array of BYTE too large (%zu > %zu)", size, max);
         }
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             json_object *jso2 = json_object_array_get_idx(jso, i);
             TSS2_RC r = ifapi_json_BYTE_deserialize(jso2, &out[i]);
             return_if_error(r, "BAD VALUE");

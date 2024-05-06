@@ -37,7 +37,7 @@ static X509
     unsigned const char* tmp_ptr1 = buffer;
     unsigned const char** tmp_ptr2 = &tmp_ptr1;
 
-    if (!d2i_X509(&cert, tmp_ptr2, cert_buffer_size))
+    if (!d2i_X509(&cert, tmp_ptr2, (long) cert_buffer_size))
         return NULL;
     return cert;
 }
@@ -59,7 +59,7 @@ static X509
 
     /* Use BIO for conversion */
     size_t pem_length = strlen(pem_cert);
-    bufio = BIO_new_mem_buf((void *)pem_cert, pem_length);
+    bufio = BIO_new_mem_buf((void *)pem_cert, (int) pem_length);
     if (!bufio)
         return NULL;
     /* Convert the certificate */
@@ -119,7 +119,7 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
     unsigned const char** tmp_ptr2 = &tmp_ptr1;
 
     if (crl_buffer_size > 0) {
-        if (!d2i_X509_CRL(crl, tmp_ptr2, crl_buffer_size)) {
+        if (!d2i_X509_CRL(crl, tmp_ptr2, (long) crl_buffer_size)) {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Can't convert crl.", cleanup);
         }
     }
