@@ -114,7 +114,7 @@ TSS2_RC tcti_control_command (
 {
     TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast(tctiContext);
     TSS2_RC rc = TSS2_RC_SUCCESS;
-    int ret;
+    size_t ret;
     uint32_t response_code;
 
     if (tcti_swtpm == NULL) {
@@ -174,8 +174,8 @@ TSS2_RC tcti_control_command (
     LOGBLOB_DEBUG(req_buf, req_buf_len, "Sending %zu bytes to socket %" PRIu32
                   ":", req_buf_len, tcti_swtpm->ctrl_sock);
     ret = write_all (tcti_swtpm->ctrl_sock, req_buf, req_buf_len);
-    if (ret < (ssize_t) req_buf_len) {
-        LOG_ERROR("Failed to send control command %d with error: %d",
+    if (ret < req_buf_len) {
+        LOG_ERROR("Failed to send control command %d with error: %zd",
                   cmd_code, ret);
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
@@ -393,7 +393,7 @@ tcti_swtpm_receive (
     TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast (tctiContext);
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast (tcti_swtpm);
     TSS2_RC rc;
-    int ret;
+    size_t ret;
 
     rc = tcti_common_receive_checks (tcti_common, response_size, TCTI_SWTPM_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
@@ -448,7 +448,7 @@ tcti_swtpm_receive (
         ret = socket_recv_buf (tcti_swtpm->tpm_sock,
                                (unsigned char *)&response_buffer[10],
                                tcti_common->header.size - 10);
-        if (ret < (ssize_t)tcti_common->header.size - 10) {
+        if (ret < tcti_common->header.size - 10) {
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto out;
         }

@@ -7,8 +7,6 @@
 #   want to turn into opaque or strong types. They are part of the API.
 # -bugprone-implicit-widening-of-multiplication-result
 #   [TODO]
-# -bugprone-narrowing-conversions
-#   [TODO]
 #  -bugprone-reserved-identifier
 #   [TODO]
 #
@@ -27,7 +25,6 @@ Checks: "\
   -bugprone-branch-clone, \
   -bugprone-easily-swappable-parameters, \
   -bugprone-implicit-widening-of-multiplication-result, \
-  -bugprone-narrowing-conversions, \
   -bugprone-reserved-identifier, \
   \
   clang-analyzer, \

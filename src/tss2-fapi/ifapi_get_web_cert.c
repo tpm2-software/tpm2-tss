@@ -261,7 +261,7 @@ base64_encode(const unsigned char* buffer)
 
     CURL *curl = curl_easy_init();
     if (curl) {
-        char *output = curl_easy_escape(curl, b64text, len);
+        char *output = curl_easy_escape(curl, b64text, (int) len);
         if (output) {
             final_string = strdup(output);
             curl_free(output);
@@ -310,7 +310,7 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
     if (curl) {
         /* Convert URL encoded string to a "plain string" */
         char *output = curl_easy_unescape(curl, (char *)buffer,
-                                          len, &unescape_len);
+                                          (int) len, &unescape_len);
         if (output) {
             unescaped_string = strdup(output);
             curl_free(output);

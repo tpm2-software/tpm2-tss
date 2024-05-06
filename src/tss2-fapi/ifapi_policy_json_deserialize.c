@@ -38,10 +38,10 @@ static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "PO
  * @retval the position of the sub string after the prefix.
  * @retval 0 if no prefix is found.
  */
-static int
+static unsigned int
 get_token_start_idx(const char *token)
 {
-    int itoken = 0;
+    unsigned int itoken = 0;
     char *entry;
     int i;
 
@@ -146,7 +146,7 @@ ifapi_json_TPMI_POLICYTYPE_deserialize_txt(json_object *jso,
         return TSS2_RC_SUCCESS;
 
     } else {
-        int itoken = get_token_start_idx(token);
+        int unsigned itoken = get_token_start_idx(token);
         size_t i;
         size_t n = sizeof(deserialize_TPMI_POLICYTYPE_tab) /
                    sizeof(deserialize_TPMI_POLICYTYPE_tab[0]);

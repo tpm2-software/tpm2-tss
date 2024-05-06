@@ -124,7 +124,7 @@ platform_i2c_write (void *user_data, uint8_t reg_addr, const void *data, size_t 
         goto error;
     }
 
-    if (Write (mpsse, (char *)data, cnt) != MPSSE_OK)
+    if (Write (mpsse, (char *)data, (int) cnt) != MPSSE_OK)
     {
         goto error;
     }
@@ -186,7 +186,7 @@ platform_i2c_read (void *user_data, uint8_t reg_addr, void *data, size_t cnt)
 
     /* Read in (cnt - 1) bytes with ACK */
     SendAcks (mpsse);
-    if ((data_in = Read (mpsse, cnt - 1)) == NULL)
+    if ((data_in = Read (mpsse, (int) cnt - 1)) == NULL)
     {
         goto error;
     }

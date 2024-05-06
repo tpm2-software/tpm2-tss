@@ -439,7 +439,7 @@ pcap_write_enhanced_packet_block (
         memcpy (buf, &footer, sizeof (epb_footer));
     }
 
-    return pdu_len;
+    return (int) pdu_len;
 }
 
 static int
@@ -491,7 +491,7 @@ pcap_write_ip_packet (
                                 direction);
     }
 
-    return pdu_len;
+    return (int) pdu_len;
 }
 
 static int
@@ -547,5 +547,5 @@ pcap_write_tcp_segment (
         }
     }
 
-    return pdu_len;
+    return (int) pdu_len;
 }

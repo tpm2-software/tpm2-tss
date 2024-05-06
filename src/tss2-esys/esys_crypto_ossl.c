@@ -752,7 +752,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                    "Could not duplicate OAEP label", cleanup);
     }
 
-    if (1 != EVP_PKEY_CTX_set0_rsa_oaep_label(ctx, label_copy, strlen(label_copy)+1)) {
+    if (1 != EVP_PKEY_CTX_set0_rsa_oaep_label(ctx, label_copy, (int) strlen(label_copy)+1)) {
         OPENSSL_free(label_copy);
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not set RSA label.", cleanup);
@@ -989,12 +989,12 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     }
 #endif
 
-    if (1 != iesys_bn2binpad(bn_x, &Q->x.buffer[0], key_size)) {
+    if (1 != iesys_bn2binpad(bn_x, &Q->x.buffer[0], (int) key_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Write big num byte buffer", cleanup);
     }
 
-    if (1 != iesys_bn2binpad(bn_y, &Q->y.buffer[0], key_size)) {
+    if (1 != iesys_bn2binpad(bn_y, &Q->y.buffer[0], (int) key_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Write big num byte buffer", cleanup);
     }
@@ -1024,7 +1024,7 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
                    "Get affine x coordinate", cleanup);
     }
 
-    if (1 != iesys_bn2binpad(bn_x, &Z->buffer[0], key_size)) {
+    if (1 != iesys_bn2binpad(bn_x, &Z->buffer[0], (int) key_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Write big num byte buffer", cleanup);
     }
@@ -1120,7 +1120,7 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t * key,
     }
 
     /* Perform the encryption */
-    if (1 != EVP_EncryptUpdate(ctx, buffer, &cipher_len, buffer, buffer_size)) {
+    if (1 != EVP_EncryptUpdate(ctx, buffer, &cipher_len, buffer, (int) buffer_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
     }
 
@@ -1203,7 +1203,7 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
     }
 
     /* Perform the decryption */
-    if (1 != EVP_DecryptUpdate(ctx, buffer, &cipher_len, buffer, buffer_size)) {
+    if (1 != EVP_DecryptUpdate(ctx, buffer, &cipher_len, buffer, (int) buffer_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
     }
 
@@ -1282,7 +1282,7 @@ iesys_cryptossl_sym_sm4_encrypt(uint8_t * key,
     }
 
     /* Perform the encryption */
-    if (1 != EVP_EncryptUpdate(ctx, buffer, &cipher_len, buffer, buffer_size)) {
+    if (1 != EVP_EncryptUpdate(ctx, buffer, &cipher_len, buffer, (int) buffer_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
     }
 
@@ -1361,7 +1361,7 @@ iesys_cryptossl_sym_sm4_decrypt(uint8_t * key,
     }
 
     /* Perform the decryption */
-    if (1 != EVP_DecryptUpdate(ctx, buffer, &cipher_len, buffer, buffer_size)) {
+    if (1 != EVP_DecryptUpdate(ctx, buffer, &cipher_len, buffer, (int) buffer_size)) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
     }
 

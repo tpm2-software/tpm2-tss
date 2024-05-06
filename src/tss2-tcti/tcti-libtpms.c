@@ -94,7 +94,7 @@ tcti_libtpms_map_state_file(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     tcti_libtpms->state_mmap_len = (file_len / STATE_MMAP_CHUNK_LEN + 1) * STATE_MMAP_CHUNK_LEN;
 
     /* allocate disk space */
-    ret = posix_fallocate(state_fd, 0, tcti_libtpms->state_mmap_len);
+    ret = posix_fallocate(state_fd, 0, (off_t) tcti_libtpms->state_mmap_len);
     if (ret != 0) {
         LOG_ERROR("fallocate failed on file %s: %d",tcti_libtpms->state_path, ret);
         rc = TSS2_TCTI_RC_IO_ERROR;
@@ -177,7 +177,7 @@ tcti_libtpms_ensure_state_len(
                 return TSS2_TCTI_RC_IO_ERROR;
             }
 
-            ret = posix_fallocate(state_fd, 0, tcti_libtpms->state_mmap_len);
+            ret = posix_fallocate(state_fd, 0, (off_t) tcti_libtpms->state_mmap_len);
             if (ret != 0) {
                 LOG_ERROR("fallocate failed on file %s: %d",tcti_libtpms->state_path, ret);
                 close(state_fd);
@@ -493,7 +493,7 @@ tcti_libtpms_finalize(
 
     if (tcti_libtpms->state_path != NULL) {
         /* truncate state file to its real size */
-        ret = truncate(tcti_libtpms->state_path, tcti_libtpms->state_len);
+        ret = truncate(tcti_libtpms->state_path, (off_t) tcti_libtpms->state_len);
         if (ret != 0) {
             LOG_WARNING("truncate failed on file %s: %s",
                         tcti_libtpms->state_path,

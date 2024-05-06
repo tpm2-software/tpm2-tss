@@ -61,7 +61,7 @@ extern "C" {
  * are detected. This is currently limited to interrupted system calls and
  * short reads.
  */
-ssize_t
+size_t
 read_all (
     SOCKET fd,
     uint8_t *data,
@@ -72,7 +72,7 @@ read_all (
  * are detected. This is currently limited to interrupted system calls and
  * short writes.
  */
-ssize_t
+size_t
 write_all (
     SOCKET fd,
     const uint8_t *buf,
@@ -104,7 +104,7 @@ socket_close (
 TSS2_RC
 socket_set_nonblock (
     SOCKET sock);
-ssize_t
+size_t
 socket_recv_buf (
     SOCKET sock,
     uint8_t *data,
