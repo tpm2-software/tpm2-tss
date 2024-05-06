@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.1.1-rc0] - 2024-05-06
+### Fixed
+- Fixed inclusion of .map and .def files in release tar balls
+
 ## [4.1.0] - 2024-04-26
 ### Security
 - Fixed CVE-2024-29040
