@@ -30,8 +30,10 @@ This stack consists of the following layers from top to bottom:
 Instructions to build and install tpm2-tss are available in the [INSTALL](INSTALL.md) file.
 
 # Getting in Touch:
-If you're looking to discuss the source code in this project or get some questions answered you should join the 01.org TPM2 mailing list:
-  - https://lists.linuxfoundation.org/mailman/listinfo/tpm2
+If you're looking to discuss the source code in this project or get some questions answered you should join the TPM2 mailing list:
+  - [https://lore.kernel.org/tpm2/](https://lore.kernel.org/tpm2/)
+  - To subscribe write an email to [tpm2+subscribe@lists.linux.dev](tpm2+subscribe@lists.linux.dev) see also [here](https://subspace.kernel.org/subscribing.html)
+  - The old list https://lists.linuxfoundation.org/mailman/listinfo/tpm2 was decomissioned by Linux
 
 We also have an IRC channel set up on [FreeNode](https://freenode.net/) called \#tpm2.0-tss.
 You can also try Gitter [![Gitter](https://badges.gitter.im/tpm2-software/community.svg)](https://gitter.im/tpm2-software/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
