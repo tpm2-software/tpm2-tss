@@ -1,3 +1,6 @@
+dnl SPDX-FileCopyrightText: 2017 - 2019, Intel */
+dnl SPDX-License-Identifier: BSD-2-Clause */
+
 dnl ADD_COMPILER_FLAG:
 dnl   A macro to add a CFLAG to the EXTRA_CFLAGS variable. This macro will
 dnl   check to be sure the compiler supports the flag. Flags can be made

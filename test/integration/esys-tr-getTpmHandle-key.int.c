@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2019, Intel */
+/* SPDX-FileCopyrightText: 2020, manuknz */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep

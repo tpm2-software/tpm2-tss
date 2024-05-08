@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Fraunhofer SIT sponsored by Infineon
+#
+# SPDX-License-Identifier: BSD-2-Clause
+
 # Unfortunately AC_CONFIG_FILES is too intelligent if this file lives inside the
 # /doc subdirectory; i.e. it will set @top_srcdir@ to ".." which screws up all
 # doxygen generation. Thus this file needs to live on top-level until anybody

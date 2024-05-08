@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2022, Intel */
+/* SPDX-FileCopyrightText: 2023, Infineon Technologies AG */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #ifdef HAVE_CONFIG_H

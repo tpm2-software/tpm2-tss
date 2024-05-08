@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
+# SPDX-FileCopyrightText: 2019 Infineon Technologies AG
+# SPDX-FileCopyrightText: 2019 Jonas Witschel
+# SPDX-FileCopyrightText: 2021 - 2023 Intel
+# SPDX-License-Identifier: BSD-2-Clause
+#
 # tpm2-tss documentation build configuration file, created by
 # sphinx-quickstart on Thu Aug 29 14:00:06 2019.
 #

@@ -1,3 +1,8 @@
+/* SPDX-FileCopyrightText: 2018 - 2022, Intel */
+/* SPDX-FileCopyrightText: 2018, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2019, Alon Bar-Lev */
+/* SPDX-FileCopyrightText: 2019, Infineon Technologies AG */
+/* SPDX-FileCopyrightText: 2022, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifndef LOG_H
 #define LOG_H

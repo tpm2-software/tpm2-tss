@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2019 - 2022 Intel
+# SPDX-FileCopyrightText: 2022 - 2023 Juergen Repp
 # SPDX-License-Identifier: BSD-3-Clause
 
 set -eo pipefail

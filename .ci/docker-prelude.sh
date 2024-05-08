@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2019 - 2021 Intel
+# SPDX-FileCopyrightText: 2022 Fraunhofer SIT sponsored by Infineon
 # SPDX-License-Identifier: BSD-3-Clause
 
 # all command failures are fatal

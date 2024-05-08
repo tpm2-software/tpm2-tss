@@ -1,8 +1,5 @@
+/* SPDX-FileCopyrightText: 2020, Andreas Droescher */
 /* SPDX-License-Identifier: BSD-2-Clause */
-/*******************************************************************************
- * Copyright: 2020, Andreas Droescher
- * All rights reserved.
- ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep

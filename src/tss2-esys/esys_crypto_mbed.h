@@ -1,8 +1,5 @@
+/* SPDX-FileCopyrightText: 2020, Andreas Droescher */
 /* SPDX-License-Identifier: BSD-2-Clause */
-/*******************************************************************************
- * Copyright: 2020, Andreas Droescher
- * All rights reserved.
- ******************************************************************************/
 
 #ifndef ESYS_CRYPTO_MBED_H
 #define ESYS_CRYPTO_MBED_H

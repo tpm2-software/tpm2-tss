@@ -1,3 +1,7 @@
+/* SPDX-FileCopyrightText: 2019, Intel */
+/* SPDX-FileCopyrightText: 2019, Alon Bar-Lev */
+/* SPDX-FileCopyrightText: 2020, manuknz */
+/* SPDX-FileCopyrightText: 2021, Fraunhofer SIT sponsored by Infineon */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
