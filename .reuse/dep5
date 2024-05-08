@@ -1,0 +1,90 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files:
+ *.md
+ doc/*.png
+ doc/*.md
+ doc/doxygen.dox
+Copyright: 2016-2024 tpm2-software community
+License: TODO
+
+Files:
+ man/*.in
+ man/*.troff
+Copyright: 2017 - 2022 Intel
+           2017 Doug Goldstein
+           2017 - 2020 Red Hat
+           2018 - 2022 Fraunhofer SIT sponsored by Infineon
+           2020 - 2024 Infineon Technologies AG
+License: TODO
+
+Files:
+ dist/fapi-config.json.in
+ dist/fapi-profiles/*.json
+Copyright: 2019-2022 Fraunhofer SIT sponsored by Infineon
+License: BSD-2-Clause
+
+Files:
+ dist/sysusers.d/tpm2-tss.conf
+Copyright: 2020 Jonas Witschel
+License: BSD-2-Clause
+
+Files:
+ dist/tmpfiles.d/tpm2-tss-fapi.conf.in
+Copyright: 2020 Jonas Witschel
+           2022 Erik Larsson
+           2023 Dan De Meyer
+License: BSD-2-Clause
+
+Files:
+ dist/tpm-udev.rules
+Copyright: TODO
+License: BSD-2-Clause
+
+Files:
+ lib/*.def
+ lib/*.map
+ lib/*.pc.in
+Copyright: 2016 - 2022 Intel
+           2018 - 2022 Fraunhofer SIT sponsored by Infineon
+           2018 - 2018 David J. Maria @ fb.com
+           2019 Jonas Witschel
+           2019 - 2022 Erik Larsson
+           2020 - 2024 Infineon Technologies AG
+License: BSD-2-Clause
+
+Files:
+ test/data/fapi/*.json
+ test/data/fapi/eventlog/*.b64
+ test/data/fapi/policy/*.pem
+ test/data/fapi/policy/pol_*.json
+Copyright: 2019-2022 Fraunhofer SIT sponsored by Infineon
+License: BSD-2-Clause
+
+Files:
+ src/tss2-esys/openssl.props
+ src/tss2-esys/tss2-esys.vcxproj
+ src/tss2-mu/tss2-mu.vcxproj
+ src/tss2-rc/tss2-rc.vcxproj
+ src/tss2-sys/tss2-sys.vcxproj
+ src/tss2-tcti/tss2-tcti-mssim.vcxproj
+ src/tss2-tcti/tss2-tcti-swtpm.vcxproj
+ src/tss2-tcti/tss2-tcti-tbs.vcxproj
+ src/tss2-tcti/tss2-tctildr.vcxproj
+ tpm2-tss.sln
+Copyright: 2018 David J. Maria @ fb.com
+           2018 - 2022 Intel
+           2021 Petr Gotthard
+           2024 Philipp Unger
+License: BSD-2-Clause
+
+Files:
+ git.mk
+Copyright: 2009 Red Hat, Inc.
+	   2010 - 2013 Behdad Esfahbod
+License: TODO
+
+Files:
+ m4/ld-version-script.m4
+Copyright: 2008 - 2019 Free Software Foundation, Inc.
+License: FSFULLR

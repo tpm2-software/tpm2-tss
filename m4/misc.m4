@@ -1,3 +1,7 @@
+dnl SPDX-FileCopyrightText: 2018, Intel */
+dnl SPDX-FileCopyrightText: 2019, Jonas Witschel */
+dnl SPDX-License-Identifier: BSD-2-Clause */
+
 dnl ERROR_IF_NO_PROG
 dnl   A quick / dirty macro to ensure that a required program / executable
 dnl   is on PATH. If it is not we display an error message using AC_MSG_ERROR.

@@ -275,6 +275,15 @@ some_long_variable_name = some_long_function_name (lots_of_parameters_1,
 ```
 These formatting conditions are contrary to Kernighan and Ritchie's "one true brace style" [3].
 
+## Licenses
+
+All files shall contain `SPDX-FileCopyrightText` and `SPDX-License-Identifier`
+information in their header.
+For files that cannot contain them (e.g. Markdown would render it and
+.def and .map files should not have them), the corresponding entry shall
+be included in the .reuse/dep5 file.
+There will be a CI job to check `reuse lint` on this project.
+
 ## References
 1. GNOME C Coding Style : https://developer.gnome.org/programming-guidelines/stable/c-coding-style.html.en
 2. Alan Bridger, Mick Brooks, and Jim Pisano, C Coding Standards, 2001, http://www.alma.nrao.edu/development/computing/docs/joint/0009/2001-02-28.pdf

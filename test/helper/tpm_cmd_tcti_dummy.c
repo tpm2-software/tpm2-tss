@@ -1,3 +1,4 @@
+/* SPDX-FileCopyrightText: 2020-2022, Intel */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #ifdef HAVE_CONFIG_H

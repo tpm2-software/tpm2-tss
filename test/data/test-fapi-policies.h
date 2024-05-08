@@ -1,3 +1,6 @@
+/* SPDX-FileCopyrightText: 2022, Intel */
+/* SPDX-FileCopyrightText: 2022, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2022, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifndef TEST_FAPI_POLICIES_H
 #define TEST_FAPI_POLICIES_H

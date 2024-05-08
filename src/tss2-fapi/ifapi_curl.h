@@ -1,3 +1,4 @@
+/* SPDX-FileCopyrightText: 2022, Intel */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifndef IFAPI_CURL_H
 #define IFAPI_CURL_H
