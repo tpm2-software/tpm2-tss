@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2021, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2023, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifndef TCG_EFI_EVENT_H
 #define TCG_EFI_EVENT_H 1

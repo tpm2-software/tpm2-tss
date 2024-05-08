@@ -1,3 +1,4 @@
+/* SPDX-FileCopyrightText: 2024, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
 #include "config.h"             // for HAVE_CURL_URL_STRERROR

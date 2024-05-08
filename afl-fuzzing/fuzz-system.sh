@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: 2022 - 2023 Juergen Repp
 # SPDX-License-Identifier: BSD-2-Clause
 #set -x
 export srcdir=$(pwd)

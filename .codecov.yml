@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2019 Fraunhofer SIT sponsored by Infineon
+# SPDX-License-Identifier: BSD-2-Clause
+
 ignore:
   - "test"
 

@@ -1,3 +1,6 @@
+/* SPDX-FileCopyrightText: 2022, Intel */
+/* SPDX-FileCopyrightText: 2022, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2023, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
 #include "config.h"             // for HAVE_CURL_URL_STRERROR

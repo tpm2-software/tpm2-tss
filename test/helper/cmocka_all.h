@@ -1,3 +1,4 @@
+/* SPDX-FileCopyrightText: 2024, Infineon Technologies AG */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #ifndef CMOCKA_ALL_H

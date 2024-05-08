@@ -1,3 +1,6 @@
+/* SPDX-FileCopyrightText: 2019, Jeffrey Ferreira */
+/* SPDX-FileCopyrightText: 2019, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2020, manuknz */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #ifdef HAVE_CONFIG_H

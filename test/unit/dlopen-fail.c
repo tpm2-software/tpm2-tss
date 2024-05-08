@@ -1,3 +1,4 @@
+/* SPDX-FileCopyrightText: 2021, Fraunhofer SIT sponsored by Infineon */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #ifdef HAVE_CONFIG_H

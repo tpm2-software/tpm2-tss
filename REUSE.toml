@@ -1,0 +1,128 @@
+version = 1
+SPDX-PackageSupplier = "tpm2-software community"
+
+[[annotations]]
+path = ["*.md", "doc/*.png", "doc/*.md", "doc/doxygen.dox"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2016-2024 tpm2-software community"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["man/*.in", "man/*.troff"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2017 - 2022 Intel",
+  "2017 Doug Goldstein",
+  "2017 - 2020 Red Hat",
+  "2018 - 2022 Fraunhofer SIT sponsored by Infineon",
+  "2020 - 2024 Infineon Technologies AG"
+]
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["dist/fapi-config.json.in", "dist/fapi-profiles/*.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2019-2022 Fraunhofer SIT sponsored by Infineon"
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = "dist/sysusers.d/tpm2-tss.conf"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2020 Jonas Witschel"
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = "dist/tmpfiles.d/tpm2-tss-fapi.conf.in"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2020 Jonas Witschel",
+  "2022 Erik Larsson",
+  "2023 Dan De Meyer"
+]
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = "dist/tpm-udev.rules"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2018 Redhat, Inc."
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = ["lib/*.def", "lib/*.map", "lib/*.pc.in"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2016 - 2022 Intel",
+  "2018 - 2022 Fraunhofer SIT sponsored by Infineon",
+  "2018 - 2018 David J. Maria @ fb.com",
+  "2019 Jonas Witschel",
+  "2019 - 2022 Erik Larsson",
+  "2020 - 2024 Infineon Technologies AG"
+]
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = ["test/data/fapi/*.json", "test/data/fapi/eventlog/*.b64", "test/data/fapi/policy/*.pem", "test/data/fapi/policy/pol_*.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2019-2022 Fraunhofer SIT sponsored by Infineon"
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = [
+  "src/tss2-esys/openssl.props",
+  "src/tss2-esys/tss2-esys.vcxproj",
+  "src/tss2-mu/tss2-mu.vcxproj",
+  "src/tss2-rc/tss2-rc.vcxproj",
+  "src/tss2-sys/tss2-sys.vcxproj",
+  "src/tss2-tcti/tss2-tcti-mssim.vcxproj",
+  "src/tss2-tcti/tss2-tcti-swtpm.vcxproj",
+  "src/tss2-tcti/tss2-tcti-tbs.vcxproj",
+  "src/tss2-tcti/tss2-tctildr.vcxproj",
+  "tpm2-tss.sln"
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2018 David J. Maria @ fb.com",
+  "2018 - 2022 Intel",
+  "2021 Petr Gotthard",
+  "2024 Philipp Unger"
+]
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = "git.mk"
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2009 Red Hat, Inc.",
+  "2010 - 2013 Behdad Esfahbod"
+]
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "m4/ld-version-script.m4"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2008 - 2019 Free Software Foundation, Inc."
+SPDX-License-Identifier = "FSFULLR"
+
+[[annotations]]
+path = ".iwyu.imp"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2024 Infineon Technologies AG"
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = [ "_vscode/launch.json", "_vscode/tasks.json" ]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2024 Infineon Technologies AG"
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = "afl-fuzzing/README.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2022 Jürgen Repp"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = "sphinx/requirements.txt"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2024 Jürgen Repp"
+SPDX-License-Identifier = "BSD-2-Clause"

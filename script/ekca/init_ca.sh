@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-
+# SPDX-FileCopyrightText: 2023 - 2024 Juergen Repp
+# SPDX-License-Identifier: BSD-2-Clause
 #set -x
 
 #set -euf

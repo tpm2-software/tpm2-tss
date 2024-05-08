@@ -1,3 +1,4 @@
+/* SPDX-FileCopyrightText: 2020, Intel */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #ifndef TEST_UNIT_TCTI_CMD_TEST_H_

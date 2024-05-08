@@ -294,6 +294,14 @@ find src -iname '*.h' | xargs -n1 -P$(nproc) include-what-you-use -Xiwyu --mappi
 # Make sure that iwyu did not break anything
 make -j check
 ```
+## Licenses
+
+All files shall contain `SPDX-FileCopyrightText` and `SPDX-License-Identifier`
+information in their header.
+For files that cannot contain them (e.g. Markdown would render it and
+.def and .map files should not have them), the corresponding entry shall
+be included in the .reuse/dep5 file.
+There will be a CI job to check `reuse lint` on this project.
 
 ## References
 1. GNOME C Coding Style : https://developer.gnome.org/programming-guidelines/stable/c-coding-style.html.en

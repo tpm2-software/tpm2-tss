@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2019 - 2023, Intel */
+/* SPDX-FileCopyrightText: 2022, Erik Larsson */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #include <stdbool.h>          // for bool, true

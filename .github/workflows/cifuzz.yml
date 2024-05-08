@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 Intel
+# SPDX-License-Identifier: BSD-2-Clause
+
 name: CIFuzz
 on: [pull_request]
 jobs:

@@ -1,1 +1,4 @@
+# SPDX-FileCopyrightText: 2019 Intel
+# SPDX-License-Identifier: BSD-2-Clause
+
 test/fuzz/*.fuzz*

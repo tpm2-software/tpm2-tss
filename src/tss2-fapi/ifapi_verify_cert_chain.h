@@ -1,3 +1,4 @@
+/* SPDX-FileCopyrightText: 2024, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifndef IFAPI_VERIFY_CERT_CHAIN_H
 #define IFAPI_VERIFY_CERT_CHAIN_H

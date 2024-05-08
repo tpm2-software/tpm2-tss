@@ -1,3 +1,4 @@
+/* SPDX-FileCopyrightText: 2020 Intel Corporation */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifndef TSS2_TCTI_CMD_H
 #define TSS2_TCTI_CMD_H

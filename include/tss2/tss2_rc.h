@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2019 Intel Corporation
+                           2022 Erik Larsson */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #ifndef TSS2_RC_H

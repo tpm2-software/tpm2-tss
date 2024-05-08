@@ -1,3 +1,6 @@
+/* SPDX-FileCopyrightText: 2021, Jesper Brynolf */
+/* SPDX-FileCopyrightText: 2021, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2022, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep

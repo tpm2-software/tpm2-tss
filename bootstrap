@@ -1,4 +1,11 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2015 - 2022 Intel
+# SPDX-FileCopyrightText: 2017 Bernhard M. Wiedemann
+# SPDX-FileCopyrightText: 2017 David Bild
+# SPDX-FileCopyrightText: 2018 - 2019 Fraunhofer SIT sponsored by Infineon
+# SPDX-FileCopyrightText: 2023 Infineon Technologies AG
+# SPDX-License-Identifier: BSD-2-Clause
+
 set -e
 
 git describe --tags --always --dirty > VERSION
