@@ -187,6 +187,16 @@ ifapi_curl_verify_ek_cert(
     goto_if_null2(ek_cert, "Failed to convert PEM certificate to DER.",
                   r, TSS2_FAPI_RC_BAD_VALUE, cleanup);
 
+    if (is_self_signed(ek_cert)) {
+        /* A self signed certificate was stored in the TPM and ek_cert_less was not set.*/
+        goto_error(r, TSS2_FAPI_RC_NO_CERT,
+                   "A self signed EK  certifcate for current crypto profile was found. "
+                   "You may want to switch the profile in fapi-config or "
+                   "set the ek_cert_less or ek_cert_file options in fapi-config. "
+                   "See also https://tpm2-software.github.io/2020/07/22/Fapi_Crypto_Profiles.html",
+                   cleanup);
+    }
+
     if (intermed_cert_pem) {
         intermed_cert = get_X509_from_pem(intermed_cert_pem);
         goto_if_null2(intermed_cert, "Failed to convert PEM certificate to DER.",
