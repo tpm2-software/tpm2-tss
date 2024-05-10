@@ -458,8 +458,23 @@ Esys_StartAuthSession_Finish(
             size_t secret_size = 0;
             if (tpmKey != ESYS_TR_NONE)
                 secret_size += keyHash_size;
-            if (bind != ESYS_TR_NONE && bindNode != NULL)
-                secret_size += bindNode->auth.size;
+            TPM2B_DIGEST bindNodeAuth = {
+                .buffer = { },
+                .size = 0,
+            };
+            if (bind != ESYS_TR_NONE && bindNode != NULL) {
+                /*
+                 * TPM2.0 Architecture 19.6.5 Note 2
+                 *
+                 * Remove tailing zeroes from the auth value
+                 */
+                bindNodeAuth.size = bindNode->auth.size;
+                while ((bindNodeAuth.size > 0) &&
+                       (bindNode->auth.buffer[bindNodeAuth.size - 1] == 0x00))
+                    bindNodeAuth.size--;
+                memcpy(&bindNodeAuth.buffer[0], &bindNode->auth.buffer[0], bindNodeAuth.size);
+                secret_size += bindNodeAuth.size;
+            }
             /*
              * A non null pointer for secret is required by the subsequent functions,
              * hence a malloc is called with size 1 if secret_size is zero.
@@ -469,16 +484,14 @@ Esys_StartAuthSession_Finish(
                 LOG_ERROR("Out of memory.");
                 return TSS2_ESYS_RC_MEMORY;
             }
-            if  (bind != ESYS_TR_NONE && bindNode != NULL
-                 && bindNode->auth.size > 0)
-                memcpy(&secret[0], &bindNode->auth.buffer[0], bindNode->auth.size);
+            if  (bindNodeAuth.size > 0)
+                memcpy(&secret[0], &bindNodeAuth.buffer[0], bindNodeAuth.size);
             if (tpmKey != ESYS_TR_NONE)
-                memcpy(&secret[(bind == ESYS_TR_NONE || bindNode == NULL) ? 0
-                               : bindNode->auth.size],
+                memcpy(&secret[bindNodeAuth.size],
                        &esysContext->salt.buffer[0], keyHash_size);
             if (bind != ESYS_TR_NONE &&  bindNode != NULL)
                 iesys_compute_bound_entity(&bindNode->rsrc.name,
-                                           &bindNode->auth,
+                                           &bindNodeAuth,
                                            &sessionHandleNode->rsrc.misc.rsrc_session.bound_entity);
             LOGBLOB_DEBUG(secret, secret_size, "ESYS Session Secret");
             r = iesys_crypto_KDFa(&esysContext->crypto_backend, esysContext->in.StartAuthSession.authHash, secret,
