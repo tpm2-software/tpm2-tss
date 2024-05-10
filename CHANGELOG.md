@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.1.2-rc0] - 2024-05-10
+### Fixed
+- configure.ac: Fix test of == to = to be POSIX comliant
+- Remove use of which in favor of command -v
+
 ## [4.1.1] - 2024-05-07
 ### Fixed
 - Fixed inclusion of .map and .def files in release tar balls
