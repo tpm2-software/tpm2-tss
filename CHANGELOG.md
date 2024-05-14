@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.1.2-rc0] - 2024-05-10
+## [4.1.2] - 2024-05-14
 ### Fixed
 - configure.ac: Fix test of == to = to be POSIX comliant
 - Remove use of which in favor of command -v
