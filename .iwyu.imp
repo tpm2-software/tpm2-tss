@@ -1,0 +1,27 @@
+
+[
+  # json-c: ensure compatibility for multiple  versions, only include public facade header json.h
+  { "include": [ "\"json_object.h\"", "private", "<json.h>", "public"] },
+  { "include": [ "\"json_tokener.h\"", "private", "<json.h>", "public"] },
+  { "include": [ "\"json_pointer.h\"", "private", "<json.h>", "public"] },
+  { "include": [ "\"json_object_iterator.h\"", "private", "<json.h>", "public"] },
+  { "include": [ "\"json_visit.h\"", "private", "<json.h>", "public"] },
+  { "include": [ "\"json_util.h\"", "private", "<json.h>", "public"] },
+  { "include": [ "\"json_types.h\"", "private", "<json.h>", "public"] },
+  # cmocka: cmocka.h requires several stdlib headers, encapsulated in cmocka_all.h
+  { "include": [ "<cmocka.h>", "private", "\"../helper/cmocka_all.h\"", "public"] },
+  # stdlib:
+  { "include": [ "<bits/mman-shared.h>", "private", "<sys/mman.h>", "public"] },
+  { "include": [ "<bits/types/mbstate_t.h>", "private", "<wchar.h>", "public"] },
+  # crypto: we have an internal wrapper to abstract openssl/mbedtls/...
+  { "include": [ "\"esys_crypto_ossl.h\"", "private", "\"esys_crypto.h\"", "public"] },
+  { "include": [ "\"bits/mman-shared.h\"", "private", "\"esys_crypto.h\"", "public"] },
+  # openssl: prevent indirect import of <openssl/ocsp.h>
+  { "symbol": [ "d2i_X509", "private", "<openssl/x509.h>", "public"] },
+  { "symbol": [ "X509_free", "private", "<openssl/x509.h>", "public"] },
+  { "symbol": [ "X509_get_pubkey", "private", "<openssl/x509.h>", "public"] },
+  { "symbol": [ "X509_REQ_free", "private", "<openssl/x509.h>", "public"] },
+  { "symbol": [ "X509_STORE_add_cert", "private", "<openssl/x509.h>", "public"] },
+  # openssl: <openssl/types.h> was introduced in v3.0, use <openssl/evp.h> instead
+  { "include": [ "<openssl/types.h>", "private", "<openssl/evp.h>", "public"] },
+]
