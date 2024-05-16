@@ -6,13 +6,13 @@
 #ifndef IFAPI_JSON_DESERIALIZE_H
 #define IFAPI_JSON_DESERIALIZE_H
 
-#include <json-c/json.h>        // for json_object, json_object_put, json_object_to_js...
-#include <stdbool.h>            // for bool
+#include <json.h>            // for json_object
+#include <stdbool.h>         // for bool
 
-#include "ifapi_eventlog.h"     // for IFAPI_EVENT_TYPE, FAPI_QUOTE_INFO
-#include "ifapi_keystore.h"     // for IFAPI_KEY, IFAPI_EXT_PUB_KEY, IFAPI_H...
-#include "ifapi_macros.h"       // for return_if_error2
-#include "tss2_common.h"        // for TSS2_RC, UINT32
+#include "ifapi_eventlog.h"  // for IFAPI_EVENT_TYPE, FAPI_QUOTE_INFO, IFAPI...
+#include "ifapi_keystore.h"  // for IFAPI_KEY, IFAPI_EXT_PUB_KEY, IFAPI_HIER...
+#include "ifapi_macros.h"    // for return_if_error2
+#include "tss2_common.h"     // for TSS2_RC, UINT32
 
 #define YES 1
 #define NO 0

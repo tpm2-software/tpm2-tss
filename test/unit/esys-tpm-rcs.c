@@ -8,11 +8,11 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                // for assert_int_equal, cmocka_unit_test...
 #include <inttypes.h>              // for uint8_t, int32_t, uint32_t, uint64_t
 #include <stdlib.h>                // for NULL, size_t, free, malloc
 #include <string.h>                // for memcpy, memset
 
+#include "../helper/cmocka_all.h"                // for assert_int_equal, cmocka_unit_test...
 #include "esys_int.h"              // for RSRC_NODE_T
 #include "esys_types.h"            // for IESYS_RESOURCE, IESYSC_WITHOUT_MIS...
 #include "tss2-esys/esys_iutil.h"  // for esys_CreateResourceObject

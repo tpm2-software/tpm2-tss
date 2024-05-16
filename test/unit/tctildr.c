@@ -7,11 +7,11 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"             // for will_return, assert_int_equal, cmocka...
 #include <limits.h>             // for PATH_MAX
 #include <stddef.h>             // for NULL, size_t
 #include <string.h>             // for memset
 
+#include "../helper/cmocka_all.h"             // for will_return, assert_int_equal, cmocka...
 #include "tss2-tcti/tctildr.h"  // for tctildr_conf_parse, tcti_from_init
 #include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_R...
 #include "tss2_tcti.h"          // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO

@@ -4,13 +4,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                 // for assert_int_equal, will_return_always
 #include <errno.h>                  // for errno, EINVAL, EFAULT, EBADF, ENOMEM
 #include <signal.h>                 // for size_t, sigprocmask, sigset_t
 #include <stdint.h>                 // for uint8_t
 #include <stdio.h>                  // for NULL, FILE, fdopen, ferror, fwrite
 #include <stdlib.h>                 // for calloc, free
 #include <unistd.h>                 // for fork, pipe
+
+#include "../helper/cmocka_all.h"                 // for assert_int_equal, will_return_always
 
 #if defined (__FreeBSD__)
 #include <sys/procctl.h>

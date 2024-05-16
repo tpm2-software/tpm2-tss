@@ -8,25 +8,31 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include <dlfcn.h>                   // for RTLD_LAZY, RTLD_LOCAL
+#include <errno.h>                   // for errno, ENOENT
+#include <fcntl.h>                   // for O_CREAT, O_RDWR, SEEK_END, mode_t
+#include <inttypes.h>                // for uint32_t
+#include <libtpms/tpm_error.h>       // for TPM_SUCCESS
+#include <libtpms/tpm_library.h>     // for libtpms_callbacks, TPMLIB_STATE_...
+#include <libtpms/tpm_tis.h>         // for TPM_IO_TpmEstablished_Reset
+#include <libtpms/tpm_types.h>       // for TPM_RESULT
+#include <stdio.h>                   // for NULL, fprintf, size_t, stderr
+#include <stdlib.h>                  // for free, calloc, malloc
+#include <string.h>                  // for memcpy, strerror, strlen, strncmp
+#include <sys/mman.h>                // for MAP_FAILED, MREMAP_MAYMOVE, MAP_...
+#include <unistd.h>                  // for unlink
 
-#include <setjmp.h>
-#include "../helper/cmocka_all.h"
-#include <unistd.h>
-
-#include "tss2_tcti.h"
-#include "tss2_tcti_libtpms.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-libtpms.h"
+#include "../helper/cmocka_all.h"    // for will_return, expect_value, asser...
+#include "tss2-tcti/tcti-common.h"   // for TSS2_TCTI_COMMON_CONTEXT, tcti_c...
+#include "tss2-tcti/tcti-libtpms.h"  // for TSS2_TCTI_LIBTPMS_CONTEXT, STATE...
+#include "tss2_common.h"             // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_T...
+#include "tss2_tcti.h"               // for TSS2_TCTI_CONTEXT, Tss2_Tcti_Tra...
+#include "tss2_tcti_libtpms.h"       // for Tss2_Tcti_Libtpms_Init
+#include "tss2_tpm2_types.h"         // for TPM2_RC_SUCCESS
+#include "util/aux_util.h"           // for ARRAY_LEN
 
 #define LOGMODULE test
-#include "util/log.h"
+#include "util/log.h"                // for LOG_TRACE, LOG_ERROR, LOG_WARNING
 
 #define EXIT_SKIP 77
 

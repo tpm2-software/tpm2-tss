@@ -5,8 +5,8 @@
 #ifndef TCTILDR_DL_H
 #define TCTILDR_DL_H
 
-#include "tss2_tpm2_types.h"
-#include "tss2_tcti.h"
+#include "tss2_common.h"  // for TSS2_RC
+#include "tss2_tcti.h"    // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
 
 const TSS2_TCTI_INFO*
 info_from_handle (void *dlhandle);

@@ -5,10 +5,11 @@
 #endif
 
 #include <curl/curl.h>             // for curl_easy_cleanup, curl_easy_init
-#include <json-c/json.h>           // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                  // for json_object_get_string, json_objec...
 #include <openssl/bio.h>           // for BIO_new, BIO_free_all, BIO_push
 #include <openssl/buffer.h>        // for buf_mem_st
 #include <openssl/evp.h>           // for EVP_DigestUpdate, BIO_f_base64
+#include <openssl/opensslv.h>      // for OPENSSL_VERSION_NUMBER
 #include <openssl/sha.h>           // for SHA256_DIGEST_LENGTH
 #include <stdbool.h>               // for bool, true
 #include <stdint.h>                // for uint8_t
@@ -18,8 +19,6 @@
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/aes.h>
-#else
-#include <openssl/types.h>      // for X509, ASN1_IA5STRING, X509_CRL, DIST_...
 #endif
 
 #include "fapi_int.h"              // for FAPI_CONTEXT, VENDOR_AMD, VENDOR_INTC

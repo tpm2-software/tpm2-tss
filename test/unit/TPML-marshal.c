@@ -8,11 +8,11 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"            // for assert_int_equal, cmocka_unit_test
 #include <stddef.h>            // for NULL, size_t
 #include <stdint.h>            // for uint8_t
 #include <string.h>            // for memcpy
 
+#include "../helper/cmocka_all.h"            // for assert_int_equal, cmocka_unit_test
 #include "tss2_common.h"       // for BYTE, TSS2_RC_SUCCESS, TSS2_RC, TSS2_M...
 #include "tss2_mu.h"           // for Tss2_MU_TPML_HANDLE_Marshal, Tss2_MU_T...
 #include "tss2_tpm2_types.h"   // for TPMS_PCR_SELECTION, TPML_PCR_SELECTION

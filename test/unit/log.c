@@ -8,9 +8,10 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"    // for CMUnitTest, cmocka_run_group_tests, cmocka_uni...
 #include <stdio.h>     // for NULL
 #include <stdlib.h>    // for setenv
+
+#include "../helper/cmocka_all.h"    // for CMUnitTest, cmocka_run_group_tests, cmocka_uni...
 
 #define LOGMODULE test
 #include "util/log.h"  // for LOG_INFO, LOGLEVEL_UNDEFINED, LOGMODULE_status

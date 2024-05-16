@@ -8,13 +8,13 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                 // for assert_int_equal, assert_ptr_equal
 #include <stdbool.h>                // for false
 #include <stdio.h>                  // for NULL, size_t
 #include <stdlib.h>                 // for free, malloc, calloc
 #include <string.h>                 // for memcmp, memcpy
 #include <sys/select.h>             // for fd_set, timeval
 
+#include "../helper/cmocka_all.h"                 // for assert_int_equal, assert_ptr_equal
 #include "tss2-tcti/mpsse/mpsse.h"  // for MPSSE_OK, GPIOL0, FIFTEEN_MHZ, MSB
 #include "tss2_common.h"            // for TSS2_RC_SUCCESS, TSS2_RC
 #include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, TSS2_TCTI_FINA...

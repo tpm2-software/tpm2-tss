@@ -6,7 +6,7 @@
 #ifndef FAPI_INT_H
 #define FAPI_INT_H
 
-#include <json-c/json.h>               // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                      // for json_object
 #include <stdbool.h>                   // for bool, false, true
 #include <stdint.h>                    // for uint8_t, uint32_t, uint64_t
 #include <stdio.h>                     // for size_t, NULL

@@ -3,10 +3,10 @@
  * Copyright 2019, Intel Corporation
  */
 
-#include "../helper/cmocka_all.h"             // for will_return, mock_type, cmocka_unit_test
 #include <errno.h>              // for ENOMEM, errno
 #include <stdio.h>              // for printf, NULL, size_t
 
+#include "../helper/cmocka_all.h"             // for will_return, mock_type, cmocka_unit_test
 #include "tss2-tcti/tctildr.h"  // for copy_info
 #include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_R...
 #include "tss2_tcti.h"          // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT

@@ -8,9 +8,9 @@
 #include "config.h"                       // for TCTI_MSSIM, TCTI_SWTPM
 #endif
 
-#include "../helper/cmocka_all.h"                       // for will_return, cmocka_unit_test
 #include <stddef.h>                       // for NULL, size_t
 
+#include "../helper/cmocka_all.h"                       // for will_return, cmocka_unit_test
 #include "tss2-tcti/tctildr-interface.h"  // for tctildr_get_tcti, tctildr_f...
 #include "tss2-tcti/tctildr-nodl.h"       // for tctildr_get_default
 #include "tss2_common.h"                  // for TSS2_RC, TSS2_RC_SUCCESS

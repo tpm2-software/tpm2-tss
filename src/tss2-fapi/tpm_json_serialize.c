@@ -8,15 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>            // for PRIuPTR, PRIx32, uint8_t, PRIi32
-#include <json-c/json.h>         // for json_object, json_object_put, json_object_to_js...
-#include <stdio.h>               // for NULL, size_t, sprintf
+#include <inttypes.h>      // for PRIuPTR, PRIx32, uint8_t, PRIi32, PRIu32
+#include <stdio.h>         // for NULL, size_t, sprintf
 
-#include "ifapi_macros.h"        // for check_oom, return_error2
+#include "ifapi_macros.h"  // for check_oom, return_error2
 #include "tpm_json_serialize.h"
 
 #define LOGMODULE fapijson
-#include "util/log.h"            // for return_error, return_if_error, retur...
+#include "util/log.h"      // for return_error, return_if_error, return_if_null
 
 #define CHECK_IN_LIST(type, needle, ...) \
     type tab[] = { __VA_ARGS__ }; \

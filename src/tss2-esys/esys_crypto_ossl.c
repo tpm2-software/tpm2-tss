@@ -8,7 +8,7 @@
 #include "config.h"               // for HAVE_EVP_SM4_CFB
 #endif
 
-#include <inttypes.h>             // for uint8_t, PRIu16
+#include <inttypes.h>             // for PRIu16
 #include <openssl/bn.h>           // for BN_free, BN_bin2bn, BN_bn2bin, BN_n...
 #include <openssl/crypto.h>       // for OSSL_LIB_CTX_free, OSSL_LIB_CTX_new
 #include <openssl/ec.h>           // for EC_POINT_free, EC_POINT_new, EC_GRO...
@@ -25,9 +25,8 @@
 #include <openssl/core_names.h>   // for OSSL_PKEY_PARAM_EC_PUB_X, OSSL_PKEY...
 #include <openssl/param_build.h>  // for OSSL_PARAM_BLD_free, OSSL_PARAM_BLD...
 #include <openssl/params.h>       // for OSSL_PARAM_free
-#include <openssl/types.h>        // for BIGNUM, EVP_CIPHER, EVP_CIPHER_CTX
 #endif
-#include "esys_crypto.h"          // for iesys_crypto_hash_get_digest_size
+#include "esys_crypto.h"          // for OSSL_FREE, iesys_crypto_hash_get_di...
 #include "esys_crypto_ossl.h"
 #include "tss2_esys.h"            // for ESYS_CRYPTO_CONTEXT_BLOB
 #include "tss2_mu.h"              // for Tss2_MU_TPMS_ECC_POINT_Marshal

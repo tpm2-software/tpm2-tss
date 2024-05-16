@@ -8,22 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json-c/json.h>         // for json_object, json_object_put, json_object_to_js...
-#include <stdint.h>              // for uint8_t
-#include <stdio.h>               // for sprintf
-#include <stdlib.h>              // for NULL, size_t, EXIT_FAILURE, EXIT_SUC...
-#include <string.h>              // for memcpy, strncmp
+#include <json.h>             // for json_object_put, json_object, json_obje...
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, size_t, sprintf
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memcpy, strncmp
 
-#include "fapi_int.h"            // for FAPI_CONTEXT
-#include "test-fapi.h"           // for ASSERT, FAPI_PROFILE, EXIT_SKIP, tes...
-#include "tss2_common.h"         // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2...
-#include "tss2_esys.h"           // for Esys_FlushContext, Esys_TR_Deserialize
-#include "tss2_fapi.h"           // for FAPI_CONTEXT, Fapi_Delete, Fapi_GetE...
-#include "tss2_tpm2_types.h"     // for TPM2_ALG_SHA256, TPM2B_AUTH, TPM2B_P...
+#include "fapi_int.h"         // for FAPI_CONTEXT
+#include "test-fapi.h"        // for ASSERT, FAPI_PROFILE, EXIT_SKIP, test_i...
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_FA...
+#include "tss2_esys.h"        // for Esys_FlushContext, Esys_TR_Deserialize
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_Delete, Fapi_GetEsys...
+#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256, TPM2B_AUTH, TPM2B_PUBLIC
 
 #define LOGMODULE test
-#include "tss2_mu.h"             // for Tss2_MU_TPMS_CONTEXT_Unmarshal
-#include "util/log.h"            // for goto_if_error, SAFE_FREE, LOG_ERROR
+#include "tss2_mu.h"          // for Tss2_MU_TPMS_CONTEXT_Unmarshal
+#include "util/log.h"         // for goto_if_error, SAFE_FREE, LOG_ERROR
 
 #define PASSWORD "abc"
 #define SIGN_TEMPLATE  "sign,noDa"

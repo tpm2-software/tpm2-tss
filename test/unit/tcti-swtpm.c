@@ -8,13 +8,13 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                 // for assert_int_equal, will_return
 #include <inttypes.h>               // for uint8_t, uint32_t
 #include <stdio.h>                  // for NULL, printf, size_t, ssize_t
 #include <stdlib.h>                 // for free, calloc
 #include <string.h>                 // for memcmp, memcpy
 #include <sys/socket.h>             // for socklen_t
 
+#include "../helper/cmocka_all.h"                 // for assert_int_equal, will_return
 #include "tss2-tcti/tcti-common.h"  // for tcti_common_context_cast, TSS2_TC...
 #include "tss2-tcti/tcti-swtpm.h"   // for swtpm_conf_t, TSS2_TCTI_SWTPM_CON...
 #include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...

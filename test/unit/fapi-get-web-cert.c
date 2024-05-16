@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"              // for assert_int_equal, cmocka_unit_test_s...
-#include <openssl/evp.h>       // for EVP_MD_CTX
-#include <stdio.h>               // for size_t, NULL
-#include <stdlib.h>              // for calloc
-#include <string.h>              // for strdup, strlen
+#include <openssl/evp.h>           // for EVP_MD_CTX
+#include <stdio.h>                 // for size_t, NULL
+#include <stdlib.h>                // for calloc
+#include <string.h>                // for strdup, strlen
 
-#include "fapi_int.h"            // for VENDOR_INTC, VENDOR_AMD, FAPI_CONTEXT
-#include "ifapi_get_web_cert.h"  // for ifapi_get_web_ek_certificate
-#include "tss2_common.h"         // for TSS2_FAPI_RC_NO_CERT, TSS2_RC, TSS2_...
-#include "tss2_fapi.h"           // for FAPI_CONTEXT
-#include "tss2_tpm2_types.h"     // for TPM2_ALG_NULL, TPM2B_PUBLIC, TPM2_AL...
-#include "util/aux_util.h"       // for SAFE_FREE, UNUSED
+#include "../helper/cmocka_all.h"  // for assert_int_equal, cmocka_unit_test...
+#include "fapi_int.h"              // for VENDOR_INTC, VENDOR_AMD, FAPI_CONTEXT
+#include "ifapi_get_web_cert.h"    // for ifapi_get_web_ek_certificate
+#include "tss2_common.h"           // for TSS2_FAPI_RC_NO_CERT, TSS2_RC, TSS...
+#include "tss2_fapi.h"             // for FAPI_CONTEXT
+#include "tss2_tpm2_types.h"       // for TPM2_ALG_NULL, TPM2B_PUBLIC, TPM2_...
+#include "util/aux_util.h"         // for SAFE_FREE, UNUSED
 
 #define LOGMODULE tests
 #include "util/log.h"

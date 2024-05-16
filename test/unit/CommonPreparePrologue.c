@@ -8,10 +8,10 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"       // for assert_int_equal, cmocka_unit_test_setup_te...
 #include <stdio.h>        // for NULL
 #include <stdlib.h>       // for calloc, free
 
+#include "../helper/cmocka_all.h"       // for assert_int_equal, cmocka_unit_test_setup_te...
 #include "sysapi_util.h"  // for CommonPreparePrologue, _TSS2_SYS_CONTEXT_BLOB
 #include "tss2_common.h"  // for TSS2_RC, TSS2_SYS_RC_BAD_SEQUENCE, TSS2_SYS...
 #include "tss2_sys.h"     // for Tss2_Sys_GetContextSize

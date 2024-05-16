@@ -8,21 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <dlfcn.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/syscall.h>
-#include <netinet/in.h>
-#include "tss2_tcti_libtpms.h"
+#include <dlfcn.h>              // for dlerror, dlsym, dlclose, dlopen, RTLD...
+#include <errno.h>              // for errno
+#include <fcntl.h>              // for open, posix_fallocate, O_CREAT, O_RDWR
+#include <inttypes.h>           // for uint32_t, PRIx32, PRIu32, PRIxPTR
+#include <libtpms/tpm_error.h>  // for TPM_SUCCESS, TPM_FAIL, TPM_RETRY
+#include <netinet/in.h>         // for htonl, ntohl
+#include <stdio.h>              // for NULL, ssize_t
+#include <stdlib.h>             // for free
+#include <string.h>             // for memcpy, strerror, memset, strdup, strlen
+#include <unistd.h>             // for close, lseek, truncate
 
+#include "tcti-common.h"        // for TSS2_TCTI_COMMON_CONTEXT, tpm_header_t
 #include "tcti-libtpms.h"
-#include "tcti-common.h"
+#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_R...
+#include "tss2_tcti.h"          // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
+#include "tss2_tcti_libtpms.h"  // for Tss2_Tcti_Libtpms_Init, Tss2_Tcti_Lib...
+#include "tss2_tpm2_types.h"    // for TPM2_RC_SUCCESS
+#include "util/aux_util.h"      // for MAYBE_UNUSED, ARRAY_LEN
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"           // for LOG_ERROR, LOG_TRACE, LOG_DEBUG, LOGB...
 
 /*
  * libtpms API calls need to be wrapped. We set the current active TCTI module

@@ -7,19 +7,12 @@
 #ifndef TCTI_LIBTPMS_H
 #define TCTI_LIBTPMS_H
 
-#include <limits.h>
+#include <libtpms/tpm_library.h>  // for TPMLIB_StateType, TPMLIB_TPMVersion
+#include <libtpms/tpm_types.h>    // for TPM_RESULT
+#include <stdint.h>               // for uint32_t, uint8_t
+#include <sys/mman.h>             // for size_t
 
-#include <dlfcn.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-
-#include <libtpms/tpm_library.h>
-#include <libtpms/tpm_tis.h>
-#include <libtpms/tpm_error.h>
-
-#include "tcti-common.h"
-#include "util/aux_util.h"
+#include "tcti-common.h"          // for TSS2_TCTI_COMMON_CONTEXT
 
 #define TCTI_LIBTPMS_MAGIC 0x49E299A554504D32ULL
 

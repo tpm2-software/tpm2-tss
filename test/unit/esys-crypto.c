@@ -8,10 +8,10 @@
 #include "config.h"            // for HAVE_EVP_SM4_CFB
 #endif
 
-#include "../helper/cmocka_all.h"            // for assert_int_equal, cmocka_unit_test
 #include <inttypes.h>          // for uint8_t
 #include <stdlib.h>            // for NULL, size_t, malloc
 
+#include "../helper/cmocka_all.h"            // for assert_int_equal, cmocka_unit_test
 #include "esys_crypto.h"       // for iesys_initialize_crypto_backend, iesys...
 #include "tss2_common.h"       // for TSS2_RC_SUCCESS, TSS2_ESYS_RC_BAD_REFE...
 #include "tss2_esys.h"         // for ESYS_CRYPTO_CALLBACKS, Esys_GetSysContext

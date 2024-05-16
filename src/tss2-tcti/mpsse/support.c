@@ -29,10 +29,11 @@
  * SPDX short identifier: BSD-2-Clause
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include <ftdi.h>    // for MPSSE_BITMODE, SET_BITS_LOW, ftdi_read_data, ftd...
+#include <stdlib.h>  // for malloc, NULL
+#include <string.h>  // for memcpy, memset
 
-#include "mpsse.h"
+#include "mpsse.h"   // for mpsse_context, CMD_SIZE, I2C, HIGH, NUM_GPIOL_PINS
 #include "support.h"
 
 /* Write data to the FTDI chip */

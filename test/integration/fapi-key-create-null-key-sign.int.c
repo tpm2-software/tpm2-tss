@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json-c/json.h>         // for json_object, json_object_put, json_object_to_js...
-#include <stdint.h>              // for uint8_t
-#include <stdio.h>               // for sprintf
-#include <stdlib.h>              // for NULL, size_t, EXIT_FAILURE, EXIT_SUC...
-#include <string.h>              // for strncmp
+#include <json.h>             // for json_object_new_string, json_object
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, size_t, sprintf
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strncmp
 
-#include "test-fapi.h"           // for init_fapi, fapi_profile, test_invoke...
-#include "tss2_common.h"         // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SUCCESS
-#include "tss2_fapi.h"           // for Fapi_CreateKey, Fapi_Delete, Fapi_Fi...
-#include "tss2_tpm2_types.h"     // for TPM2B_DIGEST
+#include "test-fapi.h"        // for init_fapi, fapi_profile, test_invoke_fapi
+#include "tss2_common.h"      // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SUCCESS
+#include "tss2_fapi.h"        // for Fapi_CreateKey, Fapi_Delete, Fapi_Finalize
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"            // for goto_if_error, SAFE_FREE, UNUSED
+#include "util/log.h"         // for goto_if_error, SAFE_FREE, UNUSED, retur...
 
 #define PASSWORD "abc"
 #define SIGN_TEMPLATE  "sign,noDa"

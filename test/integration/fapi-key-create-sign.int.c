@@ -8,20 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json-c/json.h>         // for json_object, json_object_put, json_object_to_js...
-#include <stdint.h>              // for uint8_t
-#include <stdio.h>               // for sprintf
-#include <stdlib.h>              // for NULL, size_t, EXIT_FAILURE, EXIT_SUC...
-#include <string.h>              // for strlen, strncmp
+#include <json.h>             // for json_object_object_add, json_object_put
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, size_t, sprintf
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strlen, strncmp
 
-#include "ifapi_macros.h"        // for goto_if_null2
-#include "test-fapi.h"           // for ASSERT, FAPI_PROFILE, cmp_strtokens
-#include "tss2_common.h"         // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_FAPI...
-#include "tss2_fapi.h"           // for Fapi_Delete, Fapi_GetDescription
-#include "tss2_tpm2_types.h"     // for TPM2B_DIGEST
+#include "ifapi_macros.h"     // for goto_if_null2
+#include "test-fapi.h"        // for ASSERT, FAPI_PROFILE, cmp_strtokens
+#include "tss2_common.h"      // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_FAPI_RC...
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_GetDescription, Fapi_...
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"            // for SAFE_FREE, goto_if_error, LOG_INFO
+#include "util/log.h"         // for SAFE_FREE, goto_if_error, LOG_INFO, ret...
 
 #define PASSWORD "abc"
 #define SIGN_TEMPLATE  "sign,noDa"

@@ -31,7 +31,9 @@
 #ifndef _SUPPORT_H_
 #define _SUPPORT_H_
 
-#include "mpsse.h"
+#include <stdint.h>  // for uint32_t, uint16_t, uint8_t
+
+struct mpsse_context;
 
 int raw_write (struct mpsse_context *mpsse, unsigned char *buf, int size);
 int raw_read (struct mpsse_context *mpsse, unsigned char *buf, int size);
