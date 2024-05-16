@@ -9,11 +9,11 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                 // for assert_int_equal, CMUnitTest, ass...
 #include <inttypes.h>               // for uint8_t, int32_t
 #include <stdlib.h>                 // for NULL, calloc, free, size_t
 #include <string.h>                 // for memcpy
 
+#include "../helper/cmocka_all.h"                 // for assert_int_equal, CMUnitTest, ass...
 #include "tss2-tcti/tcti-common.h"  // for tpm_header_t, header_unmarshal
 #include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_AB...
 #include "tss2_sys.h"               // for TSS2_SYS_CONTEXT, Tss2_Sys_Execute

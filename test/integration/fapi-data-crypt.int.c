@@ -18,7 +18,7 @@
 #include <string.h>           // for memcmp, strlen, strcmp, strncmp
 #include <unistd.h>           // for read
 
-#include "test-fapi.h"        // for pcr_reset, EXIT_SKIP, test_invoke_fapi
+#include "test-fapi.h"        // for pcr_reset, EXIT_SKIP, FAPI_PROFILE, tes...
 #include "tss2_common.h"      // for TSS2_FAPI_RC_GENERAL_FAILURE, TSS2_RC
 #include "tss2_fapi.h"        // for Fapi_Free, Fapi_Delete, Fapi_Decrypt
 #include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256

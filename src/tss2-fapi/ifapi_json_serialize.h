@@ -6,7 +6,7 @@
 #ifndef IFAPI_JSON_SERIALIZE_H
 #define IFAPI_JSON_SERIALIZE_H
 
-#include <json-c/json.h>         // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                // for json_object
 
 #include "fapi_int.h"            // for IFAPI_CAP_INFO, IFAPI_INFO
 #include "fapi_types.h"          // for UINT8_ARY

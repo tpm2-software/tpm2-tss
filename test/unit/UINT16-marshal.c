@@ -8,10 +8,10 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"       // for assert_int_equal, cmocka_unit_test, CMUnitTest
 #include <stdint.h>       // for uint8_t
 #include <stdio.h>        // for NULL, size_t
 
+#include "../helper/cmocka_all.h"       // for assert_int_equal, cmocka_unit_test, CMUnitTest
 #include "tss2_common.h"  // for UINT16, TSS2_RC, TSS2_RC_SUCCESS, TSS2_MU_R...
 #include "tss2_mu.h"      // for Tss2_MU_UINT16_Marshal, Tss2_MU_UINT16_Unma...
 

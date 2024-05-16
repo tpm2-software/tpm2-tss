@@ -8,7 +8,7 @@
 
 
 
-#include <json-c/json.h>         // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                // for json_object
 
 #include "ifapi_policy_types.h"  // for TPMI_POLICYTYPE, TPML_POLICYAUTHORIZ...
 #include "tss2_common.h"         // for TSS2_RC, UINT32

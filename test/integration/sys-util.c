@@ -10,16 +10,16 @@
 
 #include <assert.h>              // for assert
 #include <inttypes.h>            // for uint8_t, uint32_t
-#include <openssl/evp.h>         // for EVP_MD_CTX_free, EVP_sm3, EVP_CIPHER...
+#include <openssl/evp.h>         // for EVP_MD, EVP_MD_CTX_free, EVP_sm3
 #include <openssl/opensslv.h>    // for OPENSSL_VERSION_NUMBER
 #include <openssl/sha.h>         // for SHA1, SHA256, SHA384, SHA512
-#include <stdlib.h>              // for NULL, calloc, exit, free, size_t
+#include <stdlib.h>              // for calloc, exit, free
 #include <string.h>              // for memcpy, memcmp, memmove
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/hmac.h>
 #else
 #include <openssl/core_names.h>  // for OSSL_ALG_PARAM_DIGEST
-#include <openssl/types.h>       // for EVP_MD, OSSL_PARAM, EVP_CIPHER, EVP_...
+#include <openssl/params.h>      // for OSSL_PARAM_construct_end, OSSL_PARAM...
 #endif
 
 #define LOGMODULE testintegration

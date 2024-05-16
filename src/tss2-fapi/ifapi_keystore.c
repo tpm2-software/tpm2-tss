@@ -9,7 +9,7 @@
 #endif
 
 #include <ctype.h>                   // for isalnum
-#include <json-c/json.h>             // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                    // for json_object_put, json_object_to_...
 #include <stdint.h>                  // for uint8_t
 #include <string.h>                  // for strcmp, strncmp, strlen, strdup
 #include <sys/stat.h>                // for stat

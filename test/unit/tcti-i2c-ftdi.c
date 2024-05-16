@@ -24,7 +24,6 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                     // for assert_int_equal, assert_true
 #include <inttypes.h>                   // for uint8_t
 #include <stdbool.h>                    // for false, true
 #include <stdio.h>                      // for NULL, size_t
@@ -32,6 +31,7 @@
 #include <string.h>                     // for strncmp, memcpy
 #include <sys/select.h>                 // for fd_set, timeval
 
+#include "../helper/cmocka_all.h"                     // for assert_int_equal, assert_true
 #include "tss2-tcti/mpsse/mpsse.h"      // for MPSSE_OK, ACK, I2C, MSB, ONE_...
 #include "tss2-tcti/tcti-common.h"      // for TCTI_VERSION
 #include "tss2-tcti/tcti-i2c-ftdi.h"    // for I2C_DEV_ADDR_DEFAULT

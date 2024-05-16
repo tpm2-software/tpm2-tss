@@ -10,12 +10,12 @@
 
 #include <errno.h>                  // for errno
 #include <inttypes.h>               // for PRIu8, PRIu64, PRIu16, PRIu32
-#include <json-c/json.h>            // for json_object, json_object_put, json_object_to_js...
 #include <stdio.h>                  // for fclose, fread, fopen, sprintf, FILE
 #include <stdlib.h>                 // for free, calloc, malloc, realloc
 #include <string.h>                 // for strlen, memcpy, strerror, memset
-#include <uchar.h>                  // for char16_t, c16rtomb, mbstate_t
+#include <uchar.h>                  // for char16_t, c16rtomb
 #include <uuid/uuid.h>              // for uuid_unparse_lower, uuid_t
+#include <wchar.h>                  // for mbstate_t
 
 #include "efi_event.h"              // for TCG_EVENT2, TCG_SPECID_EVENT, UEF...
 #include "fapi_crypto.h"            // for ifapi_hash_get_digest_size

@@ -9,11 +9,11 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                // for cmocka_unit_test, assert_false
 #include <stdbool.h>               // for bool
 #include <stdio.h>                 // for NULL
 #include <string.h>                // for strcmp
 
+#include "../helper/cmocka_all.h"                // for cmocka_unit_test, assert_false
 #include "tss2_common.h"           // for TSS2_RC, TSS2_TCTI_RC_BAD_VALUE
 #include "util/key-value-parse.h"  // for parse_key_value, parse_key_value_s...
 

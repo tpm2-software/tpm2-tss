@@ -8,7 +8,7 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json-c/json.h>                    // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                           // for json_object_put, json_tok...
 #include <stdint.h>                         // for uint16_t
 #include <stdlib.h>                         // for NULL, size_t
 #include <string.h>                         // for strncmp, memset, memcpy

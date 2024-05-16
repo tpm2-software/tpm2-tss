@@ -8,7 +8,6 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                       // for will_return, assert_int_equal
 #include <inttypes.h>                     // for uint8_t, uint32_t, uint64_t
 #include <netinet/in.h>                   // for htonl, ntohl
 #include <stdio.h>                        // for NULL, size_t, fprintf, ssize_t
@@ -17,6 +16,7 @@
 #include <sys/stat.h>                     // for mode_t
 #include <time.h>                         // for clockid_t, timespec, CLOCK_...
 
+#include "../helper/cmocka_all.h"                       // for will_return, assert_int_equal
 #include "tss2-tcti/tcti-common.h"        // for TSS2_TCTI_COMMON_CONTEXT
 #include "tss2-tcti/tcti-pcap-builder.h"  // for ENV_PCAP_FILE, pcap_buider_ctx
 #include "tss2-tcti/tcti-pcap.h"          // for TSS2_TCTI_PCAP_CONTEXT, TCT...

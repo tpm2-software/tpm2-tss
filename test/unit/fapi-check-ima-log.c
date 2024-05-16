@@ -8,13 +8,13 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"    // for cmocka_unit_test, assert_int_equal
 #include <inttypes.h>                // for uint32_t, uint8_t
-#include <json-c/json.h>             // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                    // for json_object_put, json_object
 #include <stdbool.h>                 // for bool
 #include <stdio.h>                   // for NULL, fprintf, stderr
 #include <string.h>                  // for strdup
 
+#include "../helper/cmocka_all.h"    // for cmocka_unit_test, assert_int_equal
 #include "ifapi_eventlog.h"          // for ifapi_cleanup_event, IFAPI_EVENT
 #include "ifapi_ima_eventlog.h"      // for ifapi_read_ima_event_log
 #include "ifapi_json_deserialize.h"  // for ifapi_json_IFAPI_EVENT_deserialize

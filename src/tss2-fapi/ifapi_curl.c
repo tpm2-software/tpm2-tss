@@ -4,9 +4,10 @@
 #endif
 
 #include <curl/curl.h>          // for curl_easy_strerror, CURLE_OK, curl_ea...
-#include <openssl/asn1.h>       // for asn1_string_st
 #include <openssl/bio.h>        // for BIO_free, BIO_new_mem_buf
+#include <openssl/evp.h>        // for X509, ASN1_IA5STRING, X509_CRL, DIST_...
 #include <openssl/obj_mac.h>    // for NID_crl_distribution_points, NID_info...
+#include <openssl/opensslv.h>   // for OPENSSL_VERSION_NUMBER
 #include <openssl/pem.h>        // for PEM_read_bio_X509
 #include <openssl/safestack.h>  // for STACK_OF
 #include <openssl/x509.h>       // for X509_free, X509_STORE_add_cert, X509_...
@@ -17,8 +18,6 @@
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/aes.h>
-#else
-#include <openssl/types.h>      // for X509, ASN1_IA5STRING, X509_CRL, DIST_...
 #endif
 
 #include "fapi_certificates.h"  // for root_cert_list

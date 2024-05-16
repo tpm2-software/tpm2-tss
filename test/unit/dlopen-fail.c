@@ -4,10 +4,10 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"        // for will_return, assert_int_equal, cmocka_unit...
 #include <stdio.h>         // for NULL, fprintf, stderr
 #include <stdlib.h>        // for exit
 
+#include "../helper/cmocka_all.h"        // for will_return, assert_int_equal, cmocka_unit...
 #include "tss2_common.h"   // for TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_RC, TSS...
 #include "tss2_esys.h"     // for Esys_Initialize
 #include "tss2_fapi.h"     // for Fapi_Initialize, Fapi_Initialize_Async

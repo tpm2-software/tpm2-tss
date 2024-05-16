@@ -8,22 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>       // for uint8_t
-#include <openssl/bio.h>    // for BIO_free, BIO_new_mem_buf
-#include <openssl/evp.h>    // for EVP_PKEY_CTX_free, EVP_PKEY_free, EVP_PKE...
-#include <openssl/pem.h>    // for PEM_read_bio_PrivateKey
-#include <openssl/rsa.h>    // for EVP_PKEY_CTX_set_rsa_padding, RSA_PKCS1_P...
-#include <stddef.h>         // for NULL, size_t
-#include <stdio.h>          // for fprintf, stderr
-#include <stdlib.h>         // for EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>         // for strcmp, strlen
+#include <inttypes.h>     // for uint8_t
+#include <openssl/bio.h>  // for BIO_free, BIO_new_mem_buf
+#include <openssl/evp.h>  // for EVP_PKEY_CTX_free, EVP_PKEY_free, EVP_PKEY_...
+#include <openssl/pem.h>  // for PEM_read_bio_PrivateKey
+#include <openssl/rsa.h>  // for EVP_PKEY_CTX_set_rsa_padding, RSA_PKCS1_PAD...
+#include <stddef.h>       // for NULL, size_t
+#include <stdio.h>        // for fprintf, stderr
+#include <stdlib.h>       // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>       // for strcmp, strlen
 
-#include "tss2_common.h"    // for TSS2_RC
-#include "tss2_fapi.h"      // for Fapi_Delete, Fapi_Import, Fapi_GetCertifi...
+#include "tss2_common.h"  // for TSS2_RC
+#include "tss2_fapi.h"    // for Fapi_Delete, Fapi_Import, Fapi_GetCertificate
 
 #define LOGMODULE test
-#include "test-fapi.h"      // for ASSERT, ASSERT_SIZE, test_invoke_fapi
-#include "util/log.h"       // for goto_if_error, LOG_ERROR, SAFE_FREE, LOG_...
+#include "test-fapi.h"    // for ASSERT, ASSERT_SIZE, test_invoke_fapi
+#include "util/log.h"     // for goto_if_error, LOG_ERROR, SAFE_FREE, LOG_INFO
 
 /** Test the FAPI functions use an external public key for signature and quote verify without TPM.
  *

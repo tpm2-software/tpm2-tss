@@ -8,20 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h" // for assert_ptr_not_equal, assert_true
-#include <inttypes.h>             // for uint8_t
-#include <json-c/json.h>          // for json_object, json_object_put, json_object_to_js...
-#include <stdio.h>                // for NULL, size_t
-#include <stdlib.h>               // for getenv
-#include <string.h>               // for strlen, strncmp, strdup
+#include <inttypes.h>              // for uint8_t
+#include <json.h>                  // for json_object_object_del, json_objec...
+#include <stdio.h>                 // for NULL, size_t
+#include <stdlib.h>                // for getenv
+#include <string.h>                // for strlen, strncmp, strdup
 
-#include "ifapi_config.h"         // for IFAPI_CONFIG, ifapi_config_initiali...
-#include "ifapi_io.h"             // for IFAPI_IO
-#include "tss2_common.h"          // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC
-#include "util/aux_util.h"        // for SAFE_FREE
+#include "../helper/cmocka_all.h"  // for assert_ptr_not_equal, assert_true
+#include "ifapi_config.h"          // for IFAPI_CONFIG, ifapi_config_initial...
+#include "ifapi_io.h"              // for IFAPI_IO
+#include "tss2_common.h"           // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC
+#include "util/aux_util.h"         // for SAFE_FREE
 
 #define LOGMODULE tests
-#include "util/log.h"             // for LOG_WARNING
+#include "util/log.h"              // for LOG_WARNING
 
 /*
  * The unit tests will test deserialization of FAPI config files. It will be

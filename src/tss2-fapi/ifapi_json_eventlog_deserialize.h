@@ -6,7 +6,7 @@
 #ifndef IFAPI_JSON_EVENTLOG_DESERIALIZE_H
 #define IFAPI_JSON_EVENTLOG_DESERIALIZE_H
 
-#include <json-c/json.h>               // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                      // for json_object
 #include <stddef.h>                    // for size_t
 #include <stdint.h>                    // for uint8_t
 

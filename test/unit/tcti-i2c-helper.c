@@ -24,13 +24,13 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                     // for assert_int_equal, assert_stri...
 #include <inttypes.h>                   // for uint8_t, int32_t
 #include <stdbool.h>                    // for false, bool, true
 #include <stdio.h>                      // for NULL, size_t
 #include <stdlib.h>                     // for free, calloc, malloc
 #include <string.h>                     // for memcpy, strncmp
 
+#include "../helper/cmocka_all.h"                     // for assert_int_equal, assert_stri...
 #include "tss2-tcti/tcti-common.h"      // for TCTI_STATE_RECEIVE, TCTI_VERSION
 #include "tss2-tcti/tcti-i2c-helper.h"  // for TCTI_I2C_HELPER_TPM_STS_REG
 #include "tss2_common.h"                // for TSS2_RC_SUCCESS, TSS2_RC, TSS...

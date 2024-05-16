@@ -5,8 +5,8 @@
 #ifndef TCTILDR_NODL_H
 #define TCTILDR_NODL_H
 
-#include "tss2_tpm2_types.h"
-#include "tss2_tcti.h"
+#include "tss2_common.h"  // for TSS2_RC
+#include "tss2_tcti.h"    // for TSS2_TCTI_CONTEXT
 
 TSS2_RC
 tctildr_get_default (TSS2_TCTI_CONTEXT **tcti,

@@ -7,19 +7,19 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
-#include <json-c/json.h>          // for json_object, json_object_put, json_object_to_js...
-#include <stdint.h>               // for uint8_t, uint32_t
-#include <stdio.h>                // for NULL, size_t
-#include <stdlib.h>               // for EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>               // for strlen, strdup
+#include <json.h>            // for json_object_put, json_object_get_string
+#include <stdint.h>          // for uint8_t, uint32_t
+#include <stdio.h>           // for NULL, size_t
+#include <stdlib.h>          // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>          // for strlen, strdup
 
-#include "ifapi_eventlog.h"       // for CONTENT, CONTENT_TYPE
-#include "test-fapi.h"            // for ASSERT, ASSERT_SIZE, pcr_reset, CHE...
-#include "tss2_common.h"          // for TSS2_RC
-#include "tss2_fapi.h"            // for Fapi_Delete, Fapi_CreateKey, Fapi_E...
+#include "ifapi_eventlog.h"  // for CONTENT, CONTENT_TYPE
+#include "test-fapi.h"       // for ASSERT, ASSERT_SIZE, pcr_reset, CHECK_JS...
+#include "tss2_common.h"     // for TSS2_RC
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_CreateKey, Fapi_ExportKey
 
 #define LOGMODULE test
-#include "util/log.h"             // for SAFE_FREE, goto_if_error, LOG_INFO
+#include "util/log.h"        // for SAFE_FREE, goto_if_error, LOG_INFO, LOG_...
 
 #define EVENT_SIZE 10
 

@@ -9,7 +9,7 @@
 #endif
 
 #include <inttypes.h>                     // for PRIu16
-#include <json-c/json.h>                  // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                         // for json_object_to_json_string_ext
 #include <stdbool.h>                      // for false, true
 #include <string.h>                       // for memset, size_t, NULL
 

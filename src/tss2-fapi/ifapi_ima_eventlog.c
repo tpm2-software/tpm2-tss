@@ -9,8 +9,7 @@
 #endif
 
 #include <inttypes.h>              // for PRIu32
-#include <json-c/json.h>           // for json_object, json_object_put, json_object_to_js...
-#include <openssl/evp.h>           // for EVP_MD, EVP_get_digestbyname, EVP_MD_size
+#include <openssl/evp.h>           // for EVP_get_digestbyname, EVP_MD, EVP_...
 #include <stdbool.h>               // for bool, false, true
 #include <stdio.h>                 // for fread, fclose, FILE, fopen, sprintf
 #include <stdlib.h>                // for calloc, malloc

@@ -3,12 +3,12 @@
  * Copyright 2018-2019, Intel Corporation
  */
 
-#include "../helper/cmocka_all.h"                 // for assert_int_equal, cmocka_unit_tes...
 #include <inttypes.h>               // for uint8_t, int32_t
 #include <stdbool.h>                // for true
 #include <stdio.h>                  // for NULL, size_t
 #include <stdlib.h>                 // for calloc, free
 
+#include "../helper/cmocka_all.h"                 // for assert_int_equal, cmocka_unit_tes...
 #include "tss2-tcti/tcti-common.h"  // for TCTI_VERSION
 #include "tss2-tcti/tctildr.h"      // for TSS2_TCTILDR_CONTEXT, tctildr_fin...
 #include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...

@@ -9,7 +9,6 @@
 #endif
 
 #include <inttypes.h>                // for int64_t, PRId64, PRIx64
-#include <json-c/json.h>             // for json_object, json_object_put, json_object_to_js...
 #include <stdbool.h>                 // for bool, false, true
 #include <stdio.h>                   // for size_t, NULL, sscanf
 #include <stdlib.h>                  // for calloc

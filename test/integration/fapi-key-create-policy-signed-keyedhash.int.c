@@ -20,8 +20,7 @@
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/hmac.h>
 #else
-#include <openssl/core_names.h>  // for OSSL_ALG_PARAM_DIGEST
-#include <openssl/types.h>       // for EVP_MD, OSSL_PARAM, EVP_CIPHER, EVP_...
+#include <openssl/params.h>    // for OSSL_PARAM_construct_end, OSSL_PARAM_c...
 #endif
 
 #include "test-fapi.h"         // for ASSERT, pcr_reset, FAPI_PROFILE, test_...

@@ -10,7 +10,6 @@
 
 #include <errno.h>                   // for EEXIST, errno
 #include <inttypes.h>                // for PRIu16, SCNx32, PRIi32, PRIu32
-#include <json-c/json.h>             // for json_object, json_object_put, json_object_to_js...
 #include <stdarg.h>                  // for va_list, va_end, va_copy, va_start
 #include <stdio.h>                   // for sscanf, vsnprintf, vsprintf, vas...
 #include <stdlib.h>                  // for malloc, calloc, free
@@ -27,6 +26,7 @@
 #include "ifapi_json_serialize.h"    // for ifapi_json_FAPI_QUOTE_INFO_seria...
 #include "ifapi_macros.h"            // for strdup_check, goto_if_error2
 #include "ifapi_policy.h"            // for ifapi_compute_policy_digest
+#include "linkhash.h"                // for lh_entry
 #include "tpm_json_deserialize.h"    // for ifapi_parse_json
 #include "tss2_mu.h"                 // for Tss2_MU_TPMI_ALG_HASH_Marshal
 

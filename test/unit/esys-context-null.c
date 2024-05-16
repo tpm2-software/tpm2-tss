@@ -8,8 +8,9 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"       // for assert_int_equal, cmocka_unit_test, CMUnitTest
 #include <stdio.h>        // for NULL
+
+#include "../helper/cmocka_all.h"       // for assert_int_equal, cmocka_unit_test, CMUnitTest
 
 #define LOGMODULE test
 #include <tss2_esys.h>    // for ESYS_TR_NONE, ESYS_TR_PASSWORD, Esys_AC_Get...

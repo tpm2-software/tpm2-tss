@@ -9,7 +9,7 @@
 #include <config.h>
 #endif
 #include <assert.h>
-#include <json-c/json.h>
+#include <json.h>
 #include <json-c/json_util.h>
 #include <string.h>
 #include <stdbool.h>

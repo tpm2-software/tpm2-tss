@@ -4,10 +4,10 @@
 #endif
 
 #include <inttypes.h>                       // for PRIx16, PRIx32
-#include <json-c/json.h>                    // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                           // for json_object_put, json_obj...
 #include <stdbool.h>                        // for true, bool, false
-#include <stdlib.h>                         // for free, calloc
-#include <string.h>                         // for NULL, memcpy, size_t, memset
+#include <stdlib.h>                         // for NULL, free, size_t, calloc
+#include <string.h>                         // for memcpy, memset, strlen
 
 #include "fapi_crypto.h"                    // for ifapi_hash_get_digest_size
 #include "fapi_int.h"                       // for IFAPI_POLICY_EXEC_CTX
@@ -24,6 +24,7 @@
 #include "tss2_esys.h"                      // for ESYS_CONTEXT, ESYS_TR
 #include "tss2_policy.h"                    // for TSS2_POLICY_CTX, TSS2_POL...
 #include "tss2_tpm2_types.h"                // for TPM2B_DIGEST, TPMT_HA
+
 #define LOGMODULE "policy"
 #include "util/log.h"                       // for LOG_ERROR, str, LOG_TRACE
 

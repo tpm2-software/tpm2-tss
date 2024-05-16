@@ -8,7 +8,6 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                     // for assert_int_equal, assert_memo...
 #include <fcntl.h>                      // for O_RDWR
 #include <inttypes.h>                   // for uint8_t
 #include <stdbool.h>                    // for false
@@ -16,6 +15,8 @@
 #include <stdlib.h>                     // for free, calloc
 #include <string.h>                     // for memcpy, strncmp
 #include <sys/select.h>                 // for fd_set, timeval
+
+#include "../helper/cmocka_all.h"                     // for assert_int_equal, assert_memo...
 
 #include <linux/spi/spidev.h>           // for spi_ioc_transfer
 

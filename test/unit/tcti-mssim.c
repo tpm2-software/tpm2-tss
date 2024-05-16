@@ -8,7 +8,6 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                 // for will_return, assert_int_equal
 #include <inttypes.h>               // for uint8_t
 #include <poll.h>                   // for pollfd, nfds_t
 #include <stdio.h>                  // for printf, NULL, size_t, ssize_t
@@ -16,6 +15,7 @@
 #include <string.h>                 // for memcpy
 #include <sys/socket.h>             // for socklen_t
 
+#include "../helper/cmocka_all.h"                 // for will_return, assert_int_equal
 #include "tss2-tcti/tcti-common.h"  // for tcti_common_context_cast, TSS2_TC...
 #include "tss2-tcti/tcti-mssim.h"   // for mssim_conf_t, TSS2_TCTI_MSSIM_CON...
 #include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...

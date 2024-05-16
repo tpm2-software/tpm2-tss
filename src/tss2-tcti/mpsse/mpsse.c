@@ -29,15 +29,13 @@
  * SPDX short identifier: BSD-2-Clause
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <sys/time.h>
+#include <stdint.h>      // for uint8_t, uint32_t, int32_t, uint16_t
+#include <stdlib.h>      // for NULL, free, malloc
+#include <string.h>      // for memset
+#include <sys/select.h>  // for select, timeval
 
 #include "mpsse.h"
-#include "support.h"
-#include "config.h"
+#include "support.h"     // for is_valid_context, raw_write, set_bits_low
 
 /* List of known FT2232-based devices */
 struct vid_pid supported_devices[] = {

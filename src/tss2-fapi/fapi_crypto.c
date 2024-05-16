@@ -14,7 +14,7 @@
 #include <openssl/buffer.h>       // for buf_mem_st
 #include <openssl/crypto.h>       // for OSSL_LIB_CTX_free, OSSL_LIB_CTX_new
 #include <openssl/ec.h>           // for ECDSA_SIG_free, i2d_ECDSA_SIG, ECDS...
-#include <openssl/evp.h>          // for EVP_PKEY_type, EVP_PKEY_free, EVP_P...
+#include <openssl/evp.h>          // for EVP_PKEY_type, EVP_PKEY_free, EVP_PKEY
 #include <openssl/obj_mac.h>      // for NID_sm2, NID_X9_62_prime192v1, NID_...
 #include <openssl/objects.h>      // for OBJ_nid2sn, OBJ_txt2nid
 #include <openssl/opensslv.h>     // for OPENSSL_VERSION_NUMBER
@@ -31,7 +31,6 @@
 #include <openssl/core_names.h>   // for OSSL_PKEY_PARAM_GROUP_NAME, OSSL_PK...
 #include <openssl/param_build.h>  // for OSSL_PARAM_BLD_free, OSSL_PARAM_BLD...
 #include <openssl/params.h>       // for OSSL_PARAM_free
-#include <openssl/types.h>        // for EVP_PKEY, BIGNUM, BIO, EVP_PKEY_CTX
 #endif
 #include <openssl/err.h>          // for ERR_print_errors_fp
 

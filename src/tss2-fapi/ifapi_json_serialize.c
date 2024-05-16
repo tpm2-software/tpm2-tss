@@ -9,7 +9,6 @@
 #endif
 
 #include <inttypes.h>                     // for PRIx32, uint8_t
-#include <json-c/json.h>                  // for json_object, json_object_put, json_object_to_js...
 #include <stdbool.h>                      // for true
 #include <stdio.h>                        // for NULL, size_t, sprintf
 #include <stdlib.h>                       // for malloc

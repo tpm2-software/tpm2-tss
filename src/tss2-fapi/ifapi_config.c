@@ -8,7 +8,7 @@
 #include "config.h"                  // for SYSCONFDIR
 #endif
 
-#include <json-c/json.h>             // for json_object, json_object_put, json_object_to_js...
+#include <json.h>                    // for json_object_put, json_object
 #include <stdint.h>                  // for uint8_t
 #include <stdlib.h>                  // for NULL, getenv, size_t
 #include <string.h>                  // for strncmp, strlen, memset, strdup

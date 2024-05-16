@@ -9,11 +9,11 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "../helper/cmocka_all.h"                       // for expect_value, will_return
 #include <dlfcn.h>                        // for RTLD_NOW
 #include <stddef.h>                       // for NULL
 #include <stdio.h>                        // for printf
 
+#include "../helper/cmocka_all.h"                       // for expect_value, will_return
 #include "tss2-tcti/tctildr-dl.h"         // for handle_from_name, tctildr_g...
 #include "tss2-tcti/tctildr-interface.h"  // for tctildr_get_tcti, tctildr_g...
 #include "tss2_common.h"                  // for TSS2_RC, TSS2_RC_SUCCESS
