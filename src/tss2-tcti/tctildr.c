@@ -586,7 +586,7 @@ free_name_conf:
 }
 
 __attribute__((weak))
-const TSS2_TCTI_INFO tss2_tcti_info = {
+const TSS2_TCTI_INFO tss2_tctildr_info = {
     .version = TCTI_VERSION,
     .name = "tctildr",
     .description = "TCTI module for dynamically loading other TCTI modules",
@@ -614,5 +614,5 @@ __attribute__((weak))
 const TSS2_TCTI_INFO*
 Tss2_Tcti_Info (void)
 {
-    return &tss2_tcti_info;
+    return &tss2_tctildr_info;
 }

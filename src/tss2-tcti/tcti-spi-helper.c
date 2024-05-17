@@ -772,7 +772,7 @@ TSS2_RC Tss2_Tcti_Spi_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
     return TSS2_RC_SUCCESS;
 }
 
-static const TSS2_TCTI_INFO tss2_tcti_info = {
+static const TSS2_TCTI_INFO tss2_tcti_spi_helper_info = {
     .version = TCTI_VERSION,
     .name = "tcti-spi-helper",
     .description = "Platform independent TCTI for communication with TPMs over SPI.",
@@ -787,5 +787,5 @@ static const TSS2_TCTI_INFO tss2_tcti_info = {
 
 const TSS2_TCTI_INFO* Tss2_Tcti_Info (void)
 {
-    return &tss2_tcti_info;
+    return &tss2_tcti_spi_helper_info;
 }

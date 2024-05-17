@@ -664,7 +664,7 @@ fail_out:
 }
 
 /* public info structure */
-const TSS2_TCTI_INFO tss2_tcti_info = {
+const TSS2_TCTI_INFO tss2_tcti_mssim_info = {
     .version = TCTI_VERSION,
     .name = "tcti-socket",
     .description = "TCTI module for communication with the Microsoft TPM2 Simulator.",
@@ -675,5 +675,5 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
 const TSS2_TCTI_INFO*
 Tss2_Tcti_Info (void)
 {
-    return &tss2_tcti_info;
+    return &tss2_tcti_mssim_info;
 }
