@@ -240,6 +240,12 @@ AUTHORS :
 	    uniq -c | sort -nr | sed 's/^\s*//' | cut -d" " -f2- > $@
 EXTRA_DIST += AUTHORS
 
+# Use bear to generate compilation database (phony to enable regeneration)
+.PHONY: compile_commands.json
+compile_commands.json:
+	$(AM_V_GEN)bear -- $(MAKE) --always-make all check-programs
+CLEANFILES += compile_commands.json
+
 # pkg-config setup. pc-file declarations happen in the corresponding modules
 pkgconfig_DATA =
 DISTCLEANFILES += $(pkgconfig_DATA)
