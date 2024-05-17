@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.1.3] - 2024-05-17
+### Fixed
+- Fix name collisions during dlopen() on some linkers
+
 ## [4.1.2] - 2024-05-14
 ### Fixed
 - configure.ac: Fix test of == to = to be POSIX comliant
