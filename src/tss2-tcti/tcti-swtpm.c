@@ -637,7 +637,7 @@ fail_out:
 }
 
 /* public info structure */
-const TSS2_TCTI_INFO tss2_tcti_info = {
+const TSS2_TCTI_INFO tss2_tcti_swtpm_info = {
     .version = TCTI_VERSION,
     .name = "tcti-swtpm",
     .description = "TCTI module for communication with the swtpm.",
@@ -648,5 +648,5 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
 const TSS2_TCTI_INFO*
 Tss2_Tcti_Info (void)
 {
-    return &tss2_tcti_info;
+    return &tss2_tcti_swtpm_info;
 }
