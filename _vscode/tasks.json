@@ -1,0 +1,39 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "build_test",
+            "command": "make",
+            "args": [
+                "-j",
+                "${relativeFileDirname}/${fileBasenameNoExtension}",
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Build single test executable."
+        },
+        {
+            "type": "shell",
+            "label": "build_tcti_libtpms",
+            "command": "make",
+            "args": [
+                "-j",
+                "src/tss2-tcti/libtss2-tcti-libtpms.la",
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "detail": "Build tcti-libtpms"
+        }
+    ]
+}
