@@ -528,7 +528,7 @@ Tss2_Tcti_Device_Init (
     return TSS2_RC_SUCCESS;
 }
 
-const TSS2_TCTI_INFO tss2_tcti_info = {
+static const TSS2_TCTI_INFO tss2_tcti_device_info = {
     .version = TCTI_VERSION,
     .name = "tcti-device",
     .description = "TCTI module for communication with Linux kernel interface.",
@@ -540,5 +540,5 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
 const TSS2_TCTI_INFO*
 Tss2_Tcti_Info (void)
 {
-    return &tss2_tcti_info;
+    return &tss2_tcti_device_info;
 }

@@ -844,7 +844,7 @@ TSS2_RC Tss2_Tcti_I2c_Helper_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size
     return TSS2_RC_SUCCESS;
 }
 
-static const TSS2_TCTI_INFO tss2_tcti_info = {
+static const TSS2_TCTI_INFO tss2_tcti_i2c_helper_info = {
     .version = TCTI_VERSION,
     .name = "tcti-i2c-helper",
     .description = "Platform independent TCTI for communication with TPMs over I2C.",
@@ -859,5 +859,5 @@ static const TSS2_TCTI_INFO tss2_tcti_info = {
 
 const TSS2_TCTI_INFO* Tss2_Tcti_Info (void)
 {
-    return &tss2_tcti_info;
+    return &tss2_tcti_i2c_helper_info;
 }
