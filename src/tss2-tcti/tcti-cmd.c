@@ -622,7 +622,7 @@ TSS2_RC Tss2_Tcti_Cmd_Init (TSS2_TCTI_CONTEXT *tctiContext, size_t *size,
 }
 
 /* public info structure */
-const TSS2_TCTI_INFO tss2_tcti_info = {
+static const TSS2_TCTI_INFO tss2_tcti_cmd_info = {
         .version = TCTI_VERSION,
         .name = TCTI_CMD_NAME,
         .description = TCTI_CMD_DESCRIPTION,
@@ -633,5 +633,5 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
 const TSS2_TCTI_INFO*
 Tss2_Tcti_Info (void)
 {
-    return &tss2_tcti_info;
+    return &tss2_tcti_cmd_info;
 }
