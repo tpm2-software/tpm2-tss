@@ -525,7 +525,10 @@ Tss2_TctiLdr_Initialize_Ex (const char *name,
     }
 
     *tctiContext = (TSS2_TCTI_CONTEXT *) ldr_ctx;
-    return tctildr_init_context_data(*tctiContext, local_name, local_conf);
+    rc = tctildr_init_context_data(*tctiContext, local_name, local_conf);
+    if (rc == TSS2_RC_SUCCESS) {
+        return rc;
+    }
 
 err:
     if (*tctiContext != NULL) {
