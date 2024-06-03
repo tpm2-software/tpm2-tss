@@ -3,26 +3,25 @@ task:
     CFLAGS: "-I/usr/local/include -I/usr/local/openssl/include"
     LDFLAGS: -L/usr/local/lib
     ibmtpm_name: ibmtpm1637
+    libusb_version: v1.0.26
   freebsd_instance:
     matrix:
-      image_family: freebsd-13-2
+      image_family: freebsd-14-0
   install_script:
     - IGNORE_OSVERSION=yes
     - pkg update -f
     - pkg upgrade -y
     - pkg install -y bash gmake coreutils libtool pkgconf autoconf autoconf-archive
-    - pkg install -y automake openssl json-c cmocka uthash wget curl git
-    - wget --quiet --show-progress --progress=dot:giga "https://downloads.sourceforge.net/project/ibmswtpm2/$ibmtpm_name.tar.gz"
-    - shasum -a256 $ibmtpm_name.tar.gz | grep ^dd3a4c3f7724243bc9ebcd5c39bbf87b82c696d1c1241cb8e5883534f6e2e327
-    - mkdir -p $ibmtpm_name
-    - tar xvf $ibmtpm_name.tar.gz -C $ibmtpm_name && cd $ibmtpm_name/src
-    - sed -i '' -e 's/gcc/clang/g' makefile
-    - sed -i '' -e 's/-Wall //g' makefile
-    - sed -i '' -e 's/-Werror //g' makefile
-    - gmake -j && cp tpm_server /usr/bin/
-    - cd -
-    - rm -fr $ibmtpm_name $ibmtpm_name.tar.gz
+    - pkg install -y automake openssl json-c cmocka uthash wget curl git util-linux
+    - pkg install -y libftdi1
+    - pkg install -y swtpm
+    - git clone --depth 1 -b $libusb_version https://github.com/libusb/libusb
+    - cd libusb && ./bootstrap.sh && ./configure && gmake -j install
+    - cd - && rm -fr libusb
   script:
+    #
+    # Due to a race condition that only occurs in the cirrus ci, "make distcheck" has been replaced by "make check".
+    #
     ./bootstrap &&
-    ./configure --enable-self-generated-certificate --enable-unit=yes --enable-integration=yes --with-crypto=ossl --disable-doxygen-doc --enable-tcti-swtpm=no --enable-tcti-libtpms=no --enable-tcti-mssim=yes --disable-dependency-tracking &&
-    gmake -j distcheck || { cat /tmp/cirrus-ci-build/tpm2-tss-*/_build/sub/test-suite.log; exit 1; }
+    ./configure --enable-self-generated-certificate --enable-unit=yes --enable-integration=yes --with-crypto=ossl --disable-doxygen-doc --enable-tcti-swtpm=yes --enable-tcti-libtpms=no --enable-tcti-mssim=no --disable-dependency-tracking &&
+    gmake -j check || { cat /tmp/cirrus-ci-build/tpm2-tss-*/_build/sub/test-suite.log; exit 1; }
