@@ -186,6 +186,8 @@ Fapi_Import_Async(
                                             &extPubKey->public);
         goto_if_error(r, "Convert PEM public key into TPM public key.", cleanup_error);
 
+        extPubKey->public.publicArea.nameAlg = context->profiles.default_profile.nameAlg;
+
         command->new_object = *object;
         if (strncmp("/", path, 1) == 0)
             pos = 1;
