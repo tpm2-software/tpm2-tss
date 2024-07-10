@@ -4,7 +4,8 @@
         {
             "type": "POLICYAUTHORIZE",
             "policyRef": [ 1, 2, 3, 4, 5 ],
-			"keyPEM": "-----BEGIN PUBLIC KEY-----
+            // private key: test/data/fapi/policy/ecc.pem
+            "keyPEM": "-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEwl7xkJ8nywaYBzTzfr/Or0Phg2XY
 ufUHcIYJvC+x8NjOoPTFcE8CKGup6+Q7LOq21S9YmnXrt8xLiHBIxM7YOQ==
 -----END PUBLIC KEY-----"

@@ -783,6 +783,7 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_cphash.json \
     test/data/fapi/policy/pol_or_read_write_secret.json \
     test/data/fapi/policy/pol_ek_high_range_sha256.json \
+    test/data/fapi/policy/pol_ek_high_range_sha384.json \
     test/data/fapi/P_ECC_sh_eh_policy_sha384.json \
     test/data/fapi/policy/pol_authorize_ecc_pem_sha384.json \
     test/data/fapi/policy/pol_authorize_nv_complex_tpm2b_sha384.json \

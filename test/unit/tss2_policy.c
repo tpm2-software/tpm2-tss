@@ -171,30 +171,31 @@ static void test_policy_instantiate (
         fprintf(stderr, "Calculating policy (%u): %s\n", i, p->path);
 
         unsigned expected_hash_size = 0;
-        char hexdigest[32 + 32 + 1] = { 0 };
+        /* buffer for displaying a hash as a hex string */
+        char hexdigest[2 * sizeof(TPMU_HA) + 1] = { 0 };
         TPM2B_DIGEST digest = { 0 };
         TSS2_POLICY_CTX *ctx = NULL;
 
         /* for each hash alg set... */
         TPM2_ALG_ID halgs[] = {
-            TPM2_ALG_SHA1,
-            TPM2_ALG_SHA256
+            TPM2_ALG_SHA256,
+            TPM2_ALG_SHA384
         };
 
         unsigned j;
         for (j = 0; j < ARRAY_LEN(halgs); j++) {
             TPM2_ALG_ID halg = halgs[j];
 
-            if (halg == TPM2_ALG_SHA1) {
-                if (!p->sha1) {
-                    continue;
-                }
-                expected_hash_size = 20;
-            } else if (halg == TPM2_ALG_SHA256) {
+            if (halg == TPM2_ALG_SHA256) {
                 if (!p->sha256) {
                     continue;
                 }
                 expected_hash_size = 32;
+            } else if (halg == TPM2_ALG_SHA384) {
+                if (!p->sha384) {
+                    continue;
+                }
+                expected_hash_size = 48;
             }
 
             char *json = read_all(abs_path);
@@ -214,12 +215,12 @@ static void test_policy_instantiate (
             assert_int_equal(rc, TSS2_RC_SUCCESS);
             assert_int_equal(digest.size, expected_hash_size);
 
-            if (halg == TPM2_ALG_SHA1) {
-                bin2hex(digest.buffer, digest.size, hexdigest);
-                assert_string_equal(p->sha1, hexdigest);
-            } else if (halg == TPM2_ALG_SHA256) {
+            if (halg == TPM2_ALG_SHA256) {
                 bin2hex(digest.buffer, digest.size, hexdigest);
                 assert_string_equal(p->sha256, hexdigest);
+            } else if (halg == TPM2_ALG_SHA384) {
+                bin2hex(digest.buffer, digest.size, hexdigest);
+                assert_string_equal(p->sha384, hexdigest);
             }
 
             /* Get the calculated policy digest */
@@ -257,12 +258,12 @@ static void test_policy_instantiate (
             assert_int_equal(rc, TSS2_RC_SUCCESS);
             assert_int_equal(digest.size, expected_hash_size);
 
-            if (halg == TPM2_ALG_SHA1) {
-                bin2hex(digest.buffer, digest.size, hexdigest);
-                assert_string_equal(p->sha1, hexdigest);
-            } else if (halg == TPM2_ALG_SHA256) {
+            if (halg == TPM2_ALG_SHA256) {
                 bin2hex(digest.buffer, digest.size, hexdigest);
                 assert_string_equal(p->sha256, hexdigest);
+            } else if (halg == TPM2_ALG_SHA384) {
+                bin2hex(digest.buffer, digest.size, hexdigest);
+                assert_string_equal(p->sha384, hexdigest);
             }
 
             SAFE_FREE(json);
