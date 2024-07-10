@@ -3,8 +3,9 @@
     "policy":[
         {
             "type": "POLICYSIGNED",
+            // private key: test/data/fapi/policy/ecc.pem
             "keyPEM": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEoJTa3zftdAzHC96IjpqQ/dnLm+p7\npEiLMi03Jd0oP0aYnnXFjolzIB/dBZ/t+BLh0PwLM5aAM/jugeLkHgpIyQ==\n-----END PUBLIC KEY-----\n",
-            "keyPEMhashAlg": "SHA256"
+            "keyPEMhashAlg": "SHA384"
         }
     ]
 }
