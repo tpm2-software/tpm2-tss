@@ -12,6 +12,7 @@
 #include <stdlib.h>           // for exit, NULL, size_t
 #include <string.h>           // for memset, memcpy
 
+#include "test-esys.h"        // for EXIT_SKIP
 #include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
 #include "tss2_mu.h"          // for Tss2_MU_TPMT_PUBLIC_Marshal
 #include "tss2_sys.h"         // for Tss2_Sys_CreateLoaded, Tss2_Sys_FlushCo...
@@ -86,6 +87,8 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
                                 &auth_rsp);
     if (rc == TPM2_RC_SUCCESS) {
         LOG_INFO("success object handle: 0x%x", object_handle);
+    } else if (rc == TPM2_RC_COMMAND_CODE) {
+        return EXIT_SKIP;
     } else {
         LOG_ERROR("CreateLoaded FAILED! Response Code : 0x%x", rc);
         exit(1);
