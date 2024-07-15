@@ -30,15 +30,16 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
 {
     TSS2_RC rc, rc2;
     TPM2B_NONCE nonce_caller = {
-        .size   = TPM2_SHA1_DIGEST_SIZE,
+        .size   = TPM2_SHA256_DIGEST_SIZE,
         .buffer = {
                 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
                 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
-                0xde, 0xad, 0xbe, 0xef,
+                0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
+                0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
             }
     };
     TPM2B_NONCE nonce_tpm = {
-        .size   = TPM2_SHA1_DIGEST_SIZE,
+        .size   = TPM2_SHA256_DIGEST_SIZE,
         .buffer = { 0 }
     };
     TPM2B_ENCRYPTED_SECRET encrypted_salt = { 0 };
@@ -54,7 +55,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
                                     &encrypted_salt,
                                     TPM2_SE_HMAC,
                                     &symmetric,
-                                    TPM2_ALG_SHA1,
+                                    TPM2_ALG_SHA256,
                                     &session,
                                     &nonce_tpm,
                                     NULL);

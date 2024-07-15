@@ -92,6 +92,34 @@ const char *log_exp[] = {
     }\n\
   }\n\
 ]",
+/* same as above, just without sha1 */
+"[\n\
+  {\n\
+    \"recnum\":0,\n\
+    \"pcr\":16,\n\
+    \"digests\":[\n\
+      {\n\
+        \"hashAlg\":\"sha256\",\n\
+        \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\"\n\
+      },\n\
+      {\n\
+        \"hashAlg\":\"sha384\",\n\
+        \"digest\":\"182e95266adff49059e706c61483478fe0688150c8d08b95fab5cfde961f12d903aaf44104af4ce72ba6a4bf20302b2e\"\n\
+      },\n\
+      {\n\
+        \"hashAlg\":\"sha512\",\n\
+        \"digest\":\"0f89ee1fcb7b0a4f7809d1267a029719004c5a5e5ec323a7c3523a20974f9a3f202f56fadba4cd9e8d654ab9f2e96dc5c795ea176fa20ede8d854c342f903533\"\n\
+      }\n\
+    ],\n\
+    \"" CONTENT_TYPE "\":\"tss2\",\n\
+    \"" CONTENT "\":{\n\
+      \"data\":\"00010203040506070809\",\n\
+      \"event\":{\n\
+        \"test\":\"myfile\"\n\
+      }\n\
+    }\n\
+  }\n\
+]",
 "[\n\
   {\n\
     \"recnum\":0,\n\
