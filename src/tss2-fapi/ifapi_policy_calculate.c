@@ -1271,6 +1271,9 @@ ifapi_calculate_policy_template(
     r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
+    HASH_UPDATE_BUFFER(cryptoContext,
+                       &current_digest->digests[digest_idx].digest, hash_size,
+                       r, cleanup);
     HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyTemplate, r,
                 cleanup);
     HASH_UPDATE_BUFFER(cryptoContext, &used_template_hash->buffer[0],
