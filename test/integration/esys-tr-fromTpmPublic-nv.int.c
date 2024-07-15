@@ -99,7 +99,7 @@ test_esys_tr_fromTpmPublic_nv(ESYS_CONTEXT * ectx)
     r = Esys_StartAuthSession(ectx, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
 
     goto_if_error(r, "Error: During initialization of session", error);
@@ -111,7 +111,7 @@ test_esys_tr_fromTpmPublic_nv(ESYS_CONTEXT * ectx)
     r = Esys_StartAuthSession(ectx, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session2);
     goto_if_error(r, "Error: During initialization of session", error);
 
@@ -132,7 +132,7 @@ test_esys_tr_fromTpmPublic_nv(ESYS_CONTEXT * ectx)
     r = Esys_StartAuthSession(ectx, ESYS_TR_NONE, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                               NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA1,
+                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
 
     goto_if_error(r, "Error: During initialization of session", error);

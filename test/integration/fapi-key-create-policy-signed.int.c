@@ -21,13 +21,14 @@
 #include "test-fapi.h"        // for ASSERT, pcr_reset, ASSERT_SIZE, test_in...
 #include "tss2_common.h"      // for TSS2_FAPI_RC_GENERAL_FAILURE, TSS2_RC
 #include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_Import
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2_ALG_SHA256
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2_ALG_SHA384
 
 #define LOGMODULE test
 #include "util/log.h"         // for SAFE_FREE, LOG_ERROR, goto_if_error
 
 #ifdef TEST_ECC
 const char *priv_pem =
+    /* see test/data/fapi/policy/ecc.pem */
     "-----BEGIN EC PRIVATE KEY-----\n"
     "MHcCAQEEILE8jic/6w/lKoFTVblkNQ4Ls5IYibQNQ4Dk5B9R09ONoAoGCCqGSM49\n"
     "AwEHoUQDQgAEoJTa3zftdAzHC96IjpqQ/dnLm+p7pEiLMi03Jd0oP0aYnnXFjolz\n"
@@ -35,11 +36,13 @@ const char *priv_pem =
     "-----END EC PRIVATE KEY-----\n";
 
 const char *pub_pem =
+    /* see test/data/fapi/policy/ecc.pem */
    "-----BEGIN PUBLIC KEY-----\n"
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEoJTa3zftdAzHC96IjpqQ/dnLm+p7\n"
     "pEiLMi03Jd0oP0aYnnXFjolzIB/dBZ/t+BLh0PwLM5aAM/jugeLkHgpIyQ==\n"
     "-----END PUBLIC KEY-----\n";
 #else
+/* see test/data/fapi/policy/rsa2.pem */
 const char *priv_pem =
     "-----BEGIN PRIVATE KEY-----\n"
     "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCgYvoisJIDOeYg\n"
@@ -70,6 +73,7 @@ const char *priv_pem =
     "i8Kp6jR2wY0suObmZHKvbCB1Dw==\n"
     "-----END PRIVATE KEY-----\n";
 
+/* see test/data/fapi/policy/rsa2.pem */
 const char *pub_pem =
     "-----BEGIN PUBLIC KEY-----\n"
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoGL6IrCSAznmIIzBessI\n"
@@ -119,8 +123,8 @@ signatureCallback(
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
-    if (hashAlg != TPM2_ALG_SHA256) {
-        LOG_ERROR("hashAlg is not correct, %u != %u", hashAlg, TPM2_ALG_SHA256);
+    if (hashAlg != TPM2_ALG_SHA384) {
+        LOG_ERROR("hashAlg is not correct, %u != %u", hashAlg, TPM2_ALG_SHA384);
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
@@ -130,7 +134,7 @@ signatureCallback(
     EVP_MD_CTX *mdctx = NULL;
     EVP_PKEY_CTX *pctx = NULL;
 
-    const EVP_MD *ossl_hash = EVP_sha256();
+    const EVP_MD *ossl_hash = EVP_sha384();
     chknull(ossl_hash);
 
     LOGBLOB_DEBUG(dataToSign, dataToSignSize, "Data to be signed");
@@ -263,10 +267,12 @@ test_fapi_key_create_policy_signed(FAPI_CONTEXT *context)
     size_t signatureSize = 0;
 
     TPM2B_DIGEST digest = {
-        .size = 20,
+        .size = 32,
         .buffer = {
             0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f
+            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00,
         }
     };
 

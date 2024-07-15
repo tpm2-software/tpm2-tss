@@ -243,7 +243,7 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_Import", error);
 
     r = Fapi_VerifyQuote(context, "/ext/myExtPubKey",
-                         qualifying_data, 20,  quote_info,
+                         qualifying_data, sizeof(qualifying_data),  quote_info,
                          test_signature, test_signature_size, NULL);
     goto_if_error(r, "Error Fapi_Verfiy_Quote", error);
 

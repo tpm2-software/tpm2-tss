@@ -21,13 +21,14 @@
 #include "test-fapi.h"        // for pcr_reset, EXIT_SKIP, FAPI_PROFILE, tes...
 #include "tss2_common.h"      // for TSS2_FAPI_RC_GENERAL_FAILURE, TSS2_RC
 #include "tss2_fapi.h"        // for Fapi_Free, Fapi_Delete, Fapi_Decrypt
-#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256
+#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA384
 
 #define LOGMODULE test
 #include "util/log.h"         // for LOG_ERROR, goto_if_error, SAFE_FREE
 
 #define SIZE 128
 
+/* see test/data/fapi/policy/rsa2.pem */
 const char *priv_pem =
     "-----BEGIN PRIVATE KEY-----\n"
     "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCgYvoisJIDOeYg\n"
@@ -58,6 +59,7 @@ const char *priv_pem =
     "i8Kp6jR2wY0suObmZHKvbCB1Dw==\n"
     "-----END PRIVATE KEY-----\n";
 
+/* see test/data/fapi/policy/rsa2.pem */
 const char *pub_pem =
     "-----BEGIN PUBLIC KEY-----\n"
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoGL6IrCSAznmIIzBessI\n"
@@ -108,8 +110,8 @@ signatureCallback(
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
-    if (hashAlg != TPM2_ALG_SHA256) {
-        LOG_ERROR("hashAlg is not correct, %u != %u", hashAlg, TPM2_ALG_SHA256);
+    if (hashAlg != TPM2_ALG_SHA384) {
+        LOG_ERROR("hashAlg is not correct, %u != %u", hashAlg, TPM2_ALG_SHA384);
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
@@ -119,7 +121,7 @@ signatureCallback(
     EVP_MD_CTX *mdctx =NULL;
     EVP_PKEY_CTX *pctx = NULL;
 
-    const EVP_MD *ossl_hash = EVP_sha256();
+    const EVP_MD *ossl_hash = EVP_sha384();
     chknull(ossl_hash);
 
     LOGBLOB_DEBUG(dataToSign, dataToSignSize, "Data to be signed");

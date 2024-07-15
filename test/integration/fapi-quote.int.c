@@ -70,13 +70,15 @@ test_fapi_quote(FAPI_CONTEXT *context)
     r = Fapi_CreateKey(context, "HS/SRK/mySignKey", "sign,noDa", "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-   r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "  \
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "  \
         "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_SetCertificate", error);
 
-    uint8_t qualifyingData[20] = {
+    uint8_t qualifyingData[32] = {
         0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-        0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f
+        0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00,
     };
 
     r = pcr_reset(context, 16);
@@ -87,7 +89,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
 
     r = Fapi_Quote(context, pcrList, 1, "HS/SRK/mySignKey",
                    "TPM-Quote",
-                   qualifyingData, 20,
+                   qualifyingData, sizeof(qualifyingData),
                    &quoteInfo,
                    &signature, &signatureSize,
                    &pcrEventLog, &certificate);
@@ -208,6 +210,34 @@ test_fapi_quote(FAPI_CONTEXT *context)
          "    }"
          "  }"
          "]",
+         /* same as above, just without sha1 */
+         "["
+         "  {"
+         "    \"recnum\":0,"
+         "    \"pcr\":16,"
+         "    \"digests\":["
+         "      {"
+         "        \"hashAlg\":\"sha256\","
+         "        \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\""
+         "      },"
+         "      {"
+         "        \"hashAlg\":\"sha384\","
+         "        \"digest\":\"182e95266adff49059e706c61483478fe0688150c8d08b95fab5cfde961f12d903aaf44104af4ce72ba6a4bf20302b2e\""
+         "      },"
+         "      {"
+         "        \"hashAlg\":\"sha512\","
+         "        \"digest\":\"0f89ee1fcb7b0a4f7809d1267a029719004c5a5e5ec323a7c3523a20974f9a3f202f56fadba4cd9e8d654ab9f2e96dc5c795ea176fa20ede8d854c342f903533\""
+         "      }"
+         "    ],"
+         "    \"" CONTENT_TYPE "\":\"tss2\","
+         "    \"" CONTENT "\":{"
+         "      \"data\":\"00010203040506070809\","
+         "      \"event\":{"
+         "        \"test\":\"myfile\""
+         "      }"
+         "    }"
+         "  }"
+         "]",
          "["
          "  {"
          "    \"recnum\":0,"
@@ -281,7 +311,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
     CHECK_JSON_LIST(log_check_list, log, error);
 
     r = Fapi_VerifyQuote(context, "HS/SRK/mySignKey",
-                         qualifyingData, 20,  quoteInfo,
+                         qualifyingData, sizeof(qualifyingData),  quoteInfo,
                          signature, signatureSize, log);
     goto_if_error(r, "Error Fapi_Verfiy_Quote", error);
 
@@ -304,7 +334,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
     qualifyingData[0] = 0;
 
     r = Fapi_VerifyQuote(context, "HS/SRK/mySignKey",
-                         qualifyingData, 20,  quoteInfo,
+                         qualifyingData, sizeof(qualifyingData),  quoteInfo,
                          signature, signatureSize, log);
     if (r == TPM2_RC_SUCCESS) {
         LOG_ERROR("Invalid qualifying data was not detected.");

@@ -47,7 +47,7 @@ create_policy_session (TSS2_SYS_CONTEXT *sys_ctx,
 {
     TPMA_LOCALITY locality = TPMA_LOCALITY_TPM2_LOC_THREE |
         TPMA_LOCALITY_TPM2_LOC_FOUR;
-    TPM2B_NONCE nonce = { .size = GetDigestSize (TPM2_ALG_SHA1), };
+    TPM2B_NONCE nonce = { .size = GetDigestSize (TPM2_ALG_SHA256), };
     TPM2B_NONCE nonce_tpm = { 0, };
     TSS2_RC rc;
     TPM2B_ENCRYPTED_SECRET salt = { 0, };
@@ -61,7 +61,7 @@ create_policy_session (TSS2_SYS_CONTEXT *sys_ctx,
                                     &salt,
                                     TPM2_SE_POLICY,
                                     &symmetric,
-                                    TPM2_ALG_SHA1,
+                                    TPM2_ALG_SHA256,
                                     handle,
                                     &nonce_tpm,
                                     0);
@@ -92,9 +92,9 @@ setup_nv (TSS2_SYS_CONTEXT *sys_ctx)
         .nvPublic = {
             .attributes = TPMA_NV_AUTHREAD | TPMA_NV_POLICYWRITE |
                 TPMA_NV_PLATFORMCREATE, /* POLICYDELETE? */
-            .authPolicy = { .size = GetDigestSize (TPM2_ALG_SHA1), },
+            .authPolicy = { .size = GetDigestSize (TPM2_ALG_SHA256), },
             .dataSize = NV_SIZE,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .nvIndex = NV_INDEX,
         },
     };

@@ -81,9 +81,11 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
         "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_SetCertificate", error);
 
-    uint8_t qualifyingData[20] = {
+    uint8_t qualifyingData[32] = {
         0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-        0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f
+        0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00,
     };
 
     r = pcr_reset(context, 16);
@@ -100,7 +102,7 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
 
     r = Fapi_Quote(context, pcrList, 2, "HS/SRK/mySignKey",
                    "TPM-Quote",
-                   qualifyingData, 20,
+                   qualifyingData, sizeof(qualifyingData),
                    &quoteInfo,
                    &signature, &signatureSize,
                    &pcrEventLog, &certificate);
@@ -116,7 +118,7 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     LOG_INFO("\npcrEventLog: %s\n", pcrEventLog);
 
     r = Fapi_VerifyQuote(context, "HS/SRK/mySignKey",
-                         qualifyingData, 20,  quoteInfo,
+                         qualifyingData, sizeof(qualifyingData),  quoteInfo,
                          signature, signatureSize, pcrEventLog);
     goto_if_error(r, "Error Fapi_Verfiy_Quote", error);
 
