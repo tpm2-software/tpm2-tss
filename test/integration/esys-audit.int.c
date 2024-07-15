@@ -236,9 +236,11 @@ test_esys_audit(ESYS_CONTEXT * esys_context)
         LOG_WARNING("Platform authorization not possible.");
         failure_return =  EXIT_SKIP;
         goto error;
+    } else if (r == TPM2_RC_COMMAND_CODE) {
+        /* Ignore command not supported */
+    } else {
+        goto_if_error(r, "Error: SetCommandCodeAuditStatus", error);
     }
-
-    goto_if_error(r, "Error: SetCommandCodeAuditStatus", error);
 
     r = Esys_FlushContext(esys_context, signHandle);
     goto_if_error(r, "Error: FlushContext", error);
