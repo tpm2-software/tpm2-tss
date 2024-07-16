@@ -180,9 +180,9 @@ documentation for UDEVADM(8).
 
 Users who should have access to the TPM and the FAPI keystore should be
 included in the tss group.
-​```
- sudo usermod -aG tss <username>
- ```
+```
+sudo usermod -aG tss <username>
+```
 
 ## ldconfig
 
