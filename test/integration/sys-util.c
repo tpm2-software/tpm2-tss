@@ -194,7 +194,7 @@ create_keyedhash_key (
                                            TPMA_OBJECT_SENSITIVEDATAORIGIN |
                                            TPMA_OBJECT_USERWITHAUTH,
             .publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC,
-            .publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA1,
+            .publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA256,
             .publicArea.unique.keyedHash.size = 0,
     };
 
