@@ -24,10 +24,16 @@
 #include "util/tpm2b.h"                   // for TPM2B
 #ifdef TCTI_MSSIM
 #include "tss2_tcti_mssim.h"              // for tcti_platform_command, MS_S...
+#include "tss2-tcti/tcti-mssim.h"         // for TCTI_MSSIM_MAGIC
 #endif /* TCTI_MSSIM */
 #ifdef TCTI_SWTPM
 #include "tss2_tcti_swtpm.h"              // for Tss2_Tcti_Swtpm_Reset
+#include "tss2-tcti/tcti-swtpm.h"         // for TCTI_SWTPM_MAGIC
 #endif /* TCTI_SWTPM */
+#ifdef TCTI_LIBTPMS
+#include "tss2_tcti_libtpms.h"              // for Tss2_Tcti_Libtpms_Reset
+#include "tss2-tcti/tcti-libtpms.h"         // for TCTI_LIBTPMS_MAGIC
+#endif /* TCTI_LIBTPMS */
 
 #include "../integration/session-util.h"  // for SESSION, create_auth_session
 #include "../integration/sys-util.h"      // for CopySizedByteBuffer, Define...
@@ -170,46 +176,57 @@ static TSS2_RC TpmReset()
     while (magic == 0 || magic == TCTILDR_MAGIC || magic == TCTI_PCAP_MAGIC) {
         magic = *((uint64_t*) tcti);
         if (magic == TCTILDR_MAGIC) {
+            LOG_TRACE("TCTI is tctildr (0x%" PRIx64 "). Unwrapping...", magic);
             tcti = ((TSS2_TCTILDR_CONTEXT *) tcti)->tcti;
         } else if (magic == TCTI_PCAP_MAGIC) {
+            LOG_TRACE("TCTI is tcti-pcap (0x%" PRIx64 "). Unwrapping...", magic);
             tcti = ((TSS2_TCTI_PCAP_CONTEXT *) tcti)->tcti_child;
         }
     }
 
-#ifdef TCTI_LIBTPMS
-    rval = Tss2_Tcti_Libtpms_Reset(tcti);
+    switch (magic) {
 
-    /* If TCTI is not libtpms, bad context is returned. */
-    if (rval != TSS2_TCTI_RC_BAD_CONTEXT) {
-        return rval;
-    } else {
-        LOG_WARNING("TPM Reset failed: wrong TCTI type retrying with swtpm...");
-    }
+#ifdef TCTI_LIBTPMS
+        case TCTI_LIBTPMS_MAGIC:
+            LOG_DEBUG("Calling Tss2_Tcti_Libtpms_Reset()");
+            rval = Tss2_Tcti_Libtpms_Reset(tcti);
+            break;
 #endif /* TCTI_LIBTPMS */
 
 #ifdef TCTI_SWTPM
-    rval = Tss2_Tcti_Swtpm_Reset(tcti);
-
-    /* If TCTI is not swtpm, bad context is returned. */
-    if (rval != TSS2_TCTI_RC_BAD_CONTEXT) {
-        return rval;
-    } else {
-        LOG_WARNING("TPM Reset failed: wrong TCTI type retrying with mssim...");
-    }
+        case TCTI_SWTPM_MAGIC:
+            LOG_DEBUG("Calling Tss2_Tcti_Swtpm_Reset()");
+            rval = Tss2_Tcti_Swtpm_Reset(tcti);
+            break;
 #endif /* TCTI_SWTPM */
 
 #ifdef TCTI_MSSIM
-    rval = (TSS2_RC)tcti_platform_command( tcti, MS_SIM_POWER_OFF );
-    if (rval == TSS2_RC_SUCCESS) {
-        rval = (TSS2_RC)tcti_platform_command( tcti, MS_SIM_POWER_ON );
-    } else {
-        LOG_WARNING("TPM Reset failed: mssim returned 0x%x.", rval);
-    }
+        case TCTI_MSSIM_MAGIC:
+            LOG_DEBUG("Calling tcti_platform_command()");
+            rval = (TSS2_RC)tcti_platform_command( tcti, MS_SIM_POWER_OFF );
+            if (rval == TSS2_RC_SUCCESS) {
+                rval = (TSS2_RC)tcti_platform_command( tcti, MS_SIM_POWER_ON );
+            }
+            break;
 #endif /* TCTI_MSSIM */
 
-    if (rval == TSS2_TCTI_RC_BAD_CONTEXT) {
-        LOG_WARNING("TPM Reset failed: could not reset using known TCTI types. TCTI magic: %" PRIx64, *((uint64_t *) tcti));
-        rval = EXIT_SKIP;
+        default:
+            LOG_WARNING("TPM reset failed. TCTI unknown. Got TCTI magic: 0x%" PRIx64 ". Enabled TCTIs with reset support: "
+#ifdef TCTI_LIBTPMS
+                        "libtpms (" xstr(TCTI_LIBTPMS_MAGIC) "), "
+#endif /* TCTI_LIBTPMS */
+#ifdef TCTI_SWTPM
+                        "swtpm (" xstr(TCTI_SWTPM_MAGIC) "), "
+#endif /* TCTI_SWTPM */
+#ifdef TCTI_MSSIM
+                        "mssim (" xstr(TCTI_MSSIM_MAGIC) "), "
+#endif /* TCTI_MSSIM */
+                        "", magic);
+            return EXIT_SKIP;
+    }
+
+    if (rval != TSS2_RC_SUCCESS) {
+        LOG_WARNING("TPM reset failed: 0x%08x", rval);
     }
 
     return rval;

@@ -367,9 +367,38 @@ Tss2_Tcti_Libtpms_Reset(TSS2_TCTI_CONTEXT *tcti_ctx)
     int ret;
     TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = tcti_libtpms_context_cast(tcti_ctx);
 
-    LIBTPMS_API_CALL(fail, tcti_libtpms, TPM_IO_TpmEstablished_Reset);
+    if (TSS2_TCTI_MAGIC(tcti_libtpms) != TCTI_LIBTPMS_MAGIC) {
+        return TSS2_TCTI_RC_BAD_CONTEXT;
+    }
+
+    /* Get NV (i.e. permanent state) */
+    unsigned char *permanent_state;
+    uint32_t permanent_state_len;
+    LIBTPMS_API_CALL(fail,
+                     tcti_libtpms,
+                     TPMLIB_GetState,
+                     TPMLIB_STATE_PERMANENT,
+                     &permanent_state,
+                     &permanent_state_len);
+
+    /* TPM power off */
+    tcti_libtpms->TPMLIB_Terminate();
+
+    /* Set NV to the same value, will be picked up by MainInit() */
+    LIBTPMS_API_CALL(cleanup,
+                     tcti_libtpms,
+                     TPMLIB_SetState,
+                     TPMLIB_STATE_PERMANENT,
+                     permanent_state,
+                     permanent_state_len);
+
+    /* Load state and power on */
+    LIBTPMS_API_CALL(cleanup, tcti_libtpms, TPMLIB_MainInit);
+
     rc = TSS2_RC_SUCCESS;
 
+cleanup:
+    free(permanent_state);
 fail:
     return rc;
 }
