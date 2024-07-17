@@ -287,6 +287,8 @@ AC_ARG_ENABLE([tcti-libtpms],
                                                     [enable_tcti_libtpms=no]
                                                     [AC_MSG_WARN([library libtpms missing])])])
 AM_CONDITIONAL([ENABLE_TCTI_LIBTPMS], [test "x$enable_tcti_libtpms" != xno])
+AS_IF([test "x$enable_tcti_libtpms" = "xyes"],
+	[AC_DEFINE([TCTI_LIBTPMS],[1], [TCTI FOR LIBTPMS BASED ACCESS TO TPM2 DEVICE])])
 
 AC_ARG_ENABLE([tcti-cmd],
             [AS_HELP_STRING([--disable-tcti-cmd],
