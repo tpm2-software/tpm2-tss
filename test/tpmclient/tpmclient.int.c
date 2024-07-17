@@ -41,7 +41,7 @@
 #include "sysapi_util.h"                  // for _TSS2_SYS_CONTEXT_BLOB, res...
 #include "util/tss2_endian.h"             // for BE_TO_HOST_32
 
-#define LOGMODULE testtpmclient
+#define LOGMODULE test
 #include "util/log.h"                     // for LOG_INFO, LOG_ERROR, LOGBLO...
 
 /*
