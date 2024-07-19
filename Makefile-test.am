@@ -20,19 +20,12 @@ endif
 check_LTLIBRARIES =
 # test harness configuration
 TEST_EXTENSIONS = .int .fint
-INT_LOG_COMPILER = $(srcdir)/script/int-log-compiler.sh
-FINT_LOG_COMPILER = $(srcdir)/script/fint-log-compiler.sh
-INT_LOG_FLAGS = $(INTEGRATION_TCTI)
-FINT_LOG_FLAGS = $(INTEGRATION_TCTI)
-EXTRA_DIST += $(srcdir)/script/int-log-compiler.sh \
-              $(srcdir)/script/fint-log-compiler.sh \
-              $(srcdir)/script/int-log-compiler-common.sh \
-              $(srcdir)/script/ekca/create_ca.sh \
+AM_TESTS_ENVIRONMENT = TPM20TEST_TCTI='$(INTEGRATION_TCTI)'
+EXTRA_DIST += $(srcdir)/script/ekca/create_ca.sh \
               $(srcdir)/script/ekca/init_ca.sh \
               $(srcdir)/script/ekca/ek.cnf \
               $(srcdir)/script/ekca/intermed-ca.cnf \
               $(srcdir)/script/ekca/root-ca.cnf
-AM_TESTS_ENVIRONMENT = PATH="$(PATH)"
 
 check-programs: $(check_PROGRAMS)
 

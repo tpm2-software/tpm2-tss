@@ -3,7 +3,7 @@
 # All rights reserved.
 
 TEST_EXTENSIONS += .fuzz
-FUZZ_LOG_COMPILER = $(srcdir)/script/fuzz-log-compiler.sh
+AM_TESTS_ENVIRONMENT = TPM20TEST_TCTI='$(INTEGRATION_TCTI)'
 INCLUDE_DIRS += -I$(srcdir)/test/fuzz/tcti
 TESTS_LIBADD = $(lib_LTLIBRARIES) $(libtss2_mu) $(libtss2_sys) $(libutil)
 
