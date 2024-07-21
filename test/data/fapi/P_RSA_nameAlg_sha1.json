@@ -34,9 +34,6 @@
     "pcr_selection": [
         { "hash": "TPM2_ALG_SHA256",
             "pcrSelect": [ 8, 9 , 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 ]
-        },
-        { "hash": "TPM2_ALG_SHA384",
-            "pcrSelect": [ ]
         }
     ],
     "exponent": 0,
