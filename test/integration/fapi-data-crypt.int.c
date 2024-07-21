@@ -110,8 +110,8 @@ signatureCallback(
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
-    if (hashAlg != TPM2_ALG_SHA384) {
-        LOG_ERROR("hashAlg is not correct, %u != %u", hashAlg, TPM2_ALG_SHA384);
+    if (hashAlg != TPM2_ALG_SHA256) {
+        LOG_ERROR("hashAlg is not correct, %u != %u", hashAlg, TPM2_ALG_SHA256);
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
@@ -121,7 +121,7 @@ signatureCallback(
     EVP_MD_CTX *mdctx =NULL;
     EVP_PKEY_CTX *pctx = NULL;
 
-    const EVP_MD *ossl_hash = EVP_sha384();
+    const EVP_MD *ossl_hash = EVP_sha256();
     chknull(ossl_hash);
 
     LOGBLOB_DEBUG(dataToSign, dataToSignSize, "Data to be signed");
