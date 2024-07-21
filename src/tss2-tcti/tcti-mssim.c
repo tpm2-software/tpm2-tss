@@ -330,6 +330,7 @@ tcti_mssim_receive (
     TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tctiContext);
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
+    size_t size;
     UINT32 trash;
 
     rc = tcti_common_receive_checks (tcti_common,
@@ -363,8 +364,8 @@ tcti_mssim_receive (
             }
             goto out;
         }
-        rc = socket_recv_buf (tcti_mssim->tpm_sock, size_buf, sizeof(UINT32));
-        if (rc != sizeof (UINT32)) {
+        size = socket_recv_buf (tcti_mssim->tpm_sock, size_buf, sizeof(UINT32));
+        if (size != sizeof (UINT32)) {
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto out;
         }
@@ -402,10 +403,10 @@ tcti_mssim_receive (
         }
         goto out;
     }
-    rc = socket_recv_buf (tcti_mssim->tpm_sock,
-                           (unsigned char *)response_buffer,
-                           tcti_common->header.size);
-    if (rc < (ssize_t)tcti_common->header.size) {
+    size = socket_recv_buf (tcti_mssim->tpm_sock,
+                            (unsigned char *)response_buffer,
+                            tcti_common->header.size);
+    if (size < tcti_common->header.size) {
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
     }
@@ -421,9 +422,9 @@ tcti_mssim_receive (
     }
 
     /* Receive the appended four bytes of 0's */
-    rc = socket_recv_buf (tcti_mssim->tpm_sock,
+    size = socket_recv_buf (tcti_mssim->tpm_sock,
                            (unsigned char *)&trash, 4);
-    if (rc != 4) {
+    if (size != 4) {
         LOG_DEBUG ("Error reading last 4 bytes %" PRIu32, rc);
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
