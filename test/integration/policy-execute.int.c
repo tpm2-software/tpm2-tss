@@ -185,7 +185,7 @@ static TSS2_RC sign_cb (
         return TSS2_RC_TEST_KEY_NOT_FOUND;
     }
 
-    assert(key_pem_hash_alg == TPM2_ALG_SHA384);
+    assert(key_pem_hash_alg == TPM2_ALG_SHA256);
 
     BIO *bio = BIO_new_mem_buf(priv_key_pem, strlen(priv_key_pem));
     EVP_PKEY *priv_key = PEM_read_bio_PrivateKey(bio, NULL, NULL, NULL);
@@ -195,7 +195,7 @@ static TSS2_RC sign_cb (
     EVP_MD_CTX *mdctx = NULL;
     EVP_PKEY_CTX *pctx = NULL;
 
-    const EVP_MD *ossl_hash = EVP_sha384();
+    const EVP_MD *ossl_hash = EVP_sha256();
 
     mdctx = EVP_MD_CTX_create();
     assert(mdctx);
@@ -842,6 +842,35 @@ static int test_policy_execute (
     ESYS_CONTEXT *esys_context)
 {
     unsigned i;
+    TSS2_RC rc;
+    ESYS_CONTEXT *ectx;
+
+    /* Get the TPM properties */
+    TPMI_YES_NO more_data;
+    TPMS_CAPABILITY_DATA *capability_data;
+    rc = Esys_GetCapability(
+        esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+        TPM2_CAP_ALGS,
+        TPM2_ALG_SHA384,
+        1, &more_data, &capability_data);
+
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Esys_GetCapability failed: 0x%x\n", rc);
+        Esys_Finalize(&ectx);
+        goto error;
+    }
+
+    /* Check if SHA-384 is supported */
+    bool sha384_available = false;
+    for (size_t i = 0; i < capability_data->data.algorithms.count; i++) {
+        if (capability_data->data.algorithms.algProperties[i].alg == TPM2_ALG_SHA384) {
+            sha384_available = true;
+            break;
+        }
+    }
+
+    Esys_Free(capability_data);
+
     for (i = 0; i < ARRAY_LEN(_test_fapi_policy_policies); i++) {
         policy_digests *p = &_test_fapi_policy_policies[i];
 
@@ -927,16 +956,19 @@ static int test_policy_execute (
          * NOTE: the size of the digest can't be zero because TPM_ALG_NULL
          *       can't be used for the authHashAlg.
          */
-        if (p->sha384 && strcmp(_test_fapi_policy_policies[i].path, "/policy/pol_cphash")) {
-            fprintf(stderr, " - SHA384\n");
-            TSS2_RC r = check_policy(abs_path, esys_context, TPM2_ALG_SHA384,
-                    p->sha384, expected_fail);
-            if ((r == TPM2_RC_COMMAND_CODE) ||
-                (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
-                (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
-                LOG_WARNING("Policy %s not supported by TPM.", p->path);
-            } else {
-                goto_if_error(r, "Checking policy digest for sha384 failed", error);
+        if (p->sha384 && sha384_available) {
+            if (!(strcmp(_test_fapi_policy_policies[i].path, "/policy/pol_cphash") == 0 ||
+                  strcmp(_test_fapi_policy_policies[i].path, "/policy/pol_authorize_ecc_pem") == 0)) {
+                fprintf(stderr, " - SHA384\n");
+                TSS2_RC r = check_policy(abs_path, esys_context, TPM2_ALG_SHA384,
+                                         p->sha384, expected_fail);
+                if ((r == TPM2_RC_COMMAND_CODE) ||
+                    (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
+                    (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
+                    LOG_WARNING("Policy %s not supported by TPM.", p->path);
+                } else {
+                    goto_if_error(r, "Checking policy digest for sha384 failed", error);
+                }
             }
         }
         SAFE_FREE(global_signature);
