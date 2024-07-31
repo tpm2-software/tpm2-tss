@@ -253,13 +253,25 @@ ifapi_get_sub_object(json_object *jso, char *name, json_object **sub_jso)
 {
     int i;
     if (json_object_object_get_ex(jso, name, sub_jso)) {
-        return true;
+        if (*sub_jso) {
+            return true;
+        } else {
+            return false;
+        }
     } else {
         char name2[strlen(name) + 1];
         for (i = 0; name[i]; i++)
             name2[i] = (char) tolower(name[i]);
         name2[strlen(name)] = '\0';
-        return json_object_object_get_ex(jso, name2, sub_jso);
+        if (json_object_object_get_ex(jso, name2, sub_jso)) {
+            if (*sub_jso) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }
 
