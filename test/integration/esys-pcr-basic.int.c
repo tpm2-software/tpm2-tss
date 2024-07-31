@@ -112,7 +112,14 @@ test_esys_pcr_basic(ESYS_CONTEXT * esys_context)
         ESYS_TR_NONE,
         &eventData,
         &digestsEvent);
+    goto_if_error(r, "Error: PCR_Reset", error);
 
+    r = Esys_PCR_Reset(
+        esys_context,
+        pcrHandle_handle,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE);
     goto_if_error(r, "Error: PCR_Reset", error);
 
     TPMI_YES_NO allocationSuccess;

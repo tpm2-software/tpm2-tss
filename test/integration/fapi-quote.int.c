@@ -81,9 +81,6 @@ test_fapi_quote(FAPI_CONTEXT *context)
         0x00, 0x00,
     };
 
-    r = pcr_reset(context, 16);
-    goto_if_error(r, "Error pcr_reset", error);
-
     r = Fapi_PcrExtend(context, 16, data, EVENT_SIZE, "{ \"test\": \"myfile\" }");
     goto_if_error(r, "Error Fapi_PcrExtend", error);
 
@@ -343,6 +340,9 @@ test_fapi_quote(FAPI_CONTEXT *context)
         goto error;
     }
 
+    r = pcr_reset(context, 16);
+    goto_if_error(r, "Error pcr_reset", error);
+
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
@@ -359,6 +359,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    pcr_reset(context, 16);
     Fapi_Delete(context, "/");
     if (jso)
         json_object_put(jso);
