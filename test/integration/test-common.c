@@ -4,6 +4,8 @@
  *
  * All rights reserved.
  ***********************************************************************/
+#include "tss2_sys.h"
+
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
@@ -44,7 +46,7 @@ struct {
 };
 
 struct tpm_state {
-    TPMS_CAPABILITY_DATA capabilities[7];
+    TPMS_CAPABILITY_DATA capabilities[sizeof(capabilities_to_dump) / sizeof(capabilities_to_dump[0])];
 };
 
 /** Define a proxy tcti that returns yielded on every second invocation
@@ -236,6 +238,41 @@ transient_empty(TSS2_SYS_CONTEXT *sys_ctx)
 }
 
 int
+pcr16_empty(TSS2_SYS_CONTEXT *sys_ctx)
+{
+    TSS2_RC rc;
+    TPML_DIGEST pcr_values = { 0 };
+    TPML_PCR_SELECTION pcr_selection = { .count=1, .pcrSelections = { { .hash = TPM2_ALG_SHA256, .sizeofSelect = 3, .pcrSelect = { 0 } } } };
+    pcr_selection.pcrSelections[0].pcrSelect[(16 / 8)] = 1 << (16 % 8);
+
+    do {
+        rc = Tss2_Sys_PCR_Read(sys_ctx, NULL,
+                               &pcr_selection, NULL, NULL,
+                               &pcr_values,
+                               NULL);
+    } while (rc == TPM2_RC_YIELDED); // TODO also for other cmds?
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("TPM2_PCR_Read failed: 0x%" PRIx32, rc);
+        return EXIT_ERROR;
+    }
+
+    if (pcr_values.count != 1) {
+        LOG_ERROR("TPM2_PCR_Read for PCR 16 in SHA256 did not return a value");
+        return EXIT_ERROR;
+    }
+
+    for (UINT16 i = 0; i < pcr_values.digests[0].size; i++) {
+        if (pcr_values.digests[0].buffer[i] != 0x00) {
+            LOGBLOB_ERROR(&pcr_values.digests[0].buffer[0], pcr_values.digests[0].size,
+                          "PCR 16 in SHA256 is not 0x000..000");
+            return EXIT_ERROR;
+        }
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int
 dumpstate(TSS2_SYS_CONTEXT *sys_ctx, tpm_state *state_first, bool compare)
 {
     TSS2_RC rc;
@@ -390,6 +427,13 @@ test_sys_checks_pre(TSS2_TEST_SYS_CONTEXT *test_ctx)
         return ret;
     }
 
+    LOG_DEBUG("Running System API pre-test checks: pcr16 empty");
+    ret = pcr16_empty(test_ctx->sys_ctx);
+    if (ret != EXIT_SUCCESS) {
+        LOG_ERROR("PCR16 is not empty");
+        return ret;
+    }
+
     return EXIT_SUCCESS;
 }
 
@@ -398,10 +442,24 @@ test_sys_checks_post(TSS2_TEST_SYS_CONTEXT *test_ctx)
 {
     int ret;
 
+    LOG_DEBUG("Running System API pre-test checks: transient handles empty");
+    ret = transient_empty(test_ctx->sys_ctx);
+    if (ret != EXIT_SUCCESS) {
+        LOG_ERROR("TPM contains transient objects.");
+        return ret;
+    }
+
     LOG_DEBUG("Running System API post-test checks: dump capabilities");
     ret = dumpstate(test_ctx->sys_ctx, test_ctx->tpm_state, 1);
     if (ret != EXIT_SUCCESS) {
         LOG_ERROR("Error while performing TPM state checks.");
+        return ret;
+    }
+
+    LOG_DEBUG("Running System API post-test checks: pcr16 empty");
+    ret = pcr16_empty(test_ctx->sys_ctx);
+    if (ret != EXIT_SUCCESS) {
+        LOG_ERROR("PCR16 is not empty");
         return ret;
     }
 
@@ -533,6 +591,13 @@ test_esys_checks_pre(TSS2_TEST_ESYS_CONTEXT *test_ctx)
         return ret;
     }
 
+    LOG_DEBUG("Running System API pre-test checks: pcr16 empty");
+    ret = pcr16_empty(sys_context);
+    if (ret != EXIT_SUCCESS) {
+        LOG_ERROR("PCR16 is not empty");
+        return ret;
+    }
+
     return EXIT_SUCCESS;
 }
 
@@ -549,10 +614,24 @@ test_esys_checks_post(TSS2_TEST_ESYS_CONTEXT *test_ctx)
         return EXIT_ERROR;
     }
 
+    LOG_DEBUG("Running System API pre-test checks: transient handles empty");
+    ret = transient_empty(sys_context);
+    if (ret != EXIT_SUCCESS) {
+        LOG_ERROR("TPM contains transient objects.");
+        return ret;
+    }
+
     LOG_DEBUG("Running System API post-test checks: dump capabilities");
     ret = dumpstate(sys_context, test_ctx->tpm_state, 1);
     if (ret != EXIT_SUCCESS) {
         LOG_ERROR("Error while performing TPM state checks.");
+        return ret;
+    }
+
+    LOG_DEBUG("Running System API pre-test checks: pcr16 empty");
+    ret = pcr16_empty(sys_context);
+    if (ret != EXIT_SUCCESS) {
+        LOG_ERROR("PCR16 is not empty");
         return ret;
     }
 
