@@ -1,0 +1,8 @@
+{
+    global:
+        Tss2_Tcti_Info;
+        Tss2_Tcti_Start_Sim_Init;
+        Tss2_Tcti_Start_Sim_Reset;
+    local:
+        *;
+};
