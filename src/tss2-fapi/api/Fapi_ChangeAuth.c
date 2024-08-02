@@ -419,10 +419,19 @@ Fapi_ChangeAuth_Finish(
                empty authorization or an actual password. */
             object = command->key_object;
 
-            if (strlen(command->authValue) > 0)
+            if (strlen(command->authValue) > 0) {
+                if (object->misc.key.with_auth == TPM2_YES) {
+                     context->state = ENTITY_CHANGE_AUTH_CLEANUP;
+                     return TSS2_FAPI_RC_TRY_AGAIN;
+                }
                 object->misc.key.with_auth = TPM2_YES;
-            else
+            } else {
+                if (object->misc.key.with_auth == TPM2_NO) {
+                     context->state = ENTITY_CHANGE_AUTH_CLEANUP;
+                     return TSS2_FAPI_RC_TRY_AGAIN;
+                }
                 object->misc.key.with_auth = TPM2_NO;
+            }
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WRITE_PREPARE)
@@ -502,10 +511,19 @@ Fapi_ChangeAuth_Finish(
 
             /* Update the information about whether the new Auth is an empty
                authorization or an actual password. */
-            if (strlen(command->authValue) > 0)
+            if (strlen(command->authValue) > 0) {
+                if (object->misc.key.with_auth == TPM2_YES) {
+                     context->state = ENTITY_CHANGE_AUTH_CLEANUP;
+                     return TSS2_FAPI_RC_TRY_AGAIN;
+                }
                 object->misc.nv.with_auth = TPM2_YES;
-            else
+            } else {
+                if (object->misc.key.with_auth == TPM2_NO) {
+                     context->state = ENTITY_CHANGE_AUTH_CLEANUP;
+                     return TSS2_FAPI_RC_TRY_AGAIN;
+                }
                 object->misc.nv.with_auth = TPM2_NO;
+            }
 
             /* Jump over to the AUTH_WRITE_PREPARE state for storing the
                new metadata to the keystore. */
