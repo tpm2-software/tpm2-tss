@@ -2316,6 +2316,13 @@ ifapi_nv_write(
         context->nv_cmd.esys_handle = nv_index;
         context->nv_cmd.nv_obj = object->misc.nv;
 
+        /* Check whether the file in object store can be updated if necessary */
+        if (!(context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes &
+              TPMA_NV_WRITTEN) ){
+            r = ifapi_keystore_check_writeable(&context->keystore, nvPath);
+            goto_if_error_reset_state(r, "Check whether update object store is possible.", error_cleanup);
+        }
+
         /* Determine the object which will be uses for authorization. */
         if (object->misc.nv.public.nvPublic.attributes & TPMA_NV_PPWRITE) {
             ifapi_init_hierarchy_object(auth_object, ESYS_TR_RH_PLATFORM);
@@ -2436,6 +2443,12 @@ ifapi_nv_write(
             context->nv_cmd.nv_write_state = NV2_WRITE_AUTH_SENT;
             return TSS2_FAPI_RC_TRY_AGAIN;
 
+        }
+        if (context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes &
+            TPMA_NV_WRITTEN) {
+            LOG_DEBUG("success");
+            r = TSS2_RC_SUCCESS;
+            break;
         }
         fallthrough;
 
