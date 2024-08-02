@@ -1771,6 +1771,9 @@ union TPMU_PUBLIC_ID {
     TPMS_DERIVE derive;
 };
 
+/* Definition of TPMU_PUBLIC_ID_DERIVE Union <INOUT S> */
+typedef union TPMU_PUBLIC_ID TPMU_PUBLIC_ID_DERIVE;
+
 /* Definition of TPMS_KEYEDHASH_PARMS Structure */
 typedef struct TPMS_KEYEDHASH_PARMS TPMS_KEYEDHASH_PARMS;
 struct TPMS_KEYEDHASH_PARMS {
@@ -1829,6 +1832,9 @@ struct TPMT_PUBLIC {
     TPMU_PUBLIC_PARMS parameters; /* the algorithm or structure details */
     TPMU_PUBLIC_ID unique;        /* the unique identifier of the structure. For an asymmetric key this would be the public key. */
 };
+
+/* Definition of TPMT_PUBLIC_DERIVE Structure */
+typedef struct TPMT_PUBLIC TPMT_PUBLIC_DERIVE;
 
 /* Definition of TPM2B_PUBLIC Structure */
 typedef struct TPM2B_PUBLIC TPM2B_PUBLIC;
