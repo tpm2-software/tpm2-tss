@@ -369,6 +369,9 @@ iesys_cryptossl_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
     TSS2_RC r = TSS2_RC_SUCCESS;
     EVP_PKEY *hkey = NULL;
 
+    unsigned long ossl_error = 0;
+    char ossl_error_string[256];
+
     LOG_TRACE("called for context-pointer %p and hmacAlg %d", context, hashAlg);
     LOGBLOB_TRACE(key, size, "Starting  hmac with");
     if (context == NULL || key == NULL) {
@@ -410,8 +413,10 @@ iesys_cryptossl_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
 
     if(1 != EVP_DigestSignInit(mycontext->hash.ossl_context, NULL,
                                mycontext->hash.ossl_hash_alg, NULL, hkey)) {
+        ossl_error = ERR_get_error();
+        ERR_error_string_n(ossl_error, &ossl_error_string[0], sizeof(ossl_error_string));
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "DigestSignInit", cleanup);
+                   ossl_error_string, cleanup);
     }
 
     mycontext->type = IESYS_CRYPTOSSL_TYPE_HMAC;
