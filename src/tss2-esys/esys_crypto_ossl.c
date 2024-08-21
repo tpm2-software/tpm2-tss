@@ -196,8 +196,8 @@ iesys_cryptossl_hash_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
     mycontext->type = IESYS_CRYPTOSSL_TYPE_HASH;
 
     if (!iesys_cryptossl_context_set_hash_md(mycontext, hashAlg)) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
-                   "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
+        goto_ossl_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+                        "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
     }
 
     if (iesys_crypto_hash_get_digest_size(hashAlg, &mycontext->hash.hash_len)) {
@@ -206,12 +206,12 @@ iesys_cryptossl_hash_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
     }
 
     if (!(mycontext->hash.ossl_context = EVP_MD_CTX_create())) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Error EVP_MD_CTX_create", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Error EVP_MD_CTX_create", cleanup);
     }
 
     if (1 != EVP_DigestInit(mycontext->hash.ossl_context,
                             mycontext->hash.ossl_hash_alg)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Errror EVP_DigestInit", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Errror EVP_DigestInit", cleanup);
     }
 
     *context = (ESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
@@ -379,7 +379,7 @@ iesys_cryptossl_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
     return_if_null(mycontext, "Out of Memory", TSS2_ESYS_RC_MEMORY);
 
     if (!iesys_cryptossl_context_set_hash_md(mycontext, hashAlg)) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
+        goto_ossl_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
                    "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
     }
 
@@ -389,8 +389,8 @@ iesys_cryptossl_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
     }
 
     if (!(mycontext->hash.ossl_context = EVP_MD_CTX_create())) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Error EVP_MD_CTX_create", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Error EVP_MD_CTX_create", cleanup);
     }
 
 #if OPENSSL_VERSION_NUMBER < 0x10101000L
@@ -404,14 +404,14 @@ iesys_cryptossl_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
     if (!(hkey = EVP_PKEY_new_raw_private_key_ex(mycontext->hash.ossl_libctx,
                                                  "HMAC", NULL, key, size))) {
 #endif
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Failed to create HMAC key", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Failed to create HMAC key", cleanup);
     }
 
     if(1 != EVP_DigestSignInit(mycontext->hash.ossl_context, NULL,
                                mycontext->hash.ossl_hash_alg, NULL, hkey)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "DigestSignInit", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "DigestSignInit", cleanup);
     }
 
     mycontext->type = IESYS_CRYPTOSSL_TYPE_HMAC;
@@ -503,7 +503,7 @@ iesys_cryptossl_hmac_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
     }
 
     if (1 != EVP_DigestSignFinal(mycontext->hash.ossl_context, buffer, size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "DigestSignFinal", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "DigestSignFinal", cleanup);
     }
 
     LOGBLOB_TRACE(buffer, *size, "read hmac result");
@@ -676,8 +676,8 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
     if (!(n = BN_bin2bn(pub_tpm_key->publicArea.unique.rsa.buffer,
                         pub_tpm_key->publicArea.unique.rsa.size,
                         NULL))) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not create rsa n.", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Could not create rsa n.", cleanup);
     }
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
@@ -691,13 +691,13 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
                    "Could not allocate Big Number", cleanup);
     }
     if (1 != BN_set_word(bne, exp)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not set exponent.", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Could not set exponent.", cleanup);
     }
 
     if (1 != RSA_set0_key(rsa_key, n, bne, NULL)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not set rsa n.", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Could not set rsa n.", cleanup);
     }
     /* ownership got transferred */
     n = NULL;
@@ -709,8 +709,8 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
     }
 
     if (1 != EVP_PKEY_assign_RSA(evp_rsa_key, rsa_key)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not set rsa key.", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Could not set rsa key.", cleanup);
     }
     /* ownership got transferred */
     rsa_key = NULL;
@@ -719,54 +719,54 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
             || !OSSL_PARAM_BLD_push_BN(build, OSSL_PKEY_PARAM_RSA_N, n)
             || !OSSL_PARAM_BLD_push_uint32(build, OSSL_PKEY_PARAM_RSA_E, exp)
             || (params = OSSL_PARAM_BLD_to_param(build)) == NULL) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not create rsa parameters.",
-                   cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not create rsa parameters.",
+                        cleanup);
     }
 
     if ((genctx = EVP_PKEY_CTX_new_from_name(libctx, "RSA", NULL)) == NULL
             || EVP_PKEY_fromdata_init(genctx) <= 0
             || EVP_PKEY_fromdata(genctx, &evp_rsa_key, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not create rsa key.",
-                   cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not create rsa key.",
+                        cleanup);
     }
 #endif /* OPENSSL_VERSION_NUMBER < 0x30000000L */
 
     if (!(ctx = EVP_PKEY_CTX_new(evp_rsa_key, NULL))) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not create evp context.", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Could not create evp context.", cleanup);
     }
 
     if (1 != EVP_PKEY_encrypt_init(ctx)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not init encrypt context.", cleanup);
     }
 
     if (1 != EVP_PKEY_CTX_set_rsa_padding(ctx, padding)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not set RSA passing.", cleanup);
     }
 
     label_copy = OPENSSL_strdup(label);
     if (!label_copy) {
-        goto_error(r, TSS2_ESYS_RC_MEMORY,
+        goto_ossl_error(r, TSS2_ESYS_RC_MEMORY,
                    "Could not duplicate OAEP label", cleanup);
     }
 
     if (1 != EVP_PKEY_CTX_set0_rsa_oaep_label(ctx, label_copy, (int) strlen(label_copy)+1)) {
         OPENSSL_free(label_copy);
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not set RSA label.", cleanup);
     }
 
     if (1 != EVP_PKEY_CTX_set_rsa_oaep_md(ctx, hashAlg)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not set hash algorithm.", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Could not set hash algorithm.", cleanup);
     }
 
     /* Determine out size */
     if (1 != EVP_PKEY_encrypt(ctx, NULL, out_size, in_buffer, in_size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not determine ciper size.", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Could not determine ciper size.", cleanup);
     }
 
     if ((size_t)*out_size > max_out_size) {
@@ -776,7 +776,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
 
     /* Encrypt data */
     if (1 != EVP_PKEY_encrypt(ctx, out_buffer, out_size, in_buffer, in_size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Could not encrypt data.", cleanup);
     }
 
@@ -820,20 +820,20 @@ tpm_pub_to_ossl_pub(EC_GROUP *group, TPM2B_PUBLIC *key, EC_POINT **tpm_pub_key)
     if (!(bn_x = BN_bin2bn(&key->publicArea.unique.ecc.x.buffer[0],
                            key->publicArea.unique.ecc.x.size,
                            NULL))) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Create big num from byte buffer.", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Create big num from byte buffer.", cleanup);
     }
 
     if (!(bn_y = BN_bin2bn(&key->publicArea.unique.ecc.y.buffer[0],
                            key->publicArea.unique.ecc.y.size,
                            NULL))) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Create big num from byte buffer.", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Create big num from byte buffer.", cleanup);
     }
 
     /* Create the ec point with the affine coordinates of the TPM point */
     if (!(*tpm_pub_key = EC_POINT_new(group))) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Create point.", cleanup);
     }
 
@@ -841,12 +841,12 @@ tpm_pub_to_ossl_pub(EC_GROUP *group, TPM2B_PUBLIC *key, EC_POINT **tpm_pub_key)
                                                  *tpm_pub_key, bn_x,
                                                  bn_y, NULL)) {
         OSSL_FREE(*tpm_pub_key, EC_POINT);
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Set affine coordinates", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Set affine coordinates", cleanup);
     }
 
     if (1 != EC_POINT_is_on_curve(group, *tpm_pub_key, NULL)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "The TPM point is not on the curve", cleanup);
     }
 
@@ -937,32 +937,32 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     }
 
     if (!(group = EC_GROUP_new_by_curve_name(curveId))) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Create group for curve", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Create group for curve", cleanup);
     }
 
     /* Create ephemeral key */
     if ((ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL)) == NULL
             || EVP_PKEY_keygen_init(ctx) <= 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Initialize ec key generation", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Initialize ec key generation", cleanup);
     }
 
     if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, curveId) <= 0
             || EVP_PKEY_keygen(ctx, &eph_pkey) <= 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Generate ec key", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Generate ec key", cleanup);
     }
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     EC_KEY *eph_ec_key = EVP_PKEY_get0_EC_KEY(eph_pkey);
 
     if (!(eph_pub_key =  EC_KEY_get0_public_key(eph_ec_key))) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Get public key", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Get public key", cleanup);
     }
 
     eph_priv_key = EC_KEY_get0_private_key(eph_ec_key);
     if (1 != EC_POINT_is_on_curve(group, eph_pub_key, NULL)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
                    "Ephemeral public key is on curve",cleanup);
     }
 
@@ -977,26 +977,26 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
 
     if (1 != EC_POINT_get_affine_coordinates_tss(group, eph_pub_key, bn_x,
                                                  bn_y, NULL)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Get affine coordinates", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Get affine coordinates", cleanup);
     }
 #else
     if (!EVP_PKEY_get_bn_param(eph_pkey, OSSL_PKEY_PARAM_PRIV_KEY, &eph_priv_key)
             || !EVP_PKEY_get_bn_param(eph_pkey, OSSL_PKEY_PARAM_EC_PUB_X, &bn_x)
             || !EVP_PKEY_get_bn_param(eph_pkey, OSSL_PKEY_PARAM_EC_PUB_Y, &bn_y)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Get ephemeral key", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Get ephemeral key", cleanup);
     }
 #endif
 
     if (1 != iesys_bn2binpad(bn_x, &Q->x.buffer[0], (int) key_size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Write big num byte buffer", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Write big num byte buffer", cleanup);
     }
 
     if (1 != iesys_bn2binpad(bn_y, &Q->y.buffer[0], (int) key_size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Write big num byte buffer", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Write big num byte buffer", cleanup);
     }
 
     Q->x.size = key_size;
@@ -1007,26 +1007,26 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC *key,
     goto_if_error(r, "Convert TPM pub point to ossl pub point", cleanup);
 
     if (!(mul_eph_tpm = EC_POINT_new(group))) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create point.", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create point.", cleanup);
     }
 
     /* Multiply the ephemeral private key with TPM public key */
     if (1 != EC_POINT_mul(group, mul_eph_tpm, NULL,
                           tpm_pub_key, eph_priv_key, NULL)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "ec point multiplication", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "ec point multiplication", cleanup);
     }
 
     /* Write the x-part of the affine coordinate to Z */
     if (1 != EC_POINT_get_affine_coordinates_tss(group, mul_eph_tpm, bn_x,
                                                  bn_y, NULL)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Get affine x coordinate", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Get affine x coordinate", cleanup);
     }
 
     if (1 != iesys_bn2binpad(bn_x, &Z->buffer[0], (int) key_size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Write big num byte buffer", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Write big num byte buffer", cleanup);
     }
 
     Z->size = key_size;
@@ -1110,22 +1110,22 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t * key,
 
     /* Create and initialize the context */
     if(!(ctx = EVP_CIPHER_CTX_new())) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Initialize cipher context", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Initialize cipher context", cleanup);
     }
 
     if (1 != EVP_EncryptInit(ctx, cipher_alg,key, iv)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Initialize cipher operation", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Initialize cipher operation", cleanup);
     }
 
     /* Perform the encryption */
     if (1 != EVP_EncryptUpdate(ctx, buffer, &cipher_len, buffer, (int) buffer_size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
     }
 
     if (1 != EVP_EncryptFinal(ctx, buffer, &cipher_len)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt final", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt final", cleanup);
     }
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES output");
 
@@ -1191,24 +1191,24 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t * key,
 
     /* Create and initialize the context */
     if(!(ctx = EVP_CIPHER_CTX_new())) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Initialize cipher context", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Initialize cipher context", cleanup);
     }
 
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES input");
 
     if (1 != EVP_DecryptInit(ctx, cipher_alg, key, iv)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Initialize cipher operation", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Initialize cipher operation", cleanup);
     }
 
     /* Perform the decryption */
     if (1 != EVP_DecryptUpdate(ctx, buffer, &cipher_len, buffer, (int) buffer_size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
     }
 
     if (1 != EVP_DecryptFinal(ctx, buffer, &cipher_len)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt final", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt final", cleanup);
     }
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES output");
 
@@ -1272,22 +1272,22 @@ iesys_cryptossl_sym_sm4_encrypt(uint8_t * key,
 
     /* Create and initialize the context */
     if(!(ctx = EVP_CIPHER_CTX_new())) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Initialize cipher context", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Initialize cipher context", cleanup);
     }
 
     if (1 != EVP_EncryptInit(ctx, cipher_alg, key, iv)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Initialize cipher operation", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Initialize cipher operation", cleanup);
     }
 
     /* Perform the encryption */
     if (1 != EVP_EncryptUpdate(ctx, buffer, &cipher_len, buffer, (int) buffer_size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
     }
 
     if (1 != EVP_EncryptFinal(ctx, buffer, &cipher_len)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt final", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt final", cleanup);
     }
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS SM4 output");
 
@@ -1349,24 +1349,24 @@ iesys_cryptossl_sym_sm4_decrypt(uint8_t * key,
 
     /* Create and initialize the context */
     if(!(ctx = EVP_CIPHER_CTX_new())) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Initialize cipher context", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Initialize cipher context", cleanup);
     }
 
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS SM4 input");
 
     if (1 != EVP_DecryptInit(ctx, cipher_alg, key, iv)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Initialize cipher operation", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
+                        "Initialize cipher operation", cleanup);
     }
 
     /* Perform the decryption */
     if (1 != EVP_DecryptUpdate(ctx, buffer, &cipher_len, buffer, (int) buffer_size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt update", cleanup);
     }
 
     if (1 != EVP_DecryptFinal(ctx, buffer, &cipher_len)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt final", cleanup);
+        goto_ossl_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypt final", cleanup);
     }
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS SM4 output");
 

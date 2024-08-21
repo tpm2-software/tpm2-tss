@@ -13,6 +13,8 @@
 #include <stddef.h>           // for NULL, size_t
 #include <stdint.h>           // for uint8_t
 
+#include <openssl/err.h>          // for ERR_error_string_n, ERR_get_error
+
 #include "tss2_common.h"      // for TSS2_RC, BYTE
 #include "tss2_esys.h"        // for ESYS_CRYPTO_CONTEXT_BLOB
 #include "tss2_tpm2_types.h"  // for TPM2_ALG_ID, TPM2B_PUBLIC, TPMI_AES_KEY...
@@ -162,6 +164,17 @@ TSS2_RC iesys_cryptossl_get_ecdh_point(
 TSS2_RC iesys_cryptossl_init(void *userdata);
 
 #define iesys_crypto_init_internal iesys_cryptossl_init
+
+#define goto_ossl_error(r,v,msg,label, ...)              \
+    { \
+      unsigned long err = ERR_get_error(); \
+      char err_buffer[256]; \
+      ERR_error_string_n(err, err_buffer, sizeof(err_buffer)); \
+      LOG_ERROR("OpenSSL reported: %s", err_buffer); \
+      r = v; \
+      LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ## __VA_ARGS__); \
+      goto label; \
+    }
 
 #ifdef __cplusplus
 } /* extern "C" */
