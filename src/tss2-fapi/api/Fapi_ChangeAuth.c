@@ -420,16 +420,8 @@ Fapi_ChangeAuth_Finish(
             object = command->key_object;
 
             if (strlen(command->authValue) > 0) {
-                if (object->misc.key.with_auth == TPM2_YES) {
-                     context->state = ENTITY_CHANGE_AUTH_CLEANUP;
-                     return TSS2_FAPI_RC_TRY_AGAIN;
-                }
                 object->misc.key.with_auth = TPM2_YES;
             } else {
-                if (object->misc.key.with_auth == TPM2_NO) {
-                     context->state = ENTITY_CHANGE_AUTH_CLEANUP;
-                     return TSS2_FAPI_RC_TRY_AGAIN;
-                }
                 object->misc.key.with_auth = TPM2_NO;
             }
             fallthrough;
