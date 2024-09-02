@@ -7,6 +7,7 @@
 #ifndef TEST_COMMON_H
 #define TEST_COMMON_H
 
+#include "test-common-tcti.h"
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
 #include "tss2_sys.h"
@@ -69,5 +70,7 @@ int test_fapi_checks_post(TSS2_TEST_FAPI_CONTEXT *test_ctx);
 void test_fapi_teardown(TSS2_TEST_FAPI_CONTEXT *test_ctx);
 void test_esys_teardown(TSS2_TEST_ESYS_CONTEXT *test_ctx);
 
+int fapi_tcti_state_backup_if_necessary(FAPI_CONTEXT *fapi_context, libtpms_state *state);
+int fapi_tcti_state_restore_if_necessary(FAPI_CONTEXT *fapi_context, libtpms_state *state);
 
 #endif                          /* TEST_COMMON_H */
