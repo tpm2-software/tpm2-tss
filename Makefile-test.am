@@ -1148,6 +1148,7 @@ test_integration_libtest_utils_la_SOURCES = \
     test/integration/sys-session-util.c test/integration/session-util.h \
     test/integration/sys-entity-util.c test/integration/test.h \
     test/integration/test-common.c test/integration/test-common.h \
+    test/integration/test-common-tcti.c test/integration/test-common-tcti.h \
     src/util/log.c
 
 test_integration_sys_asymmetric_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
