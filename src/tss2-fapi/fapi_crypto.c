@@ -567,6 +567,21 @@ ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
         curveId = NID_sm2;
         break;
 #endif
+#ifdef NID_brainpoolP256r1
+    case TPM_ECC_BP_P256_R1:
+        curveId = NID_brainpoolP256r1;
+        break;
+#endif
+#ifdef NID_brainpoolP384r1
+    case TPM_ECC_BP_P384_R1:
+        curveId = NID_brainpoolP384r1;
+        break;
+#endif
+#ifdef NID_brainpoolP512r1
+    case TPM_ECC_BP_P512_R1:
+        curveId = NID_brainpoolP512r1;
+        break;
+#endif
     default:
         return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "ECC curve not implemented.");
