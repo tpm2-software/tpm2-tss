@@ -128,6 +128,9 @@ endif
 if ENABLE_TCTI_CMD
 TESTS_UNIT += test/unit/tcti-cmd
 endif
+if ENABLE_TCTI_HELPER_COMMON
+TESTS_UNIT += test/unit/tcti-helper-common
+endif
 if ENABLE_TCTI_SPI_HELPER
 TESTS_UNIT += test/unit/tcti-spi-helper
 endif
@@ -531,16 +534,30 @@ test_unit_tcti_cmd_SOURCES = test/unit/tcti-cmd.c \
     test/helper/cmocka_all.h
 endif
 
+if ENABLE_TCTI_HELPER_COMMON
+test_unit_tcti_helper_common_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tcti_helper_common_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_helper_common) $(libtss2_mu) $(libutil)
+test_unit_tcti_helper_common_SOURCES = test/unit/tcti-helper-common.c \
+    src/tss2-tcti/tcti-common.c \
+    test/helper/cmocka_all.h
+endif
+
 if ENABLE_TCTI_SPI_HELPER
 test_unit_tcti_spi_helper_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_tcti_spi_helper_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
+test_unit_tcti_spi_helper_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
+test_unit_tcti_spi_helper_LDFLAGS = -Wl,--wrap=Tcti_Helper_Common_Init \
+                                   -Wl,--wrap=Tcti_Helper_Common_Transmit \
+                                   -Wl,--wrap=Tcti_Helper_Common_Receive
 test_unit_tcti_spi_helper_SOURCES = test/unit/tcti-spi-helper.c \
-    test/helper/cmocka_all.h
+    test/helper/cmocka_all.h \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-helper-common.h \
+    src/tss2-tcti/tcti-spi-helper.c
 endif
 
 if ENABLE_TCTI_SPI_LTT2GO
 test_unit_tcti_spi_ltt2go_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_tcti_spi_ltt2go_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
+test_unit_tcti_spi_ltt2go_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_spi_ltt2go_LDFLAGS = -Wl,--wrap=libusb_bulk_transfer \
                                    -Wl,--wrap=libusb_claim_interface \
                                    -Wl,--wrap=libusb_open \
@@ -560,49 +577,63 @@ test_unit_tcti_spi_ltt2go_LDFLAGS = -Wl,--wrap=libusb_bulk_transfer \
                                    -Wl,--wrap=libusb_set_auto_detach_kernel_driver \
                                    -Wl,--wrap=libusb_strerror \
                                    -Wl,--wrap=select \
-                                   -Wl,--wrap=gettimeofday
+                                   -Wl,--wrap=gettimeofday \
+                                   -Wl,--wrap=Tss2_Tcti_Spi_Helper_Init
 test_unit_tcti_spi_ltt2go_SOURCES = test/unit/tcti-spi-ltt2go.c \
-    src/tss2-tcti/tcti-spi-ltt2go.c test/helper/cmocka_all.h
+    test/helper/cmocka_all.h \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-spi-helper.h \
+    src/tss2-tcti/tcti-spi-ltt2go.c
 endif
 
 if ENABLE_TCTI_SPIDEV
 test_unit_tcti_spidev_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_tcti_spidev_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
+test_unit_tcti_spidev_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_spidev_LDFLAGS = -Wl,--wrap=open \
                                 -Wl,--wrap=close \
                                 -Wl,--wrap=ioctl \
                                 -Wl,--wrap=select \
-                                -Wl,--wrap=gettimeofday
+                                -Wl,--wrap=gettimeofday \
+                                -Wl,--wrap=Tss2_Tcti_Spi_Helper_Init
 test_unit_tcti_spidev_SOURCES = test/unit/tcti-spidev.c \
-    src/tss2-tcti/tcti-spidev.c test/helper/cmocka_all.h
+    src/tss2-tcti/tcti-spidev.c test/helper/cmocka_all.h \
+    src/tss2-tcti/tcti-common.c src/tss2-tcti/tcti-spi-helper.h
 endif
 
 if ENABLE_TCTI_SPI_FTDI
 test_unit_tcti_spi_ftdi_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_tcti_spi_ftdi_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
+test_unit_tcti_spi_ftdi_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_spi_ftdi_LDFLAGS = -Wl,--wrap=Close \
                                   -Wl,--wrap=MPSSE \
-                                  -Wl,--wrap=PinHigh \
-                                  -Wl,--wrap=PinLow \
                                   -Wl,--wrap=Start \
                                   -Wl,--wrap=Stop \
                                   -Wl,--wrap=Transfer \
                                   -Wl,--wrap=select \
-                                  -Wl,--wrap=gettimeofday
+                                  -Wl,--wrap=gettimeofday \
+                                  -Wl,--wrap=Tss2_Tcti_Spi_Helper_Init
 test_unit_tcti_spi_ftdi_SOURCES = test/unit/tcti-spi-ftdi.c \
-    src/tss2-tcti/tcti-spi-ftdi.c test/helper/cmocka_all.h
+    test/helper/cmocka_all.h \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-spi-helper.h \
+    src/tss2-tcti/tcti-spi-ftdi.c
 endif
 
 if ENABLE_TCTI_I2C_HELPER
 test_unit_tcti_i2c_helper_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_tcti_i2c_helper_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_i2c_helper)
+test_unit_tcti_i2c_helper_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
+test_unit_tcti_i2c_helper_LDFLAGS = -Wl,--wrap=Tcti_Helper_Common_Init \
+                                   -Wl,--wrap=Tcti_Helper_Common_Transmit \
+                                   -Wl,--wrap=Tcti_Helper_Common_Receive
 test_unit_tcti_i2c_helper_SOURCES = test/unit/tcti-i2c-helper.c \
-    test/helper/cmocka_all.h
+    test/helper/cmocka_all.h \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-helper-common.h \
+    src/tss2-tcti/tcti-i2c-helper.c
 endif
 
 if ENABLE_TCTI_I2C_FTDI
 test_unit_tcti_i2c_ftdi_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_tcti_i2c_ftdi_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_i2c_helper)
+test_unit_tcti_i2c_ftdi_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_i2c_ftdi_LDFLAGS = -Wl,--wrap=MPSSE \
                                   -Wl,--wrap=Start \
                                   -Wl,--wrap=Stop \
@@ -613,9 +644,13 @@ test_unit_tcti_i2c_ftdi_LDFLAGS = -Wl,--wrap=MPSSE \
                                   -Wl,--wrap=SendAcks \
                                   -Wl,--wrap=SendNacks \
                                   -Wl,--wrap=select \
-                                  -Wl,--wrap=gettimeofday
+                                  -Wl,--wrap=gettimeofday \
+                                  -Wl,--wrap=Tss2_Tcti_I2c_Helper_Init
 test_unit_tcti_i2c_ftdi_SOURCES = test/unit/tcti-i2c-ftdi.c \
-    src/tss2-tcti/tcti-i2c-ftdi.c test/helper/cmocka_all.h
+    test/helper/cmocka_all.h \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-i2c-helper.h \
+    src/tss2-tcti/tcti-i2c-ftdi.c
 endif
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
