@@ -29,6 +29,11 @@
 struct timeval;
 struct timezone;
 
+#define LOGMODULE tests
+#include "util/log.h"
+
+#define EXIT_SKIP 77
+
 typedef enum {
     TPM_DID_VID_HEAD = 0,
     TPM_DID_VID_DATA,
@@ -206,6 +211,12 @@ int
 main (int   argc,
       char *argv[])
 {
+#if __SIZEOF_POINTER__ == 4 && _TIME_BITS == 64
+    // Would produce cmocka error
+    LOG_WARNING("_TIME_BITS == 64 would produce cmocka errors on this platform.");
+    return EXIT_SKIP;
+#endif
+
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tcti_spi_init_test),
     };
