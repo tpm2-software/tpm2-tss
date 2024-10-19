@@ -85,8 +85,8 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
         } else if (strcasecmp(flag, "noda") == 0) {
             attributes |= TPMA_OBJECT_NODA;
         } else if (strncmp(flag, "0x", 2) == 0) {
-            sscanf(&flag[2], "%"SCNx32 "%n", &handle, &pos);
-            if ((size_t)pos != strlen(flag) - 2) {
+            if (sscanf(&flag[2], "%"SCNx32 "%n", &handle, &pos) < 1 ||
+                (size_t)pos != strlen(flag) - 2) {
                 goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
                            error, flag);
             }
@@ -182,8 +182,8 @@ ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
         } else if (strcasecmp(flag, "noda") == 0) {
             attributes |= TPMA_NV_NO_DA;
         } else if (strncmp(flag, "0x", 2) == 0) {
-            sscanf(&flag[2], "%"SCNx32 "%n", &handle, &pos);
-            if ((size_t)pos != strlen(flag) - 2) {
+            if (sscanf(&flag[2], "%"SCNx32 "%n", &handle, &pos) < 1 ||
+                (size_t)pos != strlen(flag) - 2) {
                 goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
                            error, flag);
             }
