@@ -6,7 +6,7 @@ task:
     libusb_version: v1.0.26
   freebsd_instance:
     matrix:
-      image_family: freebsd-14-0
+      image_family: freebsd-14-2
   install_script:
     - IGNORE_OSVERSION=yes
     - pkg update -f
