@@ -609,7 +609,7 @@ src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC) $(TSS2_ESYS_SRC_CRYPTO)
     src/tss2-tcti/tctildr.c src/tss2-tcti/tctildr.h \
     src/tss2-tcti/tctildr-interface.h
 if NO_DL
-src_tss2_esys_libtss2_esys_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libtss2_tcti_cmd)
+src_tss2_esys_libtss2_esys_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libtss2_tcti_cmd)  $(libtss2_tcti_swtpm)
 src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-nodl.c src/tss2-tcti/tctildr-nodl.h
 else
 src_tss2_esys_libtss2_esys_la_LIBADD += $(LIBADD_DL)
