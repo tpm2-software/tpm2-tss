@@ -2,7 +2,6 @@ task:
   env:
     CFLAGS: "-I/usr/local/include -I/usr/local/openssl/include"
     LDFLAGS: -L/usr/local/lib
-    ibmtpm_name: ibmtpm1637
     libusb_version: v1.0.26
   freebsd_instance:
     matrix:
@@ -23,5 +22,5 @@ task:
     # Due to a race condition that only occurs in the cirrus ci, "make distcheck" has been replaced by "make check".
     #
     ./bootstrap &&
-    ./configure --enable-self-generated-certificate --enable-unit=yes --enable-integration=yes --with-crypto=ossl --disable-doxygen-doc --enable-tcti-swtpm=yes --enable-tcti-libtpms=no --enable-tcti-mssim=no --disable-dependency-tracking &&
+    ./configure --enable-self-generated-certificate --enable-unit=yes --enable-integration=yes --with-crypto=ossl --disable-doxygen-doc --enable-tcti-swtpm=yes --enable-tcti-libtpms=no --enable-tcti-mssim=no --enable-nodl --disable-dependency-tracking &&
     gmake -j check || { cat /tmp/cirrus-ci-build/tpm2-tss-*/_build/sub/test-suite.log; exit 1; }
