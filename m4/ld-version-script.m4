@@ -26,20 +26,14 @@ AC_DEFUN([gl_LD_VERSION_SCRIPT],
        [gl_cv_sys_ld_version_script=no
         save_LDFLAGS=$LDFLAGS
         LDFLAGS="$LDFLAGS -Wl,--version-script=conftest.map"
-        echo foo >conftest.map
+        echo "{ global: *; };" > conftest.map
         AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
-          [],
-          [cat > conftest.map <<EOF
-VERS_1 {
-        global: sym;
-};
-
-VERS_2 {
-        global: sym;
-} VERS_1;
-EOF
-           AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
-             [gl_cv_sys_ld_version_script=yes])])
+          [gl_cv_sys_ld_version_script=yes],
+          [gl_cv_sys_ld_version_script=no])
+        echo foo > conftest.map
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+          [gl_cv_sys_ld_version_script=no],
+          [])
         rm -f conftest.map
         LDFLAGS=$save_LDFLAGS])
      have_ld_version_script=$gl_cv_sys_ld_version_script])
