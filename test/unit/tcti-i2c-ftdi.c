@@ -40,150 +40,95 @@
 #include "tss2_tcti.h"                  // for TSS2_TCTI_CONTEXT, TSS2_TCTI_...
 #include "tss2_tcti_i2c_ftdi.h"         // for Tss2_Tcti_I2c_Ftdi_Init
 
-struct timeval;
-struct timezone;
+/*
+ * The goal is to verify the FTDI I2C implementation by checking
+ * the order in which libftdi functions are invoked when using functions in
+ * the TSS2_TCTI_I2C_HELPER_PLATFORM (e.g., sleep_ms, start_timeout,
+ * timeout_expired, i2c_write, and i2c_read).
 
-typedef enum {
-    I2C_IDLE = 0,
-    /* Read sequence */
-    R_I2C_START_0,
-    R_I2C_WRITE_0,
-    R_I2C_GET_ACK_0,
-    R_I2C_STOP_0,
-    R_I2C_START_1,
-    R_I2C_WRITE_1,
-    R_I2C_GET_ACK_1,
-    R_I2C_SEND_ACKS,
-    R_I2C_READ_0,
-    R_I2C_SEND_NACKS,
-    R_I2C_READ_1,
-    R_I2C_STOP_1,
-    R_I2C_LAST,
-    /* Write sequence */
-    W_I2C_START,
-    W_I2C_WRITE_0,
-    W_I2C_GET_ACK,
-    W_I2C_WRITE_1,
-    W_I2C_STOP,
-    W_I2C_LAST
-} i2c_state_t;
+ * The audit arrays (e.g., audit_general) contain this information. Each
+ * entry specifies the expected libftdi function to be invoked, the command
+ * to be received, or the response to be written back in a specific order.
+ * The tester_context.audit_step (audit array index) variable tracks the
+ * sequence of these operations.
+ */
 
-typedef enum {
-    /* Tss2_Tcti_I2c_Ftdi_Init () */
-    R_TPM_DID_VID = 0,
-    R_TPM_INTERFACE_CAP,
-    R_TPM_ACCESS,
-    R_TPM_CSUM_ENABLE,
-    W_TPM_CSUM_ENABLE,
-    R_TPM_STS_00,
-    R_TPM_RID,
-    /* TSS2_TCTI_TRANSMIT () */
-    W_TPM_STS_00,
-    R_TPM_STS_01,
-    R_TPM_STS_02,
-    W_TPM_FIFO,
-    R_TPM_CSUM_00,
-    W_TPM_STS_01,
-    /* TSS2_TCTI_RECEIVE () */
-    R_TPM_STS_03,
-    R_TPM_STS_04,
-    R_TPM_FIFO_00,
-    R_TPM_STS_05,
-    R_TPM_FIFO_01,
-    R_TPM_STS_06,
-    R_TPM_FIFO_02,
-    R_TPM_STS_07,
-    R_TPM_CSUM_01,
-    W_TPM_STS_02,
-} tpm_state_t;
+#define MPSSE_DUMMY_PTR       ((void *)0xA5A5A5A5)
+#define TIME_US               250
+#define TIME_MS               450
 
-static struct m_state_t {
-    tpm_state_t tpm;
-    i2c_state_t i2c;
-} m_state = {R_TPM_DID_VID, I2C_IDLE};
+typedef struct {
+    TSS2_TCTI_COMMON_CONTEXT common;
+    TSS2_TCTI_I2C_HELPER_PLATFORM platform;
+} TSS2_TCTI_I2C_FTDI_TEST_CONTEXT;
 
-static const uint8_t R_TPM_DID_VID_DATA[] = {0xd1, 0x15, 0x1b, 0x00};
-static const uint8_t R_TPM_INTERFACE_CAP_DATA[] = {0x82, 0x00, 0xe0, 0x1a};
-static const uint8_t R_TPM_ACCESS_DATA[] = {0xa1};
-static const uint8_t R_TPM_CSUM_ENABLE_DATA[] = {0x00};
-static const uint8_t R_TPM_RID_DATA[] = {0x00};
-static const uint8_t R_TPM_STS_00_01_DATA[] = {TCTI_I2C_HELPER_TPM_STS_COMMAND_READY, 0x00, 0x00, 0x00};
-static const uint8_t R_TPM_STS_02_05_DATA[] = {0x00, 0x40, 0x00, 0x00};
-static const uint8_t R_TPM_STS_04_06_DATA[] = {TCTI_I2C_HELPER_TPM_STS_VALID | TCTI_I2C_HELPER_TPM_STS_DATA_AVAIL,
-                                               0x00, 0x00, 0x00};
-static const uint8_t R_TPM_CSUM_DATA[] = {0xf7, 0x4b}; /* CRC-16 (KERMIT) of RW_TPM_FIFO_DATA */
-static const uint8_t R_TPM_STS_03_07_DATA[] = {TCTI_I2C_HELPER_TPM_STS_VALID, 0x00, 0x00, 0x00};
-static const uint8_t W_TPM_STS_00_02_DATA[] = {TCTI_I2C_HELPER_TPM_STS_COMMAND_READY, 0x00, 0x00, 0x00};
-static const uint8_t W_TPM_STS_01_DATA[] = {TCTI_I2C_HELPER_TPM_STS_GO, 0x00, 0x00, 0x00};
-static const uint8_t W_TPM_CSUM_ENABLE_DATA[] = {0x01};
-static const uint8_t RW_TPM_FIFO_DATA[] = {0x80, 0x00, 0x00, 0x00, 0x00, 0x0a, 0xde, 0xad, 0xbe, 0xef};
+typedef struct {
+    int nfds;
+    void *readfds;
+    void *writefds;
+    void *exceptfds;
+    struct timeval timeout;
+} fn_select;
 
-static struct mpsse_context *_mpsse;
+typedef struct {
+    struct timeval tv;
+    void *tz;
+} fn_gettimeofday;
 
-static void state_machine (void)
-{
-    while (true) {
-        switch (m_state.tpm) {
-        case R_TPM_DID_VID:
-        case R_TPM_INTERFACE_CAP:
-        case R_TPM_CSUM_ENABLE:
-        case R_TPM_CSUM_00:
-        case R_TPM_CSUM_01:
-        case R_TPM_ACCESS:
-        case R_TPM_STS_00:
-        case R_TPM_STS_01:
-        case R_TPM_STS_02:
-        case R_TPM_STS_03:
-        case R_TPM_STS_04:
-        case R_TPM_STS_05:
-        case R_TPM_STS_06:
-        case R_TPM_STS_07:
-        case R_TPM_RID:
-        case R_TPM_FIFO_00:
-        case R_TPM_FIFO_01:
-        case R_TPM_FIFO_02:
-            if (m_state.i2c == I2C_IDLE) {
-                /* Start a new read sequence */
-                m_state.i2c = R_I2C_START_0;
-                goto exit;
-            } else if (m_state.i2c == R_I2C_LAST - 1) {
-                /* Read sequence has ended */
-                m_state.i2c = I2C_IDLE;
-                m_state.tpm++;
-            } else {
-                /* Amidst a read sequence */
-                m_state.i2c++;
-                goto exit;
-            }
-            break;
-        case W_TPM_FIFO:
-        case W_TPM_CSUM_ENABLE:
-        case W_TPM_STS_00:
-        case W_TPM_STS_01:
-        case W_TPM_STS_02:
-            if (m_state.i2c == I2C_IDLE) {
-                /* Start a new write sequence */
-                m_state.i2c = W_I2C_START;
-                goto exit;
-            } else if (m_state.i2c == W_I2C_LAST - 1) {
-                /* Write sequence has ended */
-                m_state.i2c = I2C_IDLE;
-                m_state.tpm++;
-            } else {
-                /* Amidst a write sequence */
-                m_state.i2c++;
-                goto exit;
-            }
-            break;
-        default:
-            assert_true (false);
-            return;
-        }
-    }
+typedef struct {
+    enum modes mode;
+    int freq;
+    int endianess;
+    void *ret;
+} fn_mpsse;
 
-exit:
-    return;
-}
+typedef struct {
+    void *mpsse;
+} fn_start, fn_stop,
+  fn_close, fn_getack,
+  fn_sendacks, fn_sendnacks;
+
+typedef struct {
+    void *mpsse;
+    void *data;
+    int size;
+} fn_read;
+
+typedef struct {
+    void *mpsse;
+    void *data;
+    int size;
+} fn_write;
+
+typedef struct {
+    void *func;
+    union {
+        fn_select select;
+        fn_gettimeofday gtod;
+        fn_mpsse mpsse;
+        fn_start start;
+        fn_stop stop;
+        fn_close close;
+        fn_read read;
+        fn_write write;
+        fn_getack getack;
+        fn_sendacks sendacks;
+        fn_sendnacks sendnacks;
+    } args;
+} struct_audit;
+
+typedef struct {
+    int audit_step;
+    struct_audit *audit;
+} tester_context;
+
+static tester_context tester_ctx;
+static const unsigned char REG_ADDR_W[] = { I2C_DEV_ADDR_DEFAULT << 1, TCTI_I2C_HELPER_REG_TPM_DATA_FIFO };
+static const unsigned char REG_ADDR_R[] = { I2C_DEV_ADDR_DEFAULT << 1 | 0x1 };
+static const unsigned char TPM2_STARTUP_CMD[] =
+    { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00 };
+static const unsigned char TPM2_STARTUP_RESP[] =
+    { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00 };
 
 /*
  * Mock function select
@@ -193,12 +138,15 @@ int __wrap_select (int nfds, fd_set *readfds,
                    fd_set *exceptfds,
                    struct timeval *timeout)
 {
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
 
-    assert_int_equal (nfds, 0);
-    assert_null (readfds);
-    assert_null (writefds);
-    assert_null (exceptfds);
-    assert_non_null (timeout);
+    assert_ptr_equal (__wrap_select, audit->func);
+    assert_int_equal (nfds, audit->args.select.nfds);
+    assert_int_equal (readfds, audit->args.select.readfds);
+    assert_int_equal (writefds, audit->args.select.writefds);
+    assert_int_equal (exceptfds, audit->args.select.exceptfds);
+    assert_int_equal (timeout->tv_sec, audit->args.select.timeout.tv_sec);
+    assert_int_equal (timeout->tv_usec, audit->args.select.timeout.tv_usec);
 
     return 0;
 }
@@ -209,11 +157,14 @@ int __wrap_select (int nfds, fd_set *readfds,
 int __wrap_gettimeofday (struct timeval *tv,
                          struct timezone *tz)
 {
-    assert_null (tz);
-    assert_non_null (tv);
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
 
-    tv->tv_sec = 0;
-    tv->tv_usec = 0;
+    assert_ptr_equal (__wrap_gettimeofday, audit->func);
+    assert_non_null (tv);
+    assert_ptr_equal (tz, audit->args.gtod.tz);
+
+    tv->tv_sec = audit->args.gtod.tv.tv_sec;
+    tv->tv_usec = audit->args.gtod.tv.tv_usec;
 
     return 0;
 }
@@ -223,13 +174,16 @@ int __wrap_gettimeofday (struct timeval *tv,
  */
 struct mpsse_context *__wrap_MPSSE (enum modes mode, int freq, int endianess)
 {
-    assert_int_equal (mode, I2C);
-    assert_int_equal (freq, ONE_HUNDRED_KHZ);
-    assert_int_equal (endianess, MSB);
+    struct mpsse_context *ret;
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
 
-    _mpsse = malloc (sizeof (struct mpsse_context));
+    assert_ptr_equal (__wrap_MPSSE, audit->func);
+    assert_int_equal (mode, audit->args.mpsse.mode);
+    assert_int_equal (freq, audit->args.mpsse.freq);
+    assert_int_equal (endianess, audit->args.mpsse.endianess);
+    ret = (struct mpsse_context *)audit->args.mpsse.ret;
 
-    return _mpsse;
+    return ret;
 }
 
 /*
@@ -237,11 +191,11 @@ struct mpsse_context *__wrap_MPSSE (enum modes mode, int freq, int endianess)
  */
 int __wrap_Start (struct mpsse_context *mpsse)
 {
-    assert_ptr_equal (mpsse, _mpsse);
-    state_machine ();
-    assert_true ((m_state.i2c == R_I2C_START_0) ||
-                 (m_state.i2c == R_I2C_START_1) ||
-                 (m_state.i2c == W_I2C_START));
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
+
+    assert_ptr_equal (__wrap_Start, audit->func);
+    assert_ptr_equal (mpsse, audit->args.start.mpsse);
+
     return MPSSE_OK;
 }
 
@@ -250,11 +204,10 @@ int __wrap_Start (struct mpsse_context *mpsse)
  */
 int __wrap_Stop (struct mpsse_context *mpsse)
 {
-    assert_ptr_equal (mpsse, _mpsse);
-    state_machine ();
-    assert_true ((m_state.i2c == R_I2C_STOP_0) ||
-                 (m_state.i2c == R_I2C_STOP_1) ||
-                 (m_state.i2c == W_I2C_STOP));
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
+    assert_ptr_equal (__wrap_Stop, audit->func);
+    assert_ptr_equal (mpsse, audit->args.stop.mpsse);
+
     return MPSSE_OK;
 }
 
@@ -263,9 +216,10 @@ int __wrap_Stop (struct mpsse_context *mpsse)
  */
 void __wrap_Close (struct mpsse_context *mpsse)
 {
-    assert_ptr_equal (mpsse, _mpsse);
-    free (_mpsse);
-    _mpsse = NULL;
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
+
+    assert_ptr_equal (__wrap_Close, audit->func);
+    assert_ptr_equal (mpsse, audit->args.close.mpsse);
 }
 
 /*
@@ -273,95 +227,18 @@ void __wrap_Close (struct mpsse_context *mpsse)
  */
 char *__wrap_Read (struct mpsse_context *mpsse, int size)
 {
-    const uint8_t *payload = NULL;
-    int payload_size = 0;
-    char *out = NULL;
+    char *ptr;
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
 
-    assert_ptr_equal (mpsse, _mpsse);
-    state_machine ();
+    assert_ptr_equal (__wrap_Read, audit->func);
+    assert_ptr_equal (mpsse, audit->args.read.mpsse);
+    assert_ptr_equal (size, audit->args.read.size);
 
-    switch (m_state.tpm) {
-    case R_TPM_DID_VID:
-        payload = R_TPM_DID_VID_DATA;
-        payload_size = sizeof (R_TPM_DID_VID_DATA);
-        break;
-    case R_TPM_INTERFACE_CAP:
-        payload = R_TPM_INTERFACE_CAP_DATA;
-        payload_size = sizeof (R_TPM_INTERFACE_CAP_DATA);
-        break;
-    case R_TPM_CSUM_ENABLE:
-        payload = R_TPM_CSUM_ENABLE_DATA;
-        payload_size = sizeof (R_TPM_CSUM_ENABLE_DATA);
-        break;
-    case R_TPM_CSUM_00:
-    case R_TPM_CSUM_01:
-        payload = R_TPM_CSUM_DATA;
-        payload_size = sizeof (R_TPM_CSUM_DATA);
-        break;
-    case R_TPM_ACCESS:
-        payload = R_TPM_ACCESS_DATA;
-        payload_size = sizeof (R_TPM_ACCESS_DATA);
-        break;
-    case R_TPM_STS_00:
-    case R_TPM_STS_01:
-        payload = R_TPM_STS_00_01_DATA;
-        payload_size = sizeof (R_TPM_STS_00_01_DATA);
-        break;
-    case R_TPM_STS_02:
-    case R_TPM_STS_05:
-        payload = R_TPM_STS_02_05_DATA;
-        payload_size = sizeof (R_TPM_STS_02_05_DATA);
-        break;
-    case R_TPM_STS_03:
-    case R_TPM_STS_07:
-        payload = R_TPM_STS_03_07_DATA;
-        payload_size = sizeof (R_TPM_STS_03_07_DATA);
-        break;
-    case R_TPM_STS_04:
-    case R_TPM_STS_06:
-        payload = R_TPM_STS_04_06_DATA;
-        payload_size = sizeof (R_TPM_STS_04_06_DATA);
-        break;
-    case R_TPM_RID:
-        payload = R_TPM_RID_DATA;
-        payload_size = sizeof (R_TPM_RID_DATA);
-        break;
-    case R_TPM_FIFO_00:
-        payload = RW_TPM_FIFO_DATA;
-        payload_size = TCTI_I2C_HELPER_RESP_HEADER_SIZE;
-        break;
-    case R_TPM_FIFO_01:
-        payload = RW_TPM_FIFO_DATA + TCTI_I2C_HELPER_RESP_HEADER_SIZE;
-        payload_size = sizeof (RW_TPM_FIFO_DATA) - 1 - TCTI_I2C_HELPER_RESP_HEADER_SIZE;
-        break;
-    case R_TPM_FIFO_02:
-        payload = RW_TPM_FIFO_DATA + sizeof (RW_TPM_FIFO_DATA) - 1;
-        payload_size = 1;
-        break;
-    default:
-        assert_true (false);
-    }
+    ptr = calloc (1, size);
+    assert_non_null (ptr);
+    memcpy (ptr, audit->args.read.data, size);
 
-    switch (m_state.i2c) {
-        case R_I2C_READ_0:
-            assert_int_equal (size, payload_size - 1);
-            out = malloc (size);
-            assert_non_null (out);
-            memcpy (out, payload, payload_size - 1);
-            return out;
-            break;
-        case R_I2C_READ_1:
-            assert_int_equal (size, 1);
-            out = malloc (1);
-            assert_non_null (out);
-            memcpy (out, payload + payload_size - 1, 1);
-            return out;
-            break;
-        default:
-            assert_true (false);
-    }
-
-    return NULL;
+    return ptr;
 }
 
 /*
@@ -369,126 +246,12 @@ char *__wrap_Read (struct mpsse_context *mpsse, int size)
  */
 int __wrap_Write (struct mpsse_context *mpsse, char *data, int size)
 {
-    const uint8_t *payload = NULL;
-    int payload_size = 0;
-    uint8_t addr[2] = {I2C_DEV_ADDR_DEFAULT << 1, 0x0};
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
 
-    assert_ptr_equal (mpsse, _mpsse);
-    state_machine ();
-
-    switch (m_state.tpm) {
-    case R_TPM_DID_VID:
-        addr[1] = TCTI_I2C_HELPER_TPM_DID_VID_REG;
-        break;
-    case R_TPM_INTERFACE_CAP:
-        addr[1] = TCTI_I2C_HELPER_TPM_INTERFACE_CAPABILITY_REG;
-        break;
-    case R_TPM_CSUM_ENABLE:
-        addr[1] = TCTI_I2C_HELPER_TPM_DATA_CSUM_ENABLE_REG;
-        break;
-    case R_TPM_CSUM_00:
-    case R_TPM_CSUM_01:
-        addr[1] = TCTI_I2C_HELPER_TPM_DATA_CSUM_REG;
-        break;
-    case R_TPM_ACCESS:
-        addr[1] = TCTI_I2C_HELPER_TPM_ACCESS_REG;
-        break;
-    case R_TPM_STS_00:
-    case R_TPM_STS_01:
-    case R_TPM_STS_02:
-    case R_TPM_STS_03:
-    case R_TPM_STS_04:
-    case R_TPM_STS_05:
-    case R_TPM_STS_06:
-    case R_TPM_STS_07:
-        addr[1] = TCTI_I2C_HELPER_TPM_STS_REG;
-        break;
-    case R_TPM_RID:
-        addr[1] = TCTI_I2C_HELPER_TPM_RID_REG;
-        break;
-    case R_TPM_FIFO_00:
-    case R_TPM_FIFO_01:
-    case R_TPM_FIFO_02:
-        addr[1] = TCTI_I2C_HELPER_TPM_DATA_FIFO_REG;
-        break;
-    case W_TPM_STS_00:
-    case W_TPM_STS_02:
-        addr[1] = TCTI_I2C_HELPER_TPM_STS_REG;
-        payload = W_TPM_STS_00_02_DATA;
-        payload_size = sizeof (W_TPM_STS_00_02_DATA);
-        break;
-    case W_TPM_STS_01:
-        addr[1] = TCTI_I2C_HELPER_TPM_STS_REG;
-        payload = W_TPM_STS_01_DATA;
-        payload_size = sizeof (W_TPM_STS_01_DATA);
-        break;
-    case W_TPM_CSUM_ENABLE:
-        addr[1] = TCTI_I2C_HELPER_TPM_DATA_CSUM_ENABLE_REG;
-        payload = W_TPM_CSUM_ENABLE_DATA;
-        payload_size = sizeof (W_TPM_CSUM_ENABLE_DATA);
-        break;
-    case W_TPM_FIFO:
-        addr[1] = TCTI_I2C_HELPER_TPM_DATA_FIFO_REG;
-        payload = RW_TPM_FIFO_DATA;
-        payload_size = sizeof (RW_TPM_FIFO_DATA);
-        break;
-    default:
-        assert_true (false);
-    }
-
-    switch (m_state.tpm) {
-    case R_TPM_DID_VID:
-    case R_TPM_INTERFACE_CAP:
-    case R_TPM_CSUM_ENABLE:
-    case R_TPM_CSUM_00:
-    case R_TPM_CSUM_01:
-    case R_TPM_ACCESS:
-    case R_TPM_STS_00:
-    case R_TPM_STS_01:
-    case R_TPM_STS_02:
-    case R_TPM_STS_03:
-    case R_TPM_STS_04:
-    case R_TPM_STS_05:
-    case R_TPM_STS_06:
-    case R_TPM_STS_07:
-    case R_TPM_RID:
-    case R_TPM_FIFO_00:
-    case R_TPM_FIFO_01:
-    case R_TPM_FIFO_02:
-        switch (m_state.i2c) {
-            case R_I2C_WRITE_0:
-                assert_int_equal (size, 2);
-                assert_int_equal (strncmp ((const void *)addr, data, 2), 0);
-                break;
-            case R_I2C_WRITE_1:
-                assert_int_equal (size, 1);
-                assert_int_equal ((uint8_t)data[0], addr[0] | 0x01);
-                break;
-            default:
-                assert_true (false);
-        }
-        break;
-    case W_TPM_STS_00:
-    case W_TPM_STS_01:
-    case W_TPM_STS_02:
-    case W_TPM_FIFO:
-    case W_TPM_CSUM_ENABLE:
-        switch (m_state.i2c) {
-            case W_I2C_WRITE_0:
-                assert_int_equal (size, 2);
-                assert_int_equal (strncmp ((const void *)addr, data, 2), 0);
-                break;
-            case W_I2C_WRITE_1:
-                assert_int_equal (size, payload_size);
-                assert_int_equal (strncmp ((const char *)payload, data, payload_size), 0);
-                break;
-            default:
-                assert_true (false);
-        }
-        break;
-    default:
-        assert_true (false);
-    }
+    assert_ptr_equal (__wrap_Write, audit->func);
+    assert_ptr_equal (mpsse, audit->args.write.mpsse);
+    assert_ptr_equal (size, audit->args.write.size);
+    assert_true (!memcmp (data, audit->args.write.data, size));
 
     return 0;
 }
@@ -498,11 +261,11 @@ int __wrap_Write (struct mpsse_context *mpsse, char *data, int size)
  */
 int __wrap_GetAck (struct mpsse_context *mpsse)
 {
-    assert_ptr_equal (mpsse, _mpsse);
-    state_machine ();
-    assert_true ((m_state.i2c == R_I2C_GET_ACK_0) ||
-                 (m_state.i2c == R_I2C_GET_ACK_1) ||
-                 (m_state.i2c == W_I2C_GET_ACK));
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
+
+    assert_ptr_equal (__wrap_GetAck, audit->func);
+    assert_ptr_equal (mpsse, audit->args.getack.mpsse);
+
     return ACK;
 }
 
@@ -511,9 +274,10 @@ int __wrap_GetAck (struct mpsse_context *mpsse)
  */
 void __wrap_SendAcks (struct mpsse_context *mpsse)
 {
-    assert_ptr_equal (mpsse, _mpsse);
-    state_machine ();
-    assert_true (m_state.i2c == R_I2C_SEND_ACKS);
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
+
+    assert_ptr_equal (__wrap_SendAcks, audit->func);
+    assert_ptr_equal (mpsse, audit->args.sendacks.mpsse);
 }
 
 /*
@@ -521,72 +285,129 @@ void __wrap_SendAcks (struct mpsse_context *mpsse)
  */
 void __wrap_SendNacks (struct mpsse_context *mpsse)
 {
-    assert_ptr_equal (mpsse, _mpsse);
-    state_machine ();
-    assert_true (m_state.i2c == R_I2C_SEND_NACKS);
+    struct_audit *audit = &tester_ctx.audit[tester_ctx.audit_step++];
+
+    assert_ptr_equal (__wrap_SendNacks, audit->func);
+    assert_ptr_equal (mpsse, audit->args.sendnacks.mpsse);
 }
 
-/*
- * The test will call Tss2_Tcti_I2c_Ftdi_Init(),
- * which will perform several tasks including reading
- * the TPM_DID_VID, checking locality, reading TPM_STS,
- * and reading TPM_RID before exiting the Init function.
- * The TSS2_TCTI_CONTEXT core functions will be tested as well.
- * For testing purposes, the TPM responses are hardcoded.
- */
+static struct_audit audit_general[] = {
+    /* Tss2_Tcti_I2c_Ftdi_Init (tcti_ctx, &size, NULL) */
+    { .func = __wrap_MPSSE, .args.mpsse = { I2C, ONE_HUNDRED_KHZ, MSB, MPSSE_DUMMY_PTR } },
+
+    /* TSS2_TCTI_I2C_HELPER_PLATFORM's sleep_us */
+    { .func = __wrap_select, .args.select =
+      { 0, NULL, NULL, NULL, { TIME_US / 1000000, TIME_US % 1000000 } } },
+
+    /* TSS2_TCTI_I2C_HELPER_PLATFORM's sleep_ms */
+    { .func = __wrap_select, .args.select =
+      { 0, NULL, NULL, NULL, { (TIME_MS * 1000) / 1000000, (TIME_MS * 1000) % 1000000 } } },
+
+    /* TSS2_TCTI_I2C_HELPER_PLATFORM's start_timeout */
+    { .func = __wrap_gettimeofday, .args.gtod = { { 0, 0 }, NULL } },
+
+    /* TSS2_TCTI_I2C_HELPER_PLATFORM's timeout_expired */
+    { .func = __wrap_gettimeofday, .args.gtod =
+      { { 1, 0 }, NULL } }, /* Return a value > TIME_MS to trigger a timeout event */
+    { .func = __wrap_gettimeofday, .args.gtod =
+      { { 0, (TIME_MS * 1000) }, NULL } }, /* Return a value <= TIME_MS, no timeout occured */
+    { .func = __wrap_gettimeofday, .args.gtod =
+      { { 0, (TIME_MS * 1000) + 1 }, NULL } }, /* Return a value > TIME_MS to trigger a timeout event */
+
+    /* TSS2_TCTI_I2C_HELPER_PLATFORM's i2c_write */
+    { .func = __wrap_Start, .args.start = { MPSSE_DUMMY_PTR } },
+    { .func = __wrap_Write, .args.write =
+      { MPSSE_DUMMY_PTR, (void *)REG_ADDR_W, sizeof (REG_ADDR_W) } },
+    { .func = __wrap_GetAck, .args.getack = { MPSSE_DUMMY_PTR } },
+    { .func = __wrap_Write, .args.write =
+      { MPSSE_DUMMY_PTR, (void *)TPM2_STARTUP_CMD, sizeof (TPM2_STARTUP_CMD) } },
+    { .func = __wrap_Stop, .args.stop = { MPSSE_DUMMY_PTR } },
+
+    /* TSS2_TCTI_I2C_HELPER_PLATFORM's i2c_read */
+    { .func = __wrap_Start, .args.start = { MPSSE_DUMMY_PTR } },
+    { .func = __wrap_Write, .args.write =
+      { MPSSE_DUMMY_PTR, (void *)REG_ADDR_W, sizeof (REG_ADDR_W) } },
+    { .func = __wrap_GetAck, .args.getack = { MPSSE_DUMMY_PTR } },
+    { .func = __wrap_Stop, .args.stop = { MPSSE_DUMMY_PTR } },
+    { .func = __wrap_Start, .args.start = { MPSSE_DUMMY_PTR } },
+    { .func = __wrap_Write, .args.write =
+      { MPSSE_DUMMY_PTR, (void *)REG_ADDR_R, sizeof (REG_ADDR_R) } },
+    { .func = __wrap_GetAck, .args.getack = { MPSSE_DUMMY_PTR } },
+    { .func = __wrap_SendAcks, .args.sendacks = { MPSSE_DUMMY_PTR } },
+    { .func = __wrap_Read, .args.read =
+      { MPSSE_DUMMY_PTR, (void *)TPM2_STARTUP_RESP, sizeof (TPM2_STARTUP_RESP) - 1 } },
+    { .func = __wrap_SendNacks, .args.sendacks = { MPSSE_DUMMY_PTR } },
+    { .func = __wrap_Read, .args.read =
+      { MPSSE_DUMMY_PTR, (void *)TPM2_STARTUP_RESP + sizeof (TPM2_STARTUP_RESP) - 1, 1 } },
+    { .func = __wrap_Stop, .args.stop = { MPSSE_DUMMY_PTR } },
+
+    /* TSS2_TCTI_I2C_HELPER_PLATFORM's finalize */
+    { .func = __wrap_Close, .args.close = { MPSSE_DUMMY_PTR } },
+
+    { 0 },
+};
+
+TSS2_RC __wrap_Tss2_Tcti_I2c_Helper_Init (TSS2_TCTI_CONTEXT *tcti_context, size_t *size,
+    TSS2_TCTI_I2C_HELPER_PLATFORM *platform)
+{
+    void *data;
+    bool is_expired = false;
+    uint8_t response[sizeof (TPM2_STARTUP_RESP)] = { 0 };
+
+    if (tcti_context == NULL) {
+        *size = sizeof (TSS2_TCTI_I2C_FTDI_TEST_CONTEXT);
+        return TSS2_RC_SUCCESS;
+    }
+
+    /* Test TSS2_TCTI_I2C_HELPER_PLATFORM's callbacks */
+
+    data = platform->user_data;
+    assert_non_null (data);
+
+    assert_int_equal (platform->sleep_us (data, TIME_US), TSS2_RC_SUCCESS);
+    assert_int_equal (platform->sleep_ms (data, TIME_MS), TSS2_RC_SUCCESS);
+    assert_int_equal (platform->start_timeout (data, TIME_MS), TSS2_RC_SUCCESS);
+    assert_int_equal (platform->timeout_expired (data, &is_expired), TSS2_RC_SUCCESS);
+    assert_true (is_expired);
+    assert_int_equal (platform->timeout_expired (data, &is_expired), TSS2_RC_SUCCESS);
+    assert_false (is_expired);
+    assert_int_equal (platform->timeout_expired (data, &is_expired), TSS2_RC_SUCCESS);
+    assert_true (is_expired);
+    assert_int_equal (platform->i2c_write (data, TCTI_I2C_HELPER_REG_TPM_DATA_FIFO,
+        TPM2_STARTUP_CMD, sizeof (TPM2_STARTUP_CMD)), TSS2_RC_SUCCESS);
+    assert_int_equal (platform->i2c_read (data, TCTI_I2C_HELPER_REG_TPM_DATA_FIFO,
+        response, sizeof (response)), TSS2_RC_SUCCESS);
+    assert_true (!memcmp (response, TPM2_STARTUP_RESP, sizeof (response)));
+
+    platform->finalize (data);
+
+    return TSS2_RC_SUCCESS;
+}
+
 static void
-tcti_i2c_generic_test (void **state)
+tcti_i2c_general_test (void **state)
 {
     TSS2_RC rc;
     size_t size;
-    uint8_t response[10] = {0};
-    TSS2_TCTI_CONTEXT* tcti_ctx;
+    TSS2_TCTI_CONTEXT *tcti_ctx;
 
-    m_state.tpm = 0;
-    m_state.i2c = 0;
+    /* Initialize tester context */
+    tester_ctx.audit_step = 0;
+    tester_ctx.audit = audit_general;
 
     /* Get requested TCTI context size */
     rc = Tss2_Tcti_I2c_Ftdi_Init (NULL, &size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
     /* Allocate TCTI context size */
-    tcti_ctx = (TSS2_TCTI_CONTEXT*) calloc (1, size);
+    tcti_ctx = (TSS2_TCTI_CONTEXT *) calloc (1, size);
     assert_non_null (tcti_ctx);
 
     /* Initialize TCTI context */
     rc = Tss2_Tcti_I2c_Ftdi_Init (tcti_ctx, &size, NULL);
     assert_int_equal (rc, TSS2_RC_SUCCESS);
 
-    /* Verify the TCTI core functions */
-    assert_int_equal (TSS2_TCTI_MAGIC (tcti_ctx), TCTI_I2C_HELPER_MAGIC);
-    assert_int_equal (TSS2_TCTI_VERSION (tcti_ctx), TCTI_VERSION);
-    assert_int_equal (
-        TSS2_TCTI_TRANSMIT (tcti_ctx) (
-            tcti_ctx, sizeof (RW_TPM_FIFO_DATA), RW_TPM_FIFO_DATA
-        ),
-        TSS2_RC_SUCCESS
-    );
-    size = 0;
-    assert_int_equal (
-        TSS2_TCTI_RECEIVE (tcti_ctx) (
-            tcti_ctx, &size, NULL, 200
-        ),
-        TSS2_RC_SUCCESS
-    );
-    assert_int_equal (size, sizeof (RW_TPM_FIFO_DATA));
-    assert_int_equal (
-        TSS2_TCTI_RECEIVE (tcti_ctx) (
-            tcti_ctx, &size, response, 200
-        ),
-        TSS2_RC_SUCCESS
-    );
-    assert_int_equal (TSS2_TCTI_CANCEL (tcti_ctx) (NULL), TSS2_TCTI_RC_NOT_IMPLEMENTED);
-    assert_int_equal (TSS2_TCTI_GET_POLL_HANDLES (tcti_ctx) (NULL, NULL, NULL), TSS2_TCTI_RC_NOT_IMPLEMENTED);
-    assert_int_equal (TSS2_TCTI_SET_LOCALITY (tcti_ctx) (NULL, 0), TSS2_TCTI_RC_NOT_IMPLEMENTED);
-    assert_int_equal (TSS2_TCTI_MAKE_STICKY (tcti_ctx) (NULL, NULL, 0), TSS2_TCTI_RC_NOT_IMPLEMENTED);
-
     /* Clean up */
-    TSS2_TCTI_FINALIZE (tcti_ctx) (tcti_ctx);
     free (tcti_ctx);
 }
 
@@ -595,7 +416,8 @@ main (int   argc,
       char *argv[])
 {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test (tcti_i2c_generic_test),
+        cmocka_unit_test (tcti_i2c_general_test),
     };
+
     return cmocka_run_group_tests (tests, NULL, NULL);
 }
