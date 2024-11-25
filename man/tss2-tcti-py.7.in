@@ -1,0 +1,14 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH TCTI-PY 7 "JANUARY 2023" "TPM2 Software Stack"
+.SH NAME
+tcti-py \- Launch Python3 TPM2 TCTIs
+.SH SYNOPSIS
+Write a TCTI in Python3.
+.SH DESCRIPTION
+tcti-py is a library that allows creating TCTIs in Python3 by implementing a
+a TCTI interface in Python. More complete documentation can be found by
+visiting this URL: https://github.com/tpm2-software/tpm2-tss/tree/master/doc/tcti-py.md
+
+It is related to the TPM Command Transmission Interface Specification\*(rq specification.
