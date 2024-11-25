@@ -422,6 +422,13 @@ endif # ENABLE_TCTI_CMD
 EXTRA_DIST += lib/tss2-tcti-cmd.map \
               lib/tss2-tcti-cmd.def
 
+if ENABLE_TCTI_HELPER_COMMON
+libtss2_tcti_helper_common = src/tss2-tcti/libtss2-tcti-helper-common.la
+noinst_LTLIBRARIES += $(libtss2_tcti_helper_common)
+src_tss2_tcti_libtss2_tcti_helper_common_la_SOURCES = \
+    src/tss2-tcti/tcti-helper-common.c
+endif
+
 # tcti library for spi connected tpms
 if ENABLE_TCTI_SPI_HELPER
 libtss2_tcti_spi_helper = src/tss2-tcti/libtss2-tcti-spi-helper.la
@@ -434,7 +441,7 @@ if !UNIT
 src_tss2_tcti_libtss2_tcti_spi_helper_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spi-helper.map
 endif # UNIT
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_spi_helper_la_LIBADD   = $(libutil) $(libtss2_mu)
+src_tss2_tcti_libtss2_tcti_spi_helper_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_helper_common)
 src_tss2_tcti_libtss2_tcti_spi_helper_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-spi-helper.c \
@@ -521,7 +528,7 @@ if !UNIT
 src_tss2_tcti_libtss2_tcti_i2c_helper_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-i2c-helper.map
 endif # UNIT
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_i2c_helper_la_LIBADD   = $(libutil) $(libtss2_mu)
+src_tss2_tcti_libtss2_tcti_i2c_helper_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_helper_common)
 src_tss2_tcti_libtss2_tcti_i2c_helper_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-i2c-helper.c \

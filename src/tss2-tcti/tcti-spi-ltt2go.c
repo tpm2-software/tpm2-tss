@@ -20,19 +20,6 @@
 #define LOGMODULE tcti
 #include "util/log.h"               // for LOG_ERROR, LOG_WARNING
 
-#define VID_PI3G 0x365Du
-#define PID_LTT2GO 0x1337u
-#define TIMEOUT 1000
-#define CTRL_SET 0xC0u
-#define CTRL_GET 0x40u
-#define CY_CMD_SPI 0xCAu
-#define CY_CMD_GPIO_SET 0xDBu
-#define CY_SPI_WRITEREAD 0x03u
-#define EP_OUT 0x01u
-#define EP_IN 0x82u
-
-#define SPI_MAX_TRANSFER (4 + 64)
-
 TSS2_RC
 platform_spi_transfer (void *user_data, const void *data_out, void *data_in, size_t cnt)
 {
@@ -66,7 +53,7 @@ platform_spi_transfer (void *user_data, const void *data_out, void *data_in, siz
         memcpy (spi_dma_buffer, data_out, length);
     }
 
-    ret = libusb_control_transfer (dev_handle, CTRL_SET, CY_CMD_SPI, CY_SPI_WRITEREAD, length, NULL, 0, TIMEOUT);
+    ret = libusb_control_transfer (dev_handle, CTRL_SET, CY_CMD_SPI, CY_SPI_WRITEREAD, length, NULL, 0, LTT2GO_TIMEOUT_MS);
     if (ret) {
         LOG_ERROR ("libusb_control_transfer failed with error: %s.", libusb_strerror(ret));
         ret = TSS2_TCTI_RC_IO_ERROR;
@@ -74,7 +61,7 @@ platform_spi_transfer (void *user_data, const void *data_out, void *data_in, siz
     }
 
     while (transfered != cnt){
-        ret = libusb_bulk_transfer (dev_handle, EP_OUT, spi_dma_buffer+transfered, (int) length, &act_len, TIMEOUT);
+        ret = libusb_bulk_transfer (dev_handle, EP_OUT, spi_dma_buffer+transfered, (int) length, &act_len, LTT2GO_TIMEOUT_MS);
         if (ret) {
             LOG_ERROR ("libusb_bulk_transfer write failed with error: %s.", libusb_strerror(ret));
             ret = TSS2_TCTI_RC_IO_ERROR;
@@ -87,7 +74,7 @@ platform_spi_transfer (void *user_data, const void *data_out, void *data_in, siz
     transfered = 0;
     length = cnt;
     while(transfered != cnt){
-        ret = libusb_bulk_transfer (dev_handle, EP_IN, spi_dma_buffer+transfered, (int) length, &act_len, TIMEOUT);
+        ret = libusb_bulk_transfer (dev_handle, EP_IN, spi_dma_buffer+transfered, (int) length, &act_len, LTT2GO_TIMEOUT_MS);
         if (ret) {
             if (retry++ > 5) {
                 LOG_ERROR ("libusb_bulk_transfer read failed with error: %s.", libusb_strerror(ret));

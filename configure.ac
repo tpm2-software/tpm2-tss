@@ -392,6 +392,9 @@ AM_CONDITIONAL([ENABLE_TCTI_I2C_FTDI], [test "x$enable_tcti_i2c_ftdi" != xno])
 AS_IF([test "x$enable_tcti_i2c_ftdi" = "xyes"],
     AC_DEFINE([TCTI_I2C_FTDI],[1], [TCTI FOR USB BASED ACCESS TO I2C BASED TPM OVER THE FTDI MPSSE USB TO I2C BRIDGE]))
 
+AM_CONDITIONAL([ENABLE_TCTI_HELPER_COMMON],
+               [test "x$enable_tcti_spi_helper" = "xyes" || test "x$enable_tcti_i2c_helper" = "xyes"])
+
 AC_ARG_ENABLE([tcti-fuzzing],
             [AS_HELP_STRING([--enable-tcti-fuzzing],
                             [build the tcti-fuzzing module])],,
