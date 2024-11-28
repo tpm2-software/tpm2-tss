@@ -147,7 +147,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     if (dest != NULL) { \
         dest->size = size; \
-        memcpy(((TPM2B *)dest)->buffer, &buffer[local_offset], size); \
+        memcpy(&dest->buf_name, &buffer[local_offset], size);    \
     } \
     local_offset += size; \
     if (offset != NULL) { \
