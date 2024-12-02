@@ -336,6 +336,9 @@ tcti_socket_teardown (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
 
+    will_return (__wrap_write, 4);
+    will_return (__wrap_write, 4);
+
     Tss2_Tcti_Finalize (ctx);
     free (ctx);
     return 0;
