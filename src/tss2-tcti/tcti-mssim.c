@@ -136,7 +136,7 @@ send_sim_session_end (
     TSS2_RC rc;
 
     rc = Tss2_MU_UINT32_Marshal (TPM_SESSION_END, buf, sizeof (buf), NULL);
-    if (rc == TSS2_RC_SUCCESS) {
+    if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
     return socket_xmit_buf (sock, buf, sizeof (buf));
