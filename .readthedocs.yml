@@ -9,3 +9,6 @@ build:
 sphinx:
   builder: html
   configuration: sphinx/conf.py
+python:
+  install:
+    - requirements: sphinx/requirements.txt

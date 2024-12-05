@@ -1,0 +1,4 @@
+# needed for readthedocs builds:
+GitPython
+myst_parser
+sphinx_rtd_theme
