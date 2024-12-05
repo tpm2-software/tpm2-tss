@@ -11,6 +11,7 @@ cryptography>=3.0
 packaging
 pyyaml
 # needed for readthedocs builds:
+sphinx==6.2.1
 GitPython
 myst_parser
 sphinx_rtd_theme
