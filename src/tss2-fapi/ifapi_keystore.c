@@ -1164,7 +1164,7 @@ keystore_search_obj(
     statecase(keystore->key_search.state, KSEARCH_SEARCH_OBJECT)
         /* Use the next object in the path list */
         if (keystore->key_search.path_idx == 0) {
-            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Key not found.", cleanup);
+            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Key or NV object not found.", cleanup);
         }
         keystore->key_search.path_idx -= 1;
         path_idx = keystore->key_search.path_idx;
