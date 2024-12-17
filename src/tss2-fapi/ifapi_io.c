@@ -29,6 +29,88 @@
 #define LOGMODULE fapi
 #include "util/log.h"       // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
 
+/** Determine if a sub file in directory is also a directory
+ *
+ * @param[in] directory The directory containing the file
+ * @param[in] entry The dirent entry of the file.
+ * @param[out] isdir The flag whether file is a directory.
+ * @retval TSS2_RC_SUCCESS: if the function call was a success.
+ * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
+ */
+static TSS2_RC
+is_directory(const char* dir_name, struct dirent *entry, bool *isdir) {
+    TSS2_RC r;
+    char *path;
+
+#ifdef _DIRENT_HAVE_D_TYPE
+    if (entry->d_type == DT_DIR) {
+        *isdir = true;
+        return TSS2_RC_SUCCESS;
+    } else if (entry->d_type != DT_UNKNOWN) {
+        *isdir = false;
+        return TSS2_RC_SUCCESS;
+    }
+#endif
+    /* stat is used if d_type is not supported or unknown. */
+    struct stat file_stat;
+    r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
+    return_if_error(r, "Out of memory");
+
+    if (stat(path, &file_stat) == -1) {
+        free(path);
+        return_error(TSS2_FAPI_RC_IO_ERROR, "stat failed.");
+    }
+    if (S_ISDIR(file_stat.st_mode)) {
+        *isdir = true;
+    } else {
+        *isdir = false;
+    }
+    free(path);
+    return TSS2_RC_SUCCESS;
+}
+
+/** Determine if a sub file in directory is a regular file.
+ *
+ * @param[in] directory The directory containing the file
+ * @param[in] entry The dirent entry of the file.
+ * @param[out] isreg The flag whether file is a regular file.
+ * @retval TSS2_RC_SUCCESS: if the function call was a success.
+ * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
+ */
+static TSS2_RC
+is_regular_file(const char* dir_name, struct dirent *entry, bool *isreg) {
+    TSS2_RC r;
+    char *path;
+
+#ifdef _DIRENT_HAVE_D_TYPE
+    if (entry->d_type == DT_REG) {
+        *isreg = true;
+        return TSS2_RC_SUCCESS;
+    } else if (entry->d_type != DT_UNKNOWN){
+        *isreg = false;
+        return TSS2_RC_SUCCESS;
+    }
+#endif
+    /* stat is used if d_type is not supported or unknown. */
+    struct stat file_stat;
+    r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
+    return_if_error(r, "Out of memory");
+
+    if (stat(path, &file_stat) == -1) {
+        free(path);
+        return_error(TSS2_FAPI_RC_IO_ERROR, "stat failed.");
+    }
+    if (S_ISREG(file_stat.st_mode)) {
+        *isreg = true;
+    } else {
+        *isreg = false;
+    }
+    free(path);
+    return TSS2_RC_SUCCESS;
+}
+
 /** Start reading a file's complete content into memory in an asynchronous way.
  *
  * @param[in,out] io The input/output context being used for file I/O.
@@ -390,6 +472,7 @@ ifapi_io_remove_directories(
     TSS2_RC r;
     char *path;
     size_t len_kstore_path, len_dir_path, diff_len, pos;
+    bool is_dir;
 
     LOG_TRACE("Removing directory: %s", dirname);
 
@@ -407,7 +490,10 @@ ifapi_io_remove_directories(
             continue;
 
         /* If an entry is a directory then we call ourself recursively to remove those */
-        if (entry->d_type == DT_DIR) {
+        r = is_directory(dirname, entry, &is_dir);
+        goto_if_error(r, "directory check", error_cleanup);
+
+        if (is_dir) {
             r = ifapi_asprintf(&path, "%s/%s", dirname, entry->d_name);
             goto_if_error(r, "Out of memory", error_cleanup);
 
@@ -480,6 +566,8 @@ ifapi_io_dirfiles(
     int numentries = 0;
     struct dirent **namelist;
     size_t numpaths = 0;
+    bool is_reg_file;
+    TSS2_RC r;
     check_not_null(dirname);
     check_not_null(files);
     check_not_null(numfiles);
@@ -498,7 +586,10 @@ ifapi_io_dirfiles(
     /* Iterating through the list of entries inside the directory. */
     for (size_t i = 0; i < (size_t) numentries; i++) {
         LOG_TRACE("Looking at %s", namelist[i]->d_name);
-        if (namelist[i]->d_type != DT_REG)
+
+        r = is_regular_file(dirname, namelist[i], &is_reg_file);
+        if (r) goto  error_oom;
+        if (!is_reg_file)
             continue;
 
         paths[numpaths] = strdup(namelist[i]->d_name);
@@ -549,6 +640,7 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
     TSS2_RC r;
     char *path;
     NODE_OBJECT_T *second;
+    bool is_dir;
 
     if (!(dir = opendir(dir_name))) {
         return TSS2_RC_SUCCESS;
@@ -557,7 +649,10 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
     /* Iterating through the list of entries inside the directory. */
     while ((entry = readdir(dir)) != NULL) {
         path = NULL;
-        if (entry->d_type == DT_DIR) {
+        r = is_directory(dir_name, entry, &is_dir);
+        return_if_error(r, "directory check failed");
+
+        if (is_dir) {
             /* Recursive call for sub directories */
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
