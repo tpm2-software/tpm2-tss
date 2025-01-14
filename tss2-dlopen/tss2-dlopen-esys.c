@@ -2303,3 +2303,12 @@ MAKE_ESYS_1(Esys_GetSysContext,
     TSS2_SYS_CONTEXT **, sys_context);
 MAKE_ESYS_1(Esys_SetCryptoCallbacks,
     ESYS_CRYPTO_CALLBACKS *, callbacks);
+MAKE_ESYS_3(Esys_GetCpHash,
+    TPMI_ALG_HASH, hashAlg,
+    uint8_t **, cpHash,
+    size_t, *cpHash_size);
+MAKE_ESYS_3(Esys_GetRpHash,
+    TPMI_ALG_HASH, hashAlg,
+    uint8_t **, cpHash,
+    size_t, *cpHash_size);
+MAKE_ESYS_0(Esys_Abort);

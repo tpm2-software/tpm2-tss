@@ -33,13 +33,6 @@ extern "C" {
  */
 #define ESYS_TR_MIN_OBJECT (TPM2_RH_LAST + 1 + 0x1000)
 
-/** An entry in a cpHash or rpHash table. */
-typedef struct {
-    TPM2_ALG_ID alg;                 /**< The hash algorithm. */
-    size_t size;                     /**< The digest size. */
-    uint8_t digest[sizeof(TPMU_HA)]; /**< The digest. */
-} HASH_TAB_ITEM;
-
 TSS2_RC init_session_tab(
     ESYS_CONTEXT *esysContext,
     ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3);
@@ -51,21 +44,6 @@ TSS2_RC iesys_compute_encrypt_nonce(
     ESYS_CONTEXT *esysContext,
     int *encryptNonceIdx,
     TPM2B_NONCE **encryptNonce);
-
-TSS2_RC iesys_compute_cp_hashtab(
-    ESYS_CONTEXT *esysContext,
-    const TPM2B_NAME *name1,
-    const TPM2B_NAME *name2,
-    const TPM2B_NAME *name3,
-    HASH_TAB_ITEM cp_hash_tab[3],
-    uint8_t *cpHashNum);
-
-TSS2_RC iesys_compute_rp_hashtab(
-    ESYS_CONTEXT *esysContext,
-    const uint8_t *rpBuffer,
-    size_t rpBuffer_size,
-    HASH_TAB_ITEM rp_hash_tab[3],
-    uint8_t *rpHashNum);
 
 TSS2_RC esys_CreateResourceObject(
     ESYS_CONTEXT *esys_context,
@@ -113,9 +91,7 @@ TSS2_RC iesys_decrypt_param(
 
 TSS2_RC iesys_check_rp_hmacs(
     ESYS_CONTEXT *esysContext,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuths,
-    HASH_TAB_ITEM rp_hash_tab[3],
-    uint8_t rpHashNum);
+    TSS2L_SYS_AUTH_RESPONSE *rspAuths);
 
 void iesys_compute_bound_entity(
     const TPM2B_NAME *name,
@@ -144,8 +120,6 @@ void iesys_compute_session_value(
 TSS2_RC iesys_compute_hmac(
     ESYS_CONTEXT *esys_context,
     RSRC_NODE_T *session,
-    HASH_TAB_ITEM cp_hash_tab[3],
-    uint8_t cpHashNum,
     TPM2B_NONCE *decryptNonce,
     TPM2B_NONCE *encryptNonce,
     TPMS_AUTH_COMMAND *auth);
@@ -180,6 +154,18 @@ TSS2_RC iesys_adapt_auth_value(
 
 void iesys_strip_trailing_zeros(
     TPM2B_AUTH *auth_value);
+
+TSS2_RC iesys_compute_cp_hash(
+    ESYS_CONTEXT *esys_context,
+    TPMI_ALG_HASH hash_alg,
+    uint8_t *cp_hash,
+    size_t *cp_hash_size);
+
+ TSS2_RC iesys_compute_rp_hash(
+    ESYS_CONTEXT *esys_context,
+    TPMI_ALG_HASH hash_alg,
+    uint8_t *rp_hash,
+    size_t *rp_hash_size);
 
 #ifdef __cplusplus
 } /* extern "C" */

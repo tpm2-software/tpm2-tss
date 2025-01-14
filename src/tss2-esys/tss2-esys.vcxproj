@@ -243,6 +243,7 @@
     <ClCompile Include="api\Esys_VerifySignature.c" />
     <ClCompile Include="api\Esys_ZGen_2Phase.c" />
     <ClCompile Include="esys_context.c" />
+    <ClCompile Include="esys_cp_rp_hash.c" />
     <ClCompile Include="esys_crypto.c" />
     <ClCompile Include="esys_crypto_ossl.c" />
     <ClCompile Include="esys_free.c" />
