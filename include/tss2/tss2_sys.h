@@ -2319,6 +2319,9 @@ TSS2_RC Tss2_Sys_PolicyAuthorizeNV(
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
 
+TSS2_RC Tss2_Sys_Abort(
+     TSS2_SYS_CONTEXT *sysContext);
+
 #ifdef __cplusplus
 }
 #endif
