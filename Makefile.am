@@ -383,6 +383,25 @@ src_tss2_tcti_libtss2_tcti_pcap_la_SOURCES  = \
 endif # ENABLE_TCTI_PCAP
 EXTRA_DIST += lib/tss2-tcti-pcap.map
 
+# tcti null library
+if ENABLE_TCTI_NULL
+libtss2_tcti_null = src/tss2-tcti/libtss2-tcti-null.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_null.h
+lib_LTLIBRARIES += $(libtss2_tcti_null)
+pkgconfig_DATA += lib/tss2-tcti-null.pc
+
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_null_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-null.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_null_la_LIBADD   = $(libtss2_tctildr) $(libtss2_mu) $(libutil) $(libutilio)
+src_tss2_tcti_libtss2_tcti_null_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-null.c \
+    src/tss2-tcti/tcti-null.h
+endif # ENABLE_TCTI_NULL
+EXTRA_DIST += lib/tss2-tcti-null.map
+
+
 # tcti libtpms library
 if ENABLE_TCTI_LIBTPMS
 libtss2_tcti_libtpms = src/tss2-tcti/libtss2-tcti-libtpms.la
