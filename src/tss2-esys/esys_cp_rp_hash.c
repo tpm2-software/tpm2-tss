@@ -104,10 +104,14 @@ TSS2_RC Esys_Abort(ESYS_CONTEXT* esys_ctx) {
 
     return_if_null(esys_ctx, "ESYS context is NULL",
                    TSS2_ESYS_RC_BAD_REFERENCE);
-    esys_ctx->state = ESYS_STATE_INIT;
 
     r = Esys_GetSysContext(esys_ctx, &sys_ctx);
     return_if_error(r, "Could not get Sys context");
 
-    return Tss2_Sys_Abort(sys_ctx);
+    r =  Tss2_Sys_Abort(sys_ctx);
+    return_if_error(r, "Call of Tss2_Sys_Abort failed.");
+
+    esys_ctx->state = ESYS_STATE_INIT;
+
+    return TSS2_RC_SUCCESS;
 }
