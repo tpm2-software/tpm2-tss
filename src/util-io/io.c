@@ -15,10 +15,16 @@
 
 #ifndef _WIN32
 #include <arpa/inet.h>   // for inet_ntop
+#ifdef __ZEPHYR__
+#include <zephyr/posix/netdb.h>   // for addrinfo, freeaddrinfo, gai_strerror, getadd...
+#else
 #include <netdb.h>       // for addrinfo, freeaddrinfo, gai_strerror, getadd...
+#endif
 #include <netinet/in.h>  // for IPPROTO_TCP, sockaddr_in, sockaddr_in6
 #include <poll.h>        // for pollfd, poll, POLLIN
+#ifndef __ZEPHYR__
 #include <sys/un.h>      // for sockaddr_un
+#endif
 #include <unistd.h>      // for close, read, write
 #endif
 
