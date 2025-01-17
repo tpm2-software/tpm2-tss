@@ -43,9 +43,11 @@
 #error Version mismatch among TSS2 header files.
 #endif  /* TSS2_API_VERSION_1_2_1_108 */
 
-#if defined(__linux__) || defined(__unix__) || defined(__APPLE__) || defined (__QNXNTO__) || defined (__VXWORKS__)
+#if defined(__linux__) || defined(__unix__) || defined(__APPLE__) || defined (__QNXNTO__) || defined (__VXWORKS__) || defined(__ZEPHYR__)
 #if defined (__VXWORKS__)
 #include <sys/poll.h>
+#elif defined(__ZEPHYR__)
+#include <zephyr/posix/poll.h>
 #else
 #include <poll.h>
 #endif
@@ -53,8 +55,6 @@ typedef struct pollfd TSS2_TCTI_POLL_HANDLE;
 #elif defined(_WIN32)
 #include <windows.h>
 typedef HANDLE TSS2_TCTI_POLL_HANDLE;
-#elif defined(__ZEPHYR__)
-typedef void* TSS2_TCTI_POLL_HANDLE;
 #else
 typedef void TSS2_TCTI_POLL_HANDLE;
 #ifndef TSS2_TCTI_SUPPRESS_POLL_WARNINGS

@@ -32,7 +32,10 @@ extern "C" {
 #define COMPILER_ATTR(...)
 #endif
 
+#ifndef UNUSED
 #define UNUSED(x) (void)(x)
+#endif
+
 #if (MAXLOGLEVEL == LOGL_NONE)
 /* Note:
  * MAYBE_UNUSED macro should be used to mark variables used only
