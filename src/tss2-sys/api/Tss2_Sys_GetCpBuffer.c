@@ -25,7 +25,7 @@ TSS2_RC Tss2_Sys_GetCpBuffer(
     if (!ctx || !cpBufferUsedSize || !cpBuffer)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (ctx->previousStage != CMD_STAGE_PREPARE)
+    if (ctx->previousStage != CMD_STAGE_PREPARE && ctx->previousStage != CMD_STAGE_SEND_COMMAND)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
     *cpBuffer = ctx->cpBuffer;
