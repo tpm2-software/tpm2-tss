@@ -132,6 +132,15 @@ jobs:
           DOCKER_IMAGE: ubuntu-20.04
           ENABLE_COVERAGE: true
           PROJECT_NAME: ${{ github.event.repository.name }}
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.info
+          fail_ci_if_error: true
+          verbose: true
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
