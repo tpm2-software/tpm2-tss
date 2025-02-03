@@ -151,6 +151,7 @@ if [ -n "$BASE_REF" ]; then
 fi
 
 if [ "$ENABLE_COVERAGE" == "true" ]; then
-    bash <(curl -s https://codecov.io/bash)
+    lcov --capture --directory . --output-file ./coverage.info
 fi
+
 exit 0
