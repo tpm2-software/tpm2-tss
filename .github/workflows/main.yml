@@ -121,7 +121,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
-            fetch-depth: 0
+            fetch-depth: 01
       - name: fix-sanitizer
         run: sudo sysctl vm.mmap_rnd_bits=28
       - name: Launch Action
@@ -132,11 +132,9 @@ jobs:
           DOCKER_IMAGE: ubuntu-20.04
           ENABLE_COVERAGE: true
           PROJECT_NAME: ${{ github.event.repository.name }}
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.info
           fail_ci_if_error: true
