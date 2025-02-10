@@ -8,15 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>       // for NULL, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>       // for strcmp, strncmp
+#include <stdlib.h>                             // for NULL, EXIT_FAILURE
+#include <string.h>                             // for strcmp, strncmp
 
-#include "test-fapi.h"    // for init_fapi, FAPI_PROFILE, pcr_reset, EXIT_SKIP
-#include "tss2_common.h"  // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_AUTH...
-#include "tss2_fapi.h"    // for Fapi_Provision, Fapi_Delete, Fapi_Finalize
+#include "test-fapi.h"                          // for init_fapi, FAPI_PROFILE
+#include "test/integration/test-common-tcti.h"  // for tcti_state_backup_if_...
+#include "test/integration/test-common.h"       // for tcti_state_backup_if_...
+#include "tss2_common.h"                        // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_fapi.h"                          // for Fapi_Provision, Fapi_...
+#include "tss2_tcti.h"                          // for TSS2_TCTI_CONTEXT
 
 #define LOGMODULE test
-#include "util/log.h"     // for goto_if_error, UNUSED, LOG_ERROR, LOG_WARNING
+#include "util/log.h"                           // for goto_if_error, UNUSED
 
 #define PASSWORD "abc"
 
@@ -55,6 +58,9 @@ int
 test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
 {
     TSS2_RC r;
+    int ret;
+    TSS2_TCTI_CONTEXT *tcti;
+    libtpms_state libtpms_state;
 
     if (strncmp(FAPI_PROFILE, "P_RSA", 5) == 0) {
         LOG_WARNING("Default ECC profile needed for this test %s is used", FAPI_PROFILE);
@@ -65,6 +71,11 @@ test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
     r = Fapi_Provision(context, PASSWORD, PASSWORD, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
+    r = Fapi_GetTcti(context, &tcti);
+    if (tcti_is_volatile(tcti) && !tcti_state_backup_supported(tcti)) {
+        return EXIT_SKIP;
+    }
+
     r = pcr_reset(context, 16);
     goto_if_error(r, "Error pcr_reset", error);
 
@@ -73,11 +84,17 @@ test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
 
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
 
+    ret = fapi_tcti_state_backup_if_necessary(context, &libtpms_state);
+    goto_if_error(ret, "Error fapi_tcti_state_backup_if_necessary", error);
+
     Fapi_Finalize(&context);
 
     int rc = init_fapi("P_RSA2", &context);
     if (rc)
         goto error;
+
+    ret = fapi_tcti_state_restore_if_necessary(context, &libtpms_state);
+    goto_if_error(ret, "Error fapi_tcti_state_restore_if_necessary", error);
 
     /* Authentication should not work due to auth for hierarchy was set. */
     r = Fapi_Provision(context, NULL, NULL, NULL);
@@ -101,10 +118,16 @@ test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
+    ret = fapi_tcti_state_backup_if_necessary(context, &libtpms_state);
+    goto_if_error(ret, "Error fapi_tcti_state_backup_if_necessary", error);
+
     Fapi_Finalize(&context);
     rc = init_fapi("P_RSA2", &context);
     if (rc)
         goto error;
+
+    ret = fapi_tcti_state_restore_if_necessary(context, &libtpms_state);
+    goto_if_error(ret, "Error fapi_tcti_state_restore_if_necessary", error);
 
      /* Correct Provisioning with auth value for hierarchy from previous
        provisioning. Non information whether auth value is needed is
@@ -126,6 +149,9 @@ test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
+    ret = fapi_tcti_state_backup_if_necessary(context, &libtpms_state);
+    goto_if_error(ret, "Error fapi_tcti_state_backup_if_necessary", error);
+
     Fapi_Finalize(&context);
 
     if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
@@ -137,10 +163,16 @@ test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
     if (rc)
         goto error;
 
+    ret = fapi_tcti_state_restore_if_necessary(context, &libtpms_state);
+    goto_if_error(ret, "Error fapi_tcti_state_restore_if_necessary", error);
+
     /* A policy will be assigned to owner and endorsement hierarchy. */
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
+
+    ret = fapi_tcti_state_backup_if_necessary(context, &libtpms_state);
+    goto_if_error(ret, "Error fapi_tcti_state_backup_if_necessary", error);
 
     Fapi_Finalize(&context);
     if (strcmp(FAPI_PROFILE, "P_ECC") == 0) {
@@ -155,6 +187,9 @@ test_fapi_test_second_provisioning(FAPI_CONTEXT *context)
 
     if (rc)
         goto error;
+
+    ret = fapi_tcti_state_restore_if_necessary(context, &libtpms_state);
+    goto_if_error(ret, "Error fapi_tcti_state_restore_if_necessary", error);
 
     /* Owner and endorsement hierarchy will be authorized via policy and
        policy will be reset. */

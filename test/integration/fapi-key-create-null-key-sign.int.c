@@ -8,19 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>             // for json_object_new_string, json_object
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, size_t, sprintf
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strncmp
+#include <json.h>                               // for json_object_new_string
+#include <stdint.h>                             // for uint8_t
+#include <stdio.h>                              // for NULL, size_t, sprintf
+#include <stdlib.h>                             // for EXIT_FAILURE, EXIT_SU...
+#include <string.h>                             // for strncmp
 
-#include "test-fapi.h"        // for init_fapi, fapi_profile, test_invoke_fapi
-#include "tss2_common.h"      // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SUCCESS
-#include "tss2_fapi.h"        // for Fapi_CreateKey, Fapi_Delete, Fapi_Finalize
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "test-fapi.h"                          // for init_fapi, fapi_profile
+#include "test/integration/test-common-tcti.h"  // for tcti_is_volatile, tct...
+#include "test/integration/test-common.h"       // for tcti_is_volatile, tct...
+#include "tss2_common.h"                        // for TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_fapi.h"                          // for Fapi_CreateKey, Fapi_...
+#include "tss2_tcti.h"                          // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"                    // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, SAFE_FREE, UNUSED, retur...
+#include "util/log.h"                           // for goto_if_error, SAFE_FREE
 
 #define PASSWORD "abc"
 #define SIGN_TEMPLATE  "sign,noDa"
@@ -75,17 +78,25 @@ auth_callback(
 int
 test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
 {
-    TSS2_RC        r;
-    char          *sigscheme = NULL;
-    uint8_t       *signature = NULL;
-    char          *publicKey = NULL;
-    char          *path_list = NULL;
+    TSS2_RC           r;
+    int               ret;
+    TSS2_TCTI_CONTEXT *tcti;
+    libtpms_state     libtpms_state;
+    char              *sigscheme = NULL;
+    uint8_t           *signature = NULL;
+    char              *publicKey = NULL;
+    char              *path_list = NULL;
 
     if (strncmp("P_ECC", fapi_profile, 5) != 0)
         sigscheme = "RSA_PSS";
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
+
+    r = Fapi_GetTcti(context, &tcti);
+    if (tcti_is_volatile(tcti) && !tcti_state_backup_supported(tcti)) {
+        return EXIT_SKIP;
+    }
 
     r = Fapi_SetAuthCB(context, auth_callback, NULL);
     goto_if_error(r, "Error SetPolicyAuthCallback", error);
@@ -140,10 +151,16 @@ test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
                   &digest.buffer[0], digest.size, signature, signatureSize);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
+    ret = fapi_tcti_state_backup_if_necessary(context, &libtpms_state);
+    goto_if_error(ret, "Error fapi_tcti_state_backup_if_necessary", error);
+
     Fapi_Finalize(&context);
     int rc = init_fapi(fapi_profile, &context);
     if (rc)
         goto error;
+
+    ret = fapi_tcti_state_restore_if_necessary(context, &libtpms_state);
+    goto_if_error(ret, "Error fapi_tcti_state_restore_if_necessary", error);
 
     /* Test the creation of a primary in the storage hierarchy. */
     r = Fapi_CreateKey(context, "HS/myPrimary", "noDa", "",
