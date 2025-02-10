@@ -185,134 +185,6 @@ iesys_compute_encrypt_nonce(ESYS_CONTEXT * esys_context,
     return TSS2_RC_SUCCESS;
 }
 
-/** Computation of the command parameter(cp) hashes.
- *
- * The command parameter(cp) hash of the command is computed for every
- * session.  If the sessions use different hash algorithms then different cp
- * hashes must be calculated.
- * The names of objects with an auth index and the command buffer are used
- * to compute the cp hash with the hash algorithm of the corresponding session.
- * The result is stored in table together with the used hash algorithm.
- * @param[in] esys_context The ESYS_CONTEXT
- * @param[in] name1 The name of the first object with an auth index.
- * @param[in] name2 The name of the second object with an auth index.
- * @param[in] name3 The name of the third object with an auth index.
- * @param[3] [out] cp_hash_tab An array with all cp hashes.
- *        The used hash algorithm is stored in this table to find the
- *        appropriate values for a session.
- * @param[out] cpHashNum Number of computed cp hash values. This value
- *        corresponds to the number of used hash algorithms.
- * @retval TSS2_RC_SUCCESS on success,
- * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
- * @retval TSS2_ESYS_RC_NOT_IMPLEMENTED if a hash algorithm is not implemented.
- * @retval TSS2_SYS_RC_* for SAPI errors.
- */
-TSS2_RC
-iesys_compute_cp_hashtab(ESYS_CONTEXT * esys_context,
-                         const TPM2B_NAME * name1,
-                         const TPM2B_NAME * name2,
-                         const TPM2B_NAME * name3,
-                         HASH_TAB_ITEM cp_hash_tab[3], uint8_t * cpHashNum)
-{
-    uint8_t ccBuffer[4];
-    TSS2_RC r = Tss2_Sys_GetCommandCode(esys_context->sys, &ccBuffer[0]);
-    return_if_error(r, "Error: get command code");
-    const uint8_t *cpBuffer;
-    size_t cpBuffer_size;
-    r = Tss2_Sys_GetCpBuffer(esys_context->sys, &cpBuffer_size, &cpBuffer);
-    return_if_error(r, "Error: get cp buffer");
-    *cpHashNum = 0;
-    for (int i = 0; i < 3; i++) {
-        RSRC_NODE_T *session = esys_context->session_tab[i];
-        bool cpHashFound = false;
-        if (session != NULL) {
-            /* We do not want to compute cpHashes multiple times for the same
-               algorithm to save time and space */
-            for (int j = 0; j < *cpHashNum; j++)
-                /* Check if cpHash for this algorithm was already computed */
-                if (cp_hash_tab[j].alg ==
-                    session->rsrc.misc.rsrc_session.authHash) {
-                    cpHashFound = true;
-                    break;
-                }
-            /* If not, we compute it and append it to the list */
-            if (!cpHashFound) {
-                cp_hash_tab[*cpHashNum].size = sizeof(TPMU_HA);
-                r = iesys_crypto_cpHash(&esys_context->crypto_backend, session->rsrc.misc.rsrc_session.
-                                        authHash, ccBuffer, name1, name2, name3,
-                                        cpBuffer, cpBuffer_size,
-                                        &cp_hash_tab[*cpHashNum].digest[0],
-                                        &cp_hash_tab[*cpHashNum].size);
-                return_if_error(r, "crypto cpHash");
-
-                cp_hash_tab[*cpHashNum].alg =
-                    session->rsrc.misc.rsrc_session.authHash;
-                *cpHashNum += 1;
-            }
-        }
-    }
-    return r;
-}
-
-/** Computation of the response parameter (rp) hashes.
- * The response parameter (rp) hash of the response is computed for every
- * session.  If the sessions use different hash algorithms then different rp
- * hashes must be calculated.
- * The names of objects with an auth index and the command buffer are used
- * to compute the cp hash with the hash algorithm of the corresponding session.
- * The result is stored in table together with the used hash algorithm.
- * @param[in] esys_context The ESYS_CONTEXT
- * @param[in] rspAuths List of response
- * @param[in] const uint8_t * rpBuffer The pointer to the response buffer
- * @param[in] size_t rpBuffer_size The size of the response.
- * @param[out] HASH_TAB_ITEM rp_hash_tab[3] An array with all rp hashes.
- *        The used hash algorithm is stored in this table to find the
- *        appropriate values for a session.
- * @param[out] uint8_t Number of computed rp hash values. This value
- *        corresponds to the number of used hash algorithms.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
- * @retval TSS2_ESYS_RC_NOT_IMPLEMENTED if a hash algorithm is not implemented.
- * @retval TSS2_SYS_RC_* for SAPI errors.
- */
-TSS2_RC
-iesys_compute_rp_hashtab(ESYS_CONTEXT * esys_context,
-                         const uint8_t * rpBuffer,
-                         size_t rpBuffer_size,
-                         HASH_TAB_ITEM rp_hash_tab[3], uint8_t * rpHashNum)
-{
-    uint8_t rcBuffer[4] = { 0 };
-    uint8_t ccBuffer[4];
-    TSS2_RC r = Tss2_Sys_GetCommandCode(esys_context->sys, &ccBuffer[0]);
-    return_if_error(r, "Error: get command code");
-
-    for (int i = 0; i < esys_context->authsCount; i++) {
-        RSRC_NODE_T *session = esys_context->session_tab[i];
-        if (session == NULL)
-            continue;
-        bool rpHashFound = false;
-        /* We do not want to compute cpHashes multiple times for the same
-           algorithm to save time and space */
-        for (int j = 0; j < *rpHashNum; j++)
-            if (rp_hash_tab[j].alg == session->rsrc.misc.rsrc_session.authHash) {
-                rpHashFound = true;
-                break;
-            }
-        /* If not, we compute it and append it to the list */
-        if (!rpHashFound) {
-            rp_hash_tab[*rpHashNum].size = sizeof(TPMU_HA);
-            r = iesys_crypto_rpHash(&esys_context->crypto_backend, session->rsrc.misc.rsrc_session.authHash,
-                                    rcBuffer, ccBuffer, rpBuffer, rpBuffer_size,
-                                    &rp_hash_tab[*rpHashNum].digest[0],
-                                    &rp_hash_tab[*rpHashNum].size);
-            return_if_error(r, "crypto rpHash");
-            rp_hash_tab[*rpHashNum].alg =
-                session->rsrc.misc.rsrc_session.authHash;
-            *rpHashNum += 1;
-        }
-    }
-    return TPM2_RC_SUCCESS;
-}
 /** Create an esys resource object corresponding to a TPM object.
  *
  * The esys object is appended to the resource list stored in the esys context
@@ -968,6 +840,46 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context)
     return TSS2_RC_SUCCESS;
 }
 
+/** Computation of the command response(cp) hash.
+ *
+ * The command response(rp) hash of the command is computed for every
+ * session.  If the sessions use different hash algorithms then different cp
+ * hashes must be calculated.
+ * @param[in] esys_context The ESYS_CONTEXT
+ * @param[in] hash_alg The hash alg used to compute the cp hash
+ * @param[3] [out] rp_hash The rp hash.
+ * @param[out] rp_hash_size The size of the computed rp hash.
+ * @retval TSS2_RC_SUCCESS on success,
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ * @retval TSS2_SYS_RC_* for SAPI errors.
+ */
+TSS2_RC
+iesys_compute_rp_hash(ESYS_CONTEXT *esys_context,
+                      TPMI_ALG_HASH hash_alg,
+                      uint8_t *rp_hash,
+                      size_t *rp_hash_size) {
+     TSS2_RC r;
+     uint8_t rcBuffer[4] = { 0 };
+     uint8_t ccBuffer[4];
+     const uint8_t *rpBuffer;
+     size_t rpBuffer_size;
+
+     r = Tss2_Sys_GetCommandCode(esys_context->sys, &ccBuffer[0]);
+     return_if_error(r, "Error: get command code");
+
+     r = Tss2_Sys_GetRpBuffer(esys_context->sys, &rpBuffer_size, &rpBuffer);
+     return_if_error(r, "Error: get rp buffer");
+
+     *rp_hash_size =  sizeof(TPMU_HA);
+     r = iesys_crypto_rpHash(&esys_context->crypto_backend, hash_alg,
+                             rcBuffer, ccBuffer, rpBuffer, rpBuffer_size,
+                             &rp_hash[0],
+                             rp_hash_size);
+     return_if_error(r, "crypto rpHash");
+
+     return TSS2_RC_SUCCESS;
+}
+
 /** Check the HMAC values of the response for all sessions.
  *
  * The HMAC values are computed based on the session secrets, the used nonces,
@@ -984,11 +896,11 @@ iesys_decrypt_param(ESYS_CONTEXT * esys_context)
  */
 TSS2_RC
 iesys_check_rp_hmacs(ESYS_CONTEXT * esys_context,
-                     TSS2L_SYS_AUTH_RESPONSE * rspAuths,
-                     HASH_TAB_ITEM rp_hash_tab[3],
-                     uint8_t rpHashNum)
+                     TSS2L_SYS_AUTH_RESPONSE * rspAuths)
 {
     TSS2_RC r;
+    size_t rp_digest_size;
+    uint8_t rp_digest[sizeof(TPMU_HA)];
 
     for (int i = 0; i < rspAuths->count; i++) {
         RSRC_NODE_T *session = esys_context->session_tab[i];
@@ -1005,18 +917,12 @@ iesys_check_rp_hmacs(ESYS_CONTEXT * esys_context,
             continue;
         }
 
-        /* Find the rpHash for the hash algorithm used by this session */
-        int hi;
-        for (hi = 0; hi < rpHashNum; hi++) {
-            if (rsrc_session->authHash == rp_hash_tab[hi].alg) {
-                break;
-            }
-        }
-        if (hi == rpHashNum) {
-            LOG_ERROR("rpHash for alg %"PRIx16 " not found.",
-                      rsrc_session->authHash);
-            return TSS2_ESYS_RC_GENERAL_FAILURE;
-        }
+        rp_digest_size = sizeof(TPMU_HA);
+        r = iesys_compute_rp_hash(esys_context,
+                                  session->rsrc.misc.rsrc_session.authHash,
+                                  &rp_digest[0],
+                                  &rp_digest_size);
+        return_if_error(r, "crypto rpHash");
 
         TPM2B_AUTH rp_hmac;
         rp_hmac.size = sizeof(TPMU_HA);
@@ -1026,8 +932,8 @@ iesys_check_rp_hmacs(ESYS_CONTEXT * esys_context,
         r = iesys_crypto_authHmac(&esys_context->crypto_backend, rsrc_session->authHash,
                                   &rsrc_session->sessionValue[0],
                                   rsrc_session->sizeHmacValue,
-                                  &rp_hash_tab[hi].digest[0],
-                                  rp_hash_tab[hi].size,
+                                  &rp_digest[0],
+                                  rp_digest_size,
                                   &rsrc_session->nonceTPM,
                                   &rsrc_session->nonceCaller, NULL, NULL,
                                   rspAuths->auths[i].sessionAttributes,
@@ -1290,15 +1196,66 @@ check_session_feasibility(ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3,
     return TPM2_RC_SUCCESS;
 }
 
+/** Computation of the command parameter(cp) hash.
+ *
+ * The command parameter(cp) hash of the command is computed for every
+ * session.  If the sessions use different hash algorithms then different cp
+ * hashes must be calculated.
+ * The names of objects with an auth index and the command buffer are used
+ * to compute the cp hash with the hash algorithm of the corresponding session.
+ * The result is stored in table together with the used hash algorithm.
+ * @param[in] esys_context The ESYS_CONTEXT
+ * @param[in] hash_alg The hash alg used to compute the cp hash
+ * @param[3] [out] cp_hash The cp hash.
+ * @param[out] cp_hash_size The size of the computed cp hash.
+ * @retval TSS2_RC_SUCCESS on success,
+ * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
+ * @retval TSS2_SYS_RC_* for SAPI errors.
+ */
+TSS2_RC
+iesys_compute_cp_hash(ESYS_CONTEXT *esys_context,
+                      TPMI_ALG_HASH hash_alg,
+                      uint8_t *cp_hash,
+                      size_t *cp_hash_size) {
+     TSS2_RC r;
+     uint8_t ccBuffer[4];
+     const uint8_t *cpBuffer;
+     size_t cpBuffer_size;
+     const TPM2B_NAME *name1, *name2, *name3;
+
+     r = Tss2_Sys_GetCommandCode(esys_context->sys, &ccBuffer[0]);
+     return_if_error(r, "Error: get command code");
+
+     r = Tss2_Sys_GetCpBuffer(esys_context->sys, &cpBuffer_size, &cpBuffer);
+     return_if_error(r, "Error: get cp buffer");
+
+     name1 = (esys_context->auth_objects[0] != NULL) ?
+         &esys_context->auth_objects[0]->rsrc.name : NULL;
+     name2 = (esys_context->auth_objects[1] != NULL) ?
+         &esys_context->auth_objects[1]->rsrc.name : NULL;
+     name3 = (esys_context->auth_objects[2] != NULL) ?
+         &esys_context->auth_objects[2]->rsrc.name : NULL;
+
+     *cp_hash_size = sizeof(TPMU_HA);
+
+     r = iesys_crypto_cpHash(&esys_context->crypto_backend,
+                             hash_alg,
+                             ccBuffer,
+                             name1, name2, name3,
+                             cpBuffer, cpBuffer_size,
+                             &cp_hash[0],
+                             cp_hash_size);
+     return_if_error(r, "crypto cpHash");
+
+     return TSS2_RC_SUCCESS;
+}
+
 /** Compute HMAC for a session.
  *
  * The HMAC is computed from the appropriate cp hash, the caller nonce, the TPM
  * nonce and the session attributes. If an encrypt session is not the first
  * session also the encrypt and the decrypt nonce have to be included.
  * @param[in] session The session for which the HMAC has to be computed.
- * @param[in] cp_hash_tab The table of computed cp hash values.
- * @param[in] cpHashNum The number of computed cp hash values which depens on
- *            the number of used hash algorithms.
  * @param[in] encryptNonce The encrypt Nonce of an encryption session. Has to
  *            be NULL if encryption session is first session.
  * @param[in] decryptNonce The decrypt Nonce of an encryption session. Has to
@@ -1314,14 +1271,14 @@ check_session_feasibility(ESYS_TR shandle1, ESYS_TR shandle2, ESYS_TR shandle3,
  */
 TSS2_RC
 iesys_compute_hmac(ESYS_CONTEXT *esys_context, RSRC_NODE_T * session,
-                   HASH_TAB_ITEM cp_hash_tab[3],
-                   uint8_t cpHashNum,
                    TPM2B_NONCE * decryptNonce,
                    TPM2B_NONCE * encryptNonce,
                    TPMS_AUTH_COMMAND * auth)
 {
     TSS2_RC r;
     size_t authHash_size = 0;
+    uint8_t cp_hash[sizeof(TPMU_HA)];
+    size_t cp_hash_size;
 
     if (session != NULL) {
         IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
@@ -1329,13 +1286,9 @@ iesys_compute_hmac(ESYS_CONTEXT *esys_context, RSRC_NODE_T * session,
                                               authHash, &authHash_size);
         return_if_error(r, "Initializing auth session");
 
-        int hi = 0;
-        for (int j = 0; j < cpHashNum; j++) {
-            if (rsrc_session->authHash == cp_hash_tab[j].alg) {
-                hi = j;
-                break;
-            }
-        }
+        r = iesys_compute_cp_hash(esys_context, rsrc_session->authHash, cp_hash, &cp_hash_size);
+        return_if_error(r, "crypto cpHash");
+
         auth->hmac.size = sizeof(TPMU_HA);
         /* if other than first session is used for for parameter encryption
            the corresponding nonces have to be included into the hmac
@@ -1343,8 +1296,8 @@ iesys_compute_hmac(ESYS_CONTEXT *esys_context, RSRC_NODE_T * session,
         r = iesys_crypto_authHmac(&esys_context->crypto_backend, rsrc_session->authHash,
                                   &rsrc_session->sessionValue[0],
                                   rsrc_session->sizeHmacValue,
-                                  &cp_hash_tab[hi].digest[0],
-                                  cp_hash_tab[hi].size,
+                                  &cp_hash[0],
+                                  cp_hash_size,
                                   &rsrc_session->nonceCaller,
                                   &rsrc_session->nonceTPM,
                                   decryptNonce, encryptNonce,
@@ -1387,10 +1340,9 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
     int encryptNonceIdx = 0;
     TPM2B_NONCE *encryptNonce = NULL;
 
-    RSRC_NODE_T *objects[] = { h1, h2, h3 };
-
-    HASH_TAB_ITEM cp_hash_tab[3];
-    uint8_t cpHashNum = 0;
+    esys_context->auth_objects[0] = h1;
+    esys_context->auth_objects[1] = h2;
+    esys_context->auth_objects[2] = h3;
 
     auths->count = 0;
     r = iesys_gen_caller_nonces(esys_context);
@@ -1412,26 +1364,17 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
         decryptNonceIdx = 0;
     }
 
-
-    /* Compute cp hash values for command buffer for all used algorithms */
-
-    r = iesys_compute_cp_hashtab(esys_context,
-                                 (h1 != NULL) ? &h1->rsrc.name : NULL,
-                                 (h2 != NULL) ? &h2->rsrc.name : NULL,
-                                 (h3 != NULL) ? &h3->rsrc.name : NULL,
-                                 &cp_hash_tab[0], &cpHashNum);
-    return_if_error(r, "Error while computing cp hashes");
-
     for (int session_idx = 0; session_idx < 3; session_idx++) {
         auths->auths[auths->count].nonce.size = 0;
         auths->auths[auths->count].sessionAttributes = 0;
         if (esys_context->session_type[session_idx] == ESYS_TR_PASSWORD) {
-            if (objects[session_idx] == NULL) {
+            if (esys_context->auth_objects[session_idx] == NULL) {
                 auths->auths[auths->count].hmac.size = 0;
                 auths->count += 1;
             } else {
                 auths->auths[auths->count].sessionHandle = TPM2_RH_PW;
-                auths->auths[auths->count].hmac = objects[session_idx]->auth;
+                auths->auths[auths->count].hmac =
+                    esys_context->auth_objects[session_idx]->auth;
                 auths->count += 1;
             }
             continue;
@@ -1441,10 +1384,11 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
             IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
             if (rsrc_session->type_policy_session == POLICY_PASSWORD) {
                 auths->auths[auths->count].sessionHandle = session->rsrc.handle;
-                if (objects[session_idx] == NULL) {
+                if (esys_context->auth_objects[session_idx] == NULL) {
                     auths->auths[auths->count].hmac.size = 0;
                 } else {
-                    auths->auths[auths->count].hmac = objects[session_idx]->auth;
+                    auths->auths[auths->count].hmac =
+                        esys_context->auth_objects[session_idx]->auth;
                 }
                 auths->auths[auths->count].sessionAttributes =
                     session->rsrc.misc.rsrc_session.sessionAttributes;
@@ -1453,7 +1397,6 @@ iesys_gen_auths(ESYS_CONTEXT * esys_context,
             }
         }
         r = iesys_compute_hmac(esys_context, esys_context->session_tab[session_idx],
-                               &cp_hash_tab[0], cpHashNum,
                                (session_idx == 0
                                 && decryptNonceIdx > 0) ? decryptNonce : NULL,
                                (session_idx == 0
@@ -1494,8 +1437,6 @@ iesys_check_response(ESYS_CONTEXT * esys_context)
     const uint8_t *rpBuffer;
     size_t rpBuffer_size;
     TSS2L_SYS_AUTH_RESPONSE rspAuths;
-    HASH_TAB_ITEM rp_hash_tab[3];
-    uint8_t rpHashNum = 0;
 
     if (esys_context->authsCount == 0) {
         LOG_TRACE("No auths to verify");
@@ -1521,13 +1462,7 @@ iesys_check_response(ESYS_CONTEXT * esys_context)
         r = Tss2_Sys_GetRpBuffer(esys_context->sys, &rpBuffer_size, &rpBuffer);
         return_if_error(r, "Error: get rp buffer");
 
-        r = iesys_compute_rp_hashtab(esys_context,
-                                     rpBuffer, rpBuffer_size,
-                                     &rp_hash_tab[0], &rpHashNum);
-        return_if_error(r, "Error: while computing response hashes");
-
-        r = iesys_check_rp_hmacs(esys_context, &rspAuths, &rp_hash_tab[0],
-                                 rpHashNum);
+        r = iesys_check_rp_hmacs(esys_context, &rspAuths);
         return_if_error(r, "Error: response hmac check");
 
         if (esys_context->encryptNonce == NULL) {

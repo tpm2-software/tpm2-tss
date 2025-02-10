@@ -2123,14 +2123,7 @@ retry:
     rval = Tss2_Sys_SetDecryptParam( sysContext, 10, (uint8_t *)4 );
     CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); /* #12 */
 
-    /*
-     * NOTE: Stick test for BAD_SEQUENCE for GetCpBuffer here, just
-     * because it's easier to do this way.
-     */
-    rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)4, &cpBuffer );
-    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); /* #13 */
-
-    /*
+     /*
      * Now finish the write command so that TPM isn't stuck trying
      * to send a response.
      */
@@ -2139,7 +2132,14 @@ retry:
         LOG_INFO ("got TPM2_RC_RETRY, trying again");
         goto retry;
     }
-    CheckPassed( rval ); /* #14 */
+    CheckPassed( rval ); /* #13 */
+
+    /*
+     * NOTE: Stick test for BAD_SEQUENCE for GetCpBuffer here, just
+     * because it's easier to do this way.
+     */
+    rval = Tss2_Sys_GetCpBuffer( sysContext, (size_t *)4, &cpBuffer );
+    CheckFailed( rval, TSS2_SYS_RC_BAD_SEQUENCE ); /* #14 */
 
     /* Test GetEncryptParam for no encrypt param case. */
     rval = Tss2_Sys_GetEncryptParam( sysContext, &encryptParamSize, &encryptParamBuffer );

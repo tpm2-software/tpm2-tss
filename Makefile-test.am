@@ -238,6 +238,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-clockset.int \
     test/integration/esys-clockset-audit.int \
     test/integration/esys-commit.int \
+    test/integration/esys-cp-hash.int \
     test/integration/esys-create-fail.int \
     test/integration/esys-create-password-auth.int \
     test/integration/esys-create-policy-auth.int \
@@ -1136,7 +1137,7 @@ if POLICY
 TESTS_UNIT += test/unit/tss2_policy
 
 test_unit_tss2_policy_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_tss2_policy_LDADD   = $(CMOCKA_LIBS) $(libtss2_policy) $(libtss2_esys)
+test_unit_tss2_policy_LDADD   = $(CMOCKA_LIBS) $(libtss2_policy) $(libtss2_esys) $(libtss2_sys)
 test_unit_tss2_policy_SOURCES = test/unit/tss2_policy.c src/util/log.c \
     test/data/test-fapi-policies.h test/helper/cmocka_all.h
 endif # POLICY
@@ -1591,6 +1592,13 @@ test_integration_esys_get_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_get_random_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_get_random_int_SOURCES = \
     test/integration/esys-get-random.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_cp_hash_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_cp_hash_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_cp_hash_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_cp_hash_int_SOURCES = \
+    test/integration/esys-cp-hash.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_get_time_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)

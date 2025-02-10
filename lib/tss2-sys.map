@@ -1,5 +1,6 @@
 {
     global:
+        Tss2_Sys_Abort;
         Tss2_Sys_AC_GetCapability_Prepare;
         Tss2_Sys_AC_GetCapability_Complete;
         Tss2_Sys_AC_GetCapability;

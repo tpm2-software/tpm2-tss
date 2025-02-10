@@ -177,6 +177,7 @@ struct ESYS_CONTEXT {
                                       current command execution. */
     RSRC_NODE_T *session_tab[3]; /**< The list of TPM session meta data in the
                                       current command execution. */
+    RSRC_NODE_T *auth_objects[3];/**< The list of objects to be authenticated */
     int encryptNonceIdx;         /**< The index of the encrypt session. */
     TPM2B_NONCE *encryptNonce;   /**< The nonce of the encrypt session, or NULL
                                       if no encrypt session exists. */

@@ -3808,6 +3808,24 @@ Esys_SetCryptoCallbacks(
     ESYS_CONTEXT *esysContext,
     ESYS_CRYPTO_CALLBACKS *callbacks);
 
+TSS2_RC
+Esys_GetCpHash(
+    ESYS_CONTEXT* esysContext,
+    TPMI_ALG_HASH hashAlg,
+    uint8_t **cpHash,
+    size_t *cpHash_size);
+
+TSS2_RC
+Esys_GetRpHash(
+    ESYS_CONTEXT* esysContext,
+    TPMI_ALG_HASH hashAlg,
+    uint8_t **cpHash,
+    size_t *cpHash_size);
+
+TSS2_RC
+Esys_Abort(
+    ESYS_CONTEXT* esysContext);
+
 #ifdef __cplusplus
 }
 #endif
