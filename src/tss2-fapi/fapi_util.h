@@ -238,7 +238,8 @@ ifapi_get_certificates(
     FAPI_CONTEXT *context,
     UINT32 min_handle,
     UINT32 max_handle,
-    NODE_OBJECT_T **cert_list);
+    uint8_t **certs,
+    size_t *cert_list_size);
 
 TSS2_RC
 ifapi_initialize_object(
