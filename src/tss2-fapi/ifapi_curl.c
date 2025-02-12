@@ -76,8 +76,8 @@ static X509
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_NO_CERT if an error did occur during certificate downloading.
  */
-static TSS2_RC
-get_crl_from_cert(X509 *cert, X509_CRL **crl)
+TSS2_RC
+ifapi_get_crl_from_cert(X509 *cert, X509_CRL **crl)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     unsigned char* url = NULL;
@@ -110,6 +110,12 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
         goto cleanup;
     }
 
+    if (strncmp((char *)url,"file:", strlen("file:")) == 0) {
+        /* Workaround if crl is not configured correctly. */
+        *crl = NULL;
+        goto cleanup;
+    }
+
     curl_rc = ifapi_get_curl_buffer(url, &crl_buffer, &crl_buffer_size);
     if (curl_rc != 0) {
         goto_error(r, TSS2_FAPI_RC_NO_CERT, "Get crl.", cleanup);
@@ -123,6 +129,8 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Can't convert crl.", cleanup);
         }
     }
+
+    LOG_DEBUG("Downloaded CRL: %s", url);
 
 cleanup:
     SAFE_FREE(crl_buffer);
@@ -231,11 +239,11 @@ ifapi_curl_verify_ek_cert(
         }
 
          /* Get Certificate revocation list for Intermediate certificate */
-        r = get_crl_from_cert(intermed_cert, &crl_intermed);
+        r = ifapi_get_crl_from_cert(intermed_cert, &crl_intermed);
         goto_if_error(r, "Get crl for intermediate certificate.", cleanup);
 
         /* Get Certificate revocation list for EK certificate */
-        r = get_crl_from_cert(ek_cert, &crl_ek);
+        r = ifapi_get_crl_from_cert(ek_cert, &crl_ek);
         goto_if_error(r, "Get crl for ek certificate.", cleanup);
     }
 
