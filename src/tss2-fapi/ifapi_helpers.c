@@ -911,7 +911,8 @@ push_object_to_list(void *object, NODE_OBJECT_T **object_list)
 TSS2_RC
 append_object_to_list(void *object, NODE_OBJECT_T **object_list)
 {
-    NODE_OBJECT_T *list, *last = calloc(1, sizeof(NODE_OBJECT_T));
+    NODE_OBJECT_T *list;
+    NODE_OBJECT_T *last = calloc(1, sizeof(NODE_OBJECT_T));
     return_if_null(last, "Out of space.", TSS2_FAPI_RC_MEMORY);
     last->object = object;
     if (!*object_list) {
