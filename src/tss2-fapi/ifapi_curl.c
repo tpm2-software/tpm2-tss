@@ -76,8 +76,8 @@ static X509
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_NO_CERT if an error did occur during certificate downloading.
  */
-static TSS2_RC
-get_crl_from_cert(X509 *cert, X509_CRL **crl)
+TSS2_RC
+ifapi_get_crl_from_cert(X509 *cert, X509_CRL **crl)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     unsigned char* url = NULL;
@@ -231,11 +231,11 @@ ifapi_curl_verify_ek_cert(
         }
 
          /* Get Certificate revocation list for Intermediate certificate */
-        r = get_crl_from_cert(intermed_cert, &crl_intermed);
+        r = ifapi_get_crl_from_cert(intermed_cert, &crl_intermed);
         goto_if_error(r, "Get crl for intermediate certificate.", cleanup);
 
         /* Get Certificate revocation list for EK certificate */
-        r = get_crl_from_cert(ek_cert, &crl_ek);
+        r = ifapi_get_crl_from_cert(ek_cert, &crl_ek);
         goto_if_error(r, "Get crl for ek certificate.", cleanup);
     }
 
