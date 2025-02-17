@@ -140,6 +140,13 @@ char const *eventtype_to_string (UINT32 event_type) {
         return "EV_EFI_HCRTM_EVENT";
     case EV_EFI_VARIABLE_AUTHORITY:
         return "EV_EFI_VARIABLE_AUTHORITY";
+    case EV_EFI_PLATFORM_FIRMWARE_BLOB2:
+        return "EV_EFI_PLATFORM_FIRMWARE_BLOB2";
+    case EV_EFI_HANDOFF_TABLES2:
+        return "EV_EFI_HANDOFF_TABLES2";
+    case EV_EFI_VARIABLE_BOOT2:
+        return "EV_EFI_VARIABLE_BOOT2";
+
     default:
         return "Unknown event type";
     }
@@ -357,6 +364,7 @@ TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type,
     /* TCG PC Client FPF section 9.2.6 */
     case EV_EFI_VARIABLE_DRIVER_CONFIG:
     case EV_EFI_VARIABLE_BOOT:
+    case EV_EFI_VARIABLE_BOOT2:
     case EV_EFI_VARIABLE_AUTHORITY:
         {
 #if (MAXLOGLEVEL != LOGL_NONE)
@@ -405,6 +413,7 @@ TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type,
     /* TCG PC Client FPF section 9.2.5 */
     case EV_S_CRTM_CONTENTS:
     case EV_EFI_PLATFORM_FIRMWARE_BLOB:
+    case EV_EFI_PLATFORM_FIRMWARE_BLOB2:
         {
             UEFI_PLATFORM_FIRMWARE_BLOB *data =
                 (UEFI_PLATFORM_FIRMWARE_BLOB*)in->Event;
