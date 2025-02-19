@@ -146,6 +146,9 @@ endif
 if ENABLE_TCTI_I2C_FTDI
 TESTS_UNIT += test/unit/tcti-i2c-ftdi
 endif
+if ENABLE_TCTI_PY
+TESTS_UNIT += test/unit/tcti-py
+endif
 if ESYS
 TESTS_UNIT += \
     test/unit/esys-context-null \
@@ -616,6 +619,15 @@ test_unit_tcti_i2c_ftdi_LDFLAGS = -Wl,--wrap=MPSSE \
                                   -Wl,--wrap=gettimeofday
 test_unit_tcti_i2c_ftdi_SOURCES = test/unit/tcti-i2c-ftdi.c \
     src/tss2-tcti/tcti-i2c-ftdi.c test/helper/cmocka_all.h
+endif
+
+if ENABLE_TCTI_PY
+test_unit_tcti_py_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(PYTHON3_EMBED_CFLAGS)
+test_unit_tcti_py_LDFLAGS = $(PYTHON3_EMBED_LIBS) -ldl -lpthread -ltss2-mu -ltss2-esys
+test_unit_tcti_py_LDADD   = $(CMOCKA_LIBS) $(test_unit_log_LDADD)
+test_unit_tcti_py_SOURCES = test/unit/tcti-py.c \
+                            src/tss2-tcti/tcti-py.c \
+                            src/tss2-tcti/tcti-common.c
 endif
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
