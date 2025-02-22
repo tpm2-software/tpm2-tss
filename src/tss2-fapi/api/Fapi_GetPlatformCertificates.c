@@ -211,7 +211,6 @@ Fapi_GetPlatformCertificates_Finish(
 {
     LOG_TRACE("called for context:%p", context);
 
-    NODE_OBJECT_T *cert_list = NULL;
     TSS2_RC r;
 
     /* Check for NULL parameters */
@@ -224,46 +223,16 @@ Fapi_GetPlatformCertificates_Finish(
             /* Retrieve the certificates from the TPM's NV space. */
             r = ifapi_get_certificates(context, MIN_PLATFORM_CERT_HANDLE,
                                        MAX_PLATFORM_CERT_HANDLE,
-                                       &cert_list);
+                                       certificates,
+                                       certificatesSize);
             return_try_again(r);
             goto_if_error(r, "Get certificates.", error);
 
-            if (cert_list) {
-                /* Concatenate the found certificates */
-                size_t size;
-                NODE_OBJECT_T *cert = cert_list;
-                size = 0;
-                while (cert) {
-                    size += cert->size;
-                    cert = cert->next;
-                }
-                if (certificatesSize)
-                    *certificatesSize = size;
-                *certificates = malloc(size);
-                goto_if_null2(*certificates, "Out of memory.",
-                        r, TSS2_FAPI_RC_MEMORY, error);
-
-                cert = cert_list;
-                size = 0;
-                while (cert) {
-                    memcpy(&*(certificates)[size], cert->object, cert->size);
-                    size += cert->size;
-                    SAFE_FREE(cert->object);
-                    cert = cert->next;
-                }
-            } else {
-                *certificates = NULL;
-                if (certificatesSize)
-                    *certificatesSize = 0;
-                goto_error(r, TSS2_FAPI_RC_NO_CERT,
-                        "No platform certificates available.", error);
-            }
             break;
         statecasedefault(context->state);
     }
 
     /* Cleanup any intermediate results and state stored in the context. */
-    ifapi_free_node_list(cert_list);
     context->state =  FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
@@ -271,12 +240,5 @@ Fapi_GetPlatformCertificates_Finish(
 error:
     /* Cleanup any intermediate results and state stored in the context. */
     context->state =  FAPI_STATE_INIT;
-    NODE_OBJECT_T *cert = cert_list;
-    while (cert) {
-        SAFE_FREE(cert->object);
-        cert = cert->next;
-    }
-    ifapi_free_node_list(cert_list);
-    SAFE_FREE(*certificates);
     return r;
 }

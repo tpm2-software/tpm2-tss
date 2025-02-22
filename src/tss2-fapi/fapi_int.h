@@ -559,6 +559,9 @@ typedef struct {
     bool srk_exists;
     TPM2_HANDLE template_nv_index;
     TPM2_HANDLE nonce_nv_index;
+    bool cert_chain_exists;
+    uint8_t *certs;
+    size_t cert_list_size;
 } IFAPI_Provision;
 
 /** The data structure holding internal state of regenerate primary key.
@@ -858,6 +861,7 @@ enum FAPI_STATE {
     PROVISION_GET_CERT_NV_FINISH,
     PROVISION_GET_CERT_READ_PUBLIC,
     PROVISION_READ_CERT,
+    PROVISION_READ_CERT_CHAIN,
     PROVISION_PREPARE_READ_ROOT_CERT,
     PROVISION_READ_ROOT_CERT,
     PROVISION_PREPARE_READ_INT_CERT,

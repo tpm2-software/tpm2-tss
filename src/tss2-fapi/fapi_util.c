@@ -21,6 +21,7 @@
 #include "ifapi_macros.h"              // for statecase, fallthrough, goto_i...
 #include "ifapi_policy.h"              // for ifapi_calculate_tree
 #include "ifapi_policyutil_execute.h"  // for ifapi_policyutil_execute, ifap...
+#include "ifapi_keystore.h"            // for ifapi_check_provisioned
 #include "tss2_policy.h"               // for TSS2_OBJECT
 
 #define LOGMODULE fapi
@@ -150,31 +151,6 @@ policy_digest_size(IFAPI_OBJECT *object)
     default:
         return 0;
     }
-}
-
-/** Add a object together with size as first element to a linked list.
- *
- * This function can e.g. used to add byte arrays together with their size
- * to a linked list.
- *
- * @param[in] object The object to be added.
- * @param[in] size The size of the object to be added.
- * @param[in,out] object_list The linked list to be extended.
- *
- * @retval TSS2_RC_SUCCESS if the object was added.
- * @retval TSS2_FAPI_RC_MEMORY If memory for the list extension cannot
- *         be allocated.
- */
-static TSS2_RC
-push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_list)
-{
-    TSS2_RC r;
-    r = push_object_to_list(object, object_list);
-    return_if_error(r, "Push object with size.");
-
-    (*object_list)->size = size;
-
-    return TSS2_RC_SUCCESS;
 }
 
 /** Initialize and expand the linked list representing a FAPI key path.
@@ -4338,14 +4314,15 @@ error_cleanup:
 /** Get certificates stored in NV ram.
  *
  * The NV handles in the certificate range are determined. The corresponding
- * certificates are read out and stored in a linked list.
+ * certificates are appended to an unit8_t array.
  *
  * @param[in,out] context The FAPI_CONTEXT. The sub context for NV reading
  *                will be used.
  * @param[in] min_handle The first possible handle in the handle range.
  * @param[in] max_handle Maximal handle to filter out the handles not in the
  *            handle range for certificates.
- * @param[out] cert_list The callee allocates linked list of certificates.
+ * @param[out] certs The byte array of the concatenated certificates
+ * @param[out] cert_list_size The size of the cert array.
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
@@ -4378,18 +4355,21 @@ ifapi_get_certificates(
     FAPI_CONTEXT *context,
     UINT32 min_handle,
     UINT32 max_handle,
-    NODE_OBJECT_T **cert_list)
+    uint8_t **certs,
+    size_t *cert_list_size)
 {
     TSS2_RC r;
     TPMI_YES_NO moreData;
     uint8_t *cert_data = NULL;
     size_t cert_size;
+    bool provisioned;
 
     context->cmd.Provision.cert_nv_idx = MIN_EK_CERT_HANDLE;
 
     switch (context->get_cert_state) {
     statecase(context->get_cert_state, GET_CERT_INIT);
-        *cert_list = NULL;
+        context->cmd.Provision.certs = NULL;
+        context->cmd.Provision.cert_list_size = 0;
         context->cmd.Provision.capabilityData = NULL;
         context->cmd.Provision.cert_idx = 0;
         /* Prepare the reading of the capability handles in the certificate range */
@@ -4407,7 +4387,8 @@ ifapi_get_certificates(
 
         if (!context->cmd.Provision.capabilityData ||
             context->cmd.Provision.capabilityData->data.handles.count == 0) {
-            *cert_list = NULL;
+            *certs = NULL;
+            *cert_list_size = 0;
             SAFE_FREE(context->cmd.Provision.capabilityData);
             return TSS2_RC_SUCCESS;
         }
@@ -4460,19 +4441,32 @@ ifapi_get_certificates(
         /* TPMA_NV_NO_DA is set for NV certificate */
         context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes = TPMA_NV_NO_DA;
 
-        r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
-        goto_if_error_reset_state(r, "Could not open hierarchy /HS", error);
+        r = ifapi_check_provisioned(&context->keystore, "/HS", &provisioned);
+        goto_if_error_reset_state(r, "Provisioning check failed", error);
+
+        if (provisioned) {
+            /* Use information from keystore if available. */
+            r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
+            goto_if_error_reset_state(r, "Could not open hierarchy /HS", error);
+        }
 
         fallthrough;
 
     statecase(context->get_cert_state, GET_CERT_GET_CERT_READ_HIERARCHY);
-        r = ifapi_keystore_load_finish(&context->keystore, &context->io,
-                                       &context->nv_cmd.auth_object);
-        try_again_or_error_goto(r, "read_finish failed", error);
+        r = ifapi_check_provisioned(&context->keystore, "/HS", &provisioned);
+        goto_if_error_reset_state(r, "Provisioning check failed", error);
+
+        if (provisioned) {
+            /* Use information from keystore if available. */
+            r = ifapi_keystore_load_finish(&context->keystore, &context->io,
+                                           &context->nv_cmd.auth_object);
+            try_again_or_error_goto(r, "read_finish failed", error);
+
+            r = ifapi_initialize_object(context->esys, &context->nv_cmd.auth_object);
+            goto_if_error_reset_state(r, "Initialize hierarchy object", error);
+        }
 
         /* Prepare context for nv read */
-        r = ifapi_initialize_object(context->esys, &context->nv_cmd.auth_object);
-        goto_if_error_reset_state(r, "Initialize hierarchy object", error);
 
         context->nv_cmd.auth_object.public.handle = ESYS_TR_RH_OWNER;
         context->nv_cmd.data_idx = 0;
@@ -4480,7 +4474,6 @@ ifapi_get_certificates(
         context->nv_cmd.numBytes = context->cmd.Provision.nvPublic->nvPublic.dataSize;
         context->nv_cmd.esys_handle = context->cmd.Provision.esys_nv_cert_handle;
         context->nv_cmd.offset = 0;
-        context->cmd.Provision.pem_cert = NULL;
         context->session1 = ESYS_TR_PASSWORD;
         context->session2 = ESYS_TR_NONE;
         context->nv_cmd.nv_read_state = NV_READ_INIT;
@@ -4492,18 +4485,32 @@ ifapi_get_certificates(
         r = ifapi_nv_read(context, &cert_data, &cert_size);
         try_again_or_error_goto(r, " FAPI NV_Read", error);
 
+        goto_if_null(cert_data, "Failed to read certificate",
+                     TSS2_FAPI_RC_GENERAL_FAILURE, error);
+
         context->cmd.Provision.cert_idx += 1;
 
-        /* Add cert to list */
+        /* Append cert */
+
+        if (context->cmd.Provision.certs) {
+            uint8_t* new_certs = realloc(context->cmd.Provision.certs,
+                                         context->cmd.Provision.cert_list_size + cert_size);
+            goto_if_null(new_certs, "Out of memory", TSS2_FAPI_RC_MEMORY, error);
+            memcpy(new_certs + context->cmd.Provision.cert_list_size, cert_data, cert_size);
+            free(cert_data);
+            context->cmd.Provision.certs = new_certs;
+            context->cmd.Provision.cert_list_size += cert_size;
+        } else {
+            context->cmd.Provision.certs = cert_data;
+            context->cmd.Provision.cert_list_size = cert_size;
+        }
+        ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
+
         if (context->cmd.Provision.cert_idx == context->cmd.Provision.cert_count) {
-            context->get_cert_state = GET_CERT_GET_CERT_NV;
-
-            r = push_object_with_size_to_list(cert_data, cert_size, cert_list);
-            goto_if_error(r, "Store certificate in list.", error);
-
-            ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
-
+            /* All certificates have been read */
             SAFE_FREE(context->cmd.Provision.capabilityData);
+            *certs = context->cmd.Provision.certs;
+            *cert_list_size = context->cmd.Provision.cert_list_size;
             return TSS2_RC_SUCCESS;
         } else {
             context->get_cert_state = GET_CERT_GET_CERT_NV;
@@ -4518,7 +4525,9 @@ error:
     SAFE_FREE(context->cmd.Provision.nvPublic);
     SAFE_FREE(context->cmd.Provision.capabilityData);
     ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
-    ifapi_free_object_list(*cert_list);
+    if (r) {
+        SAFE_FREE(context->cmd.Provision.certs);
+    }
     return r;
 }
 
