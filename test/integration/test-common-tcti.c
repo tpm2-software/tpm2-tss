@@ -49,14 +49,13 @@
  * thus the corresponding handling code in ESYS can be tested.
  * The first invocation will be Tss2_Sys_StartUp.
  */
+#define TCTI_PROXY_MAGIC 0x5250584f0a000000ULL /* 'PROXY\0\0\0' */
+#define TCTI_PROXY_VERSION 0x1
+
 #ifdef TEST_ESYS
 
 TSS2_RC
 (*transmit_hook) (const uint8_t *command_buffer, size_t command_size) = NULL;
-
-#define TCTI_PROXY_MAGIC 0x5250584f0a000000ULL /* 'PROXY\0\0\0' */
-#define TCTI_PROXY_VERSION 0x1
-
 
 TSS2_TCTI_CONTEXT_PROXY*
 tcti_proxy_cast (TSS2_TCTI_CONTEXT *ctx)
@@ -229,7 +228,9 @@ tcti_type tcti_types[] = {
    {.name = "cmd", .magic = TCTI_CMD_MAGIC },
    {.name = "device", .magic = TCTI_DEVICE_MAGIC },
    {.name = "fuzzing", .magic = TCTI_FUZZING_MAGIC },
+#ifdef TCTI_LIBTPMS
    {.name = "libtpms", .magic = TCTI_LIBTPMS_MAGIC },
+#endif /* TCTI_LIBTPMS */
    {.name = "mssim", .magic = TCTI_MSSIM_MAGIC },
    {.name = "pcap", .magic = TCTI_PCAP_MAGIC },
    {.name = "proxy", .magic = TCTI_PROXY_MAGIC },
@@ -286,7 +287,12 @@ tcti_is_volatile (TSS2_TCTI_CONTEXT *tcti) {
 
     while (true) {
         magic = TSS2_TCTI_MAGIC(tcti);
-        if (magic == TCTI_START_SIM_MAGIC || magic == TCTI_LIBTPMS_MAGIC) {
+        if (
+            magic == TCTI_START_SIM_MAGIC
+#ifdef TCTI_LIBTPMS
+            || magic == TCTI_LIBTPMS_MAGIC
+#endif /* TCTI_LIBTPMS */
+        ) {
             return true;
         }
 
@@ -304,6 +310,7 @@ tcti_is_volatile (TSS2_TCTI_CONTEXT *tcti) {
 /* Return true if the TCTI state can be backed up */
 int
 tcti_state_backup_supported (TSS2_TCTI_CONTEXT *tcti) {
+#ifdef TCTI_LIBTPMS
     uint64_t magic;
 
     tcti = tcti_unwrap(tcti);
@@ -314,6 +321,10 @@ tcti_state_backup_supported (TSS2_TCTI_CONTEXT *tcti) {
     }
 
     return magic == TCTI_LIBTPMS_MAGIC;
+#else
+    UNUSED(tcti);
+    return 0;
+#endif /* TCTI_LIBTPMS */
 }
 
 /* Backup TCTI state and return alloced buffer. */
