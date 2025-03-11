@@ -17,7 +17,6 @@
 #include "test/integration/test-common-tcti.h"  // for tcti_proxy_initialize
 #include "tss2_common.h"                        // for TSS2_RC_SUCCESS, TSS2_RC
 #include "tss2_mu.h"                            // for Tss2_MU_TPMS_CAPABILI...
-#include "tss2_tctildr.h"                       // for Tss2_TctiLdr_Finalize
 #include "tss2_tpm2_types.h"                    // for TPMS_CAPABILITY_DATA
 #ifdef TEST_ESYS
 #include "tss2_esys.h"                          // for Esys_Finalize, Esys_G...
@@ -29,6 +28,8 @@
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
+
+const TSS2_TCTI_INFO* Tss2_Tcti_Info(void);
 
 struct {
     TPM2_CAP cap;
@@ -150,6 +151,7 @@ test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx)
 {
     TSS2_RC rc;
     TSS2_ABI_VERSION abi_version = TEST_ABI_VERSION;
+    const TSS2_TCTI_INFO *info = Tss2_Tcti_Info();
     size_t size;
     char *name_conf;
 
@@ -160,16 +162,30 @@ test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx)
         goto fail;
     }
 
-    name_conf = getenv(ENV_TCTI); // TODO arg, then env?
-    if (!name_conf) {
-        LOG_ERROR("TCTI module not specified. Use environment variable: " ENV_TCTI);
+    if (strcmp(info->name, "tctildr") == 0) {
+        name_conf = getenv(ENV_TCTI); // TODO arg, then env?
+        if (!name_conf) {
+            LOG_ERROR("TCTI module not specified. Use environment variable: " ENV_TCTI);
+            goto cleanup_test_ctx;
+        }
+    }
+
+    rc = info->init(NULL, &size, NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error querying for TCTI size: %s", name_conf);
         goto cleanup_test_ctx;
     }
 
-    rc = Tss2_TctiLdr_Initialize(name_conf, &(*test_ctx)->tcti_ctx);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error loading TCTI: %s", name_conf);
+    (*test_ctx)->tcti_ctx = malloc(size);
+    if ((*test_ctx)->tcti_ctx == NULL) {
+        LOG_ERROR("Failed to allocate 0x%zx bytes for the tcti context", size);
         goto cleanup_test_ctx;
+    }
+
+    rc = info->init((*test_ctx)->tcti_ctx, &size, name_conf);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error initializing the TCTI context: %s", name_conf);
+        goto cleanup_tcti_ctx_mem;
     }
 
     size = Tss2_Sys_GetContextSize(0);
@@ -207,7 +223,10 @@ cleanup_sys_mem:
     free((*test_ctx)->sys_ctx);
 
 cleanup_tcti_ctx:
-    Tss2_TctiLdr_Finalize(&(*test_ctx)->tcti_ctx);
+    Tss2_Tcti_Finalize((*test_ctx)->tcti_ctx);
+
+cleanup_tcti_ctx_mem:
+    free((*test_ctx)->tcti_ctx);
 
 cleanup_test_ctx:
     free(*test_ctx);
@@ -260,7 +279,8 @@ test_sys_teardown(TSS2_TEST_SYS_CONTEXT *test_ctx)
         free(test_ctx->tpm_state);
         Tss2_Sys_Finalize(test_ctx->sys_ctx);
         free(test_ctx->sys_ctx);
-        Tss2_TctiLdr_Finalize(&test_ctx->tcti_ctx);
+        Tss2_Tcti_Finalize(test_ctx->tcti_ctx);
+        free(test_ctx->tcti_ctx);
         free(test_ctx);
     }
 }
@@ -271,6 +291,7 @@ test_esys_setup(TSS2_TEST_ESYS_CONTEXT **test_ctx)
 {
     TSS2_RC rc;
     TSS2_ABI_VERSION abi_version = TEST_ABI_VERSION;
+    const TSS2_TCTI_INFO *info = Tss2_Tcti_Info();
     size_t size;
     char *name_conf;
 
@@ -281,16 +302,30 @@ test_esys_setup(TSS2_TEST_ESYS_CONTEXT **test_ctx)
         goto fail;
     }
 
-    name_conf = getenv(ENV_TCTI); // TODO arg, then env?
-    if (!name_conf) {
-        LOG_ERROR("TCTI module not specified. Use environment variable: " ENV_TCTI);
+    if (strcmp(info->name, "tctildr") == 0) {
+        name_conf = getenv(ENV_TCTI); // TODO arg, then env?
+        if (!name_conf) {
+            LOG_ERROR("TCTI module not specified. Use environment variable: " ENV_TCTI);
+            goto cleanup_test_ctx;
+        }
+    }
+
+    rc = info->init(NULL, &size, NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error querying for TCTI size: %s", name_conf);
         goto cleanup_test_ctx;
     }
 
-    rc = Tss2_TctiLdr_Initialize(name_conf, &(*test_ctx)->tcti_ctx);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error loading TCTI: %s", name_conf);
+    (*test_ctx)->tcti_ctx = malloc(size);
+    if ((*test_ctx)->tcti_ctx == NULL) {
+        LOG_ERROR("Failed to allocate 0x%zx bytes for the tcti context", size);
         goto cleanup_test_ctx;
+    }
+
+    rc = info->init((*test_ctx)->tcti_ctx, &size, name_conf);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error initializing the TCTI context: %s", name_conf);
+        goto cleanup_tcti_ctx_mem;
     }
 
     rc = tcti_proxy_initialize(NULL, &size, NULL);
@@ -342,7 +377,10 @@ cleanup_tcti_proxy_mem:
     free((*test_ctx)->tcti_proxy_ctx);
 
 cleanup_tcti_ctx:
-    Tss2_TctiLdr_Finalize(&(*test_ctx)->tcti_ctx);
+    Tss2_Tcti_Finalize((*test_ctx)->tcti_ctx);
+
+cleanup_tcti_ctx_mem:
+    free((*test_ctx)->tcti_ctx);
 
 cleanup_test_ctx:
     free(*test_ctx);
@@ -412,7 +450,8 @@ test_esys_teardown(TSS2_TEST_ESYS_CONTEXT *test_ctx)
         Esys_Finalize(&test_ctx->esys_ctx);
         Tss2_Tcti_Finalize(test_ctx->tcti_proxy_ctx);
         free(test_ctx->tcti_proxy_ctx);
-        Tss2_TctiLdr_Finalize(&test_ctx->tcti_ctx);
+        Tss2_Tcti_Finalize(test_ctx->tcti_ctx);
+        free(test_ctx->tcti_ctx);
         free(test_ctx);
     }
 }
