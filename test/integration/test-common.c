@@ -147,7 +147,7 @@ dumpstate(TSS2_SYS_CONTEXT *sys_ctx, tpm_state *state_first, bool compare)
 }
 
 int
-test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx)
+test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx, bool skip_startup)
 {
     TSS2_RC rc;
     TSS2_ABI_VERSION abi_version = TEST_ABI_VERSION;
@@ -200,10 +200,12 @@ test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx)
         goto cleanup_sys_mem;
     }
 
-    rc = Tss2_Sys_Startup((*test_ctx)->sys_ctx, TPM2_SU_CLEAR);
-    if (rc != TSS2_RC_SUCCESS && rc != TPM2_RC_INITIALIZE) {
-        LOG_ERROR("TPM2_Startup failed: 0x%" PRIx32, rc);
-        goto cleanup_sys_ctx;
+    if (! skip_startup) {
+        rc = Tss2_Sys_Startup((*test_ctx)->sys_ctx, TPM2_SU_CLEAR);
+        if (rc != TSS2_RC_SUCCESS && rc != TPM2_RC_INITIALIZE) {
+            LOG_ERROR("TPM2_Startup failed: 0x%" PRIx32, rc);
+            goto cleanup_sys_ctx;
+        }
     }
 
     (*test_ctx)->tpm_state = malloc(sizeof(tpm_state));
