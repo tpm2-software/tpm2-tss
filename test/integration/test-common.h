@@ -7,6 +7,8 @@
 #ifndef TEST_COMMON_H
 #define TEST_COMMON_H
 
+#include <stdbool.h>
+
 #include "test-common-tcti.h"
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
@@ -39,7 +41,7 @@ typedef struct {
     tpm_state *tpm_state;
 } TSS2_TEST_SYS_CONTEXT;
 
-int test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx);
+int test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx, bool skip_startup);
 int test_sys_checks_pre(TSS2_TEST_SYS_CONTEXT *test_ctx);
 int test_sys_checks_post(TSS2_TEST_SYS_CONTEXT *test_ctx);
 void test_sys_teardown(TSS2_TEST_SYS_CONTEXT *test_ctx);

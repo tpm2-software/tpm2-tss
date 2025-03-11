@@ -32,7 +32,7 @@ main (int   argc,
     UNUSED(argc);
     UNUSED(argv);
 
-    ret = test_sys_setup(&test_sys_ctx);
+    ret = test_sys_setup(&test_sys_ctx, false);
     if (ret != 0) {
         return ret;
     }
