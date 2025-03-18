@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 set -eo pipefail
+set -x
 
 source $DOCKER_BUILD_DIR/.ci/docker-prelude.sh
 
@@ -37,9 +38,27 @@ fi
 
 # Is it a fuzz run, if so build the fuzz test and exit.
 if [ "$GEN_FUZZ" == "1" ]; then
-    ./configure --with-fuzzing=libfuzzer --enable-tcti-fuzzing \
-      --disable-tcti-device --disable-tcti-mssim --disable-tcti-swtpm \
-      --disable-shared --with-crypto="$WITH_CRYPTO"
+    ./configure \
+      --enable-debug \
+      --with-fuzzing=libfuzzer \
+      --enable-code-coverage\
+      --disable-esys \
+      --disable-fapi \
+      --enable-tcti-fuzzing \
+      --disable-tcti-cmd \
+      --disable-tcti-device\
+      --disable-tcti-i2c-ftdi \
+      --disable-tcti-libtpms\
+      --disable-tcti-mssim \
+      --disable-tcti-pcap\
+      --disable-tcti-spi-ftdi \
+      --disable-tcti-spi-ltt2go \
+      --disable-tcti-spidev \
+      --disable-tcti-start-sim \
+      --disable-tcti-swtpm \
+      --with-maxloglevel=none \
+      --disable-shared \
+      --with-crypto="$WITH_CRYPTO"
     make -j$(nproc) check
     exit 0
 fi
