@@ -8,8 +8,8 @@
 ### Initialize global variables used throughout the file ###
 INCLUDE_DIRS    = -I$(srcdir)/src -I$(srcdir)/include/tss2
 AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS) $(CODE_COVERAGE_CFLAGS) \
-				  $(SANITIZER_CFLAGS)
-AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS) $(SANITIZER_LDFLAGS)
+				  $(SANITIZER_CFLAGS) $(FUZZ_CFLAGS)
+AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS) $(SANITIZER_LDFLAGS) $(FUZZ_LDFLAGS)
 
 # Initialize empty variables to be extended throughout
 lib_LTLIBRARIES =
@@ -346,7 +346,7 @@ endif # ENABLE_TCTI_SWTPM
 EXTRA_DIST += lib/tss2-tcti-swtpm.map lib/tss2-tcti-swtpm.def src/tss2-tcti/tss2-tcti-swtpm.vcxproj
 
 # tcti library for swtpm
-#if ENABLE_TCTI_START_SIM
+if ENABLE_TCTI_START_SIM
 libtss2_tcti_start_sim = src/tss2-tcti/libtss2-tcti-start-sim.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_start_sim.h
 lib_LTLIBRARIES += $(libtss2_tcti_start_sim)
@@ -360,7 +360,7 @@ src_tss2_tcti_libtss2_tcti_start_sim_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-start-sim.c \
     src/tss2-tcti/tcti-start-sim.h
-#endif # ENABLE_TCTI_START_SIM
+endif # ENABLE_TCTI_START_SIM
 EXTRA_DIST += lib/tss2-tcti-start-sim.map lib/tss2-tcti-start-sim.def
 
 # tcti library for Microsoft TPM2 simulator

@@ -556,7 +556,7 @@ AS_CASE(["x$with_sanitizer"],
         ["xaddress"],
         [
             SANITIZER_CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
-            SANITIZER_LDFLAGS="-lasan"
+            SANITIZER_LDFLAGS="-fsanitize=address"
         ],
         ["xundefined"],
         [
@@ -582,12 +582,15 @@ AS_CASE(["x$with_fuzzing"],
         ["xnone"],
         [],
         ["xlibfuzzer"],
-        [ADD_FUZZING_FLAG([-fsanitize=fuzzer])],
+        [FUZZ_LDFLAGS="-fsanitize=fuzzer"
+         FUZZ_CFLAGS="-fsanitize=fuzzer"],
         ["xossfuzz"],
         [AS_IF([test "x$LIB_FUZZING_ENGINE" = "x"],
                [AC_MSG_ERROR([OSS Fuzz testing requires LIB_FUZZING_ENGINE environment variable be set])])
-         ADD_FUZZING_FLAG([-lFuzzingEngine])],
+         FUZZ_LDFLAGS="-lFuzzingEngine"],
         [AC_MSG_ERROR([Bad value for --with-fuzzing])])
+AC_SUBST([FUZZ_CFLAGS])
+AC_SUBST([FUZZ_LDFLAGS])
 AM_CONDITIONAL([ENABLE_FUZZING],[test "x$with_fuzzing" != "xnone"])
 AS_IF([test "x$with_fuzzing" != "xnone"],
       [AS_IF([test "x$enable_tcti_fuzzing" = xno],

@@ -17,14 +17,15 @@ endif # ENABLE_TCTI_FUZZING
 # Each fuzz target in Makefile-fuzz-generated.am is created from this template.
 MAKEFILE_FUZZ_TARGET = """
 noinst_PROGRAMS += test/fuzz/%s.fuzz
-test_fuzz_%s_fuzz_CFLAGS = $(FUZZ_CFLAGS)
-test_fuzz_%s_fuzz_LDADD    = $(FUZZLDADD)
+test_fuzz_%s_fuzz_CFLAGS  = $(TESTS_CFLAGS)
+test_fuzz_%s_fuzz_LDFLAGS = $(TESTS_LDFLAGS)
+test_fuzz_%s_fuzz_LDADD   = $(TESTS_LDADD)
 nodist_test_fuzz_%s_fuzz_SOURCES  = test/fuzz/main-sys.c \\
         test/fuzz/%s.fuzz.c
 
 DISTCLEANFILES += test/fuzz/%s.fuzz.c"""
 # Common include definitions needed for fuzzing an SYS call
-SYS_TEMPLATE_HEADER = """/* SPDX-License-Identifier: BSD-2-Clause */
+SYS_TEMPLATE = """/* SPDX-License-Identifier: BSD-2-Clause */
 /***********************************************************************
  * Copyright (c) 2018, Intel Corporation
  *
@@ -59,50 +60,15 @@ SYS_TEMPLATE_HEADER = """/* SPDX-License-Identifier: BSD-2-Clause */
 
 int
 test_invoke (
-        TSS2_SYS_CONTEXT *sysContext)"""
-# Template to call a SYS _Complete function which takes no arguments
-SYS_COMPLETE_TEMPLATE_NO_ARGS = (
-    SYS_TEMPLATE_HEADER
-    + """
-{
-    %s (sysContext);
-
-    return EXIT_SUCCESS;
-}
-"""
-)
-# Template to call a SYS _Complete function which takes arguments
-SYS_COMPLETE_TEMPLATE_HAS_ARGS = (
-    SYS_TEMPLATE_HEADER
-    + """
+        TSS2_SYS_CONTEXT *sysContext)
 {
     %s
 
-    %s (
-        sysContext,
-        %s
-    );
-
-    return EXIT_SUCCESS;
-}
-"""
-)
-# Template to call a SYS _Prepare function
-SYS_PREPARE_TEMPLATE_HAS_ARGS = (
-    SYS_TEMPLATE_HEADER
-    + """
-{
-    int ret;
-    %s
-
-    ret = fuzz_fill (
+    fuzz_fill (
         sysContext,
         %d,
         %s
     );
-    if (ret) {
-        return ret;
-    }
 
     %s (
         sysContext,
@@ -112,7 +78,6 @@ SYS_PREPARE_TEMPLATE_HAS_ARGS = (
     return EXIT_SUCCESS;
 }
 """
-)
 
 
 def gen_file(function):
@@ -128,58 +93,50 @@ def gen_file(function):
     args = [
         arg.strip()
         for arg in function[function.index("(") + 1 : function.index(");")].split(",")
-        if not "TSS2_SYS_CONTEXT" in arg
+        if "TSS2_SYS_CONTEXT" not in arg
     ]
-    # Prepare and Complete functions require different methods of generation.
-    # Call the appropriate function to generate a c target specific to that
-    # type of function.
-    if "_Complete" in function_name:
-        return gen_complete(function, function_name, args)
-    if "_Prepare" in function_name:
-        return gen_prepare(function, function_name, args)
-    raise NotImplementedError("Unknown function type %r" % (function_name,))
+    return gen_target(function, function_name, args)
 
 
-def gen_complete(function, function_name, args):
+def gen_target(function, function_name, args):
     """
-    Generate the c fuzz target for a SYS _Complete call
-    """
-    if not args:
-        # Fill in the no args template. Simple case.
-        return function_name, SYS_COMPLETE_TEMPLATE_NO_ARGS % (function_name)
-    # Generate the c variable definitions.
-    arg_definitions = (";\n" + " " * 4).join(
-        [arg.replace("*", "") for arg in args]
-    ) + ";"
-    # Generate the c arguments. For arguments that are pointers find replace *
-    # with & so that we pass a pointer to the definition which has been
-    # allocated on the stack.
-    arg_call = (",\n" + " " * 8).join(
-        [arg.replace("*", "&").split()[-1] for arg in args]
-    )
-    # Fill in the template
-    return (
-        function_name,
-        SYS_COMPLETE_TEMPLATE_HAS_ARGS % (arg_definitions, function_name, arg_call),
-    )
-
-
-def gen_prepare(function, function_name, args):
-    """
-    Generate the c fuzz target for a SYS _Prepare call
+    Generate the c fuzz target for a SYS call
     """
     if not args:
         return function_name, None
+
+    def get_name(arg):
+        return arg.replace("*", "").split()[-1]
+    def get_name_ptr(arg):
+        return arg.replace("*", "").split()[-1] + "_ptr"
+    def get_type(arg):
+        return " ".join(arg.replace("*", " * ").split()[0:-1])
+    def get_type_no_ptr(arg):
+        return get_type(arg).replace("*", "").strip()
+    def get_type_no_ptr_pointerized(arg):
+        return get_type_no_ptr(arg) + " *"
+    def get_name_maybe_ptr(arg):
+        if is_ptr(arg):
+            return get_name(arg) + "_ptr"
+        return get_name(arg)
+    def is_ptr(arg):
+        return "*" in arg
+    def get_definition(arg):
+        definition = f"{get_type_no_ptr(arg)} {get_name(arg)} = {{0}};"
+        # Add a variable which is a pointer to the above
+        definition += f"\n    {get_type_no_ptr_pointerized(arg)} {get_name_ptr(arg)} = &{get_name(arg)};"
+        return definition
+
     # Generate the c variable definitions. Make sure to initialize to empty
     # structs (works for initializing anything) or c compiler will complain.
-    arg_definitions = (" = {0};\n" + " " * 4).join(
-        [arg.replace("*", "").replace("const", "") for arg in args]
-    ) + " = {0};"
+    arg_definitions = ("\n" + " " * 4).join(
+        get_definition(args) for args in args
+    )
     # Generate the c arguments. For arguments that are pointers find replace *
     # with & so that we pass a pointer to the definition which has been
     # allocated on the stack.
     arg_call = (",\n" + " " * 8).join(
-        [arg.replace("*", "&").split()[-1] for arg in args]
+        [get_name_maybe_ptr(arg) for arg in args]
     )
     # Generate the call to fuzz_fill. The call should be the sysContext, double
     # the number of arguments for the _Prepare call, and then for each _Prepare
@@ -187,15 +144,15 @@ def gen_prepare(function, function_name, args):
     # pointer to it.
     fill_fuzz_args = (",\n" + " " * 8).join(
         [
-            ("sizeof (%s), &%s" % tuple([arg.replace("*", "").split()[-1]] * 2))
+            f"sizeof ({get_name(arg)}), &{get_name_ptr(arg)}, {str('*' in arg).lower()}"
             for arg in args
         ]
     )
     # Fill in the template
     return (
         function_name,
-        SYS_PREPARE_TEMPLATE_HAS_ARGS
-        % (arg_definitions, len(args) * 2, fill_fuzz_args, function_name, arg_call),
+        SYS_TEMPLATE
+        % (arg_definitions, len(args) * 3, fill_fuzz_args, function_name, arg_call),
     )
 
 
@@ -206,10 +163,27 @@ def functions_from_include(header):
     with open(header, "r") as header_fd:
         current_function = ""
         for line in header_fd:
-            # Functions we are interested in start with _Complete or _Prepare
-            if "_Complete" in line or "_Prepare" in line:
+            # Functions we are interested in start with Tss2_Sys_
+            if "Tss2_Sys_" in line and "(" in line:
                 # Set the current_function to this line
                 current_function = line
+
+                # Skip function if it
+                # a) does not take a sys context (e.g. Tss2_Sys_GetContextSize)
+                # b) messes with the sys context (e.g. Tss2_Sys_Finalize)
+                # c) needs caller-allocated memory (e.g. Tss2_Sys_GetTctiContext)
+                if (
+                    "Tss2_Sys_GetContextSize" in current_function or
+                    "Tss2_Sys_Initialize" in current_function or
+                    "Tss2_Sys_Finalize" in current_function or
+                    "Tss2_Sys_GetTctiContext" in current_function or
+                    "Tss2_Sys_GetDecryptParam" in current_function or
+                    "Tss2_Sys_GetCpBuffer" in current_function or
+                    "Tss2_Sys_GetEncryptParam" in current_function or
+                    "Tss2_Sys_GetRpBuffer" in current_function
+                ):
+                    current_function = ""
+                    continue
             elif current_function and ");" in line:
                 # When we reach the closing parenthesis yield the function
                 yield current_function + line.rstrip()
@@ -253,7 +227,7 @@ def main():
     # Create the Makefile targets for each generated file
     targets = "\n".join(
         [
-            MAKEFILE_FUZZ_TARGET % tuple(list(itertools.chain(([function] * 6))))
+            MAKEFILE_FUZZ_TARGET % tuple(list(itertools.chain(([function] * 7))))
             for function in functions
         ]
     )
