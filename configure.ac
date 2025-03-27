@@ -528,14 +528,14 @@ AS_IF([test "x$enable_integration" = "xyes"],
              [# check for swtpm binary
               AC_CHECK_PROG([result_swtpm], [swtpm], [yes], [no])
               AS_IF([test "x$result_swtpm" = "xyes"],
-                    [integration_tcti=swtpm],
+                    [integration_tcti=start-sim:swtpm],
                     [AC_MSG_WARN([Executable swtpm not found in PATH.])])])
        AS_IF([test "x$integration_tcti" = "xnone" && test "x$enable_tcti_mssim" = "xyes"],
              [# check for mssim binary
               AC_MSG_NOTICE([Falling back to testing with tcti-mssim.])
               AC_CHECK_PROG([result_tpm_server], [tpm_server], [yes], [no])
               AS_IF([test "x$result_tpm_server" = "xyes"],
-                    [integration_tcti=mssim
+                    [integration_tcti=start-sim:mssim
                      AC_DEFINE([INTEGRATION_TCTI_MSSIM], [1], [use mssim TCTI for integration tests])],
                     [AC_MSG_WARN([Executable tpm_server not found in PATH (fallback)])])])
        AS_IF([test "x$integration_tcti" = "xnone"],
