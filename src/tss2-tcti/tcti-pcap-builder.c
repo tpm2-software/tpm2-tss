@@ -24,7 +24,7 @@
 #define LOGMODULE tcti
 #include "util/log.h"       // for LOG_ERROR, LOG_WARNING, LOG_TRACE
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__illumos__)
 #define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
 #endif
 
