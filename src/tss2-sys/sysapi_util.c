@@ -86,6 +86,7 @@ TSS2_RC CommonPreparePrologue(
     if (rval)
         return rval;
 
+    ctx->authsCount = 0;
     ctx->commandCode = commandCode;
     ctx->numResponseHandles = GetNumResponseHandles(commandCode);
     ctx->rspParamsSize = (UINT32 *)(ctx->cmdBuffer + sizeof(TPM20_Header_Out) +
