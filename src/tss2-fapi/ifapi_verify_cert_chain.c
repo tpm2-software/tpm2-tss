@@ -112,6 +112,7 @@ TSS2_RC
 find_issuer_for_cert(NODE_OBJECT_T *head, X509 *cert, X509 **issuer_cert) {
     char *url = NULL;
     NODE_OBJECT_T *current = head;
+    TSS2_RC r;
 
     *issuer_cert = NULL;
     while (current) {
@@ -128,14 +129,17 @@ find_issuer_for_cert(NODE_OBJECT_T *head, X509 *cert, X509 **issuer_cert) {
     if (url) {
         *issuer_cert = download_cert(url);
         if (!*issuer_cert) {
-            SAFE_FREE(url);
-            return_error2(TSS2_FAPI_RC_NO_CERT, "Get certificate from %s.", url);
+            goto_error(r, TSS2_FAPI_RC_NO_CERT, "Get certificate from %s.", error, url);
         }
         LOG_DEBUG("Downloaded certificate:");
         log_x509_name(X509_get_subject_name(*issuer_cert));
     }
     SAFE_FREE(url);
     return TSS2_RC_SUCCESS;
+
+ error:
+    SAFE_FREE(url);
+    return r;
 }
 
 /* Function to find a certificate node by subject from issuer. */
