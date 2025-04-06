@@ -228,6 +228,10 @@ Fapi_GetPlatformCertificates_Finish(
             return_try_again(r);
             goto_if_error(r, "Get certificates.", error);
 
+            if (*certificatesSize == 0) {
+                goto_error(r, TSS2_FAPI_RC_NO_CERT,
+                           "No platform certificates available.", error);
+            }
             break;
         statecasedefault(context->state);
     }
