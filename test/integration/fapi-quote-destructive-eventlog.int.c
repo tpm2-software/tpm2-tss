@@ -1043,9 +1043,6 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
         0x00, 0x00,
     };
 
-    r = pcr_reset(context, 16);
-    goto_if_error(r, "Error pcr_reset", error);
-
     r = Fapi_PcrExtend(context, 16, data, EVENT_SIZE, "{ \"test\": \"myfile\" }");
     goto_if_error(r, "Error Fapi_PcrExtend", error);
 
@@ -1118,6 +1115,9 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     ASSERT(pathlist != NULL);
     ASSERT(strlen(pathlist) > ASSERT_SIZE);
 
+    r = pcr_reset(context, 16);
+    goto_if_error(r, "Error pcr_reset", error);
+
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
@@ -1136,6 +1136,7 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     return EXIT_SUCCESS;
 
 error:
+    pcr_reset(context, 16);
     Fapi_Delete(context, "/");
     SAFE_FREE(pubkey_pem);
     SAFE_FREE(signature);
