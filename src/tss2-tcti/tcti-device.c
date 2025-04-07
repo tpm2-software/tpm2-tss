@@ -186,7 +186,8 @@ tcti_device_receive (
             if (rc_poll < 0) {
                 LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
                tcti_dev->fd, errno, strerror(errno));
-                return TSS2_TCTI_RC_IO_ERROR;
+                rc = TSS2_TCTI_RC_IO_ERROR;
+                goto out;
             } else if (rc_poll == 0) {
                 LOG_INFO ("Poll timed out on fd %d.", tcti_dev->fd);
                 return TSS2_TCTI_RC_TRY_AGAIN;
@@ -195,7 +196,8 @@ tcti_device_receive (
                 if (size < 0 || size != TPM_HEADER_SIZE) {
                     LOG_ERROR ("Failed to get response size fd %d, got errno %d: %s",
                            tcti_dev->fd, errno, strerror (errno));
-                    return TSS2_TCTI_RC_IO_ERROR;
+                    rc = TSS2_TCTI_RC_IO_ERROR;
+                    goto out;
                 }
             } else {
                 LOG_ERROR ("Header could not be received");
@@ -246,7 +248,8 @@ tcti_device_receive (
     if (rc_poll < 0) {
         LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
                    tcti_dev->fd, errno, strerror (errno));
-        return TSS2_TCTI_RC_IO_ERROR;
+        rc = TSS2_TCTI_RC_IO_ERROR;
+        goto out;
     } else if (rc_poll == 0) {
         LOG_INFO ("Poll timed out on fd %d.", tcti_dev->fd);
         return TSS2_TCTI_RC_TRY_AGAIN;
@@ -262,7 +265,8 @@ tcti_device_receive (
         if (size < 0) {
             LOG_ERROR ("Failed to read response from fd %d, got errno %d: %s",
                tcti_dev->fd, errno, strerror (errno));
-            return TSS2_TCTI_RC_IO_ERROR;
+            rc = TSS2_TCTI_RC_IO_ERROR;
+            goto out;
         }
     }
     if (size == 0) {
