@@ -43,23 +43,15 @@ is_directory(const char* dir_name, struct dirent *entry, bool *isdir) {
     TSS2_RC r;
     char *path;
 
-#ifdef _DIRENT_HAVE_D_TYPE
-    if (entry->d_type == DT_DIR) {
-        *isdir = true;
-        return TSS2_RC_SUCCESS;
-    } else if (entry->d_type != DT_UNKNOWN) {
-        *isdir = false;
-        return TSS2_RC_SUCCESS;
-    }
-#endif
     /* stat is used if d_type is not supported or unknown. */
     struct stat file_stat;
     r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
     return_if_error(r, "Out of memory");
 
     if (stat(path, &file_stat) == -1) {
+        LOG_ERROR("stat failed for %s.", path);
         free(path);
-        return_error(TSS2_FAPI_RC_IO_ERROR, "stat failed.");
+        return TSS2_FAPI_RC_IO_ERROR;
     }
     if (S_ISDIR(file_stat.st_mode)) {
         *isdir = true;
@@ -84,15 +76,6 @@ is_regular_file(const char* dir_name, struct dirent *entry, bool *isreg) {
     TSS2_RC r;
     char *path;
 
-#ifdef _DIRENT_HAVE_D_TYPE
-    if (entry->d_type == DT_REG) {
-        *isreg = true;
-        return TSS2_RC_SUCCESS;
-    } else if (entry->d_type != DT_UNKNOWN){
-        *isreg = false;
-        return TSS2_RC_SUCCESS;
-    }
-#endif
     /* stat is used if d_type is not supported or unknown. */
     struct stat file_stat;
     r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);

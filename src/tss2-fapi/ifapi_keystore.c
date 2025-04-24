@@ -874,6 +874,7 @@ keystore_list_all_abs(
     goto_if_error(r, "Out of memory.", cleanup);
 
     r = ifapi_io_dirfiles_all(full_search_path, &file_ary_user, &num_paths_user);
+    goto_if_error(r, "List directory files", cleanup);
 
     *numresults = num_paths_system + num_paths_user;
     SAFE_FREE(full_search_path);
