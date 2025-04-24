@@ -3,7 +3,7 @@
     "nameAlg":"TPM2_ALG_SHA1",
     "srk_template": "system,restricted,decrypt",
      "srk_description": "Storage root key SRK",
-    "ek_template": "system,restricted,decrypt,0x81000000",
+    "ek_template": "system,restricted,decrypt,0x81000000,unique_zero=256",
     "ek_description": "Endorsement key EK",
     "ecc_signing_scheme": {
         "scheme":"TPM2_ALG_ECDSA",

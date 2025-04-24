@@ -273,7 +273,20 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
         memset(&out->nonce, 0, sizeof(TPM2B_DIGEST));
     }
 
+    if (ifapi_get_sub_object(jso, "unique_init_set", &jso2)) {
+        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->unique_init_set);
+        return_if_error(r, "Bad value for field \"delete_prohibited\".");
 
+    } else {
+        out->unique_init_set = TPM2_NO;
+    }
+
+      if (!ifapi_get_sub_object(jso, "unique_init", &jso2)) {
+        memset(&out->unique_init, 0, sizeof(TPMU_PUBLIC_ID));
+    } else {
+        r = ifapi_json_TPMU_PUBLIC_ID_deserialize(out->public.publicArea.type, jso2, &out->unique_init);
+        return_if_error(r, "Bad value for field \"unique_init\".");
+    }
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;

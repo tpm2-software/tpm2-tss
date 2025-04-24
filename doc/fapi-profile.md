@@ -14,7 +14,7 @@ cryptographic profiles according to his needs.
 
 Specific profiles are activated in the FAPI configuration file.
 If not otherwise specified during TSS installation, the default location for the
-exemplary profiles is /etc/tpm2-tss/profiles/ and /etc/tpm2-tss/ for the FAPI
+exemplary profiles is /etc/tpm2-tss/fapi-profiles/ and /etc/tpm2-tss/ for the FAPI
 configuration file.
 
 The parameters of the profile are:
@@ -51,41 +51,42 @@ The parameters of the profile are:
 
 # EXAMPLES
 The following JSON encoded example shows the standard profile for ECC keys:
+
 ```
 {
-    "type": "TPM2_ALG_ECC",
-    "nameAlg":"TPM2_ALG_SHA256",
+    "type": "ecc",
+    "nameAlg":"sha256",
     "srk_template": "system,restricted,decrypt,0x81000001",
     "srk_description": "Storage root key SRK",
     "ek_template":  "system,restricted,decrypt",
     "ek_description": "Endorsement key EK",
     "ecc_signing_scheme": {
-        "scheme":"TPM2_ALG_ECDSA",
+        "scheme":"ecdsa",
         "details":{
-            "hashAlg":"TPM2_ALG_SHA256"
+            "hashAlg":"sha256"
         },
     },
-    "sym_mode":"TPM2_ALG_CFB",
+    "sym_mode":"cfb",
     "sym_parameters": {
-        "algorithm":"TPM2_ALG_AES",
+        "algorithm":"aes",
         "keyBits":"128",
-        "mode":"TPM2_ALG_CFB"
+        "mode":"cfb"
     },
     "sym_block_size": 16,
     "pcr_selection": [
-       { "hash": "TPM2_ALG_SHA1",
+       { "hash": "sha1",
          "pcrSelect": [ ],
        },
-       { "hash": "TPM2_ALG_SHA256",
+       { "hash": "sha256",
          "pcrSelect": [ 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 ]
        }
     ],
-    "curveID": "TPM2_ECC_NIST_P256",
+    "curveID": "nist_p256",
     "ek_policy": {
         "description": "Endorsement hierarchy used for policy secret.",
         "policy":[
             {
-                "type":"POLICYSECRET",
+                "type":"policysecret",
                 "objectName": "4000000b",
             }
         ]
@@ -112,20 +113,26 @@ The keywords are:
 * noda: Sets the noda attribute of a key or NV index.
 * A hexadecimal number: Marks a key object to be made persistent and sets the persistent object handle to
   this value.
+* unique_zero=n: Initialization of the unique field with n zeros for RSA and for the x and y
+  ECC unique field.
+* unique=hexstring: Initialization of the RSA unique field with a hextring (e.g. 0c0a0f0f0e).
+* unique_x=hexstring: Initialization of the ECC x unique field with a hextring (e.g. 0c0a0f0f0e).
+* unique_y=hexstring: Initialization of the ECC x unique field with a hextring (e.g. 0c0a0f0f0e).
 
 The RSA profile has specific values for the signing scheme and the decrypt scheme:
+
 ```
-      "rsa_signing_scheme": {
-        "scheme":"TPM2_ALG_RSAPSS",
+    "rsa_signing_scheme": {
+        "scheme":"rsapss",
         "details":{
-            "hashAlg":"TPM2_ALG_SHA256"
+            "hashAlg":"sha256"
         }
 
 
     "rsa_decrypt_scheme": {
-        "scheme":"TPM2_ALG_OAEP",
+        "scheme":"oaep",
         "details":{
-            "hashAlg":"TPM2_ALG_SHA256"
+            "hashAlg":"sha256"
         }
     },
 ```
@@ -150,15 +157,28 @@ If the PCR registers 0 to 10 are extended by BIOS and IMA in the SHA1 bank the f
 be used to enable the use of FAPI quote and verify quote:
 ```
     "pcr_selection": [
-       { "hash": "TPM2_ALG_SHA1",
+       { "hash": "sha1",
          "pcrSelect": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
        },
-       { "hash": "TPM2_ALG_SHA256",
+       { "hash": "sha256",
          "pcrSelect": [ 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 ]
        }
     ],
  ```
-# License
+
+The directory containing the FAPI profiles includes templates for various
+ECC and RSA keys. For ECC P-256 and RSA 2048-bit keys, there are three
+distinct profile templates.
+The .low-range profile corresponds to the low-range EK templates defined
+in the TCG EK Credential Profile and the TCG TPM 2.0 Provisioning Guidance.
+The .high-range profile corresponds to the high-range EK templates.
+The .legacy profile, currently the default, reflects the FAPI template
+used up to TSS version 4.1.3.
+
+The table below illustrates the key differences:
+* low-range: noDa: 1, unique field set to zero (key size length).
+* high-range: noDa: 1, unique key size set to zero.
+* legacy: noDa: 0, unique key size set to zero.
 
 This work is licensed under the
 [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).

@@ -48,6 +48,8 @@ typedef struct {
     TPMI_YES_NO                              ek_profile;    /**< Has to be set if EK is created according
                                                                  to EK credential profile: */
     TPM2B_DIGEST                                  nonce;    /**< Nonce used to initialize uniqe data */
+    TPMI_YES_NO                         unique_init_set;    /**< uniqe_init provided in keystore */
+    TPMU_PUBLIC_ID                          unique_init;    /**< unique in TPM2B_PUBLIC for initialisation */
 } IFAPI_KEY;
 
 /** Type for representing a external public key

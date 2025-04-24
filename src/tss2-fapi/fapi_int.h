@@ -81,6 +81,10 @@ typedef UINT8 IFAPI_SESSION_TYPE;
 #define IFAPI_FLUSH_PARENT true
 #define IFAPI_NOT_FLUSH_PARENT false
 
+#ifndef MAX
+#  define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
 /* Definition of FAPI buffer for TPM2B transmission */
 typedef struct {
     UINT16 size;
@@ -174,6 +178,9 @@ typedef struct {
     TPMI_YES_NO                              persistent;    /**< Store key persistent in NV ram. */
     UINT32                            persistent_handle;    /**< < Persistent handle which should be used */
     TPM2B_PUBLIC                                 public;    /**< Template for public data */
+    UINT16                                  unique_zero;    /**< Size for unique zero bytes */
+    bool                                 unique_rsa_set;    /**< Indicate whether unique rsa has to be set */
+    bool                                 unique_ecc_set;    /**< Indicate whether unique ecc has to be set */
 } IFAPI_KEY_TEMPLATE;
 
 /** Type for representing template for NV objects

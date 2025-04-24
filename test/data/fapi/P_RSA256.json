@@ -4,7 +4,7 @@
     "srk_template": "system,restricted,decrypt",
     "srk_description": "Storage root key SRK",
     "srk_persistent": 0,
-    "ek_template":  "system,restricted,decrypt",
+    "ek_template":  "system,restricted,decrypt,unique_zero=256",
     "ek_description": "Endorsement key EK",
     "ecc_signing_scheme": {
         "scheme":"TPM2_ALG_ECDSA",

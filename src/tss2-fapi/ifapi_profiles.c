@@ -545,7 +545,6 @@ ifapi_profile_json_deserialize(
         out->ignore_ek_template = TPM2_NO;
     }
 
-
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 
