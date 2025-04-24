@@ -175,6 +175,8 @@ policy_digest_size(IFAPI_OBJECT *object)
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
  */
+
+
 static TSS2_RC
 init_explicit_key_path(
     const char *context_profile,
@@ -595,27 +597,16 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
                 memcpy(context->cmd.Provision.public_templ.public.publicArea.unique.rsa.buffer,
                        &pkey->nonce.buffer[0], pkey->nonce.size);
             }
-            if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
-                context->cmd.Provision.public_templ.public.publicArea.unique.rsa.size = 0;
-            else
-                context->cmd.Provision.public_templ.public.publicArea.unique.rsa.size = 256;
         } else if (context->cmd.Provision.public_templ.public.publicArea.type == TPM2_ALG_ECC) {
             if (pkey->nonce.size) {
                 memcpy(context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.buffer,
                        &pkey->nonce.buffer[0], pkey->nonce.size);
             }
-            if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH)) {
-                context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.size = 0;
-                context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 0;
-            } else {
-                context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.size = 32;
-                context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 32;
-            }
         }
         policy = context->profiles.default_profile.ek_policy;
     } else if (ktype == TSS2_SRK) {
         policy = context->profiles.default_profile.srk_policy;
-    } else {
+     } else {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Invalid key type. Only EK or SRK allowed");
     }
@@ -724,6 +715,10 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
                                      &context->cmd.Provision.outsideInfo,
                                      &context->cmd.Provision.creationPCR);
         goto_if_error_reset_state(r, "CreatePrimary", error_cleanup);
+
+        pkey->unique_init_set = TPM2_YES;
+        pkey->unique_init
+            = context->cmd.Provision.public_templ.public.publicArea.unique;
 
         fallthrough;
 
@@ -965,29 +960,35 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
 
         memset(&public.publicArea.unique, 0, sizeof(TPMU_PUBLIC_ID));
 
-        if (hierarchy->public.handle == ESYS_TR_RH_ENDORSEMENT &&
-            pkey->ek_profile) {
-            /* Values set according to EK credential profile. */
-            if (public.publicArea.type == TPM2_ALG_RSA) {
-                if (pkey->nonce.size) {
-                    memcpy(public.publicArea.unique.rsa.buffer,
-                           &pkey->nonce.buffer[0], pkey->nonce.size);
-                }
-                if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
-                    public.publicArea.unique.rsa.size = 0;
-                else
-                    public.publicArea.unique.rsa.size = 256;
-            } else if (public.publicArea.type == TPM2_ALG_ECC) {
-                if (pkey->nonce.size) {
-                    memcpy(public.publicArea.unique.ecc.x.buffer,
-                           &pkey->nonce.buffer[0], pkey->nonce.size);
-                }
-                if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH)) {
-                    public.publicArea.unique.ecc.x.size = 0;
-                    public.publicArea.unique.ecc.y.size = 0;
-                } else {
-                    public.publicArea.unique.ecc.x.size = 32;
-                    public.publicArea.unique.ecc.y.size = 32;
+        if (pkey->unique_init_set == TPM2_YES) {
+            public.publicArea.unique = pkey->unique_init;
+        } else {
+            /* is needed to be backward compatible to versions where unique
+               is not set via the profile and stored in the keystore */
+            if (hierarchy->public.handle == ESYS_TR_RH_ENDORSEMENT &&
+                pkey->ek_profile) {
+                /* Values set according to EK credential profile. */
+                if (public.publicArea.type == TPM2_ALG_RSA) {
+                    if (pkey->nonce.size) {
+                        memcpy(public.publicArea.unique.rsa.buffer,
+                               &pkey->nonce.buffer[0], pkey->nonce.size);
+                    }
+                    if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
+                        public.publicArea.unique.rsa.size = 0;
+                    else
+                        public.publicArea.unique.rsa.size = 256;
+                } else if (public.publicArea.type == TPM2_ALG_ECC) {
+                    if (pkey->nonce.size) {
+                        memcpy(public.publicArea.unique.ecc.x.buffer,
+                               &pkey->nonce.buffer[0], pkey->nonce.size);
+                    }
+                    if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH)) {
+                        public.publicArea.unique.ecc.x.size = 0;
+                        public.publicArea.unique.ecc.y.size = 0;
+                    } else {
+                        public.publicArea.unique.ecc.x.size = 32;
+                        public.publicArea.unique.ecc.y.size = 32;
+                    }
                 }
             }
         }
@@ -1552,6 +1553,13 @@ ifapi_merge_profile_into_template(
             TPM2_ALG_NULL;
         }
         if (profile->type == TPM2_ALG_RSA) {
+            if (template->unique_ecc_set) {
+                return_error(TSS2_FAPI_RC_BAD_VALUE,
+                             "ECC unique was set for an RSA key.");
+            }
+            if (template->unique_zero) {
+                template->public.publicArea.unique.rsa.size = template->unique_zero;
+            }
             if (template->public.publicArea.objectAttributes & TPMA_OBJECT_SIGN_ENCRYPT) {
                 template->public.publicArea.parameters.rsaDetail.scheme.scheme =
                 profile->rsa_signing_scheme.scheme;
@@ -1561,6 +1569,14 @@ ifapi_merge_profile_into_template(
                 template->public.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
             }
         } else if (profile->type == TPM2_ALG_ECC) {
+            if (template->unique_rsa_set) {
+                return_error(TSS2_FAPI_RC_BAD_VALUE,
+                             "RSA unique was set for an ECC key.");
+            }
+            if (template->unique_zero) {
+                template->public.publicArea.unique.ecc.x.size = template->unique_zero;
+                template->public.publicArea.unique.ecc.y.size = template->unique_zero;
+            }
             if (template->public.publicArea.objectAttributes & TPMA_OBJECT_SIGN_ENCRYPT) {
                 template->public.publicArea.parameters.eccDetail.scheme.scheme =
                 profile->ecc_signing_scheme.scheme;
@@ -1889,6 +1905,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
                       error_cleanup); /**< to avoid scan-build errors. */
 
         key = &context->loadKey.key_object->misc.key;
+        memset(&context->loadKey.key_object->misc.key, 0, sizeof(IFAPI_KEY));
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io,
                                        context->loadKey.key_object);
@@ -1929,7 +1946,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
             context->loadKey.state = LOAD_KEY_WAIT_FOR_PRIMARY;
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
-        IFAPI_OBJECT * copyToPush = malloc(sizeof(IFAPI_OBJECT));
+        IFAPI_OBJECT * copyToPush = calloc(1, sizeof(IFAPI_OBJECT));
         goto_if_null(copyToPush, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
         r = ifapi_copy_ifapi_key_object(copyToPush, context->loadKey.key_object);
         if (r) {
@@ -3606,6 +3623,8 @@ ifapi_key_create(
         SAFE_FREE(creationData);
         SAFE_FREE(creationTicket);
         SAFE_FREE(creationHash);
+        /* unique_init is only needed for primary keys. */
+        object->misc.key.unique_init_set = TPM2_NO;
         if (context->cmd.Key_Create.inSensitive.sensitive.userAuth.size > 0)
             object->misc.key.with_auth = TPM2_YES;
         else
@@ -4854,6 +4873,10 @@ ifapi_create_primary(
                                      &context->cmd.Key_Create.creationPCR);
         goto_if_error_reset_state(r, "Prepare create primary", error_cleanup);
 
+        object->misc.key.unique_init_set = TPM2_YES;
+        object->misc.key.unique_init
+            = context->cmd.Key_Create.public_templ.public.publicArea.unique;
+
         fallthrough;
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_PRIMARY);
@@ -4877,10 +4900,12 @@ ifapi_create_primary(
         object->misc.key.description = NULL;
         object->misc.key.certificate = NULL;
         object->misc.key.reset_count = context->init_time.clockInfo.resetCount;
+
         SAFE_FREE(pkey->serialization.buffer);
         r = Esys_TR_Serialize(context->esys, context->cmd.Key_Create.handle,
                               &pkey->serialization.buffer, &pkey->serialization.size);
         goto_if_error(r, "Error serialize esys object", error_cleanup);
+
         SAFE_FREE(creationData);
         SAFE_FREE(creationTicket);
         SAFE_FREE(creationHash);

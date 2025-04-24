@@ -1,7 +1,7 @@
 {
     "type": "rsa",
     "nameAlg":"sha256",
-    "srk_template": "system,restricted,decrypt,0x81000001",
+    "srk_template": "system,restricted,decrypt,noda,0x81000001",
     "srk_description": "Storage root key SRK",
     "ek_template":  "system,restricted,decrypt,unique_zero=256",
     "ek_description": "Endorsement key EK",
