@@ -277,7 +277,23 @@ ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
         }
     }
 
+    if (in->unique_init_set) {
+        jso2 = NULL;
+        r = ifapi_json_TPMI_YES_NO_serialize(in->unique_init_set, &jso2);
+        return_if_error(r, "Serialize TPMI_YES_NO");
 
+        if (json_object_object_add(*jso, "unique_init_set", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
+
+        jso2 = NULL;
+        r = ifapi_json_TPMU_PUBLIC_ID_serialize(&in->unique_init, in->public.publicArea.type, &jso2);
+        return_if_error(r,"Serialize TPMU_PUBLIC_ID");
+
+        if (json_object_object_add(*jso, "unique_init", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
+    }
 
     return TSS2_RC_SUCCESS;
 }
