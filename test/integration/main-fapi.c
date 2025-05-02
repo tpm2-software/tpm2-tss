@@ -1485,6 +1485,10 @@ main(int argc, char *argv[])
 
     TSS2_TEST_ESYS_CONTEXT *test_esys_ctx;
 
+    // sanity check: if tcti config contains "libtpms" but not "libtpms:"
+    if (getenv(ENV_TCTI) != NULL && strstr(getenv(ENV_TCTI), "libtpms") != NULL && strstr(getenv(ENV_TCTI), "libtpms:") == NULL) {
+        LOG_WARNING(ENV_TCTI " for FAPI will probably fail. A state file has to be used to store state between test setup and FAPI (which sets up its on tcti-libtpms instance). Try libtpms:@thread or libtpms:$(mktemp /tmp/libtpms.XXXXXX)");
+    }
     ret = test_esys_setup(&test_esys_ctx);
     if (ret != 0) {
         return ret;
