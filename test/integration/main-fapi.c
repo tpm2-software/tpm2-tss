@@ -1501,15 +1501,13 @@ main(int argc, char *argv[])
     rc = Esys_GetSysContext(test_esys_ctx->esys_ctx, &sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to get SysContext: %s\n", Tss2_RC_Decode(rc));
-        ret = 1;
-        goto error;
+        goto cleanup_esys;
     }
     rc = init_ek_certificates(sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to initialize EK certificates: %s\n",
                   Tss2_RC_Decode(rc));
-        ret = 1;
-        goto error;
+        goto cleanup_esys;
     }
 #else
     char *ecc_fingerprint = NULL;
@@ -1520,12 +1518,12 @@ main(int argc, char *argv[])
     rc = Esys_GetSysContext(test_esys_ctx->esys_ctx, &sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to get SysContext: %s\n", Tss2_RC_Decode(rc));
-        return EXIT_ERROR;
+        goto cleanup_esys;
     }
 
     rc = get_ek_fingerprints(sys_ctx, &rsa_fingerprint, &ecc_fingerprint);
     if (rc != TSS2_RC_SUCCESS) {
-        return EXIT_ERROR;
+        goto cleanup_esys;
     }
     setenv("FAPI_TEST_FINGERPRINT", rsa_fingerprint, 1);
     setenv("FAPI_TEST_FINGERPRINT_ECC", ecc_fingerprint, 1);
@@ -1533,7 +1531,15 @@ main(int argc, char *argv[])
     free(ecc_fingerprint);
 #endif
 
+    rc = TSS2_RC_SUCCESS;
+
+cleanup_esys:
     test_esys_teardown(test_esys_ctx);
+
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error during test setup: %s\n", Tss2_RC_Decode(rc));
+        return EXIT_ERROR;
+    }
 
     ret = test_fapi_setup(&test_ctx);
     if (ret != 0) {
