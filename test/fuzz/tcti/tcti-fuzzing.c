@@ -29,72 +29,6 @@
 #define LOGMODULE tcti
 #include "util/log.h"
 
-/*
- * Using the data and size fields of the fuzzing TCTI memcpy the data into the
- * structures given via va_list. Caller will pass the sysContext and number of
- * arguments that follow. Following the count of arguments caller should pass
- * the sizeof the next argument, which shall be a pointer to the structure to be
- * filled.
- *
- * Example:
- *
- *     TPMI_DH_OBJECT keyA = {0};
- *     TPM2B_ECC_POINT inQsB = {0};
- *     TPM2B_ECC_POINT inQeB = {0};
- *     TPMI_ECC_KEY_EXCHANGE inScheme = {0};
- *     UINT16 counter = {0};
- *
- *     ret = fuzz_fill (
- *         sysContext,
- *         10,
- *         sizeof (keyA), &keyA,
- *         sizeof (inQsB), &inQsB,
- *         sizeof (inQeB), &inQeB,
- *         sizeof (inScheme), &inScheme,
- *         sizeof (counter), &counter
- *     );
- *     if (ret) {
- *         ... handle failure
- *     }
- */
-int
-fuzz_fill (
-        TSS2_SYS_CONTEXT *sysContext,
-        size_t count,
-        ...)
-{
-    va_list ap;
-    const uint8_t *data = NULL;
-    const uint8_t *pointer_into_data = NULL;
-    size_t size = 0U;
-    size_t i = 0U;
-    void *copy_into_type;
-    size_t copy_into_length = 0U;
-    size_t data_used = 0U;
-    TSS2_SYS_CONTEXT_BLOB *ctx = NULL;
-    TSS2_TCTI_FUZZING_CONTEXT *tcti_fuzzing = NULL;
-
-    ctx = syscontext_cast (sysContext);
-    tcti_fuzzing = tcti_fuzzing_context_cast (ctx->tctiContext);
-    data = tcti_fuzzing->data;
-    size = tcti_fuzzing->size;
-
-    va_start (ap, count);
-
-    for (i = 0U; i < (count / 2); ++i) {
-        copy_into_length = va_arg (ap, size_t);
-        copy_into_type = va_arg (ap, void *);
-        if (size > (data_used + copy_into_length)) {
-            pointer_into_data = &data[data_used];
-            data_used += copy_into_length;
-            memcpy (copy_into_type, pointer_into_data, copy_into_length);
-        }
-    }
-
-    va_end (ap);
-
-    return EXIT_SUCCESS;
-}
 
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the
@@ -212,6 +146,11 @@ tcti_fuzzing_receive (
     *response_size = tcti_fuzzing->size;
     tcti_common->header.size = 0;
     tcti_common->state = TCTI_STATE_TRANSMIT;
+    LOGBLOB_DEBUG (tcti_fuzzing->data,
+        *response_size,
+        "copying from fuzzing data (%p) into response buffer (%p)",
+        tcti_fuzzing->data,
+        response_buffer);
     memcpy(response_buffer, tcti_fuzzing->data, *response_size);
 
     return rc;

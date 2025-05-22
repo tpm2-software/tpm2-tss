@@ -1,7 +1,7 @@
 # Fuzzing
 
 Fuzz tests use [libFuzzer](http://llvm.org/docs/LibFuzzer.html) to test the SAPI
-`_Prepare` and `_Complete` functions.
+API functions (with a few [exceptions](https://github.com/tpm2-software/tpm2-tss/blob/master/script/gen_fuzz.py#L177)).
 
 Building fuzz tests can be enabled using the `--with-fuzzing=` option. For which
 there are two possible values.
@@ -16,49 +16,72 @@ libFuzzer tests can be built natively or using the docker `fuzzing` target.
 ### Natively
 
 Build the fuzz tests by setting `--with-fuzzing=libfuzzer` and statically
-linking to the fuzzing TCTI.
+linking to the fuzzing TCTI. Note that we build with source coverage (not to be confused with sanitizer coverage needed by libfuzzer), here. This flag impacts performance and is optional.
 
-```console
+```bash
 export GEN_FUZZ=1
 
 ./bootstrap
 ./configure \
   CC=clang \
-  CXX=clang++ \
   --enable-debug \
   --with-fuzzing=libfuzzer \
+  --enable-code-coverage\
+  --disable-esys \
+  --disable-fapi \
   --enable-tcti-fuzzing \
-  --enable-tcti-device=no \
-  --enable-tcti-mssim=no \
+  --disable-tcti-cmd \
+  --disable-tcti-device\
+  --disable-tcti-i2c-ftdi \
+  --disable-tcti-libtpms\
+  --disable-tcti-mssim \
+  --disable-tcti-pcap\
+  --disable-tcti-spi-ftdi \
+  --disable-tcti-spi-ltt2go \
+  --disable-tcti-spidev \
+  --disable-tcti-start-sim \
+  --disable-tcti-swtpm \
   --with-maxloglevel=none \
   --disable-shared
 
-make -j $(nproc) check
+make -j $(nproc) check TESTS=""
 ```
 
 Run the fuzz tests by executing any binary ending in `.fuzz` in `test/fuzz/`.
 
-```console
-./test/fuzz/Tss2_Sys_ZGen_2Phase_Prepare.fuzz
+For example
+```bash
+test/fuzz/Tss2_Sys_EncryptDecrypt.fuzz
+```
+
+Pass libfuzzer options to customize the approach
+```bash
+# see test/fuzz/Tss2_Sys_EncryptDecrypt.fuzz -help=1
+test/fuzz/Tss2_Sys_EncryptDecrypt.fuzz -max_total_time=20 -jobs=$(nproc) ./corpus
+```
+
+To inspect the source coverage
+```bash
+gcovr --gcov-executable "llvm-cov gcov" --html-details coverage.html
 ```
 
 ### Docker
 
-Build the fuzz targets and check that they work by building the `fuzzing` docker
-target.
+Build the fuzz targets and check that they work by building the fuzz tests in a docker
+container.
 
-```console
-docker build --target fuzzing -t tpm2-tss:fuzzing .
+```bash
+GEN_FUZZ=1 CC=clang docker run --rm -ti --cap-add=SYS_PTRACE --env-file .ci/docker.env -v $PWD:/workspace/tpm2-tss ghcr.io/tpm2-software/fedora-32 /bin/bash -c /workspace/tpm2-tss/.ci/docker.run
 ```
 
 Run a fuzz target and mount a directory as a volume into the container where it
 should store its findings should it produce any.
 
-```console
-docker run --rm -ti tpm2-tss:fuzzing \
-   -v "${PWD}/findings_dir":/artifacts \
-   ./test/fuzz/Tss2_Sys_PolicyPhysicalPresence_Prepare.fuzz \
-  -artifact_prefix=/artifacts
+```bash
+GEN_FUZZ=1 CC=clang docker run --rm -ti --cap-add=SYS_PTRACE --env-file .ci/docker.env -v $PWD:/workspace/tpm2-tss ghcr.io/tpm2-software/fedora-32
+
+# cd /workspace/tpm2-tss/
+# test/fuzz/Tss2_Sys_EncryptDecrypt.fuzz
 ```
 
 ## OSS Fuzz
@@ -89,7 +112,7 @@ Fuzz tests are generated via `script/gen_fuzz.py`.
 
 Setting `GEN_FUZZ=1` when running `bootstrap` will run `script/gen_fuzz.py`.
 
-```console
+```bash
 GEN_FUZZ=1 ./bootstrap
 ```
 

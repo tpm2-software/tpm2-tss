@@ -33,6 +33,7 @@ typedef struct {
     size_t response_buffer_len;
     size_t response_len;
     char *state_path;
+    bool state_is_thread_shared;
     char *state_mmap;
     size_t state_mmap_len;
     size_t state_len;

@@ -1485,6 +1485,10 @@ main(int argc, char *argv[])
 
     TSS2_TEST_ESYS_CONTEXT *test_esys_ctx;
 
+    // sanity check: if tcti config contains "libtpms" but not "libtpms:"
+    if (getenv(ENV_TCTI) != NULL && strstr(getenv(ENV_TCTI), "libtpms") != NULL && strstr(getenv(ENV_TCTI), "libtpms:") == NULL) {
+        LOG_WARNING(ENV_TCTI " for FAPI will probably fail. A state file has to be used to store state between test setup and FAPI (which sets up its on tcti-libtpms instance). Try libtpms:@thread or libtpms:$(mktemp /tmp/libtpms.XXXXXX)");
+    }
     ret = test_esys_setup(&test_esys_ctx);
     if (ret != 0) {
         return ret;
@@ -1494,18 +1498,38 @@ main(int argc, char *argv[])
     TSS2_SYS_CONTEXT *sys_ctx;
     TSS2_RC rc;
 
+    #if !defined(FAPI_TEST_EK_CERT_LESS)
+        // TODO this does not need to be an env variable as it is only used in test setup
+        //      move this to the test context?
+        char *cert_filename;
+        size = asprintf(&cert_filename, "%s.ekcert.pem", argv[0]);
+        if (size < 0) {
+            LOG_ERROR("Out of memory");
+            ret = EXIT_ERROR;
+            goto error;
+        }
+        setenv("FAPI_TEST_CERTIFICATE", cert_filename, 1);
+        free(cert_filename);
+        size = asprintf(&cert_filename, "%s.ekecccert.pem", argv[0]);
+        if (size < 0) {
+            LOG_ERROR("Out of memory");
+            ret = EXIT_ERROR;
+            goto error;
+        }
+        setenv("FAPI_TEST_CERTIFICATE_ECC", cert_filename, 1);
+        free(cert_filename);
+    #endif
+
     rc = Esys_GetSysContext(test_esys_ctx->esys_ctx, &sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to get SysContext: %s\n", Tss2_RC_Decode(rc));
-        ret = 1;
-        goto error;
+        goto cleanup_esys;
     }
     rc = init_ek_certificates(sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to initialize EK certificates: %s\n",
                   Tss2_RC_Decode(rc));
-        ret = 1;
-        goto error;
+        goto cleanup_esys;
     }
 #else
     char *ecc_fingerprint = NULL;
@@ -1516,12 +1540,12 @@ main(int argc, char *argv[])
     rc = Esys_GetSysContext(test_esys_ctx->esys_ctx, &sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to get SysContext: %s\n", Tss2_RC_Decode(rc));
-        return EXIT_ERROR;
+        goto cleanup_esys;
     }
 
     rc = get_ek_fingerprints(sys_ctx, &rsa_fingerprint, &ecc_fingerprint);
     if (rc != TSS2_RC_SUCCESS) {
-        return EXIT_ERROR;
+        goto cleanup_esys;
     }
     setenv("FAPI_TEST_FINGERPRINT", rsa_fingerprint, 1);
     setenv("FAPI_TEST_FINGERPRINT_ECC", ecc_fingerprint, 1);
@@ -1529,7 +1553,15 @@ main(int argc, char *argv[])
     free(ecc_fingerprint);
 #endif
 
+    rc = TSS2_RC_SUCCESS;
+
+cleanup_esys:
     test_esys_teardown(test_esys_ctx);
+
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error during test setup: %s\n", Tss2_RC_Decode(rc));
+        return EXIT_ERROR;
+    }
 
     ret = test_fapi_setup(&test_ctx);
     if (ret != 0) {

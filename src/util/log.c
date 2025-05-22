@@ -214,10 +214,10 @@ doLog(log_level loglevel, const char *module, log_level logdefault,
     if (loglevel > *status)
         return;
 
-    int size = snprintf(NULL, 0, "%s:%s:%s:%d:%s() %s \n",
+    int size = snprintf(NULL, 0, "%s:%s:%s:%d:%s() %s\n",
                 log_strings[loglevel], module, file, line, func, msg);
     char fmt[size+1];
-    snprintf(fmt, sizeof(fmt), "%s:%s:%s:%d:%s() %s \n",
+    snprintf(fmt, sizeof(fmt), "%s:%s:%s:%d:%s() %s\n",
                 log_strings[loglevel], module, file, line, func, msg);
 
     va_list vaargs;

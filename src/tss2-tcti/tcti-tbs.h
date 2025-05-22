@@ -11,6 +11,10 @@
 
 #define TCTI_TBS_MAGIC 0xfbf2afa3761e188aULL
 
+#ifndef _WIN32
+typedef BYTE *PBYTE;
+#endif  /* _WIN32 */
+
 typedef struct {
     TSS2_TCTI_COMMON_CONTEXT common;
     void *hContext;

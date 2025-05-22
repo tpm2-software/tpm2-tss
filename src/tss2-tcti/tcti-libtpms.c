@@ -51,6 +51,19 @@
 static __thread TSS2_TCTI_LIBTPMS_CONTEXT *current_tcti_libtpms = NULL;
 
 /*
+ * If as a state file, "@thread" is passed, tcti-libtpms will use thread-local
+ * memory for state handling. That means this memory will be shared for all
+ * tcti-libtpms instances of the same thread. This enables e.g. test setup stuff
+ * for FAPI (which always loads its own tcti instance).
+ *
+ * WARNING: This feature will only work for subsequent tcti instances. Do not
+ * operate two instances at the same time! (This is also why we can not use e.g.
+ * dynamic memory allocation and a refcounter)
+ */
+static __thread char thread_shared_state[4096 * 4] = {0};
+static __thread size_t thread_shared_state_len = 0;
+
+/*
  * Map the state file for this context into memory and allocate disk space. The
  * file descriptor is closed again. Once this context reaches the end of its
  * lifetime, the memory must be unmapped and the file must be truncated to its
@@ -68,6 +81,16 @@ tcti_libtpms_map_state_file(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     if (tcti_libtpms->state_path == NULL) {
         LOG_DEBUG("No state path. Skip mapping state file.");
         return TPM2_RC_SUCCESS;
+    }
+    /* if state is thread-shared memory */
+    if (tcti_libtpms->state_is_thread_shared || strcmp(tcti_libtpms->state_path, "@thread") == 0) {
+        LOG_DEBUG("Using thread-shared state memory at %p", thread_shared_state);
+        tcti_libtpms->state_is_thread_shared = true;
+        tcti_libtpms->state_mmap = thread_shared_state;
+        tcti_libtpms->state_mmap_len = sizeof(thread_shared_state);
+        tcti_libtpms->state_len = thread_shared_state_len;
+
+        return TSS2_RC_SUCCESS;
     }
     LOG_DEBUG("Mapping state file: %s", tcti_libtpms->state_path);
 
@@ -144,6 +167,13 @@ tcti_libtpms_ensure_state_len(
     size_t new_state_mmap_len;
     int state_fd;
 
+    if (tcti_libtpms->state_is_thread_shared && state_len > tcti_libtpms->state_mmap_len) {
+        LOG_ERROR("Thread-shared state memory is too small: %zu > %zu",
+                  state_len,
+                  sizeof(thread_shared_state));
+        return TSS2_TCTI_RC_GENERAL_FAILURE;
+    }
+
     if (state_len > tcti_libtpms->state_mmap_len)
     {
         new_state_mmap_len = (state_len / STATE_MMAP_CHUNK_LEN + 1) * STATE_MMAP_CHUNK_LEN;
@@ -206,7 +236,7 @@ tcti_libtpms_store_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     size_t size;
 
     /* if no state file, skip loading */
-    if (tcti_libtpms->state_path == NULL) {
+    if (!tcti_libtpms->state_is_thread_shared && tcti_libtpms->state_path == NULL) {
         LOG_DEBUG("No state file. Skip storing state file.");
         return TPM2_RC_SUCCESS;
     }
@@ -264,6 +294,7 @@ tcti_libtpms_store_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     offset += size;
 
     tcti_libtpms->state_len = offset;
+    thread_shared_state_len = offset;
 
     rc = TPM2_RC_SUCCESS;
 
@@ -291,13 +322,14 @@ tcti_libtpms_load_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     size_t offset = 0;
 
     /* if no/empty state file, skip loading */
-    if (tcti_libtpms->state_path == NULL || tcti_libtpms->state_len == 0) {
+    if ((tcti_libtpms->state_is_thread_shared && thread_shared_state_len == 0) || (tcti_libtpms->state_path == NULL || tcti_libtpms->state_len == 0)) {
         LOG_DEBUG("No/empty state file found. Skip loading state file.");
         return TPM2_RC_SUCCESS;
     }
     LOG_DEBUG("Loading from state file: %s", tcti_libtpms->state_path);
 
     tcti_libtpms->state_len = 0;
+    thread_shared_state_len = 0;
 
     /* permanent buffer length (big endian) */
     memcpy(&permanent_buf_len, tcti_libtpms->state_mmap, sizeof(permanent_buf_len));
@@ -325,6 +357,7 @@ tcti_libtpms_load_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
                                                           volatile_buf_len);
 
     tcti_libtpms->state_len = offset;
+    thread_shared_state_len = offset;
 
     rc = TPM2_RC_SUCCESS;
 
@@ -515,12 +548,12 @@ tcti_libtpms_finalize(
     /* close libtpms library handle */
     dlclose(tcti_libtpms->libtpms);
 
-    if (tcti_libtpms->state_mmap != NULL) {
+    if (!tcti_libtpms->state_is_thread_shared && tcti_libtpms->state_mmap != NULL) {
         /* unmap memory (may be backed by a state file) */
         munmap(tcti_libtpms->state_mmap, tcti_libtpms->state_mmap_len);
     }
 
-    if (tcti_libtpms->state_path != NULL) {
+    if (!tcti_libtpms->state_is_thread_shared && tcti_libtpms->state_path != NULL) {
         /* truncate state file to its real size */
         ret = truncate(tcti_libtpms->state_path, (off_t) tcti_libtpms->state_len);
         if (ret != 0) {
@@ -860,6 +893,7 @@ Tss2_Tcti_Libtpms_Init(
 #endif
     }
 
+    tcti_libtpms->state_is_thread_shared = false;
     rc = tcti_libtpms_map_state_file(tcti_libtpms);
     if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("Could not create and map state file.");
@@ -913,7 +947,7 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
     .version = TCTI_VERSION,
     .name = "tcti-libtpms",
     .description = "TCTI module for communication with the libtpms library.",
-    .config_help = "Path to the state file. NULL for no state file.",
+    .config_help = "Path to the state file. @thread for a thread-shared state. NULL for no state file.",
     .init = Tss2_Tcti_Libtpms_Init,
 };
 

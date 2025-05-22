@@ -21,6 +21,10 @@
     - [Parameters](#parameters-5)
   - [tcti-mssim](#tcti-mssim)
     - [Parameters](#parameters-6)
+- [Using tctis](#using-tctis)
+  - [SAPI](#sapi)
+  - [ESAPI](#esapi)
+  - [FAPI](#fapi)
 
 ## What is a tcti?
 
@@ -47,7 +51,7 @@ when initializing the tcti.
 
 ```mermaid
 flowchart TD
-    sapi(SAPI) -->|"conf=&quot/dev/tpmrm0&quot" | tcti_device(tcti-device)
+    sapi(SAPI) -->|"conf=&quot;/dev/tpmrm0&quot;" | tcti_device(tcti-device)
     tcti_device -.->|write| tpm{{/dev/tpmrm0}}
     tpm -.->|read| tcti_device
     style tpm stroke-dasharray: 3, 3
@@ -66,8 +70,8 @@ a tcti for you. For instance, it can load tcti-device:
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quotdevice:/dev/tpmrm0&quot"| tctildr(tctildr)
-    tctildr -->|"conf=&quot/dev/tpmrm0&quot"| tcti_device(tcti-device)
+    invis[ ] -->|"conf=&quot;device:/dev/tpmrm0&quot;"| tctildr(tctildr)
+    tctildr -->|"conf=&quot;/dev/tpmrm0&quot;"| tcti_device(tcti-device)
     tcti_device -.->|write| tpm{{/dev/tpmrm0}}
     tpm -.->|read| tcti_device
     style invis  fill:#FFFFFF00, stroke:#FFFFFF00;
@@ -78,8 +82,8 @@ Another example for tcti-swtpm:
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quotswtpm:host=localhost,port=2321&quot"| tctildr(tctildr)
-    tctildr -->|"conf=&quothost=localhost,port=2321&quot"| tcti_swtpm(tcti-swtpm)
+    invis[ ] -->|"conf=&quot;swtpm:host=localhost,port=2321&quot;"| tctildr(tctildr)
+    tctildr -->|"conf=&quot;host=localhost,port=2321&quot;"| tcti_swtpm(tcti-swtpm)
     tcti_swtpm <-.->|localhost:2321| tpm{{"swtpm (TPM simulator)"}}
     style invis  fill:#FFFFFF00, stroke:#FFFFFF00;
     style tpm stroke-dasharray: 3, 3
@@ -125,8 +129,8 @@ kernel module is loaded (`lsmod`) and load it if necessary (`modprobe tpm_tis`).
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quotdevice:/dev/tpmrm0&quot"| tctildr(tctildr)
-    tctildr -->|"conf=&quot/dev/tpmrm0&quot"| tcti_device(tcti-device)
+    invis[ ] -->|"conf=&quot;device:/dev/tpmrm0&quot;"| tctildr(tctildr)
+    tctildr -->|"conf=&quot;/dev/tpmrm0&quot;"| tcti_device(tcti-device)
     tcti_device -.->|write| tpm{{/dev/tpmrm0}}
     tpm -.->|read| tcti_device
     style invis  fill:#FFFFFF00, stroke:#FFFFFF00;
@@ -147,7 +151,7 @@ admin rights.
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quottbs&quot"| tctildr(tctildr)
+    invis[ ] -->|"conf=&quot;tbs&quot;"| tctildr(tctildr)
     tctildr --> tcti_tbs(tcti-tbs)
     tcti_tbs <-.->|"Tbsip_Submit_Command()"| tbs{{"TPM Base Services (TBS)"}}
     tbs -.- tpm{{TPM}}
@@ -169,12 +173,12 @@ read from its `stdout`.
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quotcmd:tpm2_send --tcti='device:/dev/tpmrm0'&quot"| tctildr1(tctildr)
-    tctildr1 -->|"conf=&quottpm2_send --tcti='device:/dev/tpmrm0'&quot"| tcti_cmd(tcti-cmd)
+    invis[ ] -->|"conf=&quot;cmd:tpm2_send --tcti='device:/dev/tpmrm0'&quot;"| tctildr1(tctildr)
+    tctildr1 -->|"conf=&quot;tpm2_send --tcti='device:/dev/tpmrm0'&quot;"| tcti_cmd(tcti-cmd)
     tcti_cmd -.->|stdin| process{{tpm2_send --tcti='device:/dev/tpmrm0'}}
     process -.->|stdout| tcti_cmd
-    process -->|"conf=&quotdevice:/dev/tpmrm0&quot"| tctildr2(tctildr)
-    tctildr2 -->|"conf=&quot/dev/tpmrm0&quot"| tcti_device{{tcti-device}}
+    process -->|"conf=&quot;device:/dev/tpmrm0&quot;"| tctildr2(tctildr)
+    tctildr2 -->|"conf=&quot;/dev/tpmrm0&quot;"| tcti_device{{tcti-device}}
     tcti_device -.->|write| tpm{{/dev/tpmrm0}}
     tpm -.->|read| tcti_device
 
@@ -188,15 +192,15 @@ Now for a real-world example. We can communicate with a remote TPM by invoking
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quotcmd:ssh 192.168.178.123 tpm2_send --tcti='device:/dev/tpmrm0'&quot"| tctildr1(tctildr)
-    tctildr1 -->|"conf=&quotssh 192.168.178.123 tpm2_send --tcti='device:/dev/tpmrm0'&quot"| tcti_cmd(tcti-cmd)
+    invis[ ] -->|"conf=&quot;cmd:ssh 192.168.178.123 tpm2_send --tcti='device:/dev/tpmrm0'&quot;"| tctildr1(tctildr)
+    tctildr1 -->|"conf=&quot;ssh 192.168.178.123 tpm2_send --tcti='device:/dev/tpmrm0'&quot;"| tcti_cmd(tcti-cmd)
     tcti_cmd -.->|stdin| ssh{{ssh}}
     ssh -.->|stdout| tcti_cmd
 
     ssh -.-|network| sshd{{sshd}}
     sshd -.- process{{tpm2_send -tcti='device:/dev/tpmrm0'}}
-    process -->|"conf=&quotdevice:/dev/tpmrm0&quot"| tctildr2(tctildr)
-    tctildr2 -->|"conf=&quot/dev/tpmrm0&quot"| tcti_device{{tcti-device}}
+    process -->|"conf=&quot;device:/dev/tpmrm0&quot;"| tctildr2(tctildr)
+    tctildr2 -->|"conf=&quot;/dev/tpmrm0&quot;"| tcti_device{{tcti-device}}
     tcti_device -.->|write| tpm{{/dev/tpmrm0}}
     tpm -.->|read| tcti_device
 
@@ -226,12 +230,12 @@ Internally, tcti-pcap delegates to tctildr, again.
 
 ```mermaid
 flowchart TD
-    invis2[ ] -.->|"TCTI_PCAP_FILE=&quottpm2_log.pcap&quot"| tcti_pcap
+    invis2[ ] -.->|"TCTI_PCAP_FILE=&quot;tpm2_log.pcap&quot;"| tcti_pcap
     tcti_pcap -.->|logging| file{{tpm2_log.pcap}}
-    invis[ ] -->|"conf=&quotpcap:device:/dev/tpmrm0&quot"| tctildr1(tctildr)
-    tctildr1 -->|"conf=&quotdevice:/dev/tpmrm0&quot"| tcti_pcap(tcti-pcap)
-    tcti_pcap -->|"conf=&quotdevice:/dev/tpmrm0&quot"| tctildr2(tctildr)
-    tctildr2 -->|"conf=&quot/dev/tpmrm0&quot"| tcti_device(tcti-device)
+    invis[ ] -->|"conf=&quot;pcap:device:/dev/tpmrm0&quot;"| tctildr1(tctildr)
+    tctildr1 -->|"conf=&quot;device:/dev/tpmrm0&quot;"| tcti_pcap(tcti-pcap)
+    tcti_pcap -->|"conf=&quot;device:/dev/tpmrm0&quot;"| tctildr2(tctildr)
+    tctildr2 -->|"conf=&quot;/dev/tpmrm0&quot;"| tcti_device(tcti-device)
     tcti_device -.->|write| tpm{{/dev/tpmrm0}}
     tpm -.->|read| tcti_device
     style invis  fill:#FFFFFF00, stroke:#FFFFFF00;
@@ -269,7 +273,7 @@ connects that to the host via libusb.
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quotlibtpms&quot"| tcti_spi_ltt2go(tcti-spi-ltt2go)
+    invis[ ] -->|"conf=&quot;libtpms&quot;"| tcti_spi_ltt2go(tcti-spi-ltt2go)
     tcti_spi_ltt2go <-.->|libusb| cy7c65211a{{"USB2.0 SPI bridge"}}
     cy7c65211a -.-|SPI| tpm{{"TPM"}}
     style invis  fill:#FFFFFF00, stroke:#FFFFFF00;
@@ -298,7 +302,7 @@ when the process dies.
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quotlibtpms&quot"| tctildr(tctildr)
+    invis[ ] -->|"conf=&quot;libtpms&quot;"| tctildr(tctildr)
     tctildr --> tcti_libtpms(tcti-libtpms)
     tcti_libtpms -.->|dynamically loads| tpm{{"libtpms.so (TPM simulator)"}}
     style invis  fill:#FFFFFF00, stroke:#FFFFFF00;
@@ -311,8 +315,8 @@ the filesystem and loaded again. This can be achieved by passing a path via
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quotlibtpms:tpm_state.libtpms&quot"| tctildr(tctildr)
-    tctildr -->|"conf=&quottpm_state.libtpms&quot"| tcti_libtpms(tcti-libtpms)
+    invis[ ] -->|"conf=&quot;libtpms:tpm_state.libtpms&quot;"| tctildr(tctildr)
+    tctildr -->|"conf=&quot;tpm_state.libtpms&quot;"| tcti_libtpms(tcti-libtpms)
     tcti_libtpms <-.->|loads/saves state| file{{tpm_state.libtpms}}
     tcti_libtpms -.->|dynamically loads| tpm{{"libtpms.so (TPM simulator)"}}
     style invis  fill:#FFFFFF00, stroke:#FFFFFF00;
@@ -342,8 +346,8 @@ incompatible.
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quotswtpm:host=localhost,port=2321&quot"| tctildr(tctildr)
-    tctildr -->|"conf=&quothost=localhost,port=2321&quot"| tcti_swtpm(tcti-swtpm)
+    invis[ ] -->|"conf=&quot;swtpm:host=localhost,port=2321&quot;"| tctildr(tctildr)
+    tctildr -->|"conf=&quot;host=localhost,port=2321&quot;"| tcti_swtpm(tcti-swtpm)
     tcti_swtpm <-.->|TPM commands/responses| port2321{{"localhost:2321"}}
     tcti_swtpm <-.->|control channel| port2322{{"localhost:2322"}}
     port2321 -.- tpm{{"swtpm (TPM simulator)"}}
@@ -385,8 +389,8 @@ socket is identical with that of swtpm, the secondary one is incompatible.
 
 ```mermaid
 flowchart TD
-    invis[ ] -->|"conf=&quotmssim:host=localhost,port=2321&quot"| tctildr(tctildr)
-    tctildr -->|"conf=&quothost=localhost,port=2321&quot"| tcti_mssim(tcti-mssim)
+    invis[ ] -->|"conf=&quot;mssim:host=localhost,port=2321&quot;"| tctildr(tctildr)
+    tctildr -->|"conf=&quot;host=localhost,port=2321&quot;"| tcti_mssim(tcti-mssim)
     tcti_mssim <-.->|TPM commands/responses| port2321{{"localhost:2321"}}
     tcti_mssim <-.->|platform commands| port2322{{"localhost:2322"}}
     port2321 -.- tpm{{"mssim (TPM simulator)"}}
@@ -415,3 +419,36 @@ Where:
 
 * Port to the simulator, default: `2321`. The control channel will be `<port> +
   1`
+
+## Using tctis
+
+This chapter is about how to use a tcti in a given context. Note that tctildr
+itself is also a tcti - albeit a special one.
+
+### SAPI
+
+* link against e.g. tcti-device directly, initialize tcti and pass it to `Tss2_Sys_Initialize()` **OR**
+* link against tctildr, initialize with e.g. `conf=device` and pass it to `Tss2_Sys_Initialize()`
+
+### ESAPI
+
+* dynamic linking:
+  * link against e.g. tcti-device directly, initialize tcti and pass it to `Esys_Initialize()` **OR**
+  * pass `NULL` to `Esys_Initialize()` so that ESAPI (already linking
+    against tctildr) uses tctildr which auto-detects and loads a tcti
+* static linking:
+  * link against e.g. tcti-device directly, initialize tcti and pass it to `Esys_Initialize()` **OR**
+  * pass `NULL` to `Esys_Initialize()` so that ESAPI (already linking
+    against tctildr) uses tctildr which auto-detects and loads a tcti
+
+> [!IMPORTANT]
+> When linking a tcti statically against ESAPI, `--whole-archive`
+> needs to be passed to the linker. This is because ESAPI already links against
+> tctildr for convenience. `Tss2_Tcti_Info()` is the one symbol every tcti
+> (including tctildr) exports: `Tss2_Tcti_Info()`. To resolve conflicts, tctildr
+> exports `Tss2_Tcti_Info()` as a weak symbol. For static linking, this requires
+> `--whole-archive`.
+
+### FAPI
+
+The FAPI always uses tctildr. Set the key `tcti` in the config file, see [fapi-config.md](fapi-config.md).

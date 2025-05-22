@@ -15,7 +15,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])]) #Backward compatible setti
 
 AC_CONFIG_HEADERS([config.h])
 
-AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-tcti-pcap.pc lib/tss2-tcti-null.pc lib/tss2-tcti-libtpms.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc lib/tss2-tcti-cmd.pc lib/tss2-policy.pc lib/tss2-tcti-spi-helper.pc lib/tss2-tcti-spi-ltt2go.pc lib/tss2-tcti-spidev.pc lib/tss2-tcti-spi-ftdi.pc lib/tss2-tcti-i2c-helper.pc lib/tss2-tcti-i2c-ftdi.pc])
+AC_CONFIG_FILES([Makefile Doxyfile lib/tss2-sys.pc lib/tss2-esys.pc lib/tss2-mu.pc lib/tss2-tcti-device.pc lib/tss2-tcti-mssim.pc lib/tss2-tcti-swtpm.pc lib/tss2-tcti-pcap.pc lib/tss2-tcti-null.pc lib/tss2-tcti-libtpms.pc lib/tss2-tcti-start-sim.pc lib/tss2-rc.pc lib/tss2-tctildr.pc lib/tss2-fapi.pc lib/tss2-tcti-cmd.pc lib/tss2-policy.pc lib/tss2-tcti-spi-helper.pc lib/tss2-tcti-spi-ltt2go.pc lib/tss2-tcti-spidev.pc lib/tss2-tcti-spi-ftdi.pc lib/tss2-tcti-i2c-helper.pc lib/tss2-tcti-i2c-ftdi.pc])
 
 # propagate configure arguments to distcheck
 AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],[$ac_configure_args])
@@ -272,6 +272,13 @@ AC_ARG_ENABLE([tcti-swtpm],
 AM_CONDITIONAL([ENABLE_TCTI_SWTPM], [test "x$enable_tcti_swtpm" != xno])
 AS_IF([test "x$enable_tcti_swtpm" = "xyes"], [AC_DEFINE([TCTI_SWTPM],[1], [TCTI FOR SWTPM])])
 
+AC_ARG_ENABLE([tcti-start-sim],
+            [AS_HELP_STRING([--disable-tcti-start-sim],
+                            [don't build the tcti-start-sim module])],,
+            [enable_tcti_start_sim=yes])
+AM_CONDITIONAL([ENABLE_TCTI_START_SIM], [test "x$enable_tcti_start_sim" != xno])
+AS_IF([test "x$enable_tcti_start_sim" = "xyes"], [AC_DEFINE([TCTI_START_SIM],[1], [TCTI FOR STARTING THE SIMULATOR])])
+
 AC_ARG_ENABLE([tcti-pcap],
             [AS_HELP_STRING([--disable-tcti-pcap],
                             [don't build the tcti-pcap module])],,
@@ -462,6 +469,7 @@ AM_CONDITIONAL([DEVICEMANDATORY],[test "x$enable_device_mandatory" = "xyes"])
 # enable integration tests and check for simulator binary
 #
 
+# TODO migrate and remove --with-device
 AC_ARG_WITH([integrationtcti],
             [AS_HELP_STRING([--with-integrationtcti=<tcti>],[TCTI used for testing])],
             [AS_IF([test x"$with_device_set" = "xyes"],
@@ -520,14 +528,14 @@ AS_IF([test "x$enable_integration" = "xyes"],
              [# check for swtpm binary
               AC_CHECK_PROG([result_swtpm], [swtpm], [yes], [no])
               AS_IF([test "x$result_swtpm" = "xyes"],
-                    [integration_tcti=swtpm],
+                    [integration_tcti=start-sim:swtpm],
                     [AC_MSG_WARN([Executable swtpm not found in PATH.])])])
        AS_IF([test "x$integration_tcti" = "xnone" && test "x$enable_tcti_mssim" = "xyes"],
              [# check for mssim binary
               AC_MSG_NOTICE([Falling back to testing with tcti-mssim.])
               AC_CHECK_PROG([result_tpm_server], [tpm_server], [yes], [no])
               AS_IF([test "x$result_tpm_server" = "xyes"],
-                    [integration_tcti=mssim
+                    [integration_tcti=start-sim:mssim
                      AC_DEFINE([INTEGRATION_TCTI_MSSIM], [1], [use mssim TCTI for integration tests])],
                     [AC_MSG_WARN([Executable tpm_server not found in PATH (fallback)])])])
        AS_IF([test "x$integration_tcti" = "xnone"],
@@ -548,17 +556,17 @@ AS_CASE(["x$with_sanitizer"],
         ["xaddress"],
         [
             SANITIZER_CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
-            SANITIZER_LDFLAGS="-lasan"
+            SANITIZER_LDFLAGS="-fsanitize=address"
         ],
         ["xundefined"],
         [
             SANITIZER_CFLAGS="-fsanitize=undefined"
-            SANITIZER_LDFLAGS="-lubsan"
+            SANITIZER_LDFLAGS="-fsanitize=undefined"
         ],
         ["xundefined,address"],
         [
             SANITIZER_CFLAGS="-fsanitize=undefined,address -fno-omit-frame-pointer"
-            SANITIZER_LDFLAGS="-lasan -lubsan"
+            SANITIZER_LDFLAGS="-fsanitize=undefined,address"
         ],
         [AC_MSG_ERROR([Bad value for --with-sanitizer])])
 AC_SUBST([SANITIZER_CFLAGS])
@@ -574,12 +582,15 @@ AS_CASE(["x$with_fuzzing"],
         ["xnone"],
         [],
         ["xlibfuzzer"],
-        [ADD_FUZZING_FLAG([-fsanitize=fuzzer])],
+        [FUZZ_LDFLAGS="-fsanitize=fuzzer"
+         FUZZ_CFLAGS="-fsanitize=fuzzer"],
         ["xossfuzz"],
         [AS_IF([test "x$LIB_FUZZING_ENGINE" = "x"],
                [AC_MSG_ERROR([OSS Fuzz testing requires LIB_FUZZING_ENGINE environment variable be set])])
-         ADD_FUZZING_FLAG([-lFuzzingEngine])],
+         FUZZ_LDFLAGS="-lFuzzingEngine"],
         [AC_MSG_ERROR([Bad value for --with-fuzzing])])
+AC_SUBST([FUZZ_CFLAGS])
+AC_SUBST([FUZZ_LDFLAGS])
 AM_CONDITIONAL([ENABLE_FUZZING],[test "x$with_fuzzing" != "xnone"])
 AS_IF([test "x$with_fuzzing" != "xnone"],
       [AS_IF([test "x$enable_tcti_fuzzing" = xno],

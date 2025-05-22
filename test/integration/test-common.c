@@ -8,26 +8,28 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, uint8_t, int32_t, uint32_t, uin...
-#include <stdbool.h>          // for bool
-#include <stdio.h>            // for NULL, size_t
-#include <stdlib.h>           // for free, malloc, EXIT_SUCCESS, getenv
-#include <string.h>           // for memset, memcmp, memcpy
+#include <inttypes.h>                           // for PRIx32, uint8_t
+#include <stdbool.h>                            // for bool
+#include <stdio.h>                              // for NULL, size_t
+#include <stdlib.h>                             // for free, malloc, EXIT_SU...
+#include <string.h>                             // for memcmp
 
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, UINT32, TSS2_...
-#include "tss2_mu.h"          // for Tss2_MU_TPMS_CAPABILITY_DATA_Marshal
-#include "tss2_tctildr.h"     // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_Ini...
-#include "tss2_tpm2_types.h"  // for TPMS_CAPABILITY_DATA, TPM2_CAP_HANDLES
+#include "test/integration/test-common-tcti.h"  // for tcti_proxy_initialize
+#include "tss2_common.h"                        // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_mu.h"                            // for Tss2_MU_TPMS_CAPABILI...
+#include "tss2_tpm2_types.h"                    // for TPMS_CAPABILITY_DATA
 #ifdef TEST_ESYS
-#include "tss2_esys.h"        // for Esys_Finalize, Esys_GetSysContext, Esys...
+#include "tss2_esys.h"                          // for Esys_Finalize, Esys_G...
 #endif
 #define LOGMODULE test
 #include "test-common.h"
-#include "util/log.h"         // for LOG_ERROR, LOG_DEBUG, LOGBLOB_ERROR
+#include "util/log.h"                           // for LOG_ERROR, LOG_DEBUG
 
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
+
+const TSS2_TCTI_INFO* Tss2_Tcti_Info(void);
 
 struct {
     TPM2_CAP cap;
@@ -46,162 +48,6 @@ struct {
 struct tpm_state {
     TPMS_CAPABILITY_DATA capabilities[7];
 };
-
-/** Define a proxy tcti that returns yielded on every second invocation
- * thus the corresponding handling code in ESYS can be tested.
- * The first invocation will be Tss2_Sys_StartUp.
- */
-#ifdef TEST_ESYS
-
-TSS2_RC
-(*transmit_hook) (const uint8_t *command_buffer, size_t command_size) = NULL;
-
-#define TCTI_PROXY_MAGIC 0x5250584f0a000000ULL /* 'PROXY\0\0\0' */
-#define TCTI_PROXY_VERSION 0x1
-
-enum state {
-    forwarding,
-    intercepting
-};
-
-typedef struct {
-    uint64_t magic;
-    uint32_t version;
-    TSS2_TCTI_TRANSMIT_FCN transmit;
-    TSS2_TCTI_RECEIVE_FCN receive;
-    TSS2_RC (*finalize) (TSS2_TCTI_CONTEXT *tctiContext);
-    TSS2_RC (*cancel) (TSS2_TCTI_CONTEXT *tctiContext);
-    TSS2_RC (*getPollHandles) (TSS2_TCTI_CONTEXT *tctiContext,
-              TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
-    TSS2_RC (*setLocality) (TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality);
-    TSS2_TCTI_CONTEXT *tctiInner;
-    enum state state;
-} TSS2_TCTI_CONTEXT_PROXY;
-
-static TSS2_TCTI_CONTEXT_PROXY*
-tcti_proxy_cast (TSS2_TCTI_CONTEXT *ctx)
-{
-    TSS2_TCTI_CONTEXT_PROXY *ctxi = (TSS2_TCTI_CONTEXT_PROXY*)ctx;
-    if (ctxi == NULL || ctxi->magic != TCTI_PROXY_MAGIC) {
-        LOG_ERROR("Bad tcti passed.");
-        return NULL;
-    }
-    return ctxi;
-}
-
-static TSS2_RC
-tcti_proxy_transmit(
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t command_size,
-    const uint8_t *command_buffer
-    )
-{
-    TSS2_RC rval;
-    TSS2_TCTI_CONTEXT_PROXY *tcti_proxy = tcti_proxy_cast(tctiContext);
-
-    if (tcti_proxy->state == intercepting) {
-        return TSS2_RC_SUCCESS;
-    }
-
-    if (transmit_hook != NULL) {
-        rval = transmit_hook(command_buffer, command_size);
-        if (rval != TSS2_RC_SUCCESS) {
-            LOG_ERROR("transmit hook requested error");
-            return rval;
-        }
-    }
-
-    rval = Tss2_Tcti_Transmit(tcti_proxy->tctiInner, command_size,
-        command_buffer);
-    if (rval != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Calling TCTI Transmit");
-        return rval;
-    }
-
-    return rval;
-}
-
-uint8_t yielded_response[] = {
-    0x80, 0x01,             /* TPM_ST_NO_SESSION */
-    0x00, 0x00, 0x00, 0x0A, /* Response Size 10 */
-    0x00, 0x00, 0x09, 0x08  /* TPM_RC_YIELDED */
-};
-
-static TSS2_RC
-tcti_proxy_receive(
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t *response_size,
-    uint8_t *response_buffer,
-    int32_t timeout
-    )
-{
-    TSS2_RC rval;
-    TSS2_TCTI_CONTEXT_PROXY *tcti_proxy = tcti_proxy_cast(tctiContext);
-
-    if (tcti_proxy->state == intercepting) {
-        *response_size = sizeof(yielded_response);
-
-        if (response_buffer != NULL) {
-            memcpy(response_buffer, &yielded_response[0], sizeof(yielded_response));
-            tcti_proxy->state = forwarding;
-        }
-        return TSS2_RC_SUCCESS;
-    }
-
-    rval = Tss2_Tcti_Receive(tcti_proxy->tctiInner, response_size,
-                             response_buffer, timeout);
-    if (rval != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Calling TCTI Transmit");
-        return rval;
-    }
-
-    /* First read with response buffer == NULL is to get the size of the
-     * response. The subsequent read needs to be forwarded also */
-    if (response_buffer != NULL)
-        tcti_proxy->state = intercepting;
-
-    return rval;
-}
-
-static void
-tcti_proxy_finalize(
-    TSS2_TCTI_CONTEXT *tctiContext)
-{
-    memset(tctiContext, 0, sizeof(TSS2_TCTI_CONTEXT_PROXY));
-}
-
-static TSS2_RC
-tcti_proxy_initialize(
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t *contextSize,
-    TSS2_TCTI_CONTEXT *tctiInner)
-{
-    TSS2_TCTI_CONTEXT_PROXY *tcti_proxy =
-        (TSS2_TCTI_CONTEXT_PROXY*) tctiContext;
-
-    if (tctiContext == NULL && contextSize == NULL) {
-        return TSS2_TCTI_RC_BAD_VALUE;
-    } else if (tctiContext == NULL) {
-        *contextSize = sizeof(*tcti_proxy);
-        return TSS2_RC_SUCCESS;
-    }
-
-    /* Init TCTI context */
-    memset(tcti_proxy, 0, sizeof(*tcti_proxy));
-    TSS2_TCTI_MAGIC (tctiContext) = TCTI_PROXY_MAGIC;
-    TSS2_TCTI_VERSION (tctiContext) = TCTI_PROXY_VERSION;
-    TSS2_TCTI_TRANSMIT (tctiContext) = tcti_proxy_transmit;
-    TSS2_TCTI_RECEIVE (tctiContext) = tcti_proxy_receive;
-    TSS2_TCTI_FINALIZE (tctiContext) = tcti_proxy_finalize;
-    TSS2_TCTI_CANCEL (tctiContext) = NULL;
-    TSS2_TCTI_GET_POLL_HANDLES (tctiContext) = NULL;
-    TSS2_TCTI_SET_LOCALITY (tctiContext) = NULL;
-    tcti_proxy->tctiInner = tctiInner;
-    tcti_proxy->state = forwarding;
-
-    return TSS2_RC_SUCCESS;
-}
-#endif /* TEST_ESYS */
 
 int
 transient_empty(TSS2_SYS_CONTEXT *sys_ctx)
@@ -301,10 +147,11 @@ dumpstate(TSS2_SYS_CONTEXT *sys_ctx, tpm_state *state_first, bool compare)
 }
 
 int
-test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx)
+test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx, bool skip_startup)
 {
     TSS2_RC rc;
     TSS2_ABI_VERSION abi_version = TEST_ABI_VERSION;
+    const TSS2_TCTI_INFO *info = Tss2_Tcti_Info();
     size_t size;
     char *name_conf;
 
@@ -315,16 +162,30 @@ test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx)
         goto fail;
     }
 
-    name_conf = getenv(ENV_TCTI); // TODO arg, then env?
-    if (!name_conf) {
-        LOG_ERROR("TCTI module not specified. Use environment variable: " ENV_TCTI);
+    if (strcmp(info->name, "tctildr") == 0) {
+        name_conf = getenv(ENV_TCTI); // TODO arg, then env?
+        if (!name_conf) {
+            LOG_ERROR("TCTI module not specified. Use environment variable: " ENV_TCTI);
+            goto cleanup_test_ctx;
+        }
+    }
+
+    rc = info->init(NULL, &size, NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error querying for TCTI size: %s", name_conf);
         goto cleanup_test_ctx;
     }
 
-    rc = Tss2_TctiLdr_Initialize(name_conf, &(*test_ctx)->tcti_ctx);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error loading TCTI: %s", name_conf);
+    (*test_ctx)->tcti_ctx = malloc(size);
+    if ((*test_ctx)->tcti_ctx == NULL) {
+        LOG_ERROR("Failed to allocate 0x%zx bytes for the tcti context", size);
         goto cleanup_test_ctx;
+    }
+
+    rc = info->init((*test_ctx)->tcti_ctx, &size, name_conf);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error initializing the TCTI context: %s", name_conf);
+        goto cleanup_tcti_ctx_mem;
     }
 
     size = Tss2_Sys_GetContextSize(0);
@@ -339,10 +200,12 @@ test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx)
         goto cleanup_sys_mem;
     }
 
-    rc = Tss2_Sys_Startup((*test_ctx)->sys_ctx, TPM2_SU_CLEAR);
-    if (rc != TSS2_RC_SUCCESS && rc != TPM2_RC_INITIALIZE) {
-        LOG_ERROR("TPM2_Startup failed: 0x%" PRIx32, rc);
-        goto cleanup_sys_ctx;
+    if (! skip_startup) {
+        rc = Tss2_Sys_Startup((*test_ctx)->sys_ctx, TPM2_SU_CLEAR);
+        if (rc != TSS2_RC_SUCCESS && rc != TPM2_RC_INITIALIZE) {
+            LOG_ERROR("TPM2_Startup failed: 0x%" PRIx32, rc);
+            goto cleanup_sys_ctx;
+        }
     }
 
     (*test_ctx)->tpm_state = malloc(sizeof(tpm_state));
@@ -362,7 +225,10 @@ cleanup_sys_mem:
     free((*test_ctx)->sys_ctx);
 
 cleanup_tcti_ctx:
-    Tss2_TctiLdr_Finalize(&(*test_ctx)->tcti_ctx);
+    Tss2_Tcti_Finalize((*test_ctx)->tcti_ctx);
+
+cleanup_tcti_ctx_mem:
+    free((*test_ctx)->tcti_ctx);
 
 cleanup_test_ctx:
     free(*test_ctx);
@@ -415,7 +281,8 @@ test_sys_teardown(TSS2_TEST_SYS_CONTEXT *test_ctx)
         free(test_ctx->tpm_state);
         Tss2_Sys_Finalize(test_ctx->sys_ctx);
         free(test_ctx->sys_ctx);
-        Tss2_TctiLdr_Finalize(&test_ctx->tcti_ctx);
+        Tss2_Tcti_Finalize(test_ctx->tcti_ctx);
+        free(test_ctx->tcti_ctx);
         free(test_ctx);
     }
 }
@@ -426,6 +293,7 @@ test_esys_setup(TSS2_TEST_ESYS_CONTEXT **test_ctx)
 {
     TSS2_RC rc;
     TSS2_ABI_VERSION abi_version = TEST_ABI_VERSION;
+    const TSS2_TCTI_INFO *info = Tss2_Tcti_Info();
     size_t size;
     char *name_conf;
 
@@ -436,16 +304,30 @@ test_esys_setup(TSS2_TEST_ESYS_CONTEXT **test_ctx)
         goto fail;
     }
 
-    name_conf = getenv(ENV_TCTI); // TODO arg, then env?
-    if (!name_conf) {
-        LOG_ERROR("TCTI module not specified. Use environment variable: " ENV_TCTI);
+    if (strcmp(info->name, "tctildr") == 0) {
+        name_conf = getenv(ENV_TCTI); // TODO arg, then env?
+        if (!name_conf) {
+            LOG_ERROR("TCTI module not specified. Use environment variable: " ENV_TCTI);
+            goto cleanup_test_ctx;
+        }
+    }
+
+    rc = info->init(NULL, &size, NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error querying for TCTI size: %s", name_conf);
         goto cleanup_test_ctx;
     }
 
-    rc = Tss2_TctiLdr_Initialize(name_conf, &(*test_ctx)->tcti_ctx);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Error loading TCTI: %s", name_conf);
+    (*test_ctx)->tcti_ctx = malloc(size);
+    if ((*test_ctx)->tcti_ctx == NULL) {
+        LOG_ERROR("Failed to allocate 0x%zx bytes for the tcti context", size);
         goto cleanup_test_ctx;
+    }
+
+    rc = info->init((*test_ctx)->tcti_ctx, &size, name_conf);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Error initializing the TCTI context: %s", name_conf);
+        goto cleanup_tcti_ctx_mem;
     }
 
     rc = tcti_proxy_initialize(NULL, &size, NULL);
@@ -497,7 +379,10 @@ cleanup_tcti_proxy_mem:
     free((*test_ctx)->tcti_proxy_ctx);
 
 cleanup_tcti_ctx:
-    Tss2_TctiLdr_Finalize(&(*test_ctx)->tcti_ctx);
+    Tss2_Tcti_Finalize((*test_ctx)->tcti_ctx);
+
+cleanup_tcti_ctx_mem:
+    free((*test_ctx)->tcti_ctx);
 
 cleanup_test_ctx:
     free(*test_ctx);
@@ -567,7 +452,8 @@ test_esys_teardown(TSS2_TEST_ESYS_CONTEXT *test_ctx)
         Esys_Finalize(&test_ctx->esys_ctx);
         Tss2_Tcti_Finalize(test_ctx->tcti_proxy_ctx);
         free(test_ctx->tcti_proxy_ctx);
-        Tss2_TctiLdr_Finalize(&test_ctx->tcti_ctx);
+        Tss2_Tcti_Finalize(test_ctx->tcti_ctx);
+        free(test_ctx->tcti_ctx);
         free(test_ctx);
     }
 }
@@ -586,4 +472,35 @@ test_fapi_checks_post(TSS2_TEST_FAPI_CONTEXT *test_ctx)
 {
     return test_esys_checks_post(&test_ctx->test_esys_ctx);
 }
+
+int fapi_tcti_state_backup_if_necessary(FAPI_CONTEXT *fapi_context, libtpms_state *state)
+{
+    TPM2_RC rc;
+    int ret;
+    TSS2_TCTI_CONTEXT *tcti;
+
+    rc = Fapi_GetTcti(fapi_context, &tcti);
+    return_if_error(rc, "Error Fapi_GetTcti");
+
+    ret = tcti_state_backup_if_necessary(tcti, state);
+    return_if_error(ret, "Error tcti_state_backup_if_necessary");
+
+    return 0;
+}
+
+int fapi_tcti_state_restore_if_necessary(FAPI_CONTEXT *fapi_context, libtpms_state *state)
+{
+    TPM2_RC rc;
+    int ret;
+    TSS2_TCTI_CONTEXT *tcti;
+
+    rc = Fapi_GetTcti(fapi_context, &tcti);
+    return_if_error(rc, "Error Fapi_GetTcti");
+
+    ret = tcti_state_restore_if_necessary(tcti, state);
+    return_if_error(ret, "Error tcti_state_restore_if_necessary");
+
+    return 0;
+}
+
 #endif /* TEST_FAPI */

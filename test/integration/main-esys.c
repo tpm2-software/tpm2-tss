@@ -41,20 +41,25 @@ main(int argc, char *argv[])
 
     ret = test_esys_checks_pre(test_esys_ctx);
     if (ret != 0) {
-        return ret;
+        rc = TSS2_ESYS_RC_GENERAL_FAILURE;
+        goto cleanup_esys;
     }
 
     rc = test_invoke_esys(test_esys_ctx->esys_ctx);
     if (rc != 0 && rc != EXIT_SKIP) {
         LOG_ERROR("Test returned %08x", rc);
-        return rc;
+        goto cleanup_esys;
     }
 
     ret = test_esys_checks_post(test_esys_ctx);
     if (ret != 0) {
-        return ret;
+        rc = TSS2_ESYS_RC_GENERAL_FAILURE;
+        goto cleanup_esys;
     }
 
+    rc = TSS2_RC_SUCCESS;
+
+cleanup_esys:
     test_esys_teardown(test_esys_ctx);
 
     return rc;
