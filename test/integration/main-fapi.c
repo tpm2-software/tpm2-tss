@@ -1498,6 +1498,28 @@ main(int argc, char *argv[])
     TSS2_SYS_CONTEXT *sys_ctx;
     TSS2_RC rc;
 
+    #if !defined(FAPI_TEST_EK_CERT_LESS)
+        // TODO this does not need to be an env variable as it is only used in test setup
+        //      move this to the test context?
+        char *cert_filename;
+        size = asprintf(&cert_filename, "%s.ekcert.pem", argv[0]);
+        if (size < 0) {
+            LOG_ERROR("Out of memory");
+            ret = EXIT_ERROR;
+            goto error;
+        }
+        setenv("FAPI_TEST_CERTIFICATE", cert_filename, 1);
+        free(cert_filename);
+        size = asprintf(&cert_filename, "%s.ekecccert.pem", argv[0]);
+        if (size < 0) {
+            LOG_ERROR("Out of memory");
+            ret = EXIT_ERROR;
+            goto error;
+        }
+        setenv("FAPI_TEST_CERTIFICATE_ECC", cert_filename, 1);
+        free(cert_filename);
+    #endif
+
     rc = Esys_GetSysContext(test_esys_ctx->esys_ctx, &sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to get SysContext: %s\n", Tss2_RC_Decode(rc));
