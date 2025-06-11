@@ -198,10 +198,16 @@ AS_IF([test "x$enable_esys" = xyes],
            TSS2_ESYS_CFLAGS_CRYPTO="$CRYPTO_CFLAGS"
            TSS2_ESYS_LDFLAGS_CRYPTO="$CRYPTO_LIBS"
        ], [test "x$with_crypto" = xmbed], [
-           AC_CHECK_HEADER(mbedtls/md.h, [], [AC_MSG_ERROR([Missing required mbedTLS library])])
-           AC_DEFINE([MBED], [1], [mbedTLS cryptographic backend])
-           TSS2_ESYS_CFLAGS_CRYPTO="$LIBMBED_CFLAGS"
-           TSS2_ESYS_LDFLAGS_CRYPTO="-lmbedcrypto"
+            CFLAGS_SAVE=$CFLAGS
+            CFLAGS="$LIBMBED_CFLAGS $CFLAGS"
+            AC_CHECK_HEADER(mbedtls/md.h, [], [AC_MSG_ERROR([Missing required mbedTLS library])])
+            CFLAGS=${CFLAGS_SAVE}
+            AC_SEARCH_LIBS([mbedtls_md_init], [mbedcrypto-3 mbedcrypto],
+                TSS2_ESYS_LDFLAGS_CRYPTO=$ac_cv_search_mbedtls_md_init,
+                [AC_MSG_ERROR([Missing required mbedTLS library])]
+            )
+            AC_DEFINE([MBED], [1], [mbedTLS cryptographic backend])
+            TSS2_ESYS_CFLAGS_CRYPTO="$LIBMBED_CFLAGS"
        ], [test "x$with_crypto" = xnone], [
            AC_MSG_NOTICE([No crypto backend selected! Users must set crypto functions!])
        ], [AC_MSG_ERROR([Bad value for --with-crypto $with_crypto])])])
