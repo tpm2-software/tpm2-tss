@@ -100,14 +100,14 @@ AC_SUBST(userstatedir, $with_userstatedir)
 
 AC_ARG_WITH([sysusersdir],
             [AS_HELP_STRING([--with-sysusersdir=<dir>],
-                            [sets the sysusers.d directory (default is "${sysconfdir}/sysusers.d")])],,
-            [with_sysusersdir="${sysconfdir}/sysusers.d"])
+                            [sets the sysusers.d directory (default is "${libdir}/sysusers.d")])],,
+            [with_sysusersdir="${libdir}/sysusers.d"])
 AC_SUBST(sysusersdir, $with_sysusersdir)
 
 AC_ARG_WITH([tmpfilesdir],
             [AS_HELP_STRING([--with-tmpfilesdir=<dir>],
-                            [sets the tmpfiles.d directory (default is "${sysconfdir}/tmpfiles.d")])],,
-            [with_tmpfilesdir="${sysconfdir}/tmpfiles.d"])
+                            [sets the tmpfiles.d directory (default is "${libdir}/tmpfiles.d")])],,
+            [with_tmpfilesdir="${libdir}/tmpfiles.d"])
 AC_SUBST(tmpfilesdir, $with_tmpfilesdir)
 
 AC_ARG_ENABLE([unit],
