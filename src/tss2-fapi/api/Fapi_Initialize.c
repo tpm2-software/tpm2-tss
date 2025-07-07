@@ -28,9 +28,11 @@
 #include "tss2_tcti.h"           // for TSS2_TCTI_CONTEXT
 #include "tss2_tctildr.h"        // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_...
 #include "tss2_tpm2_types.h"     // for TPMS_CAPABILITY_DATA, TPMS_TAGGED_PR...
+#include "fapi_util.h"           // for nv serialization.
 
 #define LOGMODULE fapi
 #include "util/log.h"            // for goto_if_error, LOG_TRACE, SAFE_FREE
+
 
 /** One-Call function for Fapi_Initialize
  *
@@ -183,8 +185,9 @@ Fapi_Initialize_Finish(
     TPMI_YES_NO moreData;
     TSS2_TCTI_CONTEXT *fapi_tcti = NULL;
     TPMS_TIME_INFO *currentTime = NULL;
-    IFAPI_OBJECT pkey_object;
+    IFAPI_OBJECT object;
     size_t i;
+    bool provisioned;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -267,6 +270,7 @@ Fapi_Initialize_Finish(
                 (*capability)->data.tpmProperties.tpmProperty[0].property ==
                 TPM2_PT_NV_BUFFER_MAX) {
             (*context)->nv_buffer_max = (*capability)->data.tpmProperties.tpmProperty[0].value;
+            SAFE_FREE(*capability);
             /* FAPI also contains an upper limit on the NV_MAX_BUFFER size. This is
                useful for vTPMs that could in theory allow for several Megabytes of
                max transfer buffer sizes. */
@@ -335,8 +339,21 @@ Fapi_Initialize_Finish(
         fallthrough;
 
     statecase((*context)->state, INITIALIZE_CHECK_NULL_PRIMARY);
-        if (command->path_idx == command->numNullPrimaries)
-            break;
+        if (command->path_idx == command->numNullPrimaries) {
+            SAFE_FREE(*capability);
+            for (i = 0; i < command->numPaths; i++) {
+                SAFE_FREE(command->pathlist[i]);
+            }
+            SAFE_FREE(command->pathlist);
+            r = ifapi_check_provisioned(&(*context)->keystore, "/HS", &provisioned);
+            goto_if_error(r, "Provisioning check failed", cleanup_return);
+            if (provisioned) {
+                (*context)->state = INITIALIZE_CHECK_EXISTING_NV;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            } else {
+                break;
+            }
+        }
 
         r = ifapi_keystore_load_async(&(*context)->keystore, &(*context)->io,
                                       command->pathlist[command->path_idx]);
@@ -346,14 +363,14 @@ Fapi_Initialize_Finish(
 
     statecase((*context)->state, INITIALIZE_READ_NULL_PRIMARY);
         r = ifapi_keystore_load_finish(&(*context)->keystore, &(*context)->io,
-                                       &pkey_object);
+                                       &object);
         return_try_again(r);
         goto_if_error2(r, "Could not open %s", cleanup_return,
                        command->pathlist[command->path_idx]);
 
-        if (pkey_object.misc.key.reset_count !=
+        if (object.misc.key.reset_count !=
             (*context)->init_time.clockInfo.resetCount) {
-            ifapi_cleanup_ifapi_object(&pkey_object);
+            ifapi_cleanup_ifapi_object(&object);
             /* The primary is not valid anymore. */
             r = ifapi_keystore_remove_directories(&(*context)->keystore,
                                                   command->pathlist[command->path_idx]);
@@ -362,21 +379,23 @@ Fapi_Initialize_Finish(
                             command->pathlist[command->path_idx]);
             }
         } else {
-            ifapi_cleanup_ifapi_object(&pkey_object);
+            ifapi_cleanup_ifapi_object(&object);
         }
         command->path_idx += 1;
         (*context)->state = INITIALIZE_CHECK_NULL_PRIMARY;
         return TSS2_FAPI_RC_TRY_AGAIN;
 
+    statecase((*context)->state, INITIALIZE_CHECK_EXISTING_NV);
+        r = ifapi_create_nv_objects((*context), &(*context)->create_nv);
+        return_try_again(r);
+        goto_if_error2(r, "Create NV objects", cleanup_return);
+        break;
+
     statecasedefault((*context)->state);
     }
 
     (*context)->state = FAPI_STATE_INIT;
-    SAFE_FREE(*capability);
-    for (size_t i = 0; i < command->numPaths; i++) {
-        SAFE_FREE(command->pathlist[i]);
-    }
-    SAFE_FREE(command->pathlist);
+
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
@@ -386,6 +405,7 @@ cleanup_return:
         SAFE_FREE(command->pathlist[i]);
     }
     SAFE_FREE(command->pathlist);
+
     if ((*context)->esys) {
         Esys_GetTcti((*context)->esys, &fapi_tcti);
         Esys_Finalize(&(*context)->esys);
@@ -393,6 +413,7 @@ cleanup_return:
     if (fapi_tcti) {
         Tss2_TctiLdr_Finalize(&fapi_tcti);
     }
+
 
     /* Free the context memory in case of an error. */
     free(*context);
