@@ -316,6 +316,14 @@ Fapi_NvIncrement_Finish(
         return_try_again(r);
         goto_if_error_reset_state(r, "FAPI NV_Increment_Finish", error_cleanup);
 
+        if (context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes &
+            TPMA_NV_WRITTEN &&
+            !authObject->auth_changed) {
+            LOG_DEBUG("success");
+            context->state = NV_INCREMENT_CLEANUP;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
         /* Set written bit in keystore */
         context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes |= TPMA_NV_WRITTEN;
 

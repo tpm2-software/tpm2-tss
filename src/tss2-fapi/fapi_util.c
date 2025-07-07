@@ -421,6 +421,10 @@ ifapi_set_auth(
         r = Esys_TR_SetAuth(context->esys, auth_object->public.handle, &authValue);
         return_if_error(r, "Set auth value.");
 
+        if (auth_object->objectType == IFAPI_NV_OBJ &&
+            object_with_auth(auth_object) && authValue.size == 0) {
+            auth_object->auth_changed = true;
+        }
         if (auth_object->objectType == IFAPI_HIERARCHY_OBJ)
             auth_object->misc.hierarchy.authorized = true;
 
@@ -2420,8 +2424,16 @@ ifapi_nv_write(
             return TSS2_FAPI_RC_TRY_AGAIN;
 
         }
+        if (auth_object->auth_changed) {
+            /* Auth for automatically added NV objects which hav no
+               auth value has to be updated.
+            */
+            context->nv_cmd.nv_object.misc.nv.with_auth = TPM2_NO;
+        }
+
         if (context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes &
-            TPMA_NV_WRITTEN) {
+            TPMA_NV_WRITTEN &&
+            !auth_object->auth_changed) {
             LOG_DEBUG("success");
             r = TSS2_RC_SUCCESS;
             break;
@@ -2623,7 +2635,23 @@ ifapi_nv_read(
             *size = context->nv_cmd.data_idx;
             LOG_DEBUG("success");
             r = TSS2_RC_SUCCESS;
-            break;
+
+            if (auth_object->auth_changed) {
+                /* Auth for automatically added NV objects which hav no
+                   auth value has to be updated.
+                */
+                context->nv_cmd.nv_object.misc.nv.with_auth = TPM2_NO;
+                /* Start writing the NV object to the key store */
+                r = ifapi_keystore_store_async(&context->keystore, &context->io,
+                                               context->nv_cmd.nvPath,
+                                               &context->nv_cmd.nv_object);
+                goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
+                                          context->nv_cmd.nvPath);
+                context->nv_cmd.nv_read_state =  NV_READ_WRITE_CHANGED_OBJECT;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            } else {
+                break;
+            }
         }
     statecase(context->nv_cmd.nv_read_state, NV_READ_CHECK_HANDLE);
         context->nv_cmd.data_idx = 0;
@@ -2675,6 +2703,14 @@ ifapi_nv_read(
         SAFE_FREE(nvPublic);
         context->nv_cmd.nv_read_state = NV_READ_INIT;
         return TSS2_FAPI_RC_TRY_AGAIN;
+
+    statecase(context->nv_cmd.nv_read_state, NV_READ_WRITE_CHANGED_OBJECT)
+        /* Finish writing the NV object to the key store */
+        r = ifapi_keystore_store_finish(&context->io);
+        return_try_again(r);
+        return_if_error_reset_state(r, "write_finish failed");
+        break;
+
 
     statecasedefault(context->nv_cmd.nv_read_state);
     }
@@ -4960,4 +4996,261 @@ ifapi_create_primary(
     ifapi_cleanup_ifapi_object(hierarchy);
     return r;
 
+}
+
+static const struct { char* name; UINT32 from; UINT32 to; } nv_tab[] = {
+    { "TPM", 0x01000000, 0x013fffff },
+    { "Platform", 0x01400000, 0x017fffff },
+    { "Owner", 0x01800000, 0x01bfffff },
+    { "Endorsement_Certificate", 0x01c00000, 0x01c07fff },
+    { "Platform_Certificate", 0x01c08000, 0x01c0ffff },
+    { "Component_OEM",  0x01c10000, 0x01c1ffff },
+    { "TPM_OEM", 0x01c20000, 0x01c2ffff },
+    { "Platform_OEM", 0x01c30000, 0x01c3ffff },
+    { "PC-Client", 0x01c40000, 0x01c4ffff },
+    { "Server", 0x01c50000, 0x01c5ffff },
+    { "Virtualized_Platform", 0x01c60000, 0x01c6ffff },
+    { "MPWG", 0x01c70000, 0x01c7ffff },
+    { "Embedded", 0x01c80000,  0x01c8ffff }
+ };
+
+/** Creation of objects for existing nv indexes in keystore.
+ *
+ * For every TPM NV index which is currently not stored in the keystore
+ * a FAPI object in the appropriate sub directory will be created.
+ * e.g. a certificate stored at 0x1c00002 will be stored at:
+ * /nv/Endorsement_Certificate/1c00002
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] ctx The context of the asynchronous state machine
+ *            which creates the nv keystore objects.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ */
+TSS2_RC
+ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx)
+{
+    /* Check for NULL parameters */
+    check_not_null(ctx);
+    TPMS_CAPABILITY_DATA **capability = &ctx->capability;
+    TPM2B_NV_PUBLIC *existing_nv_public = NULL;
+    IFAPI_OBJECT object;
+    size_t i;
+    TSS2_RC r;
+
+    switch (ctx->state) {
+    statecase(ctx->state, CREATE_NV_CHECK_NV_OBJECTS_INIT);
+        /* Compute the list of all nv objects stored in keystore. */
+        r = ifapi_keystore_list_all(&fapi_ctx->keystore, "/nv", &ctx->pathlist,
+                                    &ctx->numPaths);
+        goto_if_error2(r, "Could not create list of nv objects", cleanup_return);
+
+        ctx->nv_idx_list = calloc(ctx->numPaths, sizeof(TPMI_RH_NV_INDEX));
+        ctx->path_idx = 0;
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_CHECK_NV_OBJECTS);
+        if (ctx->path_idx == ctx->numPaths) {
+            /* All nv files were read. */
+            ctx->state = CREATE_NV_GET_TPM_NV_HANDLES;
+            ctx->more_data = TPM2_YES;
+            ctx->nv_index = TPM2_NV_INDEX_FIRST;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+        r = ifapi_keystore_load_async(&fapi_ctx->keystore, &fapi_ctx->io,
+                                      ctx->pathlist[ctx->path_idx]);
+        goto_if_error2(r, "Could not open %s", cleanup_return,
+                       ctx->pathlist[ctx->path_idx]);
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_READ_NV_OBJECT);
+        r = ifapi_keystore_load_finish(&fapi_ctx->keystore, &fapi_ctx->io,
+                                       &object);
+        return_try_again(r);
+        goto_if_error2(r, "Could not open %s", cleanup_return,
+                       ctx->pathlist[ctx->path_idx]);
+        ctx->nv_idx_list[ctx->path_idx] = object.misc.nv.public.nvPublic.nvIndex;
+        ifapi_cleanup_ifapi_object(&object);
+        ctx->path_idx += 1;
+        ctx->state = CREATE_NV_CHECK_NV_OBJECTS;
+        return TSS2_FAPI_RC_TRY_AGAIN;
+
+    statecase(ctx->state, CREATE_NV_GET_TPM_NV_HANDLES);
+        /* Get the list of all nv indexes */
+        r = Esys_GetCapability_Async(fapi_ctx->esys,
+                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                               TPM2_CAP_HANDLES,
+                               ctx->nv_index,
+                               TPM2_MAX_CAP_HANDLES);
+        goto_if_error2(r, "GetCapability_Async", cleanup_return);
+
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_GET_TPM_NV_HANDLES2);
+        r = Esys_GetCapability_Finish(fapi_ctx->esys, &ctx->more_data,
+                                      capability);
+        return_try_again(r);
+        goto_if_error2(r, "GetCapability_Finish", cleanup_return);
+
+        ctx->nv_cap_idx = 0;
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_CHECK_NV_INDEX);
+        /* Async loop over all nv indexes */
+        if (ctx->nv_cap_idx == (*capability)->data.handles.count) {
+            /* All indexes from get capability processed. */
+            if (0 &&  ctx->more_data) {
+                /* Further call of get capability needed. */
+                ctx->state = CREATE_NV_GET_TPM_NV_HANDLES;
+                /* Define property for get capability. */
+                ctx->nv_index =
+                    (*capability)->data.handles.handle
+                        [(*capability)->data.handles.count - 1] + 1;
+                SAFE_FREE(*capability);
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            } else {
+                break;
+            }
+        }
+
+        if  ((*capability)->data.handles.handle[ctx->nv_cap_idx] >
+             TPM2_NV_INDEX_LAST) {
+            break;
+        }
+
+        /* Check whether nv index already exists in keystore. */
+        for (i = 0; i < ctx->numPaths; i++) {
+            if (ctx->nv_idx_list[i] ==
+                (*capability)->data.handles.handle[ctx->nv_cap_idx]) {
+                ctx->nv_cap_idx++;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+        }
+
+        ctx->nv_index = (*capability)->data.handles.handle[ctx->nv_cap_idx];
+
+        r = Esys_TR_FromTPMPublic_Async(fapi_ctx->esys, ctx->nv_index,
+                                        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+        return_if_error(r, "Esys_TR_FromTPMPublic_Async");
+
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_NV_GET_ESYS_HANDLE);
+        r = Esys_TR_FromTPMPublic_Finish(fapi_ctx->esys, &ctx->esys_nv_handle);
+        return_try_again(r);
+
+        return_if_error(r, "Esys_TR_FromTPMPublic_Finish");
+
+        /* Read public from the existing nv object */
+        r = Esys_NV_ReadPublic_Async(fapi_ctx->esys, ctx->esys_nv_handle,
+                ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+        return_if_error(r, "Esys_NV_ReadPublic_Async");
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_NV_WAIT_FOR_READ_PUBLIC);
+        r = Esys_NV_ReadPublic_Finish(fapi_ctx->esys,
+                                  &existing_nv_public, NULL);
+        return_try_again(r);
+        return_if_error(r, "Error: nv read public");
+
+        ctx->path = NULL;
+
+        for (i = 0; i < ARRAY_LEN(nv_tab); i++) {
+            if (ctx->nv_index >= nv_tab[i].from &&
+                ctx->nv_index <= nv_tab[i].to) {
+                r = ifapi_asprintf(&ctx->path, "/nv/%s/%x", nv_tab[i].name,
+                                   ctx->nv_index);
+                return_if_error(r, "Can't create pathname for nv index.");
+            }
+        }
+
+        if (!ctx->path) {
+            LOG_WARNING("NV path can't be determined for handel 0x%x",
+                        ctx->nv_index);
+            ctx->nv_cap_idx++;
+            SAFE_FREE(existing_nv_public);
+            ctx->state = CREATE_NV_CHECK_NV_INDEX;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
+        memset(&ctx->nv_object, 0, sizeof(IFAPI_OBJECT));
+        ctx->nv_object.objectType = IFAPI_NV_OBJ;
+        if (existing_nv_public->nvPublic.attributes & TPMA_NV_PLATFORMCREATE) {
+            ctx->nv_object.misc.nv.hierarchy = ESYS_TR_RH_PLATFORM;
+        } else {
+            ctx->nv_object.misc.nv.hierarchy = ESYS_TR_RH_OWNER;
+        }
+        ctx->nv_object.system = TPM2_YES;
+
+        if (ctx->nv_index >= 0x01c00000 && ctx->nv_index <= 0x01c07fff) {
+            ctx->nv_object.misc.nv.with_auth = TPM2_NO;
+        } else {
+            ctx->nv_object.misc.nv.with_auth = TPM2_YES;
+        }
+        ctx->nv_object.misc.nv.public= *existing_nv_public;
+        ctx->nv_object.public.handle = ctx->esys_nv_handle;
+        SAFE_FREE(existing_nv_public);
+        /* Perform esys serialization  */
+        r = ifapi_esys_serialize_object(fapi_ctx->esys, &ctx->nv_object);
+        goto_if_error(r, "Prepare serialization", cleanup_return);
+
+        /* Check whether object already exists in key store.*/
+        r = ifapi_keystore_object_does_not_exist(&fapi_ctx->keystore,
+                                                 ctx->path,
+                                                 &ctx->nv_object);
+        goto_if_error2(r, "Could not write: %sh", cleanup_return,
+                       ctx->path);
+
+        /* Start writing the NV object to the key store */
+        r = ifapi_keystore_store_async(&fapi_ctx->keystore, &fapi_ctx->io,
+                                       ctx->path,
+                                       &ctx->nv_object);
+        goto_if_error2(r, "Could not open: %sh", cleanup_return,
+                       ctx->path);
+
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_WRITE);
+        SAFE_FREE(ctx->path);
+        /* Finish writing the NV object to the key store */
+        r = ifapi_keystore_store_finish(&fapi_ctx->io);
+        return_try_again(r);
+        goto_if_error(r, "write_finish failed", cleanup_return);
+
+        ifapi_cleanup_ifapi_object(&ctx->nv_object);
+
+        ctx->nv_cap_idx++;
+        ctx->state = CREATE_NV_CHECK_NV_INDEX;
+        return TSS2_FAPI_RC_TRY_AGAIN;
+
+    statecasedefault(ctx->state);
+    }
+    ctx->state = CREATE_NV_CHECK_NV_OBJECTS_INIT;
+    SAFE_FREE(*capability);
+    for (i = 0; i < ctx->numPaths; i++) {
+        SAFE_FREE(ctx->pathlist[i]);
+    }
+    SAFE_FREE(ctx->pathlist);
+    SAFE_FREE(ctx->nv_idx_list);
+    LOG_TRACE("finished");
+    return TSS2_RC_SUCCESS;
+
+    cleanup_return:
+    /* Cleanup any intermediate results and state stored in the context. */
+    for (size_t i = 0; i < ctx->numPaths; i++) {
+        SAFE_FREE(ctx->pathlist[i]);
+    }
+    ifapi_cleanup_ifapi_object(&ctx->nv_object);
+    SAFE_FREE(ctx->pathlist);
+    SAFE_FREE(ctx->nv_idx_list);
+    SAFE_FREE(ctx->path);
+
+    return r;
 }

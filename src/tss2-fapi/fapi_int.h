@@ -196,7 +196,8 @@ enum FAPI_STATE_NV_READ {
     NV_READ_CHECK_HANDLE,
     NV_READ_GET_CAPABILITY,
     NV_READ_GET_ESYS_HANDLE,
-    NV_READ_GET_NV_PUBLIC
+    NV_READ_GET_NV_PUBLIC,
+    NV_READ_WRITE_CHANGED_OBJECT
 };
 
 /** The states for the FAPI's NV write state */
@@ -258,9 +259,40 @@ typedef struct {
     size_t numNullPrimaries;         /**< Number of NULL hierarchy primaries
                                           stored in keystore */
     size_t primary_idx;              /**< Index to the current primary */
+    UINT32 nv_cap_idx;               /**< Index to the current nv object */
     size_t path_idx;                 /**< Index of array with the object paths */
     IFAPI_OBJECT *null_primaries;    /**< Array of the NULL hierarchy primaries. */
 } IFAPI_INITIALIZE;
+
+/** The states for the creation objects for existing nv indexes. */
+enum FAPI_NV_CREATE {
+    CREATE_NV_CHECK_NV_OBJECTS_INIT = 0,
+    CREATE_NV_CHECK_NV_OBJECTS,
+    CREATE_NV_READ_NV_OBJECT,
+    CREATE_NV_GET_TPM_NV_HANDLES,
+    CREATE_NV_GET_TPM_NV_HANDLES2,
+    CREATE_NV_CHECK_NV_INDEX,
+    CREATE_NV_NV_GET_ESYS_HANDLE,
+    CREATE_NV_NV_WAIT_FOR_READ_PUBLIC,
+    CREATE_NV_WRITE
+};
+
+/** The data structure holding internal state the create objects function.
+ */
+typedef struct {
+    enum FAPI_NV_CREATE  state;       /**< The state of the async state machine. */
+    TPMS_CAPABILITY_DATA *capability; /**< TPM capability data to check available algs */
+    char **pathlist;                  /**< The array with all keystore objects */
+    size_t numPaths;                  /**< Size of array with all keystore objects */
+    UINT32 nv_cap_idx;               /**< Index to the current nv object */
+    size_t path_idx;                 /**< Index of array with the object paths */
+    TPMI_RH_NV_INDEX *nv_idx_list;   /**< Array of nv indexes in keystore */
+    TPMI_YES_NO more_data;           /**< more calls of get capability needed. */
+    TPM2_HANDLE nv_index;            /**< The first handle for get capability. */
+    ESYS_TR esys_nv_handle;          /**< The esys nv handle for created nv objects. */
+    IFAPI_OBJECT nv_object;          /**< NV object to be serialized*/
+    char *path;                      /**< The pathname generated for nv indexes */
+} IFAPI_CREATE_NV;
 
 /** The data structure holding internal state of Fapi_PCR commands.
  */
@@ -852,6 +884,7 @@ enum FAPI_STATE {
     INITIALIZE_READ_TIME,
     INITIALIZE_CHECK_NULL_PRIMARY,
     INITIALIZE_READ_NULL_PRIMARY,
+    INITIALIZE_CHECK_EXISTING_NV,
     PROVISION_WAIT_FOR_GET_CAP_AUTH_STATE,
     PROVISION_WAIT_FOR_GET_CAP0,
     PROVISION_WAIT_FOR_GET_CAP1,
@@ -916,6 +949,7 @@ enum FAPI_STATE {
     PROVISION_PREPARE_EK_EVICT,
     PROVISION_READ_EK_TEMPLATE,
     PROVISION_READ_EK_NONCE,
+    PROVISION_CHECK_EXISTING_NV,
 
     KEY_CREATE,
     KEY_CREATE_PRIMARY,
@@ -1185,6 +1219,7 @@ struct FAPI_CONTEXT {
     IFAPI_CMD_STATE cmd;             /**< The state information of the currently executed
                                           command */
     IFAPI_NV_Cmds nv_cmd;
+    IFAPI_CREATE_NV create_nv;
     IFAPI_GetRandom get_random;
     IFAPI_CreatePrimary createPrimary;
     IFAPI_LoadKey loadKey;
