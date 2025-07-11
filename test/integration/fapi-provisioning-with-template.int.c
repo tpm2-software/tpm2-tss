@@ -244,14 +244,6 @@ test_fapi_provision_template(FAPI_CONTEXT *context)
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
-    r = Esys_NV_UndefineSpace(esys_ctx,
-                              ESYS_TR_RH_OWNER,
-                              nv_handle_template,
-                              ESYS_TR_PASSWORD,
-                              ESYS_TR_NONE, ESYS_TR_NONE);
-    goto_if_error(r, "Error Esys_NV_UndefineSpace", error);
-    nv_handle_template = ESYS_TR_NONE;
-
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 

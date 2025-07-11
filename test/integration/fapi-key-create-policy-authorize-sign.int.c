@@ -326,7 +326,8 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
         FAPI_PROFILE "/HE/EK:/" FAPI_PROFILE "/HE:/" FAPI_PROFILE "/HN:/policy/pol_name_hash:"
         "/policy/pol_cphash:/policy/pol_authorize_outer:/policy/pol_authorize:/" FAPI_PROFILE
         "/HS/SRK/myPolicySignKey2:/" FAPI_PROFILE "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE
-        "/HS/SRK/mySignKey:/" FAPI_PROFILE "/HS/SRK/myPolicySignKeyOuter";
+        "/HS/SRK/mySignKey:/" FAPI_PROFILE "/HS/SRK/myPolicySignKeyOuter"
+        ":/nv/Endorsement_Certificate/1c00002:/nv/Endorsement_Certificate/1c0000a";
     ASSERT(cmp_strtokens(pathList, check_pathList1, ":"));
 
     SAFE_FREE(pathList);
