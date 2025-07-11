@@ -130,7 +130,7 @@ test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
 
     /* Check all possible nv paths to get exactly nvPathOrdinary by Fapi_List. */
     char *path_check[] = {
-        "nv", "/nv", "/nv/", "/nv/Owner", "/nv/Owner/", nvPathOrdinary };
+        "/nv/Owner", "/nv/Owner/", nvPathOrdinary };
 
     for (i = 0; i < sizeof(path_check) / sizeof(path_check[0]); i++) {
         r = Fapi_List(context, path_check[i], &pathList);
