@@ -46,12 +46,14 @@ main(int argc, char *argv[])
 
     rc = test_invoke_esys(test_esys_ctx->esys_ctx);
     if (rc != 0 && rc != EXIT_SKIP) {
+        test_esys_teardown(test_esys_ctx);
         LOG_ERROR("Test returned %08x", rc);
         return rc;
     }
 
     ret = test_esys_checks_post(test_esys_ctx);
     if (ret != 0) {
+        test_esys_teardown(test_esys_ctx);
         return ret;
     }
 

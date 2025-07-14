@@ -43,13 +43,15 @@ main (int   argc,
     }
 
     rc = test_invoke(test_sys_ctx->sys_ctx);
-    if (rc != 0 && ret != 77) {
+    if (rc != 0 && rc != 77) {
+        test_sys_teardown(test_sys_ctx);
         LOG_ERROR("Test returned %08x", rc);
         return rc;
     }
 
     ret = test_sys_checks_post(test_sys_ctx);
     if (ret != 0) {
+        test_sys_teardown(test_sys_ctx);
         return ret;
     }
 
