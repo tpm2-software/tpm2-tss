@@ -242,6 +242,8 @@
     <ClCompile Include="api\Esys_Vendor_TCG_Test.c" />
     <ClCompile Include="api\Esys_VerifySignature.c" />
     <ClCompile Include="api\Esys_ZGen_2Phase.c" />
+    <ClCompile Include="api\Esys_ECC_Encrypt.c" />
+    <ClCompile Include="api\Esys_ECC_Decrypt.c" />
     <ClCompile Include="esys_context.c" />
     <ClCompile Include="esys_cp_rp_hash.c" />
     <ClCompile Include="esys_crypto.c" />
