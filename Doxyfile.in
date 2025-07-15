@@ -850,6 +850,7 @@ INPUT                  = @top_srcdir@/doc/coding_standard_c.md \
                          @top_srcdir@/test/integration/esys-unseal-password-auth.int.c \
                          @top_srcdir@/test/integration/esys-verify-signature.int.c \
                          @top_srcdir@/test/integration/esys-zgen-2phase.int.c \
+                         @top_srcdir@/test/integration/esys-ecc-encrypt-decrypt.int.c \
                          @top_srcdir@/test/integration/fapi-data-crypt.int.c \
                          @top_srcdir@/test/integration/fapi-duplicate.int.c \
                          @top_srcdir@/test/integration/fapi-ext-public-key.int.c \

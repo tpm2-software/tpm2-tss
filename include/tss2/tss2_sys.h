@@ -2319,6 +2319,52 @@ TSS2_RC Tss2_Sys_PolicyAuthorizeNV(
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
 
+TSS2_RC Tss2_Sys_ECC_Encrypt_Prepare(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT keyHandle,
+    const TPM2B_MAX_BUFFER *platinText,
+    const TPMT_KDF_SCHEME *inScheme);
+
+TSS2_RC Tss2_Sys_ECC_Encrypt_Complete(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPM2B_ECC_POINT *c1,
+    TPM2B_MAX_BUFFER *c2,
+    TPM2B_DIGEST *c3);
+
+TSS2_RC Tss2_Sys_ECC_Encrypt(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT keyHandle,
+    const TSS2L_SYS_AUTH_COMMAND *cmdAuthsArray,
+    const TPM2B_MAX_BUFFER *plainText,
+    const TPMT_KDF_SCHEME *inScheme,
+    TPM2B_ECC_POINT *c1,
+    TPM2B_MAX_BUFFER *c2,
+    TPM2B_DIGEST *c3,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
+
+TSS2_RC Tss2_Sys_ECC_Decrypt_Prepare(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT keyHandle,
+    const TPM2B_ECC_POINT *c1,
+    const TPM2B_MAX_BUFFER *c2,
+    const TPM2B_DIGEST *c3,
+    const TPMT_KDF_SCHEME *inScheme);
+
+TSS2_RC Tss2_Sys_ECC_Decrypt_Complete(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPM2B_MAX_BUFFER *plaintText);
+
+TSS2_RC Tss2_Sys_ECC_Decrypt(
+    TSS2_SYS_CONTEXT *sysContext,
+    TPMI_DH_OBJECT keyHandle,
+    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+    const TPM2B_ECC_POINT *c1,
+    const TPM2B_MAX_BUFFER *c2,
+    const TPM2B_DIGEST *c3,
+    const TPMT_KDF_SCHEME *inScheme,
+    TPM2B_MAX_BUFFER *plaintText,
+    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
+
 TSS2_RC Tss2_Sys_Abort(
      TSS2_SYS_CONTEXT *sysContext);
 

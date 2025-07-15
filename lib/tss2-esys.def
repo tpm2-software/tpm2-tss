@@ -381,3 +381,9 @@ EXPORTS
     Esys_ZGen_2Phase
     Esys_ZGen_2Phase_Async
     Esys_ZGen_2Phase_Finish
+    Esys_ECC_Decrypt
+    Esys_ECC_Decrypt_Async
+    Esys_ECC_Decrypt_Finish
+    Esys_ECC_Encrypt
+    Esys_ECC_Encrypt_Async
+    Esys_ECC_Encrypt_Finish

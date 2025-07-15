@@ -251,7 +251,9 @@ typedef UINT32                                TPM2_CC;
 #define TPM2_CC_Policy_AC_SendSelect          ((TPM2_CC) 0x00000196)
 #define TPM2_CC_CertifyX509                   ((TPM2_CC) 0x00000197)
 #define TPM2_CC_ACT_SetTimeout                ((TPM2_CC) 0x00000198)
-#define TPM2_CC_LAST                          ((TPM2_CC) 0x00000198)
+#define TPM2_CC_ECC_Encrypt                   ((TPM2_CC) 0x00000199)
+#define TPM2_CC_ECC_Decrypt                   ((TPM2_CC) 0x0000019a)
+#define TPM2_CC_LAST                          ((TPM2_CC) 0x0000019a)
 #define TPM2_CC_Vendor_TCG_Test               ((TPM2_CC) 0x20000000)
 
 /* Definition of Types for Documentation Clarity */

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2025, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  *******************************************************************************/
 
@@ -2110,6 +2110,42 @@ check_Policy_AC_SendSelect(void **state)
     }
 }
 
+void
+check_ECC_Encrypt(void **state)
+{
+    TSS2_RC r;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
+    };
+    TPM2B_ECC_POINT *c1;
+    TPM2B_MAX_BUFFER *c2;
+    TPM2B_DIGEST *c3;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_ECC_Encrypt_Finish(esys_context, &c1, &c2, &c3);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_ECC_Decrypt(void **state)
+{
+    TSS2_RC r;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
+    };
+    TPM2B_MAX_BUFFER *plainText;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_ECC_Decrypt_Finish(esys_context, &plainText);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
 int
 main(void)
 {
@@ -2345,7 +2381,11 @@ main(void)
         cmocka_unit_test_setup_teardown(check_AC_Send, esys_unit_setup,
                                         esys_unit_teardown),
         cmocka_unit_test_setup_teardown(check_Policy_AC_SendSelect, esys_unit_setup,
-                                        esys_unit_teardown)
+                                        esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_ECC_Encrypt, esys_unit_setup,
+                                            esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_ECC_Decrypt, esys_unit_setup,
+                                            esys_unit_teardown)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
