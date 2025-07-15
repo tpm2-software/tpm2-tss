@@ -3822,6 +3822,70 @@ Esys_GetRpHash(
     uint8_t **cpHash,
     size_t *cpHash_size);
 
+/* TPM2_ECC_Encrypt Command */
+
+TSS2_RC
+Esys_ECC_Encrypt(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR keyHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_MAX_BUFFER *plainText,
+    const TPMT_KDF_SCHEME *inScheme,
+    TPM2B_ECC_POINT **c1,
+    TPM2B_MAX_BUFFER **c2,
+    TPM2B_DIGEST **c3);
+
+TSS2_RC
+Esys_ECC_Encrypt_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR keyHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_MAX_BUFFER *plainText,
+    const TPMT_KDF_SCHEME *inScheme);
+
+TSS2_RC
+Esys_ECC_Encrypt_Finish(
+    ESYS_CONTEXT *esysContext,
+    TPM2B_ECC_POINT **c1,
+    TPM2B_MAX_BUFFER **c2,
+    TPM2B_DIGEST **c3);
+
+/* TPM2_ECC_Decrypt Command */
+
+TSS2_RC
+Esys_ECC_Decrypt(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR keyHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_ECC_POINT *c1,
+    const TPM2B_MAX_BUFFER *c2,
+    const TPM2B_DIGEST *c3,
+    const TPMT_KDF_SCHEME *inScheme,
+    TPM2B_MAX_BUFFER **plainText);
+
+TSS2_RC
+Esys_ECC_Decrypt_Async(
+    ESYS_CONTEXT *esysContext,
+    ESYS_TR keyHandle,
+    ESYS_TR shandle1,
+    ESYS_TR shandle2,
+    ESYS_TR shandle3,
+    const TPM2B_ECC_POINT *c1,
+    const TPM2B_MAX_BUFFER *c2,
+    const TPM2B_DIGEST *c3,
+    const TPMT_KDF_SCHEME *inScheme);
+
+TSS2_RC
+Esys_ECC_Decrypt_Finish(
+    ESYS_CONTEXT *esysContext,
+    TPM2B_MAX_BUFFER **plainText);
+
 TSS2_RC
 Esys_Abort(
     ESYS_CONTEXT* esysContext);

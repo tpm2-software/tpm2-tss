@@ -60,10 +60,8 @@ check_SelfTest(void **state)
 
     r = Esys_SelfTest(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
-
     r = Esys_SelfTest_Async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
-
     r = Esys_SelfTest_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
@@ -2377,6 +2375,48 @@ check_Policy_AC_SendSelect(void **state)
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
+void
+check_ECC_Encrypt(void **state)
+{
+    TSS2_RC r;
+
+    r = Esys_ECC_Encrypt(NULL,
+                         0,
+                         ESYS_TR_NONE,
+                         ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_ECC_Encrypt_Async(NULL,
+                               0,
+                               ESYS_TR_NONE,
+                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_ECC_Encrypt_Finish(NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_ECC_Decrypt(void **state)
+{
+    TSS2_RC r;
+
+    r = Esys_ECC_Decrypt(NULL,
+                         0,
+                         ESYS_TR_PASSWORD,
+                         ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_ECC_Decrypt_Async(NULL,
+                               0,
+                               ESYS_TR_PASSWORD,
+                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_ECC_Decrypt_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
 int
 main(void)
 {
@@ -2496,7 +2536,9 @@ main(void)
         cmocka_unit_test(check_Vendor_TCG_Test),
         cmocka_unit_test(check_AC_GetCapability),
         cmocka_unit_test(check_AC_Send),
-        cmocka_unit_test(check_Policy_AC_SendSelect)
+        cmocka_unit_test(check_Policy_AC_SendSelect),
+        cmocka_unit_test(check_ECC_Encrypt),
+        cmocka_unit_test(check_ECC_Decrypt)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
