@@ -30,6 +30,10 @@
 #define LOGMODULE tcti
 #include "util/log.h"           // for LOG_ERROR, LOG_TRACE, LOG_DEBUG, LOGB...
 
+#if defined(__FreeBSD__)
+#define mremap(a,b,c,d) ((void*)(-1))
+#endif
+
 /*
  * libtpms API calls need to be wrapped. We set the current active TCTI module
  * for this thread. This is needed because libtpms may call callbacks and these
