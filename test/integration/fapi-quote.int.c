@@ -326,7 +326,9 @@ test_fapi_quote(FAPI_CONTEXT *context)
     char *check_pathlist =
         "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE "/LOCKOUT:/"
         FAPI_PROFILE "/HE/EK:/" FAPI_PROFILE "/HE:/" FAPI_PROFILE "/HN:/" FAPI_PROFILE
-        "/HS/SRK/mySignKey:/ext/myExtPubKey";
+        "/HS/SRK/mySignKey:/ext/myExtPubKey:/nv/Endorsement_Certificate/1c00002"
+        ":/nv/Endorsement_Certificate/1c0000a"
+        ;
     ASSERT(cmp_strtokens(pathlist, check_pathlist, ":"));
     LOG_INFO("\nPathlist: %s\n", check_pathlist);
 
