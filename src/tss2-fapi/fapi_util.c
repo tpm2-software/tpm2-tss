@@ -5180,6 +5180,14 @@ ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx)
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
 
+        if (existing_nv_public->nvPublic.authPolicy.size > 0) {
+            /* NV objects with existing policy will not be automatically added. */
+            ctx->nv_cap_idx++;
+            SAFE_FREE(existing_nv_public);
+            ctx->state = CREATE_NV_CHECK_NV_INDEX;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
         memset(&ctx->nv_object, 0, sizeof(IFAPI_OBJECT));
         ctx->nv_object.objectType = IFAPI_NV_OBJ;
         if (existing_nv_public->nvPublic.attributes & TPMA_NV_PLATFORMCREATE) {
@@ -5253,4 +5261,90 @@ ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx)
     SAFE_FREE(ctx->path);
 
     return r;
+}
+
+/** Check whether an NV index exist on TPM and in keystore.
+ *
+ *  It will be checked whether an NV index exists in the TPM.
+ *  An error will be returned if the index already exists in
+ *  the keystore.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] template The template which defines the key attributes and whether the
+ *            key will be persistent.
+ * @param[out] The boolean which defines whether the index exists.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the index already exists.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
+ *         or contains illegal characters.
+ * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the object already exists in object store.
+ */
+TSS2_RC
+ifapi_check_existing_nv(FAPI_CONTEXT *context, TPMI_RH_NV_INDEX nv_index, bool *nv_exists,
+                        ESYS_TR *esys_nv_handle,
+                        TPM2B_NV_PUBLIC **nvPublic)
+{
+    TSS2_RC r;
+    *nv_exists = false;
+    TPMI_YES_NO moreData;
+    TPMS_CAPABILITY_DATA **capabilityData = &context->nv_cmd.capability;
+
+    switch (context->nv_cmd.nv_check) {
+    statecase(context->nv_cmd.nv_check, CHECK_NV_INIT);
+        *capabilityData = NULL;
+        r = Esys_GetCapability_Async(context->esys,
+                 ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, TPM2_CAP_HANDLES,
+                 nv_index, 1);
+        return_if_error(r, "Esys_GetCapability_Async");
+        fallthrough;
+    statecase(context->nv_cmd.nv_check, CHECK_NV_WAIT_FOR_GET_CAP);
+        r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
+        return_try_again(r);
+        return_if_error_reset_state(r, "GetCapablity_Finish");
+        if ((*capabilityData)->data.handles.count == 0 ||
+            (*capabilityData)->data.handles.handle[0] != nv_index) {
+            context->nv_cmd.nv_check = CHECK_NV_INIT;
+            SAFE_FREE(*capabilityData);
+            *nv_exists = false;
+            break;
+        }
+        SAFE_FREE(*capabilityData);
+
+        r = Esys_TR_FromTPMPublic_Async(context->esys, nv_index,
+                                        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+        return_if_error(r, "Esys_TR_FromTPMPublic_Async");
+
+        fallthrough;
+
+    statecase(context->nv_cmd.nv_check, CHECK_NV_GET_ESYS_HANDLE);
+        r = Esys_TR_FromTPMPublic_Finish(context->esys, esys_nv_handle);
+        return_try_again(r);
+
+        return_if_error(r, "Esys_TR_FromTPMPublic_Finish");
+
+        /* Read public from the existing nv object */
+        r = Esys_NV_ReadPublic_Async(context->esys, *esys_nv_handle,
+                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+        return_if_error(r, "Esys_NV_ReadPublic_Async");
+        fallthrough;
+
+    statecase(context->nv_cmd.nv_check, CHECK_NV_WAIT_FOR_READ_PUBLIC);
+        r = Esys_NV_ReadPublic_Finish(context->esys, nvPublic, NULL);
+        return_try_again(r);
+        return_if_error(r, "Error: nv read public");
+        *nv_exists = true;
+        break;
+    statecasedefault(context->cmd.Key_Create.state);
+    }
+
+    return TSS2_RC_SUCCESS;
+
 }

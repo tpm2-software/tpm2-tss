@@ -153,6 +153,15 @@ enum IFAPI_READ_NV_PUBLIC_STATE {
     READ_NV_PUBLIC_GET_PUBLIC
 };
 
+/** The states for checking whether an nv index exits */
+enum IFAPI_CHECK_NV_STATE {
+    CHECK_NV_INIT = 0,
+    CHECK_NV_WAIT_FOR_GET_CAP,
+    CHECK_NV_GET_ESYS_HANDLE,
+    CHECK_NV_WAIT_FOR_READ_PUBLIC
+};
+
+
 #define IFAPI_MAX_CAP_INFO 17
 
 typedef struct {
@@ -248,6 +257,8 @@ typedef struct {
     IFAPI_EVENT pcr_event;       /**< Event to be added to log */
     TPML_DIGEST_VALUES digests;  /**< Digest for the event data of an extend */
     bool skip_policy_computation; /**< switch whether policy needs to be computed */
+    enum IFAPI_CHECK_NV_STATE nv_check; /**< state for checking existing nv indexes */
+    TPMS_CAPABILITY_DATA *capability; /* TPM capability data to check nv index */
 } IFAPI_NV_Cmds;
 
 /** The data structure holding internal state of Fapi_Initialize command.
@@ -975,6 +986,9 @@ enum FAPI_STATE {
     NV_CREATE_AUTH_SENT,
     NV_CREATE_WRITE,
     NV_CREATE_CALCULATE_POLICY,
+    NV_CREATE_CHECK_EXISTING,
+    NV_CREATE_INDEX,
+    NV_CREATE_SERIALIZE,
 
     NV_WRITE_READ,
     NV_WRITE_WRITE,

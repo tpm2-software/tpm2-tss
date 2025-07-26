@@ -296,10 +296,12 @@ Fapi_CreateNv_Finish(
     IFAPI_OBJECT *hierarchy = &nvCmd->auth_object;
     IFAPI_NV * miscNv = &(nvCmd->nv_object.misc.nv);
     TPM2B_NV_PUBLIC *publicInfo = &miscNv->public;
+    TPM2B_NV_PUBLIC *existing_nv_public = NULL;
     TPM2B_DIGEST * authPolicy = &(miscNv->public.nvPublic.authPolicy);
     TPMS_POLICY * policy = &(context->policy.policy);
     TPMS_POLICY ** nvCmdPolicy = &nvCmd->nv_object.policy;
     ESYS_TR auth_session;
+    bool nv_exists;
 
     switch (context->state) {
         statecase(context->state, NV_CREATE_READ_PROFILE)
@@ -381,8 +383,11 @@ Fapi_CreateNv_Finish(
             fallthrough;
 
         statecase(context->state, NV_CREATE_GET_INDEX)
-            /* Check whether nv index was already defined */
-            if (!nvCmd->public_templ.public.nvIndex) {
+            if (nvCmd->public_templ.public.nvIndex) {
+                 /* Check nv index passed by user was already defined*/
+                context->state = NV_CREATE_CHECK_EXISTING;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            } else {
                 r = ifapi_get_nv_start_index(nvCmd->nvPath,
                                              &publicInfo->nvPublic.nvIndex);
                 goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
@@ -396,13 +401,14 @@ Fapi_CreateNv_Finish(
             fallthrough;
 
         statecase(context->state, NV_CREATE_FIND_INDEX)
-            if (!nvCmd->public_templ.public.nvIndex) {
-                /* Get nv index if not already defined. */
-                r = ifapi_get_free_handle_finish(context, &publicInfo->nvPublic.nvIndex,
+            /* Get nv index if not already defined. */
+            r = ifapi_get_free_handle_finish(context, &publicInfo->nvPublic.nvIndex,
                                              nvCmd->maxNvIndex);
-                return_try_again(r);
-                goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
-            }
+            return_try_again(r);
+            goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
+
+            fallthrough;
+        statecase(context->state, NV_CREATE_INDEX)
 
             /* Start a authorization session for the NV creation. */
             context->primary_state = PRIMARY_INIT;
@@ -418,11 +424,10 @@ Fapi_CreateNv_Finish(
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-
             fallthrough;
 
         statecase(context->state, NV_CREATE_AUTHORIZE_HIERARCHY)
-            /* Authorize with the storage hierarhcy / "owner" for NV creation. */
+            /* Authorize with the storage hierarchy "owner" for NV creation. */
             r = ifapi_authorize_object(context, &nvCmd->auth_object, &auth_session);
             FAPI_SYNC(r, "Authorize hierarchy.", error_cleanup);
 
@@ -443,8 +448,12 @@ Fapi_CreateNv_Finish(
 
             goto_if_error_reset_state(r, "FAPI CreateWithTemplate_Finish", error_cleanup);
 
-            /* Store whether the NV index requires a password. */
             nvCmd->nv_object.public.handle = nvHandle;
+
+            fallthrough;
+
+        statecase(context->state, NV_CREATE_SERIALIZE)
+            /* Store whether the NV index requires a password. */
             if (nvCmd->auth.size > 0)
                 miscNv->with_auth = TPM2_YES;
             else
@@ -481,6 +490,60 @@ Fapi_CreateNv_Finish(
 
             break;
 
+        statecase(context->state, NV_CREATE_CHECK_EXISTING)
+            r = ifapi_check_existing_nv(context, publicInfo->nvPublic.nvIndex, &nv_exists,
+                                        &nvCmd->nv_object.public.handle,
+                                        &existing_nv_public);
+            return_try_again(r);
+            return_if_error_reset_state(r, "checking whether nv index exists failed");
+
+            if (nv_exists) {
+                if (publicInfo->nvPublic.dataSize != existing_nv_public->nvPublic.dataSize) {
+                    LOG_WARNING("Data size from TPM will be used: %u",
+                                existing_nv_public->nvPublic.dataSize);
+                }
+                /* Check whether type is equal */
+                if (!((existing_nv_public->nvPublic.attributes & TPMA_NV_TPM2_NT_MASK) ==
+                      (publicInfo->nvPublic.attributes & TPMA_NV_TPM2_NT_MASK))) {
+                    goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                               "The existing NV object and the NV object defined "
+                               "have different types.",
+                               error_cleanup);
+                }
+                if (existing_nv_public->nvPublic.authPolicy.size) {
+                    if (existing_nv_public->nvPublic.attributes & TPMA_NV_POLICYWRITE &&
+                        existing_nv_public->nvPublic.attributes & TPMA_NV_POLICYREAD) {
+                        /* Check that the two policies are equal */
+                        if (existing_nv_public->nvPublic.authPolicy.size ==
+                            publicInfo->nvPublic.authPolicy.size &&
+                            memcmp(&existing_nv_public->nvPublic.authPolicy.buffer[0],
+                                   &publicInfo->nvPublic.authPolicy.buffer[0],
+                                   publicInfo->nvPublic.authPolicy.size) == 0) {
+                            context->state = NV_CREATE_SERIALIZE;
+                        } else {
+                            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                                       "The two policies do not match.",
+                                       error_cleanup);
+                        }
+                    } else if ((publicInfo->nvPublic.attributes & TPMA_NV_AUTHWRITE) &&
+                               (publicInfo->nvPublic.attributes & TPMA_NV_AUTHREAD)) {
+                        publicInfo->nvPublic.authPolicy.size = 0;
+                        LOG_WARNING("Policy defined for object will be ignored");
+                        context->state = NV_CREATE_SERIALIZE;
+                    } else {
+                        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                                   "Object with policy can't be used in FAPI.",
+                                   error_cleanup);
+                    }
+                } else {
+                    context->state = NV_CREATE_SERIALIZE;
+                }
+                *publicInfo = *existing_nv_public;
+            } else {
+                context->state  = NV_CREATE_INDEX;
+            }
+            return TSS2_FAPI_RC_TRY_AGAIN;
+
         statecasedefault(context->state);
     }
 
@@ -498,6 +561,7 @@ error_cleanup:
     SAFE_FREE(miscNv->policyInstance);
     SAFE_FREE(nvCmd->nvPath);
     ifapi_session_clean(context);
+    SAFE_FREE(existing_nv_public);
     LOG_TRACE("finished");
     return r;
 }
