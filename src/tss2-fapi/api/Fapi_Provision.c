@@ -1568,6 +1568,13 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
             context->state =FAPI_STATE_INIT;
+            memset(&context->create_nv, 0, sizeof(IFAPI_CREATE_NV));
+            fallthrough;
+
+        statecase(context->state, PROVISION_CHECK_EXISTING_NV);
+            r = ifapi_create_nv_objects(context, &context->create_nv);
+            return_try_again(r);
+            goto_if_error_reset_state(r, "Read EK template", error_cleanup);
             break;
 
         statecase(context->state, PROVISION_WRITE_HIERARCHIES);

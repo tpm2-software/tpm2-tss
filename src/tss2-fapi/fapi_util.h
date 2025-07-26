@@ -267,4 +267,12 @@ ifapi_get_key_properties(
 TSS2_RC
 ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template);
 
+TSS2_RC
+ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx);
+
+TSS2_RC
+ifapi_check_existing_nv(FAPI_CONTEXT *context, TPMI_RH_NV_INDEX nv_index,
+                        bool *nv_exists,
+                        ESYS_TR *esys_nv_handle, TPM2B_NV_PUBLIC **nvPublic);
+
 #endif /* FAPI_UTIL_H */
