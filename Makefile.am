@@ -618,7 +618,8 @@ libtss2_rc = src/tss2-rc/libtss2-rc.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_rc.h
 lib_LTLIBRARIES += $(libtss2_rc)
 pkgconfig_DATA += lib/tss2-rc.pc
-EXTRA_DIST += lib/tss2-rc.map lib/tss2-rc.def
+EXTRA_DIST += lib/tss2-rc.map lib/tss2-rc.def \
+              src/tss2-rc/tss2-rc.vcxproj
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_rc_libtss2_rc_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/tss2-rc.map
