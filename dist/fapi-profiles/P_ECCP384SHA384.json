@@ -11,6 +11,10 @@
             "hashAlg":"TPM2_ALG_SHA384"
         }
     },
+    "ecc_crypt_scheme": {
+        "scheme": "kdf2",
+        "details": { "hashAlg": "sha384"}
+    },
     "sym_mode":"TPM2_ALG_CFB",
     "sym_parameters": {
         "algorithm":"TPM2_ALG_AES",
