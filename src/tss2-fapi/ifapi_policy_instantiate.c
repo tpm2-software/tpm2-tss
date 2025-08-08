@@ -333,9 +333,19 @@ ifapi_policyeval_instantiate_finish(
             break;
 
         case POLICYDUPLICATIONSELECT:
+            /* Name is already defined no callback needed */
+            if  (pol_element->element.PolicyDuplicationSelect.newParentName.size) {
+                break;
+            }
             if (pol_element->element.PolicyDuplicationSelect.newParentPublic.type) {
                 /* public data is already set in policy. Path will not be needed. */
                 SAFE_FREE(pol_element->element.PolicyDuplicationSelect.newParentPath);
+                r = ifapi_get_name(
+                     &pol_element->element.PolicyDuplicationSelect.newParentPublic,
+                     &pol_element->element.PolicyDuplicationSelect.newParentName);
+                return_if_error(r, "Compute object name");
+
+                pol_element->element.PolicyDuplicationSelect.newParentPublic.type = 0;
                 break;
             }
 
