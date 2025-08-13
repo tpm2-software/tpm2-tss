@@ -12,6 +12,7 @@
 #include <dlfcn.h>              // for dlclose, dlerror, dlsym, dlopen, RTLD...
 #include <limits.h>             // for PATH_MAX
 #include <stdio.h>              // for NULL, size_t, snprintf
+#include <string.h>             // for memset
 
 #include "tctildr-interface.h"  // for tctildr_finalize_data, tctildr_get_info
 #include "tctildr.h"            // for tcti_from_info, FMT_LIB_SUFFIX, FMT_L...
@@ -82,7 +83,7 @@ TSS2_RC
 handle_from_name(const char *file,
                  void **handle)
 {
-    size_t size;
+    size_t size = 0;
     char file_xfrm[PATH_MAX];
     const char *formats[] = {
         /* <name> */
@@ -102,6 +103,7 @@ handle_from_name(const char *file,
     }
 
     for (size_t i = 0; i < ARRAY_SIZE(formats); i++) {
+        memset(file_xfrm, 0, sizeof(file_xfrm));
         size = snprintf(file_xfrm, sizeof(file_xfrm), formats[i], file);
         if (size >= sizeof(file_xfrm)) {
             LOG_ERROR("TCTI name truncated in transform.");
