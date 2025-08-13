@@ -874,6 +874,7 @@ keystore_list_all_abs(
     goto_if_error(r, "Out of memory.", cleanup);
 
     r = ifapi_io_dirfiles_all(full_search_path, &file_ary_user, &num_paths_user);
+    goto_if_error(r, "List directory files", cleanup);
 
     *numresults = num_paths_system + num_paths_user;
     SAFE_FREE(full_search_path);
@@ -1552,6 +1553,7 @@ ifapi_cleanup_ifapi_key(IFAPI_KEY * key) {
         SAFE_FREE(key->description);
         SAFE_FREE(key->certificate);
         SAFE_FREE(key->appData.buffer);
+        key->unique_init_set = TPM2_NO;
     }
 }
 
@@ -1667,6 +1669,9 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {
     dest->system = src->system;
     dest->public.handle = src->public.handle;
     dest->authorization_state = src->authorization_state;
+    if (src->misc.key.unique_init_set) {
+        dest->misc.key.unique_init = src->misc.key.unique_init;
+    }
 
     return r;
 
