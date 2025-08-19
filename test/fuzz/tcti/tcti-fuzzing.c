@@ -265,7 +265,7 @@ Tss2_Tcti_Fuzzing_Init (
 }
 
 /* public info structure */
-const TSS2_TCTI_INFO tss2_tcti_info = {
+const TSS2_TCTI_INFO tss2_tcti_fuzzing_info = {
     .version = TCTI_VERSION,
     .name = "tcti-fuzzing",
     .description = "TCTI module for fuzzing the System API.",
@@ -276,5 +276,5 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
 const TSS2_TCTI_INFO*
 Tss2_Tcti_Info (void)
 {
-    return &tss2_tcti_info;
+    return &tss2_tcti_fuzzing_info;
 }
