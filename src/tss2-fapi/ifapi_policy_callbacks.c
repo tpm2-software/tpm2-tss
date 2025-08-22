@@ -1574,7 +1574,6 @@ ifapi_exec_auth_nv_policy(
             goto_if_error(r, "Initialize NV object", cleanup);
 
             current_policy->nv_index = cb_ctx->object.public.handle;
-            ifapi_cleanup_ifapi_object(&cb_ctx->object);
             get_nv_auth_object(&cb_ctx->object,
                                current_policy->nv_index,
                                &current_policy->auth_objectNV,
@@ -1583,8 +1582,10 @@ ifapi_exec_auth_nv_policy(
 
         statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_OBJECT)
             /* Authorize the NV object with the corresponding auth object. */
-            r = ifapi_authorize_object(fapi_ctx, &cb_ctx->auth_object, &cb_ctx->session);
+            r = ifapi_authorize_object(fapi_ctx, &current_policy->auth_objectNV, &cb_ctx->session);
             return_try_again(r);
+
+            ifapi_cleanup_ifapi_object(&cb_ctx->object);
             goto_if_error(r, "Authorize  object.", cleanup);
 
             /* Prepare the reading of the NV index from TPM. */
