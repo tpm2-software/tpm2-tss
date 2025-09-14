@@ -593,10 +593,32 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
                 memcpy(context->cmd.Provision.public_templ.public.publicArea.unique.rsa.buffer,
                        &pkey->nonce.buffer[0], pkey->nonce.size);
             }
+            else if (! (context->cmd.Provision.public_templ.unique_rsa_set ||
+                        context->cmd.Provision.public_templ.unique_zero)) {
+                 /* is needed to be backward compatible to versions where unique
+                    is not set via the profile. */
+                if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes &
+                     TPMA_OBJECT_USERWITHAUTH))
+                context->cmd.Provision.public_templ.public.publicArea.unique.rsa.size = 0;
+                else
+                    context->cmd.Provision.public_templ.public.publicArea.unique.rsa.size = 256;
+            }
         } else if (context->cmd.Provision.public_templ.public.publicArea.type == TPM2_ALG_ECC) {
             if (pkey->nonce.size) {
                 memcpy(context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.buffer,
                        &pkey->nonce.buffer[0], pkey->nonce.size);
+            } else if (! (context->cmd.Provision.public_templ.unique_ecc_set ||
+                          context->cmd.Provision.public_templ.unique_zero)) {
+                /* is needed to be backward compatible to versions where unique
+                   is not set via the profile. */
+                if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes &
+                     TPMA_OBJECT_USERWITHAUTH)) {
+                    context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.size = 0;
+                    context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 0;
+                } else {
+                    context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.size = 32;
+                    context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 32;
+                }
             }
         }
         policy = context->profiles.default_profile.ek_policy;
