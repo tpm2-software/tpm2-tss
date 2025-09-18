@@ -138,7 +138,7 @@ platform_finalize (void *user_data)
 }
 
 TSS2_RC
-create_tcti_spi_ftdi_platform (TSS2_TCTI_SPI_HELPER_PLATFORM *platform)
+create_tcti_spi_ftdi_platform (TSS2_TCTI_SPI_HELPER_PLATFORM *platform, const enum interface interface)
 {
     PLATFORM_USERDATA *platform_data = malloc (sizeof (PLATFORM_USERDATA));
     struct mpsse_context **mpsse = &platform_data->mpsse;
@@ -149,7 +149,7 @@ create_tcti_spi_ftdi_platform (TSS2_TCTI_SPI_HELPER_PLATFORM *platform)
 
     memset (platform_data, 0, sizeof (PLATFORM_USERDATA));
 
-    if ((*mpsse = MPSSE (SPI0, FIFTEEN_MHZ, MSB)) == NULL )
+    if ((*mpsse = MPSSE (SPI0, FIFTEEN_MHZ, MSB, interface)) == NULL )
     {
         goto error;
     }
@@ -173,7 +173,27 @@ error:
 TSS2_RC
 Tss2_Tcti_Spi_Ftdi_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size, const char* config)
 {
-    (void) config;
+    enum interface interface = IFACE_A;
+    if (config != NULL) {
+        switch (*config) {
+            case 'A':
+                interface = IFACE_A;
+                break;
+            case 'B':
+                interface = IFACE_B;
+                break;
+            case 'C':
+                interface = IFACE_C;
+                break;
+            case 'D':
+                interface = IFACE_D;
+                break;
+            default:
+                LOG_ERROR("Invalid configuration: %s", config);
+                return TSS2_BASE_RC_GENERAL_FAILURE;
+        }
+    }
+
     TSS2_RC ret = 0;
     TSS2_TCTI_SPI_HELPER_PLATFORM tcti_platform = {0};
 
@@ -181,7 +201,7 @@ Tss2_Tcti_Spi_Ftdi_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size, const ch
         return Tss2_Tcti_Spi_Helper_Init (NULL, size, NULL);
     }
 
-    if ((ret = create_tcti_spi_ftdi_platform (&tcti_platform))) {
+    if ((ret = create_tcti_spi_ftdi_platform (&tcti_platform, interface))) {
         return ret;
     }
 
@@ -192,7 +212,7 @@ const TSS2_TCTI_INFO tss2_tcti_info = {
     .version = TCTI_VERSION,
     .name = "tcti-spi-ftdi",
     .description = "TCTI for communicating with TPM through the USB-FTDI-SPI converter.",
-    .config_help = "Takes no configuration.",
+    .config_help = "FTDI interface to be used, defaults to A.",
     .init = Tss2_Tcti_Spi_Ftdi_Init
 };
 
