@@ -241,7 +241,7 @@ create_tcti_i2c_ftdi_platform (TSS2_TCTI_I2C_HELPER_PLATFORM *platform)
 
     memset (platform_data, 0, sizeof (PLATFORM_USERDATA));
 
-    if ((*mpsse = MPSSE (I2C, ONE_HUNDRED_KHZ, MSB)) == NULL )
+    if ((*mpsse = MPSSE (I2C, ONE_HUNDRED_KHZ, MSB, IFACE_A)) == NULL )
     {
         goto error;
     }
