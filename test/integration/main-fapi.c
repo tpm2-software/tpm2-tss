@@ -1411,7 +1411,6 @@ int
 test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx)
 {
     char template[] = "/tmp/fapi_tmpdir.XXXXXX";
-    char *tmpdir = NULL;
     size_t size;
     int ret;
 
@@ -1422,12 +1421,7 @@ test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx)
         goto error;
     }
 
-    tmpdir = strdup(template);
-    if (!tmpdir) {
-        LOG_ERROR("Failed to allocate name of temp dir.");
-        goto error;
-    }
-    (*test_ctx)->tmpdir = mkdtemp(tmpdir);
+    (*test_ctx)->tmpdir = strdup(mkdtemp(template));
     if (!(*test_ctx)->tmpdir) {
         LOG_ERROR("No temp dir created");
         goto error;
@@ -1449,7 +1443,6 @@ test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx)
     return ret;
 
  error:
-    SAFE_FREE(tmpdir);
     SAFE_FREE(*test_ctx);
     return EXIT_ERROR;
 }
