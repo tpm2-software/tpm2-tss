@@ -320,6 +320,7 @@ test_esys_trailing_zeros_in_auth(ESYS_CONTEXT * esys_context)
                                  ESYS_TR_NONE,
                                  ESYS_TR_NONE,
                                  &newAuth);
+    goto_if_error(r, "Error Esys_HierarchyChangeAuth", error);
 
     r = Esys_StartAuthSession(esys_context, primaryHandle, ESYS_TR_RH_OWNER, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, TPM2_SE_HMAC,
