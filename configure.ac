@@ -678,9 +678,9 @@ AS_IF([test "$HOSTOS" = "Linux" && test "x$systemd_sysusers" != "xyes"],
       AC_CHECK_PROG(adduser, adduser, yes)
       AC_CHECK_PROG(addgroup, addgroup, yes)
       AS_IF([test "x$addgroup" != "xyes" && test "x$groupadd" != "xyes" ],
-         [AC_MSG_ERROR([addgroup or groupadd are needed.])])
+         [AC_MSG_WARN([addgroup or groupadd are needed for install.])])
       AS_IF([test "x$adduser" != "xyes" && test "x$useradd" != "xyes" ],
-         [AC_MSG_ERROR([adduser or useradd are needed.])])])
+         [AC_MSG_WARN([adduser or useradd are needed for install.])])])
 
 AC_SUBST([PATH])
 
