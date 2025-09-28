@@ -33,6 +33,17 @@
 #define LOGMODULE fapi
 #include "util/log.h"                // for SAFE_FREE, goto_error, LOG_ERROR
 
+/* Returns pointer to a char array if input starts with key=, else NULL */
+static const char *extract_value(const char *input, const char *key) {
+    size_t key_len = strlen(key);
+
+    if (strncmp(input, key, key_len) == 0 && input[key_len] == '=') {
+        return input + key_len + 1;
+    }
+
+    return NULL;
+}
+
 /** Create template for key creation based on type flags.
  *
  * Based on passed flags the TPM2B_PUBLIC data which is used for key
@@ -55,6 +66,7 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
     UINT32 handle;
     int pos;
     bool exportable = false;
+    const char *unique_value;
 
     memset(template, 0, sizeof(IFAPI_KEY_TEMPLATE));
     type_dup = strdup(type);
@@ -62,6 +74,9 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
 
     char *saveptr;
     char *flag = strtok_r(type_dup, ", ", &saveptr);
+    template->unique_ecc_set = false;
+    template->unique_rsa_set = false;
+    template->unique_zero = false;
 
     /* The default store will be the user directory */
     template->system = TPM2_NO;
@@ -92,11 +107,51 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
             }
             template->persistent_handle = handle;
             template->persistent = TPM2_YES;
+        } else if ((unique_value = extract_value(flag, "unique_zero"))) {
+            char *endptr;
+            long num = strtol(unique_value, &endptr, 10);
+
+            if (endptr && *endptr == '\0') {
+                template->unique_zero = num;
+            } else {
+                 goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid unique_zero",
+                            error);
+            }
+        } else if ((unique_value = extract_value(flag, "unique"))) {
+            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_RSA_KEY_BYTES,
+                                      &template->public.publicArea.unique.rsa.buffer[0]);
+            goto_if_error(r, "Invalid unique field", error);
+
+            template->public.publicArea.unique.rsa.size = strlen(unique_value)/2;
+            template->unique_rsa_set = true;
+        } else if ((unique_value = extract_value(flag, "unique_x"))) {
+            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_ECC_KEY_BYTES,
+                                      &template->public.publicArea.unique.ecc.x.buffer[0]);
+            goto_if_error(r, "Invalid unique_x field", error);
+            template->public.publicArea.unique.ecc.x.size = strlen(unique_value)/2;
+            template->unique_ecc_set = true;
+        } else if ((unique_value = extract_value(flag, "unique_y"))) {
+            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_ECC_KEY_BYTES,
+                                      &template->public.publicArea.unique.ecc.y.buffer[0]);
+            goto_if_error(r, "Invalid unique_y field", error);
+
+            template->public.publicArea.unique.ecc.y.size = strlen(unique_value)/2;
+            template->unique_ecc_set = true;
         } else {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
                        error, flag);
         }
         flag = strtok_r(NULL, " ,", &saveptr);
+    }
+    if (template->unique_rsa_set && template->unique_ecc_set) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Only ECC or RSA unique can be set",
+                       error);
+    }
+
+    if ((template->unique_rsa_set || template->unique_ecc_set) &
+        template->unique_zero) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "unique can't be set if unique_zero is defined",
+                       error);
     }
     if (exportable) {
         /* Clear flags preventing duplication */

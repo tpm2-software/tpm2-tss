@@ -734,7 +734,13 @@ fapiprofilesdir = @sysconfdir@/tpm2-tss/fapi-profiles
 fapiprofiles_DATA = dist/fapi-profiles/P_RSA2048SHA256.json \
                     dist/fapi-profiles/P_ECCP256SHA256.json \
                     dist/fapi-profiles/P_RSA3072SHA384.json \
-                    dist/fapi-profiles/P_ECCP384SHA384.json
+                    dist/fapi-profiles/P_ECCP384SHA384.json \
+                    dist/fapi-profiles/P_RSA2048SHA256-legacy.json \
+                    dist/fapi-profiles/P_ECCP256SHA256-legacy.json \
+                    dist/fapi-profiles/P_RSA2048SHA256-high-range.json \
+                    dist/fapi-profiles/P_ECCP256SHA256-high-range.json \
+                    dist/fapi-profiles/P_RSA2048SHA256-low-range.json \
+                    dist/fapi-profiles/P_ECCP256SHA256-low-range.json
 
 libtss2_fapi = src/tss2-fapi/libtss2-fapi.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_fapi.h
@@ -746,6 +752,12 @@ EXTRA_DIST +=  \
     dist/fapi-profiles/P_ECCP256SHA256.json \
     dist/fapi-profiles/P_RSA3072SHA384.json \
     dist/fapi-profiles/P_ECCP384SHA384.json \
+    dist/fapi-profiles/P_RSA2048SHA256-legacy.json \
+    dist/fapi-profiles/P_ECCP256SHA256-legacy.json \
+    dist/fapi-profiles/P_RSA2048SHA256-high-range.json \
+    dist/fapi-profiles/P_ECCP256SHA256-high-range.json \
+    dist/fapi-profiles/P_RSA2048SHA256-low-range.json \
+    dist/fapi-profiles/P_ECCP256SHA256-low-range.json \
     dist/sysusers.d/tpm2-tss.conf \
     dist/tmpfiles.d/tpm2-tss-fapi.conf.in \
     doc/fapi-config.md \
@@ -766,6 +778,10 @@ EXTRA_DIST +=  \
     test/data/fapi/P_ECC.json \
     test/data/fapi/P_ECC384.json \
     test/data/fapi/P_ECC_system.json \
+    test/data/fapi/P_ECC384_no_unique_init.json \
+    test/data/fapi/P_ECC_no_unique_init.json \
+    test/data/fapi/P_RSA3072_no_unique_init.json \
+    test/data/fapi/P_RSA_no_unique_init.json \
     test/data/fapi/policy/pol_pcr16_0.json \
     test/data/fapi/policy/pol_pcr16_0_rsa_authorized.json \
     test/data/fapi/policy/pol_pcr16_0_ecc_authorized.json \
