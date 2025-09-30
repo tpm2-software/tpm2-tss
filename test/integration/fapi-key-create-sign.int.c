@@ -207,7 +207,8 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     LOG_INFO("Path list: %s", path_list);
     char *check_path_list =
         "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE "/LOCKOUT:/" FAPI_PROFILE "/HE/EK:/" FAPI_PROFILE "/HE:"
-        "/" FAPI_PROFILE "/HN:/" FAPI_PROFILE "/HS/SRK/mySignKey2:/" FAPI_PROFILE "/HS/SRK/mySignKey";
+        "/" FAPI_PROFILE "/HN:/" FAPI_PROFILE "/HS/SRK/mySignKey2:/" FAPI_PROFILE "/HS/SRK/mySignKey"
+        ":/nv/Endorsement_Certificate/1c00002:/nv/Endorsement_Certificate/1c0000a";
     ASSERT(cmp_strtokens(path_list, check_path_list, ":"));
 
     /* We need to reset the passwords again, in order to not brick physical TPMs */

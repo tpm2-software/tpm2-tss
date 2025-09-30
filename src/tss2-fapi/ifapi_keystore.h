@@ -168,6 +168,7 @@ typedef struct IFAPI_OBJECT {
     enum IFAPI_AUTHORIZATION_STATE  authorization_state;    /**< State of object authorization state machine */
     enum IFAPI_IO_STATE                           state;
     const char                                *rel_path;    /**< The relative path in keystore. */
+    bool                                   auth_changed;    /**< flag whether auth value has been changed. */
 
 } IFAPI_OBJECT;
 

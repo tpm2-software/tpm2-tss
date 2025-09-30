@@ -1439,7 +1439,9 @@ copy_uint8_ary(UINT8_ARY *dest, const UINT8_ARY * src) {
     dest->size = src->size;
     dest->buffer = malloc(dest->size);
     goto_if_null(dest->buffer, "Out of memory.", r, error_cleanup);
-    memcpy(dest->buffer, src->buffer, dest->size);
+    if (src->size > 0) {
+        memcpy(dest->buffer, src->buffer, dest->size);
+    }
 
     return r;
 
