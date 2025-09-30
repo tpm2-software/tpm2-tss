@@ -318,4 +318,7 @@ Esys_GetRandom
 Random: 03e61dfcf7d1a8d8af18a93d
 Tss2_TctiLdr_Finalize
 Esys_Finalize
-```
+```# License
+
+This work is licensed under the
+[Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).

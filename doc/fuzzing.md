@@ -98,3 +98,7 @@ each `_Prepare` and `_Complete` call using similar templates.
 
 For `_Prepare` calls the `fuzz_fill` function in the fuzzing TCTI will fill each
 TPM2 structure used can copy from `LLVMFuzzerTestOneInput`'s `Data` into it.
+# License
+
+This work is licensed under the
+[Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
