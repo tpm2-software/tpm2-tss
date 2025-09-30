@@ -82,6 +82,14 @@ test_esys_event_sequence_complete(ESYS_CONTEXT * esys_context)
         &results);
     goto_if_error(r, "Error: EventSequenceComplete", error);
 
+    r = Esys_PCR_Reset(
+        esys_context,
+        pcrHandle_handle,
+        ESYS_TR_PASSWORD,
+        ESYS_TR_NONE,
+        ESYS_TR_NONE);
+    goto_if_error(r, "Error: PCR_Reset", error);
+
     Esys_Free(results);
     return EXIT_SUCCESS;
 
