@@ -415,3 +415,7 @@ Where:
 
 * Port to the simulator, default: `2321`. The control channel will be `<port> +
   1`
+# License
+
+This work is licensed under the
+[Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).

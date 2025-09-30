@@ -303,3 +303,7 @@ graph TD
   1_0_2 -->|Fix Null Pointer Dereference| user_a
   1_2_0 -->|Fix Input Validation issue| user_b
 ```
+# License
+
+This work is licensed under the
+[Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
