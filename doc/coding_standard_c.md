@@ -299,3 +299,7 @@ make -j check
 1. GNOME C Coding Style : https://developer.gnome.org/programming-guidelines/stable/c-coding-style.html.en
 2. Alan Bridger, Mick Brooks, and Jim Pisano, C Coding Standards, 2001, http://www.alma.nrao.edu/development/computing/docs/joint/0009/2001-02-28.pdf
 3. Brian Kernighan, Dennis Ritchie, The C Programing Language, 1988
+# License
+
+This work is licensed under the
+[Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).

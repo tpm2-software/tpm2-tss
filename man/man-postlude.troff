@@ -14,3 +14,9 @@ This page is part of release @VERSION@ of Open Source implementation of the
 TCG TPM2 Software Stack (TSS2). A description of the project, information
 about reporting bugs, and the latest version of this page can be found at
 \%https://github.com/tpm2-software/tpm2-tss/.
+
+.SH LICENSE
+.PP
+This work is licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0). For more
+information visit \%https://creativecommons.org/licenses/by/4.0/
