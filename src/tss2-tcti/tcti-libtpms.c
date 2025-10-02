@@ -440,7 +440,7 @@ tcti_libtpms_transmit(
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
-    LOGBLOB_DEBUG(cmd_buf, size, "Sending command with TPM_CC 0x%" PRIx32, header.size);
+    LOGBLOB_DEBUG(cmd_buf, size, "Sending command with TPM_CC 0x%" PRIx32, header.code);
     resp_size = (uint32_t) tcti_libtpms->response_len;
     respbufsize = (uint32_t) tcti_libtpms->response_buffer_len;
     LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_Process, &tcti_libtpms->response_buffer,
