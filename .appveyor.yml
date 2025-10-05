@@ -11,55 +11,9 @@ configuration:
 
 platform:
   - x64
-
-environment:
-  OPENSSL_ROOT_DIR: "C:/Program Files/OpenSSL-Win64"
-  OPENSSL_INCLUDE_DIR: "C:/Program Files/OpenSSL-Win64/include"
-  OPENSSL_LIB_DIR: "C:/Program Files/OpenSSL-Win64/lib/VC"
-
-install:
-  # Install 64-bit OpenSSL 1.1.x
-  - choco install openssl --version=1.1.1.1400 -y
-  - ps: |
-      Write-Host "Checking OpenSSL installation..."
-      dir "$env:OPENSSL_INCLUDE_DIR\openssl" | select Name
-      dir "$env:OPENSSL_LIB_DIR"
-
-      Write-Host "Configuring environment for x64"
-      # Runtime DLLs
-      $env:PATH = "$env:OPENSSL_ROOT_DIR/bin;" + $env:PATH
-      # Compiler: add OpenSSL headers
-      $env:CL   = "/I`"$env:OPENSSL_INCLUDE_DIR`" " + $env:CL
-      # Linker: point to actual libs
-      $env:LINK = "/LIBPATH:`"$env:OPENSSL_LIB_DIR`" libcrypto64MD.lib libssl64MD.lib " + $env:LINK
-
-      # --- Symlink fix for legacy paths in .vcxproj ---
-      $legacyPath = "C:\OpenSSL-v11-Win64\lib"
-      New-Item -ItemType Directory -Force -Path $legacyPath | Out-Null
-
-      $cryptoTarget = "`"$env:OPENSSL_LIB_DIR\libcrypto64MD.lib`""
-      $sslTarget    = "`"$env:OPENSSL_LIB_DIR\libssl64MD.lib`""
-
-      cmd.exe /c "mklink `"$legacyPath\libcrypto.lib`" $cryptoTarget"
-      cmd.exe /c "mklink `"$legacyPath\libssl.lib`"    $sslTarget"
-
-      Write-Host "Created symlinks in $legacyPath"
-      dir $legacyPath
+  - x86
 
 build:
   project: tpm2-tss.sln
   parallel: false
   verbosity: normal
-
-test_script:
-  - ps: |
-      Write-Host "Skipping DLL check (Chocolatey package does not ship libcrypto-1_1.dll/libssl-1_1.dll)."
-      $outputDir = "C:\projects\tpm2-tss\bin\$env:configuration"
-      if (Test-Path $outputDir) {
-        Get-ChildItem $outputDir -Filter *.exe | ForEach-Object {
-          Write-Host "Running $($_.FullName)..."
-          try { & $_.FullName --version 2>$null } catch { Write-Host "Failed to run $_" }
-        }
-      } else {
-        Write-Host "No output directory $outputDir found."
-      }
