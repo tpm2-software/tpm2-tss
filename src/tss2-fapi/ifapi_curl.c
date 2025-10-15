@@ -463,7 +463,7 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
         goto out_easy_cleanup;
     }
 
-    rc = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+    rc = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_setopt for CURLOPT_FOLLOWLOCATION failed: %s",
                   curl_easy_strerror(rc));
