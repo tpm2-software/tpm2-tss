@@ -16,7 +16,7 @@ The FAPI parameters which can be adjusted via the configuration file are:
 * ima_log_file: The binary IMA measuerments (Integrity Measurement Architecture).
 
 If not otherwise specified during TSS installation, the default location for the
-exemplary profiles is /etc/tpm2-tss/profiles/ and /etc/tpm2-tss/ for the FAPI
+exemplary profiles is /etc/tpm2-tss/fapi-profiles/ and /etc/tpm2-tss/ for the FAPI
 configuration file. The environment variable TSS2_FAPICONF can be used to set
 an alternative pathname for the FAPI configuration file.
 If the system measurement files (IMA and bios) do not exist /dev/null will

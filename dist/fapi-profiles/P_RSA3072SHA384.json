@@ -1,43 +1,43 @@
 {
-    "type": "TPM2_ALG_RSA",
-    "nameAlg":"TPM2_ALG_SHA384",
-    "srk_template": "system,restricted,decrypt,0x81000001",
+    "type": "rsa",
+    "nameAlg":"sha384",
+    "srk_template": "system,restricted,noda,decrypt,0x81000001",
     "srk_description": "Storage root key SRK",
     "ek_template":  "system,restricted,decrypt,user",
     "ek_description": "Endorsement key EK",
     "rsa_signing_scheme": {
-        "scheme":"TPM2_ALG_RSAPSS",
+        "scheme":"rsapss",
         "details":{
-            "hashAlg":"TPM2_ALG_SHA384"
+            "hashAlg":"sha384"
         }
     },
     "rsa_decrypt_scheme": {
-        "scheme":"TPM2_ALG_OAEP",
+        "scheme":"oaep",
         "details":{
-            "hashAlg":"TPM2_ALG_SHA384"
+            "hashAlg":"sha384"
         }
     },
-    "sym_mode":"TPM2_ALG_CFB",
+    "sym_mode":"cfb",
     "sym_parameters": {
-        "algorithm":"TPM2_ALG_AES",
+        "algorithm":"aes",
         "keyBits":"256",
-        "mode":"TPM2_ALG_CFB"
+        "mode":"cfb"
     },
     "sym_block_size": 16,
     "pcr_selection": [
-        { "hash": "TPM2_ALG_SHA1",
+        { "hash": "sha1",
           "pcrSelect": [ ]
         },
-        { "hash": "TPM2_ALG_SHA256",
+        { "hash": "sha256",
           "pcrSelect": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 ]
         }
     ],
     "exponent": 0,
     "keyBits": 3072,
     "session_symmetric":{
-        "algorithm":"TPM2_ALG_AES",
+        "algorithm":"aes",
         "keyBits":"256",
-        "mode":"TPM2_ALG_CFB"
+        "mode":"cfb"
     },
     "ek_policy": {
         "description": "Endorsement hierarchy used for policy secret.",
@@ -50,7 +50,7 @@
                         "description": "",
                         "policy": [
                             {
-                                "type":"POLICYSECRET",
+                                "type":"policysecret",
                                 "objectName": "4000000b"
                             }
                         ]
