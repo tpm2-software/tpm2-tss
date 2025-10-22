@@ -55,7 +55,8 @@ in the config file:
     "hashAlg" : "sha256",
     "digest" : "9e56...214d"
     }
- ```# License
+ ```
+ # License
 
 This work is licensed under the
 [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).

@@ -8,7 +8,9 @@ These methods are supplied to `Tss2_Tcti_I2c_Helper_Init` via the `TSS2_TCTI_I2C
 
 Documentation detailing the implementation of platform methods can be found in `tss2_tcti_i2c_helper.h`.
 For an example implementation that uses the I2C TCTI helper to communicate with an I2C-based TPM over the
-FTDI MPSSE USB to I2C bridge, refer to the `tcti-i2c-ftdi` module.# License
+FTDI MPSSE USB to I2C bridge, refer to the `tcti-i2c-ftdi` module.
+
+# License
 
 This work is licensed under the
 [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).

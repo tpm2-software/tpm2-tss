@@ -165,7 +165,8 @@ Now, plug in the LetsTrust-TPM2Go and access it by:
 export TPM2TOOLS_TCTI="tabrmd:bus_name=com.intel.tss2.Tabrmd"
 sudo -u tss tpm2_startup -c
 sudo -u tss tpm2_getrandom 8 --hex
-```# License
+```
+# License
 
 This work is licensed under the
 [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
