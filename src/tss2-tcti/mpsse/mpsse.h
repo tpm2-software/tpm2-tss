@@ -206,7 +206,7 @@ struct mpsse_context
     uint8_t rack;
 };
 
-struct mpsse_context *MPSSE (enum modes mode, int freq, int endianess);
+struct mpsse_context *MPSSE (enum modes mode, int freq, int endianess, enum interface interface);
 struct mpsse_context *Open (int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial);
 struct mpsse_context *OpenIndex (int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial, int index);
 void Close (struct mpsse_context *mpsse);
