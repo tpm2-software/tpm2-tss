@@ -104,8 +104,7 @@ initialize_explicit_key_path(
         LOG_ERROR("Out of memory");
         return TSS2_FAPI_RC_MEMORY;
     }
-    if (strcmp(list_node->str, "HN") == 0 ||
-        strcmp(list_node->str, "HS") == 0 ||
+    if (strcmp(list_node->str, "HS") == 0 ||
         strcmp(list_node->str, "HE") == 0 ||
         strcmp(list_node->str, "HN") == 0) {
         hierarchy = list_node->str;
