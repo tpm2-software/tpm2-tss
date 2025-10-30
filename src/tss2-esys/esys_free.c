@@ -18,7 +18,5 @@
  * esys library on Windows.
  */
 void Esys_Free(void *ptr) {
-    if (ptr != NULL) {
-        free(ptr);
-    }
+    free(ptr);
 }

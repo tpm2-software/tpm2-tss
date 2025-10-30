@@ -446,15 +446,9 @@ Tss2_TctiLdr_FreeInfo (TSS2_TCTI_INFO **info)
         return;
     }
     info_tmp = *info;
-    if (info_tmp->name != NULL) {
-        free ((char*)info_tmp->name);
-    }
-    if (info_tmp->description != NULL) {
-        free ((char*)info_tmp->description);
-    }
-    if (info_tmp->config_help != NULL) {
-        free ((char*)info_tmp->config_help);
-    }
+    free ((char*)info_tmp->name);
+    free ((char*)info_tmp->description);
+    free ((char*)info_tmp->config_help);
     free (info_tmp);
     *info = NULL;
 }

@@ -534,13 +534,8 @@ tcti_libtpms_finalize(
         }
     }
 
-    if (tcti_libtpms->state_path != NULL) {
-        free(tcti_libtpms->state_path);
-    }
-
-    if (tcti_libtpms->response_buffer) {
-        free(tcti_libtpms->response_buffer);
-    }
+    free(tcti_libtpms->state_path);
+    free(tcti_libtpms->response_buffer);
 }
 
 TSS2_RC
