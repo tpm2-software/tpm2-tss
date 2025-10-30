@@ -1,0 +1,17 @@
+name: Clang Format Checker
+on:
+  [push, pull_request]
+jobs:
+  clang-format-checking:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
+      - name: Run clang-format
+        run: |
+          docker run -u $UID -v $PWD:$PWD xianpengshen/clang-tools:17 clang-format -i $(find -name '*.c' | xargs realpath)
+          docker run -u $UID -v $PWD:$PWD xianpengshen/clang-tools:17 clang-format -i $(find -name '*.h' | xargs realpath)
+      - name: Check for diffs
+        run: git diff --exit-code
