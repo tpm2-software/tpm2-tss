@@ -88,7 +88,7 @@ TSS2_RC tcti_platform_command (
 
     LOGBLOB_DEBUG(buf, sizeof (cmd), "Sending %zu bytes to socket %" PRIu32
                   ":", sizeof (cmd), tcti_mssim->platform_sock);
-    ret = write_all (tcti_mssim->platform_sock, buf, sizeof (cmd));
+    ret = write_all (tcti_mssim->platform_sock, buf, sizeof (cmd), -1);
     if (ret < sizeof (cmd)) {
         LOG_ERROR("Failed to send platform command %d with error: %zd",
                   cmd, ret);
@@ -139,7 +139,7 @@ send_sim_session_end (
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-    return socket_xmit_buf (sock, buf, sizeof (buf));
+    return socket_xmit_buf (sock, buf, sizeof (buf), -1);
 }
 
 /*
@@ -182,7 +182,7 @@ send_sim_cmd_setup (
         return rc;
     }
 
-    return socket_xmit_buf (tcti_mssim->tpm_sock, buf, sizeof (buf));
+    return socket_xmit_buf (tcti_mssim->tpm_sock, buf, sizeof (buf), -1);
 }
 
 TSS2_RC
@@ -216,7 +216,7 @@ tcti_mssim_transmit (
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-    rc = socket_xmit_buf (tcti_mssim->tpm_sock, cmd_buf, size);
+    rc = socket_xmit_buf (tcti_mssim->tpm_sock, cmd_buf, size, -1);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -357,14 +357,14 @@ tcti_mssim_receive (
         /* Receive the size of the response. */
         uint8_t size_buf [sizeof (UINT32)];
 
-        rc = socket_poll(tcti_mssim->tpm_sock, timeout);
+        rc = socket_poll(tcti_mssim->tpm_sock, SOCKET_POLL_RD, timeout);
         if (rc != TSS2_RC_SUCCESS) {
             if (rc == TSS2_TCTI_RC_TRY_AGAIN) {
                 return rc;
             }
             goto out;
         }
-        size = socket_recv_buf (tcti_mssim->tpm_sock, size_buf, sizeof(UINT32));
+        size = socket_recv_buf (tcti_mssim->tpm_sock, size_buf, sizeof(UINT32), timeout);
         if (size != sizeof (UINT32)) {
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto out;
@@ -396,7 +396,7 @@ tcti_mssim_receive (
 
     /* Receive the TPM response. */
     LOG_DEBUG ("Reading response of size %" PRIu32, tcti_common->header.size);
-    rc = socket_poll(tcti_mssim->tpm_sock, timeout);
+    rc = socket_poll(tcti_mssim->tpm_sock, SOCKET_POLL_RD, timeout);
     if (rc != TSS2_RC_SUCCESS) {
         if (rc == TSS2_TCTI_RC_TRY_AGAIN) {
             return rc;
@@ -405,7 +405,8 @@ tcti_mssim_receive (
     }
     size = socket_recv_buf (tcti_mssim->tpm_sock,
                             (unsigned char *)response_buffer,
-                            tcti_common->header.size);
+                            tcti_common->header.size,
+                            timeout);
     if (size < tcti_common->header.size) {
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
@@ -413,7 +414,7 @@ tcti_mssim_receive (
     LOGBLOB_DEBUG(response_buffer, tcti_common->header.size,
                   "Response buffer received:");
 
-    rc = socket_poll (tcti_mssim->tpm_sock, timeout);
+    rc = socket_poll (tcti_mssim->tpm_sock, SOCKET_POLL_RD, timeout);
     if (rc != TSS2_RC_SUCCESS) {
         if (rc == TSS2_TCTI_RC_TRY_AGAIN) {
             return rc;
@@ -423,7 +424,8 @@ tcti_mssim_receive (
 
     /* Receive the appended four bytes of 0's */
     size = socket_recv_buf (tcti_mssim->tpm_sock,
-                           (unsigned char *)&trash, 4);
+                           (unsigned char *)&trash, 4,
+                           timeout);
     if (size != 4) {
         LOG_DEBUG ("Error reading last 4 bytes %" PRIu32, rc);
         rc = TSS2_TCTI_RC_IO_ERROR;

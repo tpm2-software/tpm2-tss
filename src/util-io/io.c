@@ -51,7 +51,8 @@ size_t
 read_all (
     SOCKET fd,
     uint8_t *data,
-    size_t size)
+    size_t size,
+    int timeout)
 {
     ssize_t recvd;
     size_t recvd_total = 0;
@@ -69,6 +70,11 @@ read_all (
 #else
         TEMP_RETRY (recvd, read (fd, &data [recvd_total], size));
         if (recvd < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                if (socket_poll(fd, SOCKET_POLL_RD, timeout) == TSS2_RC_SUCCESS) {
+                    continue;
+                }
+            }
             LOG_WARNING ("read on fd %d failed with errno %d: %s",
                          fd, errno, strerror (errno));
             return recvd_total;
@@ -91,7 +97,8 @@ size_t
 write_all (
     SOCKET fd,
     const uint8_t *buf,
-    size_t size)
+    size_t size,
+    int timeout)
 {
     ssize_t written = 0;
     size_t written_total = 0;
@@ -117,6 +124,11 @@ write_all (
 #ifdef _WIN32
             LOG_ERROR ("failed to write to fd %d: %s", fd, strerror (WSAGetLastError()));
 #else
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                if (socket_poll(fd, SOCKET_POLL_WR, timeout) == TSS2_RC_SUCCESS) {
+                    continue;
+                }
+            }
             LOG_ERROR ("failed to write to fd %d: %s", fd, strerror (errno));
 #endif
             return written_total;
@@ -130,21 +142,23 @@ size_t
 socket_recv_buf (
     SOCKET sock,
     uint8_t *data,
-    size_t size)
+    size_t size,
+    int timeout)
 {
-    return read_all (sock, data, size);
+    return read_all (sock, data, size, timeout);
 }
 
 TSS2_RC
 socket_xmit_buf (
     SOCKET sock,
     const void *buf,
-    size_t size)
+    size_t size,
+    int timeout)
 {
     size_t ret;
 
     LOGBLOB_DEBUG (buf, size, "Writing %zu bytes to socket %d:", size, sock);
-    ret = write_all (sock, buf, size);
+    ret = write_all (sock, buf, size, timeout);
     if (ret < size) {
 #ifdef _WIN32
         LOG_ERROR ("write to fd %d failed, errno %d: %s", sock, WSAGetLastError(), strerror (WSAGetLastError()));
@@ -333,14 +347,23 @@ socket_set_nonblock (SOCKET sock)
 }
 
 TSS2_RC
-socket_poll (SOCKET sock, int timeout)
+socket_poll (SOCKET sock, int wait_flags, int timeout)
 {
 #ifndef _WIN32
     struct pollfd fds;
     int rc_poll, nfds = 1;
 
     fds.fd = sock;
-    fds.events = POLLIN;
+    fds.revents = fds.events = 0;
+
+    if (wait_flags & SOCKET_POLL_RD)
+        fds.events |= POLLIN;
+    if (wait_flags & SOCKET_POLL_WR)
+        fds.events |= POLLOUT;
+
+    if (!fds.events) {
+        return TSS2_TCTI_RC_BAD_VALUE;
+    }
 
     /* Timeout of 0 ie return immediately is not
      * well handled throughout the upper layers currenty

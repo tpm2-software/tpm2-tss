@@ -173,7 +173,7 @@ TSS2_RC tcti_control_command (
     /* transmit */
     LOGBLOB_DEBUG(req_buf, req_buf_len, "Sending %zu bytes to socket %" PRIu32
                   ":", req_buf_len, tcti_swtpm->ctrl_sock);
-    ret = write_all (tcti_swtpm->ctrl_sock, req_buf, req_buf_len);
+    ret = write_all (tcti_swtpm->ctrl_sock, req_buf, req_buf_len, -1);
     if (ret < req_buf_len) {
         LOG_ERROR("Failed to send control command %d with error: %zd",
                   cmd_code, ret);
@@ -298,7 +298,7 @@ tcti_swtpm_transmit (
         return rc;
     }
 
-    rc = socket_xmit_buf (tcti_swtpm->tpm_sock, cmd_buf, size);
+    rc = socket_xmit_buf (tcti_swtpm->tpm_sock, cmd_buf, size, -1);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -417,7 +417,7 @@ tcti_swtpm_receive (
     if (tcti_common->header.size == 0) {
         LOG_DEBUG("Receiving header to determine the size of the response.");
         uint8_t res_header[10];
-        ret = socket_recv_buf (tcti_swtpm->tpm_sock, &res_header[0], 10);
+        ret = socket_recv_buf (tcti_swtpm->tpm_sock, &res_header[0], 10, timeout);
         if (ret != 10) {
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto out;
@@ -447,7 +447,8 @@ tcti_swtpm_receive (
         LOG_DEBUG ("Reading response of size %" PRIu32, tcti_common->header.size);
         ret = socket_recv_buf (tcti_swtpm->tpm_sock,
                                (unsigned char *)&response_buffer[10],
-                               tcti_common->header.size - 10);
+                               tcti_common->header.size - 10,
+                               timeout);
         if (ret < tcti_common->header.size - 10) {
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto out;

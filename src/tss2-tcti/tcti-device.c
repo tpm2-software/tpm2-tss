@@ -117,7 +117,8 @@ tcti_device_transmit (
                    command_size);
     size = write_all (tcti_dev->fd,
                       command_buffer,
-                      command_size);
+                      command_size,
+                      -1);
     if (size != command_size) {
         LOG_ERROR ("wrong number of bytes written. Expected %zu, wrote %zd.",
                    command_size,
@@ -465,7 +466,7 @@ Tss2_Tcti_Device_Init (
     struct pollfd fds;
     int rc_poll, nfds = 1;
 
-    ssize_t sz = (ssize_t) write_all (tcti_dev->fd, cmd, sizeof(cmd));
+    ssize_t sz = (ssize_t) write_all (tcti_dev->fd, cmd, sizeof(cmd), -1);
     if (sz != sizeof(cmd)) {
         LOG_ERROR ("Could not probe device for partial response read support");
         close_tpm (&tcti_dev->fd);
