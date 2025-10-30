@@ -242,7 +242,7 @@ pcap_init (pcap_buider_ctx *ctx)
     offset += ret;
 
     /* write file header: SHB and IDB (can be written multiple times to same file) */
-    uret = write_all (ctx->fd, buf, offset);
+    uret = write_all (ctx->fd, buf, offset, -1);
     if (uret != offset) {
         LOG_ERROR ("Failed to write to file %s: %s", filename, strerror (errno));
         goto error;
@@ -291,7 +291,7 @@ pcap_print (
     }
     pdu_len = ret;
 
-    uret = write_all (ctx->fd, buf, pdu_len);
+    uret = write_all (ctx->fd, buf, pdu_len, -1);
     if (uret != pdu_len) {
         LOG_ERROR ("Failed to write to file: %s", strerror (errno));
         ret = -1;

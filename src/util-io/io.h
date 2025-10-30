@@ -28,6 +28,9 @@ typedef SSIZE_T ssize_t;
 #define SOCKET_ERROR ((-1))
 #endif
 
+#define SOCKET_POLL_RD 1
+#define SOCKET_POLL_WR 2
+
 #ifdef _WIN32
 #define TEMP_RETRY(dest, exp) \
 {   int __ret; \
@@ -65,7 +68,8 @@ size_t
 read_all (
     SOCKET fd,
     uint8_t *data,
-    size_t size);
+    size_t size,
+    int timeout);
 /*
  * Write 'size' bytes from 'buf' to file descriptor 'fd'. Additionally this
  * function will retry calls to the 'write' function when recoverable errors
@@ -76,7 +80,8 @@ size_t
 write_all (
     SOCKET fd,
     const uint8_t *buf,
-    size_t size);
+    size_t size,
+    int timeout);
 /*
  * Connect to the given target using TCP. 'control' is to distinguish the data
  * socket from the control socket. For TCP, the data socket and control socket
@@ -108,15 +113,18 @@ size_t
 socket_recv_buf (
     SOCKET sock,
     uint8_t *data,
-    size_t size);
+    size_t size,
+    int timeout);
 TSS2_RC
 socket_xmit_buf (
     SOCKET sock,
     const void *buf,
-    size_t size);
+    size_t size,
+    int timeout);
 TSS2_RC
 socket_poll (
     SOCKET sock,
+    int wait_flags,
     int timeout);
 
 #ifdef __cplusplus

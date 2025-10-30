@@ -78,7 +78,7 @@ write_all_simple_success_test (void **state)
     uint8_t buf [10];
 
     will_return (__wrap_write, sizeof (buf));
-    ret = write_all (99, buf, sizeof (buf));
+    ret = write_all (99, buf, sizeof (buf), -1);
     assert_int_equal(ret, sizeof (buf));
 }
 /*
@@ -92,7 +92,7 @@ read_all_eof_test (void **state)
     uint8_t buf [10];
 
     will_return (__wrap_read, 0);
-    ret = read_all (10, buf, sizeof (buf));
+    ret = read_all (10, buf, sizeof (buf), -1);
     assert_int_equal (ret, 0);
 }
 /*
@@ -108,7 +108,7 @@ read_all_twice_eof (void **state)
 
     will_return (__wrap_read, 5);
     will_return (__wrap_read, 0);
-    ret = read_all (10, buf, 10);
+    ret = read_all (10, buf, 10, -1);
     assert_int_equal (ret, 5);
 }
 /* When passed all NULL values ensure that we get back the expected RC. */
