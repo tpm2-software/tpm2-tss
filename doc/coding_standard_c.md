@@ -9,8 +9,7 @@ check the surrounding code and imitate its style [1].
 For simplicity, we use clang-format for all files (also as part of the CI).
 Thus before commiting any code, we recommend you run
 ```sh
-docker run -u 1000 -v $PWD:$PWD xianpengshen/clang-tools:17 clang-format -i $(find -name '*.c' | xargs realpath)
-docker run -u 1000 -v $PWD:$PWD xianpengshen/clang-tools:17 clang-format -i $(find -name '*.h' | xargs realpath)
+docker run -u $UID -v $PWD:$PWD ghcr.io/tpm2-software/ubuntu-24.04 clang-format -i $(find -name '*.h' -or -name '*.c' | xargs realpath)
 ```
 This ensures that the code will not break during your pull request.
 
