@@ -443,7 +443,7 @@ Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
                 return TSS2_RC_SUCCESS;
             }
             *update_ptr = node->next;
-            SAFE_FREE(node);
+            free(node);
             *object = ESYS_TR_NONE;
             return TSS2_RC_SUCCESS;
         }
