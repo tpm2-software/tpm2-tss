@@ -353,7 +353,6 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     SAFE_FREE(command->nvPath);
-    //SAFE_FREE(context->nv_cmd.tes);
     ifapi_session_clean(context);
     context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
