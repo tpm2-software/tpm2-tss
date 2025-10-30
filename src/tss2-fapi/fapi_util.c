@@ -2405,11 +2405,11 @@ ifapi_nv_write(
 
         if (number_rc(r) == TPM2_RC_BAD_AUTH) {
             if (context->nv_cmd.nv_write_state == NV2_WRITE_NULL_AUTH_SENT) {
-                IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
+                IFAPI_OBJECT *auth_object2 = &context->nv_cmd.auth_object;
                 char *description;
-                r = ifapi_get_description(auth_object, &description);
+                r = ifapi_get_description(auth_object2, &description);
                 goto_if_error(r, "Get description", error_cleanup);
-                r = ifapi_set_auth(context, auth_object, description);
+                r = ifapi_set_auth(context, auth_object2, description);
                 SAFE_FREE(description);
                 goto_if_error_reset_state(r, " Fapi_NvWrite_Finish", error_cleanup);
 

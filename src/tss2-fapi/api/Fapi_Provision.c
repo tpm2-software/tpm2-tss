@@ -786,14 +786,14 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             command->cert_count = (*capabilityData)->data.handles.count;
 
             /* Filter out NV handles beyond the EK cert range */
-            for (size_t i = 0; i < command->cert_count; i++) {
+            for (size_t j = 0; j < command->cert_count; j++) {
                 /* Check whether a cert chain exists. */
-                if (command->capabilityData->data.handles.handle[i] >= EK_CERT_CHAIN_MIN &&
-                    command->capabilityData->data.handles.handle[i] <= EK_CERT_CHAIN_MAX) {
+                if (command->capabilityData->data.handles.handle[j] >= EK_CERT_CHAIN_MIN &&
+                    command->capabilityData->data.handles.handle[j] <= EK_CERT_CHAIN_MAX) {
                     command->cert_chain_exists = true;
                 }
-                if (command->capabilityData->data.handles.handle[i] > EK_CERT_RANGE) {
-                    command->cert_count = i;
+                if (command->capabilityData->data.handles.handle[j] > EK_CERT_RANGE) {
+                    command->cert_count = j;
                 }
             }
 
@@ -1681,7 +1681,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(hierarchy_he);
     ifapi_cleanup_ifapi_object(hierarchy_hn);
     ifapi_cleanup_ifapi_object(hierarchy_lockout);
-    for (size_t i = 0; i < command->numPaths; i++) {
+    for (i = 0; i < command->numPaths; i++) {
         SAFE_FREE(command->pathlist[i]);
     }
     SAFE_FREE(command->pathlist);
@@ -1704,7 +1704,7 @@ error_cleanup:
         SAFE_FREE(command->hierarchies);
     }
     if (command->pathlist) {
-        for (size_t i = 0; i < command->numPaths; i++) {
+        for (i = 0; i < command->numPaths; i++) {
             SAFE_FREE(command->pathlist[i]);
         }
         SAFE_FREE(command->pathlist);

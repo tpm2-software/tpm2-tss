@@ -1425,7 +1425,7 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
                      from_policy->element.PolicyAction.action, r, error);
         break;
     case POLICYNAMEHASH:
-        for (size_t i = 0; i < from_policy->element.PolicyNameHash.count; i++) {
+        for (i = 0; i < from_policy->element.PolicyNameHash.count; i++) {
             strdup_check(to_policy->element.PolicyNameHash.namePaths[i],
                     from_policy->element.PolicyNameHash.namePaths[i],
                     r, error);

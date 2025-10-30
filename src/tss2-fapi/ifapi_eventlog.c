@@ -298,8 +298,8 @@ loop:
         } else {
             /* Iterate through the array of logpart and add each item to the eventlog */
             /* The return type of json_object_array_length() was changed, thus the case */
-            for (int i = 0; i < (int)json_object_array_length(logpart); i++) {
-                jso_event = json_object_array_get_idx(logpart, i);
+            for (int j = 0; j < (int)json_object_array_length(logpart); j++) {
+                jso_event = json_object_array_get_idx(logpart, j);
                 /* Increment the refcount of event so it does not get freed on put(logpart) below */
                 json_object_get(jso_event);
                 if (json_object_array_add(eventlog->log, jso_event)) {

@@ -4536,8 +4536,8 @@ ifapi_json_TPMA_NV_deserialize(json_object *jso, TPMA_NV *out)
                     return TSS2_FAPI_RC_BAD_VALUE;
                 }
                 TPM2_NT out2;
-                TSS2_RC r = ifapi_json_TPM2_NT_deserialize(jso2, &out2);
-                return_if_error(r, "Bad value");
+                TSS2_RC r2 = ifapi_json_TPM2_NT_deserialize(jso2, &out2);
+                return_if_error(r2, "Bad value");
                 *out |= out2 << 4;
                 continue;
             }
@@ -4564,8 +4564,8 @@ ifapi_json_TPMA_NV_deserialize(json_object *jso, TPMA_NV *out)
             const char *token = strip_prefix(key, "TPM_", "TPM2_", "TPMA_", "NV_", "TPM2_", NULL);
             if (strcasecmp(token, "NT") == 0) {
                 TPM2_NT out2;
-                TSS2_RC r = ifapi_json_TPM2_NT_deserialize(val, &out2);
-                return_if_error(r, "Bad value");
+                TSS2_RC r2 = ifapi_json_TPM2_NT_deserialize(val, &out2);
+                return_if_error(r2, "Bad value");
                 *out |= out2 << 4;
                 continue;
             }
