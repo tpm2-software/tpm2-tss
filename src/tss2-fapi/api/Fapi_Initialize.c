@@ -401,7 +401,7 @@ Fapi_Initialize_Finish(
 
 cleanup_return:
     /* Cleanup any intermediate results and state stored in the context. */
-    for (size_t i = 0; i < command->numPaths; i++) {
+    for (i = 0; i < command->numPaths; i++) {
         SAFE_FREE(command->pathlist[i]);
     }
     SAFE_FREE(command->pathlist);

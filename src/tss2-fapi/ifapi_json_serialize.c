@@ -1258,9 +1258,9 @@ ifapi_json_TPMI_CELMGTTYPE_serialize(const TPMI_CELMGTTYPE in, json_object **jso
         { FIRMWARE_END, "firmware_end" }
     };
     CHECK_IN_LIST(TPMI_CELMGTTYPE, in, CEL_VERSION, FIRMWARE_END);
-    for (size_t i = 0; i < sizeof(jso_tab) / sizeof(jso_tab[0]); i++) {
-        if (jso_tab[i].in == in) {
-            *jso = json_object_new_string(jso_tab[i].name);
+    for (size_t j = 0; j < sizeof(jso_tab) / sizeof(jso_tab[0]); j++) {
+        if (jso_tab[j].in == in) {
+            *jso = json_object_new_string(jso_tab[j].name);
             check_oom(*jso);
             return TSS2_RC_SUCCESS;
         }
