@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: Copyright (c) 2025 Infineon Technologies AG
+#
+# SPDX-License-Identifier: BSD-2-Clause
+
+name: Clang Format Checker
+on:
+  [push, pull_request]
+jobs:
+  clang-format-checking:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/tpm2-software/ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 1
+      - name: Run clang-format
+        run: clang-format -i $(find -name '*.h' -or -name '*.c' | xargs realpath)
+      - name: Check for diffs
+        run: |
+          git config --global --add safe.directory $PWD
+          git diff --exit-code && echo "No formatting issues found."
+      - name: failure
+        if: ${{ failure() }}
+        run: |
+          echo "Clang format check failed. Please run clang-format on your code or see the diff in the step above."
+          echo "docker run -u $UID -v $PWD:$PWD ghcr.io/tpm2-software/ubuntu-24.04 clang-format -i $(find -name '*.h' -or -name '*.c' | xargs realpath)"
