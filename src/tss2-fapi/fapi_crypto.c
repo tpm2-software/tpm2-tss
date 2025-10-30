@@ -768,8 +768,6 @@ ifapi_ecc_der_sig_to_tpm(
                        keySize);
     tpmSignature->signature.ecdsa.signatureS.size = keySize;
     OSSL_FREE(ecdsaSignature, ECDSA_SIG);
-    //OSSL_FREE(bnr, BN);
-    //OSSL_FREE(bns, BN);
     return TSS2_RC_SUCCESS;
 }
 
