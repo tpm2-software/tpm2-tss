@@ -653,15 +653,11 @@ Tss2_Tcti_Mssim_Init (
         goto fail_out;
     }
 
-    if (conf_copy != NULL) {
-        free (conf_copy);
-    }
+    free (conf_copy);
     return TSS2_RC_SUCCESS;
 
 fail_out:
-    if (conf_copy != NULL) {
-        free (conf_copy);
-    }
+    free (conf_copy);
     socket_close (&tcti_mssim->tpm_sock);
     socket_close (&tcti_mssim->platform_sock);
 
