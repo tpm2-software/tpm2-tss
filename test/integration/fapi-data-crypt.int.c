@@ -75,7 +75,7 @@ const char *pub_pem =
 
 char *userDataTest = "test";
 
-#define chknull(X) if (!X) { LOG_ERROR(str(X) "should not be null"); \
+#define chknull(X) if (!(X)) { LOG_ERROR(str(X) "should not be null"); \
                              r = TSS2_FAPI_RC_GENERAL_FAILURE; \
                              goto error_cleanup; }
 
@@ -100,8 +100,8 @@ signatureCallback(
     uint8_t *aux_signature = NULL;
     size_t profile_len = strlen(FAPI_PROFILE);
 
-    if (strcmp(objectPath + profile_len, "/HS/SRK/myRsaCryptKey") ||
-        strncmp(objectPath, "P_RSA", 5))
+    if (strcmp(objectPath + profile_len, "/HS/SRK/myRsaCryptKey") != 0 ||
+        strncmp(objectPath, "P_RSA", 5) != 0)
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path") {
     }
 
@@ -126,7 +126,7 @@ signatureCallback(
 
     LOGBLOB_DEBUG(dataToSign, dataToSignSize, "Data to be signed");
 
-    bufio = BIO_new_mem_buf((void *)priv_pem, strlen(priv_pem));
+    bufio = BIO_new_mem_buf((void *)priv_pem, (int) strlen(priv_pem));
     priv_key = PEM_read_bio_PrivateKey(bufio, NULL, NULL, NULL);
     chknull(priv_key);
 

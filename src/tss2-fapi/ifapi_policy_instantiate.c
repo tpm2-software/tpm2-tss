@@ -4,6 +4,7 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include "tss2_common.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
@@ -433,6 +434,9 @@ ifapi_policyeval_instantiate_finish(
             /* Clear key path, only public data will be needed */
             SAFE_FREE(pol_element->element.PolicyAuthorize.keyPath);
             break;
+            default:
+                /* Other policy elements do not need instatiation. */
+                break;
         }
         /* Cleanup head of list and use next policy element */
         context->policy_elements = first_in_pol_list->next;

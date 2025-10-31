@@ -8,6 +8,8 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
+#include <stdlib.h>      // for EXIT_FAILURE, EXIT_SUCCESS
+
 #include "test-esys.h"    // for test_invoke_esys, EXIT_SKIP
 #include "tss2_common.h"  // for TSS2_RC
 
@@ -48,7 +50,7 @@ main(int argc, char *argv[])
     if (rc != 0 && rc != EXIT_SKIP) {
         test_esys_teardown(test_esys_ctx);
         LOG_ERROR("Test returned %08x", rc);
-        return rc;
+        return EXIT_FAILURE;
     }
 
     ret = test_esys_checks_post(test_esys_ctx);
@@ -59,5 +61,5 @@ main(int argc, char *argv[])
 
     test_esys_teardown(test_esys_ctx);
 
-    return rc;
+    return EXIT_SUCCESS;
 }

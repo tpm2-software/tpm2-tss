@@ -448,6 +448,9 @@ TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type,
             LOGBLOB_TRACE(&data->DevicePath[0], data->LengthOfDevicePath, "DevicePath:");
         }
         break;
+        default:
+            LOG_WARNING("Unknown event type %"PRIu32"", event_type);
+            break;
     }
     /* Check whether data has already been added (for legacy events). */
     if (!ifapi_get_sub_object(*jso, "event_data", &jso2)) {
@@ -459,7 +462,7 @@ TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type,
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
-        return TSS2_RC_SUCCESS;
+    return TSS2_RC_SUCCESS;
 }
 
 bool ifapi_json_TCG_EVENT2_cb(const TCG_EVENT2 *in, UINT32 event_type, void *data)

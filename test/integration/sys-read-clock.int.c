@@ -96,7 +96,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
 
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Tss2_Sys_ExecuteAsync failed: 0x%" PRIx32, rc);
-	goto error;
+        goto error;
     }
 
     TPMS_TIME_INFO time;
@@ -104,14 +104,14 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     rc = Tss2_Sys_ReadClock_Complete(sys_context, &time);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Tss2_Sys_ReadClock_Complete failed: 0x%" PRIx32, rc);
-	goto error;
+        goto error;
     }
 
 error:
     rc2 = Tss2_Sys_FlushContext (sys_context, session);
     if (rc2 != TSS2_RC_SUCCESS) {
         LOG_ERROR("Tss2_Sys_FlushContext failed: 0x%" PRIx32, rc);
-	return rc2;
+        return EXIT_FAILURE;
     }
-    return rc;
+    return (rc)? EXIT_FAILURE : EXIT_SUCCESS;
 }

@@ -102,7 +102,7 @@ check_eventlog(const char *file, ascii_event *ima_ascii_list, int n_ascii)
         *json_ascii_list = NULL,
         *json_digests, *json_digest, *json_digest_ary0, *json_bin,
         *json_content; // *json_name;
-    int n_bin, i;
+    size_t n_bin, i;
     int jso_result;
     const char *digest1; // *name;
     uint32_t pcr_list[1] = { 10 };

@@ -83,7 +83,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     LOG_INFO("Decrypted data: \"%s\" with key handle: 0x%08" PRIx32,
                data_decrypted.buffer, handle);
 
-    if (strcmp ((char*)data_in.buffer, (char*)data_decrypted.buffer)) {
+    if (strcmp ((char*)data_in.buffer, (char*)data_decrypted.buffer) != 0) {
         LOG_ERROR("Decrypt succeeded but decrypted data != to input data");
         exit(1);
     }

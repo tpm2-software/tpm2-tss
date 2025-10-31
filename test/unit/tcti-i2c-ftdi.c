@@ -340,6 +340,7 @@ char *__wrap_Read (struct mpsse_context *mpsse, int size)
         break;
     default:
         assert_true (false);
+        return NULL;
     }
 
     switch (m_state.i2c) {

@@ -563,7 +563,7 @@ ifapi_io_dirfiles(
                       dirname);
     }
 
-    paths = calloc(numentries, sizeof(*paths));
+    paths = (char**)calloc(numentries, sizeof(*paths));
     check_oom(paths);
 
     /* Iterating through the list of entries inside the directory. */
@@ -589,7 +589,7 @@ ifapi_io_dirfiles(
     for (int i = 0; i < numentries; i++) {
         free(namelist[i]);
     }
-    free(namelist);
+    free((void*) namelist);
 
     return TSS2_RC_SUCCESS;
 
@@ -597,11 +597,11 @@ error_oom:
     for (int i = 0; i < numentries; i++) {
         free(namelist[i]);
     }
-    free(namelist);
+    free((void*) namelist);
     LOG_ERROR("Out of memory");
     for (size_t i = 0; i < numpaths; i++)
         free(paths[i]);
-    free(paths);
+    free((void*)paths);
     return TSS2_FAPI_RC_MEMORY;
 }
 
@@ -719,7 +719,7 @@ ifapi_io_dirfiles_all(
 
     if (*numPaths > 0) {
         size_t size_path_list = *numPaths * sizeof(char *);
-        pathlist2 = calloc(1, size_path_list);
+        pathlist2 = (char**) calloc(1, size_path_list);
         goto_if_null2(pathlist2, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
                       cleanup);
         n = *numPaths;

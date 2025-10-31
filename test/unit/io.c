@@ -74,7 +74,7 @@ __wrap_write (int fd, const void *buffer, size_t buffer_size)
 static void
 write_all_simple_success_test (void **state)
 {
-    ssize_t ret;
+    size_t ret;
     uint8_t buf [10];
 
     will_return (__wrap_write, sizeof (buf));
@@ -88,7 +88,7 @@ write_all_simple_success_test (void **state)
 static void
 read_all_eof_test (void **state)
 {
-    ssize_t ret;
+    size_t ret;
     uint8_t buf [10];
 
     will_return (__wrap_read, 0);
@@ -103,7 +103,7 @@ read_all_eof_test (void **state)
 static void
 read_all_twice_eof (void **state)
 {
-    ssize_t ret;
+    size_t ret;
     uint8_t buf [10];
 
     will_return (__wrap_read, 5);

@@ -21,7 +21,7 @@
 #define TEST_FN_PTR ((void *)0xBADC0DE)
 
 #define CHECK_BACKEND_FN_NOT_TEST(backend, fn) \
-    if (backend.fn == TEST_FN_PTR) { \
+    if ((backend).fn == TEST_FN_PTR) { \
         LOG_ERROR("Expected function \"%s\" not to be test ptr", xstr(fn)); \
         return EXIT_FAILURE; \
     }
@@ -101,7 +101,7 @@ test_invoke_esys(ESYS_CONTEXT *esys_context)
     }
 
     /* peer back into internals and ensure state is correct */
-    if (memcmp(&esys_context->crypto_backend, &callbacks, sizeof(callbacks))) {
+    if (memcmp(&esys_context->crypto_backend, &callbacks, sizeof(callbacks)) != 0) {
         LOG_ERROR("ESYS_CONTEXT state for user callbacks not as expected");
         return EXIT_FAILURE;
     }

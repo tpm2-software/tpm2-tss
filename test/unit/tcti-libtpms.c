@@ -331,6 +331,8 @@ tcti_libtpms_init_dlopen_fail_test(void **state)
     free(ctx);
 }
 
+static int dummy;
+static void *dummy_ptr = &dummy;
 /* When dlsym fails for any libtpms symbol, we expect TSS2_TCTI_RC_GENERAL_FAILURE. */
 static void
 tcti_libtpms_init_dlsym_fail_test(void **state)
@@ -364,7 +366,7 @@ tcti_libtpms_init_dlsym_fail_test(void **state)
         for (size_t j = 0; j < i; j++) {
             expect_value(__wrap_dlsym, handle, LIBTPMS_DL_HANDLE);
             expect_string(__wrap_dlsym, symbol, syms[j]);
-            will_return(__wrap_dlsym, (void *) 1);
+            will_return(__wrap_dlsym, dummy_ptr);
         }
 
         /* fail to load sym at index i */
@@ -1574,13 +1576,13 @@ tcti_libtpms_setup_no_statefile(void **state)
 static int
 tcti_libtpms_setup_two_states_no_statefiles(void **state)
 {
-    TSS2_TCTI_CONTEXT **ctxs = malloc(sizeof(void *) * 2);
+    TSS2_TCTI_CONTEXT **ctxs = (TSS2_TCTI_CONTEXT **) malloc(sizeof(void *) * 2);
     fprintf(stderr, "%s: before tcti_libtpms_init_from_conf\n", __func__);
     ctxs[0] = tcti_libtpms_init_from_conf_real(NULL);
     ctxs[1] = tcti_libtpms_init_from_conf_real(NULL);
     fprintf(stderr, "%s: done\n", __func__);
 
-    *state = ctxs;
+    *state = (void *)ctxs;
     return 0;
 }
 /*
@@ -1597,7 +1599,7 @@ tcti_libtpms_setup_two_states(void **state)
     return 0;
 #endif
 
-    ctxs = malloc(sizeof(void *) * 2);
+    ctxs = (TSS2_TCTI_CONTEXT **) malloc(sizeof(void *) * 2);
     assert_non_null(ctxs);
 
     /* delete state files if they exist already */
@@ -1619,7 +1621,7 @@ tcti_libtpms_setup_two_states(void **state)
     ctxs[1] = tcti_libtpms_init_from_conf_real(STATEFILE_PATH_REAL1);
     fprintf(stderr, "%s: done\n", __func__);
 
-    *state = ctxs;
+    *state = (void *)ctxs;
     return 0;
 }
 /*

@@ -646,7 +646,7 @@ CompareSizedByteBuffer(
     if (buffer1->size != buffer2->size)
         return TPM2_RC_FAILURE;
 
-    if (memcmp(buffer1->buffer, buffer2->buffer, buffer1->size))
+    if (memcmp(buffer1->buffer, buffer2->buffer, buffer1->size) != 0)
         return TPM2_RC_FAILURE;
 
     return TPM2_RC_SUCCESS;

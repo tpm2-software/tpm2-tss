@@ -85,7 +85,8 @@ __wrap_tcti_from_info(TSS2_TCTI_INFO_FUNC infof,
     return mock_type (TSS2_RC);
 }
 
-#define TEST_HANDLE (void*)0xade0
+static int dummy;
+static void *TEST_HANDLE = &dummy;
 static void
 test_info_from_handle_null (void **state)
 {
@@ -258,7 +259,8 @@ test_tcti_from_file_null_tcti (void **state)
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 
-#define HANDLE (void *)123321
+static int dummy2;
+void *HANDLE = &dummy2;
 #ifndef ESYS_TCTI_DEFAULT_MODULE
 static void
 test_get_info_default_null (void **state)
@@ -385,7 +387,6 @@ static void
 test_tcti_default_fail_sym(void **state)
 {
     TSS2_TCTI_CONTEXT *tcti;
-#define HANDLE (void *)123321
 
     expect_string(__wrap_dlopen, filename, "libtss2-tcti-default.so");
     expect_value(__wrap_dlopen, flags, RTLD_NOW);
@@ -427,7 +428,6 @@ static void
 test_tcti_default_fail_info(void **state)
 {
     TSS2_TCTI_CONTEXT *tcti;
-#define HANDLE (void *)123321
 #define TEST_RC 0x55687
 
  /** Test for failure on tcti

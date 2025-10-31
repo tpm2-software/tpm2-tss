@@ -81,6 +81,7 @@
 
 char *fapi_profile = NULL;
 TSS2_TEST_FAPI_CONTEXT *fapi_test_ctx = NULL;
+char *config_env = NULL;
 
 struct tpm_state {
     TPMS_CAPABILITY_DATA capabilities[7];
@@ -302,7 +303,6 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
     int ret, size;
     char *config = NULL;
     char *config_path = NULL;
-    char *config_env = NULL;
     char *config_bak = NULL;
     FILE *config_file;
     char *tmpdir;
@@ -917,13 +917,13 @@ get_ecc_ek_public(TSS2_SYS_CONTEXT *sys_context, EVP_PKEY **evp_pub)
 
 }
 
-char pwd[6] = "123456";
+char pwd[] = "123456";
 
 int pass_cb(char *buf, int size, int rwflag, void *u)
 {
     (void)rwflag;
-    memcpy(buf, &pwd[0], 6);
-    return 6;
+    memcpy(buf, &pwd[0], sizeof(pwd));
+    return sizeof(pwd);
 }
 
 TSS2_RC

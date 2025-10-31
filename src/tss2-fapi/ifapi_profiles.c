@@ -119,12 +119,12 @@ ifapi_profiles_initialize_async(
 #ifdef HAVE_REALLOCARRAY
     profiles->profiles = reallocarray(profiles->profiles, profiles->num_profiles,
                                       sizeof(profiles->profiles[0]));
-    profiles->filenames = reallocarray(profiles->filenames, profiles->num_profiles,
+    profiles->filenames = (char **)reallocarray((void *)profiles->filenames, profiles->num_profiles,
                                       sizeof(profiles->filenames[0]));
 #else /* HAVE_REALLOCARRAY */
     profiles->profiles = realloc(profiles->profiles, profiles->num_profiles *
                                       sizeof(profiles->profiles[0]));
-    profiles->filenames = realloc(profiles->filenames, profiles->num_profiles *
+    profiles->filenames = (char **)realloc((void *)profiles->filenames, profiles->num_profiles *
                                       sizeof(profiles->filenames[0]));
 #endif /* HAVE_REALLOCARRAY */
     /* No need for OOM checks, since num_profiles may only have become smaller */

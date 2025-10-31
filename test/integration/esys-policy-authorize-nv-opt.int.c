@@ -48,7 +48,7 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
 
     if (policyDigest->size != 32
         || memcmp(&policyDigest->buffer[0], &expected_digest->buffer[0],
-                  policyDigest->size)) {
+                  policyDigest->size) != 0) {
         free(policyDigest);
         LOG_ERROR("Error: Policy%s digest did not match expected policy.",
                   comment);
