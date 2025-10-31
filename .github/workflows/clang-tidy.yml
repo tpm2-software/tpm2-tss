@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: Copyright (c) 2023-2024 Infineon Technologies AG
+#
+# SPDX-License-Identifier: BSD-2-Clause
+
+name: clang-tidy-check
+on: [push, pull_request]
+
+jobs:
+  clang-tidy-check:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/tpm2-software/ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Generate compile_commands.json
+      run: |
+        git config --global --add safe.directory /__w/tpm2-tss/tpm2-tss
+        ./bootstrap
+        ./configure CC=clang --enable-unit --enable-integration
+        make -j1 compile_commands.json
+    - uses: ZehMatt/clang-tidy-annotations@v1.1.2
+      with:
+        only_affected_lines: true

@@ -35,6 +35,8 @@ Checks: "\
   -clang-analyzer-valist.Uninitialized, \
   \
   clang-diagnostic*, \
+  \
+  -clang-diagnostic-#pragma-messages, \
 "
 WarningsAsErrors: "*"
 HeaderFilterRegex: "(src|include)/.*"
