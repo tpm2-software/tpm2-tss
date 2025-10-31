@@ -1299,7 +1299,7 @@ ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso,  TPMS_POLICYPCR *out)
         r = ifapi_json_TPML_PCRVALUES_deserialize(jso2, &out->pcrs);
         return_if_error(r, "Bad value for field \"pcrs\".");
     } else {
-        memset(&out->pcrs, 0, sizeof(TPML_PCRVALUES));
+        out->pcrs = NULL;
     }
 
     if (ifapi_get_sub_object(jso, "currentPCRs", &jso2)) {
@@ -1795,7 +1795,7 @@ ifapi_json_TPMS_POLICY_deserialize(json_object *jso,
 
     }
     if (!ifapi_get_sub_object(jso, "policyAuthorizations", &jso2)) {
-        memset(&out->policyAuthorizations, 0, sizeof(TPML_POLICYAUTHORIZATIONS));
+        out->policyAuthorizations = NULL;
     } else {
         r = ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(jso2,
                 &out->policyAuthorizations);

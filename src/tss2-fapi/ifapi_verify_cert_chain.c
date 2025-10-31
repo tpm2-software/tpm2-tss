@@ -269,7 +269,7 @@ ifapi_verify_cert_chain(char* ek_pem, uint8_t *cert_buf, size_t cert_buf_size,
 
     /* Create linked list with all X509 intermediate certificates. */
     while (remaining_length > 0) {
-        X509 *cert = d2i_X509(NULL, &current_pos, remaining_length);
+        X509 *cert = d2i_X509(NULL, &current_pos, (long) remaining_length);
         goto_if_null(cert, "Failed to convert DER certificate to X509 certificate.",
                      TSS2_FAPI_RC_MEMORY, error);
 

@@ -358,7 +358,7 @@ nv_rw_with_session (
     /* Check that write and read data are equal. */
     if (memcmp ((void *)&nvReadData.buffer[0],
                 (void *)&nvWriteData.buffer[0],
-                nvReadData.size))
+                nvReadData.size) != 0)
     {
         LOG_ERROR ("Data read not equal to data written.");
         return 1;
@@ -399,17 +399,15 @@ test_invoke (TSS2_SYS_CONTEXT *sys_ctx)
     nvAttributes = TPMA_NV_AUTHREAD | TPMA_NV_AUTHWRITE | TPMA_NV_PLATFORMCREATE;
     rc = nv_rw_with_session (sys_ctx, &authPolicy, nvAttributes, TPM2_SE_HMAC);
     if (rc != TSS2_RC_SUCCESS)
-        return rc;
+        return EXIT_FAILURE;
 
     LOG_INFO ("Policy session test");
     authPolicy.size = TPM2B_SIZE (authPolicy);
     rc = create_policy (sys_ctx, &authPolicy);
     if (rc != TSS2_RC_SUCCESS)
-        return rc;
+        return EXIT_FAILURE;
     nvAttributes = TPMA_NV_POLICYREAD | TPMA_NV_POLICYWRITE | TPMA_NV_PLATFORMCREATE;
     rc = nv_rw_with_session (sys_ctx, &authPolicy, nvAttributes, TPM2_SE_POLICY);
-    if (rc != TSS2_RC_SUCCESS)
-        return rc;
 
-    return TSS2_RC_SUCCESS;
+    return (rc)? EXIT_FAILURE : EXIT_SUCCESS;
 }

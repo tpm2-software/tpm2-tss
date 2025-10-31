@@ -39,7 +39,7 @@ check_eventlog(const char *file)
 {
     TSS2_RC r;
     char *json_string;
-    int n_bin, i;
+    size_t n_bin, i;
     uint32_t pcr_list[1] = { 10 };
     json_object
         *json_event_list = NULL, *json_bin = NULL,

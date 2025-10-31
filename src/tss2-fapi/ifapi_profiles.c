@@ -119,7 +119,7 @@ ifapi_profiles_initialize_async(
 #ifdef HAVE_REALLOCARRAY
     profiles->profiles = reallocarray(profiles->profiles, profiles->num_profiles,
                                       sizeof(profiles->profiles[0]));
-    profiles->filenames = reallocarray(profiles->filenames, profiles->num_profiles,
+    profiles->filenames = (char**)reallocarray(profiles->filenames, profiles->num_profiles,
                                       sizeof(profiles->filenames[0]));
 #else /* HAVE_REALLOCARRAY */
     profiles->profiles = realloc(profiles->profiles, profiles->num_profiles *

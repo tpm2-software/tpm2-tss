@@ -95,6 +95,11 @@ fi
 
 if [ "$SCANBUILD" == "yes" ]; then
   scan-build --status-bugs make -j
+elif [ "$CC" == "clang" -a "$DOCKER_IMAGE" == "ubuntu-24.04" ]; then
+  make -j compile_commands.json
+  run-clang-tidy -header-filter $PWD $(find src include -name '*.c' -o -name '*.h') 2>&1 | tee clang-tidy.log
+  make -j clean
+  make -j distcheck
 elif [ "$CC" == "clang" ]; then
   make -j distcheck
 else

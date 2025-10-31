@@ -117,7 +117,7 @@ test_sys_mac(TSS2_SYS_CONTEXT * sys_context)
         return 99; /* fatal error */
     }
 
-    return rc;
+    return EXIT_SUCCESS;
 }
 
 int

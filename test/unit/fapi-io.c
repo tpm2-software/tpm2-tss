@@ -50,7 +50,7 @@ int
 int
  __wrap_stat(const char *pathname, struct stat *statbuf, ...)
 {
-    if (strcmp(pathname, "tss_unit_dummyf")) {
+    if (strcmp(pathname, "tss_unit_dummyf") != 0) {
         return __real_stat(pathname, statbuf);
     }
     statbuf->st_mode = R_OK;
@@ -62,7 +62,7 @@ __real_fopen(const char *pathname, const char* mode, ...);
 FILE *
 __wrap_fopen(const char *pathname, const char* mode, ...)
 {
-    if (strcmp(pathname, "tss_unit_dummyf")) {
+    if (strcmp(pathname, "tss_unit_dummyf") != 0) {
         return __real_fopen(pathname, mode);
     }
     return mock_ptr_type(FILE*);

@@ -881,7 +881,7 @@ keystore_list_all_abs(
     if (*numresults > 0) {
 
         /* Move file names from list to combined array */
-        file_ary = calloc(*numresults, sizeof(char *));
+        file_ary = (char**) calloc(*numresults, sizeof(char *));
         goto_if_null(file_ary, "Out of memory.", TSS2_FAPI_RC_MEMORY,
                     cleanup);
         i = 0;
@@ -1210,7 +1210,7 @@ keystore_search_obj(
 cleanup:
     for (i = 0; i < keystore->key_search.numPaths; i++)
         free(keystore->key_search.pathlist[i]);
-    free(keystore->key_search.pathlist);
+    free((void*)keystore->key_search.pathlist);
     if (!*found_path) {
         LOG_ERROR("Object not found");
         r = TSS2_FAPI_RC_KEY_NOT_FOUND;

@@ -36,7 +36,7 @@ static char *read_all(const char *path) {
 
     fseek(f, 0, SEEK_END);
     long fsize = ftell(f);
-    rewind(f);
+    fseek(f, 0, SEEK_SET);
 
     char *buffer = calloc(1, fsize + 1);
     if (!buffer) {
@@ -90,7 +90,7 @@ TSS2_RC policy_cb_pcr (
         UINT32 i;
         for (i = 0; i < pcr_select.sizeofSelect; i++) {
 
-            UINT8 j;
+            size_t j;
             /* for each selection bit in the byte */
             for (j = 0; j < sizeof(pcr_select.pcrSelect[i]) * 8; j++) {
                 if (pcr_select.pcrSelect[i] & 1 << j) {

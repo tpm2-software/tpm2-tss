@@ -187,7 +187,7 @@ test_esys_rsa_encrypt_decrypt(ESYS_CONTEXT * esys_context)
         Esys_Free(null_data);
         Esys_Free(cipher);
 
-        if (mode > 0 && memcmp(&plain.buffer[0], &plain2->buffer[0], plain_size)) {
+        if (mode > 0 && memcmp(&plain.buffer[0], &plain2->buffer[0], plain_size) != 0) {
             LOG_ERROR("plain texts are not equal for mode %i", mode);
             goto error;
         }

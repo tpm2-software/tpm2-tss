@@ -22,7 +22,7 @@
 #include "util/log.h"     // for goto_if_error, SAFE_FREE, LOG_ERROR, goto_i...
 
 #define NV_SIZE 10
-#define APP_DATA_SIZE 10*1024*1024
+#define APP_DATA_SIZE (10*1024*1024)
 
 /** Test the FAPI policy PolicyNvWritten.
  *

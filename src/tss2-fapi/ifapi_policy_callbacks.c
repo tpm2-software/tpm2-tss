@@ -1389,7 +1389,7 @@ ifapi_exec_auth_policy(
                 for (branch = current_policy->policy_list; branch->next;
                      branch = branch->next)
                     n += 1;
-                names = malloc(sizeof(char *) * n);
+                names = (const char**) malloc(sizeof(char *) * n);
                 return_if_null(names, "Out of memory.", TSS2_FAPI_RC_MEMORY);
                 i = 0;
                 branch = current_policy->policy_list;

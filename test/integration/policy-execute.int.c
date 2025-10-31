@@ -63,9 +63,9 @@ static char *read_all(const char *path) {
         return NULL;
     }
 
-    fseek(f, 0, SEEK_END);
+    fseek(f, 0L, SEEK_END);
     long fsize = ftell(f);
-    rewind(f);
+    fseek(f, 0L, SEEK_SET);
 
     char *buffer = calloc(1, fsize + 1);
     if (!buffer) {
@@ -187,7 +187,7 @@ static TSS2_RC sign_cb (
 
     assert(key_pem_hash_alg == TPM2_ALG_SHA256);
 
-    BIO *bio = BIO_new_mem_buf(priv_key_pem, strlen(priv_key_pem));
+    BIO *bio = BIO_new_mem_buf(priv_key_pem, (int) strlen(priv_key_pem));
     EVP_PKEY *priv_key = PEM_read_bio_PrivateKey(bio, NULL, NULL, NULL);
     assert(priv_key);
 
@@ -234,7 +234,7 @@ static TSS2_RC sign_cb (
     if (bio)
         BIO_free(bio);
 
-    bio = BIO_new_mem_buf(key_pem, strlen(key_pem));
+    bio = BIO_new_mem_buf(key_pem, (int) strlen(key_pem));
     EVP_PKEY *pub_key = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);
 
     mdctx = EVP_MD_CTX_create();
@@ -446,7 +446,7 @@ static TSS2_RC polauth_cb (
                 hash_alg == TPM2_ALG_SHA256 ?
                         sizeof(der_sig_ecdsa_sha256) :
                         sizeof(der_sig_ecdsa_sha384);
-        d2i_ECDSA_SIG(&ecdsaSignature, &p, len);
+        d2i_ECDSA_SIG(&ecdsaSignature, &p, (long) len);
         return_if_null(ecdsaSignature, "Invalid DER signature",
                 TSS2_FAPI_RC_GENERAL_FAILURE);
 
@@ -579,7 +579,7 @@ static TSS2_RC polaction_cb (
     const char *action,
     void *userdata)
 {
-    if (strcmp(action, "myaction")) {
+    if (strcmp(action, "myaction") != 0) {
         LOG_ERROR("Bad action: %s", action);
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
@@ -642,7 +642,7 @@ static TSS2_RC policy_cb_pcr (
         UINT32 i;
         for (i = 0; i < pcr_select.sizeofSelect; i++) {
 
-            UINT8 j;
+            size_t j;
             /* for each selection bit in the byte */
             for (j = 0; j < sizeof(pcr_select.pcrSelect[i]) * 8; j++) {
                 if (pcr_select.pcrSelect[i] & 1 << j) {
@@ -799,7 +799,7 @@ static TSS2_RC check_policy (
     } else {
         /* compare actual policyDigest to the one specified by callback */
         if (memcmp(digest->buffer, userdata.update_digest.buffer,
-                digest->size)) {
+                digest->size) != 0) {
             char a[64 + 64 + 1] = { 0 };
             bin2hex(digest->buffer, digest->size, a);
             char b[64 + 64 + 1] = { 0 };

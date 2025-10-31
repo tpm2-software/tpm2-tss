@@ -107,7 +107,7 @@ void check_remove_field(char *file, char* fname, TSS2_RC rc)
         profiles.num_profiles = 1;
         profiles.profiles_idx = 0;
         profiles.default_name = strdup("dmy_name");
-        profiles.filenames = calloc(1 ,sizeof(profiles.filenames[0]));
+        profiles.filenames = (char**) calloc(1 ,sizeof(profiles.filenames[0]));
         assert_ptr_not_equal(profiles.filenames, NULL);
         profiles.profiles = calloc(profiles.num_profiles, sizeof(profiles.profiles[0]));
         profiles.profiles[0].name = strdup("dmy_name");

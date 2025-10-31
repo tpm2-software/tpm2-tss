@@ -70,7 +70,8 @@ TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \
         case 8: \
             src = (type)HOST_TO_BE_64(src); \
             break; \
-\
+        default: \
+            return TSS2_MU_RC_GENERAL_FAILURE; \
     } \
     memcpy (&buffer [local_offset], &src, sizeof(src)); \
     if (offset != NULL) { \
@@ -137,7 +138,8 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
         case 8: \
             *dest = (type)BE_TO_HOST_64(tmp); \
             break; \
-\
+        default: \
+            return TSS2_MU_RC_GENERAL_FAILURE; \
     } \
 \
     if (offset != NULL) { \
