@@ -63,7 +63,7 @@ action_callback(
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path");
     }
 
-    if (strcmp(action, "myaction")) {
+    if (strcmp(action, "myaction") != 0) {
         LOG_ERROR("Bad action: %s", action);
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }

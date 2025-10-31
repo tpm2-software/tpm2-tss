@@ -404,7 +404,7 @@ Fapi_Delete_Async(
     /* Check whether a path for exactly one policy was passed. */
     if (command->numPaths == 0 && ifapi_path_type_p(path, IFAPI_POLICY_PATH)) {
         command->numPaths = 1;
-        command->pathlist = calloc(1, sizeof(char *));
+        command->pathlist = (char **)calloc(1, sizeof(char *));
         strdup_check(command->pathlist[0], path, r, error_cleanup);
     }
 

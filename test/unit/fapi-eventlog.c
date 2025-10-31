@@ -92,7 +92,7 @@ check_eventlog(const char *file, uint32_t *pcr_list, size_t pcr_list_size, int n
     TSS2_RC r;
     uint8_t *eventlog;
     size_t size;
-    int i, n;
+    size_t i, n;
     char *json_string = NULL;
     json_object *json_event_list = NULL, *jso;
     IFAPI_EVENT event;

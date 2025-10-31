@@ -219,7 +219,8 @@ __wrap_calloc(size_t nmemb, size_t size)
     printf("%s\n", __func__);
     return mock_type (void*);
 }
-#define TEST_DATA (void*)0xabcdef999
+static int dummy;
+void *TEST_DATA = &dummy;
 static void
 getinfo_calloc_fail (void **state)
 {

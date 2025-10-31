@@ -9,6 +9,7 @@
 
 #include <assert.h>           // for assert
 #include <inttypes.h>         // for uint8_t, PRIu32, PRIu8
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
 #include <string.h>           // for memcpy
 
 #include "sys-util.h"         // for GetDigestSize, TSS2_RETRY_EXP
@@ -307,5 +308,5 @@ teardown:
     return_if_error (rc, "NV policy locality test failed");
     return_if_error (rc_teardown, "teardown_nv");
 
-    return rc;
+    return (rc) ? EXIT_FAILURE : EXIT_SUCCESS;
 }

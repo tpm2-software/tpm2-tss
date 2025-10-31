@@ -328,6 +328,9 @@ ifapi_get_object_path(IFAPI_OBJECT *object)
             return "/HE";
         case ESYS_TR_RH_LOCKOUT:
             return  "/LOCKOUT";
+        default:
+            LOG_ERROR("This code should not be reachable");
+            return NULL;
         }
     }
     return NULL;

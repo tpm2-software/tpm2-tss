@@ -1012,6 +1012,11 @@ set_name_hierarchy_object(IFAPI_OBJECT *object)
     case ESYS_TR_RH_PLATFORM_NV:
         handle = TPM2_RH_PLATFORM_NV;
         break;
+    default:
+        /* Invalid esys handle for a hierarchy */
+        LOG_ERROR("This code should not be reachable");
+        handle = 0xFFFFFFFF;
+        break;
     }
     Tss2_MU_TPM2_HANDLE_Marshal(handle,
                                 &object->misc.hierarchy.name.name[0], sizeof(TPM2_HANDLE),
@@ -1213,6 +1218,9 @@ cleanup_policy_element(TPMT_POLICYELEMENT *policy)
             break;
         case POLICYACTION:
             SAFE_FREE(policy->element.PolicyAction.action);
+            break;
+        default:
+            LOG_ERROR("This code should not be reachable");
             break;
         }
 }
@@ -1431,6 +1439,9 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
                     r, error);
         }
         break;
+    default:
+        LOG_ERROR("This code should not be reachable");
+        return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
     return TSS2_RC_SUCCESS;
 

@@ -26,7 +26,7 @@
 #include "util/log.h"         // for LOG_ERROR, LOG_DEBUG, LOGBLOB_ERROR
 
 
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
 
 
 struct {
@@ -293,11 +293,11 @@ dumpstate(TSS2_SYS_CONTEXT *sys_ctx, tpm_state *state_first, bool compare)
             LOGBLOB_ERROR(buffer[0], off[0], "Before");
             LOGBLOB_ERROR(buffer[1], off[1], "After");
 
-            rc = EXIT_ERROR;
+            return EXIT_ERROR;
         }
     }
 
-    return rc;
+    return EXIT_SUCCESS;
 }
 
 int

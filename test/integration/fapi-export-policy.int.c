@@ -33,7 +33,7 @@ check_policy(char *policy, policy_digests *digests) {
     const char *digest_str= NULL;
     bool check_sha256 = false;
     bool check_sha384 = false;
-    int i, n;
+    size_t i, n;
 
     jso = json_tokener_parse(policy);
     if (!jso) {
@@ -68,21 +68,21 @@ check_policy(char *policy, policy_digests *digests) {
         if (strlen(digest_str) == 64 && strcmp(digest_str, digests->sha256) != 0)
             printf(" ");
         if (strlen(digest_str) == 64) {
-            LOG_ERROR("%i - Digest SHA256:  %s", i, digests->sha256);
+            LOG_ERROR("%zi - Digest SHA256:  %s", i, digests->sha256);
             LOG_INFO("Digest SHA256: %s", digests->sha256);
             if (strcmp(digest_str, digests->sha256) == 0) {
                 LOG_ERROR(" -> sha256 pass");
                 check_sha256 = true;
             }
         } else if  (strlen(digest_str) == 96) {
-            LOG_ERROR("%i - Digest SHA384:  %s", i, digests->sha384);
+            LOG_ERROR("%zi - Digest SHA384:  %s", i, digests->sha384);
             LOG_INFO("Digest SHA384: %s", digests->sha384);
             if (strcmp(digest_str, digests->sha384) == 0) {
                 LOG_ERROR(" -> sha384 pass");
                 check_sha384 = true;
             }
         } else {
-            LOG_WARNING("%i - Hash alg not in result table.", i);
+            LOG_WARNING("%zi - Hash alg not in result table.", i);
         }
         if (n > 0 && i == n - 1 && (!check_sha256 || !check_sha384))
             printf(" ");

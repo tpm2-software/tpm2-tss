@@ -221,7 +221,7 @@ int main (int argc, char *argv[])
                     hdr.size, sizeof (getcap_command));
             child_exit (EXIT_FAILURE);
         }
-        if (memcmp (getcap_command, buf, hdr.size)) {
+        if (memcmp (getcap_command, buf, hdr.size) != 0) {
             LOG_ERROR ("PID (%d): memcmp failed", getpid ());
             LOG_ERROR ("Unexpected command buffer");
             child_exit (EXIT_FAILURE);

@@ -9,6 +9,7 @@
 #endif
 
 #include <inttypes.h>         // for PRIx32, uint8_t
+#include <stdlib.h>
 #include <stdio.h>            // for size_t
 #include <string.h>           // for memcpy, memcmp
 
@@ -71,7 +72,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
                                  &nv_auth, &nv_public, &resp_auth);
     if (rc) {
         LOG_ERROR("Tss2_Sys_NV_DefineSpace failed 0x%" PRIx32, rc);
-        return rc;
+        return (rc)? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
     symmetric.algorithm = TPM2_ALG_AES;
@@ -182,7 +183,7 @@ retry:
 
     roll_nonces(session, &resp_auth.auths[1].nonce);
 
-    if (memcmp(data_read.buffer, data_to_write.buffer, data_read.size)) {
+    if (memcmp(data_read.buffer, data_to_write.buffer, data_read.size) != 0) {
         LOG_ERROR("Read data not equal to written data");
         LOGBLOB_ERROR(data_to_write.buffer, data_to_write.size, "written");
         LOGBLOB_ERROR(data_read.buffer, data_read.size, "read");
@@ -256,7 +257,7 @@ retry:
 
     LOGBLOB_DEBUG(data_read.buffer, (UINT32)data_read.size, "Decrypted read data = ");
 
-    if (memcmp(data_read.buffer, data_to_write.buffer, data_read.size)) {
+    if (memcmp(data_read.buffer, data_to_write.buffer, data_read.size) != 0) {
         LOG_ERROR("Read data not equal to written data");
         rc = 99;
         goto clean;
@@ -280,5 +281,5 @@ clean:
     if (rc == 0)
         LOG_INFO("param-encrypt-decrypt test PASSED");
 
-    return rc;
+    return (rc)? EXIT_FAILURE : EXIT_SUCCESS;
 }

@@ -97,6 +97,8 @@ void check_remove_field(char *file_content, char* fname, TSS2_RC rc)
     char *home_dir = getenv("HOME");
 
     assert_ptr_not_equal(home_dir, NULL);
+    if (home_dir == NULL)
+        return; // This is for clang-tidy which complains about following strlen() otherwise
     wrap_config_file_content = file_content;
     wrap_remove_field = fname;
     r = ifapi_config_initialize_finish(&io, &config);

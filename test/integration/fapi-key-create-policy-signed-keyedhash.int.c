@@ -34,7 +34,7 @@
 
 char *userDataTest = "test";
 
-#define chknull(X) if (!X) { LOG_ERROR(str(X) "should not be null"); \
+#define chknull(X) if (!(X)) { LOG_ERROR(str(X) "should not be null"); \
                              r = TSS2_FAPI_RC_GENERAL_FAILURE; \
                              goto error_cleanup; }
 

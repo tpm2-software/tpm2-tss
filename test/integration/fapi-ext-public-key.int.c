@@ -183,7 +183,7 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
     r = Fapi_Import(context, "myExtPubKey", pub_pem);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    bufio = BIO_new_mem_buf((void *)priv_pem, strlen(priv_pem));
+    bufio = BIO_new_mem_buf((void *)priv_pem, (int) strlen(priv_pem));
     evp_key = PEM_read_bio_PrivateKey(bufio, NULL, NULL, NULL);
 
     if (!bufio || !evp_key) {

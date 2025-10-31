@@ -76,7 +76,7 @@ test_sys_hmac(TSS2_SYS_CONTEXT * sys_context)
                                  &creation_ticket, &name, &sessions_rsp);
     if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("CreatePrimary FAILED! Response Code : 0x%x", rc);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     TPM2B_MAX_BUFFER test_buffer = { .size = 20,
@@ -118,7 +118,7 @@ test_sys_hmac(TSS2_SYS_CONTEXT * sys_context)
         return 99; /* fatal error */
     }
 
-    return rc;
+    return EXIT_SUCCESS;
 }
 
 int

@@ -160,7 +160,7 @@ test_esys_ecc_encrypt_decrypt(ESYS_CONTEXT * esys_context)
                         c1, c2, c3, &scheme, &plain2);
     goto_if_error(r, "Error esys ecc decrypt", error);
 
-    if (memcmp(&plain.buffer[0], &plain2->buffer[0], plain_size)) {
+    if (memcmp(&plain.buffer[0], &plain2->buffer[0], plain_size) != 0) {
         LOG_ERROR("plain texts are not equal");
         goto error;
     }
