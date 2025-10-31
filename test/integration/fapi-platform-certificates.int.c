@@ -173,8 +173,8 @@ test_fapi_platform_certificates(FAPI_CONTEXT *context)
         &capabilityData);
     goto_if_error(r, "Error Esys_GetCapability", error);
 
-    int count = capabilityData->data.handles.count;
-    for(int i = 0; i < count; i++){
+    size_t count = capabilityData->data.handles.count;
+    for(size_t i = 0; i < count; i++){
         if(capabilityData->data.handles.handle[i] == MIN_PLATFORM_CERT_HANDLE){
             nv_already_defined1 = true;
         }

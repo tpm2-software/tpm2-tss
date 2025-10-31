@@ -90,7 +90,7 @@ const char *pub_pem =
 
 char *userDataTest = "test";
 
-#define chknull(X) if (!X) { LOG_ERROR(str(X) "should not be null"); \
+#define chknull(X) if (!(X)) { LOG_ERROR(str(X) "should not be null"); \
                              r = TSS2_FAPI_RC_GENERAL_FAILURE; \
                              goto error_cleanup; }
 
@@ -139,7 +139,7 @@ signatureCallback(
 
     LOGBLOB_DEBUG(dataToSign, dataToSignSize, "Data to be signed");
 
-    bufio = BIO_new_mem_buf((void *)priv_pem, strlen(priv_pem));
+    bufio = BIO_new_mem_buf((void *)priv_pem, (int) strlen(priv_pem));
     priv_key = PEM_read_bio_PrivateKey(bufio, NULL, NULL, NULL);
     chknull(priv_key);
 

@@ -423,7 +423,7 @@ static void TestTpmClear()
 
 #define SESSIONS_ABOVE_MAX_ACTIVE 0
 #define DEBUG_MAX_ACTIVE_SESSIONS   8
-#define DEBUG_GAP_MAX   2*DEBUG_MAX_ACTIVE_SESSIONS
+#define DEBUG_GAP_MAX (2*(DEBUG_MAX_ACTIVE_SESSIONS))
 
 SESSION *sessions[SESSIONS_COUNT];
 
@@ -434,29 +434,7 @@ static void TestStartAuthSession()
     TPMT_SYM_DEF symmetric;
     SESSION *authSession = NULL;
     TPM2B_NONCE nonceCaller;
-    UINT16 i;
-    TPM2_HANDLE badSessionHandle = 0x03010000;
-
-    TPMS_AUTH_COMMAND sessionData;
-    TPM2B_NONCE     nonce;
-
-
-    TPM2B_AUTH      hmac;
-
-
-    /* Init sessionHandle */
-    sessionData.sessionHandle = badSessionHandle;
-
-    /* Init nonce. */
-    nonce.size = 0;
-    sessionData.nonce = nonce;
-
-    /* init hmac */
-    hmac.size = 0;
-    sessionData.hmac = hmac;
-
-    /* Init session attributes */
-    *( (UINT8 *)((void *)&sessionData.sessionAttributes ) ) = 0;
+    size_t i;
 
     encryptedSalt.size = 0;
 
@@ -490,7 +468,7 @@ static void TestStartAuthSession()
         /* Init session struct */
         rval = create_auth_session(&sessions[i], TPM2_RH_NULL, 0, TPM2_RH_PLATFORM, 0, &nonceCaller, &encryptedSalt, TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, sysContext );
         CheckPassed( rval );
-        LOG_INFO("Number of sessions created: %d", i+1 );
+        LOG_INFO("Number of sessions created: %zd", i+1 );
 
     }
     /* clean up the sessions that I don't want here. */
@@ -1038,7 +1016,7 @@ static TSS2_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySess
     CheckPassed( rval );
 
     /* Send PolicyLocality command */
-    *(UINT8 *)( (void *)&locality ) = 0;
+    locality = 0;
     locality |= TPMA_LOCALITY_TPM2_LOC_THREE;
     rval = Tss2_Sys_PolicyLocality( sysContext, (*policySession)->sessionHandle,
             0, locality, 0 );
@@ -1053,7 +1031,7 @@ static TSS2_RC CreateNVIndex( TSS2_SYS_CONTEXT *sysContext, SESSION **policySess
     nvAuth.size = 0;
 
     /* Now set the attributes. */
-    *(UINT32 *)( (void *)&nvAttributes ) = 0;
+    nvAttributes = 0;
     nvAttributes |= TPMA_NV_POLICYREAD;
     nvAttributes |= TPMA_NV_POLICYWRITE;
     nvAttributes |= TPMA_NV_PLATFORMCREATE;
@@ -1476,7 +1454,7 @@ static void TestHash()
     CheckPassed( rval );
 
     /* Test the resulting hash. */
-    if (memcmp(result.buffer, goodHashValue, result.size)) {
+    if (memcmp(result.buffer, goodHashValue, result.size) != 0) {
         LOG_ERROR("ERROR!! resulting hash is incorrect." );
         Cleanup();
     }
@@ -2081,7 +2059,7 @@ static void GetSetEncryptParamTests()
     nvAuth.size = 0;
 
     /* Now set the attributes. */
-    *(UINT32 *)( (void *)&nvAttributes ) = 0;
+    nvAttributes = 0;
     nvAttributes |= TPMA_NV_AUTHREAD;
     nvAttributes |= TPMA_NV_AUTHWRITE;
     nvAttributes |= TPMA_NV_PLATFORMCREATE;

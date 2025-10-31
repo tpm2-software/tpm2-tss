@@ -222,8 +222,9 @@ bool parse_event2body(TCG_EVENT2 const *event, UINT32 type) {
             }
         }
         break;
-
-
+    default:
+        /* no special handling */
+        break;
     }
 
     return true;

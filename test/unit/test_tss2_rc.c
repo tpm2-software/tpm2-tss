@@ -13,8 +13,6 @@
 #include "tss2_tpm2_types.h"  // for TPM2_RC_HASH, TPM2_RC_EXPIRED, TPM2_RC_...
 #include "util/aux_util.h"    // for ARRAY_LEN, UNUSED
 
-#define TPM2_ERROR_TSS2_RC_LAYER_COUNT (TSS2_RC_LAYER_MASK >> TSS2_RC_LAYER_SHIFT)
-
 #define assert_string_prefix(str, prefix) \
     assert_memory_equal(str, prefix, strlen(prefix))
 
@@ -23,7 +21,7 @@ test_layers(void **state)
 {
     UNUSED(state);
 
-    static const char *known_layers[TPM2_ERROR_TSS2_RC_LAYER_COUNT] = {
+    static const char *known_layers[] = {
         "tpm:",
         NULL,
         NULL,
@@ -41,7 +39,7 @@ test_layers(void **state)
     };
 
     UINT8 layer;
-    for (layer = 0; layer < TPM2_ERROR_TSS2_RC_LAYER_COUNT; layer++) {
+    for (layer = 0; layer < (UINT8) ARRAY_LEN(known_layers); layer++) {
         TSS2_RC rc = TSS2_RC_LAYER(layer);
 
         const char *got = Tss2_RC_Decode(rc);

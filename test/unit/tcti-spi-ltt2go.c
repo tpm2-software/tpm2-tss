@@ -107,8 +107,11 @@ ssize_t  __wrap_libusb_get_device_list (libusb_context *ctx, libusb_device ***li
 
     assert_ptr_equal (ctx, context);
 
-    *list = device_list = malloc (sizeof (*list));
-    **list = device = malloc (sizeof (**list));
+    device_list = (libusb_device **) malloc (sizeof (void*));
+    device = (libusb_device *) malloc (1024);   /* sizeof (libusb_device) is opaque */
+
+    *list = device_list;
+    **list = device;
 
     return num_of_devs;
 }
@@ -136,7 +139,7 @@ int  __wrap_libusb_get_string_descriptor_ascii (libusb_device_handle *dev_handle
     uint8_t desc_index, unsigned char *data, int length)
 {
     unsigned char *sn = (unsigned char *)DEV_DESC_SERIAL_NUMBER;
-    int sn_size = strlen ((const char *)sn) + 1;
+    int sn_size = (int) strlen ((const char *)sn) + 1;
 
     assert_ptr_equal (dev_handle, device_handle);
     assert_int_equal (desc_index, DEV_DESC_SERIAL_NUMBER_INDEX);
@@ -185,7 +188,7 @@ void __wrap_libusb_free_device_list (
     assert_ptr_equal (*list, device);
     assert_int_equal (unref_devices, 1);
     free (device);
-    free (device_list);
+    free ((void*) device_list);
     device = NULL;
     device_list = NULL;
 }

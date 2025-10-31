@@ -260,7 +260,8 @@ tctildr_init_ex_from_file_fail (void **state)
     rc = Tss2_TctiLdr_Initialize_Ex ("foo", NULL, &context);
     assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
-#define TEST_TCTI_HANDLE (TSS2_TCTI_LIBRARY_HANDLE)0x9827635
+static int libhandledummy;
+TSS2_TCTI_LIBRARY_HANDLE TEST_TCTI_HANDLE = &libhandledummy;
 static void
 tctildr_init_ex_calloc_fail_test (void **state)
 {

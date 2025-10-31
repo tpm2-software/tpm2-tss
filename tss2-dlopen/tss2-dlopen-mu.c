@@ -49,6 +49,7 @@ init_dlhandle(void)
     return TSS2_RC_SUCCESS;
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define MAKE_MU_BASE(typ) \
 TSS2_RC Tss2_MU_ ## typ ## _Marshal ( \
     typ             src, \
@@ -158,6 +159,7 @@ TSS2_RC Tss2_MU_ ## typ ## _Unmarshal ( \
     } \
     return sym(buffer, buffer_size, offset, selector_value, dest); \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 MAKE_MU_BASE(INT8);
 MAKE_MU_BASE(INT16);

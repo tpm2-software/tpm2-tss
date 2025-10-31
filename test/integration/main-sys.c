@@ -8,6 +8,8 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
+#include <stdlib.h>          // for EXIT_FAILURE, EXIT_SUCCESS
+
 #define LOGMODULE test
 #include "test-common.h"    // for test_sys_checks_post, test_sys_checks_pre
 #include "test.h"           // for test_invoke
@@ -46,7 +48,7 @@ main (int   argc,
     if (rc != 0 && rc != 77) {
         test_sys_teardown(test_sys_ctx);
         LOG_ERROR("Test returned %08x", rc);
-        return rc;
+        return EXIT_FAILURE;
     }
 
     ret = test_sys_checks_post(test_sys_ctx);
@@ -57,5 +59,5 @@ main (int   argc,
 
     test_sys_teardown(test_sys_ctx);
 
-    return rc;
+    return EXIT_SUCCESS;
 }

@@ -74,7 +74,9 @@ Tss2_MU_##type##_Marshal ( \
         case 8: \
             src = (type)HOST_TO_BE_64((UINT64)src); \
             break; \
-\
+        default: \
+            LOG_ERROR("Unknown size for type " #type); \
+            return TSS2_MU_RC_BAD_SIZE; \
     } \
     memcpy (&buffer [local_offset], &src, sizeof (src)); \
     if (offset != NULL) { \
@@ -144,7 +146,9 @@ Tss2_MU_##type##_Unmarshal ( \
         case 8: \
             *dest = (type)BE_TO_HOST_64((UINT64)tmp); \
             break; \
-\
+        default: \
+            LOG_ERROR("Unknown size for type " #type); \
+            return TSS2_MU_RC_BAD_SIZE; \
     } \
 \
     if (offset != NULL) { \

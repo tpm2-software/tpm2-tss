@@ -93,7 +93,7 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
     ESYS_TR        esys_handle;
     uint8_t        type;
 
-    if (strncmp(FAPI_PROFILE,"P_ECC", 5)) {
+    if (strncmp(FAPI_PROFILE,"P_ECC", 5) != 0) {
         LOG_WARNING("Profile %s is no ECC profile.", FAPI_PROFILE);
         return EXIT_SKIP;
     }

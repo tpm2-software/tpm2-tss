@@ -113,7 +113,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     LOG_INFO("Calculating template digest size of in_public: %d", (int)template_size - 2);
 
     rc = hash(in_public.publicArea.nameAlg, tmp_buff + 2,
-              template_size - 2, &templ_dgst);
+              (int) template_size - 2, &templ_dgst);
 
 
     if (rc != TSS2_RC_SUCCESS) {

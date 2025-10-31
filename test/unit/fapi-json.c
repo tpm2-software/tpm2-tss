@@ -232,7 +232,7 @@ char * normalize(const char *string) {
         rc = ifapi_json_ ## TYPE ## _serialize (PSERIALIZE ## 2, &jso); \
         jso_string2 = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY)); \
         assert_int_equal (rc, TSS2_RC_SUCCESS); \
-        if (strcmp(jso_string1, jso_string2)) { \
+        if (strcmp(jso_string1, jso_string2) != 0) { \
             fprintf(stderr,"\n jso: %s\n", jso_string1); \
             fprintf(stderr,"\n jso: %s\n", jso_string2); \
         } \
@@ -242,8 +242,10 @@ char * normalize(const char *string) {
         free(jso_string2); \
     }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define CHECK_BIN(TYPE, BIN) \
     CHECK_BIN2(TYPE, BIN, &BIN)
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define CHECK_BIN_SIMPLE(TYPE, BIN) \
     CHECK_BIN2(TYPE, BIN, BIN)
@@ -519,7 +521,7 @@ check_policy_bin(void **state)
         rc = ifapi_json_TPMS_POLICY_serialize (&policy, &jso);
         jso_string2 = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
         assert_int_equal (rc, TSS2_RC_SUCCESS);
-        if (strcmp(jso_string1, jso_string2)) {
+        if (strcmp(jso_string1, jso_string2) != 0) {
             fprintf(stderr,"\n jso: %s\n", jso_string1);
             fprintf(stderr,"\n jso: %s\n", jso_string2);
         }
@@ -590,7 +592,7 @@ check_policy_bin(void **state)
         rc = ifapi_json_TPMS_POLICY_serialize (&policy, &jso);
         jso_string2 = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
         assert_int_equal (rc, TSS2_RC_SUCCESS);
-        if (strcmp(jso_string1, jso_string2)) {
+        if (strcmp(jso_string1, jso_string2) != 0) {
             fprintf(stderr,"\n jso: %s\n", jso_string1);
             fprintf(stderr,"\n jso: %s\n", jso_string2);
         }
