@@ -897,9 +897,7 @@ cleanup_state_mmap:
     }
 
 cleanup_state_path:
-    if (tcti_libtpms->state_path != NULL) {
-        free(tcti_libtpms->state_path);
-    }
+    free(tcti_libtpms->state_path);
 
 cleanup_dl:
     dlclose(tcti_libtpms->libtpms);

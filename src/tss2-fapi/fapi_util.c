@@ -5299,7 +5299,7 @@ ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx)
 
     cleanup_return:
     /* Cleanup any intermediate results and state stored in the context. */
-    for (size_t i = 0; i < ctx->numPaths; i++) {
+    for (i = 0; i < ctx->numPaths; i++) {
         SAFE_FREE(ctx->pathlist[i]);
     }
     ifapi_cleanup_ifapi_object(&ctx->nv_object);
