@@ -63,7 +63,7 @@ make -j$(nproc)
 popd
 
 if [ "$WITH_CRYPTO" == "none" ]; then
-    echo "Exiting without running tests becuase crypto backend is none"
+    echo "Exiting without running tests because crypto backend is none"
     exit 0
 fi
 
