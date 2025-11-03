@@ -51,7 +51,7 @@ test_helper_tpm_cmd_tcti_dummy_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_cmd_tcti_dummy_LDADD = $(TESTS_LDADD)
 endif #UNIT
 
-### Rules to enerate binary test files for FAPI from b64 files.
+### Rules to enumerate binary test files for FAPI from b64 files.
 
 if FAPI
 FAPI_TEST_BINS = \
