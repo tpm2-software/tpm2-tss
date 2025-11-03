@@ -109,7 +109,7 @@ get_number(json_object *jso) {
     return num;
 }
 
-/* Determin number of fields in a json objecd. */
+/* Determine number of fields in a json object. */
 size_t nmb_of_fields(json_object *jso) {
     size_t n = 0;
     json_object_object_foreach(jso, key, val) {
@@ -170,7 +170,7 @@ bool cmp_jso(json_object *jso1, json_object *jso2) {
     }
 }
 
-/* Compare two delimter sparated token lists. */
+/* Compare two delimiter separated token lists. */
 bool cmp_strtokens(char* string1, char *string2, char *delimiter) {
     bool found = false;
     char *token1 = NULL;
@@ -513,6 +513,11 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
         goto error;
     }
 
+    if (config_env != NULL) {
+        LOG_DEBUG("config_env not empty, freeing old value");
+        free(config_env);
+    }
+
     /* We set the environment variable for FAPI to consume the config file */
     size = asprintf(&config_env, "TSS2_FAPICONF=%s", config_path);
     if (size < 0) {
@@ -520,6 +525,7 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
         ret = EXIT_ERROR;
         goto error;
     }
+    /* config_env must not be freed after the putenv ! */
     putenv(config_env);
 
     /***********
@@ -535,7 +541,6 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
     }
 
     fapi_test_ctx->fapi_ctx = *fapi_context;
-    SAFE_FREE(config_env);
     SAFE_FREE(config);
     SAFE_FREE(config_path);
     return 0;
@@ -545,7 +550,6 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
 
     if (config) free(config);
     if (config_path) free(config_path);
-    if (config_env) free(config_env);
 
     return ret;
 }
@@ -1464,15 +1468,12 @@ test_fapi_teardown(TSS2_TEST_FAPI_CONTEXT *test_ctx)
  * This program is a template for integration tests (ones that use the TCTI,
  * the ESAPI, and FAPI contexts / API directly). It does nothing more than
  * parsing  command line options that allow the caller (likely a script)
- * to specifywhich TCTI to use for the test using getenv("TPM20TEST_TCTI").
+ * to specify which TCTI to use for the test using getenv("TPM20TEST_TCTI").
  */
 int
 main(int argc, char *argv[])
 {
     int ret, size;
-    char *config = NULL;
-    char *config_path = NULL;
-    char *config_env = NULL;
     char *remove_cmd = NULL;
     TSS2_TEST_FAPI_CONTEXT *test_ctx = NULL;
 
@@ -1563,10 +1564,8 @@ main(int argc, char *argv[])
 
 error:
     test_fapi_teardown(test_ctx);
-    if (config) free(config);
-    if (config_path) free(config_path);
-    if (config_env) free(config_env);
-    if (remove_cmd) free(remove_cmd);
+    free(config_env);
+    free(remove_cmd);
 
     return ret;
 }
