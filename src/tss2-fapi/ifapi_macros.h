@@ -134,12 +134,12 @@
 
 #define statecasedefault(VAR) \
     default: \
-        LOG_ERROR("Bad state for " str(VAR)); \
+        LOG_ERROR("Bad state for " str(VAR) ": %i", VAR); \
         return TSS2_FAPI_RC_BAD_SEQUENCE;
 
 #define statecasedefault_error(VAR, r, label)         \
     default: \
-        LOG_ERROR("Bad state for " str(VAR)); \
+        LOG_ERROR("Bad state for " str(VAR) ": %i", VAR); \
         (r) = TSS2_FAPI_RC_BAD_SEQUENCE; \
         goto label;
 
