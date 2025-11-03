@@ -4263,6 +4263,8 @@ ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
     TSS2_RC r = TSS2_RC_SUCCESS;
     ESYS_CONTEXT *ectx = context->esys;
 
+    LOG_TRACE("Current state is: %i", context->state);
+
     switch (context->state) {
     statecase(context->state, GET_INFO_GET_CAP);
         /* fetch capability info */

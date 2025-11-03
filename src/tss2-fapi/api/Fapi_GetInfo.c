@@ -226,6 +226,8 @@ Fapi_GetInfo_Finish(
     IFAPI_INFO *infoObj = &command->info_obj;
     TPMS_CAPABILITY_DATA *capabilityData = NULL;
 
+    LOG_TRACE("Current state is: %i", context->state);
+
     switch (context->state) {
     case GET_INFO_GET_CAP:
         /* Initialize the property for the first ESAPI call */

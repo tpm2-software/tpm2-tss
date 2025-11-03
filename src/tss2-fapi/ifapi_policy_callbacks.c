@@ -1465,7 +1465,7 @@ ifapi_exec_auth_policy(
             cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
             break;
 
-        statecasedefault_error(cb_ctx->state, r, cleanup);
+        statecasedefault_error(cb_ctx->cb_state, r, cleanup);
     }
 cleanup:
     SAFE_FREE(names);
@@ -1637,7 +1637,7 @@ ifapi_exec_auth_nv_policy(
             cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
             break;
 
-        statecasedefault_error(cb_ctx->state, r, cleanup);
+        statecasedefault_error(cb_ctx->cb_state, r, cleanup);
     }
 cleanup:
     cleanup_policy_list(current_policy->policy_list);
