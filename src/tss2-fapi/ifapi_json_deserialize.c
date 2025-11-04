@@ -349,7 +349,7 @@ ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
     /* Get structure with public data from binary blob. */
     r = Tss2_MU_TPM2B_PUBLIC_Unmarshal(public_blob.buffer, public_blob.size,
                                        &offset, &out->public);
-    return_if_error(r, "Invalid public data.");
+    goto_if_error(r, "Invalid public data.", error_cleanup);
 
     SAFE_FREE(public_blob.buffer);
 
@@ -358,7 +358,7 @@ ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
     } else {
         /* Deserialize complete binary blob. */
         r = ifapi_json_UINT8_ARY_deserialize(jso2, &private_blob);
-        return_if_error(r, "BAD VALUE");
+        goto_if_error(r, "BAD VALUE", error_cleanup);
         offset = 0;
 
         /* Extract private data from blob with size. */
