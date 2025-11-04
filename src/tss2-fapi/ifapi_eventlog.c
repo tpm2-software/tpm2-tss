@@ -5,24 +5,26 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
+#include <stdint.h>                         // for uint8_t
+#include <stdlib.h>                         // for free
+#include <string.h>                         // for memset, strdup, memcpy
 
-#include "ifapi_helpers.h"
+#include "fapi_int.h"                       // for IFAPI_PCR_LOG_FILE, FAPI_...
+#include "fapi_types.h"                     // for UINT8_ARY
 #include "ifapi_eventlog.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_serialize.h"
+#include "ifapi_helpers.h"                  // for ifapi_asprintf, ifapi_cal...
+#include "ifapi_ima_eventlog.h"             // for IFAPI_IMA_EVENT, ifapi_re...
+#include "ifapi_json_deserialize.h"         // for ifapi_json_IFAPI_EVENT_de...
+#include "ifapi_json_eventlog_serialize.h"  // for ifapi_get_tcg_firmware_ev...
+#include "ifapi_json_serialize.h"           // for ifapi_json_IFAPI_EVENT_se...
+#include "ifapi_macros.h"                   // for check_not_null, statecase
+#include "tpm_json_deserialize.h"           // for ifapi_parse_json
 
 #define LOGMODULE fapi
-#include "ifapi_ima_eventlog.h"
-#include "ifapi_json_eventlog_serialize.h"
-#include "ifapi_json_deserialize.h"
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "ifapi_macros.h"
-#include "fapi_crypto.h"
+#include "util/log.h"                       // for goto_if_error, SAFE_FREE
 
 /** Initialize the eventlog module of FAPI.
  *
@@ -296,8 +298,8 @@ loop:
         } else {
             /* Iterate through the array of logpart and add each item to the eventlog */
             /* The return type of json_object_array_length() was changed, thus the case */
-            for (int i = 0; i < (int)json_object_array_length(logpart); i++) {
-                jso_event = json_object_array_get_idx(logpart, i);
+            for (int j = 0; j < (int)json_object_array_length(logpart); j++) {
+                jso_event = json_object_array_get_idx(logpart, j);
                 /* Increment the refcount of event so it does not get freed on put(logpart) below */
                 json_object_get(jso_event);
                 if (json_object_array_add(eventlog->log, jso_event)) {

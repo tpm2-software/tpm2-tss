@@ -3,25 +3,24 @@
     "nameAlg":"TPM2_ALG_SHA256",
     "srk_template": "system,restricted,decrypt",
      "srk_description": "Storage root key SRK",
-    "srk_persistent": 0,
-    "ek_template": "system,restricted,decrypt,0x81000000",
+    "ek_template": "system,restricted,decrypt,0x81000000,unique_zero=256",
     "ek_description": "Endorsement key EK",
     "ecc_signing_scheme": {
         "scheme":"TPM2_ALG_ECDSA",
         "details":{
-            "hashAlg":"TPM2_ALG_SHA1"
+            "hashAlg":"TPM2_ALG_SHA256"
         },
     },
     "rsa_signing_scheme": {
         "scheme":"TPM2_ALG_RSAPSS",
         "details":{
-            "hashAlg":"TPM2_ALG_SHA1"
+            "hashAlg":"TPM2_ALG_SHA256"
         }
     },
     "rsa_decrypt_scheme": {
         "scheme":"TPM2_ALG_OAEP",
         "details":{
-            "hashAlg":"TPM2_ALG_SHA1"
+            "hashAlg":"TPM2_ALG_SHA256"
         }
     },
     "sym_mode":"TPM2_ALG_CFB",
@@ -32,7 +31,7 @@
     },
     "sym_block_size": 16,
     "pcr_selection": [
-        { "hash": "TPM2_ALG_SHA1",
+        { "hash": "TPM2_ALG_SHA256",
           "pcrSelect": [ ]
         },
         { "hash": "TPM2_ALG_SHA256",

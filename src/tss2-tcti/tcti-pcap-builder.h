@@ -6,7 +6,8 @@
 #ifndef TCTI_PCAP_BUILDER_H
 #define TCTI_PCAP_BUILDER_H
 
-#include <stddef.h>
+#include <stddef.h>  // for size_t
+#include <stdint.h>  // for uint32_t
 
 #define PCAP_DIR_HOST_TO_TPM 0
 #define PCAP_DIR_TPM_TO_HOST 1

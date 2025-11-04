@@ -6,7 +6,13 @@
 #ifndef FAPI_CRYPTO_H
 #define FAPI_CRYPTO_H
 
-#include "fapi_int.h"
+#include <stddef.h>           // for size_t
+#include <stdint.h>           // for uint8_t, uint16_t
+
+#include "ifapi_keystore.h"   // for IFAPI_OBJECT
+#include "ifapi_profiles.h"   // for IFAPI_PROFILE
+#include "tss2_common.h"      // for TSS2_RC
+#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPM2_ALG_ID, TPMI_ALG_HASH
 
 TSS2_RC
 ifapi_get_profile_sig_scheme(
@@ -52,7 +58,7 @@ ifapi_verify_signature_quote(
     const TPMT_SIG_SCHEME       *signatureScheme);
 
 
-typedef struct _IFAPI_CRYPTO_CONTEXT IFAPI_CRYPTO_CONTEXT_BLOB;
+typedef struct IFAPI_CRYPTO_CONTEXT IFAPI_CRYPTO_CONTEXT_BLOB;
 
 TSS2_RC
 ifapi_crypto_hash_start(

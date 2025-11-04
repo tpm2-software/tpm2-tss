@@ -5,18 +5,16 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
+#include <stdlib.h>         // for NULL, calloc, free
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_esys.h"
+#include "../helper/cmocka_all.h"         // for CMUnitTest, assert_int_equal, assert_ptr_...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_GE...
+#include "tss2_esys.h"      // for Esys_Finalize, Esys_Initialize, ESYS_CONTEXT
+#include "tss2_tcti.h"      // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CANCEL, TSS2...
+#include "util/aux_util.h"  // for UNUSED
 
 #define LOGMODULE tests
 #include "util/log.h"

@@ -5,19 +5,27 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#include <stdint.h>           // for uint8_t
+#include <stdlib.h>           // for NULL, size_t
+#include <string.h>           // for memset
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_GetRandom, GET_RAND...
+#include "fapi_util.h"        // for ifapi_session_clean, ifapi_cleanup_session
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"     // for check_not_null, return_if_error_reset_s...
+#include "ifapi_profiles.h"   // for IFAPI_PROFILES, IFAPI_PROFILE
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"        // for Esys_SetTimeout
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_GetRandom, Fapi_GetR...
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_TRACE, return_if_error, SAFE_FREE
 
 /** One-Call function for Fapi_GetRandom
  *
@@ -255,7 +263,7 @@ Fapi_GetRandom_Finish(
     }
 
     /* Cleanup any intermediate results and state stored in the context. */
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_session_clean(context);
     LOG_TRACE("finished");
@@ -266,7 +274,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_session_clean(context);
     SAFE_FREE(context->get_random.data);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

@@ -16,9 +16,13 @@
  * http://github.com/tpm2-software/tpm2-tss/tss2-dlopen
 */
 
-#include <dlfcn.h>
-#include <stdio.h>
-#include <tss2/tss2_fapi.h>
+#include <dlfcn.h>           // for dlsym, dlerror, dlopen, RTLD_LOCAL, RTLD...
+#include <stdint.h>          // for uint8_t, uint32_t, uint64_t
+#include <stdio.h>           // for fprintf, NULL, stderr, size_t
+#include <tss2/tss2_fapi.h>  // for FAPI_CONTEXT, FAPI_POLL_HANDLE, Fapi_CB_...
+
+#include "tss2_common.h"     // for TSS2_RC, TSS2_FAPI_RC_NOT_IMPLEMENTED
+#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT
 
 #define str(s) xstr(s)
 #define xstr(s) #s
@@ -113,18 +117,18 @@ Fapi_Finalize(FAPI_CONTEXT **ctx)
 }
 
 void
-Fapi_Free(void *__ptr)
+Fapi_Free(void *ptr)
 {
-    if (!__ptr)
+    if (!ptr)
         return;
-    static TSS2_RC (*sym) (void *__ptr) = NULL;
+    static TSS2_RC (*sym) (void *ptr) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Fapi_Free");
     if (!sym) {
         WARN("Function Fapi_Free not found.");
         return;
     }
-    sym(__ptr);
+    sym(ptr);
 }
 
 #define MAKE_FAPI_0(fun) \

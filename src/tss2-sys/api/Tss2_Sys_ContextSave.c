@@ -5,18 +5,20 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"          // for Tss2_MU_TPMS_CONTEXT_Unmarshal, Tss2_MU...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, Tss2_Sys_ContextSave
+#include "tss2_tpm2_types.h"  // for TPMI_DH_CONTEXT, TPMS_CONTEXT, TPM2_CC_...
 
 TSS2_RC Tss2_Sys_ContextSave_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_CONTEXT saveHandle)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -43,7 +45,7 @@ TSS2_RC Tss2_Sys_ContextSave_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPMS_CONTEXT *context)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -64,7 +66,7 @@ TSS2_RC Tss2_Sys_ContextSave(
     TPMI_DH_CONTEXT saveHandle,
     TPMS_CONTEXT *context)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_ContextSave_Prepare(sysContext, saveHandle);

@@ -6,19 +6,21 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <string.h>
+#include <inttypes.h>         // for PRIx32, uint8_t, uint32_t, PRIxPTR, uin...
+#include <string.h>           // for NULL, size_t, memcpy
 
-#include "tss2_mu.h"
+#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2_MU...
+#include "tss2_mu.h"          // for Tss2_MU_TPMS_SCHEME_HASH_Marshal, Tss2_...
+#include "tss2_tpm2_types.h"  // for TPM2_ALG_NULL, TPMU_ASYM_SCHEME, TPMU_A...
+#include "util/aux_util.h"    // for UNUSED
 
-#include "util/tss2_endian.h"
 #define LOGMODULE marshal
-#include "util/log.h"
+#include "util/log.h"         // for LOG_DEBUG, LOG_ERROR, LOG_WARNING, LOG_...
 
-#define ADDR &
+#define ADDR &  // NOLINT(bugprone-macro-parentheses)
 #define VAL
 
 static TSS2_RC marshal_tab(BYTE const *src, uint8_t buffer[],
@@ -328,7 +330,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
     ret = TSS2_RC_SUCCESS; \
     break; \
     default: \
-    LOG_DEBUG("wrong selector 0x%"PRIx32" return error", selector); \
+    LOG_ERROR("wrong selector 0x%"PRIx32" return error", selector); \
     break; \
     } \
     return ret; \
@@ -373,6 +375,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint32_t selector, uint8_t buf
  * needed because the first parameter to the function element is always a
  * reference (never a value).
  */
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMU_UNMARSHAL(type, sel, m, fn, sel2, m2, fn2, sel3, m3, fn3, \
                        sel4, m4, fn4, sel5, m5, fn5, sel6, m6, fn6, sel7, m7, fn7, \
                        sel8, m8, fn8, sel9, m9, fn9, sel10, m10, fn10, sel11, m11, fn11, \
@@ -425,11 +428,12 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     ret = TSS2_RC_SUCCESS; \
     break; \
     default: \
-    LOG_DEBUG("wrong selector 0x%"PRIx32" return error", selector); \
+    LOG_ERROR("wrong selector 0x%"PRIx32" return error", selector); \
     break; \
     } \
     return ret; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*
  * The TPMU_UNMARSHAL2 operates on the same principles as the TPMU_MARSHAL2
@@ -554,11 +558,13 @@ TPMU_UNMARSHAL2(TPMU_SIG_SCHEME,
 TPMU_MARSHAL2(TPMU_KDF_SCHEME,
     TPM2_ALG_MGF1, ADDR, mgf1, Tss2_MU_TPMS_SCHEME_HASH_Marshal,
     TPM2_ALG_KDF1_SP800_56A, ADDR, kdf1_sp800_56a, Tss2_MU_TPMS_SCHEME_HASH_Marshal,
-    TPM2_ALG_KDF1_SP800_108, ADDR, kdf1_sp800_108, Tss2_MU_TPMS_SCHEME_HASH_Marshal)
+    TPM2_ALG_KDF1_SP800_108, ADDR, kdf1_sp800_108, Tss2_MU_TPMS_SCHEME_HASH_Marshal,
+    TPM2_ALG_KDF2, ADDR, kdf2, Tss2_MU_TPMS_SCHEME_HASH_Marshal)
 TPMU_UNMARSHAL2(TPMU_KDF_SCHEME,
     TPM2_ALG_MGF1, mgf1, Tss2_MU_TPMS_SCHEME_HASH_Unmarshal,
     TPM2_ALG_KDF1_SP800_56A, kdf1_sp800_56a, Tss2_MU_TPMS_SCHEME_HASH_Unmarshal,
-    TPM2_ALG_KDF1_SP800_108, kdf1_sp800_108, Tss2_MU_TPMS_SCHEME_HASH_Unmarshal)
+    TPM2_ALG_KDF1_SP800_108, kdf1_sp800_108, Tss2_MU_TPMS_SCHEME_HASH_Unmarshal,
+    TPM2_ALG_KDF2, kdf2, Tss2_MU_TPMS_SCHEME_HASH_Unmarshal)
 
 TPMU_MARSHAL2(TPMU_ASYM_SCHEME,
     TPM2_ALG_ECDH, ADDR, ecdh, Tss2_MU_TPMS_SCHEME_HASH_Marshal,

@@ -4,18 +4,20 @@
  * All rights reserved.
  ******************************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
+#include <inttypes.h>              // for PRIx32
+#include <stdio.h>                 // for NULL, size_t
+#include <string.h>                // for strcmp, strlen
 
-#include "tpm_json_serialize.h"
-#include "fapi_policy.h"
+#include "ifapi_json_serialize.h"  // for ifapi_json_UINT8_ARY_serialize
 #include "ifapi_policy_json_serialize.h"
+#include "tpm_json_serialize.h"    // for ifapi_json_TPM2B_DIGEST_serialize
+#include "tss2_tpm2_types.h"       // for TPM2B_NAME, TPMT_PUBLIC, TPM2B_DIGEST
 
 #define LOGMODULE fapijson
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"              // for return_error, return_if_error, ret...
 
 
 /** Serialize a character string to json.
@@ -791,6 +793,13 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
 
     if (json_object_object_add(*jso, "rsaScheme", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
+
+    /* Check whether only one condition field found in policy. */
+    if (cond_cnt > 1) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE,
+                     "Exactly one conditional is allowed for policy "
+                     "duplication select.");
     }
 
     return TSS2_RC_SUCCESS;

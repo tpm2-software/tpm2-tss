@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2019 - 2022 Intel
+# SPDX-FileCopyrightText: 2022 - 2023 Juergen Repp
 # SPDX-License-Identifier: BSD-3-Clause
 
 set -eo pipefail
@@ -82,12 +84,12 @@ fi
 if [ "$SCANBUILD" == "yes" ]; then
   scan-build --status-bugs ../configure --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 elif [ "$CC" == "clang" ]; then
-  ../configure --enable-unit --enable-self-generated-certificate  --enable-integration --with-maxloglevel=none --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+  ../configure --enable-unit --enable-self-generated-certificate  --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 else
   if [ "$WITH_TCTI" == "mssim" ]; then
     ../configure $SANITIZER_OPTION --disable-tcti-swtpm --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
   else
-    ../configure $SANITIZER_OPTION --with-maxloglevel=none --enable-debug=yes --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+    ../configure $SANITIZER_OPTION --enable-debug=yes --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
   fi
 fi
 
@@ -151,6 +153,7 @@ if [ -n "$BASE_REF" ]; then
 fi
 
 if [ "$ENABLE_COVERAGE" == "true" ]; then
-    bash <(curl -s https://codecov.io/bash)
+    lcov --capture --directory . --output-file ./coverage.info
 fi
+
 exit 0

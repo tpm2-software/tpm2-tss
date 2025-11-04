@@ -1,14 +1,22 @@
+# SPDX-FileCopyrightText: 2018 Intel
+# SPDX-FileCopyrightText: 2024 Philipp Unger
+# SPDX-License-Identifier: BSD-2-Clause
+
 version: '{build}'
 pull_requests:
   do_not_increment_build_number: true
 skip_tags: true
-image: Visual Studio 2019
+
+image: Visual Studio 2022
+
 configuration:
   - Debug
   - Release
+
 platform:
-  - x86
   - x64
+  - x86
+
 build:
   project: tpm2-tss.sln
   parallel: false

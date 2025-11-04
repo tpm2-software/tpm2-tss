@@ -22,12 +22,10 @@
  */
 #ifndef TCTI_I2C_HELPER_H
 #define TCTI_I2C_HELPER_H
+#include <stdbool.h>               // for bool
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include "tcti-common.h"
+#include "tcti-common.h"           // for TSS2_TCTI_COMMON_CONTEXT
+#include "tss2_tcti_i2c_helper.h"  // for TSS2_TCTI_I2C_HELPER_PLATFORM
 
 #define TCTI_I2C_HELPER_MAGIC 0x392452ED67A5D511ULL
 
@@ -38,7 +36,7 @@ typedef struct {
     TSS2_TCTI_I2C_HELPER_PLATFORM platform;
     bool guard_time_read;
     bool guard_time_write;
-    int  guard_time;
+    uint8_t  guard_time;
     char header[TCTI_I2C_HELPER_RESP_HEADER_SIZE];
 } TSS2_TCTI_I2C_HELPER_CONTEXT;
 

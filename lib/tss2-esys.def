@@ -1,5 +1,6 @@
 LIBRARY tss2-esys
 EXPORTS
+    Esys_Abort
     Esys_AC_GetCapability
     Esys_AC_GetCapability_Async
     Esys_AC_GetCapability_Finish
@@ -110,10 +111,12 @@ EXPORTS
     Esys_GetCommandAuditDigest
     Esys_GetCommandAuditDigest_Async
     Esys_GetCommandAuditDigest_Finish
+    Esys_GetCpHash
     Esys_GetPollHandles
     Esys_GetRandom
     Esys_GetRandom_Async
     Esys_GetRandom_Finish
+    Esys_GetRpHash
     Esys_GetSessionAuditDigest
     Esys_GetSessionAuditDigest_Async
     Esys_GetSessionAuditDigest_Finish
@@ -378,3 +381,9 @@ EXPORTS
     Esys_ZGen_2Phase
     Esys_ZGen_2Phase_Async
     Esys_ZGen_2Phase_Finish
+    Esys_ECC_Decrypt
+    Esys_ECC_Decrypt_Async
+    Esys_ECC_Decrypt_Finish
+    Esys_ECC_Encrypt
+    Esys_ECC_Encrypt_Async
+    Esys_ECC_Encrypt_Finish

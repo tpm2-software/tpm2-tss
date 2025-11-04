@@ -5,28 +5,30 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <errno.h>                 // for errno
+#include <inttypes.h>              // for PRIu32, PRIxPTR, uintptr_t, uint8_t
+#include <stdio.h>                 // for NULL, size_t, ssize_t, sscanf, EOF
+#include <stdlib.h>                // for free
+#include <string.h>                // for strcmp, strerror, memset, strdup
 
 #ifndef _WIN32
-#include <sys/time.h>
-#include <unistd.h>
+#include <poll.h>                  // for POLLIN, POLLOUT
+#include <unistd.h>                // for read
 #endif
 
-#include "tss2_mu.h"
-#include "tss2_tcti_mssim.h"
-
+#include "tcti-common.h"           // for TSS2_TCTI_COMMON_CONTEXT, tpm_head...
 #include "tcti-mssim.h"
-#include "tcti-common.h"
-#include "util/key-value-parse.h"
+#include "tss2_common.h"           // for TSS2_RC_SUCCESS, TSS2_RC, UINT32
+#include "tss2_mu.h"               // for Tss2_MU_UINT32_Marshal, Tss2_MU_UI...
+#include "tss2_tcti.h"             // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_...
+#include "tss2_tcti_mssim.h"       // for MS_SIM_CANCEL_OFF, MS_SIM_CANCEL_ON
+#include "util/key-value-parse.h"  // for key_value_t, parse_key_value_string
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"              // for LOG_DEBUG, LOG_ERROR, LOG_TRACE
 
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the
@@ -66,7 +68,7 @@ TSS2_RC tcti_platform_command (
     uint8_t buf [sizeof (cmd)] = { 0 };
     UINT32 rsp = 0;
     TSS2_RC rc = TSS2_RC_SUCCESS;
-    int ret;
+    size_t ret;
     ssize_t read_ret;
 
     if (tcti_mssim == NULL) {
@@ -87,8 +89,8 @@ TSS2_RC tcti_platform_command (
     LOGBLOB_DEBUG(buf, sizeof (cmd), "Sending %zu bytes to socket %" PRIu32
                   ":", sizeof (cmd), tcti_mssim->platform_sock);
     ret = write_all (tcti_mssim->platform_sock, buf, sizeof (cmd));
-    if (ret < (ssize_t) sizeof (cmd)) {
-        LOG_ERROR("Failed to send platform command %d with error: %d",
+    if (ret < sizeof (cmd)) {
+        LOG_ERROR("Failed to send platform command %d with error: %zd",
                   cmd, ret);
         return TSS2_TCTI_RC_IO_ERROR;
     }
@@ -134,7 +136,7 @@ send_sim_session_end (
     TSS2_RC rc;
 
     rc = Tss2_MU_UINT32_Marshal (TPM_SESSION_END, buf, sizeof (buf), NULL);
-    if (rc == TSS2_RC_SUCCESS) {
+    if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
     return socket_xmit_buf (sock, buf, sizeof (buf));
@@ -328,8 +330,8 @@ tcti_mssim_receive (
     TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast (tctiContext);
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast (tcti_mssim);
     TSS2_RC rc;
+    size_t size;
     UINT32 trash;
-    int ret;
 
     rc = tcti_common_receive_checks (tcti_common,
                                      response_size,
@@ -355,16 +357,15 @@ tcti_mssim_receive (
         /* Receive the size of the response. */
         uint8_t size_buf [sizeof (UINT32)];
 
-        ret = socket_poll(tcti_mssim->tpm_sock, timeout);
-        if (ret != TSS2_RC_SUCCESS) {
-            if (ret == TSS2_TCTI_RC_TRY_AGAIN) {
-                return ret;
+        rc = socket_poll(tcti_mssim->tpm_sock, timeout);
+        if (rc != TSS2_RC_SUCCESS) {
+            if (rc == TSS2_TCTI_RC_TRY_AGAIN) {
+                return rc;
             }
-            rc = ret;
             goto out;
         }
-        ret = socket_recv_buf (tcti_mssim->tpm_sock, size_buf, sizeof(UINT32));
-        if (ret != sizeof (UINT32)) {
+        size = socket_recv_buf (tcti_mssim->tpm_sock, size_buf, sizeof(UINT32));
+        if (size != sizeof (UINT32)) {
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto out;
         }
@@ -395,46 +396,50 @@ tcti_mssim_receive (
 
     /* Receive the TPM response. */
     LOG_DEBUG ("Reading response of size %" PRIu32, tcti_common->header.size);
-    ret = socket_poll(tcti_mssim->tpm_sock, timeout);
-    if (ret != TSS2_RC_SUCCESS) {
-        if (ret == TSS2_TCTI_RC_TRY_AGAIN) {
-            return ret;
+    rc = socket_poll(tcti_mssim->tpm_sock, timeout);
+    if (rc != TSS2_RC_SUCCESS) {
+        if (rc == TSS2_TCTI_RC_TRY_AGAIN) {
+            return rc;
         }
-        rc = ret;
         goto out;
     }
-    ret = socket_recv_buf (tcti_mssim->tpm_sock,
-                           (unsigned char *)response_buffer,
-                           tcti_common->header.size);
-    if (ret < (ssize_t)tcti_common->header.size) {
+    size = socket_recv_buf (tcti_mssim->tpm_sock,
+                            (unsigned char *)response_buffer,
+                            tcti_common->header.size);
+    if (size < tcti_common->header.size) {
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
     }
     LOGBLOB_DEBUG(response_buffer, tcti_common->header.size,
                   "Response buffer received:");
 
-    ret = socket_poll (tcti_mssim->tpm_sock, timeout);
-    if (ret != TSS2_RC_SUCCESS) {
-        if (ret == TSS2_TCTI_RC_TRY_AGAIN) {
-            return ret;
+    rc = socket_poll (tcti_mssim->tpm_sock, timeout);
+    if (rc != TSS2_RC_SUCCESS) {
+        if (rc == TSS2_TCTI_RC_TRY_AGAIN) {
+            return rc;
         }
-        rc = ret;
         goto out;
     }
 
     /* Receive the appended four bytes of 0's */
-    ret = socket_recv_buf (tcti_mssim->tpm_sock,
+    size = socket_recv_buf (tcti_mssim->tpm_sock,
                            (unsigned char *)&trash, 4);
-    if (ret != 4) {
-        LOG_DEBUG ("Error reading last 4 bytes %" PRIu32, ret);
+    if (size != 4) {
+        LOG_DEBUG ("Error reading last 4 bytes %" PRIu32, rc);
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
     }
 
     if (tcti_mssim->cancel) {
         rc = tcti_platform_command (tctiContext, MS_SIM_CANCEL_OFF);
+            if (rc != TSS2_RC_SUCCESS) {
+            return rc;
+        }
         tcti_mssim->cancel = 0;
     }
+
+    rc = TSS2_RC_SUCCESS;
+
     /*
      * Executing code beyond this point transitions the state machine to
      * TRANSMIT. Another call to this function will not be possible until
@@ -648,15 +653,11 @@ Tss2_Tcti_Mssim_Init (
         goto fail_out;
     }
 
-    if (conf_copy != NULL) {
-        free (conf_copy);
-    }
+    free (conf_copy);
     return TSS2_RC_SUCCESS;
 
 fail_out:
-    if (conf_copy != NULL) {
-        free (conf_copy);
-    }
+    free (conf_copy);
     socket_close (&tcti_mssim->tpm_sock);
     socket_close (&tcti_mssim->platform_sock);
 

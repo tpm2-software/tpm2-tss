@@ -275,7 +275,39 @@ some_long_variable_name = some_long_function_name (lots_of_parameters_1,
 ```
 These formatting conditions are contrary to Kernighan and Ritchie's "one true brace style" [3].
 
+## Include what you use
+
+In order to keep a clear include section in all files, we utilize the
+include-what-you-use tool.
+
+```sh
+./bootstrap
+./configure --enable-integration --enable-unit
+make clean
+
+# Clean up .c files and their corresponding .h files
+make -j -k CC=include-what-you-use CFLAGS="-Xiwyu --mapping_file=.iwyu.imp" check-programs 3>&1 1>&2 2>&3 | fix_include --comments --update_comments --reorder --nosafe_headers
+
+# Work also on headers (without a corresponding .c file)
+find src -iname '*.h' | xargs -n1 -P$(nproc) include-what-you-use -Xiwyu --mapping_file=.iwyu.imp -I. -I./src -I./include/tss2 -I./test/fuzz/tcti -I./include -I./src/tss2-mu -I./src/tss2-sys -I./src/tss2-esys -I./src/tss2-fapi -I./test/data -I/usr/include/json-c 2>&1 | fix_include --comments --update_comments --reorder --nosafe_headers
+
+# Make sure that iwyu did not break anything
+make -j check
+```
+## Licenses
+
+All files shall contain `SPDX-FileCopyrightText` and `SPDX-License-Identifier`
+information in their header.
+For files that cannot contain them (e.g. Markdown would render it and
+.def and .map files should not have them), the corresponding entry shall
+be included in the .reuse/dep5 file.
+There will be a CI job to check `reuse lint` on this project.
+
 ## References
 1. GNOME C Coding Style : https://developer.gnome.org/programming-guidelines/stable/c-coding-style.html.en
 2. Alan Bridger, Mick Brooks, and Jim Pisano, C Coding Standards, 2001, http://www.alma.nrao.edu/development/computing/docs/joint/0009/2001-02-28.pdf
 3. Brian Kernighan, Dennis Ritchie, The C Programing Language, 1988
+# License
+
+This work is licensed under the
+[Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).

@@ -1,8 +1,5 @@
+/* SPDX-FileCopyrightText: 2020, Andreas Droescher */
 /* SPDX-License-Identifier: BSD-2-Clause */
-/*******************************************************************************
- * Copyright: 2020, Andreas Droescher
- * All rights reserved.
- ******************************************************************************/
 
 #ifndef ESYS_CRYPTO_MBED_H
 #define ESYS_CRYPTO_MBED_H
@@ -35,11 +32,11 @@ void iesys_cryptmbed_hash_abort(
     ESYS_CRYPTO_CONTEXT_BLOB **context,
     void *userdata);
 
-#define _iesys_crypto_rsa_pk_encrypt iesys_cryptmbed_pk_encrypt
-#define _iesys_crypto_hash_start iesys_cryptmbed_hash_start
-#define _iesys_crypto_hash_update iesys_cryptmbed_hash_update
-#define _iesys_crypto_hash_finish iesys_cryptmbed_hash_finish
-#define _iesys_crypto_hash_abort iesys_cryptmbed_hash_abort
+#define iesys_crypto_rsa_pk_encrypt_internal iesys_cryptmbed_pk_encrypt
+#define iesys_crypto_hash_start_internal iesys_cryptmbed_hash_start
+#define iesys_crypto_hash_update_internal iesys_cryptmbed_hash_update
+#define iesys_crypto_hash_finish_internal iesys_cryptmbed_hash_finish
+#define iesys_crypto_hash_abort_internal iesys_cryptmbed_hash_abort
 
 TSS2_RC iesys_cryptmbed_hmac_start(
     ESYS_CRYPTO_CONTEXT_BLOB **context,
@@ -64,10 +61,10 @@ void iesys_cryptmbed_hmac_abort(
     ESYS_CRYPTO_CONTEXT_BLOB **context,
     void *userdata);
 
-#define _iesys_crypto_hmac_start iesys_cryptmbed_hmac_start
-#define _iesys_crypto_hmac_update iesys_cryptmbed_hmac_update
-#define _iesys_crypto_hmac_finish iesys_cryptmbed_hmac_finish
-#define _iesys_crypto_hmac_abort iesys_cryptmbed_hmac_abort
+#define iesys_crypto_hmac_start_internal iesys_cryptmbed_hmac_start
+#define iesys_crypto_hmac_update_internal iesys_cryptmbed_hmac_update
+#define iesys_crypto_hmac_finish_internal iesys_cryptmbed_hmac_finish
+#define iesys_crypto_hmac_abort_internal iesys_cryptmbed_hmac_abort
 
 TSS2_RC iesys_cryptmbed_random2b(
     TPM2B_NONCE *nonce,
@@ -116,14 +113,14 @@ TSS2_RC iesys_cryptmbed_get_ecdh_point(
 
 TSS2_RC iesys_cryptmbed_init(void *userdata);
 
-#define _iesys_crypto_get_random2b iesys_cryptmbed_random2b
-#define _iesys_crypto_get_ecdh_point iesys_cryptmbed_get_ecdh_point
-#define _iesys_crypto_aes_encrypt iesys_cryptmbed_sym_aes_encrypt
-#define _iesys_crypto_aes_decrypt iesys_cryptmbed_sym_aes_decrypt
-#define _iesys_crypto_sm4_encrypt NULL
-#define _iesys_crypto_sm4_decrypt NULL
+#define iesys_crypto_get_random2b_internal iesys_cryptmbed_random2b
+#define iesys_crypto_get_ecdh_point_internal iesys_cryptmbed_get_ecdh_point
+#define iesys_crypto_aes_encrypt_internal iesys_cryptmbed_sym_aes_encrypt
+#define iesys_crypto_aes_decrypt_internal iesys_cryptmbed_sym_aes_decrypt
+#define iesys_crypto_sm4_encrypt_internal NULL
+#define iesys_crypto_sm4_decrypt_internal NULL
 
-#define _iesys_crypto_init iesys_cryptmbed_init
+#define iesys_crypto_init_internal iesys_cryptmbed_init
 
 #ifdef __cplusplus
 } /* extern "C" */

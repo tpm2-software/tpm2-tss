@@ -1,0 +1,53 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug Test",
+            "program": "${workspaceFolder}/${relativeFileDirname}/.libs/${fileBasenameNoExtension}",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "TPM20TEST_TCTI": "${input:tcti}",
+                "TSS2_LOG": "all+trace",
+                "LD_LIBRARY_PATH": "${workspaceFolder}/src/tss2-mu/.libs:${workspaceFolder}/src/tss2-tcti/.libs:${workspaceFolder}/src/tss2-sys/.libs:${workspaceFolder}/src/tss2-esys/.libs:${workspaceFolder}/src/tss2-rc/.libs:${workspaceFolder}/src/tss2-policy/.libs:${workspaceFolder}/src/tss2-fapi/.libs"
+            },
+            "preLaunchTask": "build_test",
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug tpm2 startup",
+            "program": "/bin/env",
+            "args": [
+                "tpm2",
+                "startup",
+                "-c",
+                "-T${input:tcti}",
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "TSS2_LOG": "all+trace",
+                "LD_LIBRARY_PATH": "${workspaceFolder}/src/tss2-mu/.libs:${workspaceFolder}/src/tss2-tcti/.libs:${workspaceFolder}/src/tss2-sys/.libs:${workspaceFolder}/src/tss2-esys/.libs:${workspaceFolder}/src/tss2-rc/.libs:${workspaceFolder}/src/tss2-policy/.libs:${workspaceFolder}/src/tss2-fapi/.libs"
+            },
+            "preLaunchTask": "build_tcti_libtpms",
+        },
+    ],
+    "inputs": [
+        {
+            "id": "tcti",
+            "type": "pickString",
+            "description": "The TCTI for connecting to a TPM",
+            "options": [
+                "libtpms",
+                "swtpm",
+                "mssim"
+            ],
+            "default": "libtpms"
+        }
+    ]
+}

@@ -5,19 +5,27 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
+#include <inttypes.h>                // for int64_t, PRId64, PRIx64
+#include <stdbool.h>                 // for bool, false, true
+#include <stdio.h>                   // for size_t, NULL, sscanf
+#include <stdlib.h>                  // for calloc
+#include <string.h>                  // for memset, strlen, strcmp, strncmp
+#include <strings.h>                 // for strncasecmp
 
-#include "ifapi_helpers.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_deserialize.h"
-#include "fapi_policy.h"
+#include "ifapi_helpers.h"           // for ifapi_check_json_object_fields
+#include "ifapi_json_deserialize.h"  // for ifapi_json_char_deserialize, GET...
+#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMI_POLICYTYP...
+#include "ifapi_policy_types.h"      // for TPMS_POLICYSIGNED, TPMU_POLICYEL...
+#include "tpm_json_deserialize.h"    // for ifapi_get_sub_object, ifapi_json...
+#include "tss2_common.h"             // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_policy.h"             // for TPMS_PCRVALUE, TPML_PCRVALUES
+#include "tss2_tpm2_types.h"         // for TPM2B_NAME, TPMT_RSA_SCHEME, TPM...
+
 #define LOGMODULE fapijson
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                // for return_if_error, LOG_TRACE, retu...
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 
@@ -30,10 +38,10 @@ static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "PO
  * @retval the position of the sub string after the prefix.
  * @retval 0 if no prefix is found.
  */
-static int
+static unsigned int
 get_token_start_idx(const char *token)
 {
-    int itoken = 0;
+    unsigned int itoken = 0;
     char *entry;
     int i;
 
@@ -138,7 +146,7 @@ ifapi_json_TPMI_POLICYTYPE_deserialize_txt(json_object *jso,
         return TSS2_RC_SUCCESS;
 
     } else {
-        int itoken = get_token_start_idx(token);
+        int unsigned itoken = get_token_start_idx(token);
         size_t i;
         size_t n = sizeof(deserialize_TPMI_POLICYTYPE_tab) /
                    sizeof(deserialize_TPMI_POLICYTYPE_tab[0]);

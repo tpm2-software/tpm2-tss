@@ -6,23 +6,25 @@
 #ifndef AUX_UTIL_H
 #define AUX_UTIL_H
 
-#include <stdbool.h>
+#include <stdbool.h>          // for true, bool, false
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <inttypes.h>
-#include "tss2_tpm2_types.h"
+#include <inttypes.h>         // for PRIx32
+
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC_LAYER_MASK
+#include "tss2_tpm2_types.h"  // for TPM2_RC_1, TPM2_RC_ASYMMETRIC, TPM2_RC_...
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define SAFE_FREE(S) if((S) != NULL) {free((void*) (S)); (S)=NULL;}
 
-#define ARRAY_LEN(x) (sizeof(x)/sizeof(x[0]))
+#define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
 
 #define TPM2_ERROR_FORMAT "%s%s (0x%08"PRIx32")"
 #define TPM2_ERROR_TEXT(r) "Error", "Code", r
-#define SIZE_OF_ARY(ary) (sizeof(ary) / sizeof(ary[0]))
+#define SIZE_OF_ARY(ary) (sizeof(ary) / sizeof((ary)[0]))
 
 #if defined (__GNUC__)
 #define COMPILER_ATTR(...) __attribute__((__VA_ARGS__))
@@ -30,7 +32,10 @@ extern "C" {
 #define COMPILER_ATTR(...)
 #endif
 
+#ifndef UNUSED
 #define UNUSED(x) (void)(x)
+#endif
+
 #if (MAXLOGLEVEL == LOGL_NONE)
 /* Note:
  * MAYBE_UNUSED macro should be used to mark variables used only
@@ -46,13 +51,13 @@ extern "C" {
 #endif
 
 #define return_if_error(r,msg) \
-    if (r != TSS2_RC_SUCCESS) { \
+    if ((r) != TSS2_RC_SUCCESS) { \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         return r;  \
     }
 
 #define return_state_if_error(r,s,msg)      \
-    if (r != TSS2_RC_SUCCESS) { \
+    if ((r) != TSS2_RC_SUCCESS) { \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         esysContext->state = s; \
         return r;  \
@@ -65,7 +70,7 @@ extern "C" {
     }
 
 #define goto_state_if_error(r,s,msg,label) \
-    if (r != TSS2_RC_SUCCESS) { \
+    if ((r) != TSS2_RC_SUCCESS) { \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         esysContext->state = s; \
         goto label;  \
@@ -79,7 +84,7 @@ extern "C" {
     }
 
 #define goto_if_error(r,msg,label) \
-    if (r != TSS2_RC_SUCCESS) { \
+    if ((r) != TSS2_RC_SUCCESS) { \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
         goto label;  \
     }
@@ -91,26 +96,26 @@ extern "C" {
     }
 
 #define return_if_null(p,msg,ec) \
-    if (p == NULL) { \
+    if ((p) == NULL) { \
         LOG_ERROR("%s ", msg); \
         return ec; \
     }
 
 #define return_if_notnull(p,msg,ec) \
-    if (p != NULL) { \
+    if ((p) != NULL) { \
         LOG_ERROR("%s ", msg); \
         return ec; \
     }
 
 #define set_return_code(r_max, r, msg) \
-    if (r != TSS2_RC_SUCCESS) { \
+    if ((r) != TSS2_RC_SUCCESS) { \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
-        r_max = r; \
+        (r_max) = r; \
     }
 
-#define rc_layer(r) (r & TSS2_RC_LAYER_MASK)
-#define base_rc(r) (r & ~TSS2_RC_LAYER_MASK)
-#define number_rc(r) (r & ~TPM2_RC_N_MASK)
+#define rc_layer(r) ((r) & TSS2_RC_LAYER_MASK)
+#define base_rc(r) ((r) & ~TSS2_RC_LAYER_MASK)
+#define number_rc(r) ((r) & ~TPM2_RC_N_MASK)
 
 static inline TSS2_RC
 tss2_fmt_p1_error_to_rc(UINT16 err)

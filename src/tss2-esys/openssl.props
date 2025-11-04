@@ -2,10 +2,30 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <OpenSslDir>C:\OpenSSL-v11-Win64</OpenSslDir>
-    <OpenSslDir32Bit>C:\OpenSSL-v11-Win32</OpenSslDir32Bit>
+    <!-- 64-Bit Installation -->
+    <OpenSslDir>C:\OpenSSL-v35-Win64</OpenSslDir>
+    <!-- Falls du auch 32-Bit brauchst -->
+    <OpenSslDir32Bit>C:\OpenSSL-v35-Win32</OpenSslDir32Bit>
   </PropertyGroup>
-  <PropertyGroup />
-  <ItemDefinitionGroup />
+  <!-- x64 Build -->
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <IncludePath>$(OpenSslDir)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(OpenSslDir)\lib\VC\x64\MD;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <!-- Win32 Build -->
+  <PropertyGroup Condition="'$(Platform)'=='Win32' or '$(Platform)'=='x86'">
+    <IncludePath>$(OpenSslDir32Bit)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(OpenSslDir32Bit)\lib\VC\x86\MD;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+    <Link>
+      <AdditionalDependencies>libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='Win32' or '$(Platform)'=='x86'">
+    <Link>
+      <AdditionalDependencies>libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup />
 </Project>

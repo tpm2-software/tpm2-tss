@@ -5,26 +5,26 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <time.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <netinet/in.h>
+#include <errno.h>          // for errno
+#include <fcntl.h>          // for open, O_APPEND, O_CREAT, O_NONBLOCK, O_WR...
+#include <netinet/in.h>     // for htons, htonl
+#include <stdint.h>         // for uint32_t, uint16_t, uint8_t, uint64_t
+#include <stdlib.h>         // for rand, free, getenv, malloc, srand
+#include <string.h>         // for memcpy, strerror, strcmp, memset
+#include <time.h>           // for timespec, clock_gettime, CLOCK_MONOTONIC_RAW
+#include <unistd.h>         // for close, STDERR_FILENO, STDOUT_FILENO
 
-#include "tss2_common.h"
 #include "tcti-pcap-builder.h"
-#include "util-io/io.h"
-#define LOGMODULE tcti
-#include "util/log.h"
+#include "util-io/io.h"     // for write_all
+#include "util/aux_util.h"  // for UNUSED
 
-#ifdef __FreeBSD__
+#define LOGMODULE tcti
+#include "util/log.h"       // for LOG_ERROR, LOG_WARNING, LOG_TRACE
+
+#if defined(__FreeBSD__) || defined(__illumos__)
 #define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
 #endif
 
@@ -56,7 +56,7 @@
 #define TCP_URGENT_PTR_UNUSED       0x0000
 
 #define SIZEOF_IN_OCTETS(x)         (sizeof (x)/sizeof (uint32_t))
-#define TO_MULTIPLE_OF_4_BYTE(x)    (((x)-1)/4*4+4) * !!(x)
+#define TO_MULTIPLE_OF_4_BYTE(x)    ((((x)-1)/4*4+4) * !!(x))
 
 /*
  * complies to pcap-ng (IETF RFC draft-tuexen-opsawg-pcapng-01)
@@ -439,7 +439,7 @@ pcap_write_enhanced_packet_block (
         memcpy (buf, &footer, sizeof (epb_footer));
     }
 
-    return pdu_len;
+    return (int) pdu_len;
 }
 
 static int
@@ -491,7 +491,7 @@ pcap_write_ip_packet (
                                 direction);
     }
 
-    return pdu_len;
+    return (int) pdu_len;
 }
 
 static int
@@ -547,5 +547,5 @@ pcap_write_tcp_segment (
         }
     }
 
-    return pdu_len;
+    return (int) pdu_len;
 }

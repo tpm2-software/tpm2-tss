@@ -5,23 +5,28 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <stdbool.h>          // for false, true
+#include <stdint.h>           // for uint8_t
+#include <stdlib.h>           // for size_t
+#include <string.h>           // for memset, strcmp
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "fapi_policy.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_CMD_STATE, IFAPI_Ke...
+#include "fapi_util.h"        // for ifapi_key_create, ifapi_key_create_prep...
+#include "ifapi_helpers.h"    // for ifapi_set_key_flags
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"     // for check_not_null, return_if_error_reset_s...
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"        // for Esys_SetTimeout
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_CreateSeal, Fapi_Cre...
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPMA_OBJECT_SENSITIVEDATA...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_TRACE, return_if_error, base_rc
 
 /** One-Call function for Fapi_CreateSeal
  *
@@ -276,7 +281,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

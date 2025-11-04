@@ -5,19 +5,21 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_mu.h"
-#include "tss2_sys.h"
-#include "tss2_esys.h"
+#include <inttypes.h>         // for PRIx32, int32_t
+#include <stdlib.h>           // for NULL, calloc
 
-#include "esys_types.h"
-#include "esys_iutil.h"
-#include "esys_mu.h"
+#include "esys_int.h"         // for ESYS_CONTEXT, _ESYS_STATE_INIT, _ESYS_S...
+#include "esys_iutil.h"       // for iesys_compute_session_value, check_sess...
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_Vendor_TCG_...
+#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h"  // for TPM2B_DATA, TPM2_RC_RETRY, TPM2_RC_TESTING
+
 #define LOGMODULE esys
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** One-Call function for TPM2_Vendor_TCG_Test
  *
@@ -140,40 +142,40 @@ Esys_Vendor_TCG_Test_Async(
     r = iesys_check_sequence_async(esysContext);
     if (r != TSS2_RC_SUCCESS)
         return r;
-    esysContext->state = _ESYS_STATE_INTERNALERROR;
+    esysContext->state = ESYS_STATE_INTERNALERROR;
 
     /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Check session usage");
+    return_state_if_error(r, ESYS_STATE_INIT, "Check session usage");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_Vendor_TCG_Test_Prepare(esysContext->sys, inputData);
-    return_state_if_error(r, _ESYS_STATE_INIT, "SAPI Prepare returned error.");
+    return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
-    return_state_if_error(r, _ESYS_STATE_INIT, "Initialize session resources");
+    return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
     iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
     iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
-    return_state_if_error(r, _ESYS_STATE_INIT,
+    return_state_if_error(r, ESYS_STATE_INIT,
                           "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
         r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
-        return_state_if_error(r, _ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
+        return_state_if_error(r, ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
     }
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
                           "Finish (Execute Async)");
 
-    esysContext->state = _ESYS_STATE_SENT;
+    esysContext->state = ESYS_STATE_SENT;
 
     return r;
 }
@@ -222,16 +224,16 @@ Esys_Vendor_TCG_Test_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != _ESYS_STATE_SENT &&
-        esysContext->state != _ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT &&
+        esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
-    esysContext->state = _ESYS_STATE_INTERNALERROR;
+    esysContext->state = ESYS_STATE_INTERNALERROR;
 
     /* Allocate memory for response parameters */
     if (outputData != NULL) {
-        *outputData = calloc(sizeof(TPM2B_DATA), 1);
+        *outputData = calloc(1, sizeof(TPM2B_DATA));
         if (*outputData == NULL) {
             return_error(TSS2_ESYS_RC_MEMORY, "Out of memory");
         }
@@ -241,7 +243,7 @@ Esys_Vendor_TCG_Test_Finish(
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
         LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32, r);
-        esysContext->state = _ESYS_STATE_SENT;
+        esysContext->state = ESYS_STATE_SENT;
         goto error_cleanup;
     }
     /* This block handle the resubmission of TPM commands given a certain set of
@@ -249,12 +251,12 @@ Esys_Vendor_TCG_Test_Finish(
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
             "resubmission: %" PRIx32, r);
-        if (esysContext->submissionCount++ >= _ESYS_MAX_SUBMISSIONS) {
+        if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
-            esysContext->state = _ESYS_STATE_INIT;
+            esysContext->state = ESYS_STATE_INIT;
             goto error_cleanup;
         }
-        esysContext->state = _ESYS_STATE_RESUBMISSION;
+        esysContext->state = ESYS_STATE_RESUBMISSION;
         r = Tss2_Sys_ExecuteAsync(esysContext->sys);
         if (r != TSS2_RC_SUCCESS) {
             LOG_WARNING("Error attempting to resubmit");
@@ -269,11 +271,11 @@ Esys_Vendor_TCG_Test_Finish(
     /* The following is the "regular error" handling. */
     if (iesys_tpm_error(r)) {
         LOG_WARNING("Received TPM Error");
-        esysContext->state = _ESYS_STATE_INIT;
+        esysContext->state = ESYS_STATE_INIT;
         goto error_cleanup;
     } else if (r != TSS2_RC_SUCCESS) {
         LOG_ERROR("Received a non-TPM Error");
-        esysContext->state = _ESYS_STATE_INTERNALERROR;
+        esysContext->state = ESYS_STATE_INTERNALERROR;
         goto error_cleanup;
     }
 
@@ -282,7 +284,7 @@ Esys_Vendor_TCG_Test_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR, "Error: check response",
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response",
                         error_cleanup);
 
     /*
@@ -292,11 +294,11 @@ Esys_Vendor_TCG_Test_Finish(
     r = Tss2_Sys_Vendor_TCG_Test_Complete(esysContext->sys,
                                           (outputData != NULL) ? *outputData
                                            : NULL);
-    goto_state_if_error(r, _ESYS_STATE_INTERNALERROR,
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR,
                         "Received error from SAPI unmarshaling" ,
                         error_cleanup);
 
-    esysContext->state = _ESYS_STATE_INIT;
+    esysContext->state = ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
 

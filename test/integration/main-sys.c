@@ -5,19 +5,15 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>
-#include <stdlib.h>
-
 #define LOGMODULE test
-#include "tss2_tctildr.h"
-#include "tss2_sys.h"
-#include "util/log.h"
-#include "test.h"
-
-#include "test-common.h"
+#include "test-common.h"    // for test_sys_checks_post, test_sys_checks_pre
+#include "test.h"           // for test_invoke
+#include "tss2_common.h"    // for TSS2_RC
+#include "util/aux_util.h"  // for UNUSED
+#include "util/log.h"       // for LOG_ERROR
 
 /**
  * This program is a template for integration tests (ones that use the TCTI
@@ -47,13 +43,15 @@ main (int   argc,
     }
 
     rc = test_invoke(test_sys_ctx->sys_ctx);
-    if (rc != 0 && ret != 77) {
+    if (rc != 0 && rc != 77) {
+        test_sys_teardown(test_sys_ctx);
         LOG_ERROR("Test returned %08x", rc);
         return rc;
     }
 
     ret = test_sys_checks_post(test_sys_ctx);
     if (ret != 0) {
+        test_sys_teardown(test_sys_ctx);
         return ret;
     }
 

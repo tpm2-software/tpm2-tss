@@ -4,7 +4,8 @@
         {
             "type": "POLICYAUTHORIZE",
             "policyRef": [ 1, 2, 3, 4, 5 ],
-			"keyPEM": "-----BEGIN PUBLIC KEY-----
+            // private key: test/data/fapi/policy/rsa2.pem
+            "keyPEM": "-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoGL6IrCSAznmIIzBessI
 mW7tPOUy78uWTIaub32KnYHn78KXprrZ3ykp6WDrOQeMjv4AA+14mJbg77apVYXy
 EnkFdOMa1hszSJnp6cJvx7ILngLvFUxzbVki/ehvgS3nRk67Njal+nMTe8hpe3UK

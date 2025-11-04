@@ -28,8 +28,8 @@
  * All rights reserved.
  * SPDX short identifier: BSD-2-Clause
  */
-#ifndef _LIBMPSSE_H_
-#define _LIBMPSSE_H_
+#ifndef LIBMPSSE_H_
+#define LIBMPSSE_H_
 
 #include <stdint.h>
 
@@ -44,7 +44,7 @@
 #endif
 
 #define MPSSE_OK            0
-#define MPSSE_FAIL          -1
+#define MPSSE_FAIL          (-1)
 
 #define MSB                 0x00
 #define LSB                 0x08
@@ -188,7 +188,7 @@ struct mpsse_context
     int flush_after_read;
     int vid;
     int pid;
-    int clock;
+    uint32_t clock;
     int xsize;
     int open;
     int endianess;
@@ -214,7 +214,7 @@ const char *ErrorString (struct mpsse_context *mpsse);
 int SetMode (struct mpsse_context *mpsse, int endianess);
 void EnableBitmode (struct mpsse_context *mpsse, int tf);
 int SetClock (struct mpsse_context *mpsse, uint32_t freq);
-int GetClock (struct mpsse_context *mpsse);
+uint32_t GetClock (struct mpsse_context *mpsse);
 int GetVid (struct mpsse_context *mpsse);
 int GetPid (struct mpsse_context *mpsse);
 const char *GetDescription (struct mpsse_context *mpsse);

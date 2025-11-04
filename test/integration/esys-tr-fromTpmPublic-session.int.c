@@ -1,16 +1,21 @@
+/* SPDX-FileCopyrightText: 2019, Intel */
+/* SPDX-FileCopyrightText: 2019, Alon Bar-Lev */
+/* SPDX-FileCopyrightText: 2020, manuknz */
+/* SPDX-FileCopyrightText: 2021, Fraunhofer SIT sponsored by Infineon */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <inttypes.h>         // for PRIu32
+#include <stdlib.h>           // for free, NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for TSS2_ESYS_RC_BAD_TR, TSS2_RC, TSS2_RC_S...
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_GetCapability, Esys_...
+#include "tss2_tpm2_types.h"  // for TPMS_CAPABILITY_DATA, TPML_HANDLE, TPMU...
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_ERROR, TPM2_ERROR_FORMAT, TPM2_ERRO...
 
 /** This tests the ability to create an ESYS_TR object via Esys_TR_FromTPMPublic
  *  given a TPM2_HANDLE representing a session handle.

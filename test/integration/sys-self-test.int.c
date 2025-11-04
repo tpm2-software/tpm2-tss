@@ -5,17 +5,17 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h>       // for exit
 
-#include "tss2_sys.h"
+#include "tss2_common.h"  // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_sys.h"     // for Tss2_Sys_SelfTest, TSS2_SYS_CONTEXT
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
+#include "test.h"         // for YES, NO, test_invoke
+#include "util/log.h"     // for LOG_ERROR, LOG_INFO
 
 /*
  * This program contains integration test for SYS Tss2_Sys_SelfTest

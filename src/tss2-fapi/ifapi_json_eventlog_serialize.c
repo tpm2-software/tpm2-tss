@@ -5,29 +5,45 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"                 // for MAXLOGLEVEL
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <inttypes.h>
-#include <strings.h>
-#include <string.h>
-#include <uchar.h>
-#include <uuid/uuid.h>
-#include <uchar.h>
+#include <errno.h>                  // for errno
+#include <inttypes.h>               // for PRIu8, PRIu64, PRIu16, PRIu32
+#include <stdio.h>                  // for fclose, fread, fopen, sprintf, FILE
+#include <stdlib.h>                 // for free, calloc, malloc, realloc
+#include <string.h>                 // for strlen, memcpy, strerror, memset
+#include <uchar.h>                  // for char16_t, c16rtomb
+#include <uuid/uuid.h>              // for uuid_unparse_lower, uuid_t
+#include <wchar.h>                  // for mbstate_t
 
-#include "tss2_common.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_eventlog_system.h"
+#include "efi_event.h"              // for TCG_EVENT2, TCG_SPECID_EVENT, UEF...
+#include "fapi_crypto.h"            // for ifapi_hash_get_digest_size
+#include "ifapi_eventlog.h"         // for CONTENT, CONTENT_TYPE
+#include "ifapi_eventlog_system.h"  // for parse_eventlog, tpm2_eventlog_con...
 #include "ifapi_json_eventlog_serialize.h"
-#include "fapi_crypto.h"
-#include "tpm_json_serialize.h"
-#include "tss2_tpm2_types.h"
+#include "ifapi_macros.h"           // for return_error2
+#include "tpm_json_deserialize.h"   // for ifapi_get_sub_object
+#include "tpm_json_serialize.h"     // for ifapi_json_TPM2_ALG_ID_serialize
+#include "tss2_common.h"            // for TSS2_RC, TSS2_FAPI_RC_GENERAL_FAI...
+#include "tss2_tpm2_types.h"        // for TPM2_ALG_SHA1, TPM2_MAX_PCRS
+
 #define LOGMODULE fapifirmware
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"               // for return_if_null, return_error, LOG...
+
+#define JSON_CLEAR(jso) \
+    if (jso) {                   \
+        json_object_put(jso); \
+    }
+
+#define return_if_jso_error(r,msg, jso)       \
+    if ((r) != TSS2_RC_SUCCESS) { \
+        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
+        if (jso) {                                                   \
+            json_object_put(jso);                                    \
+        } \
+        return r;  \
+    }
 
 bool ifapi_pcr_used(uint32_t pcr, const uint32_t *pcr_list,  size_t pcr_list_size)
 {
@@ -124,6 +140,13 @@ char const *eventtype_to_string (UINT32 event_type) {
         return "EV_EFI_HCRTM_EVENT";
     case EV_EFI_VARIABLE_AUTHORITY:
         return "EV_EFI_VARIABLE_AUTHORITY";
+    case EV_EFI_PLATFORM_FIRMWARE_BLOB2:
+        return "EV_EFI_PLATFORM_FIRMWARE_BLOB2";
+    case EV_EFI_HANDOFF_TABLES2:
+        return "EV_EFI_HANDOFF_TABLES2";
+    case EV_EFI_VARIABLE_BOOT2:
+        return "EV_EFI_VARIABLE_BOOT2";
+
     default:
         return "Unknown event type";
     }
@@ -281,7 +304,7 @@ TSS2_RC trace_unicodename(
     const char16_t *UnicodeName,
     UINT64 UnicodeNameLength)
 {
-    int ret = 0;
+    size_t ret = 0;
     char *mbstr = NULL, *tmp = NULL;
     mbstate_t st;
 
@@ -295,7 +318,7 @@ TSS2_RC trace_unicodename(
 
     for(size_t i = 0; i < UnicodeNameLength; ++i, tmp += ret) {
         ret = c16rtomb(tmp, UnicodeName[i], &st);
-        if (ret < 0) {
+        if (ret == (size_t) -1) {
             LOG_ERROR("c16rtomb failed: %s", strerror(errno));
             free(mbstr);
             return TSS2_FAPI_RC_BAD_VALUE;
@@ -341,6 +364,7 @@ TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type,
     /* TCG PC Client FPF section 9.2.6 */
     case EV_EFI_VARIABLE_DRIVER_CONFIG:
     case EV_EFI_VARIABLE_BOOT:
+    case EV_EFI_VARIABLE_BOOT2:
     case EV_EFI_VARIABLE_AUTHORITY:
         {
 #if (MAXLOGLEVEL != LOGL_NONE)
@@ -389,6 +413,7 @@ TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type,
     /* TCG PC Client FPF section 9.2.5 */
     case EV_S_CRTM_CONTENTS:
     case EV_EFI_PLATFORM_FIRMWARE_BLOB:
+    case EV_EFI_PLATFORM_FIRMWARE_BLOB2:
         {
             UEFI_PLATFORM_FIRMWARE_BLOB *data =
                 (UEFI_PLATFORM_FIRMWARE_BLOB*)in->Event;
@@ -512,7 +537,7 @@ TSS2_RC ifapi_json_TCG_EVENT_HEADER2_serialize(
     }
     jso2 = NULL;
 
-    jso2 = json_object_new_int64(recnum);
+    jso2 = json_object_new_int64((int64_t) recnum);
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     if (json_object_object_add(*jso, "recnum", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -616,7 +641,7 @@ TSS2_RC ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_
     if (json_object_object_add(*jso, "pcr", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
-    jso2 = json_object_new_int64(recnum);
+    jso2 = json_object_new_int64((int64_t) recnum);
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     if (json_object_object_add(*jso, "recnum", jso2)) {

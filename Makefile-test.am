@@ -212,6 +212,7 @@ TESTS_INTEGRATION += \
     test/integration/sys-read-clock.int \
     test/integration/sys-mac.int \
     test/integration/sys-hmac.int \
+    test/integration/sys-ecc-encrypt-decrypt.int \
     test/tpmclient/tpmclient.int
 endif # !TESTDEVICE
 
@@ -238,6 +239,7 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-clockset.int \
     test/integration/esys-clockset-audit.int \
     test/integration/esys-commit.int \
+    test/integration/esys-cp-hash.int \
     test/integration/esys-create-fail.int \
     test/integration/esys-create-password-auth.int \
     test/integration/esys-create-policy-auth.int \
@@ -303,7 +305,8 @@ ESYS_TESTS_INTEGRATION_MANDATORY = \
     test/integration/esys-unseal-password-auth.int \
     test/integration/esys-verify-signature.int \
     test/integration/esys-ecdh-keygen.int \
-    test/integration/esys-policy-ticket.int
+    test/integration/esys-policy-ticket.int \
+    test/integration/esys-ecc-encrypt-decrypt.int
 
 ESYS_TESTS_INTEGRATION_OPTIONAL = \
     test/integration/esys-audit.int \
@@ -473,7 +476,8 @@ test_unit_tcti_device_LDFLAGS = -Wl,--wrap=read -Wl,--wrap=write -Wl,--wrap=poll
         -Wl,--wrap=open
 test_unit_tcti_device_SOURCES = test/unit/tcti-device.c \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h
+    src/tss2-tcti/tcti-device.c src/tss2-tcti/tcti-device.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_MSSIM
@@ -482,7 +486,8 @@ test_unit_tcti_mssim_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil) $(libutil
 test_unit_tcti_mssim_LDFLAGS = -Wl,--wrap=connect -Wl,--wrap=read -Wl,--wrap=write -Wl,--wrap=poll
 test_unit_tcti_mssim_SOURCES = test/unit/tcti-mssim.c \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h
+    src/tss2-tcti/tcti-mssim.c src/tss2-tcti/tcti-mssim.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_SWTPM
@@ -491,7 +496,8 @@ test_unit_tcti_swtpm_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil) $(libutil
 test_unit_tcti_swtpm_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=select,--wrap=write
 test_unit_tcti_swtpm_SOURCES = test/unit/tcti-swtpm.c \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-swtpm.c src/tss2-tcti/tcti-swtpm.h
+    src/tss2-tcti/tcti-swtpm.c src/tss2-tcti/tcti-swtpm.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_LIBTPMS
@@ -502,7 +508,8 @@ test_unit_tcti_libtpms_LDFLAGS = -Wl,--wrap=dlopen,--wrap=dlclose,--wrap=dlsym \
     -Wl,--wrap=lseek,--wrap=posix_fallocate,--wrap=truncate
 test_unit_tcti_libtpms_SOURCES = test/unit/tcti-libtpms.c \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-libtpms.c src/tss2-tcti/tcti-libtpms.h
+    src/tss2-tcti/tcti-libtpms.c src/tss2-tcti/tcti-libtpms.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_PCAP
@@ -514,7 +521,8 @@ test_unit_tcti_pcap_LDFLAGS = -Wl,--wrap=getenv -Wl,--wrap=rand -Wl,--wrap=clock
 test_unit_tcti_pcap_SOURCES = test/unit/tcti-pcap.c \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-pcap.c src/tss2-tcti/tcti-pcap.h \
-    src/tss2-tcti/tcti-pcap-builder.c src/tss2-tcti/tcti-pcap-builder.h
+    src/tss2-tcti/tcti-pcap-builder.c src/tss2-tcti/tcti-pcap-builder.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_CMD
@@ -522,13 +530,15 @@ test_unit_tcti_cmd_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_cmd_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil)
 test_unit_tcti_cmd_SOURCES = test/unit/tcti-cmd.c \
     src/tss2-tcti/tcti-common.c \
-    src/tss2-tcti/tcti-cmd.c src/tss2-tcti/tcti-cmd.h test/unit/tcti-cmd-test.h
+    src/tss2-tcti/tcti-cmd.c src/tss2-tcti/tcti-cmd.h test/unit/tcti-cmd-test.h \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_SPI_HELPER
 test_unit_tcti_spi_helper_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_spi_helper_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
-test_unit_tcti_spi_helper_SOURCES = test/unit/tcti-spi-helper.c
+test_unit_tcti_spi_helper_SOURCES = test/unit/tcti-spi-helper.c \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_SPI_LTT2GO
@@ -536,23 +546,26 @@ test_unit_tcti_spi_ltt2go_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_spi_ltt2go_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_spi_helper)
 test_unit_tcti_spi_ltt2go_LDFLAGS = -Wl,--wrap=libusb_bulk_transfer \
                                    -Wl,--wrap=libusb_claim_interface \
+                                   -Wl,--wrap=libusb_open \
                                    -Wl,--wrap=libusb_close \
                                    -Wl,--wrap=libusb_control_transfer \
                                    -Wl,--wrap=libusb_dev_mem_alloc \
                                    -Wl,--wrap=libusb_dev_mem_free \
                                    -Wl,--wrap=libusb_exit \
                                    -Wl,--wrap=libusb_free_config_descriptor \
+                                   -Wl,--wrap=libusb_free_device_list \
                                    -Wl,--wrap=libusb_get_config_descriptor \
-                                   -Wl,--wrap=libusb_get_device \
+                                   -Wl,--wrap=libusb_get_device_list \
+                                   -Wl,--wrap=libusb_get_device_descriptor \
+                                   -Wl,--wrap=libusb_get_string_descriptor_ascii \
                                    -Wl,--wrap=libusb_init \
-                                   -Wl,--wrap=libusb_open_device_with_vid_pid \
                                    -Wl,--wrap=libusb_release_interface \
                                    -Wl,--wrap=libusb_set_auto_detach_kernel_driver \
                                    -Wl,--wrap=libusb_strerror \
                                    -Wl,--wrap=select \
                                    -Wl,--wrap=gettimeofday
 test_unit_tcti_spi_ltt2go_SOURCES = test/unit/tcti-spi-ltt2go.c \
-                                   src/tss2-tcti/tcti-spi-ltt2go.c
+    src/tss2-tcti/tcti-spi-ltt2go.c test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_SPIDEV
@@ -564,7 +577,7 @@ test_unit_tcti_spidev_LDFLAGS = -Wl,--wrap=open \
                                 -Wl,--wrap=select \
                                 -Wl,--wrap=gettimeofday
 test_unit_tcti_spidev_SOURCES = test/unit/tcti-spidev.c \
-                                src/tss2-tcti/tcti-spidev.c
+    src/tss2-tcti/tcti-spidev.c test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_SPI_FTDI
@@ -580,13 +593,14 @@ test_unit_tcti_spi_ftdi_LDFLAGS = -Wl,--wrap=Close \
                                   -Wl,--wrap=select \
                                   -Wl,--wrap=gettimeofday
 test_unit_tcti_spi_ftdi_SOURCES = test/unit/tcti-spi-ftdi.c \
-                                  src/tss2-tcti/tcti-spi-ftdi.c
+    src/tss2-tcti/tcti-spi-ftdi.c test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_I2C_HELPER
 test_unit_tcti_i2c_helper_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tcti_i2c_helper_LDADD   = $(CMOCKA_LIBS) $(libtss2_tcti_i2c_helper)
-test_unit_tcti_i2c_helper_SOURCES = test/unit/tcti-i2c-helper.c
+test_unit_tcti_i2c_helper_SOURCES = test/unit/tcti-i2c-helper.c \
+    test/helper/cmocka_all.h
 endif
 
 if ENABLE_TCTI_I2C_FTDI
@@ -604,7 +618,7 @@ test_unit_tcti_i2c_ftdi_LDFLAGS = -Wl,--wrap=MPSSE \
                                   -Wl,--wrap=select \
                                   -Wl,--wrap=gettimeofday
 test_unit_tcti_i2c_ftdi_SOURCES = test/unit/tcti-i2c-ftdi.c \
-                                  src/tss2-tcti/tcti-i2c-ftdi.c
+    src/tss2-tcti/tcti-i2c-ftdi.c test/helper/cmocka_all.h
 endif
 
 test_unit_tctildr_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
@@ -613,7 +627,7 @@ test_unit_tctildr_LDFLAGS = -Wl,--wrap=calloc,--wrap=free \
     -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti \
     -Wl,--wrap=tctildr_get_info
 test_unit_tctildr_SOURCES = test/unit/tctildr.c \
-    src/tss2-tcti/tctildr.c
+    src/tss2-tcti/tctildr.c test/helper/cmocka_all.h
 
 test_unit_tctildr_dl_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
         -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
@@ -621,7 +635,7 @@ test_unit_tctildr_dl_LDADD = $(CMOCKA_LIBS) $(TESTS_LDADD) $(LIBADD_DL)
 test_unit_tctildr_dl_LDFLAGS = -Wl,--wrap=dlopen,--wrap=dlclose,--wrap=dlsym \
     -Wl,--wrap=tcti_from_init,--wrap=tcti_from_info,--wrap=__dlsym_time64
 test_unit_tctildr_dl_SOURCES = test/unit/tctildr-dl.c \
-        src/tss2-tcti/tctildr-dl.c
+        src/tss2-tcti/tctildr-dl.c test/helper/cmocka_all.h
 
 test_unit_tctildr_nodl_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) \
         -UESYS_TCTI_DEFAULT_MODULE -UESYS_TCTI_DEFAUT_CONFIG
@@ -629,7 +643,7 @@ test_unit_tctildr_nodl_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_tctildr_nodl_LDFLAGS = -Wl,--wrap=Tss2_Tcti_Device_Init \
         -Wl,--wrap=Tss2_Tcti_Mssim_Init,--wrap=tcti_from_init
 test_unit_tctildr_nodl_SOURCES = test/unit/tctildr-nodl.c \
-        src/tss2-tcti/tctildr-nodl.c
+        src/tss2-tcti/tctildr-nodl.c test/helper/cmocka_all.h
 
 test_unit_tctildr_tcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_tcti_LDADD = $(CMOCKA_LIBS) $(libutil) \
@@ -637,7 +651,7 @@ test_unit_tctildr_tcti_LDADD = $(CMOCKA_LIBS) $(libutil) \
 test_unit_tctildr_tcti_LDFLAGS = -Wl,--wrap=tctildr_get_info \
     -Wl,--wrap=tctildr_get_tcti,--wrap=tctildr_finalize_data
 test_unit_tctildr_tcti_SOURCES = test/unit/tctildr-tcti.c \
-    src/tss2-tcti/tctildr.c
+    src/tss2-tcti/tctildr.c test/helper/cmocka_all.h
 
 test_unit_tctildr_getinfo_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tctildr_getinfo_LDADD = $(CMOCKA_LIBS) $(libutil) \
@@ -646,27 +660,33 @@ test_unit_tctildr_getinfo_LDFLAGS = -Wl,--wrap=strndup,--wrap=free \
     -Wl,--wrap=calloc,--wrap=tctildr_finalize_data \
     -Wl,--wrap=tctildr_get_info,--wrap=tctildr_get_tcti
 test_unit_tctildr_getinfo_SOURCES = test/unit/tctildr-getinfo.c \
-    src/tss2-tcti/tctildr.c
+    src/tss2-tcti/tctildr.c test/helper/cmocka_all.h
 
 test_unit_io_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_io_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libutil) $(libutilio)
 test_unit_io_LDFLAGS = -Wl,--wrap=connect,--wrap=read,--wrap=socket,--wrap=write
+test_unit_io_SOURCES = test/unit/io.c \
+    test/helper/cmocka_all.h
 
 test_unit_key_value_parse_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_key_value_parse_LDADD   = $(CMOCKA_LIBS) $(libutil)
+test_unit_key_value_parse_SOURCES = test/unit/key-value-parse.c \
+    test/helper/cmocka_all.h
 
 test_unit_log_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_log_LDADD   = $(CMOCKA_LIBS) $(libutil)
+test_unit_log_SOURCES = test/unit/log.c \
+    test/helper/cmocka_all.h
 
 test_unit_CommonPreparePrologue_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CommonPreparePrologue_LDADD = $(CMOCKA_LIBS) $(libtss2_sys) $(libtss2_mu)
 test_unit_CommonPreparePrologue_SOURCES = test/unit/CommonPreparePrologue.c \
-    src/tss2-sys/sysapi_util.c
+    src/tss2-sys/sysapi_util.c test/helper/cmocka_all.h
 
 test_unit_CopyCommandHeader_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_CopyCommandHeader_LDADD = $(CMOCKA_LIBS) $(libtss2_sys) $(libtss2_mu)
 test_unit_CopyCommandHeader_SOURCES = test/unit/CopyCommandHeader.c \
-    src/tss2-sys/sysapi_util.c
+    src/tss2-sys/sysapi_util.c test/helper/cmocka_all.h
 
 test_unit_dlopen_fail_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_dlopen_fail_LDADD   = $(CMOCKA_LIBS)
@@ -676,72 +696,93 @@ test_unit_dlopen_fail_SOURCES = test/unit/dlopen-fail.c \
     tss2-dlopen/tss2-dlopen-rc.c \
     tss2-dlopen/tss2-dlopen-mu.c \
     tss2-dlopen/tss2-dlopen-esys.c \
-    tss2-dlopen/tss2-dlopen-fapi.c
+    tss2-dlopen/tss2-dlopen-fapi.c \
+    test/helper/cmocka_all.h
 
 test_unit_dlopen_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_dlopen_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(LIBADD_DL) $(libtss2_mu)
 test_unit_dlopen_UINT8_marshal_SOURCES = test/unit/UINT8-marshal.c \
-    tss2-dlopen/tss2-dlopen-mu.c
+    tss2-dlopen/tss2-dlopen-mu.c test/helper/cmocka_all.h
 
 test_unit_dlopen_TPM2B_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_dlopen_TPM2B_marshal_LDADD   = $(CMOCKA_LIBS) $(LIBADD_DL) $(libtss2_mu)
 test_unit_dlopen_TPM2B_marshal_SOURCES = test/unit/TPM2B-marshal.c \
-    tss2-dlopen/tss2-dlopen-mu.c
+    tss2-dlopen/tss2-dlopen-mu.c test/helper/cmocka_all.h
 
 test_unit_dlopen_TPMU_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_dlopen_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(LIBADD_DL) $(libtss2_mu)
 test_unit_dlopen_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c \
-    tss2-dlopen/tss2-dlopen-mu.c
+    tss2-dlopen/tss2-dlopen-mu.c test/helper/cmocka_all.h
 
 test_unit_UINT8_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT8_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_UINT8_marshal_SOURCES = test/unit/UINT8-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_UINT16_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT16_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_UINT16_marshal_SOURCES = test/unit/UINT16-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_UINT32_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT32_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_UINT32_marshal_SOURCES = test/unit/UINT32-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_UINT64_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_UINT64_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_UINT64_marshal_SOURCES = test/unit/UINT64-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPMA_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMA_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPMA_marshal_SOURCES = test/unit/TPMA-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPM2B_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPM2B_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPM2B_marshal_SOURCES = test/unit/TPM2B-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPMS_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMS_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPMS_marshal_SOURCES = test/unit/TPMS-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPML_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPML_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPML_marshal_SOURCES = test/unit/TPML-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPMT_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMT_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPMT_marshal_SOURCES = test/unit/TPMT-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_TPMU_marshal_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_TPMU_marshal_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu)
+test_unit_TPMU_marshal_SOURCES = test/unit/TPMU-marshal.c \
+    test/helper/cmocka_all.h
 
 test_unit_sys_execute_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_sys_execute_LDADD   = $(CMOCKA_LIBS) $(libtss2_mu) $(libtss2_sys)
 test_unit_sys_execute_SOURCES = test/unit/sys-execute.c \
-                                src/tss2-tcti/tcti-common.c src/util/log.c
+    src/tss2-tcti/tcti-common.c src/util/log.c test/helper/cmocka_all.h
 
 test_unit_tss2_rc_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_tss2_rc_LDADD   = $(CMOCKA_LIBS) $(libtss2_rc) $(libtss2_sys)
-test_unit_tss2_rc_SOURCES = test/unit/test_tss2_rc.c
+test_unit_tss2_rc_SOURCES = test/unit/test_tss2_rc.c test/helper/cmocka_all.h
 
 test_unit_dlopen_tss2_rc_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_dlopen_tss2_rc_LDADD   = $(CMOCKA_LIBS) $(LIBADD_DL) $(libtss2_rc) $(libtss2_sys)
 test_unit_dlopen_tss2_rc_SOURCES = test/unit/test_tss2_rc.c \
-    tss2-dlopen/tss2-dlopen-rc.c
+    tss2-dlopen/tss2-dlopen-rc.c test/helper/cmocka_all.h
 
 if ESYS
 test_unit_esys_context_null_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_context_null_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_context_null_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO) -Wl,--wrap=tctildr_finalize_data,--wrap=tctildr_get_tcti
-
+test_unit_esys_context_null_SOURCES = test/unit/esys-context-null.c test/helper/cmocka_all.h
 
 test_unit_esys_resubmissions_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_resubmissions_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
@@ -750,11 +791,14 @@ test_unit_esys_resubmissions_SOURCES = test/unit/esys-resubmissions.c \
                                        test/unit/esys-dummy-defs.h \
                                        src/tss2-esys/esys_iutil.c \
                                        src/tss2-esys/esys_crypto.c \
-                                       $(TSS2_ESYS_SRC_CRYPTO)
+                                       $(TSS2_ESYS_SRC_CRYPTO) \
+                                       test/helper/cmocka_all.h
 
 test_unit_esys_sequence_finish_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_sequence_finish_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_sequence_finish_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_sequence_finish_SOURCES = test/unit/esys-sequence-finish.c \
+    test/helper/cmocka_all.h
 
 test_unit_esys_tcti_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_tcti_rcs_LDADD = $(CMOCKA_LIBS) $(TESTS_LDADD)
@@ -763,7 +807,8 @@ test_unit_esys_tcti_rcs_SOURCES = test/unit/esys-tcti-rcs.c \
                                   test/unit/esys-dummy-defs.h \
                                   src/tss2-esys/esys_iutil.c \
                                   src/tss2-esys/esys_crypto.c \
-                                  $(TSS2_ESYS_SRC_CRYPTO)
+                                  $(TSS2_ESYS_SRC_CRYPTO) \
+                                  test/helper/cmocka_all.h
 
 test_unit_esys_tpm_rcs_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_tpm_rcs_LDADD = $(CMOCKA_LIBS) $(TESTS_LDADD)
@@ -772,23 +817,32 @@ test_unit_esys_tpm_rcs_SOURCES = test/unit/esys-tpm-rcs.c \
                                  test/unit/esys-dummy-defs.h \
                                  src/tss2-esys/esys_iutil.c \
                                  src/tss2-esys/esys_crypto.c \
-                                 $(TSS2_ESYS_SRC_CRYPTO)
+                                 $(TSS2_ESYS_SRC_CRYPTO) \
+                                 test/helper/cmocka_all.h
 
 test_unit_esys_getpollhandles_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_getpollhandles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_getpollhandles_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_getpollhandles_SOURCES = test/unit/esys-getpollhandles.c \
+    test/helper/cmocka_all.h
 
 test_unit_esys_ac_getcapability_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_ac_getcapability_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_ac_getcapability_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_ac_getcapability_SOURCES = test/unit/esys-ac-getcapability.c \
+    test/helper/cmocka_all.h
 
 test_unit_esys_ac_send_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_ac_send_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_ac_send_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_ac_send_SOURCES = test/unit/esys-ac-send.c \
+    test/helper/cmocka_all.h
 
 test_unit_esys_policy_ac_sendselect_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_esys_policy_ac_sendselect_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_esys_policy_ac_sendselect_LDFLAGS = $(TESTS_LDFLAGS)
+test_unit_esys_policy_ac_sendselect_SOURCES = test/unit/esys-policy-ac-sendselect.c \
+    test/helper/cmocka_all.h
 
 test_unit_esys_nulltcti_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_nulltcti_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD) $(LIBADD_DL)
@@ -798,7 +852,8 @@ test_unit_esys_nulltcti_SOURCES = test/unit/esys-nulltcti.c \
                                   src/tss2-esys/esys_context.c \
                                   src/tss2-esys/esys_iutil.c \
                                   src/tss2-esys/esys_crypto.c \
-                                  $(TSS2_ESYS_SRC_CRYPTO)
+                                  $(TSS2_ESYS_SRC_CRYPTO) \
+                                  test/helper/cmocka_all.h
 
 test_unit_esys_crypto_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
 test_unit_esys_crypto_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD) $(LIBADD_DL)
@@ -807,7 +862,8 @@ test_unit_esys_crypto_SOURCES = test/unit/esys-crypto.c \
                                 src/tss2-esys/esys_context.c \
                                 src/tss2-esys/esys_iutil.c \
                                 src/tss2-esys/esys_crypto.c \
-                                $(TSS2_ESYS_SRC_CRYPTO)
+                                $(TSS2_ESYS_SRC_CRYPTO) \
+                                test/helper/cmocka_all.h
 
 if VENDOR
 test_unit_esys_vendor_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -817,13 +873,14 @@ test_unit_esys_vendor_SOURCES = test/unit/esys-vendor.c \
                                 src/tss2-esys/esys_context.c \
                                 src/tss2-esys/esys_iutil.c \
                                 src/tss2-esys/esys_crypto.c \
-                                $(TSS2_ESYS_SRC_CRYPTO)
+                                $(TSS2_ESYS_SRC_CRYPTO) \
+                                test/helper/cmocka_all.h
 endif # VENDOR
 endif # ESYS
 
 if FAPI
 
-test_unit_fapi_json_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_json_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_json_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_json_LDFLAGS = $(TESTS_LDFLAGS)  $(CURL_LIBS) $(JSONC_LIBS) $(UUID_LIBS)
 test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
@@ -840,9 +897,10 @@ test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi/fapi_crypto.c \
                               src/tss2-fapi/ifapi_eventlog.c \
                               src/tss2-fapi/ifapi_keystore.c  \
-                              src/tss2-fapi/ifapi_io.c
+                              src/tss2-fapi/ifapi_io.c \
+                              test/helper/cmocka_all.h
 
-test_unit_fapi_helpers_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_helpers_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_helpers_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_helpers_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                                  -Wl,--wrap=ifapi_crypto_hash_update \
@@ -861,9 +919,10 @@ test_unit_fapi_helpers_SOURCES = test/unit/fapi-helpers.c \
                                  src/tss2-fapi/ifapi_eventlog.c \
                                  src/tss2-fapi/ifapi_helpers.c \
                                  src/tss2-fapi/ifapi_keystore.c  \
-                                 src/tss2-fapi/ifapi_io.c
+                                 src/tss2-fapi/ifapi_io.c \
+                                 test/helper/cmocka_all.h
 
-test_unit_fapi_io_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_io_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_io_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_io_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                             -Wl,--wrap=fopen \
@@ -890,9 +949,10 @@ test_unit_fapi_io_SOURCES = test/unit/fapi-io.c \
                             src/tss2-fapi/ifapi_eventlog.c \
                             src/tss2-fapi/ifapi_helpers.c \
                             src/tss2-fapi/ifapi_keystore.c  \
-                            src/tss2-fapi/ifapi_io.c
+                            src/tss2-fapi/ifapi_io.c \
+                            test/helper/cmocka_all.h
 
-test_unit_fapi_profiles_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_profiles_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_profiles_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_profiles_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                                   -Wl,--wrap=ifapi_io_read_finish
@@ -911,9 +971,10 @@ test_unit_fapi_profiles_SOURCES = test/unit/fapi-profiles.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_keystore.c  \
-                                  src/tss2-fapi/ifapi_io.c
+                                  src/tss2-fapi/ifapi_io.c \
+                                  test/helper/cmocka_all.h
 
-test_unit_fapi_config_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_config_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_config_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_config_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                                   -Wl,--wrap=ifapi_io_read_finish
@@ -932,9 +993,10 @@ test_unit_fapi_config_SOURCES = test/unit/fapi-config.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_keystore.c  \
-                                  src/tss2-fapi/ifapi_io.c
+                                  src/tss2-fapi/ifapi_io.c \
+                                  test/helper/cmocka_all.h
 
-test_unit_fapi_get_web_cert_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_get_web_cert_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_get_web_cert_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_get_web_cert_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                                        -Wl,--wrap=ifapi_get_curl_buffer \
@@ -954,11 +1016,12 @@ test_unit_fapi_get_web_cert_SOURCES = test/unit/fapi-get-web-cert.c \
                                        src/tss2-fapi/ifapi_eventlog.c \
                                        src/tss2-fapi/ifapi_helpers.c \
                                        src/tss2-fapi/ifapi_keystore.c  \
-                                       src/tss2-fapi/ifapi_io.c
+                                       src/tss2-fapi/ifapi_io.c \
+                                       test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_eventlog_DEPENDENCIES = $(FAPI_TEST_BINS)
 
-test_unit_fapi_eventlog_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_eventlog_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_eventlog_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_eventlog_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
 test_unit_fapi_eventlog_SOURCES = test/unit/fapi-eventlog.c \
@@ -975,11 +1038,12 @@ test_unit_fapi_eventlog_SOURCES = test/unit/fapi-eventlog.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
-                                  src/tss2-fapi/ifapi_io.c
+                                  src/tss2-fapi/ifapi_io.c \
+                                  test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_ima_eventlog_DEPENDENCIES = $(FAPI_TEST_BINS)
 
-test_unit_fapi_ima_eventlog_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_ima_eventlog_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_ima_eventlog_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_ima_eventlog_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
 test_unit_fapi_ima_eventlog_SOURCES = test/unit/fapi-ima-eventlog.c \
@@ -996,11 +1060,12 @@ test_unit_fapi_ima_eventlog_SOURCES = test/unit/fapi-ima-eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
-                                  src/tss2-fapi/ifapi_io.c
+                                  src/tss2-fapi/ifapi_io.c \
+                                  test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_check_ima_log_DEPENDENCIES = $(FAPI_TEST_BINS)
 
-test_unit_fapi_check_ima_log_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_check_ima_log_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_check_ima_log_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_check_ima_log_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
 test_unit_fapi_check_ima_log_SOURCES = test/unit/fapi-check-ima-log.c \
@@ -1017,9 +1082,10 @@ test_unit_fapi_check_ima_log_SOURCES = test/unit/fapi-check-ima-log.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
-                                  src/tss2-fapi/ifapi_io.c
+                                  src/tss2-fapi/ifapi_io.c \
+                                  test/helper/cmocka_all.h
 
-test_unit_fapi_ima_fuzzing_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_ima_fuzzing_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_ima_fuzzing_CXXFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_ima_fuzzing_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_ima_fuzzing_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
@@ -1038,11 +1104,12 @@ test_unit_fapi_ima_fuzzing_SOURCES = test/unit/fapi-ima-fuzzing.c \
                          src/tss2-fapi/ifapi_helpers.c \
                          src/tss2-fapi/ifapi_eventlog_system.c\
                          src/tss2-fapi/ifapi_keystore.c  \
-                         src/tss2-fapi/ifapi_io.c
+                         src/tss2-fapi/ifapi_io.c \
+                         test/helper/cmocka_all.h
 
 noinst_PROGRAMS += test/unit/fapi-ima-fuzzing
 
-test_unit_fapi_system_fuzzing_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_system_fuzzing_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_system_fuzzing_CXXFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_system_fuzzing_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_system_fuzzing_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
@@ -1061,7 +1128,8 @@ test_unit_fapi_system_fuzzing_SOURCES = test/unit/fapi-system-fuzzing.c \
                           src/tss2-fapi/ifapi_eventlog.c \
                           src/tss2-fapi/ifapi_helpers.c\
                           src/tss2-fapi/ifapi_keystore.c  \
-                          src/tss2-fapi/ifapi_io.c
+                          src/tss2-fapi/ifapi_io.c \
+                          test/helper/cmocka_all.h
 
 noinst_PROGRAMS += test/unit/fapi-system-fuzzing
 
@@ -1071,9 +1139,9 @@ if POLICY
 TESTS_UNIT += test/unit/tss2_policy
 
 test_unit_tss2_policy_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_tss2_policy_LDADD   = $(CMOCKA_LIBS) $(libtss2_policy) $(libtss2_esys)
+test_unit_tss2_policy_LDADD   = $(CMOCKA_LIBS) $(libtss2_policy) $(libtss2_esys) $(libtss2_sys)
 test_unit_tss2_policy_SOURCES = test/unit/tss2_policy.c src/util/log.c \
-    test/data/test-fapi-policies.h
+    test/data/test-fapi-policies.h test/helper/cmocka_all.h
 endif # POLICY
 
 endif # UNIT
@@ -1207,6 +1275,11 @@ test_integration_sys_read_clock_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
 test_integration_sys_read_clock_int_LDADD   = $(TESTS_LDADD)
 test_integration_sys_read_clock_int_SOURCES = test/integration/main-sys.c \
     test/integration/sys-read-clock.int.c
+
+test_integration_sys_ecc_encrypt_decrypt_int_CFLAGS  = $(AM_CFLAGS) $(TESTS_CFLAGS)
+test_integration_sys_ecc_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_sys_ecc_encrypt_decrypt_int_SOURCES = \
+    test/integration/sys-ecc-encrypt-decrypt.int.c test/integration/main-sys.c
 
 if ESYS
 ESYS_SRC_UTIL_CRYPTO_SRC = src/tss2-esys/esys_iutil.c \
@@ -1526,6 +1599,13 @@ test_integration_esys_get_random_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_get_random_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_get_random_int_SOURCES = \
     test/integration/esys-get-random.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_cp_hash_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_cp_hash_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_cp_hash_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_cp_hash_int_SOURCES = \
+    test/integration/esys-cp-hash.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_get_time_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
@@ -1982,6 +2062,14 @@ test_integration_esys_crypto_int_SOURCES = \
     test/integration/esys-crypto.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
+test_integration_esys_ecc_encrypt_decrypt_int_CFLAGS  = $(TESTS_CFLAGS) $(TSS2_ESYS_CFLAGS_CRYPTO)
+test_integration_esys_ecc_encrypt_decrypt_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_ecc_encrypt_decrypt_int_LDFLAGS = $(TESTS_LDFLAGS) $(TSS2_ESYS_LDFLAGS_CRYPTO)
+test_integration_esys_ecc_encrypt_decrypt_int_SOURCES = \
+    $(ESYS_SRC_UTIL_CRYPTO_SRC) \
+    test/integration/esys-ecc-encrypt-decrypt.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
 endif #ESYS
 
 test_integration_sys_policy_template_int_CFLAGS  = $(TESTS_CFLAGS)
@@ -2000,7 +2088,7 @@ test_integration_sys_policy_authorizeNV_int_SOURCES = test/integration/main-sys.
     test/integration/sys-policy-authorizeNV.int.c
 
 if FAPI
-test_integration_dlopen_fapi_get_random_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_dlopen_fapi_get_random_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DENABLE_WARN=1 -DDLOPEN=1
 test_integration_dlopen_fapi_get_random_fint_LDADD   = $(TESTS_LDADD) $(LIBADD_DL)
 test_integration_dlopen_fapi_get_random_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2012,49 +2100,49 @@ test_integration_dlopen_fapi_get_random_fint_SOURCES = \
     tss2-dlopen/tss2-dlopen-tctildr.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_check_wrong_paths_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_check_wrong_paths_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_check_wrong_paths_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_check_wrong_paths_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_check_wrong_paths_fint_SOURCES = \
     test/integration/fapi-check-wrong-paths.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_get_esys_blobs_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_get_esys_blobs_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_get_esys_blobs_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_get_esys_blobs_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_get_esys_blobs_fint_SOURCES = \
     test/integration/fapi-get-esys-blobs.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_get_random_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_get_random_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_get_random_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_get_random_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_get_random_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_platform_certificates_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_platform_certificates_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_platform_certificates_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_platform_certificates_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_platform_certificates_fint_SOURCES = \
     test/integration/fapi-platform-certificates.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_sign_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_he_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_he_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_he_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_he_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_he_sign_fint_SOURCES = \
     test/integration/fapi-key-create-he-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_primary_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_primary_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_primary_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_primary_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_primary_sign_fint_SOURCES = \
@@ -2062,21 +2150,21 @@ test_integration_fapi_key_create_primary_sign_fint_SOURCES = \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 
-test_integration_fapi_key_create2_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create2_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create2_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create2_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create2_sign_fint_SOURCES = \
     test/integration/fapi-key-create2-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_null_key_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_null_key_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_null_key_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_null_key_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_null_key_sign_fint_SOURCES = \
     test/integration/fapi-key-create-null-key-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_sign_persistent_key_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_sign_persistent_key_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
 -DPERSISTENT
 test_integration_fapi_key_create_sign_persistent_key_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_persistent_key_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2085,14 +2173,14 @@ test_integration_fapi_key_create_sign_persistent_key_fint_SOURCES = \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 
-test_integration_fapi_key_create_sign_password_provision_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_sign_password_provision_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_sign_password_provision_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_password_provision_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_sign_password_provision_fint_SOURCES = \
     test/integration/fapi-key-create-sign-password-provision.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_sign_policy_provision_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_sign_policy_provision_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA_sh_policy\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_sign_policy_provision_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_policy_provision_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2100,7 +2188,7 @@ test_integration_fapi_key_create_sign_policy_provision_fint_SOURCES = \
     test/integration/fapi-key-create-sign-policy-provision.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_sign_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_sign_rsa_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_sign_rsa_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2108,7 +2196,7 @@ test_integration_fapi_key_create_sign_rsa_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_sign_password_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_sign_password_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PASSWORD
 test_integration_fapi_key_create_sign_password_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_password_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2116,7 +2204,7 @@ test_integration_fapi_key_create_sign_password_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_sign_password_da_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_sign_password_da_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PASSWORD -DFAPI_DA
 test_integration_fapi_key_create_sign_password_da_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_password_da_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2124,7 +2212,7 @@ test_integration_fapi_key_create_sign_password_da_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_sign_persistent_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_sign_persistent_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
    -DFAPI_PROFILE=\"P_RSA_EK_persistent\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_sign_persistent_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_sign_persistent_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2132,21 +2220,21 @@ test_integration_fapi_key_create_sign_persistent_fint_SOURCES = \
     test/integration/fapi-key-create-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_authorize_sign_fint_CFLAGS  = $(TESTS_CFLAGS) -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_key_create_policy_authorize_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_policy_authorize_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_authorize_rsa_pem_sign_fint_CFLAGS  = $(TESTS_CFLAGS) -DFAPI_PROFILE=\"P_RSA\"
+test_integration_fapi_key_create_policy_authorize_rsa_pem_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_policy_authorize_rsa_pem_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_rsa_pem_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_rsa_pem_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-pem-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_authorize_ecc_pem_sign_fint_CFLAGS  = $(TESTS_CFLAGS) -DTEST_ECC
+test_integration_fapi_key_create_policy_authorize_ecc_pem_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) -DTEST_ECC
 test_integration_fapi_key_create_policy_authorize_ecc_pem_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_ecc_pem_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_ecc_pem_sign_fint_SOURCES = \
@@ -2154,7 +2242,7 @@ test_integration_fapi_key_create_policy_authorize_ecc_pem_sign_fint_SOURCES = \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 
-test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DFAPI_PROFILE=\"P_RSA256\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2162,14 +2250,14 @@ test_integration_fapi_key_create_policy_authorize_sign_rsa_fint_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_authorize_nv_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_authorize_nv_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_authorize_nv_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_authorize_nv_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_authorize_nv_tpms_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_authorize_nv_tpms_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DPOLICY_AUTHORIZE_NV=\""/policy/pol_authorize_nv_tpms\""
 test_integration_fapi_key_create_policy_authorize_nv_tpms_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_nv_tpms_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2177,7 +2265,7 @@ test_integration_fapi_key_create_policy_authorize_nv_tpms_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-authorize-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_authorize_nv_complex_tpm2b_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_authorize_nv_complex_tpm2b_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DPOLICY_AUTHORIZE_NV=\""/policy/pol_authorize_nv_complex_tpm2b\""
 test_integration_fapi_key_create_policy_authorize_nv_complex_tpm2b_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_authorize_nv_complex_tpm2b_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2185,7 +2273,7 @@ test_integration_fapi_key_create_policy_authorize_nv_complex_tpm2b_sign_fint_SOU
     test/integration/fapi-key-create-policy-authorize-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_secret_nv_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_secret_nv_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DFAPI_PROFILE=\"P_RSA256\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_key_create_policy_secret_nv_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_secret_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2193,28 +2281,28 @@ test_integration_fapi_key_create_policy_secret_nv_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-secret-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_secret_key_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_secret_key_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_secret_key_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_secret_key_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_secret_key_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-secret-key-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_pcr_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_pcr_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_pcr_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_pcr_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_pcr_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-pcr-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_signed_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_signed_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_signed_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_signed_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_signed_fint_SOURCES = \
     test/integration/fapi-key-create-policy-signed.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_signed_ecc_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_signed_ecc_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DTEST_ECC
 test_integration_fapi_key_create_policy_signed_ecc_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_signed_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2222,7 +2310,7 @@ test_integration_fapi_key_create_policy_signed_ecc_fint_SOURCES = \
     test/integration/fapi-key-create-policy-signed.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_signed_keyedhash_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_signed_keyedhash_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_signed_keyedhash_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_signed_keyedhash_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_signed_keyedhash_fint_SOURCES = \
@@ -2230,14 +2318,14 @@ test_integration_fapi_key_create_policy_signed_keyedhash_fint_SOURCES = \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 
-test_integration_fapi_key_create_policy_nv_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_nv_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_nv_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_nv_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_nv_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_nv_tpm_idx_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_nv_tpm_idx_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DTPMIDX
 test_integration_fapi_key_create_policy_nv_tpm_idx_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_nv_tpm_idx_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2245,21 +2333,21 @@ test_integration_fapi_key_create_policy_nv_tpm_idx_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-nv-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_nv_counter_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_nv_counter_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_nv_counter_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_nv_counter_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_nv_counter_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-nv-counter-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_or_sign_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_create_policy_or_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_create_policy_or_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_or_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_create_policy_or_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policy-or-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_password_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_password_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DTEST_POLICY_PASSWORD -DTEST_PASSWORD
 test_integration_fapi_key_create_policy_password_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_password_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2267,7 +2355,7 @@ test_integration_fapi_key_create_policy_password_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_countertimer_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_countertimer_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DTEST_POLICY_COUNTERTIMER
 test_integration_fapi_key_create_policy_countertimer_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_countertimer_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2275,7 +2363,7 @@ test_integration_fapi_key_create_policy_countertimer_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_physical_presence_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_physical_presence_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DTEST_POLICY_PHYSICAL_PRESENCE
 test_integration_fapi_key_create_policy_physical_presence_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_physical_presence_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2283,7 +2371,7 @@ test_integration_fapi_key_create_policy_physical_presence_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_locality_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_locality_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DTEST_POLICY_LOCALITY
 test_integration_fapi_key_create_policy_locality_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_locality_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2291,7 +2379,7 @@ test_integration_fapi_key_create_policy_locality_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_command_code_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_command_code_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
     -DTEST_POLICY_COMMAND_CODE
 test_integration_fapi_key_create_policy_command_code_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_command_code_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2299,7 +2387,7 @@ test_integration_fapi_key_create_policy_command_code_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_policy_auth_value_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_policy_auth_value_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DTEST_POLICY_AUTH_VALUE -DTEST_PASSWORD
 test_integration_fapi_key_create_policy_auth_value_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_policy_auth_value_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2307,7 +2395,7 @@ test_integration_fapi_key_create_policy_auth_value_sign_fint_SOURCES = \
     test/integration/fapi-key-create-policies-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_ckda_sign_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_ckda_sign_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_ckda_sign_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_ckda_sign_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2315,7 +2403,7 @@ test_integration_fapi_key_create_ckda_sign_fint_SOURCES = \
     test/integration/fapi-key-create-ckda-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_ckda_sign_password_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_ckda_sign_password_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PASSWORD  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_ckda_sign_password_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_ckda_sign_password_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2323,7 +2411,7 @@ test_integration_fapi_key_create_ckda_sign_password_fint_SOURCES = \
     test/integration/fapi-key-create-ckda-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_create_ckda_sign_password_da_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_key_create_ckda_sign_password_da_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PASSWORD -DFAPI_DA  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_key_create_ckda_sign_password_da_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_create_ckda_sign_password_da_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2331,63 +2419,63 @@ test_integration_fapi_key_create_ckda_sign_password_da_fint_SOURCES = \
     test/integration/fapi-key-create-ckda-sign.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_key_change_auth_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_key_change_auth_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_key_change_auth_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_key_change_auth_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_key_change_auth_fint_SOURCES = \
     test/integration/fapi-key-change-auth.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_nv_ordinary_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_nv_ordinary_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_nv_ordinary_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_nv_ordinary_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_nv_ordinary_fint_SOURCES = \
     test/integration/fapi-nv-ordinary.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_nv_authorizenv_cphash_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_nv_authorizenv_cphash_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_nv_authorizenv_cphash_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_nv_authorizenv_cphash_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_nv_authorizenv_cphash_fint_SOURCES = \
     test/integration/fapi-nv-authorizenv-cphash.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_nv_extend_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_nv_extend_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_nv_extend_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_nv_extend_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_nv_extend_fint_SOURCES = \
     test/integration/fapi-nv-extend.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_nv_increment_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_nv_increment_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_nv_increment_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_nv_increment_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_nv_increment_fint_SOURCES = \
     test/integration/fapi-nv-increment.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_nv_set_bits_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_nv_set_bits_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_nv_set_bits_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_nv_set_bits_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_nv_set_bits_fint_SOURCES = \
     test/integration/fapi-nv-set-bits.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_nv_written_policy_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_nv_written_policy_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_nv_written_policy_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_nv_written_policy_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_nv_written_policy_fint_SOURCES = \
     test/integration/fapi-nv-written-policy.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_export_policy_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_export_policy_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_export_policy_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_export_policy_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_export_policy_fint_SOURCES = \
     test/integration/fapi-export-policy.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_ext_public_key_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_ext_public_key_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
   -DFAPI_NONTPM
 test_integration_fapi_ext_public_key_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_ext_public_key_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2395,14 +2483,14 @@ test_integration_fapi_ext_public_key_fint_SOURCES = \
     test/integration/fapi-ext-public-key.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_data_crypt_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_data_crypt_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_data_crypt_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_data_crypt_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_data_crypt_fint_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_data_crypt_persistent_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_data_crypt_persistent_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DPERSISTENT
 test_integration_fapi_data_crypt_persistent_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_data_crypt_persistent_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2410,7 +2498,7 @@ test_integration_fapi_data_crypt_persistent_fint_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_data_crypt_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_data_crypt_rsa_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_data_crypt_rsa_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_data_crypt_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2418,7 +2506,7 @@ test_integration_fapi_data_crypt_rsa_fint_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_data_crypt_rsa_persistent_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_data_crypt_rsa_persistent_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\" -DPERSISTENT
 test_integration_fapi_data_crypt_rsa_persistent_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_data_crypt_rsa_persistent_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2426,14 +2514,14 @@ test_integration_fapi_data_crypt_rsa_persistent_fint_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_duplicate_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_duplicate_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_duplicate_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_duplicate_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_duplicate_fint_SOURCES = \
     test/integration/fapi-duplicate.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_import_ossl_key_ecc_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_import_ossl_key_ecc_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_ECC\"
 test_integration_fapi_import_ossl_key_ecc_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_import_ossl_key_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2441,7 +2529,7 @@ test_integration_fapi_import_ossl_key_ecc_fint_SOURCES = \
     test/integration/fapi-import-ossl-key.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_import_ossl_key_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_import_ossl_key_rsa_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_import_ossl_key_rsa_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_import_ossl_key_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2449,28 +2537,28 @@ test_integration_fapi_import_ossl_key_rsa_fint_SOURCES = \
     test/integration/fapi-import-ossl-key.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_pcr_test_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_pcr_test_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_pcr_test_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_pcr_test_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_pcr_test_fint_SOURCES = \
     test/integration/fapi-pcr-test.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_quote_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_quote_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_quote_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_quote_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_quote_fint_SOURCES = \
     test/integration/fapi-quote.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_quote_with_primary_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_quote_with_primary_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_quote_with_primary_fint_LDADD    = $(TESTS_LDADD)
 test_integration_fapi_quote_with_primary_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_quote_with_primary_fint_SOURCES = \
     test/integration/fapi-quote-with-primary.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_quote_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_quote_rsa_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_quote_rsa_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_quote_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2478,28 +2566,28 @@ test_integration_fapi_quote_rsa_fint_SOURCES = \
     test/integration/fapi-quote.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_policy_or_nv_read_write_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_policy_or_nv_read_write_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_policy_or_nv_read_write_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_policy_or_nv_read_write_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_policy_or_nv_read_write_fint_SOURCES = \
     test/integration/fapi-policy-or-nv-read-write.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_info_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_info_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_info_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_info_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_info_fint_SOURCES = \
     test/integration/fapi-info.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_unseal_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_unseal_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_unseal_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_unseal_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_unseal_fint_SOURCES = \
     test/integration/fapi-unseal.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_unseal_persistent_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_unseal_persistent_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DPERSISTENT
 test_integration_fapi_unseal_persistent_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_unseal_persistent_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2508,7 +2596,7 @@ test_integration_fapi_unseal_persistent_fint_SOURCES = \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 
-test_integration_fapi_provision_fingerprint_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_provision_fingerprint_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_TEST_FINGERPRINT  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_provision_fingerprint_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provision_fingerprint_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2516,7 +2604,7 @@ test_integration_fapi_provision_fingerprint_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_provision_certificate_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_provision_certificate_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_TEST_CERTIFICATE  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_provision_certificate_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provision_certificate_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2524,7 +2612,7 @@ test_integration_fapi_provision_certificate_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_provision_fingerprint_ecc_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_provision_fingerprint_ecc_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_TEST_FINGERPRINT_ECC  -DFAPI_PROFILE=\"P_ECC\"
 test_integration_fapi_provision_fingerprint_ecc_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provision_fingerprint_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2532,7 +2620,7 @@ test_integration_fapi_provision_fingerprint_ecc_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_provision_certificate_ecc_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_provision_certificate_ecc_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_TEST_CERTIFICATE_ECC  -DFAPI_PROFILE=\"P_ECC\"
 test_integration_fapi_provision_certificate_ecc_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provision_certificate_ecc_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2540,14 +2628,14 @@ test_integration_fapi_provision_certificate_ecc_fint_SOURCES = \
     test/integration/fapi-get-random.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_second_provisioning_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_second_provisioning_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_second_provisioning_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_second_provisioning_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_second_provisioning_fint_SOURCES = \
     test/integration/fapi-second-provisioning.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_provisioning_error_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_provisioning_error_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_ECC_error\" -DFAPI_TEST_EK_CERT_LESS
 test_integration_fapi_provisioning_error_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provisioning_error_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2555,7 +2643,7 @@ test_integration_fapi_provisioning_error_fint_SOURCES = \
     test/integration/fapi-provisioning-error.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_provisioning_cert_error_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_provisioning_cert_error_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DSELF_SIGNED_CERTIFICATE
 test_integration_fapi_provisioning_cert_error_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provisioning_cert_error_fint_LDFLAGS = $(TESTS_LDFLAGS)
@@ -2563,14 +2651,14 @@ test_integration_fapi_provisioning_cert_error_fint_SOURCES = \
     test/integration/fapi-provisioning-cert-error.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_quote_destructive_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_quote_destructive_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_quote_destructive_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_quote_destructive_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_quote_destructive_fint_SOURCES = \
     test/integration/fapi-quote-destructive.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_quote_destructive_eventlog_null_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_quote_destructive_eventlog_null_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
   -DFAPI_PROFILE=\"P_ECC_system\" \
   -D FAPI_TEST_FIRMWARE_NULL \
   -D FAPI_TEST_FIRMWARE_LOG_FILE_ABS=\"/dev/null\" \
@@ -2581,7 +2669,7 @@ test_integration_fapi_quote_destructive_eventlog_null_fint_SOURCES = \
     test/integration/fapi-quote-destructive-eventlog.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_quote_destructive_eventlog_not_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_quote_destructive_eventlog_not_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
   -DFAPI_PROFILE=\"P_ECC_system\" \
   -D FAPI_TEST_FIRMWARE_NULL
 test_integration_fapi_quote_destructive_eventlog_not_fint_LDADD   = $(TESTS_LDADD)
@@ -2592,7 +2680,7 @@ test_integration_fapi_quote_destructive_eventlog_not_fint_SOURCES = \
 
 EXTRA_test_integration_fapi_quote_destructive_eventlog_fint_DEPENDENCIES = $(FAPI_TEST_BINS)
 
-test_integration_fapi_quote_destructive_eventlog_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_quote_destructive_eventlog_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
   -DFAPI_PROFILE=\"P_ECC_system\" \
   -D FAPI_TEST_FIRMWARE_NUC \
   -D FAPI_TEST_FIRMWARE_LOG_FILE=\"test/data/fapi/eventlog/binary_measurements_nuc.bin\" \
@@ -2605,7 +2693,7 @@ test_integration_fapi_quote_destructive_eventlog_fint_SOURCES = \
 
 EXTRA_test_integration_fapi_quote_destructive_eventlog_pc_client_fint_DEPENDENCIES = $(FAPI_TEST_BINS)
 
-test_integration_fapi_quote_destructive_eventlog_pc_client_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_quote_destructive_eventlog_pc_client_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
   -DFAPI_PROFILE=\"P_ECC_system\" \
   -D FAPI_TEST_FIRMWARE_PC_CLIENT \
   -D FAPI_TEST_FIRMWARE_LOG_FILE=\"test/data/fapi/eventlog/binary_measurements_pc_client.bin\" \
@@ -2616,14 +2704,14 @@ test_integration_fapi_quote_destructive_eventlog_pc_client_fint_SOURCES = \
     test/integration/fapi-quote-destructive-eventlog.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_provisioning_with_template_fint_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_fapi_provisioning_with_template_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_integration_fapi_provisioning_with_template_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provisioning_with_template_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_provisioning_with_template_fint_SOURCES = \
     test/integration/fapi-provisioning-with-template.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
-test_integration_fapi_provisioning_with_template_rsa_fint_CFLAGS  = $(TESTS_CFLAGS) \
+test_integration_fapi_provisioning_with_template_rsa_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
  -DFAPI_PROFILE=\"P_RSA\"
 test_integration_fapi_provisioning_with_template_rsa_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_provisioning_with_template_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)

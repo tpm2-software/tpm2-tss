@@ -6,18 +6,18 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>
-#include <inttypes.h>
-#include <stddef.h>
-#include <stdlib.h>
+#include <errno.h>              // for errno
+#include <inttypes.h>           // for uint8_t, PRIx32, PRIxPTR, uintptr_t
+#include <limits.h>             // for PATH_MAX
+#include <stddef.h>             // for NULL, size_t
+#include <stdlib.h>             // for free, calloc
 #if defined(__linux__)
-#include <linux/limits.h>
 #elif defined(_MSC_VER)
+#include <limits.h>             // for PATH_MAX
 #include <windows.h>
-#include <limits.h>
 #ifndef PATH_MAX
 #define PATH_MAX MAX_PATH
 
@@ -38,22 +38,23 @@ static char *strndup(const char* s, size_t n)
 }
 #endif
 #else
-#include <limits.h>
+#include <limits.h>             // for PATH_MAX
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif
 #endif
-#include <stdlib.h>
-#include <string.h>
+#include <string.h>             // for strerror, strcmp, strndup, strcpy
 
-#include "tss2_tpm2_types.h"
-#include "tss2_tcti.h"
-
-#include "tcti-common.h"
+#include "tcti-common.h"        // for TCTI_VERSION
+#include "tctildr-interface.h"  // for tctildr_finalize_data, tctildr_get_info
 #include "tctildr.h"
-#include "tctildr-interface.h"
+#include "tss2_tcti.h"          // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
+#include "tss2_tctildr.h"       // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_F...
+#include "tss2_tpm2_types.h"    // for TPM2_HANDLE
+#include "util/aux_util.h"      // for SAFE_FREE
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"           // for LOG_ERROR, LOG_DEBUG, LOG_TRACE, LOGM...
 
 TSS2_RC
 tcti_from_init(TSS2_TCTI_INIT_FUNC init,
@@ -445,15 +446,9 @@ Tss2_TctiLdr_FreeInfo (TSS2_TCTI_INFO **info)
         return;
     }
     info_tmp = *info;
-    if (info_tmp->name != NULL) {
-        free ((char*)info_tmp->name);
-    }
-    if (info_tmp->description != NULL) {
-        free ((char*)info_tmp->description);
-    }
-    if (info_tmp->config_help != NULL) {
-        free ((char*)info_tmp->config_help);
-    }
+    free ((char*)info_tmp->name);
+    free ((char*)info_tmp->description);
+    free ((char*)info_tmp->config_help);
     free (info_tmp);
     *info = NULL;
 }
@@ -511,10 +506,10 @@ Tss2_TctiLdr_Initialize_Ex (const char *name,
     }
     *tctiContext = NULL;
     /* Ignore 'name' and 'conf' if they're NULL or empty string */
-    if (name != NULL && strcmp (name, "")) {
+    if (name != NULL && strcmp (name, "") != 0) {
         local_name = name;
     }
-    if (conf != NULL && strcmp (conf, "")) {
+    if (conf != NULL && strcmp (conf, "") != 0) {
         local_conf = conf;
     }
     ldr_ctx = calloc (1, sizeof (TSS2_TCTILDR_CONTEXT));
@@ -524,7 +519,10 @@ Tss2_TctiLdr_Initialize_Ex (const char *name,
     }
 
     *tctiContext = (TSS2_TCTI_CONTEXT *) ldr_ctx;
-    return tctildr_init_context_data(*tctiContext, local_name, local_conf);
+    rc = tctildr_init_context_data(*tctiContext, local_name, local_conf);
+    if (rc == TSS2_RC_SUCCESS) {
+        return rc;
+    }
 
 err:
     if (*tctiContext != NULL) {

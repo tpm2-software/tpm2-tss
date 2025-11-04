@@ -43,9 +43,11 @@
 #error Version mismatch among TSS2 header files.
 #endif  /* TSS2_API_VERSION_1_2_1_108 */
 
-#if defined(__linux__) || defined(__unix__) || defined(__APPLE__) || defined (__QNXNTO__) || defined (__VXWORKS__)
+#if defined(__linux__) || defined(__unix__) || defined(__APPLE__) || defined (__QNXNTO__) || defined (__VXWORKS__) || defined(__ZEPHYR__)
 #if defined (__VXWORKS__)
 #include <sys/poll.h>
+#elif defined(__ZEPHYR__)
+#include <zephyr/posix/poll.h>
 #else
 #include <poll.h>
 #endif
@@ -53,8 +55,6 @@ typedef struct pollfd TSS2_TCTI_POLL_HANDLE;
 #elif defined(_WIN32)
 #include <windows.h>
 typedef HANDLE TSS2_TCTI_POLL_HANDLE;
-#elif defined(__ZEPHYR__)
-typedef void* TSS2_TCTI_POLL_HANDLE;
 #else
 typedef void TSS2_TCTI_POLL_HANDLE;
 #ifndef TSS2_TCTI_SUPPRESS_POLL_WARNINGS
@@ -63,39 +63,39 @@ typedef void TSS2_TCTI_POLL_HANDLE;
 #endif
 
 /* The following are used to configure timeout characteristics. */
-#define  TSS2_TCTI_TIMEOUT_BLOCK    -1
+#define  TSS2_TCTI_TIMEOUT_BLOCK    (-1)
 #define  TSS2_TCTI_TIMEOUT_NONE     0
 
 /* Macros to simplify access to values in common TCTI structure */
 #define TSS2_TCTI_MAGIC(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->magic
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)(tctiContext))->magic
 #define TSS2_TCTI_VERSION(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->version
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)(tctiContext))->version
 #define TSS2_TCTI_TRANSMIT(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->transmit
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)(tctiContext))->transmit
 #define TSS2_TCTI_RECEIVE(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->receive
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)(tctiContext))->receive
 #define TSS2_TCTI_FINALIZE(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->finalize
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)(tctiContext))->finalize
 #define TSS2_TCTI_CANCEL(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->cancel
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)(tctiContext))->cancel
 #define TSS2_TCTI_GET_POLL_HANDLES(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->getPollHandles
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)(tctiContext))->getPollHandles
 #define TSS2_TCTI_SET_LOCALITY(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_COMMON_V1*)tctiContext)->setLocality
+    ((TSS2_TCTI_CONTEXT_COMMON_V1*)(tctiContext))->setLocality
 #define TSS2_TCTI_MAKE_STICKY(tctiContext) \
-    ((TSS2_TCTI_CONTEXT_COMMON_V2*)tctiContext)->makeSticky
+    ((TSS2_TCTI_CONTEXT_COMMON_V2*)(tctiContext))->makeSticky
 
 /* Macros to simplify invocation of functions from the common TCTI structure */
 #define Tss2_Tcti_Transmit(tctiContext, size, command) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
+    (((tctiContext) == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_TRANSMIT(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_TRANSMIT(tctiContext)(tctiContext, size, command))
 #define Tss2_Tcti_Receive(tctiContext, size, response, timeout) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
+    (((tctiContext) == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_RECEIVE(tctiContext) == NULL) ? \
@@ -103,7 +103,7 @@ typedef void TSS2_TCTI_POLL_HANDLE;
     TSS2_TCTI_RECEIVE(tctiContext)(tctiContext, size, response, timeout))
 #define Tss2_Tcti_Finalize(tctiContext) \
     do { \
-        if ((tctiContext != NULL) && \
+        if (((tctiContext) != NULL) && \
             (TSS2_TCTI_VERSION(tctiContext) >= 1) && \
             (TSS2_TCTI_FINALIZE(tctiContext) != NULL)) \
         { \
@@ -111,28 +111,28 @@ typedef void TSS2_TCTI_POLL_HANDLE;
         } \
     } while (0)
 #define Tss2_Tcti_Cancel(tctiContext) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
+    (((tctiContext) == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_CANCEL(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_CANCEL(tctiContext)(tctiContext))
 #define Tss2_Tcti_GetPollHandles(tctiContext, handles, num_handles) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
+    (((tctiContext) == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_GET_POLL_HANDLES(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_GET_POLL_HANDLES(tctiContext)(tctiContext, handles, num_handles))
 #define Tss2_Tcti_SetLocality(tctiContext, locality) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
+    (((tctiContext) == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 1) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_SET_LOCALITY(tctiContext) == NULL) ? \
         TSS2_TCTI_RC_NOT_IMPLEMENTED: \
     TSS2_TCTI_SET_LOCALITY(tctiContext)(tctiContext, locality))
 #define Tss2_Tcti_MakeSticky(tctiContext, handle, sticky) \
-    ((tctiContext == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
+    (((tctiContext) == NULL) ? TSS2_TCTI_RC_BAD_REFERENCE: \
     (TSS2_TCTI_VERSION(tctiContext) < 2) ? \
         TSS2_TCTI_RC_ABI_MISMATCH: \
     (TSS2_TCTI_MAKE_STICKY(tctiContext) == NULL) ? \

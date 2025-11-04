@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2019 - 2020 Fraunhofer SIT sponsored by Infineon
+# SPDX-FileCopyrightText: 2020 Intel
+# SPDX-FileCopyrightText: 2021 Petr Gotthard
+# SPDX-FileCopyrightText: 2024 Juergen Repp
+# SPDX-License-Identifier: BSD-2-Clause
 
 #set -x
 

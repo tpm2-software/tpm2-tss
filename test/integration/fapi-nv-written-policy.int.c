@@ -5,21 +5,21 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#include <unistd.h>
+#include <inttypes.h>     // for uint8_t
+#include <stdio.h>        // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>       // for calloc, malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>       // for memcmp
+#include <unistd.h>       // for read
 
-#include "tss2_fapi.h"
-#include "test-fapi.h"
+#include "test-fapi.h"    // for ASSERT, test_invoke_fapi
+#include "tss2_common.h"  // for TSS2_FAPI_RC_MEMORY, TSS2_RC
+#include "tss2_fapi.h"    // for Fapi_Delete, Fapi_CreateNv, Fapi_GetAppData
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"     // for goto_if_error, SAFE_FREE, LOG_ERROR, goto_i...
 
 #define NV_SIZE 10
 #define APP_DATA_SIZE 10*1024*1024

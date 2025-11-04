@@ -5,23 +5,22 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>
-#include <string.h>
-#include <inttypes.h>
+#include <inttypes.h>           // for PRIxPTR, uintptr_t, uint8_t, int32_t
+#include <string.h>             // for NULL, size_t, memset
 
-#include "tss2_tpm2_types.h"
-#include "tss2_common.h"
-#include "tss2_tcti.h"
-#include "tcti-common.h"
+#include "tcti-common.h"        // for TSS2_TCTI_COMMON_CONTEXT, TCTI_STATE_...
+#include "tss2_common.h"        // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TCTI_R...
+#include "tss2_tcti.h"          // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
+#include "tss2_tpm2_types.h"    // for TPM2_RC_SUCCESS
+
 #define LOGMODULE tcti
-#include "util/log.h"
-
+#include "tcti-pcap-builder.h"  // for pcap_print, pcap_deinit, pcap_init
 #include "tcti-pcap.h"
-#include "tcti-pcap-builder.h"
-#include "tss2_tctildr.h"
+#include "tss2_tctildr.h"       // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_I...
+#include "util/log.h"           // for LOG_WARNING, LOG_ERROR, LOGBLOB_DEBUG
 
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the

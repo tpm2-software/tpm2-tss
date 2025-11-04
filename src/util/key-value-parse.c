@@ -4,18 +4,17 @@
  * All rights reserved.
  */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdbool.h>
-#include <string.h>
-
-#include "tss2_tpm2_types.h"
+#include <inttypes.h>  // for PRIxPTR, uintptr_t
+#include <stdbool.h>   // for false, true, bool
+#include <string.h>    // for strtok_r
 
 #include "util/key-value-parse.h"
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"  // for LOG_WARNING, LOG_TRACE, LOG_DEBUG
 
 /*
  * Parse the provided string containing a key / value pair separated by the

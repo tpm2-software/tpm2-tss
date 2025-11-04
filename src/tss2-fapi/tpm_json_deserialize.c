@@ -5,19 +5,41 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"         // for MAXLOGLEVEL
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+#include <ctype.h>          // for tolower, isxdigit
+#include <inttypes.h>       // for int64_t, uint8_t, PRId64, PRIu32, PRIx64
+#include <stdarg.h>         // for va_arg, va_end, va_list, va_start
+#include <stdio.h>          // for sscanf
+#include <stdlib.h>         // for malloc
+#include <string.h>         // for memset, strlen, strncmp
+#include <strings.h>        // for strcasecmp, strncasecmp
 
-#include "ifapi_helpers.h"
+#include "ifapi_helpers.h"  // for ifapi_check_json_object_fields
+#include "ifapi_macros.h"   // for return_if_error2, return_error2
+#include "linkhash.h"       // for lh_entry
 #include "tpm_json_deserialize.h"
-#define LOGMODULE fapijson
-#include "util/log.h"
-#include "util/aux_util.h"
 
+#define LOGMODULE fapijson
+#include "util/log.h"       // for LOG_ERROR, LOG_TRACE, return_if_error
+
+/* Deserialize according to the rules of parenttype and then filter against values
+   provided in the ... list. */
+#define SUBTYPE_FILTER(type, parenttype, ...) \
+    TSS2_RC r; \
+    type tab[] = { __VA_ARGS__ }; \
+    type v; \
+    r = ifapi_json_ ## parenttype ## _deserialize(jso, &v); \
+    return_if_error(r, "Bad value"); \
+    for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) { \
+        if (v == tab[i]) { \
+            *out = v; \
+            return TSS2_RC_SUCCESS; \
+        } \
+    } \
+    LOG_ERROR("Bad sub-value"); \
+    return TSS2_FAPI_RC_BAD_VALUE;
 
 /** Parse JSON data and create JSON object.
  *
@@ -34,9 +56,11 @@ json_object*
 ifapi_parse_json(const char *jstring) {
     json_object *jso = NULL;
     enum json_tokener_error jerr;
+#if MAXLOGLEVEL > 0
     int line = 1;
     int line_offset = 0;
     int char_pos;
+#endif
     struct json_tokener* tok = json_tokener_new();
     if (!tok) {
         LOG_ERROR("Could not allocate json tokener");
@@ -45,6 +69,7 @@ ifapi_parse_json(const char *jstring) {
     jso = json_tokener_parse_ex(tok, jstring, -1);
     jerr = json_tokener_get_error(tok);
     if (jerr != json_tokener_success) {
+#if MAXLOGLEVEL > 0
         for (char_pos = 0; char_pos <= tok->char_offset; char_pos++) {
             if (jstring[char_pos] == '\n') {
                 line++;
@@ -55,6 +80,7 @@ ifapi_parse_json(const char *jstring) {
         }
         LOG_ERROR("Invalid JSON at line %i column %i: %s.", line, line_offset,
                   json_tokener_error_desc(jerr));
+#endif
         json_tokener_free(tok);
         return NULL;
     }
@@ -227,13 +253,25 @@ ifapi_get_sub_object(json_object *jso, char *name, json_object **sub_jso)
 {
     int i;
     if (json_object_object_get_ex(jso, name, sub_jso)) {
-        return true;
+        if (*sub_jso) {
+            return true;
+        } else {
+            return false;
+        }
     } else {
         char name2[strlen(name) + 1];
         for (i = 0; name[i]; i++)
-            name2[i] = tolower(name[i]);
+            name2[i] = (char) tolower(name[i]);
         name2[strlen(name)] = '\0';
-        return json_object_object_get_ex(jso, name2, sub_jso);
+        if (json_object_object_get_ex(jso, name2, sub_jso)) {
+            if (*sub_jso) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }
 
@@ -273,9 +311,9 @@ get_boolean_from_json(json_object *jso, TPMI_YES_NO *value)
     TSS2_RC r = ifapi_json_TPMI_YES_NO_deserialize(jso, value);
     if (r != TSS2_RC_SUCCESS) {
         const char *token = json_object_get_string(jso);
-        if (strcasecmp(token, "set") || strcasecmp(token, "on")) {
+        if (strcasecmp(token, "set") != 0 || strcasecmp(token, "on") != 0) {
             *value = 1;
-        } else if (strcasecmp(token, "off")) {
+        } else if (strcasecmp(token, "off") != 0) {
             *value = 0;
         } else {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "No boolean value");
@@ -305,7 +343,7 @@ ifapi_json_pcr_selection_deserialize(
     TSS2_RC r;
     size_t i;
     int64_t n;
-    int n_byte = 0;
+    int64_t n_byte = 0;
     json_type jso_type = json_object_get_type(jso);
 
     if (jso_type != json_type_array) {
@@ -316,7 +354,7 @@ ifapi_json_pcr_selection_deserialize(
         r = get_number_from_json(json_object_array_get_idx(jso, i), &n);
         return_if_error(r, "Bad PCR value");
         n_byte = n / 8;
-        pcrSelect[n_byte] |= (BYTE)(1 << (n % 8));
+        pcrSelect[n_byte] |= ((BYTE)1) << (n % 8);
         if (n_byte > *sizeofSelect)
             *sizeofSelect = n_byte;
     }
@@ -517,11 +555,11 @@ ifapi_json_BYTE_array_deserialize(size_t max, json_object *jso, BYTE *out)
     LOG_TRACE("call");
     json_type jso_type = json_object_get_type(jso);
     if (jso_type == json_type_array) {
-        int size = json_object_array_length(jso);
-        if (size > (int)max) {
-            LOG_ERROR("Array of BYTE too large (%i > %zu)", size, max);
+        size_t size = json_object_array_length(jso);
+        if (size > max) {
+            LOG_ERROR("Array of BYTE too large (%zu > %zu)", size, max);
         }
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             json_object *jso2 = json_object_array_get_idx(jso, i);
             TSS2_RC r = ifapi_json_BYTE_deserialize(jso2, &out[i]);
             return_if_error(r, "BAD VALUE");
@@ -694,6 +732,7 @@ ifapi_json_TPM2_GENERATED_deserialize(json_object *jso, TPM2_GENERATED *out)
     const char *s = json_object_get_string(jso);
     const char *str = strip_prefix(s, "TPM_", "TPM2_", "GENERATED_", NULL);
     LOG_TRACE("called for %s parsing %s", s, str);
+    TSS2_RC r;
 
     if (str) {
         for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
@@ -703,8 +742,14 @@ ifapi_json_TPM2_GENERATED_deserialize(json_object *jso, TPM2_GENERATED *out)
             }
         }
     }
-
-    return ifapi_json_UINT32_deserialize(jso, out);
+    r = ifapi_json_UINT32_deserialize(jso, out);
+    return_if_error(r, "Could not deserialize UINT32");
+    if (*out != TPM2_GENERATED_VALUE) {
+        return_error2(TSS2_FAPI_RC_BAD_VALUE,
+                      "Value %x not equal TPM self generated value %x",
+                      *out, TPM2_GENERATED_VALUE);
+    }
+    return TSS2_RC_SUCCESS;
 }
 
 /** Deserialize a TPM2_ALG_ID json object.
@@ -4491,8 +4536,8 @@ ifapi_json_TPMA_NV_deserialize(json_object *jso, TPMA_NV *out)
                     return TSS2_FAPI_RC_BAD_VALUE;
                 }
                 TPM2_NT out2;
-                TSS2_RC r = ifapi_json_TPM2_NT_deserialize(jso2, &out2);
-                return_if_error(r, "Bad value");
+                TSS2_RC r2 = ifapi_json_TPM2_NT_deserialize(jso2, &out2);
+                return_if_error(r2, "Bad value");
                 *out |= out2 << 4;
                 continue;
             }
@@ -4519,8 +4564,8 @@ ifapi_json_TPMA_NV_deserialize(json_object *jso, TPMA_NV *out)
             const char *token = strip_prefix(key, "TPM_", "TPM2_", "TPMA_", "NV_", "TPM2_", NULL);
             if (strcasecmp(token, "NT") == 0) {
                 TPM2_NT out2;
-                TSS2_RC r = ifapi_json_TPM2_NT_deserialize(val, &out2);
-                return_if_error(r, "Bad value");
+                TSS2_RC r2 = ifapi_json_TPM2_NT_deserialize(val, &out2);
+                return_if_error(r2, "Bad value");
                 *out |= out2 << 4;
                 continue;
             }

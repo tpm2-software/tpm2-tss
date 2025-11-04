@@ -6,18 +6,20 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
+#include <stdbool.h>           // for bool
+#include <stdint.h>            // for uint8_t
 
-#include "tss2_mu.h"
 #include "sysapi_util.h"
-#include "util/tss2_endian.h"
+#include "tss2_mu.h"           // for Tss2_MU_TPM2_ST_Marshal, Tss2_MU_TPM2_...
+#include "util/tss2_endian.h"  // for BE_TO_HOST_32, HOST_TO_BE_32, BE_TO_HO...
+
 #define LOGMODULE sys
 #include "util/log.h"
 
-void InitSysContextFields(_TSS2_SYS_CONTEXT_BLOB *ctx)
+void InitSysContextFields(TSS2_SYS_CONTEXT_BLOB *ctx)
 {
     ctx->decryptAllowed = 0;
     ctx->encryptAllowed = 0;
@@ -27,19 +29,19 @@ void InitSysContextFields(_TSS2_SYS_CONTEXT_BLOB *ctx)
 }
 
 void InitSysContextPtrs(
-    _TSS2_SYS_CONTEXT_BLOB *ctx,
+    TSS2_SYS_CONTEXT_BLOB *ctx,
     size_t contextSize)
 {
-    ctx->cmdBuffer = (UINT8 *)ctx + sizeof(_TSS2_SYS_CONTEXT_BLOB);
-    ctx->maxCmdSize = contextSize - sizeof(_TSS2_SYS_CONTEXT_BLOB);
+    ctx->cmdBuffer = (UINT8 *)ctx + sizeof(TSS2_SYS_CONTEXT_BLOB);
+    ctx->maxCmdSize = contextSize - sizeof(TSS2_SYS_CONTEXT_BLOB);
 }
 
-UINT32 GetCommandSize(_TSS2_SYS_CONTEXT_BLOB *ctx)
+UINT32 GetCommandSize(TSS2_SYS_CONTEXT_BLOB *ctx)
 {
     return BE_TO_HOST_32(req_header_from_cxt(ctx)->commandSize);
 }
 
-TSS2_RC CopyCommandHeader(_TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode)
+TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode)
 {
     TSS2_RC rval;
 
@@ -63,7 +65,7 @@ static int GetNumCommandHandles(TPM2_CC commandCode);
 static int GetNumResponseHandles(TPM2_CC commandCode);
 
 TSS2_RC CommonPreparePrologue(
-    _TSS2_SYS_CONTEXT_BLOB *ctx,
+    TSS2_SYS_CONTEXT_BLOB *ctx,
     TPM2_CC commandCode)
 {
     int numCommandHandles;
@@ -95,7 +97,7 @@ TSS2_RC CommonPreparePrologue(
     return rval;
 }
 
-TSS2_RC CommonPrepareEpilogue(_TSS2_SYS_CONTEXT_BLOB *ctx)
+TSS2_RC CommonPrepareEpilogue(TSS2_SYS_CONTEXT_BLOB *ctx)
 {
     ctx->cpBufferUsedSize = ctx->cmdBuffer + ctx->nextData - ctx->cpBuffer;
     req_header_from_cxt(ctx)->commandSize = HOST_TO_BE_32(ctx->nextData);
@@ -104,7 +106,7 @@ TSS2_RC CommonPrepareEpilogue(_TSS2_SYS_CONTEXT_BLOB *ctx)
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
+TSS2_RC CommonComplete(TSS2_SYS_CONTEXT_BLOB *ctx)
 {
     UINT32 rspSize;
     TPM2_ST tag;
@@ -142,7 +144,7 @@ TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
 }
 
 TSS2_RC CommonOneCall(
-    _TSS2_SYS_CONTEXT_BLOB *ctx,
+    TSS2_SYS_CONTEXT_BLOB *ctx,
     TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
@@ -288,10 +290,12 @@ static int GetNumHandles(TPM2_CC commandCode, bool req)
         { TPM2_CC_AC_Send, 3, 0 },
         { TPM2_CC_Policy_AC_SendSelect, 1, 0 },
         { TPM2_CC_ACT_SetTimeout, 1, 0 },
-        { TPM2_CC_CertifyX509, 2, 0 }
+        { TPM2_CC_CertifyX509, 2, 0 },
+        { TPM2_CC_ECC_Encrypt, 1, 0 },
+        { TPM2_CC_ECC_Decrypt, 1, 0 }
     };
 
-    uint8_t i;
+    size_t i;
 
     for (i = 0; i < sizeof(commandArray) / sizeof(COMMAND_HANDLES); i++) {
         if (commandCode == commandArray[i].commandCode) {

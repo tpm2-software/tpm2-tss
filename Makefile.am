@@ -7,7 +7,6 @@
 
 ### Initialize global variables used throughout the file ###
 INCLUDE_DIRS    = -I$(srcdir)/src -I$(srcdir)/include/tss2
-ACLOCAL_AMFLAGS = -I m4 --install
 AM_CFLAGS       = $(INCLUDE_DIRS) $(EXTRA_CFLAGS) $(CODE_COVERAGE_CFLAGS) \
 				  $(SANITIZER_CFLAGS)
 AM_LDFLAGS      = $(EXTRA_LDFLAGS) $(CODE_COVERAGE_LIBS) $(SANITIZER_LDFLAGS)
@@ -204,7 +203,8 @@ include Makefile-fuzz.am
 
 ### Distribution files ###
 # Add udev rule
-udevrules_DATA   = dist/tpm-udev.rules
+udevrules_DATA   = dist/tpm-udev.rules \
+                   dist/ltt2go-udev.rules
 
 # Adding user and developer information
 EXTRA_DIST += \
@@ -212,7 +212,7 @@ EXTRA_DIST += \
     CONTRIBUTING.md \
     INSTALL.md \
     LICENSE \
-    MAINTAINERS \
+    MAINTAINERS.md \
     README.md \
     RELEASE.md \
     VERSION
@@ -239,6 +239,12 @@ AUTHORS :
 	$(AM_V_GEN)git log --format='%aN <%aE>' | grep -v 'users.noreply.github.com' | sort | \
 	    uniq -c | sort -nr | sed 's/^\s*//' | cut -d" " -f2- > $@
 EXTRA_DIST += AUTHORS
+
+# Use bear to generate compilation database (phony to enable regeneration)
+.PHONY: compile_commands.json
+compile_commands.json:
+	$(AM_V_GEN)bear -- $(MAKE) --always-make all check-programs
+CLEANFILES += compile_commands.json
 
 # pkg-config setup. pc-file declarations happen in the corresponding modules
 pkgconfig_DATA =
@@ -297,7 +303,7 @@ src_tss2_tcti_libtss2_tctildr_la_SOURCES = \
     src/tss2-tcti/tctildr.c src/tss2-tcti/tctildr.h \
     src/tss2-tcti/tctildr-interface.h
 if NO_DL
-src_tss2_tcti_libtss2_tctildr_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim)
+src_tss2_tcti_libtss2_tctildr_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libtss2_tcti_swtpm)
 src_tss2_tcti_libtss2_tctildr_la_SOURCES += src/tss2-tcti/tctildr-nodl.c src/tss2-tcti/tctildr-nodl.h
 else
 src_tss2_tcti_libtss2_tctildr_la_LIBADD += $(LIBADD_DL)
@@ -376,6 +382,25 @@ src_tss2_tcti_libtss2_tcti_pcap_la_SOURCES  = \
 endif # ENABLE_TCTI_PCAP
 EXTRA_DIST += lib/tss2-tcti-pcap.map
 
+# tcti null library
+if ENABLE_TCTI_NULL
+libtss2_tcti_null = src/tss2-tcti/libtss2-tcti-null.la
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_null.h
+lib_LTLIBRARIES += $(libtss2_tcti_null)
+pkgconfig_DATA += lib/tss2-tcti-null.pc
+
+if HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_null_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-null.map
+endif # HAVE_LD_VERSION_SCRIPT
+src_tss2_tcti_libtss2_tcti_null_la_LIBADD   = $(libtss2_tctildr) $(libtss2_mu) $(libutil) $(libutilio)
+src_tss2_tcti_libtss2_tcti_null_la_SOURCES  = \
+    src/tss2-tcti/tcti-common.c \
+    src/tss2-tcti/tcti-null.c \
+    src/tss2-tcti/tcti-null.h
+endif # ENABLE_TCTI_NULL
+EXTRA_DIST += lib/tss2-tcti-null.map
+
+
 # tcti libtpms library
 if ENABLE_TCTI_LIBTPMS
 libtss2_tcti_libtpms = src/tss2-tcti/libtss2-tcti-libtpms.la
@@ -421,8 +446,6 @@ libtss2_tcti_spi_helper = src/tss2-tcti/libtss2-tcti-spi-helper.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spi_helper.h
 lib_LTLIBRARIES += $(libtss2_tcti_spi_helper)
 pkgconfig_DATA += lib/tss2-tcti-spi-helper.pc
-EXTRA_DIST += lib/tss2-tcti-spi-helper.map \
-              lib/tss2-tcti-spi-helper.def
 
 if HAVE_LD_VERSION_SCRIPT
 if !UNIT
@@ -435,6 +458,8 @@ src_tss2_tcti_libtss2_tcti_spi_helper_la_SOURCES  = \
     src/tss2-tcti/tcti-spi-helper.c \
     src/tss2-tcti/tcti-spi-helper.h
 endif # ENABLE_TCTI_SPI_HELPER
+EXTRA_DIST += lib/tss2-tcti-spi-helper.map \
+              lib/tss2-tcti-spi-helper.def
 
 # tcti library for letstrust-tpm2go usb tpm
 if ENABLE_TCTI_SPI_LTT2GO
@@ -483,8 +508,6 @@ libtss2_tcti_spi_ftdi = src/tss2-tcti/libtss2-tcti-spi-ftdi.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spi_ftdi.h
 lib_LTLIBRARIES += $(libtss2_tcti_spi_ftdi)
 pkgconfig_DATA += lib/tss2-tcti-spi-ftdi.pc
-EXTRA_DIST += lib/tss2-tcti-spi-ftdi.map \
-              lib/tss2-tcti-spi-ftdi.def
 
 src_tss2_tcti_libtss2_tcti_spi_ftdi_la_CFLAGS  = $(AM_CFLAGS) $(LIBFTDI_CFLAGS) -Wno-deprecated-declarations
 src_tss2_tcti_libtss2_tcti_spi_ftdi_la_LDFLAGS  = $(LIBFTDI_LIBS)
@@ -501,6 +524,8 @@ src_tss2_tcti_libtss2_tcti_spi_ftdi_la_SOURCES  = \
     src/tss2-tcti/tcti-spi-ftdi.c \
     src/tss2-tcti/tcti-spi-ftdi.h
 endif # ENABLE_TCTI_SPI_FTDI
+EXTRA_DIST += lib/tss2-tcti-spi-ftdi.map \
+              lib/tss2-tcti-spi-ftdi.def
 
 # tcti library for i2c connected tpms
 if ENABLE_TCTI_I2C_HELPER
@@ -508,8 +533,6 @@ libtss2_tcti_i2c_helper = src/tss2-tcti/libtss2-tcti-i2c-helper.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_i2c_helper.h
 lib_LTLIBRARIES += $(libtss2_tcti_i2c_helper)
 pkgconfig_DATA += lib/tss2-tcti-i2c-helper.pc
-EXTRA_DIST += lib/tss2-tcti-i2c-helper.map \
-              lib/tss2-tcti-i2c-helper.def
 
 if HAVE_LD_VERSION_SCRIPT
 if !UNIT
@@ -522,6 +545,8 @@ src_tss2_tcti_libtss2_tcti_i2c_helper_la_SOURCES  = \
     src/tss2-tcti/tcti-i2c-helper.c \
     src/tss2-tcti/tcti-i2c-helper.h
 endif # ENABLE_TCTI_I2C_HELPER
+EXTRA_DIST += lib/tss2-tcti-i2c-helper.map \
+              lib/tss2-tcti-i2c-helper.def
 
 # tcti library for ftdi connected tpm
 if ENABLE_TCTI_I2C_FTDI
@@ -529,8 +554,6 @@ libtss2_tcti_i2c_ftdi = src/tss2-tcti/libtss2-tcti-i2c-ftdi.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_i2c_ftdi.h
 lib_LTLIBRARIES += $(libtss2_tcti_i2c_ftdi)
 pkgconfig_DATA += lib/tss2-tcti-i2c-ftdi.pc
-EXTRA_DIST += lib/tss2-tcti-i2c-ftdi.map \
-              lib/tss2-tcti-i2c-ftdi.def
 
 src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_CFLAGS  = $(AM_CFLAGS) $(LIBFTDI_CFLAGS) -Wno-deprecated-declarations
 src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_LDFLAGS  = $(LIBFTDI_LIBS)
@@ -547,6 +570,8 @@ src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_SOURCES  = \
     src/tss2-tcti/tcti-i2c-ftdi.c \
     src/tss2-tcti/tcti-i2c-ftdi.h
 endif # ENABLE_TCTI_I2C_FTDI
+EXTRA_DIST += lib/tss2-tcti-i2c-ftdi.map \
+              lib/tss2-tcti-i2c-ftdi.def
 
 ### TCG TSS SYS spec library ###
 libtss2_sys = src/tss2-sys/libtss2-sys.la
@@ -602,23 +627,24 @@ src_tss2_esys_libtss2_esys_la_SOURCES = $(TSS2_ESYS_SRC) $(TSS2_ESYS_SRC_CRYPTO)
     src/tss2-tcti/tctildr.c src/tss2-tcti/tctildr.h \
     src/tss2-tcti/tctildr-interface.h
 if NO_DL
-src_tss2_esys_libtss2_esys_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libtss2_tcti_cmd)
+src_tss2_esys_libtss2_esys_la_LIBADD += $(libtss2_tcti_device) $(libtss2_tcti_mssim) $(libtss2_tcti_cmd)  $(libtss2_tcti_swtpm)
 src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-nodl.c src/tss2-tcti/tctildr-nodl.h
 else
 src_tss2_esys_libtss2_esys_la_LIBADD += $(LIBADD_DL)
 src_tss2_esys_libtss2_esys_la_SOURCES += src/tss2-tcti/tctildr-dl.c src/tss2-tcti/tctildr-dl.h
 endif
+endif # ESYS
 EXTRA_DIST += lib/tss2-esys.map \
               lib/tss2-esys.def \
               src/tss2-esys/tss2-esys.vcxproj
-endif #ESYS
 
 ### TCG TSS error decoding spec library ###
 libtss2_rc = src/tss2-rc/libtss2-rc.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_rc.h
 lib_LTLIBRARIES += $(libtss2_rc)
 pkgconfig_DATA += lib/tss2-rc.pc
-EXTRA_DIST += lib/tss2-rc.map lib/tss2-rc.def
+EXTRA_DIST += lib/tss2-rc.map lib/tss2-rc.def \
+              src/tss2-rc/tss2-rc.vcxproj
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_rc_libtss2_rc_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/tss2-rc.map
@@ -661,9 +687,8 @@ src_tss2_policy_libtss2_policy_la_SOURCES = $(TSS2_POLICY_SRC) \
     src/tss2-fapi/ifapi_policy_json_serialize.c \
     src/tss2-fapi/ifapi_keystore.c \
     src/tss2-fapi/ifapi_policy_store.c
-
+endif # POLICY
 EXTRA_DIST += lib/tss2-policy.map lib/tss2-policy.def
-endif
 
 ### TCG TSS FAPI spec library ###
 if FAPI
@@ -709,7 +734,13 @@ fapiprofilesdir = @sysconfdir@/tpm2-tss/fapi-profiles
 fapiprofiles_DATA = dist/fapi-profiles/P_RSA2048SHA256.json \
                     dist/fapi-profiles/P_ECCP256SHA256.json \
                     dist/fapi-profiles/P_RSA3072SHA384.json \
-                    dist/fapi-profiles/P_ECCP384SHA384.json
+                    dist/fapi-profiles/P_ECCP384SHA384.json \
+                    dist/fapi-profiles/P_RSA2048SHA256-legacy.json \
+                    dist/fapi-profiles/P_ECCP256SHA256-legacy.json \
+                    dist/fapi-profiles/P_RSA2048SHA256-high-range.json \
+                    dist/fapi-profiles/P_ECCP256SHA256-high-range.json \
+                    dist/fapi-profiles/P_RSA2048SHA256-low-range.json \
+                    dist/fapi-profiles/P_ECCP256SHA256-low-range.json
 
 libtss2_fapi = src/tss2-fapi/libtss2-fapi.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_fapi.h
@@ -721,6 +752,12 @@ EXTRA_DIST +=  \
     dist/fapi-profiles/P_ECCP256SHA256.json \
     dist/fapi-profiles/P_RSA3072SHA384.json \
     dist/fapi-profiles/P_ECCP384SHA384.json \
+    dist/fapi-profiles/P_RSA2048SHA256-legacy.json \
+    dist/fapi-profiles/P_ECCP256SHA256-legacy.json \
+    dist/fapi-profiles/P_RSA2048SHA256-high-range.json \
+    dist/fapi-profiles/P_ECCP256SHA256-high-range.json \
+    dist/fapi-profiles/P_RSA2048SHA256-low-range.json \
+    dist/fapi-profiles/P_ECCP256SHA256-low-range.json \
     dist/sysusers.d/tpm2-tss.conf \
     dist/tmpfiles.d/tpm2-tss-fapi.conf.in \
     doc/fapi-config.md \
@@ -741,6 +778,10 @@ EXTRA_DIST +=  \
     test/data/fapi/P_ECC.json \
     test/data/fapi/P_ECC384.json \
     test/data/fapi/P_ECC_system.json \
+    test/data/fapi/P_ECC384_no_unique_init.json \
+    test/data/fapi/P_ECC_no_unique_init.json \
+    test/data/fapi/P_RSA3072_no_unique_init.json \
+    test/data/fapi/P_RSA_no_unique_init.json \
     test/data/fapi/policy/pol_pcr16_0.json \
     test/data/fapi/policy/pol_pcr16_0_rsa_authorized.json \
     test/data/fapi/policy/pol_pcr16_0_ecc_authorized.json \
@@ -777,6 +818,7 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_cphash.json \
     test/data/fapi/policy/pol_or_read_write_secret.json \
     test/data/fapi/policy/pol_ek_high_range_sha256.json \
+    test/data/fapi/policy/pol_ek_high_range_sha384.json \
     test/data/fapi/P_ECC_sh_eh_policy_sha384.json \
     test/data/fapi/policy/pol_authorize_ecc_pem_sha384.json \
     test/data/fapi/policy/pol_authorize_nv_complex_tpm2b_sha384.json \
@@ -971,7 +1013,8 @@ install-man: install-man3 install-man7
 	$(LN_S) -f Tss2_TctiLdr_Initialize.3 $(DESTDIR)$(man3dir)/Tss2_TctiLdr_Initialize_Ex.3
 endif #FAPI
 
-EXTRA_DIST += dist/tpm-udev.rules
+EXTRA_DIST += dist/tpm-udev.rules \
+              dist/ltt2go-udev.rules
 
 install-dirs:
 if HOSTOS_LINUX
@@ -998,10 +1041,12 @@ endif
 install-data-hook: install-dirs
 	-if [ ! -z "$(udevrulesprefix)" ]; then \
 		mv $(DESTDIR)$(udevrulesdir)/tpm-udev.rules $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules; \
+		mv $(DESTDIR)$(udevrulesdir)/ltt2go-udev.rules $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)ltt2go-udev.rules; \
 	fi
 
 uninstall-local:
 	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)tpm-udev.rules
+	-rm $(DESTDIR)$(udevrulesdir)/$(udevrulesprefix)ltt2go-udev.rules
 	cd $(DESTDIR)$(man3dir) && \
 		[ -L Tss2_TctiLdr_Initialize_Ex.3 ] && \
 			rm -f Tss2_TctiLdr_Initialize_Ex.3 || true

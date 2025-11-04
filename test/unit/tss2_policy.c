@@ -5,30 +5,24 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <limits.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <setjmp.h>
-#include <cmocka.h>
+#include <limits.h>                        // for PATH_MAX
+#include <stddef.h>                        // for NULL, size_t
+#include <stdio.h>                         // for fclose, fopen, fprintf, fread
+#include <stdlib.h>                        // for calloc
+#include <string.h>                        // for memcpy, memset
 
-#if defined(__linux__)
-#include <linux/limits.h>
-#endif
-
-#include "tss2_policy.h"
+#include "../helper/cmocka_all.h"                        // for assert_int_equal, assert_s...
+#include "tss2_common.h"                   // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_policy.h"                   // for TSS2_POLICY_PCR_SELECTION
+#include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMS_PCR_SEL...
 
 #define LOGMODULE test
-#include "util/log.h"
-
-#include "test/data/test-fapi-policies.h"
-#include "util/aux_util.h"
+#include "test/data/test-fapi-policies.h"  // for policy_digests, _test_fapi...
+#include "util/aux_util.h"                 // for UNUSED, SAFE_FREE, ARRAY_LEN
+#include "util/log.h"                      // for LOG_ERROR
 
 #define TEST_LAYER        TSS2_RC_LAYER(19)
 #define TSS2_RC_TEST_NOT_SUPPORTED ((TSS2_RC)(TEST_LAYER | \
@@ -177,30 +171,31 @@ static void test_policy_instantiate (
         fprintf(stderr, "Calculating policy (%u): %s\n", i, p->path);
 
         unsigned expected_hash_size = 0;
-        char hexdigest[32 + 32 + 1] = { 0 };
+        /* buffer for displaying a hash as a hex string */
+        char hexdigest[2 * sizeof(TPMU_HA) + 1] = { 0 };
         TPM2B_DIGEST digest = { 0 };
         TSS2_POLICY_CTX *ctx = NULL;
 
         /* for each hash alg set... */
         TPM2_ALG_ID halgs[] = {
-            TPM2_ALG_SHA1,
-            TPM2_ALG_SHA256
+            TPM2_ALG_SHA256,
+            TPM2_ALG_SHA384
         };
 
         unsigned j;
         for (j = 0; j < ARRAY_LEN(halgs); j++) {
             TPM2_ALG_ID halg = halgs[j];
 
-            if (halg == TPM2_ALG_SHA1) {
-                if (!p->sha1) {
-                    continue;
-                }
-                expected_hash_size = 20;
-            } else if (halg == TPM2_ALG_SHA256) {
+            if (halg == TPM2_ALG_SHA256) {
                 if (!p->sha256) {
                     continue;
                 }
                 expected_hash_size = 32;
+            } else if (halg == TPM2_ALG_SHA384) {
+                if (!p->sha384) {
+                    continue;
+                }
+                expected_hash_size = 48;
             }
 
             char *json = read_all(abs_path);
@@ -220,12 +215,12 @@ static void test_policy_instantiate (
             assert_int_equal(rc, TSS2_RC_SUCCESS);
             assert_int_equal(digest.size, expected_hash_size);
 
-            if (halg == TPM2_ALG_SHA1) {
-                bin2hex(digest.buffer, digest.size, hexdigest);
-                assert_string_equal(p->sha1, hexdigest);
-            } else if (halg == TPM2_ALG_SHA256) {
+            if (halg == TPM2_ALG_SHA256) {
                 bin2hex(digest.buffer, digest.size, hexdigest);
                 assert_string_equal(p->sha256, hexdigest);
+            } else if (halg == TPM2_ALG_SHA384) {
+                bin2hex(digest.buffer, digest.size, hexdigest);
+                assert_string_equal(p->sha384, hexdigest);
             }
 
             /* Get the calculated policy digest */
@@ -263,12 +258,12 @@ static void test_policy_instantiate (
             assert_int_equal(rc, TSS2_RC_SUCCESS);
             assert_int_equal(digest.size, expected_hash_size);
 
-            if (halg == TPM2_ALG_SHA1) {
-                bin2hex(digest.buffer, digest.size, hexdigest);
-                assert_string_equal(p->sha1, hexdigest);
-            } else if (halg == TPM2_ALG_SHA256) {
+            if (halg == TPM2_ALG_SHA256) {
                 bin2hex(digest.buffer, digest.size, hexdigest);
                 assert_string_equal(p->sha256, hexdigest);
+            } else if (halg == TPM2_ALG_SHA384) {
+                bin2hex(digest.buffer, digest.size, hexdigest);
+                assert_string_equal(p->sha384, hexdigest);
             }
 
             SAFE_FREE(json);

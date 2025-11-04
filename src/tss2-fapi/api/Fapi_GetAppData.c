@@ -5,22 +5,24 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <stdint.h>          // for uint8_t
+#include <stdlib.h>          // for malloc, size_t, NULL
+#include <string.h>          // for memcpy
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"        // for FAPI_CONTEXT, PATH_GET_DESCRIPTION_READ
+#include "fapi_types.h"      // for UINT8_ARY
+#include "fapi_util.h"       // for ifapi_session_init
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_GetAppData, Fapi_GetA...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"        // for LOG_TRACE, return_if_error, base_rc, got...
 
 /** One-Call function for Fapi_GetAppData
  *
@@ -227,7 +229,7 @@ cleanup:
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

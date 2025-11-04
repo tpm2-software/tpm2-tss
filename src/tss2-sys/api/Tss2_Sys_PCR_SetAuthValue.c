@@ -5,19 +5,21 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"          // for Tss2_MU_TPM2B_DIGEST_Marshal, Tss2_MU_U...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPMI_DH_PCR, TPM2_CC_PCR_...
 
 TSS2_RC Tss2_Sys_PCR_SetAuthValue_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_DH_PCR pcrHandle,
     const TPM2B_DIGEST *auth)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -58,7 +60,7 @@ TSS2_RC Tss2_Sys_PCR_SetAuthValue_Prepare(
 TSS2_RC Tss2_Sys_PCR_SetAuthValue_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -73,7 +75,7 @@ TSS2_RC Tss2_Sys_PCR_SetAuthValue(
     const TPM2B_DIGEST *auth,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_PCR_SetAuthValue_Prepare(sysContext, pcrHandle, auth);

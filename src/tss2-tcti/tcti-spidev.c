@@ -2,29 +2,27 @@
 /*
  * Copyright 2020 Peter Huewe
  */
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <sys/ioctl.h>
-#include <linux/ioctl.h>
-#include <unistd.h>
-#include <assert.h>
-#include <linux/spi/spidev.h>
+#include <errno.h>                 // for errno
+#include <fcntl.h>                 // for open, O_RDWR
+#include <inttypes.h>              // for int32_t
+#include <stdbool.h>               // for true, bool, false
+#include <stdio.h>                 // for NULL, size_t
+#include <stdlib.h>                // for free, calloc
+#include <string.h>                // for strerror, memset
+#include <sys/ioctl.h>             // for ioctl
+#include <sys/select.h>            // for select
+#include <sys/time.h>              // for timeval, gettimeofday
+#include <unistd.h>                // for close
+#include <linux/spi/spidev.h>      // for spi_ioc_transfer, SPI_IOC_MESSAGE
 
-#include "tss2_tcti.h"
-#include "tss2_tcti_spidev.h"
-#include "tss2_tcti_spi_helper.h"
-#include "tcti-common.h"
-#include "tss2_mu.h"
+#include "tcti-common.h"           // for TCTI_VERSION
+#include "tss2_common.h"           // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCT...
+#include "tss2_tcti.h"             // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
+#include "tss2_tcti_spi_helper.h"  // for TSS2_TCTI_SPI_HELPER_PLATFORM, Tss...
+#include "tss2_tcti_spidev.h"      // for Tss2_Tcti_Spidev_Init
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"              // for LOG_ERROR, LOGBLOB_DEBUG
 
 typedef struct {
     struct timeval timeout;

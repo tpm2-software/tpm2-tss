@@ -6,9 +6,13 @@
 #ifndef TCTI_COMMON_H
 #define TCTI_COMMON_H
 
-#include <stdbool.h>
+#include <stdbool.h>          // for bool
+#include <stddef.h>           // for size_t
+#include <stdint.h>           // for uint8_t, uint64_t
 
-#include "tss2_tcti.h"
+#include "tss2_common.h"      // for UINT32, TSS2_RC
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CONTEXT_CO...
+#include "tss2_tpm2_types.h"  // for TPM2_ST, TPM2_HANDLE
 
 #define TCTI_VERSION 0x2
 

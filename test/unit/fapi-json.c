@@ -5,32 +5,31 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include <json.h>                           // for json_object_put, json_tok...
+#include <stdio.h>                          // for fprintf, stderr, NULL
+#include <stdlib.h>                         // for free, calloc, malloc
+#include <string.h>                         // for strdup, memset, strcmp
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_fapi.h"
-#include "tpm_json_serialize.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_json_deserialize.h"
-#include "fapi_policy.h"
-#include "ifapi_helpers.h"
-
-#include "util/aux_util.h"
+#include "../helper/cmocka_all.h"           // for assert_int_equal, assert_...
+#include "fapi_types.h"                     // for UINT8_ARY
+#include "ifapi_helpers.h"                  // for ifapi_cleanup_policy
+#include "ifapi_json_deserialize.h"         // for ifapi_json_IFAPI_OBJECT_d...
+#include "ifapi_keystore.h"                 // for IFAPI_OBJECT, IFAPI_KEY
+#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_policy_json_serialize.h"    // for ifapi_json_TPMS_POLICY_se...
+#include "ifapi_policy_types.h"             // for TPMT_POLICYELEMENT, TPMS_...
+#include "tpm_json_deserialize.h"           // for ifapi_json_TPMS_ATTEST_de...
+#include "tpm_json_serialize.h"             // for ifapi_json_TPMT_SIG_SCHEM...
+#include "tss2_common.h"                    // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_policy.h"                    // for TPMS_PCRVALUE, TPML_PCRVA...
+#include "tss2_tpm2_types.h"                // for TPM2B_PUBLIC, TPMT_SIG_SC...
+#include "util/aux_util.h"                  // for SAFE_FREE
 
 #define LOGMODULE tests
-#include "util/log.h"
+#include "util/log.h"                       // for LOG_ERROR
 
 /* 6 copies of cleanup functions from ifapi_keystore.c */
 

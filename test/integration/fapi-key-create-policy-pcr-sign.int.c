@@ -5,26 +5,23 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <ctype.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <json.h>             // for json_object_object_get_ex, json_object_put
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>           // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strcmp, strstr, strlen
+#include <unistd.h>           // for read
 
+#include "test-fapi.h"        // for ASSERT, CHECK_JSON, FAPI_PROFILE, pcr_r...
+#include "tss2_common.h"      // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_RC, TSS...
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_ExportPolicy, Fapi_Cr...
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
-#include "tss2_fapi.h"
-
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, goto_if_error, LOG_ERROR
 
 #define PASSWORD NULL
 #define SIGN_TEMPLATE  "sign,noDa"
@@ -70,8 +67,7 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     char *policy = NULL;
     char *path_list = NULL;
 
-    const char *policy_sha256_check =
-        "{" \
+#define POLICY_SHA256_CHECK "{" \
         "  \"description\":\"Description pol_16_0\"," \
         "  \"policyDigests\":[" \
         "    {" \
@@ -99,8 +95,8 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
         "  ]" \
         "}";
 
-    const char *policy_sha384_check =
-        "{" \
+
+#define POLICY_SHA384_CHECK "{" \
         "  \"description\":\"Description pol_16_0\"," \
         "  \"policyDigests\":[" \
         "    {" \
@@ -128,8 +124,7 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
         "  ]" \
         "}" ;
 
-    const char *policy_sha256_export_check =
-        "{" \
+    #define POLICY_SHA256_EXPORT_CHECK "{" \
         "  \"description\":\"Description pol_16_0\"," \
         "  \"policyDigests\":[" \
         "    {" \
@@ -173,8 +168,7 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
         "  ]" \
         "}";
 
-       const char *policy_sha384_export_check =
-        "{" \
+#define POLICY_SHA384_EXPORT_CHECK "{" \
         "  \"description\":\"Description pol_16_0\"," \
         "  \"policyDigests\":[" \
         "    { " \
@@ -218,7 +212,6 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
         "  ]" \
         "}";
 
-
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
@@ -259,10 +252,11 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     size_t signatureSize = 0;
 
     TPM2B_DIGEST digest = {
-        .size = 20,
+        .size = 32,
         .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f
+            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00,
         }
     };
 
@@ -282,8 +276,10 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     LOG_INFO("\nTEST_JSON\nPolicy_sha256:\n%s\nEND_JSON", policy);
 
     if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
+        const char *policy_sha384_check = POLICY_SHA384_CHECK;
         CHECK_JSON(policy, policy_sha384_check, error);
     } else {
+        const char *policy_sha256_check = POLICY_SHA256_CHECK;
         CHECK_JSON(policy, policy_sha256_check, error);
     }
 
@@ -297,8 +293,10 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     ASSERT(policy != NULL);
     LOG_INFO("\nTEST_JSON\nPolicy export1:\n%s\nEND_JSON", policy);
     if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
+        const char *policy_sha384_export_check =  POLICY_SHA384_EXPORT_CHECK;
         CHECK_JSON(policy, policy_sha384_export_check, error)
     } else {
+        const char *policy_sha256_export_check = POLICY_SHA256_EXPORT_CHECK;
         CHECK_JSON(policy, policy_sha256_export_check, error)
     }
 
@@ -427,9 +425,11 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
     ASSERT(policy != NULL);
 
-        if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0){
+    if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
+        const char *policy_sha384_check = POLICY_SHA384_CHECK;
         CHECK_JSON(policy, policy_sha384_check, error);
     } else {
+        const char *policy_sha256_check = POLICY_SHA256_CHECK;
         CHECK_JSON(policy, policy_sha256_check, error);
     }
     fprintf(stderr, "\nPolicy from key:\n%s\n", policy);

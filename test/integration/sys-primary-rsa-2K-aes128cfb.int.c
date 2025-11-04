@@ -5,15 +5,18 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
+#include <inttypes.h>         // for PRIx32
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "sys-util.h"
-#include "test.h"
+#include "sys-util.h"         // for create_primary_rsa_2048_aes_128_cfb
+#include "test.h"             // for test_invoke
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_sys.h"         // for Tss2_Sys_FlushContext, TSS2_SYS_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2_HANDLE
+#include "util/log.h"         // for LOG_ERROR
 
 int
 test_invoke (TSS2_SYS_CONTEXT *sys_context)

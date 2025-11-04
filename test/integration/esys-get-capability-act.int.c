@@ -1,18 +1,21 @@
+/* SPDX-FileCopyrightText: 2021, Jesper Brynolf */
+/* SPDX-FileCopyrightText: 2021, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2022, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
+#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"      // for UINT32, TSS2_RC
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_GetCapability, ESYS_...
+#include "tss2_tpm2_types.h"  // for TPM2_CAP, TPM2_CAP_ACT, TPM2_RC_N_MASK
 
-
-#include "esys_iutil.h"
-#include "test-esys.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, goto_if_error
+
 /** This test is intended to test to get ACT
  *  capabilities using the get capability command.
  *

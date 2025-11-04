@@ -5,25 +5,25 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <openssl/evp.h>
-#include <openssl/aes.h>
-#include <openssl/rsa.h>
-#include <openssl/engine.h>
-#include <openssl/pem.h>
-#include <stdio.h>
-#include <stddef.h>
-#include <string.h>
-#include <inttypes.h>
+#include <inttypes.h>     // for uint8_t
+#include <openssl/bio.h>  // for BIO_free, BIO_new_mem_buf
+#include <openssl/evp.h>  // for EVP_PKEY_CTX_free, EVP_PKEY_free, EVP_PKEY_...
+#include <openssl/pem.h>  // for PEM_read_bio_PrivateKey
+#include <openssl/rsa.h>  // for EVP_PKEY_CTX_set_rsa_padding, RSA_PKCS1_PAD...
+#include <stddef.h>       // for NULL, size_t
+#include <stdio.h>        // for fprintf, stderr
+#include <stdlib.h>       // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>       // for strcmp, strlen
 
-#include "tss2_fapi.h"
+#include "tss2_common.h"  // for TSS2_RC
+#include "tss2_fapi.h"    // for Fapi_Delete, Fapi_Import, Fapi_GetCertificate
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "test-fapi.h"
+#include "test-fapi.h"    // for ASSERT, ASSERT_SIZE, test_invoke_fapi
+#include "util/log.h"     // for goto_if_error, LOG_ERROR, SAFE_FREE, LOG_INFO
 
 /** Test the FAPI functions use an external public key for signature and quote verify without TPM.
  *
@@ -243,7 +243,7 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_Import", error);
 
     r = Fapi_VerifyQuote(context, "/ext/myExtPubKey",
-                         qualifying_data, 20,  quote_info,
+                         qualifying_data, sizeof(qualifying_data),  quote_info,
                          test_signature, test_signature_size, NULL);
     goto_if_error(r, "Error Fapi_Verfiy_Quote", error);
 

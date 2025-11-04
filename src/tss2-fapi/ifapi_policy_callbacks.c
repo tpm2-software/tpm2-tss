@@ -5,25 +5,29 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <inttypes.h>                  // for uint8_t, PRIu16
+#include <stdbool.h>                   // for true, false, bool
+#include <stdlib.h>                    // for size_t, NULL, calloc, malloc
+#include <string.h>                    // for memset, memcmp, memcpy, strcmp
 
-#include "fapi_util.h"
-#include "fapi_policy.h"
-#include "ifapi_helpers.h"
-#include "fapi_crypto.h"
-#include "ifapi_policy_instantiate.h"
-#include "ifapi_policyutil_execute.h"
-#include "ifapi_policy_execute.h"
+#include "fapi_crypto.h"               // for ifapi_get_tpm2b_public_from_pem
+#include "fapi_types.h"                // for UINT8_ARY
+#include "fapi_util.h"                 // for ifapi_get_object_path, ifapi_a...
+#include "ifapi_helpers.h"             // for ifapi_TPMT_PUBLIC_cmp, ifapi_c...
+#include "ifapi_macros.h"              // for statecase, fallthrough, return...
 #include "ifapi_policy_callbacks.h"
-#include "tss2_mu.h"
+#include "ifapi_policy_execute.h"      // for IFAPI_POLICY_EXEC_CTX, POLICY_...
+#include "ifapi_policy_store.h"        // for ifapi_policy_store_load_async
+#include "ifapi_policyutil_execute.h"  // for IFAPI_POLICYUTIL_STACK, ifapi_...
+#include "ifapi_profiles.h"            // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_fapi.h"                 // for FAPI_CONTEXT
+#include "tss2_mu.h"                   // for Tss2_MU_TPMT_HA_Unmarshal
 
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                  // for SAFE_FREE, goto_if_error, retu...
 
 /** Determine the auth object of a NV index.
  *
@@ -361,7 +365,7 @@ TSS2_RC ifapi_read_pcr(
             for (i = 0; i < profile_selection->count; i++) {
                 for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
                     uint8_t byte_idx = pcr / 8;
-                    uint8_t flag = 1 << (pcr % 8);
+                    uint8_t flag = ((uint8_t)1) << (pcr % 8);
                     /* Check whether PCR is used. */
                     if ((flag & profile_selection->pcrSelections[i].pcrSelect[byte_idx]) &&
                         (flag & pcr_selection->selections.pcr_select.pcrSelect[byte_idx])) {
@@ -1006,7 +1010,7 @@ compare_policy_digest(
             if (digest_values->digests[i].hashAlg == hash_alg) {
                 if (memcmp(&digest_values->digests[i].digest,
                            &authPolicy->buffer[0],
-                           authPolicy->size))
+                           authPolicy->size) != 0)
                     continue;
                 *equal = true;
                 return TSS2_RC_SUCCESS;
@@ -1132,7 +1136,7 @@ search_policy(
             }
         }
         /* Extend linked list.*/
-        policy_object = calloc(sizeof(struct POLICY_LIST), 1);
+        policy_object = calloc(1, sizeof(struct POLICY_LIST));
         return_if_null(policy_object, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
         strdup_check(policy_object->path, context->fsearch.current_path, r, cleanup);
@@ -1161,7 +1165,7 @@ search_policy(
         break;
 
     default:
-        context->state = _FAPI_STATE_INTERNALERROR;
+        context->state = FAPI_STATE_INTERNALERROR;
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid state for load key.", cleanup);
     }
     context->fsearch.state = FSEARCH_INIT;
@@ -1466,8 +1470,10 @@ ifapi_exec_auth_policy(
 cleanup:
     SAFE_FREE(names);
     /* Check whether cleanup was executed. */
-    if (fapi_ctx->policy.policyutil_stack)
+    if (fapi_ctx->policy.policyutil_stack) {
         cleanup_policy_list(current_policy->policy_list);
+        current_policy->policy_list = NULL;
+    }
     return r;
 }
 
@@ -1568,7 +1574,6 @@ ifapi_exec_auth_nv_policy(
             goto_if_error(r, "Initialize NV object", cleanup);
 
             current_policy->nv_index = cb_ctx->object.public.handle;
-            ifapi_cleanup_ifapi_object(&cb_ctx->object);
             get_nv_auth_object(&cb_ctx->object,
                                current_policy->nv_index,
                                &current_policy->auth_objectNV,
@@ -1577,8 +1582,10 @@ ifapi_exec_auth_nv_policy(
 
         statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_OBJECT)
             /* Authorize the NV object with the corresponding auth object. */
-            r = ifapi_authorize_object(fapi_ctx, &cb_ctx->auth_object, &cb_ctx->session);
+            r = ifapi_authorize_object(fapi_ctx, &current_policy->auth_objectNV, &cb_ctx->session);
             return_try_again(r);
+
+            ifapi_cleanup_ifapi_object(&cb_ctx->object);
             goto_if_error(r, "Authorize  object.", cleanup);
 
             /* Prepare the reading of the NV index from TPM. */

@@ -5,24 +5,25 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <inttypes.h>         // for PRIx32, uint8_t
+#include <openssl/rand.h>     // for RAND_bytes
+#include <stdio.h>            // for NULL, size_t
+#include <stdlib.h>           // for exit
+#include <string.h>           // for memcpy, memset
 
-#include <openssl/rand.h>
-
-#include "tss2_mu.h"
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_mu.h"          // for Tss2_MU_INT16_Marshal, Tss2_MU_TPMT_PUB...
+#include "tss2_sys.h"         // for TSS2L_SYS_AUTH_COMMAND, Tss2_Sys_FlushC...
+#include "tss2_tpm2_types.h"  // for TPMS_AUTH_COMMAND, TPMT_PUBLIC, TPM2B_N...
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test-esys.h"
-#include "test.h"
-#include "sys-util.h"
+#include "sys-util.h"         // for TSS2_RETRY_EXP, TPM2B_IV_INIT, TPM2B_MA...
+#include "test-esys.h"        // for EXIT_SKIP
+#include "test.h"             // for NO, test_invoke
+#include "util/log.h"         // for LOG_INFO, LOG_ERROR, LOGBLOB_DEBUG, LOG...
 
 int
 test_invoke (TSS2_SYS_CONTEXT *sys_context)
@@ -200,7 +201,37 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
                                 &out_public,
                                 &name,
                                 &rsp_auth);
-    if (rc != TPM2_RC_SUCCESS) {
+    if (rc == TPM2_RC_COMMAND_CODE) {
+        TPM2B_PUBLIC in_public_with_size = {
+            .size = sizeof(TPMT_PUBLIC),
+            .publicArea = { 0 },
+        };
+        memcpy(&in_public_with_size.publicArea, &in_public, sizeof(TPMT_PUBLIC));
+
+        TPM2B_DATA outside_info = {0};
+        TPM2B_CREATION_DATA creation_data = {0};
+        TPML_PCR_SELECTION creation_pcr = {0};
+        TPM2B_DIGEST creation_hash = {0};
+        TPMT_TK_CREATION creation_ticket = {0};
+        rc = Tss2_Sys_CreatePrimary (sys_context,
+                                     TPM2_RH_OWNER,
+                                     &cmd_auth,
+                                     &in_sensitive,
+                                     &in_public_with_size,
+                                     &outside_info,
+                                     &creation_pcr,
+                                     &object_handle,
+                                     &out_public,
+                                     &creation_data,
+                                     &creation_hash,
+                                     &creation_ticket,
+                                     &name,
+                                     &rsp_auth);
+        if (rc != TPM2_RC_SUCCESS) {
+            LOG_ERROR("CreatePrimary FAILED! Response Code: 0x%x", rc);
+            exit(1);
+        }
+    } else if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("CreateLoaded FAILED! Response Code: 0x%x", rc);
         exit(1);
     }

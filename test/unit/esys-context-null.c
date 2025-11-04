@@ -5,24 +5,18 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <stdint.h>
-#define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "tss2-sys/sysapi_util.h"
-#include <tss2_esys.h>
-#include "esys_types.h"
-#include "esys_iutil.h"
+#include <stdio.h>        // for NULL
 
-#include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"       // for assert_int_equal, cmocka_unit_test, CMUnitTest
+
+#define LOGMODULE test
+#include <tss2_esys.h>    // for ESYS_TR_NONE, ESYS_TR_PASSWORD, Esys_AC_Get...
+
+#include "tss2_common.h"  // for TSS2_ESYS_RC_BAD_REFERENCE, TSS2_RC
+#include "util/log.h"
 
 /**
  * This unit test checks whether all  Esys_<cmd>() functions (one call, async,
@@ -66,10 +60,8 @@ check_SelfTest(void **state)
 
     r = Esys_SelfTest(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
-
     r = Esys_SelfTest_Async(NULL, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
-
     r = Esys_SelfTest_Finish(NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
@@ -2383,6 +2375,48 @@ check_Policy_AC_SendSelect(void **state)
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
+void
+check_ECC_Encrypt(void **state)
+{
+    TSS2_RC r;
+
+    r = Esys_ECC_Encrypt(NULL,
+                         0,
+                         ESYS_TR_NONE,
+                         ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_ECC_Encrypt_Async(NULL,
+                               0,
+                               ESYS_TR_NONE,
+                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_ECC_Encrypt_Finish(NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_ECC_Decrypt(void **state)
+{
+    TSS2_RC r;
+
+    r = Esys_ECC_Decrypt(NULL,
+                         0,
+                         ESYS_TR_PASSWORD,
+                         ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_ECC_Decrypt_Async(NULL,
+                               0,
+                               ESYS_TR_PASSWORD,
+                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_ECC_Decrypt_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
 int
 main(void)
 {
@@ -2502,7 +2536,9 @@ main(void)
         cmocka_unit_test(check_Vendor_TCG_Test),
         cmocka_unit_test(check_AC_GetCapability),
         cmocka_unit_test(check_AC_Send),
-        cmocka_unit_test(check_Policy_AC_SendSelect)
+        cmocka_unit_test(check_Policy_AC_SendSelect),
+        cmocka_unit_test(check_ECC_Encrypt),
+        cmocka_unit_test(check_ECC_Decrypt)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

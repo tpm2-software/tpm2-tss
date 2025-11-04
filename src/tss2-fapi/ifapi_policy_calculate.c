@@ -5,22 +5,24 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <inttypes.h>            // for uint8_t, PRIu16
+#include <string.h>              // for memset, memcpy
 
-#include "tss2_mu.h"
-#include "fapi_util.h"
-#include "fapi_crypto.h"
-#include "fapi_policy.h"
-#include "ifapi_helpers.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
+#include "fapi_crypto.h"         // for ifapi_crypto_hash_finish, ifapi_cryp...
+#include "fapi_int.h"            // for HASH_UPDATE_BUFFER, HASH_UPDATE
+#include "ifapi_helpers.h"       // for ifapi_nv_get_name
+#include "ifapi_policy.h"        // for get_policy_digest_idx, ifapi_compute...
+#include "ifapi_policy_calculate.h"  // for ifapi_calculate_policy
+#include "ifapi_policy_types.h"  // for TPMT_POLICYELEMENT, TPML_POLICYELEMENTS
+#include "tss2_common.h"         // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
+#include "tss2_mu.h"             // for Tss2_MU_TPM2_CC_Marshal, Tss2_MU_UIN...
+#include "tss2_tpm2_types.h"     // for TPMT_HA, TPML_DIGEST_VALUES, TPM2_CC
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"            // for return_if_error, LOG_DEBUG, goto_if_...
 
 /** Copy policy digest.
  *
@@ -1269,6 +1271,9 @@ ifapi_calculate_policy_template(
     r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
+    HASH_UPDATE_BUFFER(cryptoContext,
+                       &current_digest->digests[digest_idx].digest, hash_size,
+                       r, cleanup);
     HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyTemplate, r,
                 cleanup);
     HASH_UPDATE_BUFFER(cryptoContext, &used_template_hash->buffer[0],

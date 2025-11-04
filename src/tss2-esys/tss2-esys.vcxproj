@@ -17,6 +17,22 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -45,6 +61,26 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>ClangCL</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>ClangCL</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>ClangCL</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>ClangCL</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>ClangCL</PlatformToolset>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -66,6 +102,22 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="openssl.props" />
   </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="openssl.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="openssl.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="openssl.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="openssl.props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -79,7 +131,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;$(OpenSslDir32Bit)\lib\libcrypto.lib;$(OpenSslDir32Bit)\lib\libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -96,7 +148,40 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;$(OpenSslDir32Bit)\lib\libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;$(OpenSslDir32Bit)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineARM</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;$(OpenSslDir32Bit)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineARM</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -106,7 +191,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;$(OpenSslDir)\lib\libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -116,7 +201,29 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;$(OpenSslDir)\lib\libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;$(OpenSslDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineARM64</TargetMachine>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\src;$(SolutionDir)\include\tss2;$(SolutionDir)\src\tss2-mu;$(SolutionDir)\src\tss2-sys;$(SolutionDir)\src\tss2-esys;$(OpenSslDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;TSS2ESYS_EXPORTS;MAXLOGLEVEL=6;strtok_r=strtok_s;OSSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineARM64</TargetMachine>
+      <AdditionalDependencies>$(OutDir)\tss2-mu.lib;$(OutDir)\tss2-sys.lib;$(OutDir)\tss2-tctildr.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>$(SolutionDir)\lib\tss2-esys.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -242,7 +349,10 @@
     <ClCompile Include="api\Esys_Vendor_TCG_Test.c" />
     <ClCompile Include="api\Esys_VerifySignature.c" />
     <ClCompile Include="api\Esys_ZGen_2Phase.c" />
+    <ClCompile Include="api\Esys_ECC_Encrypt.c" />
+    <ClCompile Include="api\Esys_ECC_Decrypt.c" />
     <ClCompile Include="esys_context.c" />
+    <ClCompile Include="esys_cp_rp_hash.c" />
     <ClCompile Include="esys_crypto.c" />
     <ClCompile Include="esys_crypto_ossl.c" />
     <ClCompile Include="esys_free.c" />

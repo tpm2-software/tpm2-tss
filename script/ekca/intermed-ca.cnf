@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2019 - 2020 Fraunhofer SIT sponsored by Infineon
+# SPDX-FileCopyrightText: 2021 Petr Gotthard
+# SPDX-License-Identifier: BSD-2-Clause
+
 #
 # OpenSSL configuration for the Intermediate Certification Authority.
 #

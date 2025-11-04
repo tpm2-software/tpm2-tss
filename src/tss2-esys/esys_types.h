@@ -7,6 +7,9 @@
 #ifndef ESYS_TYPES_H
 #define ESYS_TYPES_H
 
+#include "tss2_common.h"      // for UINT32, UINT16, BYTE, TSS2_RC_SUCCESS
+#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2B_NONCE, TPMA_SESSION
+
 #define ESYS_MAX_SIZE_METADATA 3072
 
 typedef UINT32 TSS2_ESYS_RC;

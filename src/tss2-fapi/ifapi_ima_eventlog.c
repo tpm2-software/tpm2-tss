@@ -5,35 +5,27 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <inttypes.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <openssl/sha.h>
-#include <ctype.h>
-#include <stdbool.h>
-#include <openssl/evp.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
-#include "tss2_common.h"
-#include "tss2_tpm2_types.h"
-#include "fapi_int.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
+#include <inttypes.h>              // for PRIu32
+#include <openssl/evp.h>           // for EVP_get_digestbyname, EVP_MD, EVP_...
+#include <stdbool.h>               // for bool, false, true
+#include <stdio.h>                 // for fread, fclose, FILE, fopen, sprintf
+#include <stdlib.h>                // for calloc, malloc
+#include <string.h>                // for memcpy, strlen, strcmp, memcmp
+#include <strings.h>               // for strncasecmp
+
+#include "ifapi_eventlog.h"        // for CONTENT, CONTENT_TYPE
+#include "ifapi_helpers.h"         // for ifapi_check_json_object_fields
 #include "ifapi_ima_eventlog.h"
-#include "ifapi_helpers.h"
+#include "ifapi_macros.h"          // for goto_if_null2, return_error2, goto...
+#include "tpm_json_deserialize.h"  // for ifapi_get_sub_object, ifapi_json_U...
+#include "tss2_common.h"           // for UINT8, TSS2_RC, TSS2_FAPI_RC_BAD_V...
+#include "tss2_tpm2_types.h"       // for TPM2_SHA1_DIGEST_SIZE, TPM2_SHA512...
 
 #define LOGMODULE fapijson
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"              // for return_error, return_if_null, retu...
 
 /* Defines from kernel ima.h */
 #define IMA_TEMPLATE_FIELD_ID_MAX_LEN 16
@@ -597,7 +589,7 @@ static TSS2_RC
 read_event_buffer(IFAPI_IMA_TEMPLATE *template, FILE *fp)
 {
     bool old_ima_format;
-    int size, rsize;
+    size_t size, rsize;
 
     /* Check IMA  legacy format. */
     if (strcmp(template->ima_type, "ima") == 0) {

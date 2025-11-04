@@ -5,19 +5,21 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"          // for Tss2_MU_TPML_DIGEST_Marshal, Tss2_MU_UI...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h"  // for TPMI_SH_POLICY, TPML_DIGEST, TPM2_CC_Po...
 
 TSS2_RC Tss2_Sys_PolicyOR_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     TPMI_SH_POLICY policySession,
     const TPML_DIGEST *pHashList)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !pHashList)
@@ -49,7 +51,7 @@ TSS2_RC Tss2_Sys_PolicyOR_Prepare(
 TSS2_RC Tss2_Sys_PolicyOR_Complete (
     TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -64,7 +66,7 @@ TSS2_RC Tss2_Sys_PolicyOR(
     const TPML_DIGEST *pHashList,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!pHashList)

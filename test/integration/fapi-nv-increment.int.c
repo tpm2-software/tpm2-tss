@@ -5,21 +5,19 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#include <unistd.h>
+#include <stdio.h>        // for fopen, NULL, fclose, fileno, fseek, ftell
+#include <stdlib.h>       // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <unistd.h>       // for read
 
-#include "tss2_fapi.h"
+#include "test-fapi.h"    // for pcr_reset, test_invoke_fapi
+#include "tss2_common.h"  // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_FAPI_...
+#include "tss2_fapi.h"    // for Fapi_Delete, Fapi_CreateNv, Fapi_NvIncrement
 
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"     // for goto_if_error, LOG_ERROR, SAFE_FREE, UNUSED
 
 #define PASSWORD "abc"
 

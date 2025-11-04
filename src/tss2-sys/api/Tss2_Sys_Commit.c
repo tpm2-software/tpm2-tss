@@ -5,12 +5,14 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE, UINT16
+#include "tss2_mu.h"          // for Tss2_MU_TPM2B_ECC_POINT_Unmarshal, Tss2...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h"  // for TPM2B_ECC_POINT, TPM2B_ECC_PARAMETER
 
 TSS2_RC Tss2_Sys_Commit_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
@@ -19,7 +21,7 @@ TSS2_RC Tss2_Sys_Commit_Prepare(
     const TPM2B_SENSITIVE_DATA *s2,
     const TPM2B_ECC_PARAMETER *y2)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -94,7 +96,7 @@ TSS2_RC Tss2_Sys_Commit_Complete(
     TPM2B_ECC_POINT *E,
     UINT16 *counter)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -140,7 +142,7 @@ TSS2_RC Tss2_Sys_Commit(
     UINT16 *counter,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_Commit_Prepare(sysContext, signHandle, P1, s2, y2);

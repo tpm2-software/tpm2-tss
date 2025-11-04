@@ -3,28 +3,23 @@
  * Copyright 2020 Fraunhofer SIT. All rights reserved.
  */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"                // for MAXLOGLEVEL
 #endif
 
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include <inttypes.h>              // for uint8_t, uint32_t, PRIu32, PRIx32
+#include <stdbool.h>               // for bool, false, true
+#include <stdio.h>                 // for NULL, size_t
+#include <string.h>                // for memcpy, memset
 
-#include "tss2_tcti.h"
-#include "tss2_tcti_spi_helper.h"
-#include "tss2_mu.h"
-#include "tcti-common.h"
+#include "tcti-common.h"           // for TSS2_TCTI_COMMON_CONTEXT, tpm_head...
 #include "tcti-spi-helper.h"
-#include "util/tss2_endian.h"
+#include "tss2_common.h"           // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TCT...
+#include "tss2_tcti.h"             // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
+#include "tss2_tcti_spi_helper.h"  // for TSS2_TCTI_SPI_HELPER_PLATFORM, Tss...
+#include "util/tss2_endian.h"      // for LE_TO_HOST_32
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"              // for LOG_ERROR, LOG_DEBUG, return_if_error
 
 #define TIMEOUT_B 2000 // The default timeout value as specified in the TCG spec
 

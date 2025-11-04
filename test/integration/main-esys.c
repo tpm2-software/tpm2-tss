@@ -5,24 +5,15 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include "test-esys.h"    // for test_invoke_esys, EXIT_SKIP
+#include "tss2_common.h"  // for TSS2_RC
 
-#include "tss2_esys.h"
-
-#include "tss2_tctildr.h"
-#include "test-esys.h"
-#include "tss2-esys/esys_int.h"
 #define LOGMODULE test
-#include "util/log.h"
-
-
-
-#include "test-common.h"
+#include "test-common.h"  // for test_esys_checks_post, test_esys_checks_pre
+#include "util/log.h"     // for LOG_ERROR
 
 
 
@@ -55,12 +46,14 @@ main(int argc, char *argv[])
 
     rc = test_invoke_esys(test_esys_ctx->esys_ctx);
     if (rc != 0 && rc != EXIT_SKIP) {
+        test_esys_teardown(test_esys_ctx);
         LOG_ERROR("Test returned %08x", rc);
         return rc;
     }
 
     ret = test_esys_checks_post(test_esys_ctx);
     if (ret != 0) {
+        test_esys_teardown(test_esys_ctx);
         return ret;
     }
 

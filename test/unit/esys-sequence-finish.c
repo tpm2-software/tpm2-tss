@@ -1,27 +1,27 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
 /*******************************************************************************
- * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * Copyright 2017-2025, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <stdlib.h>
-#include <inttypes.h>
-#include <string.h>
+#include <inttypes.h>         // for uint8_t, int32_t
+#include <stdlib.h>           // for size_t, NULL, calloc, free
+#include <string.h>           // for memcpy
 
-#include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"           // for assert_int_equal, cmocka_unit_test_setu...
+#include "esys_int.h"         // for _ESYS_STATE, _ESYS_STATE_INIT, _ESYS_ST...
+#include "tss2_common.h"      // for TSS2_RC, TSS2_ESYS_RC_BAD_SEQUENCE, TSS...
+#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_AC_GetCapab...
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CONTEXT_CO...
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2B_ECC_POINT, TPMT_SIG...
 
-#include "tss2_esys.h"
-
-#include "tss2-esys/esys_iutil.h"
 #define LOGMODULE tests
+#include "util/aux_util.h"    // for UNUSED
 #include "util/log.h"
-#include "util/aux_util.h"
 
 /*
  * Tests whether all ESAPI finish calls handle wrong internal states with the correct
@@ -100,9 +100,9 @@ check_Startup(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -116,9 +116,9 @@ check_Shutdown(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -132,9 +132,9 @@ check_SelfTest(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -148,9 +148,9 @@ check_IncrementalSelfTest(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPML_ALG *toDoList;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -165,9 +165,9 @@ check_GetTestResult(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_MAX_BUFFER *outData;
     TPM2_RC testResult;
@@ -183,9 +183,9 @@ check_StartAuthSession(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR sessionHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -201,9 +201,9 @@ check_PolicyRestart(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -217,9 +217,9 @@ check_Create(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_PRIVATE *outPrivate;
     TPM2B_PUBLIC *outPublic;
@@ -241,9 +241,9 @@ check_Load(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR objectHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -258,9 +258,9 @@ check_LoadExternal(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR objectHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -275,9 +275,9 @@ check_ReadPublic(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_PUBLIC *outPublic;
     TPM2B_NAME *name;
@@ -295,9 +295,9 @@ check_ActivateCredential(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_DIGEST *certInfo;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -312,9 +312,9 @@ check_MakeCredential(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ID_OBJECT *credentialBlob;
     TPM2B_ENCRYPTED_SECRET *secret;
@@ -330,9 +330,9 @@ check_Unseal(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_SENSITIVE_DATA *outData;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -347,9 +347,9 @@ check_ObjectChangeAuth(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_PRIVATE *outPrivate;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -364,9 +364,9 @@ check_CreateLoaded(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR objectHandle_handle;
     TPM2B_PRIVATE *outPrivate;
@@ -385,9 +385,9 @@ check_Duplicate(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_DATA *encryptionKeyOut;
     TPM2B_PRIVATE *duplicate;
@@ -405,9 +405,9 @@ check_Rewrap(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_PRIVATE *outDuplicate;
     TPM2B_ENCRYPTED_SECRET *outSymSeed;
@@ -423,9 +423,9 @@ check_Import(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_PRIVATE *outPrivate;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -440,9 +440,9 @@ check_RSA_Encrypt(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_PUBLIC_KEY_RSA *outData;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -457,9 +457,9 @@ check_RSA_Decrypt(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_PUBLIC_KEY_RSA *message;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -474,9 +474,9 @@ check_ECDH_KeyGen(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ECC_POINT *zPoint;
     TPM2B_ECC_POINT *pubPoint;
@@ -492,9 +492,9 @@ check_ECDH_ZGen(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ECC_POINT *outPoint;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -509,9 +509,9 @@ check_ECC_Parameters(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPMS_ALGORITHM_DETAIL_ECC *parameters;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -526,9 +526,9 @@ check_ZGen_2Phase(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ECC_POINT *outZ1;
     TPM2B_ECC_POINT *outZ2;
@@ -544,9 +544,9 @@ check_EncryptDecrypt(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_MAX_BUFFER *outData;
     TPM2B_IV *ivOut;
@@ -562,9 +562,9 @@ check_EncryptDecrypt2(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_MAX_BUFFER *outData;
     TPM2B_IV *ivOut;
@@ -580,9 +580,9 @@ check_Hash(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_DIGEST *outHash;
     TPMT_TK_HASHCHECK *validation;
@@ -598,9 +598,9 @@ check_HMAC(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_DIGEST *outHMAC;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -615,9 +615,9 @@ check_MAC(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_DIGEST *outMAC;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -632,9 +632,9 @@ check_GetRandom(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_DIGEST *randomBytes;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -649,9 +649,9 @@ check_StirRandom(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -665,9 +665,9 @@ check_HMAC_Start(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR sequenceHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -682,9 +682,9 @@ check_MAC_Start(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR sequenceHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -699,9 +699,9 @@ check_HashSequenceStart(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR sequenceHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -716,9 +716,9 @@ check_SequenceUpdate(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -732,9 +732,9 @@ check_SequenceComplete(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_DIGEST *result;
     TPMT_TK_HASHCHECK *validation;
@@ -750,9 +750,9 @@ check_EventSequenceComplete(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPML_DIGEST_VALUES *results;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -767,9 +767,9 @@ check_Certify(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ATTEST *certifyInfo;
     TPMT_SIGNATURE *signature;
@@ -785,9 +785,9 @@ check_CertifyCreation(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ATTEST *certifyInfo;
     TPMT_SIGNATURE *signature;
@@ -803,9 +803,9 @@ check_Quote(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ATTEST *quoted;
     TPMT_SIGNATURE *signature;
@@ -821,9 +821,9 @@ check_GetSessionAuditDigest(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ATTEST *auditInfo;
     TPMT_SIGNATURE *signature;
@@ -840,9 +840,9 @@ check_GetCommandAuditDigest(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ATTEST *auditInfo;
     TPMT_SIGNATURE *signature;
@@ -859,9 +859,9 @@ check_GetTime(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ATTEST *timeInfo;
     TPMT_SIGNATURE *signature;
@@ -877,9 +877,9 @@ check_Commit(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ECC_POINT *K;
     TPM2B_ECC_POINT *L;
@@ -897,9 +897,9 @@ check_EC_Ephemeral(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ECC_POINT *Q;
     UINT16 counter;
@@ -915,9 +915,9 @@ check_VerifySignature(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPMT_TK_VERIFIED *validation;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -932,9 +932,9 @@ check_Sign(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -949,9 +949,9 @@ check_SetCommandCodeAuditStatus(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -965,9 +965,9 @@ check_PCR_Extend(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -981,9 +981,9 @@ check_PCR_Event(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPML_DIGEST_VALUES *digests;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -998,9 +998,9 @@ check_PCR_Read(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPML_PCR_SELECTION *pcrSelectionOut;
     TPML_DIGEST *pcrValues;
@@ -1019,9 +1019,9 @@ check_PCR_Allocate(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPMI_YES_NO allocationSuccess;
     UINT32 maxPCR;
@@ -1041,9 +1041,9 @@ check_PCR_SetAuthPolicy(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1057,9 +1057,9 @@ check_PCR_SetAuthValue(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1073,9 +1073,9 @@ check_PCR_Reset(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1089,9 +1089,9 @@ check_PolicySigned(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_TIMEOUT *timeout;
     TPMT_TK_AUTH *policyTicket;
@@ -1107,9 +1107,9 @@ check_PolicySecret(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_TIMEOUT *timeout;
     TPMT_TK_AUTH *policyTicket;
@@ -1125,9 +1125,9 @@ check_PolicyTicket(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1141,9 +1141,9 @@ check_PolicyOR(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1157,9 +1157,9 @@ check_PolicyPCR(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1173,9 +1173,9 @@ check_PolicyLocality(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1189,9 +1189,9 @@ check_PolicyNV(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1205,9 +1205,9 @@ check_PolicyCounterTimer(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1221,9 +1221,9 @@ check_PolicyCommandCode(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1237,9 +1237,9 @@ check_PolicyPhysicalPresence(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1253,9 +1253,9 @@ check_PolicyCpHash(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1269,9 +1269,9 @@ check_PolicyNameHash(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1285,9 +1285,9 @@ check_PolicyDuplicationSelect(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1301,9 +1301,9 @@ check_PolicyAuthorize(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1317,9 +1317,9 @@ check_PolicyAuthValue(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1333,9 +1333,9 @@ check_PolicyPassword(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1349,9 +1349,9 @@ check_PolicyGetDigest(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_DIGEST *policyDigest;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -1366,9 +1366,9 @@ check_PolicyNvWritten(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1382,9 +1382,9 @@ check_PolicyTemplate(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1398,9 +1398,9 @@ check_PolicyAuthorizeNV(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1414,9 +1414,9 @@ check_CreatePrimary(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR objectHandle_handle;
     TPM2B_PUBLIC *outPublic;
@@ -1439,9 +1439,9 @@ check_HierarchyControl(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1455,9 +1455,9 @@ check_SetPrimaryPolicy(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1471,9 +1471,9 @@ check_ChangePPS(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1487,9 +1487,9 @@ check_ChangeEPS(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1503,9 +1503,9 @@ check_Clear(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1519,9 +1519,9 @@ check_ClearControl(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1535,9 +1535,9 @@ check_HierarchyChangeAuth(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1551,9 +1551,9 @@ check_DictionaryAttackLockReset(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1567,9 +1567,9 @@ check_DictionaryAttackParameters(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1583,9 +1583,9 @@ check_PP_Commands(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1599,9 +1599,9 @@ check_SetAlgorithmSet(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1615,9 +1615,9 @@ check_FieldUpgradeStart(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1631,9 +1631,9 @@ check_FieldUpgradeData(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPMT_HA *nextDigest;
     TPMT_HA *firstDigest;
@@ -1650,9 +1650,9 @@ check_FirmwareRead(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_MAX_BUFFER *fuData;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -1667,9 +1667,9 @@ check_ContextSave(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPMS_CONTEXT *context;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -1684,9 +1684,9 @@ check_ContextLoad(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR loadedHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -1701,9 +1701,9 @@ check_FlushContext(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1717,9 +1717,9 @@ check_EvictControl(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR newObjectHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -1734,9 +1734,9 @@ check_ReadClock(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPMS_TIME_INFO *currentTime;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -1751,9 +1751,9 @@ check_ClockSet(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1767,9 +1767,9 @@ check_ClockRateAdjust(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1783,9 +1783,9 @@ check_GetCapability(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPMS_CAPABILITY_DATA *capabilityData;
     TPMI_YES_NO moreData;
@@ -1801,9 +1801,9 @@ check_TestParms(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1817,9 +1817,9 @@ check_NV_DefineSpace(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     ESYS_TR nvHandle_handle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -1834,9 +1834,9 @@ check_NV_UndefineSpace(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1850,9 +1850,9 @@ check_NV_UndefineSpaceSpecial(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1866,9 +1866,9 @@ check_NV_ReadPublic(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_NV_PUBLIC *nvPublic;
     TPM2B_NAME *nvName;
@@ -1884,9 +1884,9 @@ check_NV_Write(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1900,9 +1900,9 @@ check_NV_Increment(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1916,9 +1916,9 @@ check_NV_Extend(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1932,9 +1932,9 @@ check_NV_SetBits(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1948,9 +1948,9 @@ check_NV_WriteLock(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1964,9 +1964,9 @@ check_NV_GlobalWriteLock(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1980,9 +1980,9 @@ check_NV_Read(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_MAX_NV_BUFFER *data;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -1997,9 +1997,9 @@ check_NV_ReadLock(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -2013,9 +2013,9 @@ check_NV_ChangeAuth(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -2029,9 +2029,9 @@ check_NV_Certify(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_ATTEST *certifyInfo;
     TPMT_SIGNATURE *signature;
@@ -2047,9 +2047,9 @@ check_Vendor_TCG_Test(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPM2B_DATA *outputData;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -2064,9 +2064,9 @@ check_AC_GetCapability(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPML_AC_CAPABILITIES *capabilityData;
     TPMI_YES_NO moreData;
@@ -2082,9 +2082,9 @@ check_AC_Send(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     TPMS_AC_OUTPUT *acDataOut;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -2099,13 +2099,49 @@ check_Policy_AC_SendSelect(void **state)
 {
     TSS2_RC r;
     ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
-    enum _ESYS_STATE esys_states[3] = {
-        _ESYS_STATE_INIT,
-        _ESYS_STATE_INTERNALERROR
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
     };
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
         r = Esys_Policy_AC_SendSelect_Finish(esys_context);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_ECC_Encrypt(void **state)
+{
+    TSS2_RC r;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
+    };
+    TPM2B_ECC_POINT *c1;
+    TPM2B_MAX_BUFFER *c2;
+    TPM2B_DIGEST *c3;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_ECC_Encrypt_Finish(esys_context, &c1, &c2, &c3);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_ECC_Decrypt(void **state)
+{
+    TSS2_RC r;
+    ESYS_CONTEXT *esys_context = (ESYS_CONTEXT *) * state;
+    enum ESYS_STATE esys_states[3] = {
+        ESYS_STATE_INIT,
+        ESYS_STATE_INTERNALERROR
+    };
+    TPM2B_MAX_BUFFER *plainText;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_ECC_Decrypt_Finish(esys_context, &plainText);
         assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
     }
 }
@@ -2345,7 +2381,11 @@ main(void)
         cmocka_unit_test_setup_teardown(check_AC_Send, esys_unit_setup,
                                         esys_unit_teardown),
         cmocka_unit_test_setup_teardown(check_Policy_AC_SendSelect, esys_unit_setup,
-                                        esys_unit_teardown)
+                                        esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_ECC_Encrypt, esys_unit_setup,
+                                            esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_ECC_Decrypt, esys_unit_setup,
+                                            esys_unit_teardown)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

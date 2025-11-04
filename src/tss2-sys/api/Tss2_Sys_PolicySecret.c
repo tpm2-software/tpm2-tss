@@ -5,12 +5,14 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"      // for TSS2_RC, INT32, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"          // for Tss2_MU_UINT16_Marshal, Tss2_MU_UINT32_...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h"  // for TPM2B_NONCE, TPM2B_DIGEST, TPM2B_TIMEOUT
 
 TSS2_RC Tss2_Sys_PolicySecret_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
@@ -21,7 +23,7 @@ TSS2_RC Tss2_Sys_PolicySecret_Prepare(
     const TPM2B_NONCE *policyRef,
     INT32 expiration)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -99,7 +101,7 @@ TSS2_RC Tss2_Sys_PolicySecret_Complete(
     TPM2B_TIMEOUT *timeout,
     TPMT_TK_AUTH *policyTicket)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -133,7 +135,7 @@ TSS2_RC Tss2_Sys_PolicySecret(
     TPMT_TK_AUTH *policyTicket,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_PolicySecret_Prepare(sysContext, authHandle, policySession,

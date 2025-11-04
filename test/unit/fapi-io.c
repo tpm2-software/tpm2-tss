@@ -5,29 +5,27 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include <errno.h>        // for errno, EAGAIN
+#include <inttypes.h>     // for uint8_t
+#include <stdbool.h>      // for false, true, bool
+#include <stdio.h>        // for FILE, NULL, size_t, ssize_t
+#include <string.h>       // for memset, strcmp
+#include <sys/stat.h>     // for stat
+#include <unistd.h>       // for R_OK
 
-#include <setjmp.h>
-#include <cmocka.h>
-#include <errno.h>
-
-#include "ifapi_io.h"
-#include "util/aux_util.h"
+#include "../helper/cmocka_all.h"       // for will_return, assert_int_equal, mock_type
+#include "ifapi_io.h"     // for IFAPI_IO, ifapi_io_read_async, ifapi_io_rea...
+#include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_FAPI_R...
 
 #define LOGMODULE tests
 #include "util/log.h"
 
+struct stat;
+
+#define EXIT_SKIP 77
 /*
  * The unit tests will simulate error codes which can be returned by the
  * system calls for file system IO.
@@ -364,6 +362,12 @@ check_io_write_finish(void **state) {
 int
 main(int argc, char *argv[])
 {
+#if _FILE_OFFSET_BITS == 64
+    // Would produce cmocka error
+    LOG_WARNING("_FILE_OFFSET == 64 would produce cmocka errors.");
+    return EXIT_SKIP;
+#endif
+
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(check_io_read_async),
         cmocka_unit_test(check_io_read_finish),

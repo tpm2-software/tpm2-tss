@@ -4,21 +4,18 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <string.h>           // for memcmp
 
-#include "tss2_sys.h"
+#include "sys-util.h"         // for GetDigestSize, TSS2_RETRY_EXP
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_RESPONSE
+#include "tss2_tpm2_types.h"  // for TPM2B_MAX_NV_BUFFER, TPM2B_DIGEST, TPM2...
 
-#include "sys-util.h"
-#include "session-util.h"
-#include "util/aux_util.h"
 #define LOGMODULE test
-#include "util/log.h"
+#include "util/log.h"         // for return_if_error, LOG_ERROR, LOGBLOB_DEBUG
 
 #define NV_PS_INDEX_SIZE 34
 #define INDEX_LCP_OWN 0x01400001
@@ -43,7 +40,7 @@ create_policy_session (
     TSS2_RC rc;
     TPM2B_ENCRYPTED_SECRET salt = { 0 };
     TPM2B_NONCE nonce = {
-        .size = GetDigestSize (TPM2_ALG_SHA1),
+        .size = GetDigestSize (TPM2_ALG_SHA256),
     };
     TPM2B_NONCE nonce_tpm = { 0, };
     TPMT_SYM_DEF symmetric = {
@@ -58,7 +55,7 @@ create_policy_session (
                                     &salt,
                                     TPM2_SE_POLICY,
                                     &symmetric,
-                                    TPM2_ALG_SHA1,
+                                    TPM2_ALG_SHA256,
                                     handle,
                                     &nonce_tpm,
                                     0);
@@ -79,7 +76,7 @@ setup_nv (TSS2_SYS_CONTEXT *sys_ctx,
     TSS2L_SYS_AUTH_RESPONSE auth_rsp;
     TPM2B_NV_PUBLIC public_info = {
         .nvPublic = {
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .attributes = TPMA_NV_AUTHREAD | TPMA_NV_AUTHWRITE |
                 TPMA_NV_PLATFORMCREATE | TPMA_NV_WRITEDEFINE | TPMA_NV_ORDERLY,
             .dataSize = NV_PS_INDEX_SIZE,

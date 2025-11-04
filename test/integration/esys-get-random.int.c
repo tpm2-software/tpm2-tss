@@ -5,17 +5,17 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for free, NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for BYTE, TSS2_RC
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_GetRandom, Esys_Star...
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2_RC_SUCCESS, TPMA_SES...
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for LOG_ERROR, LOGBLOB_DEBUG, LOG_INFO
 
 /** Test the ESYS function Esys_GetRandom.
  *

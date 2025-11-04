@@ -1,0 +1,17 @@
+setuptools_scm[toml]>=3.4.3
+cffi>=1.0.0
+pkgconfig
+cryptography>=3.0
+asn1crypto
+packaging
+pycparser
+cffi>=1.0.0
+asn1crypto
+cryptography>=3.0
+packaging
+pyyaml
+# needed for readthedocs builds:
+sphinx==6.2.1
+GitPython
+myst_parser
+sphinx_rtd_theme

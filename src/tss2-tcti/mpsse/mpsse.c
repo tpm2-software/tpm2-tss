@@ -29,15 +29,13 @@
  * SPDX short identifier: BSD-2-Clause
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <sys/time.h>
+#include <stdint.h>      // for uint8_t, uint32_t, int32_t, uint16_t
+#include <stdlib.h>      // for NULL, free, malloc
+#include <string.h>      // for memset
+#include <sys/select.h>  // for select, timeval
 
 #include "mpsse.h"
-#include "support.h"
-#include "config.h"
+#include "support.h"     // for is_valid_context, raw_write, set_bits_low
 
 /* List of known FT2232-based devices */
 struct vid_pid supported_devices[] = {
@@ -492,16 +490,14 @@ const char *ErrorString (struct mpsse_context *mpsse)
  *
  * Returns the existing clock rate in hertz.
  */
-int GetClock (struct mpsse_context *mpsse)
+uint32_t GetClock (struct mpsse_context *mpsse)
 {
-    int clock = 0;
-
-    if (is_valid_context (mpsse))
+    if (! is_valid_context (mpsse))
     {
-        clock = mpsse->clock;
+        return 0;
     }
 
-    return clock;
+    return mpsse->clock;
 }
 
 /*
@@ -922,7 +918,7 @@ char ReadBits (struct mpsse_context *mpsse, int size)
              * In MSB mode, bits are sifted in from the left. If less than 8 bits were
              * read, we need to shift them left accordingly.
              */
-            bits = bits << (8-size);
+            bits = (char) ((bits << (8-size)) & 0xff);
         }
         else if (mpsse->endianess == LSB)
         {
@@ -930,7 +926,7 @@ char ReadBits (struct mpsse_context *mpsse, int size)
              * In LSB mode, bits are shifted in from the right. If less than 8 bits were
              * read, we need to shift them right accordingly.
              */
-            bits = bits >> (8-size);
+            bits = (char) ((bits >> (8-size)) & 0xff);
         }
 
         free (rdata);

@@ -5,19 +5,22 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
-#include <stdlib.h>
+#include <stdint.h>        // for int32_t
+#include <stdlib.h>        // for NULL, free, calloc, rand, size_t
 
-#include "tss2_esys.h"
-#include "tss2_tctildr.h"
+#include "esys_crypto.h"   // for iesys_initialize_crypto_backend
+#include "esys_int.h"      // for ESYS_CONTEXT, _ESYS_ASSERT_NON_NULL
+#include "esys_iutil.h"    // for iesys_DeleteAllResourceObjects, ESYS_TR_MI...
+#include "tss2_common.h"   // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_ESYS_RC_BAD...
+#include "tss2_esys.h"     // for ESYS_CONTEXT, ESYS_CRYPTO_CALLBACKS, ESYS_TR
+#include "tss2_sys.h"      // for Tss2_Sys_GetTctiContext, Tss2_Sys_Finalize
+#include "tss2_tcti.h"     // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_HANDLE
+#include "tss2_tctildr.h"  // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_Initia...
 
-#include "esys_crypto.h"
-#include "esys_iutil.h"
-#include "tss2-tcti/tctildr-interface.h"
 #define LOGMODULE esys
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"      // for LOG_ERROR, goto_if_error, return_if_error
 
 /** Initialize an ESYS_CONTEXT for further use.
  *
@@ -48,7 +51,7 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
     TSS2_RC r;
     size_t syssize;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     *esys_context = NULL;
 
     /* Allocate memory for the ESYS context
@@ -163,8 +166,8 @@ Esys_Finalize(ESYS_CONTEXT ** esys_context)
 TSS2_RC
 Esys_GetTcti(ESYS_CONTEXT * esys_context, TSS2_TCTI_CONTEXT ** tcti)
 {
-    _ESYS_ASSERT_NON_NULL(esys_context);
-    _ESYS_ASSERT_NON_NULL(tcti);
+    ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(tcti);
     *tcti = esys_context->tcti_app_param;
     return TSS2_RC_SUCCESS;
 }
@@ -188,9 +191,9 @@ Esys_GetPollHandles(ESYS_CONTEXT * esys_context,
     TSS2_RC r;
     TSS2_TCTI_CONTEXT *tcti_context;
 
-    _ESYS_ASSERT_NON_NULL(esys_context);
-    _ESYS_ASSERT_NON_NULL(handles);
-    _ESYS_ASSERT_NON_NULL(count);
+    ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(handles);
+    ESYS_ASSERT_NON_NULL(count);
 
     /* Get the tcti-context to use */
     r = Tss2_Sys_GetTctiContext(esys_context->sys, &tcti_context);
@@ -220,7 +223,7 @@ Esys_GetPollHandles(ESYS_CONTEXT * esys_context,
 TSS2_RC
 Esys_SetTimeout(ESYS_CONTEXT * esys_context, int32_t timeout)
 {
-    _ESYS_ASSERT_NON_NULL(esys_context);
+    ESYS_ASSERT_NON_NULL(esys_context);
     esys_context->timeout = timeout;
     return TSS2_RC_SUCCESS;
 }

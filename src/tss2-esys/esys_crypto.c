@@ -5,19 +5,19 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-
-#include "tss2_esys.h"
+#include <inttypes.h>          // for uint8_t, uint32_t, PRIu16
+#include <string.h>            // for strlen
 
 #include "esys_crypto.h"
-#include "esys_iutil.h"
-#include "esys_mu.h"
+#include "esys_mu.h"           // for TRUE
+#include "tss2_esys.h"         // for ESYS_CRYPTO_CALLBACKS, ESYS_CRYPTO_CON...
+#include "tss2_mu.h"           // for Tss2_MU_UINT32_Marshal, Tss2_MU_TPMA_S...
+
 #define LOGMODULE esys_crypto
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"          // for LOG_ERROR, goto_if_error, str, xstr
 
 /** Provide the digest size for a given hash algorithm.
  *
@@ -615,28 +615,31 @@ iesys_crypto_KDFa(ESYS_CRYPTO_CALLBACKS *crypto_cb,
                   "IESYS KDFa contextV key");
     BYTE *subKey = outKey;
     UINT32 counter = 0;
-    INT32 bytes = 0;
+    size_t bytes = 0;
     size_t hlen = 0;
     TSS2_RC r = iesys_crypto_hash_get_digest_size(hashAlg, &hlen);
     return_if_error(r, "Error");
     if (counterInOut != NULL)
         counter = *counterInOut;
     bytes = use_digest_size ? hlen : (bitLength + 7) / 8;
-    LOG_DEBUG("IESYS KDFa hmac key bytes: %i", bytes);
+    LOG_DEBUG("IESYS KDFa hmac key bytes: %zu", bytes);
 
      /* Fill outKey with results from KDFaHmac */
-    for (; bytes > 0; subKey = &subKey[hlen], bytes = bytes - hlen) {
-        LOG_TRACE("IESYS KDFa hmac key bytes: %i", bytes);
-        //if(bytes < (INT32)hlen)
-        //    hlen = bytes;
+    for (;; subKey = &subKey[hlen], bytes = bytes - hlen) {
+        LOG_TRACE("IESYS KDFa hmac key bytes: %zu", bytes);
         counter++;
         r = iesys_crypto_KDFaHmac(crypto_cb, hashAlg, hmacKey,
                                   hmacKeySize, counter, label, contextU,
                                   contextV, bitLength, &subKey[0], &hlen);
         return_if_error(r, "Error");
+
+        if (bytes <= hlen) {
+            /* no bytes remaining */
+            break;
+        }
     }
     if ((bitLength % 8) != 0)
-        outKey[0] &= ((1 << (bitLength % 8)) - 1);
+        outKey[0] &= ((((BYTE)1) << (bitLength % 8)) - 1);
     if (counterInOut != NULL)
         *counterInOut = counter;
     LOGBLOB_DEBUG(outKey, (bitLength + 7) / 8, "IESYS KDFa key");
@@ -669,7 +672,7 @@ iesys_crypto_KDFe(ESYS_CRYPTO_CALLBACKS *crypto_cb,
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     size_t hash_len;
-    INT16 byte_size = (INT16)((bit_size +7) / 8);
+    size_t byte_size = ((bit_size +7) / 8);
     BYTE *stream = key;
     ESYS_CRYPTO_CONTEXT_BLOB *cryptoContext;
     BYTE counter_buffer[4];
@@ -691,7 +694,7 @@ iesys_crypto_KDFe(ESYS_CRYPTO_CALLBACKS *crypto_cb,
     }
 
     /* Fill seed key with hash of counter, Z, label, partyUInfo, and partyVInfo */
-    for (; byte_size > 0; stream = &stream[hash_len], byte_size = byte_size - hash_len)
+    for (;; stream = &stream[hash_len], byte_size = byte_size - hash_len)
         {
             counter ++;
             r = iesys_crypto_hash_start(crypto_cb,
@@ -730,10 +733,15 @@ iesys_crypto_KDFe(ESYS_CRYPTO_CALLBACKS *crypto_cb,
             r = iesys_crypto_hash_finish(crypto_cb,
                 &cryptoContext, (uint8_t *) stream, &hash_len);
             goto_if_error(r, "Error", error);
+
+            if (byte_size <= hash_len) {
+                /* no bytes remaining */
+                break;
+            }
         }
     LOGBLOB_DEBUG(key, bit_size/8, "Result KDFe");
     if((bit_size % 8) != 0)
-        key[0] &= ((1 << (bit_size % 8)) - 1);
+        key[0] &= ((((BYTE)1) << (bit_size % 8)) - 1);
     return r;
 
  error:
@@ -801,8 +809,8 @@ iesys_xor_parameter_obfuscation(ESYS_CRYPTO_CALLBACKS *crypto_cb,
 }
 
 #define TEST_AND_SET_CALLBACK(crypto_cb, callbacks, fn) \
-    if (callbacks->fn) { \
-        crypto_cb->fn = callbacks->fn; \
+    if ((callbacks)->fn) { \
+        (crypto_cb)->fn = (callbacks)->fn; \
     } else { \
         LOG_ERROR("Callback \"%s\" not set", xstr(fn)); \
         return TSS2_ESYS_RC_CALLBACK_NULL; \
@@ -820,22 +828,22 @@ TSS2_RC
          * userdata pointer it must be saved and restored.
          */
         crypto_cb->userdata = NULL;
-        crypto_cb->aes_decrypt = _iesys_crypto_aes_decrypt;
-        crypto_cb->aes_encrypt = _iesys_crypto_aes_encrypt;
-        crypto_cb->sm4_decrypt = _iesys_crypto_sm4_decrypt;
-        crypto_cb->sm4_encrypt = _iesys_crypto_sm4_encrypt;
-        crypto_cb->get_ecdh_point = _iesys_crypto_get_ecdh_point;
-        crypto_cb->hash_abort = _iesys_crypto_hash_abort;
-        crypto_cb->hash_finish = _iesys_crypto_hash_finish;
-        crypto_cb->hash_start = _iesys_crypto_hash_start;
-        crypto_cb->hash_update = _iesys_crypto_hash_update;
-        crypto_cb->hmac_abort = _iesys_crypto_hmac_abort;
-        crypto_cb->hmac_finish = _iesys_crypto_hmac_finish;
-        crypto_cb->hmac_start = _iesys_crypto_hmac_start;
-        crypto_cb->hmac_update = _iesys_crypto_hmac_update;
-        crypto_cb->init = _iesys_crypto_init;
-        crypto_cb->get_random2b = _iesys_crypto_get_random2b;
-        crypto_cb->rsa_pk_encrypt = _iesys_crypto_rsa_pk_encrypt;
+        crypto_cb->aes_decrypt = iesys_crypto_aes_decrypt_internal;
+        crypto_cb->aes_encrypt = iesys_crypto_aes_encrypt_internal;
+        crypto_cb->sm4_decrypt = iesys_crypto_sm4_decrypt_internal;
+        crypto_cb->sm4_encrypt = iesys_crypto_sm4_encrypt_internal;
+        crypto_cb->get_ecdh_point = iesys_crypto_get_ecdh_point_internal;
+        crypto_cb->hash_abort = iesys_crypto_hash_abort_internal;
+        crypto_cb->hash_finish = iesys_crypto_hash_finish_internal;
+        crypto_cb->hash_start = iesys_crypto_hash_start_internal;
+        crypto_cb->hash_update = iesys_crypto_hash_update_internal;
+        crypto_cb->hmac_abort = iesys_crypto_hmac_abort_internal;
+        crypto_cb->hmac_finish = iesys_crypto_hmac_finish_internal;
+        crypto_cb->hmac_start = iesys_crypto_hmac_start_internal;
+        crypto_cb->hmac_update = iesys_crypto_hmac_update_internal;
+        crypto_cb->init = iesys_crypto_init_internal;
+        crypto_cb->get_random2b = iesys_crypto_get_random2b_internal;
+        crypto_cb->rsa_pk_encrypt = iesys_crypto_rsa_pk_encrypt_internal;
 
     } else {
 
@@ -845,12 +853,12 @@ TSS2_RC
         if (user_cb->sm4_encrypt) {
             crypto_cb->sm4_encrypt = user_cb->sm4_encrypt;
         } else {
-            crypto_cb->sm4_encrypt = _iesys_crypto_sm4_encrypt;
+            crypto_cb->sm4_encrypt = iesys_crypto_sm4_encrypt_internal;
         }
         if (user_cb->sm4_decrypt) {
             crypto_cb->sm4_decrypt = user_cb->sm4_decrypt;
         } else {
-            crypto_cb->sm4_decrypt = _iesys_crypto_sm4_decrypt;
+            crypto_cb->sm4_decrypt = iesys_crypto_sm4_decrypt_internal;
         }
         TEST_AND_SET_CALLBACK(crypto_cb, user_cb, get_ecdh_point);
         TEST_AND_SET_CALLBACK(crypto_cb, user_cb, get_random2b);

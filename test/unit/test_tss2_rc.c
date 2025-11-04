@@ -1,17 +1,17 @@
+/* SPDX-FileCopyrightText: 2019 - 2023, Intel */
+/* SPDX-FileCopyrightText: 2022, Erik Larsson */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdbool.h>          // for bool, true
+#include <stddef.h>           // for NULL
+#include <stdio.h>            // for snprintf
+#include <string.h>           // for strlen
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_rc.h"
-#include "util/aux_util.h"
+#include "../helper/cmocka_all.h"           // for cmocka_unit_test, assert_int_equal, ass...
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_RC_LAYER
+#include "tss2_rc.h"          // for Tss2_RC_Decode, TSS2_RC_INFO, Tss2_RC_S...
+#include "tss2_tpm2_types.h"  // for TPM2_RC_HASH, TPM2_RC_EXPIRED, TPM2_RC_...
+#include "util/aux_util.h"    // for ARRAY_LEN, UNUSED
 
 #define TPM2_ERROR_TSS2_RC_LAYER_COUNT (TSS2_RC_LAYER_MASK >> TSS2_RC_LAYER_SHIFT)
 

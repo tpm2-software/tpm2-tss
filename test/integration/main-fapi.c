@@ -5,41 +5,55 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"               // for FAPI_TEST_EK_CERT_LESS
 #endif
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <json-c/json_util.h>
-
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
+#include <inttypes.h>             // for PRIx32, int64_t, PRId64, PRIu16
+#include <json.h>                 // for json_object_get_string, json_object...
+#include <openssl/asn1.h>         // for ASN1_INTEGER_free, ASN1_INTEGER_new
+#include <openssl/bio.h>          // for BIO_free_all, BIO_new, BIO_s_file
+#include <openssl/bn.h>           // for BN_free, BN_bin2bn, BN_new
+#include <openssl/buffer.h>       // for buf_mem_st
+#include <openssl/crypto.h>       // for OPENSSL_free
+#include <openssl/ec.h>           // for EC_GROUP_free, EC_GROUP_new_by_curv...
+#include <openssl/evp.h>          // for EVP_PKEY_free, EVP_PKEY, EVP_PKEY_C...
+#include <openssl/obj_mac.h>      // for NID_sm2, NID_X9_62_prime192v1, NID_...
+#include <openssl/objects.h>      // for OBJ_nid2sn
+#include <openssl/opensslv.h>     // for OPENSSL_VERSION_NUMBER
+#include <openssl/pem.h>          // for PEM_read_bio_PrivateKey, PEM_read_b...
+#include <openssl/rsa.h>          // for EVP_PKEY_CTX_set_rsa_keygen_bits
+#include <openssl/x509.h>         // for X509_REQ_free, X509_free, X509_gmti...
+#include <stdbool.h>              // for false, bool, true
+#include <stdio.h>                // for NULL, asprintf, size_t, perror, sscanf
+#include <stdlib.h>               // for free, calloc, setenv, malloc, mkdtemp
+#include <string.h>               // for strtok_r, memcpy, strdup, strcmp
+#include <sys/stat.h>             // for stat
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/aes.h>
-#else
-#include <openssl/core_names.h>
-#include <openssl/params.h>
-#include <openssl/param_build.h>
-#endif
-#include <openssl/x509v3.h>
-#include <openssl/err.h>
 
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-#include "test-fapi.h"
-#include "fapi_int.h"
-#include "tss2_rc.h"
+#include "ifapi_macros.h"         // for goto_if_null2
+#else
+#include <openssl/core_names.h>   // for OSSL_PKEY_PARAM_GROUP_NAME, OSSL_PK...
+#include <openssl/param_build.h>  // for OSSL_PARAM_BLD_free, OSSL_PARAM_BLD...
+#include <openssl/params.h>       // for OSSL_PARAM_free
+#endif
+#include <openssl/err.h>          // for ERR_error_string_n, ERR_get_error
+
+#include "fapi_int.h"             // for OSSL_FREE, FAPI_CONTEXT
+#include "linkhash.h"             // for lh_entry
+#include "test-common.h"          // for TSS2_TEST_FAPI_CONTEXT, TSS2_TEST_E...
+#include "test-fapi.h"            // for EXIT_ERROR, test_invoke_fapi, ASSERT
+#include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_FAPI...
+#include "tss2_esys.h"            // for Esys_Finalize, Esys_Initialize, ESY...
+#include "tss2_fapi.h"            // for Fapi_GetTcti, Fapi_Finalize, FAPI_C...
+#include "tss2_rc.h"              // for Tss2_RC_Decode
+#include "tss2_sys.h"             // for TSS2_SYS_CONTEXT, Tss2_Sys_CreatePr...
+#include "tss2_tcti.h"            // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"      // for TPM2B_MAX_NV_BUFFER, TPM2B_PUBLIC
 
 #define LOGDEFAULT LOGLEVEL_INFO
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
-
-#include "test-common.h"
+#include "util/log.h"             // for LOGLEVEL_INFO, LOG_ERROR, SAFE_FREE
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101000L
 #define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
@@ -1182,7 +1196,7 @@ get_pubkey_fingerprint(EVP_PKEY *key, char **fingerprint)
         goto error_cleanup;
     }
 #endif
-    *fingerprint = calloc(TPM2_SHA256_DIGEST_SIZE * 2 + 1, 1);
+    *fingerprint = calloc(1, TPM2_SHA256_DIGEST_SIZE * 2 + 1);
     if (!(*fingerprint)) {
         LOG_ERROR("Failed to allocate fingerprint.");
         goto error_cleanup;
@@ -1397,23 +1411,17 @@ int
 test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx)
 {
     char template[] = "/tmp/fapi_tmpdir.XXXXXX";
-    char *tmpdir = NULL;
     size_t size;
     int ret;
 
     size = sizeof(TSS2_TEST_FAPI_CONTEXT);
-    *test_ctx = calloc(size, 1);
+    *test_ctx = calloc(1, size);
     if (test_ctx == NULL) {
         LOG_ERROR("Failed to allocate 0x%zx bytes for the test context", size);
         goto error;
     }
 
-    tmpdir = strdup(template);
-    if (!tmpdir) {
-        LOG_ERROR("Failed to allocate name of temp dir.");
-        goto error;
-    }
-    (*test_ctx)->tmpdir = mkdtemp(tmpdir);
+    (*test_ctx)->tmpdir = strdup(mkdtemp(template));
     if (!(*test_ctx)->tmpdir) {
         LOG_ERROR("No temp dir created");
         goto error;
@@ -1435,7 +1443,6 @@ test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx)
     return ret;
 
  error:
-    SAFE_FREE(tmpdir);
     SAFE_FREE(*test_ctx);
     return EXIT_ERROR;
 }

@@ -1,3 +1,5 @@
+/* SPDX-FileCopyrightText: 2022 Intel Corporation
+                           2022 Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifndef INCLUDE_TSS2_TSS2_POLICY_H_
 #define INCLUDE_TSS2_TSS2_POLICY_H_

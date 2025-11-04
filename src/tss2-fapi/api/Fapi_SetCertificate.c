@@ -5,24 +5,22 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <stdlib.h>          // for NULL
+#include <string.h>          // for memset
 
+#include "fapi_int.h"        // for IFAPI_Key_SetCertificate, FAPI_CONTEXT
+#include "fapi_util.h"       // for ifapi_esys_serialize_object, ifapi_initi...
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"    // for check_not_null, strdup_check, goto_if_er...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_SetCertificate, Fapi_...
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "fapi_crypto.h"
+#include "util/log.h"        // for LOG_TRACE, SAFE_FREE, goto_if_error, bas...
 
 /** One-Call function for Fapi_SetCertificate
  *
@@ -141,7 +139,7 @@ Fapi_SetCertificate_Async(
     /* Cleanup command context. */
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
-    if (context->state != _FAPI_STATE_INIT) {
+    if (context->state != FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
     }
 
@@ -275,7 +273,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

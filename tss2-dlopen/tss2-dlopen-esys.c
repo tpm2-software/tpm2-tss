@@ -16,9 +16,15 @@
  * http://github.com/tpm2-software/tpm2-tss/tss2-dlopen
 */
 
-#include <dlfcn.h>
-#include <stdio.h>
-#include <tss2/tss2_esys.h>
+#include <dlfcn.h>            // for dlsym, dlerror, dlopen, RTLD_LOCAL, RTL...
+#include <stdint.h>           // for uint8_t, int32_t
+#include <stdio.h>            // for fprintf, NULL, stderr, size_t
+#include <tss2/tss2_esys.h>   // for ESYS_TR, ESYS_CONTEXT, ESYS_CRYPTO_CALL...
+
+#include "tss2_common.h"      // for TSS2_RC, TSS2_ESYS_RC_NOT_IMPLEMENTED
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_HANDLE
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2B_DATA, TPM2B_MAX_BUFFER
 
 #define str(s) xstr(s)
 #define xstr(s) #s
@@ -81,18 +87,18 @@ Esys_Finalize(ESYS_CONTEXT **ctx)
 }
 
 void
-Esys_Free(void *__ptr)
+Esys_Free(void *ptr)
 {
-    if (!__ptr)
+    if (!ptr)
         return;
-    static TSS2_RC (*sym) (void *__ptr) = NULL;
+    static TSS2_RC (*sym) (void *ptr) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Esys_Free");
     if (!sym) {
         WARN("Function Esys_Free not found.");
         return;
     }
-    sym(__ptr);
+    sym(ptr);
 }
 
 #define MAKE_ESYS_0(fun) \
@@ -2297,3 +2303,54 @@ MAKE_ESYS_1(Esys_GetSysContext,
     TSS2_SYS_CONTEXT **, sys_context);
 MAKE_ESYS_1(Esys_SetCryptoCallbacks,
     ESYS_CRYPTO_CALLBACKS *, callbacks);
+MAKE_ESYS_3(Esys_GetCpHash,
+    TPMI_ALG_HASH, hashAlg,
+    uint8_t **, cpHash,
+    size_t, *cpHash_size);
+MAKE_ESYS_3(Esys_GetRpHash,
+    TPMI_ALG_HASH, hashAlg,
+    uint8_t **, cpHash,
+    size_t, *cpHash_size);
+MAKE_ESYS_9(Esys_ECC_Encrypt,
+    ESYS_TR, keyHandle,
+    ESYS_TR, shandle1,
+    ESYS_TR, shandle2,
+    ESYS_TR, shandle3,
+    const TPM2B_MAX_BUFFER *, plainText,
+    const TPMT_KDF_SCHEME *, inScheme,
+    TPM2B_ECC_POINT **, c1,
+    TPM2B_MAX_BUFFER **, c2,
+    TPM2B_DIGEST **, c3);
+MAKE_ESYS_6(Esys_ECC_Encrypt_Async,
+    ESYS_TR, keyHandle,
+    ESYS_TR, shandle1,
+    ESYS_TR, shandle2,
+    ESYS_TR, shandle3,
+    const TPM2B_MAX_BUFFER *, plainText,
+    const TPMT_KDF_SCHEME *, inScheme);
+MAKE_ESYS_3(Esys_ECC_Encrypt_Finish,
+    TPM2B_ECC_POINT **, c1,
+    TPM2B_MAX_BUFFER **, c2,
+    TPM2B_DIGEST **, c3);
+MAKE_ESYS_9(Esys_ECC_Decrypt,
+    ESYS_TR, keyHandle,
+    ESYS_TR, shandle1,
+    ESYS_TR, shandle2,
+    ESYS_TR, shandle3,
+    const TPM2B_ECC_POINT *, c1,
+    const TPM2B_MAX_BUFFER *, c2,
+    const TPM2B_DIGEST *, c3,
+    const TPMT_KDF_SCHEME *, inScheme,
+    TPM2B_MAX_BUFFER **, plainText);
+MAKE_ESYS_8(Esys_ECC_Decrypt_Async,
+    ESYS_TR, keyHandle,
+    ESYS_TR, shandle1,
+    ESYS_TR, shandle2,
+    ESYS_TR, shandle3,
+    const TPM2B_ECC_POINT *, c1,
+    const TPM2B_MAX_BUFFER *, c2,
+    const TPM2B_DIGEST *, c3,
+    const TPMT_KDF_SCHEME *, inScheme);
+MAKE_ESYS_1(Esys_ECC_Decrypt_Finish,
+    TPM2B_MAX_BUFFER **, plainText);
+MAKE_ESYS_0(Esys_Abort);

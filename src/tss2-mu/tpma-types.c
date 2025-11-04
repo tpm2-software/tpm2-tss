@@ -6,17 +6,19 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <string.h>
+#include <inttypes.h>          // for PRIxPTR, uint8_t, uintptr_t
+#include <string.h>            // for NULL, memcpy, size_t
 
-#include "tss2_mu.h"
+#include "tss2_common.h"       // for TSS2_RC_SUCCESS, TSS2_MU_RC_BAD_REFERENCE
+#include "tss2_mu.h"           // for Tss2_MU_TPMA_ALGORITHM_Marshal, Tss2_M...
+#include "tss2_tpm2_types.h"   // for TPMA_ALGORITHM, TPMA_CC, TPMA_LOCALITY
+#include "util/tss2_endian.h"  // for BE_TO_HOST_16, BE_TO_HOST_32, BE_TO_HO...
 
-#include "util/tss2_endian.h"
 #define LOGMODULE marshal
-#include "util/log.h"
+#include "util/log.h"          // for LOG_DEBUG, LOG_TRACE, LOG_ERROR
 
 #define TPMA_MARSHAL(type) \
 TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \
@@ -79,6 +81,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type src, uint8_t buffer[], \
     return TSS2_RC_SUCCESS; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPMA_UNMARSHAL(type) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -143,6 +146,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
     } \
     return TSS2_RC_SUCCESS; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*
  * These macros expand to (un)marshal functions for each of the TPMA types

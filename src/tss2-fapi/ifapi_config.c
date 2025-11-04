@@ -5,22 +5,23 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"                  // for SYSCONFDIR
 #endif
 
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <json.h>                    // for json_object_put, json_object
+#include <stdint.h>                  // for uint8_t
+#include <stdlib.h>                  // for NULL, getenv, size_t
+#include <string.h>                  // for strncmp, strlen, memset, strdup
 
-#include "util/aux_util.h"
+#include "fapi_int.h"                // for IFAPI_FILE_DELIM, DEFAULT_LOG_DIR
 #include "ifapi_config.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_serialize.h"
-#include "tpm_json_serialize.h"
-#include "ifapi_helpers.h"
+#include "ifapi_helpers.h"           // for ifapi_asprintf
+#include "ifapi_json_deserialize.h"  // for ifapi_json_char_deserialize
+#include "ifapi_macros.h"            // for return_try_again
+#include "tpm_json_deserialize.h"    // for ifapi_get_sub_object, ifapi_json...
 
 #define LOGMODULE fapi
-#include "util/log.h"
+#include "util/log.h"                // for return_if_error, SAFE_FREE, retu...
 
 /**
  * The path of the default config file

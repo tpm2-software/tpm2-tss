@@ -5,25 +5,21 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include <json.h>            // for json_object_put, json_object_get_string
+#include <stdint.h>          // for uint8_t, uint32_t
+#include <stdio.h>           // for NULL, size_t
+#include <stdlib.h>          // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>          // for strlen, strdup
 
-#include "tss2_fapi.h"
+#include "ifapi_eventlog.h"  // for CONTENT, CONTENT_TYPE
+#include "test-fapi.h"       // for ASSERT, ASSERT_SIZE, pcr_reset, CHECK_JS...
+#include "tss2_common.h"     // for TSS2_RC
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_CreateKey, Fapi_ExportKey
 
-#include "test-fapi.h"
-#include "ifapi_eventlog.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"        // for SAFE_FREE, goto_if_error, LOG_INFO, LOG_...
 
 #define EVENT_SIZE 10
 
@@ -77,9 +73,11 @@ test_fapi_quote(FAPI_CONTEXT *context)
         "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_SetCertificate", error);
 
-    uint8_t qualifyingData[20] = {
+    uint8_t qualifyingData[32] = {
         0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-        0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f
+        0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00,
     };
 
     r = pcr_reset(context, 16);
@@ -90,7 +88,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
 
     r = Fapi_Quote(context, pcrList, 1, "HS/mySignKey",
                    "TPM-Quote",
-                   qualifyingData, 20,
+                   qualifyingData, sizeof(qualifyingData),
                    &quoteInfo,
                    &signature, &signatureSize,
                    &pcrEventLog, &certificate);
@@ -154,6 +152,34 @@ test_fapi_quote(FAPI_CONTEXT *context)
          "        \"hashAlg\":\"sha1\","
          "        \"digest\":\"494179714a6cd627239dfededf2de9ef994caf03\""
          "      },"
+         "      {"
+         "        \"hashAlg\":\"sha256\","
+         "        \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\""
+         "      },"
+         "      {"
+         "        \"hashAlg\":\"sha384\","
+         "        \"digest\":\"182e95266adff49059e706c61483478fe0688150c8d08b95fab5cfde961f12d903aaf44104af4ce72ba6a4bf20302b2e\""
+         "      },"
+         "      {"
+         "        \"hashAlg\":\"sha512\","
+         "        \"digest\":\"0f89ee1fcb7b0a4f7809d1267a029719004c5a5e5ec323a7c3523a20974f9a3f202f56fadba4cd9e8d654ab9f2e96dc5c795ea176fa20ede8d854c342f903533\""
+         "      }"
+         "    ],"
+         "    \"" CONTENT_TYPE "\":\"tss2\","
+         "    \"" CONTENT "\":{"
+         "      \"data\":\"00010203040506070809\","
+         "      \"event\":{"
+         "        \"test\":\"myfile\""
+         "      }"
+         "    }"
+         "  }"
+         "]",
+         /* same as above, just without sha1 */
+         "["
+         "  {"
+         "    \"recnum\":0,"
+         "    \"pcr\":16,"
+         "    \"digests\":["
          "      {"
          "        \"hashAlg\":\"sha256\","
          "        \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\""
@@ -250,7 +276,7 @@ test_fapi_quote(FAPI_CONTEXT *context)
     CHECK_JSON_LIST(log_check_list, log, error);
 
     r = Fapi_VerifyQuote(context, "HS/mySignKey",
-                         qualifyingData, 20,  quoteInfo,
+                         qualifyingData, sizeof(qualifyingData),  quoteInfo,
                          signature, signatureSize, log);
     goto_if_error(r, "Error Fapi_Verfiy_Quote", error);
 

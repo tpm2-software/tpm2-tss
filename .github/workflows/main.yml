@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2020 - 2022 Intel
+# SPDX-FileCopyrightText: 2021 - 2022 Fraunhofer SIT sponsored by Infineon
+# SPDX-FileCopyrightText: 2024 Juergen Repp
+# SPDX-License-Identifier: BSD-2-Clause
+
 name: CI
 on:
   [push, pull_request]
@@ -7,13 +12,15 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     strategy:
       matrix:
-        docker_image: [ubuntu-20.04, fedora-32, opensuse-leap, ubuntu-22.04, alpine-3.15]
+        docker_image: [fedora-32, opensuse-leap, ubuntu-22.04, ubuntu-24.04, alpine-3.15, arch-linux ]
         compiler: [gcc, clang]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
             fetch-depth: 0
+      - name: fix-sanitizer
+        run: sudo sysctl vm.mmap_rnd_bits=28
       - name: Launch Action
         uses:
           tpm2-software/ci/runCI@main
@@ -30,9 +37,11 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
             fetch-depth: 0
+      - name: fix-sanitizer
+        run: sudo sysctl vm.mmap_rnd_bits=28
       - name: Launch Action
         uses:
           tpm2-software/ci/runCI@main
@@ -49,9 +58,11 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
             fetch-depth: 0
+      - name: fix-sanitizer
+        run: sudo sysctl vm.mmap_rnd_bits=28
       - name: Launch Action
         uses:
           tpm2-software/ci/runCI@main
@@ -71,9 +82,11 @@ jobs:
         docker_image: [ubuntu-20.04, ubuntu-22.04-mbedtls-3.1]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
             fetch-depth: 0
+      - name: fix-sanitizer
+        run: sudo sysctl vm.mmap_rnd_bits=28
       - name: Launch Action
         uses:
           tpm2-software/ci/runCI@main
@@ -90,9 +103,11 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
             fetch-depth: 0
+      - name: fix-sanitizer
+        run: sudo sysctl vm.mmap_rnd_bits=28
       - name: Launch Action
         uses:
           tpm2-software/ci/runCI@main
@@ -109,9 +124,11 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
             fetch-depth: 0
+      - name: fix-sanitizer
+        run: sudo sysctl vm.mmap_rnd_bits=28
       - name: Launch Action
         uses:
           tpm2-software/ci/runCI@main
@@ -120,6 +137,13 @@ jobs:
           DOCKER_IMAGE: ubuntu-20.04
           ENABLE_COVERAGE: true
           PROJECT_NAME: ${{ github.event.repository.name }}
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.info
+          fail_ci_if_error: true
+          verbose: true
       - name: failure
         if: ${{ failure() }}
         run: cat $(find ../ -name test-suite.log) || true
@@ -128,7 +152,7 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
             fetch-depth: 0
       - name: Launch Action
@@ -148,9 +172,11 @@ jobs:
     if: contains(github.ref, 'coverity_scan')
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
             fetch-depth: 0
+      - name: fix-sanitizer
+        run: sudo sysctl vm.mmap_rnd_bits=28
       - name: Launch Coverity Action
         uses:
           tpm2-software/ci/coverityScan@main

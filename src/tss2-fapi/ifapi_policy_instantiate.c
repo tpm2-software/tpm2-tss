@@ -5,23 +5,21 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <stdlib.h>           // for size_t, NULL
+#include <string.h>           // for strlen
 
-#include "tss2_mu.h"
-#include "fapi_util.h"
-#include "fapi_crypto.h"
+#include "fapi_crypto.h"      // for ifapi_get_signature_algorithm_from_pem
 //#include "fapi_policy.h"
-#include "ifapi_helpers.h"
+#include "ifapi_helpers.h"    // for ifapi_get_name, ifapi_free_node_list
+#include "ifapi_macros.h"     // for return_error2, return_try_again
 #include "ifapi_policy_instantiate.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
+#include "tss2_tpm2_types.h"  // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for return_if_error, SAFE_FREE, goto_if_error
 
 static TSS2_RC
 get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list);
@@ -149,12 +147,12 @@ set_pem_key_param(
 }
 
 #define CHECK_TEMPLATE_PATH(path, template) \
-     if (!path) { \
+     if (!(path)) { \
          return_error2(TSS2_FAPI_RC_BAD_TEMPLATE, "No path for policy %s", template); \
      }
 
 #define CHECK_CALLBACK(callback, name) \
-    if (!callback) { \
+    if (!(callback)) { \
         return_error2(TSS2_FAPI_RC_NULL_CALLBACK, "Callback %s was NULL", name) \
     }
 
@@ -333,9 +331,18 @@ ifapi_policyeval_instantiate_finish(
             break;
 
         case POLICYDUPLICATIONSELECT:
+            if  (pol_element->element.PolicyDuplicationSelect.newParentName.size) {
+                break;
+            }
             if (pol_element->element.PolicyDuplicationSelect.newParentPublic.type) {
                 /* public data is already set in policy. Path will not be needed. */
                 SAFE_FREE(pol_element->element.PolicyDuplicationSelect.newParentPath);
+                r = ifapi_get_name(
+                     &pol_element->element.PolicyDuplicationSelect.newParentPublic,
+                     &pol_element->element.PolicyDuplicationSelect.newParentName);
+                return_if_error(r, "Compute object name");
+
+                pol_element->element.PolicyDuplicationSelect.newParentPublic.type = 0;
                 break;
             }
 

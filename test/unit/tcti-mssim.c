@@ -5,25 +5,24 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include <inttypes.h>               // for uint8_t
+#include <poll.h>                   // for pollfd, nfds_t
+#include <stdio.h>                  // for printf, NULL, size_t, ssize_t
+#include <stdlib.h>                 // for free, calloc
+#include <string.h>                 // for memcpy
+#include <sys/socket.h>             // for socklen_t
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_tcti.h"
-#include "tss2_tcti_mssim.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-mssim.h"
-#include "util/key-value-parse.h"
+#include "../helper/cmocka_all.h"                 // for will_return, assert_int_equal
+#include "tss2-tcti/tcti-common.h"  // for tcti_common_context_cast, TSS2_TC...
+#include "tss2-tcti/tcti-mssim.h"   // for mssim_conf_t, TSS2_TCTI_MSSIM_CON...
+#include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...
+#include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, TSS2_TCTI_TIME...
+#include "tss2_tcti_mssim.h"        // for Tss2_Tcti_Mssim_Init
+#include "tss2_tpm2_types.h"        // for TPM2_ST
+#include "util/key-value-parse.h"   // for parse_key_value_string, key_value_t
 
 /*
  * This function is defined in the tcti-mssim module but not exposed through
@@ -336,6 +335,9 @@ static int
 tcti_socket_teardown (void **state)
 {
     TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
+
+    will_return (__wrap_write, 4);
+    will_return (__wrap_write, 4);
 
     Tss2_Tcti_Finalize (ctx);
     free (ctx);

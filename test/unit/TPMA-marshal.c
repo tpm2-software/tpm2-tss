@@ -5,16 +5,17 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <setjmp.h>
-#include <cmocka.h>
-#include <stdio.h>
-#include "tss2_mu.h"
-#include "util/tss2_endian.h"
+#include <stddef.h>            // for NULL, size_t
+#include <stdint.h>            // for uint8_t, uint32_t
+
+#include "../helper/cmocka_all.h"            // for assert_int_equal, cmocka_unit_test
+#include "tss2_common.h"       // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_MU_RC_B...
+#include "tss2_mu.h"           // for Tss2_MU_TPMA_ALGORITHM_Marshal, Tss2_M...
+#include "tss2_tpm2_types.h"   // for TPMA_ALGORITHM, TPMA_SESSION, TPMA_ALG...
+#include "util/tss2_endian.h"  // for HOST_TO_BE_32, BE_TO_HOST_32
 
 /*
  * Success case

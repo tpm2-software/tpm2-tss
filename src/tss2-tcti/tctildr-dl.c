@@ -6,23 +6,23 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-#include <dlfcn.h>
-#include <limits.h>
-#include <stdio.h>
+#include <dlfcn.h>              // for dlclose, dlerror, dlsym, dlopen, RTLD...
+#include <limits.h>             // for PATH_MAX
+#include <stdio.h>              // for NULL, size_t, snprintf
+#include <string.h>             // for memset
 
-#include "tss2_tcti.h"
-#include "tctildr-interface.h"
-#include "tctildr.h"
+#include "tctildr-interface.h"  // for tctildr_finalize_data, tctildr_get_info
+#include "tctildr.h"            // for tcti_from_info, FMT_LIB_SUFFIX, FMT_L...
+#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_R...
+#include "tss2_tcti.h"          // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"           // for LOG_ERROR, LOG_DEBUG, LOG_TRACE
 
-#define ARRAY_SIZE(X) (sizeof(X)/sizeof(X[0]))
+#define ARRAY_SIZE(X) (sizeof(X)/sizeof((X)[0]))
 
 struct {
     char *file;
@@ -83,7 +83,7 @@ TSS2_RC
 handle_from_name(const char *file,
                  void **handle)
 {
-    size_t size;
+    size_t size = 0;
     char file_xfrm[PATH_MAX];
     const char *formats[] = {
         /* <name> */
@@ -103,6 +103,7 @@ handle_from_name(const char *file,
     }
 
     for (size_t i = 0; i < ARRAY_SIZE(formats); i++) {
+        memset(file_xfrm, 0, sizeof(file_xfrm));
         size = snprintf(file_xfrm, sizeof(file_xfrm), formats[i], file);
         if (size >= sizeof(file_xfrm)) {
             LOG_ERROR("TCTI name truncated in transform.");

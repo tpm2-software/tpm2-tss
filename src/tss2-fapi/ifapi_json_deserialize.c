@@ -5,29 +5,50 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
+#include <inttypes.h>                       // for int64_t, uint8_t, PRId64
+#include <stdio.h>                          // for NULL, size_t, sscanf
+#include <stdlib.h>                         // for calloc, malloc
+#include <string.h>                         // for memset, strlen, strdup
+#include <strings.h>                        // for strncasecmp, strcasecmp
 
-#include "ifapi_helpers.h"
-#include "ifapi_json_eventlog_deserialize.h"
-#include "efi_event.h"
-#include "tpm_json_deserialize.h"
+#include "fapi_crypto.h"                    // for ifapi_crypto_hash_abort
+#include "fapi_int.h"                       // for HASH_UPDATE_BUFFER
+#include "fapi_types.h"                     // for UINT8_ARY
+#include "ifapi_eventlog_system.h"          // for IFAPI_FIRMWARE_EVENT, ifa...
+#include "ifapi_helpers.h"                  // for ifapi_check_json_object_f...
+#include "ifapi_ima_eventlog.h"             // for IFAPI_IMA_EVENT, ifapi_ge...
 #include "ifapi_json_deserialize.h"
-#include "fapi_policy.h"
-#include "ifapi_config.h"
-#include "fapi_crypto.h"
-#include "ifapi_ima_eventlog.h"
-#include "ifapi_eventlog_system.h"
-#include "ifapi_helpers.h"
+#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_policy_types.h"             // for TPMS_POLICY
+#include "tpm_json_deserialize.h"           // for ifapi_get_sub_object, ifa...
+#include "tss2_esys.h"                      // for ESYS_TR_RH_OWNER
+#include "tss2_mu.h"                        // for Tss2_MU_TPM2B_PRIVATE_Unm...
+#include "tss2_tpm2_types.h"                // for TPMT_HA, TPM2_NO, TPML_DI...
+
 #define LOGMODULE fapijson
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "tss2_mu.h"
+#include "util/log.h"                       // for return_if_error, LOG_ERROR
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
+
+/* Deserialize according to the rules of parenttype and then filter against values
+   provided in the ... list. */
+#define SUBTYPE_FILTER(type, parenttype, ...) \
+    TSS2_RC r; \
+    type tab[] = { __VA_ARGS__ }; \
+    type v; \
+    r = ifapi_json_ ## parenttype ## _deserialize(jso, &v); \
+    return_if_error(r, "Bad value"); \
+    for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) { \
+        if (v == tab[i]) { \
+            *out = v; \
+            return TSS2_RC_SUCCESS; \
+        } \
+    } \
+    LOG_ERROR("Bad sub-value"); \
+    return TSS2_FAPI_RC_BAD_VALUE;
 
 /** Get the index of a sub string after a certain prefix.
  *
@@ -38,10 +59,10 @@ static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "PO
  * @retval the position of the sub string after the prefix.
  * @retval 0 if no prefix is found.
  */
-static int
+static unsigned int
 get_token_start_idx(const char *token)
 {
-    int itoken = 0;
+    unsigned int itoken = 0;
     char *entry;
     int i;
 
@@ -252,7 +273,20 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso,  IFAPI_KEY *out)
         memset(&out->nonce, 0, sizeof(TPM2B_DIGEST));
     }
 
+    if (ifapi_get_sub_object(jso, "unique_init_set", &jso2)) {
+        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->unique_init_set);
+        return_if_error(r, "Bad value for field \"delete_prohibited\".");
 
+    } else {
+        out->unique_init_set = TPM2_NO;
+    }
+
+      if (!ifapi_get_sub_object(jso, "unique_init", &jso2)) {
+        memset(&out->unique_init, 0, sizeof(TPMU_PUBLIC_ID));
+    } else {
+        r = ifapi_json_TPMU_PUBLIC_ID_deserialize(out->public.publicArea.type, jso2, &out->unique_init);
+        return_if_error(r, "Bad value for field \"unique_init\".");
+    }
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
@@ -809,7 +843,7 @@ ifapi_json_IFAPI_EVENT_TYPE_deserialize_txt(json_object *jso,
         return TSS2_RC_SUCCESS;
 
     } else {
-        int itoken = get_token_start_idx(token);
+        int unsigned itoken = get_token_start_idx(token);
         size_t i;
         size_t n = sizeof(deserialize_IFAPI_EVENT_TYPE_tab) /
                    sizeof(deserialize_IFAPI_EVENT_TYPE_tab[0]);

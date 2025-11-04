@@ -1,5 +1,6 @@
 {
     global:
+        Tss2_Sys_Abort;
         Tss2_Sys_AC_GetCapability_Prepare;
         Tss2_Sys_AC_GetCapability_Complete;
         Tss2_Sys_AC_GetCapability;
@@ -376,6 +377,12 @@
         Tss2_Sys_ZGen_2Phase_Prepare;
         Tss2_Sys_ZGen_2Phase_Complete;
         Tss2_Sys_ZGen_2Phase;
+        Tss2_Sys_ECC_Encrypt_Prepare;
+        Tss2_Sys_ECC_Encrypt_Complete;
+        Tss2_Sys_ECC_Encrypt;
+        Tss2_Sys_ECC_Decrypt_Prepare;
+        Tss2_Sys_ECC_Decrypt_Complete;
+        Tss2_Sys_ECC_Decrypt;
     local:
         *;
 };

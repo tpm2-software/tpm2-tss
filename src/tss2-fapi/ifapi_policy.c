@@ -5,26 +5,30 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <inttypes.h>                  // for PRIu16
+#include <stdbool.h>                   // for bool, false, true
+#include <string.h>                    // for memset
 
-#include "tss2_mu.h"
-#include "fapi_util.h"
-#include "fapi_int.h"
-#include "fapi_crypto.h"
-#include "fapi_policy.h"
-#include "ifapi_policy_instantiate.h"
-#include "ifapi_policy_callbacks.h"
-#include "ifapi_helpers.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_policy_store.h"
+#include "fapi_crypto.h"               // for ifapi_hash_get_digest_size
+#include "fapi_int.h"                  // for IFAPI_POLICY_CTX, POLICY_INIT
+#include "ifapi_helpers.h"             // for ifapi_free_node_list
+#include "ifapi_io.h"                  // for IFAPI_IO
+#include "ifapi_macros.h"              // for statecase, fallthrough, return...
+#include "ifapi_policy.h"              // for ifapi_calculate_tree_ex, ifapi...
+#include "ifapi_policy_calculate.h"    // for ifapi_calculate_policy
+#include "ifapi_policy_execute.h"      // for ifapi_policyeval_execute, ifap...
+#include "ifapi_policy_instantiate.h"  // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ifapi_policy_store.h"        // for ifapi_policy_store_load_async
+#include "ifapi_policy_types.h"        // for TPMS_POLICY
+#include "tss2_common.h"               // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_esys.h"                 // for ESYS_CONTEXT
+#include "tss2_tpm2_types.h"           // for TPMT_HA, TPML_DIGEST_VALUES
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                  // for goto_if_error, goto_error
 
 /** Compute policy digest for a policy tree.
  *

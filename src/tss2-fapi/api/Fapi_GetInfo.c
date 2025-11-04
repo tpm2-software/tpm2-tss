@@ -5,21 +5,26 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"                // for PACKAGE_STRING
 #endif
 
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
-#include <string.h>
+#include <json.h>                  // for json_object_put, json_object_to_js...
+#include <string.h>                // for memset, strdup, NULL, size_t
 
-#include "ifapi_json_serialize.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"              // for FAPI_CONTEXT, IFAPI_GetInfo, IFAPI...
+#include "fapi_util.h"             // for ifapi_capability_get, ifapi_capabi...
+#include "ifapi_io.h"              // for ifapi_io_poll
+#include "ifapi_json_serialize.h"  // for ifapi_json_IFAPI_INFO_serialize
+#include "ifapi_macros.h"          // for check_not_null, return_if_error_re...
+#include "ifapi_policy_types.h"    // for TPMI_POLICYTYPE
+#include "tss2_common.h"           // for TSS2_RC, TSS2_RC_SUCCESS, UINT32
+#include "tss2_esys.h"             // for Esys_SetTimeout
+#include "tss2_fapi.h"             // for FAPI_CONTEXT, Fapi_GetInfo, Fapi_G...
+#include "tss2_tcti.h"             // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"       // for TPM2_CAP_HANDLES, TPM2_MAX_CAP_HAN...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"              // for LOG_TRACE, return_if_error, goto_i...
 
 typedef struct {
     char *description;
@@ -280,7 +285,7 @@ Fapi_GetInfo_Finish(
 #endif
         goto_if_null2(*info, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
-        context->state = _FAPI_STATE_INIT;
+        context->state = FAPI_STATE_INIT;
         r = TSS2_RC_SUCCESS;
         break;
 

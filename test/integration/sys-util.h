@@ -7,9 +7,12 @@
 #ifndef TEST_INTEGRATION_SYS_UTIL_H
 #define TEST_INTEGRATION_SYS_UTIL_H
 
-#include "tss2_tpm2_types.h"
-#include "tss2_sys.h"
-#include "util/tpm2b.h"
+#include <stddef.h>           // for NULL
+
+#include "tss2_common.h"      // for TSS2_RC, UINT16
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2B_MAX_BUFFER, TPM2B_DIGEST, TPM2B_NAME
+#include "util/tpm2b.h"       // for TPM2B
 
 /*
  * This macro is like the GNU TEMP_FAILURE_RETRY macro for the

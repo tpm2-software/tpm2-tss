@@ -30,25 +30,29 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"            // for TCTI_DEVICE, TCTI_MSSIM, TCTI_SWTPM
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
+#include <stdlib.h>            // for NULL, size_t
+#include <string.h>            // for strcmp
 
-#include "tctildr.h"
-#include "tss2_tcti_mssim.h"
-#include "tss2_tcti_swtpm.h"
+#include "tctildr.h"           // for tcti_from_init
+#include "tss2_common.h"       // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_RC...
+#include "tss2_tcti.h"         // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO, TSS...
+#include "tss2_tcti_mssim.h"   // for Tss2_Tcti_Mssim_Init
+#include "tss2_tcti_swtpm.h"   // for Tss2_Tcti_Swtpm_Init
+#include "util/aux_util.h"     // for UNUSED
 #ifdef _WIN32
 #include "tss2_tcti_tbs.h"
 #else /* _WIN32 */
-#include "tss2_tcti_device.h"
+#include "tss2_tcti_device.h"  // for Tss2_Tcti_Device_Init
 #endif
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"          // for LOG_ERROR, LOG_DEBUG
 
-#define ARRAY_SIZE(X) (sizeof(X)/sizeof(X[0]))
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(X) (sizeof(X)/sizeof((X)[0]))
+#endif
 #define NAME_ARRAY_SIZE 3
 
 struct {
@@ -194,7 +198,7 @@ tctildr_get_tcti (const char *name,
     for (size_t i = 0; i < ARRAY_SIZE(tctis); ++i) {
 #pragma GCC diagnostic pop
         for (size_t j = 0; j < NAME_ARRAY_SIZE; ++j) {
-            if (strcmp (name, tctis[i].names[j]))
+            if (strcmp (name, tctis[i].names[j]) != 0)
                 continue;
             LOG_DEBUG("initializing TCTI with name \"%s\"",
                       tctis[i].names[j]);

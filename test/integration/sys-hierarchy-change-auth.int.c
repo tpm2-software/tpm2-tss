@@ -5,18 +5,18 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for exit
 
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for BYTE, UINT32
+#include "tss2_sys.h"         // for Tss2_Sys_HierarchyChangeAuth, TSS2L_SYS...
+#include "tss2_tpm2_types.h"  // for TPM2B_AUTH, TPMS_AUTH_COMMAND, TPM2_RC_...
 
-#include "inttypes.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "sys-util.h"
-#include "test.h"
+#include "test.h"             // for test_invoke
+#include "util/log.h"         // for LOG_ERROR, LOG_INFO
 
 /*
  * Test auth value changes for Owner Auth

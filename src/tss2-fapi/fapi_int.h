@@ -6,33 +6,26 @@
 #ifndef FAPI_INT_H
 #define FAPI_INT_H
 
-#include "fapi_types.h"
-#include "ifapi_policy_types.h"
-#include "ifapi_policy_instantiate.h"
-#include "ifapi_eventlog.h"
-#include "ifapi_io.h"
-#include "ifapi_profiles.h"
-#include "ifapi_macros.h"
-#include "ifapi_keystore.h"
-#include "ifapi_policy_store.h"
-#include "ifapi_config.h"
+#include <json.h>                      // for json_object
+#include <stdbool.h>                   // for bool, false, true
+#include <stdint.h>                    // for uint8_t, uint32_t, uint64_t
+#include <stdio.h>                     // for size_t, NULL
+#include <unistd.h>                    // for R_OK, W_OK
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <string.h>
-#include <inttypes.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <json-c/json.h>
-#include <poll.h>
-
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
+#include "fapi_types.h"                // for NODE_STR_T, NODE_OBJECT_T, UIN...
+#include "ifapi_config.h"              // for IFAPI_CONFIG
+#include "ifapi_eventlog.h"            // for IFAPI_EVENT, FAPI_QUOTE_INFO
+#include "ifapi_io.h"                  // for IFAPI_IO
+#include "ifapi_keystore.h"            // for IFAPI_OBJECT, IFAPI_IO_STATE
+#include "ifapi_policy_instantiate.h"  // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ifapi_policy_store.h"        // for IFAPI_POLICY_STORE
+#include "ifapi_policy_types.h"        // for TPMS_POLICY, TPMS_POLICYAUTHOR...
+#include "ifapi_profiles.h"            // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_common.h"               // for UINT32, UINT16, BYTE, TSS2_BAS...
+#include "tss2_esys.h"                 // for ESYS_TR, ESYS_TR_NONE, ESYS_CO...
+#include "tss2_fapi.h"                 // for Fapi_CB_Auth, Fapi_CB_Branch
+#include "tss2_tpm2_types.h"           // for TPM2_HANDLE, TPMS_CAPABILITY_DATA
+#include "util/aux_util.h"             // for goto_if_error, TPM2_ERROR_FORMAT
 
 #define DEFAULT_LOG_DIR "/run/tpm2_tss"
 #define IFAPI_PCR_LOG_FILE "pcr.log"
@@ -88,6 +81,10 @@ typedef UINT8 IFAPI_SESSION_TYPE;
 #define IFAPI_FLUSH_PARENT true
 #define IFAPI_NOT_FLUSH_PARENT false
 
+#ifndef MAX
+#  define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
 /* Definition of FAPI buffer for TPM2B transmission */
 typedef struct {
     UINT16 size;
@@ -98,27 +95,27 @@ typedef struct {
 
 
 #define FAPI_COPY_DIGEST(dest_buffer, dest_size, src, src_size) \
-    if (src_size > sizeof(TPMU_HA)) { \
+    if ((src_size) > sizeof(TPMU_HA)) { \
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Digest size too large."); \
     } \
     memcpy(dest_buffer, (src), (src_size));  \
-    dest_size = src_size
+    (dest_size) = src_size
 
 #define HASH_UPDATE(CONTEXT, TYPE, OBJECT, R, LABEL)    \
     { \
         uint8_t buffer[sizeof(TYPE)]; \
         size_t offset = 0; \
-        R = Tss2_MU_ ## TYPE ## _Marshal(OBJECT, \
+        (R) = Tss2_MU_ ## TYPE ## _Marshal(OBJECT, \
                                          &buffer[0], sizeof(TYPE), &offset); \
         goto_if_error(R, "Marshal for hash update", LABEL); \
-        R = ifapi_crypto_hash_update(CONTEXT, \
+        (R) = ifapi_crypto_hash_update(CONTEXT, \
                                      (const uint8_t *) &buffer[0], \
                                      offset);                     \
         goto_if_error(R, "crypto hash update", LABEL); }
 
 #define HASH_UPDATE_BUFFER(CONTEXT, BUFFER, SIZE, R, LABEL) \
     R = ifapi_crypto_hash_update(CONTEXT, \
-                                 (const uint8_t *) BUFFER, SIZE) ; \
+                                 (const uint8_t *) (BUFFER), SIZE) ; \
     goto_if_error(R, "crypto hash update", LABEL);
 
 #define FAPI_SYNC(r,msg,label, ...)             \
@@ -130,8 +127,8 @@ typedef struct {
     }
 
 #define ENC_SESSION_IF_POLICY(auth_session)             \
-    (auth_session == ESYS_TR_PASSWORD || auth_session == ESYS_TR_NONE || \
-     auth_session == context->session2 || \
+    ((auth_session) == ESYS_TR_PASSWORD || (auth_session) == ESYS_TR_NONE || \
+     (auth_session) == context->session2 || \
      !context->session2) ? ESYS_TR_NONE : context->session2
 
 /** The states for the FAPI's object authorization state*/
@@ -160,6 +157,15 @@ enum IFAPI_READ_NV_PUBLIC_STATE {
     READ_NV_PUBLIC_GET_PUBLIC
 };
 
+/** The states for checking whether an nv index exits */
+enum IFAPI_CHECK_NV_STATE {
+    CHECK_NV_INIT = 0,
+    CHECK_NV_WAIT_FOR_GET_CAP,
+    CHECK_NV_GET_ESYS_HANDLE,
+    CHECK_NV_WAIT_FOR_READ_PUBLIC
+};
+
+
 #define IFAPI_MAX_CAP_INFO 17
 
 typedef struct {
@@ -181,6 +187,9 @@ typedef struct {
     TPMI_YES_NO                              persistent;    /**< Store key persistent in NV ram. */
     UINT32                            persistent_handle;    /**< < Persistent handle which should be used */
     TPM2B_PUBLIC                                 public;    /**< Template for public data */
+    UINT16                                  unique_zero;    /**< Size for unique zero bytes */
+    bool                                 unique_rsa_set;    /**< Indicate whether unique rsa has to be set */
+    bool                                 unique_ecc_set;    /**< Indicate whether unique ecc has to be set */
 } IFAPI_KEY_TEMPLATE;
 
 /** Type for representing template for NV objects
@@ -195,7 +204,7 @@ typedef struct {
 
 
 /** The states for the FAPI's NV read state */
-enum _FAPI_STATE_NV_READ {
+enum FAPI_STATE_NV_READ {
     NV_READ_INIT = 0,
     NV_READ_AUTHORIZE,
     NV_READ_AUTHORIZE2,
@@ -203,11 +212,12 @@ enum _FAPI_STATE_NV_READ {
     NV_READ_CHECK_HANDLE,
     NV_READ_GET_CAPABILITY,
     NV_READ_GET_ESYS_HANDLE,
-    NV_READ_GET_NV_PUBLIC
+    NV_READ_GET_NV_PUBLIC,
+    NV_READ_WRITE_CHANGED_OBJECT
 };
 
 /** The states for the FAPI's NV write state */
-enum _FAPI_STATE_NV_WRITE {
+enum FAPI_STATE_NV_WRITE {
     NV2_WRITE_INIT = 0,
     NV2_WRITE_READ,
     NV2_WRITE_WAIT_FOR_SESSSION,
@@ -233,6 +243,7 @@ typedef struct {
     UINT16 offset;              /**< Offset in TPM memory TPM */
     size_t data_idx;            /**< Offset in the read buffer */
     const uint8_t *data;        /**< Buffer for data to be written */
+    uint8_t *nv_buffer;         /**< Buffer for data to be written */
     uint8_t *rdata;             /**< Buffer for data to be read */
     size_t size;                /**< size of rdata */
     IFAPI_OBJECT auth_object;   /**< Object used for authentication */
@@ -244,8 +255,8 @@ typedef struct {
     uint64_t bitmap;            /**< The bitmask for the SetBits command */
     IFAPI_NV_TEMPLATE public_templ; /**< The template for nv creation, adjusted
                                          appropriate by the passed flags */
-    enum _FAPI_STATE_NV_READ nv_read_state; /**< The current state of NV read */
-    enum _FAPI_STATE_NV_WRITE nv_write_state; /**< The current state of NV write*/
+    enum FAPI_STATE_NV_READ nv_read_state; /**< The current state of NV read */
+    enum FAPI_STATE_NV_WRITE nv_write_state; /**< The current state of NV write*/
     uint8_t *write_data;
     char *logData;               /**< The event log for NV objects of type pcr */
     json_object *jso_event_log;  /**< logData in JSON format */
@@ -253,6 +264,8 @@ typedef struct {
     IFAPI_EVENT pcr_event;       /**< Event to be added to log */
     TPML_DIGEST_VALUES digests;  /**< Digest for the event data of an extend */
     bool skip_policy_computation; /**< switch whether policy needs to be computed */
+    enum IFAPI_CHECK_NV_STATE nv_check; /**< state for checking existing nv indexes */
+    TPMS_CAPABILITY_DATA *capability; /* TPM capability data to check nv index */
 } IFAPI_NV_Cmds;
 
 /** The data structure holding internal state of Fapi_Initialize command.
@@ -264,9 +277,40 @@ typedef struct {
     size_t numNullPrimaries;         /**< Number of NULL hierarchy primaries
                                           stored in keystore */
     size_t primary_idx;              /**< Index to the current primary */
+    UINT32 nv_cap_idx;               /**< Index to the current nv object */
     size_t path_idx;                 /**< Index of array with the object paths */
     IFAPI_OBJECT *null_primaries;    /**< Array of the NULL hierarchy primaries. */
 } IFAPI_INITIALIZE;
+
+/** The states for the creation objects for existing nv indexes. */
+enum FAPI_NV_CREATE {
+    CREATE_NV_CHECK_NV_OBJECTS_INIT = 0,
+    CREATE_NV_CHECK_NV_OBJECTS,
+    CREATE_NV_READ_NV_OBJECT,
+    CREATE_NV_GET_TPM_NV_HANDLES,
+    CREATE_NV_GET_TPM_NV_HANDLES2,
+    CREATE_NV_CHECK_NV_INDEX,
+    CREATE_NV_NV_GET_ESYS_HANDLE,
+    CREATE_NV_NV_WAIT_FOR_READ_PUBLIC,
+    CREATE_NV_WRITE
+};
+
+/** The data structure holding internal state the create objects function.
+ */
+typedef struct {
+    enum FAPI_NV_CREATE  state;       /**< The state of the async state machine. */
+    TPMS_CAPABILITY_DATA *capability; /**< TPM capability data to check available algs */
+    char **pathlist;                  /**< The array with all keystore objects */
+    size_t numPaths;                  /**< Size of array with all keystore objects */
+    UINT32 nv_cap_idx;               /**< Index to the current nv object */
+    size_t path_idx;                 /**< Index of array with the object paths */
+    TPMI_RH_NV_INDEX *nv_idx_list;   /**< Array of nv indexes in keystore */
+    TPMI_YES_NO more_data;           /**< more calls of get capability needed. */
+    TPM2_HANDLE nv_index;            /**< The first handle for get capability. */
+    ESYS_TR esys_nv_handle;          /**< The esys nv handle for created nv objects. */
+    IFAPI_OBJECT nv_object;          /**< NV object to be serialized*/
+    char *path;                      /**< The pathname generated for nv indexes */
+} IFAPI_CREATE_NV;
 
 /** The data structure holding internal state of Fapi_PCR commands.
  */
@@ -565,6 +609,9 @@ typedef struct {
     bool srk_exists;
     TPM2_HANDLE template_nv_index;
     TPM2_HANDLE nonce_nv_index;
+    bool cert_chain_exists;
+    uint8_t *certs;
+    size_t cert_list_size;
 } IFAPI_Provision;
 
 /** The data structure holding internal state of regenerate primary key.
@@ -656,7 +703,7 @@ typedef struct {
 } IFAPI_FILE_SEARCH_CTX;
 
 /** The states for the FAPI's prepare key loading */
-enum _FAPI_STATE_PREPARE_LOAD_KEY {
+enum FAPI_STATE_PREPARE_LOAD_KEY {
     PREPARE_LOAD_KEY_INIT = 0,
     PREPARE_LOAD_KEY_WAIT_FOR_SESSION,
     PREPARE_LOAD_KEY_INIT_KEY,
@@ -664,7 +711,7 @@ enum _FAPI_STATE_PREPARE_LOAD_KEY {
 };
 
 /** The states for the FAPI's key loading */
-enum _FAPI_STATE_LOAD_KEY {
+enum FAPI_STATE_LOAD_KEY {
     LOAD_KEY_GET_PATH = 0,
     LOAD_KEY_READ_KEY,
     LOAD_KEY_WAIT_FOR_PRIMARY,
@@ -723,8 +770,8 @@ typedef struct {
 /** The data structure holding internal state of loading keys.
  */
 typedef struct {
-    enum _FAPI_STATE_LOAD_KEY state;   /**< The current state of key  loading */
-    enum  _FAPI_STATE_PREPARE_LOAD_KEY prepare_state;
+    enum FAPI_STATE_LOAD_KEY state;   /**< The current state of key  loading */
+    enum  FAPI_STATE_PREPARE_LOAD_KEY prepare_state;
     NODE_STR_T *path_list;        /**< The current used hierarchy for CreatePrimary */
     NODE_OBJECT_T *key_list;
     IFAPI_OBJECT auth_object;
@@ -804,7 +851,7 @@ typedef union {
 } IFAPI_CMD_STATE;
 
 /** The states for the FAPI's primary key regeneration */
-enum _FAPI_STATE_PRIMARY {
+enum FAPI_STATE_PRIMARY {
     PRIMARY_INIT = 0,
     PRIMARY_READ_KEY,
     PRIMARY_READ_HIERARCHY,
@@ -819,7 +866,7 @@ enum _FAPI_STATE_PRIMARY {
 };
 
 /** The states for the FAPI's primary key regeneration */
-enum _FAPI_STATE_SESSION {
+enum FAPI_STATE_SESSION {
     SESSION_INIT = 0,
     SESSION_WAIT_FOR_PRIMARY,
     SESSION_CREATE_SESSION,
@@ -828,23 +875,23 @@ enum _FAPI_STATE_SESSION {
 };
 
 /** The states for the FAPI's get random  state */
-enum _FAPI_STATE_GET_RANDOM {
+enum FAPI_STATE_GET_RANDOM {
     GET_RANDOM_INIT = 0,
     GET_RANDOM_SENT
 };
 
 /** The states for flushing objects */
-enum _FAPI_FLUSH_STATE {
+enum FAPI_FLUSH_STATE {
     FLUSH_INIT = 0,
     WAIT_FOR_FLUSH
 };
 
 /** The states for the FAPI's internal state machine */
-enum _FAPI_STATE {
-    _FAPI_STATE_INIT = 0,         /**< The initial state after creation or after
+enum FAPI_STATE {
+    FAPI_STATE_INIT = 0,         /**< The initial state after creation or after
                                      finishing a command. A new command can only
                                      be issued in this state. */
-    _FAPI_STATE_INTERNALERROR,     /**< A non-recoverable error occurred within the
+    FAPI_STATE_INTERNALERROR,     /**< A non-recoverable error occurred within the
                                       ESAPI code. */
     INITIALIZE_READ,
     INITIALIZE_INIT_TCTI,
@@ -855,6 +902,7 @@ enum _FAPI_STATE {
     INITIALIZE_READ_TIME,
     INITIALIZE_CHECK_NULL_PRIMARY,
     INITIALIZE_READ_NULL_PRIMARY,
+    INITIALIZE_CHECK_EXISTING_NV,
     PROVISION_WAIT_FOR_GET_CAP_AUTH_STATE,
     PROVISION_WAIT_FOR_GET_CAP0,
     PROVISION_WAIT_FOR_GET_CAP1,
@@ -864,6 +912,7 @@ enum _FAPI_STATE {
     PROVISION_GET_CERT_NV_FINISH,
     PROVISION_GET_CERT_READ_PUBLIC,
     PROVISION_READ_CERT,
+    PROVISION_READ_CERT_CHAIN,
     PROVISION_PREPARE_READ_ROOT_CERT,
     PROVISION_READ_ROOT_CERT,
     PROVISION_PREPARE_READ_INT_CERT,
@@ -918,6 +967,7 @@ enum _FAPI_STATE {
     PROVISION_PREPARE_EK_EVICT,
     PROVISION_READ_EK_TEMPLATE,
     PROVISION_READ_EK_NONCE,
+    PROVISION_CHECK_EXISTING_NV,
 
     KEY_CREATE,
     KEY_CREATE_PRIMARY,
@@ -943,6 +993,9 @@ enum _FAPI_STATE {
     NV_CREATE_AUTH_SENT,
     NV_CREATE_WRITE,
     NV_CREATE_CALCULATE_POLICY,
+    NV_CREATE_CHECK_EXISTING,
+    NV_CREATE_INDEX,
+    NV_CREATE_SERIALIZE,
 
     NV_WRITE_READ,
     NV_WRITE_WRITE,
@@ -1172,14 +1225,14 @@ struct FAPI_CONTEXT {
     struct IFAPI_PROFILES profiles;
     TPMS_TIME_INFO init_time;        /**< The current time during FAPI initialization. **/
 
-    enum _FAPI_STATE state;          /**< The current state of the command execution */
-    enum _FAPI_STATE_PRIMARY primary_state; /**< The current state of the primary regeneration */
-    enum _FAPI_STATE_SESSION session_state; /**< The current state of the session creation */
-    enum _FAPI_STATE_GET_RANDOM get_random_state; /**< The current state of get random */
+    enum FAPI_STATE state;          /**< The current state of the command execution */
+    enum FAPI_STATE_PRIMARY primary_state; /**< The current state of the primary regeneration */
+    enum FAPI_STATE_SESSION session_state; /**< The current state of the session creation */
+    enum FAPI_STATE_GET_RANDOM get_random_state; /**< The current state of get random */
     enum IFAPI_HIERACHY_AUTHORIZATION_STATE hierarchy_state;
     enum IFAPI_HIERACHY_POLICY_AUTHORIZATION_STATE hierarchy_policy_state;
     enum IFAPI_GET_CERT_STATE get_cert_state;
-    enum _FAPI_FLUSH_STATE flush_object_state;  /**< The current state of a flush operation */
+    enum FAPI_FLUSH_STATE flush_object_state;  /**< The current state of a flush operation */
     enum IFAPI_CLEANUP_STATE cleanup_state;     /**< The state of cleanup after command execution */
     enum IFAPI_READ_NV_PUBLIC_STATE read_nv_public_state;
     IFAPI_CONFIG config;             /**< The profile independent configuration data */
@@ -1187,6 +1240,7 @@ struct FAPI_CONTEXT {
     IFAPI_CMD_STATE cmd;             /**< The state information of the currently executed
                                           command */
     IFAPI_NV_Cmds nv_cmd;
+    IFAPI_CREATE_NV create_nv;
     IFAPI_GetRandom get_random;
     IFAPI_CreatePrimary createPrimary;
     IFAPI_LoadKey loadKey;

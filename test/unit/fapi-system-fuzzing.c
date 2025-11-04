@@ -1,30 +1,16 @@
+/* SPDX-FileCopyrightText: 2022, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include <inttypes.h>                       // for uint32_t
+#include <json-c/json.h>                    // for json_object, json_object_put, json_object_to_js...
+#include <stdio.h>                          // for NULL, size_t
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_fapi.h"
-#include "tpm_json_serialize.h"
-#include "ifapi_json_eventlog_serialize.h"
-#include "ifapi_json_eventlog_deserialize.h"
-#include "ifapi_eventlog.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_json_deserialize.h"
-#include "fapi_policy.h"
-
-#include "util/aux_util.h"
+#include "ifapi_json_eventlog_serialize.h"  // for ifapi_get_tcg_firmware_ev...
+#include "tss2_common.h"                    // for TSS2_RC
+#include "util/aux_util.h"                  // for UNUSED
 
 #define LOGMODULE tests
 #include "util/log.h"

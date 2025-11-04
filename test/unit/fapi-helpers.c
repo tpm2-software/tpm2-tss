@@ -5,30 +5,19 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include <inttypes.h>         // for uint8_t
+#include <stdbool.h>          // for false, bool, true
+#include <stdio.h>            // for size_t, NULL
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_fapi.h"
-#include "tpm_json_serialize.h"
-#include "ifapi_eventlog.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_json_deserialize.h"
-#include "ifapi_helpers.h"
-#include "fapi_crypto.h"
-
-#include "util/aux_util.h"
+#include "../helper/cmocka_all.h"           // for assert_int_equal, assert_true, cmocka_u...
+#include "fapi_crypto.h"      // for ifapi_get_profile_sig_scheme, IFAPI_CRY...
+#include "ifapi_helpers.h"    // for ifapi_get_name, ifapi_TPMT_PUBLIC_cmp
+#include "ifapi_profiles.h"   // for IFAPI_PROFILE
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_tpm2_types.h"  // for TPMT_PUBLIC, TPMT_SIG_SCHEME, TPM2_ALG_...
 
 #define LOGMODULE tests
 #include "util/log.h"

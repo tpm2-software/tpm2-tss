@@ -5,25 +5,19 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include <inttypes.h>              // for int32_t
+#include <stdbool.h>               // for false, true, bool
+#include <stdio.h>                 // for NULL, size_t
+#include <stdlib.h>                // for free, calloc, malloc
+#include <string.h>                // for memcpy, memcmp
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_tcti.h"
-#include "tss2_tcti_spi_helper.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-spi-helper.h"
-#include "util/key-value-parse.h"
+#include "../helper/cmocka_all.h"                // for assert_int_equal, assert_true, ass...
+#include "tss2_common.h"           // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TCT...
+#include "tss2_tcti.h"             // for TSS2_TCTI_CONTEXT
+#include "tss2_tcti_spi_helper.h"  // for Tss2_Tcti_Spi_Helper_Init, TSS2_TC...
 
 #define DUMMY_PLATFORM_DATA "my platform data"
 

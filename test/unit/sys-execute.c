@@ -6,23 +6,23 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <setjmp.h>
-#include <cmocka.h>
+#include <inttypes.h>               // for uint8_t, int32_t
+#include <stdlib.h>                 // for NULL, calloc, free, size_t
+#include <string.h>                 // for memcpy
 
-#include "tss2_sys.h"
-#include "sysapi_util.h"
-#include "tss2-tcti/tcti-common.h"
+#include "../helper/cmocka_all.h"                 // for assert_int_equal, CMUnitTest, ass...
+#include "tss2-tcti/tcti-common.h"  // for tpm_header_t, header_unmarshal
+#include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_AB...
+#include "tss2_sys.h"               // for TSS2_SYS_CONTEXT, Tss2_Sys_Execute
+#include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CONT...
+#include "tss2_tpm2_types.h"        // for TPM2_RC_SUCCESS, TPM2_RC_RETRY
 
 
 #define LOGMODULE test
-#include "util/log.h"
+#include "util/log.h"               // for LOG_DEBUG
 
 /**
  * Test calls Tss2_Sys_Execute() many times after receiving TPM2_RC_RETRY

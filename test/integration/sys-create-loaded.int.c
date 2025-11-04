@@ -5,19 +5,22 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
+#include <inttypes.h>         // for PRIx32, uint8_t
+#include <stdlib.h>           // for exit, NULL, size_t
+#include <string.h>           // for memset, memcpy
 
-#include "tss2_mu.h"
-#include "tss2_sys.h"
+#include "test-esys.h"        // for EXIT_SKIP
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_mu.h"          // for Tss2_MU_TPMT_PUBLIC_Marshal
+#include "tss2_sys.h"         // for Tss2_Sys_CreateLoaded, Tss2_Sys_FlushCo...
+#include "tss2_tpm2_types.h"  // for TPMT_PUBLIC, TPM2B_NAME, TPMS_RSA_PARMS
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "sys-util.h"
+#include "sys-util.h"         // for TPM2B_NAME_INIT
+#include "util/log.h"         // for LOG_ERROR, LOG_INFO, LOGBLOB_INFO
 
 TSS2_RC
 test_invoke (TSS2_SYS_CONTEXT *sys_context)
@@ -84,6 +87,8 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
                                 &auth_rsp);
     if (rc == TPM2_RC_SUCCESS) {
         LOG_INFO("success object handle: 0x%x", object_handle);
+    } else if (rc == TPM2_RC_COMMAND_CODE) {
+        return EXIT_SKIP;
     } else {
         LOG_ERROR("CreateLoaded FAILED! Response Code : 0x%x", rc);
         exit(1);

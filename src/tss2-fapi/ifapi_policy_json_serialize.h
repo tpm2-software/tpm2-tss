@@ -6,12 +6,13 @@
 #ifndef IFAPI_POLICY_JSON_SERIALIZE_H
 #define IFAPI_POLICY_JSON_SERIALIZE_H
 
-#include <stdbool.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
 
-#include "tss2_tpm2_types.h"
-#include "fapi_int.h"
+
+#include <json.h>                // for json_object
+
+#include "ifapi_policy_types.h"  // for TPMI_POLICYTYPE, TPML_POLICYAUTHORIZ...
+#include "tss2_common.h"         // for TSS2_RC, UINT32
+#include "tss2_policy.h"         // for TPML_PCRVALUES, TPMS_PCRVALUE
 
 TSS2_RC
 ifapi_json_TPMI_POLICYTYPE_serialize(const TPMI_POLICYTYPE in,

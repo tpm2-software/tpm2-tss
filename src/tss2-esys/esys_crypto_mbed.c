@@ -1,11 +1,8 @@
+/* SPDX-FileCopyrightText: 2020, Andreas Droescher */
 /* SPDX-License-Identifier: BSD-2-Clause */
-/*******************************************************************************
- * Copyright: 2020, Andreas Droescher
- * All rights reserved.
- ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
 #include <stdlib.h>
@@ -18,11 +15,12 @@
 #include <mbedtls/entropy.h>
 #include <mbedtls/ctr_drbg.h>
 
-#include "esys_iutil.h"
-#include "esys_mu.h"
+#include "tss2_esys.h"
+#include "tss2_mu.h"
+#include "util/aux_util.h"
+
 #define LOGMODULE esys_crypto
 #include "util/log.h"
-#include "util/aux_util.h"
 
 #if MBEDTLS_VERSION_MAJOR > 2
 #define MBEDTLS_ACCESS(member) MBEDTLS_PRIVATE(member)

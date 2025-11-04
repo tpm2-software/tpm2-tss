@@ -7,14 +7,16 @@
 #ifndef IFAPI_KEYSTORE_H
 #define IFAPI_KEYSTORE_H
 
-#include <stdlib.h>
+#include <stdbool.h>             // for bool
+#include <stdlib.h>              // for size_t
 
-#include "tss2_common.h"
-#include "tss2_tpm2_types.h"
-#include "fapi_types.h"
-#include "ifapi_policy_types.h"
-#include "tss2_esys.h"
-#include "tss2_policy.h"
+#include "fapi_types.h"          // for UINT8_ARY
+#include "ifapi_io.h"            // for IFAPI_IO
+#include "ifapi_policy_types.h"  // for TPMS_POLICY
+#include "tss2_common.h"         // for TSS2_RC, UINT32
+#include "tss2_esys.h"           // for ESYS_TR
+#include "tss2_policy.h"         // for TSS2_OBJECT
+#include "tss2_tpm2_types.h"     // for TPMI_YES_NO, TPM2B_PUBLIC, TPM2B_DIGEST
 
 typedef UINT32 IFAPI_OBJECT_TYPE_CONSTANT;
 #define IFAPI_OBJ_NONE                 0    /**< Tag for key resource */
@@ -46,6 +48,8 @@ typedef struct {
     TPMI_YES_NO                              ek_profile;    /**< Has to be set if EK is created according
                                                                  to EK credential profile: */
     TPM2B_DIGEST                                  nonce;    /**< Nonce used to initialize uniqe data */
+    TPMI_YES_NO                         unique_init_set;    /**< uniqe_init provided in keystore */
+    TPMU_PUBLIC_ID                          unique_init;    /**< unique in TPM2B_PUBLIC for initialisation */
 } IFAPI_KEY;
 
 /** Type for representing a external public key
@@ -143,11 +147,11 @@ enum IFAPI_IO_STATE {
     IO_ACTIVE,
 };
 
-#define TSS2_OBJECT_TO_IFAPI_OBJECT(p) ((IFAPI_OBJECT *)p)
+#define TSS2_OBJECT_TO_IFAPI_OBJECT(p) ((IFAPI_OBJECT *)(p))
 
 /** Type for representing TPM-Resource
  */
-typedef struct _IFAPI_OBJECT {
+typedef struct IFAPI_OBJECT {
     /* TSS2_OBJECT MUST GO FIRST. In C pointer of first element
      * is equal to pointer of base type, use this to hide data by
      * only passing pointer to public in callbacks, however, internal
@@ -166,6 +170,7 @@ typedef struct _IFAPI_OBJECT {
     enum IFAPI_AUTHORIZATION_STATE  authorization_state;    /**< State of object authorization state machine */
     enum IFAPI_IO_STATE                           state;
     const char                                *rel_path;    /**< The relative path in keystore. */
+    bool                                   auth_changed;    /**< flag whether auth value has been changed. */
 
 } IFAPI_OBJECT;
 

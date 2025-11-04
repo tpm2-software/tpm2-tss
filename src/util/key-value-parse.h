@@ -7,9 +7,10 @@
 #ifndef KEY_VALUE_PARSE_H
 #define KEY_VALUE_PARSE_H
 
-#include <stdlib.h>
+#include <stdbool.h>      // for bool
+#include <stdlib.h>       // for NULL
 
-#include "tss2_tpm2_types.h"
+#include "tss2_common.h"  // for TSS2_RC
 
 #define KEY_VALUE_INIT { \
     .key = NULL, \

@@ -3,6 +3,75 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.1.0] - 2024-04-26
+### Security
+- Fixed CVE-2024-29040
+
+### Fixed
+- fapi: Fix length check on FAPI auth callbacks
+- mu: Correct error message for errors
+- tss2-rc: fix unknown laer handler dropping bits.
+- fapi: Fix deviation from CEL specification (template_value was used instead of template_data).
+- fapi: Fix json syntax error in FAPI profiles which was ignored by json-c.
+- build: fix build fail after make clean.
+- mu: Fix unneeded size check in TPM2B unmarshaling.
+- fapi: Fix missing parameter encryption.
+- build: Fix failed build with --disable-vendor.
+- fapi: Fix flush of persistent handles.
+- fapi: Fix test provisioning with template with self generated certificate disabled.
+- fapi: Fix error in Fapi_GetInfo it TPM supports SHA3 hash algs.
+- fapi: Revert  pcr extension  for EV_NO_ACTION events.
+- fapi: Fix strange error messages if nv, ext, or policy path does not exits.
+- fapi: Fix segfault caused by wrong allocation of pcr policy.
+- esys: Fix leak in Esys_EvictControl for persistent handles.
+- tss2-tcti: tcti-libtpms: fix test failure on big-endian platform.
+- esys: Add reference counting for Esys_TR_FromTPMPublic.
+- esys: Fix HMAC error if session bind key has an auth value with a trailing 0.
+- fapi: fix usage of self signed certificates in TPM.
+- fapi: Usage of self signed certificates.
+- fapi: A segfault after the error handling of non existing keys.
+- fapi: Fix several leaks.
+- fapi: Fix error handling for policy execution.
+- fapi: Fix usage of persistent handles (should not be flushed)
+- fapi: Fix test provisioning with template (skip test without self generated certificate).
+- fapi: Fix pcr extension for EV_NO_ACTION
+- test: Fix fapi-key-create-policy-signed-keyedhash with P_ECC384 profile
+- tcti_spi_helper_transmit: ensure FIFO is accessed only after TPM reports commandReady bit is set
+- fapi:  Fix read large system eventlog (> UINT16_MAX).
+- esys tests: Fix layer check for TPM2_RC_COMMAND_CODE (for /dev/tpmrm0)
+- test: unit: tcti-libtpms: fix test failed at 32-bit platforms.
+- fapi: Fix possible null pointer dereferencing in Fapi_List.
+- sys: Fix size check in Tss2_Sys_GetCapability.
+- esys: Fix leak in Esys_TR_FromTPMPublic.
+- esys: fix unchecked return value in esys crypto.
+- fapi: Fix wrong usage of local variable in provisioning.
+- fapi: Fix memset 0 in ifapi_json_TPMS_POLICYNV_deserialize.
+- fapi: Fix possible out of bound array access in IMA parser.
+- tcti device: Fix possible unmarshalling from uninitialized variable.
+- fapi: Fix error checking authorization of signing key.
+- fapi: Fix cleanup of policy sessions.
+- fapi: Eventlog  H-CRTM events and different localities.
+- fapi: Fix missing synchronization of quote and eventlog.
+- faii: Fix invalid free in Fapi_Quote with empty eventlog.
+
+### Added
+- tcti: LetsTrust-TPM2Go TCTI module spi-ltt2go.
+- mbedtls: add sha512 hmac.
+- fapi: Enable usage of external keys for Fapi_Encrypt.
+- fapi: Support download of AMD certificates.
+- tcti: Add USB TPM (FTDI MPSSE USB to SPI bridge) TCTI module.
+- fapi: The recreation of primaries (except EK) in the owner hierarchy instead the endorsement hierarchy is fixed.
+- rc: New TPM return codes added.
+- fapi: Further Nuvoton certificates added.
+- tpm_types/esys: Add support for Attestable TPM changes in latest TPM spec.
+- tcti: Add '/dev/tcm0' to default conf
+- fapi: New Nuvoton certificates added.
+- esys: Fix leak in Esys_TR_FromTPMPublic.
+
+### Removed
+- Testing on Ubuntu 18.04 as it's near EOL (May 2023).
+
+
 ## [4.0.1] - 2023-01-23
 ### Fixed:
  - A buffer overflow in tss2-rc as CVE-2023-22745.

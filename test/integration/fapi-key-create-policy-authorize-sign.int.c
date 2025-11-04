@@ -5,24 +5,23 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <stdbool.h>          // for bool, false, true
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>           // for malloc, EXIT_FAILURE, exit, free, EXIT_...
+#include <string.h>           // for strlen, strcmp, strstr
+#include <unistd.h>           // for read
 
-#include "tss2_fapi.h"
-
-#include "test-fapi.h"
+#include "test-fapi.h"        // for ASSERT, cmp_strtokens, pcr_reset, ASSER...
+#include "tss2_common.h"      // for TSS2_FAPI_RC_MEMORY, TSS2_FAPI_RC_GENER...
+#include "tss2_fapi.h"        // for Fapi_List, Fapi_CreateKey, Fapi_Import
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, SAFE_FREE, LOG_ERROR
 
 static bool cb_called = false;
 
@@ -327,7 +326,8 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
         FAPI_PROFILE "/HE/EK:/" FAPI_PROFILE "/HE:/" FAPI_PROFILE "/HN:/policy/pol_name_hash:"
         "/policy/pol_cphash:/policy/pol_authorize_outer:/policy/pol_authorize:/" FAPI_PROFILE
         "/HS/SRK/myPolicySignKey2:/" FAPI_PROFILE "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE
-        "/HS/SRK/mySignKey:/" FAPI_PROFILE "/HS/SRK/myPolicySignKeyOuter";
+        "/HS/SRK/mySignKey:/" FAPI_PROFILE "/HS/SRK/myPolicySignKeyOuter"
+        ":/nv/Endorsement_Certificate/1c00002:/nv/Endorsement_Certificate/1c0000a";
     ASSERT(cmp_strtokens(pathList, check_pathList1, ":"));
 
     SAFE_FREE(pathList);

@@ -4,18 +4,19 @@
  * All rights reserved.
  *******************************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for free, EXIT_FAILURE, EXIT_SUCCESS, size_t
+#include <string.h>           // for memcmp
 
-#include "tss2_mu.h"
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for BYTE, TSS2_RC
+#include "tss2_esys.h"        // for Esys_TR_GetName, ESYS_CONTEXT, ESYS_TR_...
+#include "tss2_mu.h"          // for Tss2_MU_TPM2_HANDLE_Marshal
+#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2_RH_OWNER
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR
 
 /** This tests the Esys_TR_FromTPMPublic and Esys_TR_GetName functions by
  *  creating an NV Index and then attempting to retrieve an ESYS_TR object for

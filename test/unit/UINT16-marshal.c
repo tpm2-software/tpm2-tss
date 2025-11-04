@@ -5,16 +5,15 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <stdint.h>       // for uint8_t
+#include <stdio.h>        // for NULL, size_t
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_mu.h"
+#include "../helper/cmocka_all.h"       // for assert_int_equal, cmocka_unit_test, CMUnitTest
+#include "tss2_common.h"  // for UINT16, TSS2_RC, TSS2_RC_SUCCESS, TSS2_MU_R...
+#include "tss2_mu.h"      // for Tss2_MU_UINT16_Marshal, Tss2_MU_UINT16_Unma...
 
 /*
  * Test case for successful UINT16 marshaling with NULL offset.

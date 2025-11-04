@@ -5,12 +5,14 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"          // for Tss2_MU_UINT32_Marshal, Tss2_MU_TPM2B_D...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2B_MAX_BUFFER, TPMI_DH...
 
 TSS2_RC Tss2_Sys_SequenceComplete_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
@@ -18,7 +20,7 @@ TSS2_RC Tss2_Sys_SequenceComplete_Prepare(
     const TPM2B_MAX_BUFFER *buffer,
     TPMI_RH_HIERARCHY hierarchy)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -68,7 +70,7 @@ TSS2_RC Tss2_Sys_SequenceComplete_Complete(
     TPM2B_DIGEST *result,
     TPMT_TK_HASHCHECK *validation)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -99,7 +101,7 @@ TSS2_RC Tss2_Sys_SequenceComplete(
     TPMT_TK_HASHCHECK *validation,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_SequenceComplete_Prepare(sysContext, sequenceHandle,

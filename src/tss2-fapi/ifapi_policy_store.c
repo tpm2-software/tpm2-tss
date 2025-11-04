@@ -5,21 +5,28 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
-#include <dirent.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "ifapi_io.h"
-#include "ifapi_helpers.h"
-#include "ifapi_policy_types.h"
+#include <json.h>                           // for json_object_put, json_obj...
+#include <stdint.h>                         // for uint8_t
+#include <stdio.h>                          // for NULL, remove
+#include <stdlib.h>                         // for free
+#include <string.h>                         // for strdup, strlen, memset
+
+#include "fapi_int.h"                       // for IFAPI_FILE_DELIM, IFAPI_P...
+#include "ifapi_helpers.h"                  // for ifapi_asprintf, ifapi_pat...
+#include "ifapi_io.h"                       // for ifapi_io_path_exists, IFA...
+#include "ifapi_keystore.h"                 // for ifapi_check_valid_path
+#include "ifapi_macros.h"                   // for goto_if_error2, return_tr...
+#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_policy_json_serialize.h"    // for ifapi_json_TPMS_POLICY_se...
 #include "ifapi_policy_store.h"
-#include "ifapi_macros.h"
+#include "ifapi_policy_types.h"             // for TPMS_POLICY
+#include "tpm_json_deserialize.h"           // for ifapi_parse_json
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_policy_json_deserialize.h"
-#include "ifapi_policy_json_serialize.h"
+#include "util/log.h"                       // for SAFE_FREE, return_if_error
 
 /** Compute absolute path of policy for IO.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.

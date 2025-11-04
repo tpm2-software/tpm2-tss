@@ -5,20 +5,26 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <dirent.h>
-#include <ctype.h>
-#include "ifapi_io.h"
-#include "ifapi_helpers.h"
+#include <ctype.h>                   // for isalnum
+#include <json.h>                    // for json_object_put, json_object_to_...
+#include <stdint.h>                  // for uint8_t
+#include <string.h>                  // for strcmp, strncmp, strlen, strdup
+#include <sys/stat.h>                // for stat
+
+#include "fapi_int.h"                // for IFAPI_POLICY_PATH, IFAPI_NV_PATH
+#include "ifapi_helpers.h"           // for free_string_list, ifapi_asprintf
+#include "ifapi_io.h"                // for ifapi_io_path_exists, IFAPI_IO
+#include "ifapi_json_deserialize.h"  // for ifapi_json_IFAPI_OBJECT_deserialize
+#include "ifapi_json_serialize.h"    // for ifapi_json_IFAPI_OBJECT_serialize
 #include "ifapi_keystore.h"
+#include "ifapi_macros.h"            // for goto_if_error2, strdup_check
+#include "tpm_json_deserialize.h"    // for ifapi_parse_json
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_json_deserialize.h"
-#include "ifapi_json_serialize.h"
+#include "util/log.h"                // for SAFE_FREE, goto_if_error, LOG_ERROR
 
 
 /** Check whether pathname is valid.
@@ -98,8 +104,7 @@ initialize_explicit_key_path(
         LOG_ERROR("Out of memory");
         return TSS2_FAPI_RC_MEMORY;
     }
-    if (strcmp(list_node->str, "HN") == 0 ||
-        strcmp(list_node->str, "HS") == 0 ||
+    if (strcmp(list_node->str, "HS") == 0 ||
         strcmp(list_node->str, "HE") == 0 ||
         strcmp(list_node->str, "HN") == 0) {
         hierarchy = list_node->str;
@@ -868,6 +873,7 @@ keystore_list_all_abs(
     goto_if_error(r, "Out of memory.", cleanup);
 
     r = ifapi_io_dirfiles_all(full_search_path, &file_ary_user, &num_paths_user);
+    goto_if_error(r, "List directory files", cleanup);
 
     *numresults = num_paths_system + num_paths_user;
     SAFE_FREE(full_search_path);
@@ -1158,7 +1164,7 @@ keystore_search_obj(
     statecase(keystore->key_search.state, KSEARCH_SEARCH_OBJECT)
         /* Use the next object in the path list */
         if (keystore->key_search.path_idx == 0) {
-            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Key not found.", cleanup);
+            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Key or NV object not found.", cleanup);
         }
         keystore->key_search.path_idx -= 1;
         path_idx = keystore->key_search.path_idx;
@@ -1432,7 +1438,9 @@ copy_uint8_ary(UINT8_ARY *dest, const UINT8_ARY * src) {
     dest->size = src->size;
     dest->buffer = malloc(dest->size);
     goto_if_null(dest->buffer, "Out of memory.", r, error_cleanup);
-    memcpy(dest->buffer, src->buffer, dest->size);
+    if (src->size > 0) {
+        memcpy(dest->buffer, src->buffer, dest->size);
+    }
 
     return r;
 
@@ -1546,6 +1554,7 @@ ifapi_cleanup_ifapi_key(IFAPI_KEY * key) {
         SAFE_FREE(key->description);
         SAFE_FREE(key->certificate);
         SAFE_FREE(key->appData.buffer);
+        key->unique_init_set = TPM2_NO;
     }
 }
 
@@ -1661,6 +1670,9 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {
     dest->system = src->system;
     dest->public.handle = src->public.handle;
     dest->authorization_state = src->authorization_state;
+    if (src->misc.key.unique_init_set) {
+        dest->misc.key.unique_init = src->misc.key.unique_init;
+    }
 
     return r;
 

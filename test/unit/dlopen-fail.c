@@ -1,22 +1,20 @@
+/* SPDX-FileCopyrightText: 2021, Fraunhofer SIT sponsored by Infineon */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <setjmp.h>
-#include <cmocka.h>
+#include <stdio.h>         // for NULL, fprintf, stderr
+#include <stdlib.h>        // for exit
 
-#include <dlfcn.h>
-
-#include "tss2_tctildr.h"
-#include "tss2_rc.h"
-#include "tss2_mu.h"
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
+#include "../helper/cmocka_all.h"        // for will_return, assert_int_equal, cmocka_unit...
+#include "tss2_common.h"   // for TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_RC, TSS...
+#include "tss2_esys.h"     // for Esys_Initialize
+#include "tss2_fapi.h"     // for Fapi_Initialize, Fapi_Initialize_Async
+#include "tss2_mu.h"       // for Tss2_MU_TPM2B_DIGEST_Marshal, Tss2_MU_TPM2...
+#include "tss2_rc.h"       // for Tss2_RC_Decode, Tss2_RC_SetHandler, TSS2_R...
+#include "tss2_tctildr.h"  // for Tss2_TctiLdr_GetInfo, Tss2_TctiLdr_Initialize
 
 
 #define DLOPEN_HANDLE ((void *)0xaaffffee)

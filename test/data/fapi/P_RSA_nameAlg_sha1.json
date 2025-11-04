@@ -3,8 +3,7 @@
     "nameAlg":"TPM2_ALG_SHA1",
     "srk_template": "system,restricted,decrypt",
      "srk_description": "Storage root key SRK",
-    "srk_persistent": 0,
-    "ek_template": "system,restricted,decrypt,0x81000000",
+    "ek_template": "system,restricted,decrypt,0x81000000,unique_zero=256",
     "ek_description": "Endorsement key EK",
     "ecc_signing_scheme": {
         "scheme":"TPM2_ALG_ECDSA",
@@ -32,10 +31,7 @@
     },
     "sym_block_size": 16,
     "pcr_selection": [
-        { "hash": "TPM2_ALG_SHA1",
-            "pcrSelect": [ ]
-          },
-          { "hash": "TPM2_ALG_SHA256",
+        { "hash": "TPM2_ALG_SHA256",
             "pcrSelect": [ 8, 9 , 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 ]
         }
     ],

@@ -5,22 +5,27 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
+#include <inttypes.h>              // for uintptr_t, uint8_t, int64_t, PRId64
+#include <stdio.h>                 // for sscanf
+#include <stdlib.h>                // for calloc
+#include <string.h>                // for strlen, strncmp, memcmp, strcmp
+#include <strings.h>               // for strncasecmp
+#include <sys/types.h>             // for uint
+#include <uchar.h>                 // for char16_t
 
-#include "ifapi_helpers.h"
+#include "efi_event.h"             // for TCG_EVENT, TCG_EVENT2, TCG_EVENT_H...
+#include "fapi_crypto.h"           // for ifapi_hash_get_digest_size
+#include "ifapi_eventlog.h"        // for IFAPI_EVENT_TYPE
 #include "ifapi_eventlog_system.h"
-#include "ifapi_json_serialize.h"
-#include "tpm_json_deserialize.h"
-#include "efi_event.h"
+#include "ifapi_macros.h"          // for check_oom, return_error2
+#include "tpm_json_deserialize.h"  // for ifapi_get_sub_object, ifapi_json_U...
+#include "tss2_tpm2_types.h"       // for TPM2_MAX_PCRS, TPMI_ALG_HASH
 
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "ifapi_macros.h"
-#include "fapi_crypto.h"
+#include "util/log.h"              // for LOG_ERROR, LOG_TRACE, SAFE_FREE
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 
@@ -60,7 +65,7 @@ get_number(const char *token, int64_t *num)
  * @retval the position of the sub string after the prefix.
  * @retval 0 if no prefix is found.
  */
-static int
+static unsigned int
 get_token_start_idx(const char *token)
 {
     uint itoken = 0;
@@ -211,7 +216,7 @@ bool parse_event2body(TCG_EVENT2 const *event, UINT32 type) {
             size_t len = strlen(hcrtm_data);
             BYTE *data = (BYTE *)event->Event;
             if (event->EventSize != len ||
-                    strncmp((const char *)data, hcrtm_data, len)) {
+                    strncmp((const char *)data, hcrtm_data, len) != 0) {
                 LOG_ERROR("HCRTM Event Data MUST be the string: \"%s\"", hcrtm_data);
                 return false;
             }
@@ -444,7 +449,7 @@ bool specid_event(TCG_EVENT const *event, size_t size,
     TCG_SPECID_EVENT *event_specid = (TCG_SPECID_EVENT*)event->event;
 
     /* Check the signature */
-    if (strcmp((char *)&event_specid->Signature[0], "Spec ID Event03")) {
+    if (strcmp((char *)&event_specid->Signature[0], "Spec ID Event03") != 0) {
         LOG_ERROR("Check of signature \"Spec ID Event03\" failed.");
         return false;
     }
@@ -547,7 +552,7 @@ ifapi_json_TCG_EVENT_TYPE_deserialize_txt(json_object *jso,
         return TSS2_RC_SUCCESS;
 
     } else {
-        int itoken = get_token_start_idx(token);
+        unsigned int itoken = get_token_start_idx(token);
         size_t i;
         size_t n = sizeof(deserialize_TCG_EVENT_TYPE_tab) /
                    sizeof(deserialize_TCG_EVENT_TYPE_tab[0]);

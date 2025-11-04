@@ -29,10 +29,11 @@
  * SPDX short identifier: BSD-2-Clause
  */
 
-#include <stdlib.h>
-#include <string.h>
+#include <ftdi.h>    // for MPSSE_BITMODE, SET_BITS_LOW, ftdi_read_data, ftd...
+#include <stdlib.h>  // for malloc, NULL
+#include <string.h>  // for memcpy, memset
 
-#include "mpsse.h"
+#include "mpsse.h"   // for mpsse_context, CMD_SIZE, I2C, HIGH, NUM_GPIOL_PINS
 #include "support.h"
 
 /* Write data to the FTDI chip */
@@ -225,27 +226,27 @@ unsigned char *build_block_buffer (struct mpsse_context *mpsse, uint8_t cmd, uns
 }
 
 /* Set the low bit pins high/low */
-int set_bits_low (struct mpsse_context *mpsse, int port)
+int set_bits_low (struct mpsse_context *mpsse, uint8_t port)
 {
-    char buf[CMD_SIZE] = { 0 };
+    uint8_t buf[CMD_SIZE] = { 0 };
 
     buf[0] = SET_BITS_LOW;
     buf[1] = port;
     buf[2] = mpsse->tris;
 
-    return raw_write (mpsse, (unsigned char *) &buf, sizeof (buf));
+    return raw_write (mpsse, buf, sizeof (buf));
 }
 
 /* Set the high bit pins high/low */
-int set_bits_high (struct mpsse_context *mpsse, int port)
+int set_bits_high (struct mpsse_context *mpsse, uint8_t port)
 {
-    char buf[CMD_SIZE] = { 0 };
+    uint8_t buf[CMD_SIZE] = { 0 };
 
     buf[0] = SET_BITS_HIGH;
     buf[1] = port;
     buf[2] = mpsse->trish;
 
-    return raw_write (mpsse, (unsigned char *)&buf, sizeof (buf));
+    return raw_write (mpsse, buf, sizeof (buf));
 }
 
 /* Set the GPIO pins high/low */
@@ -257,11 +258,11 @@ int gpio_write (struct mpsse_context *mpsse, int pin, int direction)
     {
         if (direction == HIGH)
         {
-            mpsse->bitbang |= (1 << pin);
+            mpsse->bitbang |= (((uint8_t)1) << pin);
         }
         else
         {
-            mpsse->bitbang &= ~(1 << pin);
+            mpsse->bitbang &= ~(((uint8_t)1) << pin);
         }
 
         if (set_bits_high (mpsse, mpsse->bitbang) == MPSSE_OK)
@@ -299,11 +300,11 @@ int gpio_write (struct mpsse_context *mpsse, int pin, int direction)
 
             if (direction == HIGH)
             {
-                mpsse->gpioh |= (1 << pin);
+                mpsse->gpioh |= (((uint8_t)1) << pin);
             }
             else
             {
-                mpsse->gpioh &= ~(1 << pin);
+                mpsse->gpioh &= ~(((uint8_t)1) << pin);
             }
             retval = set_bits_high (mpsse, mpsse->gpioh);
         }

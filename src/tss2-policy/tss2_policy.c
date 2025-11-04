@@ -1,26 +1,39 @@
+/* SPDX-FileCopyrightText: 2022, Intel */
+/* SPDX-FileCopyrightText: 2023, Infineon Technologies AG */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
+#include <inttypes.h>                       // for PRIx16, PRIx32
+#include <json.h>                           // for json_object_put, json_obj...
+#include <stdbool.h>                        // for true, bool, false
+#include <stdlib.h>                         // for NULL, free, size_t, calloc
+#include <string.h>                         // for memcpy, memset, strlen
+
+#include "fapi_crypto.h"                    // for ifapi_hash_get_digest_size
+#include "fapi_int.h"                       // for IFAPI_POLICY_EXEC_CTX
+#include "ifapi_helpers.h"                  // for ifapi_cleanup_policy
+#include "ifapi_io.h"                       // for ifapi_io_poll, IFAPI_IO
+#include "ifapi_policy.h"                   // for ifapi_calculate_tree_ex
+#include "ifapi_policy_execute.h"           // for IFAPI_POLICY_EXEC_CTX
+#include "ifapi_policy_instantiate.h"       // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_policy_json_serialize.h"    // for ifapi_json_TPMS_POLICY_se...
+#include "ifapi_policy_types.h"             // for TPMS_POLICY
+#include "tpm_json_deserialize.h"           // for ifapi_parse_json
+#include "tss2_common.h"                    // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"                      // for ESYS_CONTEXT, ESYS_TR
+#include "tss2_policy.h"                    // for TSS2_POLICY_CTX, TSS2_POL...
+#include "tss2_tpm2_types.h"                // for TPM2B_DIGEST, TPMT_HA
+
 #define LOGMODULE "policy"
-#include "util/log.h"
+#include "util/log.h"                       // for LOG_ERROR, str, LOG_TRACE
 
-#include "tss2_policy.h"
-#include "fapi_crypto.h"
-#include "fapi_int.h"
-#include "ifapi_macros.h"
-#include "ifapi_helpers.h"
-#include "ifapi_policy.h"
-#include "ifapi_policy_execute.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_policy_json_deserialize.h"
-#include "ifapi_policy_json_serialize.h"
-
-#define JSON_OBJECT_SAFE_PUT(o) do { json_object_put(o); o = NULL; } while(0)
+#define JSON_OBJECT_SAFE_PUT(o) do { json_object_put(o); (o) = NULL; } while(0)
 
 #define policy_check_not_null(X) \
-    if (X == NULL) { \
+    if ((X) == NULL) { \
         LOG_ERROR(str(X) " is NULL: BAD_REFERENCE"); \
         return TSS2_POLICY_RC_BAD_REFERENCE; \
     }
@@ -404,7 +417,8 @@ Tss2_PolicyGetDescription(
             policy_ctx->path);
 
     const char *description = policy_ctx->policy.description;
-    size_t len = strlen(description);
+    /* length including null termination */
+    size_t len = strlen(description) + 1;
 
     /* NULL buffer let calller know size */
     if (!buffer) {
@@ -418,9 +432,9 @@ Tss2_PolicyGetDescription(
         return_if_error(TSS2_POLICY_RC_BUFFER_TOO_SMALL, "Specified buffer is too small");
     }
 
-    /* all is well, copy it to user and let them know size */
+    /* all is well, copy it to user (including null termination) and let them know size */
     *size = len;
-    memcpy(buffer, description, len);
+    strcpy(buffer, description);
 
     LOG_TRACE("finished, returning: 0x0");
     return TSS2_RC_SUCCESS;

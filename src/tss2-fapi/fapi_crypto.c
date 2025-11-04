@@ -5,29 +5,41 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"               // for HAVE_EVP_SM3
 #endif
 
-#include <string.h>
-
-#include <openssl/evp.h>
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
+#include <inttypes.h>             // for PRIu16
+#include <openssl/bio.h>          // for BIO_free, BIO_new_mem_buf, BIO_free...
+#include <openssl/bn.h>           // for BN_free, BN_bin2bn, BN_bn2bin, BN_b...
+#include <openssl/buffer.h>       // for buf_mem_st
+#include <openssl/crypto.h>       // for OSSL_LIB_CTX_free, OSSL_LIB_CTX_new
+#include <openssl/ec.h>           // for ECDSA_SIG_free, i2d_ECDSA_SIG, ECDS...
+#include <openssl/evp.h>          // for EVP_PKEY_type, EVP_PKEY_free, EVP_PKEY
+#include <openssl/obj_mac.h>      // for NID_sm2, NID_X9_62_prime192v1, NID_...
+#include <openssl/objects.h>      // for OBJ_nid2sn, OBJ_txt2nid
+#include <openssl/opensslv.h>     // for OPENSSL_VERSION_NUMBER
+#include <openssl/pem.h>          // for PEM_read_bio_PUBKEY, PEM_read_bio_P...
+#include <openssl/rsa.h>          // for EVP_PKEY_CTX_set_rsa_padding, EVP_P...
+#include <openssl/x509.h>         // for X509_free, X509_get_pubkey, d2i_X509
+#include <stdbool.h>              // for bool, false, true
+#include <stdio.h>                // for stderr
+#include <stdlib.h>               // for malloc, calloc, free
+#include <string.h>               // for memcpy, strlen, memset, strdup
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/aes.h>
 #else
-#include <openssl/core_names.h>
-#include <openssl/params.h>
-#include <openssl/param_build.h>
+#include <openssl/core_names.h>   // for OSSL_PKEY_PARAM_GROUP_NAME, OSSL_PK...
+#include <openssl/param_build.h>  // for OSSL_PARAM_BLD_free, OSSL_PARAM_BLD...
+#include <openssl/params.h>       // for OSSL_PARAM_free
 #endif
-#include <openssl/x509v3.h>
-#include <openssl/err.h>
+#include <openssl/err.h>          // for ERR_print_errors_fp
 
-#include "fapi_util.h"
-#include "util/aux_util.h"
 #include "fapi_crypto.h"
+#include "fapi_int.h"             // for OSSL_FREE, HASH_UPDATE_BUFFER
+#include "ifapi_macros.h"         // for goto_if_null2, check_oom
+
 #define LOGMODULE fapi
-#include "util/log.h"
+#include "util/log.h"             // for return_if_null, goto_error, goto_if...
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101000L
 #define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
@@ -45,7 +57,7 @@
 #endif /* OPENSSL_VERSION_NUMBER >= 0x10101000L */
 
 /** Context to hold temporary values for ifapi_crypto */
-typedef struct _IFAPI_CRYPTO_CONTEXT {
+typedef struct IFAPI_CRYPTO_CONTEXT {
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     /** The currently used hash algorithm */
     const EVP_MD *osslHashAlgorithm;
@@ -122,7 +134,7 @@ static const TPM2B_PUBLIC templateRsaSign = {
     .size = 0,
     .publicArea = {
         .type = TPM2_ALG_RSA,
-        .nameAlg = TPM2_ALG_SHA1,
+        .nameAlg = TPM2_ALG_SHA256,
         .objectAttributes = ( TPMA_OBJECT_SIGN_ENCRYPT ),
         .authPolicy = {
             .size = 0,
@@ -153,7 +165,7 @@ static const TPM2B_PUBLIC templateEccSign = {
     .size = 0,
     .publicArea = {
         .type = TPM2_ALG_ECC,
-        .nameAlg = TPM2_ALG_SHA1,
+        .nameAlg = TPM2_ALG_SHA256,
         .objectAttributes = ( TPMA_OBJECT_SIGN_ENCRYPT ),
         .authPolicy = {
             .size = 0,
@@ -740,7 +752,7 @@ ifapi_ecc_der_sig_to_tpm(
     const BIGNUM *bnr;
     const BIGNUM *bns;
 
-    d2i_ECDSA_SIG(&ecdsaSignature, &signature, signatureSize);
+    d2i_ECDSA_SIG(&ecdsaSignature, &signature, (long) signatureSize);
     return_if_null(ecdsaSignature, "Invalid DER signature",
                    TSS2_FAPI_RC_GENERAL_FAILURE);
 
@@ -756,8 +768,6 @@ ifapi_ecc_der_sig_to_tpm(
                        keySize);
     tpmSignature->signature.ecdsa.signatureS.size = keySize;
     OSSL_FREE(ecdsaSignature, ECDSA_SIG);
-    //OSSL_FREE(bnr, BN);
-    //OSSL_FREE(bns, BN);
     return TSS2_RC_SUCCESS;
 }
 
@@ -1176,12 +1186,12 @@ get_ecc_tpm2b_public_from_evp(
     tpmPublic->publicArea.unique.ecc.x.size = ecKeySize;
     tpmPublic->publicArea.unique.ecc.y.size = ecKeySize;
     if (1 != ifapi_bn2binpad(bnX, &tpmPublic->publicArea.unique.ecc.x.buffer[0],
-                             ecKeySize)) {
+                             (int) ecKeySize)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Write big num byte buffer", cleanup);
     }
     if (1 != ifapi_bn2binpad(bnY, &tpmPublic->publicArea.unique.ecc.y.buffer[0],
-                             ecKeySize)) {
+                             (int) ecKeySize)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
                    "Write big num byte buffer", cleanup);
     }
@@ -1241,7 +1251,7 @@ ifapi_get_evp_from_pem(const char *pemKey, EVP_PKEY **publicKey) {
     BIO *bufio = NULL;
 
     /* Use BIO for conversion */
-    bufio = BIO_new_mem_buf((void *)pemKey, strlen(pemKey));
+    bufio = BIO_new_mem_buf((void *)pemKey, (int) strlen(pemKey));
     goto_if_null(bufio, "BIO buffer could not be allocated.",
                  TSS2_FAPI_RC_MEMORY, cleanup);
 
@@ -1406,7 +1416,7 @@ ifapi_verify_signature_quote(
 
     /* Create an OpenSSL object for the key */
     bufio = BIO_new_mem_buf((void *)public_pem_key,
-                            strlen(public_pem_key));
+                            (int) strlen(public_pem_key));
     goto_if_null(bufio, "BIO buffer could not be allocated.",
                  TSS2_FAPI_RC_MEMORY, error_cleanup);
 
@@ -1537,7 +1547,7 @@ ifapi_verify_signature(
 
     /* Convert the key to an OpenSSL object */
     bufio = BIO_new_mem_buf((void *)public_pem_key,
-                                strlen(public_pem_key));
+                                (int) strlen(public_pem_key));
     goto_if_null(bufio, "Out of memory.", TSS2_FAPI_RC_MEMORY, error_cleanup);
     publicKey = PEM_read_bio_PUBKEY(bufio, NULL, NULL, NULL);
     goto_if_null(publicKey, "PEM format could not be decoded.",
@@ -1811,7 +1821,7 @@ ifapi_cert_to_pem(
     EVP_PKEY *publicKey = NULL;
     int pemCertSize;
 
-    if (!d2i_X509(&cert, (const unsigned char **)&certBuffer, certBufferSize)) {
+    if (!d2i_X509(&cert, (const unsigned char **)&certBuffer, (long) certBufferSize)) {
         LOGBLOB_ERROR(certBuffer, certBufferSize, "Bad certificate data");
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid certificate.");
     }
@@ -1927,7 +1937,7 @@ static X509
 
     /* Use BIO for conversion */
     size_t pem_length = strlen(pem_cert);
-    bufio = BIO_new_mem_buf((void *)pem_cert, pem_length);
+    bufio = BIO_new_mem_buf((void *)pem_cert, (int) pem_length);
     if (!bufio)
         return NULL;
     /* Convert the certificate */
@@ -2084,13 +2094,13 @@ ifapi_base64encode(uint8_t *buffer, size_t buffer_size, char** b64_data) {
     bio = BIO_push(bio64, bio);
 
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-    bytes_written = BIO_write(bio, buffer, buffer_size);
+    bytes_written = BIO_write(bio, buffer, (int) buffer_size);
     if (bytes_written != (int)buffer_size) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid BIO_write",
                    cleanup);
     }
 
-    BIO_flush(bio);
+    (void) BIO_flush(bio);
     BIO_get_mem_ptr(bio, &b64_mem);
     goto_if_null2(b64_mem, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
@@ -2137,7 +2147,7 @@ ifapi_rsa_encrypt(const char *pem_key,
     const EVP_MD *evp_md;
 
     /* Convert the pem key to an OpenSSL object */
-    bufio = BIO_new_mem_buf((void *)pem_key, strlen(pem_key));
+    bufio = BIO_new_mem_buf((void *)pem_key, (int) strlen(pem_key));
     goto_if_null(bufio, "Out of memory.", TSS2_FAPI_RC_MEMORY, cleanup);
 
     publicKey = PEM_read_bio_PUBKEY(bufio, NULL, NULL, NULL);
@@ -2320,7 +2330,7 @@ load_private_ECC_from_key(EVP_PKEY *key,
         goto out;
     }
 
-    p->size = BN_bn2binpad(b, p->buffer, priv_bytes);
+    p->size = BN_bn2binpad(b, p->buffer, (int) priv_bytes);
     if (p->size != priv_bytes) {
         goto out;
     }

@@ -5,32 +5,27 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <dirent.h>
+#include <json.h>                      // for json_object_put, json_object_t...
+#include <stdlib.h>                    // for free, calloc, malloc
+#include <string.h>                    // for memcpy, strcmp, memset, strlen
+#include <strings.h>                   // for strcasecmp
 
-#include "tss2_mu.h"
+#include "fapi_crypto.h"               // for ifapi_get_hash_alg_for_size
 #include "fapi_util.h"
-#include "fapi_crypto.h"
-#include "ifapi_helpers.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
-#include "fapi_policy.h"
-#include "ifapi_policyutil_execute.h"
+#include "ifapi_config.h"              // for IFAPI_CONFIG
+#include "ifapi_helpers.h"             // for free_string_list, ifapi_path_l...
+#include "ifapi_json_serialize.h"      // for ifapi_json_IFAPI_OBJECT_serialize
+#include "ifapi_macros.h"              // for statecase, fallthrough, goto_i...
+#include "ifapi_policy.h"              // for ifapi_calculate_tree
+#include "ifapi_policyutil_execute.h"  // for ifapi_policyutil_execute, ifap...
+#include "ifapi_keystore.h"            // for ifapi_check_provisioned
+#include "tss2_policy.h"               // for TSS2_OBJECT
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                  // for SAFE_FREE, goto_if_error, retu...
 
 /** State machine for flushing objects.
  *
@@ -158,31 +153,6 @@ policy_digest_size(IFAPI_OBJECT *object)
     }
 }
 
-/** Add a object together with size as first element to a linked list.
- *
- * This function can e.g. used to add byte arrays together with their size
- * to a linked list.
- *
- * @param[in] object The object to be added.
- * @param[in] size The size of the object to be added.
- * @param[in,out] object_list The linked list to be extended.
- *
- * @retval TSS2_RC_SUCCESS if the object was added.
- * @retval TSS2_FAPI_RC_MEMORY If memory for the list extension cannot
- *         be allocated.
- */
-static TSS2_RC
-push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_list)
-{
-    TSS2_RC r;
-    r = push_object_to_list(object, object_list);
-    return_if_error(r, "Push object with size.");
-
-    (*object_list)->size = size;
-
-    return TSS2_RC_SUCCESS;
-}
-
 /** Initialize and expand the linked list representing a FAPI key path.
  *
  * From a passed key path the explicit key path will be determined. The
@@ -205,6 +175,8 @@ push_object_with_size_to_list(void *object, size_t size, NODE_OBJECT_T **object_
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
  */
+
+
 static TSS2_RC
 init_explicit_key_path(
     const char *context_profile,
@@ -440,6 +412,10 @@ ifapi_set_auth(
         return_if_error(r, "policyAuthCallback");
         if (auth != NULL) {
             authValue.size = strlen(auth);
+            if (authValue.size > sizeof(TPMU_HA)) {
+                return_error2(TSS2_FAPI_RC_BAD_VALUE, "Size of auth value %"PRIu16" > %zu",
+                              authValue.size, sizeof(TPMU_HA));
+            }
             memcpy(&authValue.buffer[0], auth, authValue.size);
         }
 
@@ -447,6 +423,10 @@ ifapi_set_auth(
         r = Esys_TR_SetAuth(context->esys, auth_object->public.handle, &authValue);
         return_if_error(r, "Set auth value.");
 
+        if (auth_object->objectType == IFAPI_NV_OBJ &&
+            object_with_auth(auth_object) && authValue.size == 0) {
+            auth_object->auth_changed = true;
+        }
         if (auth_object->objectType == IFAPI_HIERARCHY_OBJ)
             auth_object->misc.hierarchy.authorized = true;
 
@@ -617,27 +597,38 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype)
                 memcpy(context->cmd.Provision.public_templ.public.publicArea.unique.rsa.buffer,
                        &pkey->nonce.buffer[0], pkey->nonce.size);
             }
-            if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
+            else if (! (context->cmd.Provision.public_templ.unique_rsa_set ||
+                        context->cmd.Provision.public_templ.unique_zero)) {
+                 /* is needed to be backward compatible to versions where unique
+                    is not set via the profile. */
+                if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes &
+                     TPMA_OBJECT_USERWITHAUTH))
                 context->cmd.Provision.public_templ.public.publicArea.unique.rsa.size = 0;
-            else
-                context->cmd.Provision.public_templ.public.publicArea.unique.rsa.size = 256;
+                else
+                    context->cmd.Provision.public_templ.public.publicArea.unique.rsa.size = 256;
+            }
         } else if (context->cmd.Provision.public_templ.public.publicArea.type == TPM2_ALG_ECC) {
             if (pkey->nonce.size) {
                 memcpy(context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.buffer,
                        &pkey->nonce.buffer[0], pkey->nonce.size);
-            }
-            if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH)) {
-                context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.size = 0;
-                context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 0;
-            } else {
-                context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.size = 32;
-                context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 32;
+            } else if (! (context->cmd.Provision.public_templ.unique_ecc_set ||
+                          context->cmd.Provision.public_templ.unique_zero)) {
+                /* is needed to be backward compatible to versions where unique
+                   is not set via the profile. */
+                if ((context->cmd.Provision.public_templ.public.publicArea.objectAttributes &
+                     TPMA_OBJECT_USERWITHAUTH)) {
+                    context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.size = 0;
+                    context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 0;
+                } else {
+                    context->cmd.Provision.public_templ.public.publicArea.unique.ecc.x.size = 32;
+                    context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 32;
+                }
             }
         }
         policy = context->profiles.default_profile.ek_policy;
     } else if (ktype == TSS2_SRK) {
         policy = context->profiles.default_profile.srk_policy;
-    } else {
+     } else {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Invalid key type. Only EK or SRK allowed");
     }
@@ -747,6 +738,10 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
                                      &context->cmd.Provision.creationPCR);
         goto_if_error_reset_state(r, "CreatePrimary", error_cleanup);
 
+        pkey->unique_init_set = TPM2_YES;
+        pkey->unique_init
+            = context->cmd.Provision.public_templ.public.publicArea.unique;
+
         fallthrough;
 
     statecase(context->primary_state, PRIMARY_WAIT_FOR_PRIMARY);
@@ -756,38 +751,8 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
             return TSS2_FAPI_RC_TRY_AGAIN;
 
-        /* Retry with authorization callback after trial with null auth */
-        if (number_rc(r) == TPM2_RC_BAD_AUTH
-            && hierarchy->misc.hierarchy.with_auth == TPM2_NO) {
-            char *description;
-            r = ifapi_get_description(hierarchy, &description);
-            return_if_error(r, "Get description");
+        goto_if_error_reset_state(r, "FAPI Provision", error_cleanup);
 
-            r = ifapi_set_auth(context, hierarchy, description);
-            SAFE_FREE(description);
-            goto_if_error_reset_state(r, "CreatePrimary", error_cleanup);
-
-            r = Esys_CreatePrimary_Async(context->esys, hierarchy->public.handle,
-                                         (context->session1 == ESYS_TR_NONE) ?
-                                         ESYS_TR_PASSWORD : context->session1,
-                                         ESYS_TR_NONE, ESYS_TR_NONE,
-                                         &context->cmd.Provision.inSensitive,
-                                         &context->cmd.Provision.public_templ.public,
-                                         &context->cmd.Provision.outsideInfo,
-                                         &context->cmd.Provision.creationPCR);
-            goto_if_error_reset_state(r, "CreatePrimary", error_cleanup);
-
-            if (ktype == TSS2_EK) {
-                context->state = PROVISION_AUTH_EK_AUTH_SENT;
-            } else {
-                context->state = PROVISION_AUTH_SRK_AUTH_SENT;
-            }
-            hierarchy->misc.hierarchy.with_auth = TPM2_YES;
-            return TSS2_FAPI_RC_TRY_AGAIN;
-
-        } else {
-            goto_if_error_reset_state(r, "FAPI Provision", error_cleanup);
-        }
         /* Set EK or SRK handle in context. */
         if (ktype == TSS2_EK) {
             context->ek_handle = primaryHandle;
@@ -1017,29 +982,35 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle)
 
         memset(&public.publicArea.unique, 0, sizeof(TPMU_PUBLIC_ID));
 
-        if (hierarchy->public.handle == ESYS_TR_RH_ENDORSEMENT &&
-            pkey->ek_profile) {
-            /* Values set according to EK credential profile. */
-            if (public.publicArea.type == TPM2_ALG_RSA) {
-                if (pkey->nonce.size) {
-                    memcpy(public.publicArea.unique.rsa.buffer,
-                           &pkey->nonce.buffer[0], pkey->nonce.size);
-                }
-                if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
-                    public.publicArea.unique.rsa.size = 0;
-                else
-                    public.publicArea.unique.rsa.size = 256;
-            } else if (public.publicArea.type == TPM2_ALG_ECC) {
-                if (pkey->nonce.size) {
-                    memcpy(public.publicArea.unique.ecc.x.buffer,
-                           &pkey->nonce.buffer[0], pkey->nonce.size);
-                }
-                if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH)) {
-                    public.publicArea.unique.ecc.x.size = 0;
-                    public.publicArea.unique.ecc.y.size = 0;
-                } else {
-                    public.publicArea.unique.ecc.x.size = 32;
-                    public.publicArea.unique.ecc.y.size = 32;
+        if (pkey->unique_init_set == TPM2_YES) {
+            public.publicArea.unique = pkey->unique_init;
+        } else {
+            /* is needed to be backward compatible to versions where unique
+               is not set via the profile and stored in the keystore */
+            if (hierarchy->public.handle == ESYS_TR_RH_ENDORSEMENT &&
+                pkey->ek_profile) {
+                /* Values set according to EK credential profile. */
+                if (public.publicArea.type == TPM2_ALG_RSA) {
+                    if (pkey->nonce.size) {
+                        memcpy(public.publicArea.unique.rsa.buffer,
+                               &pkey->nonce.buffer[0], pkey->nonce.size);
+                    }
+                    if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
+                        public.publicArea.unique.rsa.size = 0;
+                    else
+                        public.publicArea.unique.rsa.size = 256;
+                } else if (public.publicArea.type == TPM2_ALG_ECC) {
+                    if (pkey->nonce.size) {
+                        memcpy(public.publicArea.unique.ecc.x.buffer,
+                               &pkey->nonce.buffer[0], pkey->nonce.size);
+                    }
+                    if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH)) {
+                        public.publicArea.unique.ecc.x.size = 0;
+                        public.publicArea.unique.ecc.y.size = 0;
+                    } else {
+                        public.publicArea.unique.ecc.x.size = 32;
+                        public.publicArea.unique.ecc.y.size = 32;
+                    }
                 }
             }
         }
@@ -1149,7 +1120,7 @@ ifapi_session_init(FAPI_CONTEXT *context)
 
     return_if_null(context->esys, "No context", TSS2_FAPI_RC_NO_TPM);
 
-    if (context->state != _FAPI_STATE_INIT) {
+    if (context->state != FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
     }
 
@@ -1177,7 +1148,7 @@ ifapi_non_tpm_mode_init(FAPI_CONTEXT *context)
     LOG_TRACE("call");
     return_if_null(context, "No context", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    if (context->state != _FAPI_STATE_INIT) {
+    if (context->state != FAPI_STATE_INIT) {
         return_error(TSS2_FAPI_RC_BAD_SEQUENCE, "Invalid State");
     }
 
@@ -1604,6 +1575,13 @@ ifapi_merge_profile_into_template(
             TPM2_ALG_NULL;
         }
         if (profile->type == TPM2_ALG_RSA) {
+            if (template->unique_ecc_set) {
+                return_error(TSS2_FAPI_RC_BAD_VALUE,
+                             "ECC unique was set for an RSA key.");
+            }
+            if (template->unique_zero) {
+                template->public.publicArea.unique.rsa.size = template->unique_zero;
+            }
             if (template->public.publicArea.objectAttributes & TPMA_OBJECT_SIGN_ENCRYPT) {
                 template->public.publicArea.parameters.rsaDetail.scheme.scheme =
                 profile->rsa_signing_scheme.scheme;
@@ -1613,6 +1591,14 @@ ifapi_merge_profile_into_template(
                 template->public.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
             }
         } else if (profile->type == TPM2_ALG_ECC) {
+            if (template->unique_rsa_set) {
+                return_error(TSS2_FAPI_RC_BAD_VALUE,
+                             "RSA unique was set for an ECC key.");
+            }
+            if (template->unique_zero) {
+                template->public.publicArea.unique.ecc.x.size = template->unique_zero;
+                template->public.publicArea.unique.ecc.y.size = template->unique_zero;
+            }
             if (template->public.publicArea.objectAttributes & TPMA_OBJECT_SIGN_ENCRYPT) {
                 template->public.publicArea.parameters.eccDetail.scheme.scheme =
                 profile->ecc_signing_scheme.scheme;
@@ -1941,6 +1927,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
                       error_cleanup); /**< to avoid scan-build errors. */
 
         key = &context->loadKey.key_object->misc.key;
+        memset(&context->loadKey.key_object->misc.key, 0, sizeof(IFAPI_KEY));
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io,
                                        context->loadKey.key_object);
@@ -1981,7 +1968,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent)
             context->loadKey.state = LOAD_KEY_WAIT_FOR_PRIMARY;
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
-        IFAPI_OBJECT * copyToPush = malloc(sizeof(IFAPI_OBJECT));
+        IFAPI_OBJECT * copyToPush = calloc(1, sizeof(IFAPI_OBJECT));
         goto_if_null(copyToPush, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
         r = ifapi_copy_ifapi_key_object(copyToPush, context->loadKey.key_object);
         if (r) {
@@ -2318,7 +2305,7 @@ ifapi_nv_write(
         context->nv_cmd.data_idx = 0;
 
         /* Use calloc to ensure zero padding for write buffer. */
-        context->nv_cmd.write_data = calloc(size, 1);
+        context->nv_cmd.write_data = calloc(1, size);
         goto_if_null2(context->nv_cmd.write_data, "Out of memory.", r,
                       TSS2_FAPI_RC_MEMORY,
                       error_cleanup);
@@ -2347,6 +2334,13 @@ ifapi_nv_write(
         nv_index = context->nv_cmd.nv_object.public.handle;
         context->nv_cmd.esys_handle = nv_index;
         context->nv_cmd.nv_obj = object->misc.nv;
+
+        /* Check whether the file in object store can be updated if necessary */
+        if (!(context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes &
+              TPMA_NV_WRITTEN) ){
+            r = ifapi_keystore_check_writeable(&context->keystore, nvPath);
+            goto_if_error_reset_state(r, "Check whether update object store is possible.", error_cleanup);
+        }
 
         /* Determine the object which will be uses for authorization. */
         if (object->misc.nv.public.nvPublic.attributes & TPMA_NV_PPWRITE) {
@@ -2411,11 +2405,11 @@ ifapi_nv_write(
 
         if (number_rc(r) == TPM2_RC_BAD_AUTH) {
             if (context->nv_cmd.nv_write_state == NV2_WRITE_NULL_AUTH_SENT) {
-                IFAPI_OBJECT *auth_object = &context->nv_cmd.auth_object;
+                IFAPI_OBJECT *auth_object2 = &context->nv_cmd.auth_object;
                 char *description;
-                r = ifapi_get_description(auth_object, &description);
+                r = ifapi_get_description(auth_object2, &description);
                 goto_if_error(r, "Get description", error_cleanup);
-                r = ifapi_set_auth(context, auth_object, description);
+                r = ifapi_set_auth(context, auth_object2, description);
                 SAFE_FREE(description);
                 goto_if_error_reset_state(r, " Fapi_NvWrite_Finish", error_cleanup);
 
@@ -2468,6 +2462,20 @@ ifapi_nv_write(
             context->nv_cmd.nv_write_state = NV2_WRITE_AUTH_SENT;
             return TSS2_FAPI_RC_TRY_AGAIN;
 
+        }
+        if (auth_object->auth_changed) {
+            /* Auth for automatically added NV objects which hav no
+               auth value has to be updated.
+            */
+            context->nv_cmd.nv_object.misc.nv.with_auth = TPM2_NO;
+        }
+
+        if (context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes &
+            TPMA_NV_WRITTEN &&
+            !auth_object->auth_changed) {
+            LOG_DEBUG("success");
+            r = TSS2_RC_SUCCESS;
+            break;
         }
         fallthrough;
 
@@ -2666,7 +2674,23 @@ ifapi_nv_read(
             *size = context->nv_cmd.data_idx;
             LOG_DEBUG("success");
             r = TSS2_RC_SUCCESS;
-            break;
+
+            if (auth_object->auth_changed) {
+                /* Auth for automatically added NV objects which hav no
+                   auth value has to be updated.
+                */
+                context->nv_cmd.nv_object.misc.nv.with_auth = TPM2_NO;
+                /* Start writing the NV object to the key store */
+                r = ifapi_keystore_store_async(&context->keystore, &context->io,
+                                               context->nv_cmd.nvPath,
+                                               &context->nv_cmd.nv_object);
+                goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
+                                          context->nv_cmd.nvPath);
+                context->nv_cmd.nv_read_state =  NV_READ_WRITE_CHANGED_OBJECT;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            } else {
+                break;
+            }
         }
     statecase(context->nv_cmd.nv_read_state, NV_READ_CHECK_HANDLE);
         context->nv_cmd.data_idx = 0;
@@ -2719,6 +2743,14 @@ ifapi_nv_read(
         context->nv_cmd.nv_read_state = NV_READ_INIT;
         return TSS2_FAPI_RC_TRY_AGAIN;
 
+    statecase(context->nv_cmd.nv_read_state, NV_READ_WRITE_CHANGED_OBJECT)
+        /* Finish writing the NV object to the key store */
+        r = ifapi_keystore_store_finish(&context->io);
+        return_try_again(r);
+        return_if_error_reset_state(r, "write_finish failed");
+        break;
+
+
     statecasedefault(context->nv_cmd.nv_read_state);
     }
 
@@ -2729,7 +2761,7 @@ error_cleanup:
     return r;
 }
 
-#define min(X,Y) (X>Y)?Y:X
+#define min(X,Y) ((X)>(Y))?(Y):X
 
 /** State machine to retrieve random data from TPM.
  *
@@ -2758,7 +2790,7 @@ ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data)
     switch (context->get_random_state) {
     statecase(context->get_random_state, GET_RANDOM_INIT);
         context->get_random.numBytes = numBytes;
-        context->get_random.data = calloc(context->get_random.numBytes, 1);
+        context->get_random.data = calloc(1, context->get_random.numBytes);
         context->get_random.idx = 0;
         return_if_null(context->get_random.data, "FAPI out of memory.",
                        TSS2_FAPI_RC_MEMORY);
@@ -3613,6 +3645,8 @@ ifapi_key_create(
         SAFE_FREE(creationData);
         SAFE_FREE(creationTicket);
         SAFE_FREE(creationHash);
+        /* unique_init is only needed for primary keys. */
+        object->misc.key.unique_init_set = TPM2_NO;
         if (context->cmd.Key_Create.inSensitive.sensitive.userAuth.size > 0)
             object->misc.key.with_auth = TPM2_YES;
         else
@@ -4160,28 +4194,29 @@ ifapi_free_objects(FAPI_CONTEXT *context)
     }
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define ADD_CAPABILITY_INFO(capability, field, subfield, max_count, property_count) \
-    if (context->cmd.GetInfo.fetched_data->data.capability.count > max_count - property_count) { \
-        context->cmd.GetInfo.fetched_data->data.capability.count = max_count - property_count; \
+    if (context->cmd.GetInfo.fetched_data->data.capability.count > (max_count) - (property_count)) { \
+        context->cmd.GetInfo.fetched_data->data.capability.count = (max_count) - (property_count); \
     } \
 \
     memmove(&context->cmd.GetInfo.capability_data->data.capability.field[property_count], \
             context->cmd.GetInfo.fetched_data->data.capability.field, \
             context->cmd.GetInfo.fetched_data->data.capability.count \
             * sizeof(context->cmd.GetInfo.fetched_data->data.capability.field[0]));       \
-    property_count += context->cmd.GetInfo.fetched_data->data.capability.count; \
+    (property_count) += context->cmd.GetInfo.fetched_data->data.capability.count; \
 \
     context->cmd.GetInfo.capability_data->data.capability.count = property_count; \
 \
-    if (more_data && property_count < count \
+    if (more_data && (property_count) < count \
         && context->cmd.GetInfo.fetched_data->data.capability.count) {  \
         context->cmd.GetInfo.property \
             = context->cmd.GetInfo.capability_data->data. \
-            capability.field[property_count - 1]subfield + 1;   \
+            capability.field[(property_count) - 1]subfield + 1;   \
     } else { \
         more_data = false; \
     }
-
+// NOLINTEND(bugprone-macro-parentheses)
 
 /** Prepare the receiving of capability data.
  *
@@ -4342,12 +4377,12 @@ ifapi_capability_get(FAPI_CONTEXT *context, TPM2_CAP capability,
         context->state = GET_INFO_GET_CAP_MORE;
         return TSS2_FAPI_RC_TRY_AGAIN;
     } else {
-        context->state = _FAPI_STATE_INIT;
+        context->state = FAPI_STATE_INIT;
         return TSS2_RC_SUCCESS;
     }
 
 error_cleanup:
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     SAFE_FREE(context->cmd.GetInfo.capability_data);
     SAFE_FREE(context->cmd.GetInfo.fetched_data);
     return r;
@@ -4356,14 +4391,15 @@ error_cleanup:
 /** Get certificates stored in NV ram.
  *
  * The NV handles in the certificate range are determined. The corresponding
- * certificates are read out and stored in a linked list.
+ * certificates are appended to an unit8_t array.
  *
  * @param[in,out] context The FAPI_CONTEXT. The sub context for NV reading
  *                will be used.
  * @param[in] min_handle The first possible handle in the handle range.
  * @param[in] max_handle Maximal handle to filter out the handles not in the
  *            handle range for certificates.
- * @param[out] cert_list The callee allocates linked list of certificates.
+ * @param[out] certs The byte array of the concatenated certificates
+ * @param[out] cert_list_size The size of the cert array.
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
@@ -4396,18 +4432,21 @@ ifapi_get_certificates(
     FAPI_CONTEXT *context,
     UINT32 min_handle,
     UINT32 max_handle,
-    NODE_OBJECT_T **cert_list)
+    uint8_t **certs,
+    size_t *cert_list_size)
 {
     TSS2_RC r;
     TPMI_YES_NO moreData;
     uint8_t *cert_data = NULL;
     size_t cert_size;
+    bool provisioned;
 
     context->cmd.Provision.cert_nv_idx = MIN_EK_CERT_HANDLE;
 
     switch (context->get_cert_state) {
     statecase(context->get_cert_state, GET_CERT_INIT);
-        *cert_list = NULL;
+        context->cmd.Provision.certs = NULL;
+        context->cmd.Provision.cert_list_size = 0;
         context->cmd.Provision.capabilityData = NULL;
         context->cmd.Provision.cert_idx = 0;
         /* Prepare the reading of the capability handles in the certificate range */
@@ -4425,7 +4464,8 @@ ifapi_get_certificates(
 
         if (!context->cmd.Provision.capabilityData ||
             context->cmd.Provision.capabilityData->data.handles.count == 0) {
-            *cert_list = NULL;
+            *certs = NULL;
+            *cert_list_size = 0;
             SAFE_FREE(context->cmd.Provision.capabilityData);
             return TSS2_RC_SUCCESS;
         }
@@ -4478,19 +4518,32 @@ ifapi_get_certificates(
         /* TPMA_NV_NO_DA is set for NV certificate */
         context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes = TPMA_NV_NO_DA;
 
-        r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
-        goto_if_error_reset_state(r, "Could not open hierarchy /HS", error);
+        r = ifapi_check_provisioned(&context->keystore, "/HS", &provisioned);
+        goto_if_error_reset_state(r, "Provisioning check failed", error);
+
+        if (provisioned) {
+            /* Use information from keystore if available. */
+            r = ifapi_keystore_load_async(&context->keystore, &context->io, "/HS");
+            goto_if_error_reset_state(r, "Could not open hierarchy /HS", error);
+        }
 
         fallthrough;
 
     statecase(context->get_cert_state, GET_CERT_GET_CERT_READ_HIERARCHY);
-        r = ifapi_keystore_load_finish(&context->keystore, &context->io,
-                                       &context->nv_cmd.auth_object);
-        try_again_or_error_goto(r, "read_finish failed", error);
+        r = ifapi_check_provisioned(&context->keystore, "/HS", &provisioned);
+        goto_if_error_reset_state(r, "Provisioning check failed", error);
+
+        if (provisioned) {
+            /* Use information from keystore if available. */
+            r = ifapi_keystore_load_finish(&context->keystore, &context->io,
+                                           &context->nv_cmd.auth_object);
+            try_again_or_error_goto(r, "read_finish failed", error);
+
+            r = ifapi_initialize_object(context->esys, &context->nv_cmd.auth_object);
+            goto_if_error_reset_state(r, "Initialize hierarchy object", error);
+        }
 
         /* Prepare context for nv read */
-        r = ifapi_initialize_object(context->esys, &context->nv_cmd.auth_object);
-        goto_if_error_reset_state(r, "Initialize hierarchy object", error);
 
         context->nv_cmd.auth_object.public.handle = ESYS_TR_RH_OWNER;
         context->nv_cmd.data_idx = 0;
@@ -4498,7 +4551,6 @@ ifapi_get_certificates(
         context->nv_cmd.numBytes = context->cmd.Provision.nvPublic->nvPublic.dataSize;
         context->nv_cmd.esys_handle = context->cmd.Provision.esys_nv_cert_handle;
         context->nv_cmd.offset = 0;
-        context->cmd.Provision.pem_cert = NULL;
         context->session1 = ESYS_TR_PASSWORD;
         context->session2 = ESYS_TR_NONE;
         context->nv_cmd.nv_read_state = NV_READ_INIT;
@@ -4510,18 +4562,32 @@ ifapi_get_certificates(
         r = ifapi_nv_read(context, &cert_data, &cert_size);
         try_again_or_error_goto(r, " FAPI NV_Read", error);
 
+        goto_if_null(cert_data, "Failed to read certificate",
+                     TSS2_FAPI_RC_GENERAL_FAILURE, error);
+
         context->cmd.Provision.cert_idx += 1;
 
-        /* Add cert to list */
+        /* Append cert */
+
+        if (context->cmd.Provision.certs) {
+            uint8_t* new_certs = realloc(context->cmd.Provision.certs,
+                                         context->cmd.Provision.cert_list_size + cert_size);
+            goto_if_null(new_certs, "Out of memory", TSS2_FAPI_RC_MEMORY, error);
+            memcpy(new_certs + context->cmd.Provision.cert_list_size, cert_data, cert_size);
+            free(cert_data);
+            context->cmd.Provision.certs = new_certs;
+            context->cmd.Provision.cert_list_size += cert_size;
+        } else {
+            context->cmd.Provision.certs = cert_data;
+            context->cmd.Provision.cert_list_size = cert_size;
+        }
+        ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
+
         if (context->cmd.Provision.cert_idx == context->cmd.Provision.cert_count) {
-            context->get_cert_state = GET_CERT_GET_CERT_NV;
-
-            r = push_object_with_size_to_list(cert_data, cert_size, cert_list);
-            goto_if_error(r, "Store certificate in list.", error);
-
-            ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
-
+            /* All certificates have been read */
             SAFE_FREE(context->cmd.Provision.capabilityData);
+            *certs = context->cmd.Provision.certs;
+            *cert_list_size = context->cmd.Provision.cert_list_size;
             return TSS2_RC_SUCCESS;
         } else {
             context->get_cert_state = GET_CERT_GET_CERT_NV;
@@ -4536,7 +4602,9 @@ error:
     SAFE_FREE(context->cmd.Provision.nvPublic);
     SAFE_FREE(context->cmd.Provision.capabilityData);
     ifapi_cleanup_ifapi_object(&context->nv_cmd.auth_object);
-    ifapi_free_object_list(*cert_list);
+    if (r) {
+        SAFE_FREE(context->cmd.Provision.certs);
+    }
     return r;
 }
 
@@ -4827,6 +4895,10 @@ ifapi_create_primary(
                                      &context->cmd.Key_Create.creationPCR);
         goto_if_error_reset_state(r, "Prepare create primary", error_cleanup);
 
+        object->misc.key.unique_init_set = TPM2_YES;
+        object->misc.key.unique_init
+            = context->cmd.Key_Create.public_templ.public.publicArea.unique;
+
         fallthrough;
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_PRIMARY);
@@ -4850,10 +4922,12 @@ ifapi_create_primary(
         object->misc.key.description = NULL;
         object->misc.key.certificate = NULL;
         object->misc.key.reset_count = context->init_time.clockInfo.resetCount;
+
         SAFE_FREE(pkey->serialization.buffer);
         r = Esys_TR_Serialize(context->esys, context->cmd.Key_Create.handle,
                               &pkey->serialization.buffer, &pkey->serialization.size);
         goto_if_error(r, "Error serialize esys object", error_cleanup);
+
         SAFE_FREE(creationData);
         SAFE_FREE(creationTicket);
         SAFE_FREE(creationHash);
@@ -4968,5 +5042,356 @@ ifapi_create_primary(
     free_string_list(context->loadKey.path_list);
     ifapi_cleanup_ifapi_object(hierarchy);
     return r;
+
+}
+
+static const struct { char* name; UINT32 from; UINT32 to; } nv_tab[] = {
+    { "TPM", 0x01000000, 0x013fffff },
+    { "Platform", 0x01400000, 0x017fffff },
+    { "Owner", 0x01800000, 0x01bfffff },
+    { "Endorsement_Certificate", 0x01c00000, 0x01c07fff },
+    { "Platform_Certificate", 0x01c08000, 0x01c0ffff },
+    { "Component_OEM",  0x01c10000, 0x01c1ffff },
+    { "TPM_OEM", 0x01c20000, 0x01c2ffff },
+    { "Platform_OEM", 0x01c30000, 0x01c3ffff },
+    { "PC-Client", 0x01c40000, 0x01c4ffff },
+    { "Server", 0x01c50000, 0x01c5ffff },
+    { "Virtualized_Platform", 0x01c60000, 0x01c6ffff },
+    { "MPWG", 0x01c70000, 0x01c7ffff },
+    { "Embedded", 0x01c80000,  0x01c8ffff }
+ };
+
+/** Creation of objects for existing nv indexes in keystore.
+ *
+ * For every TPM NV index which is currently not stored in the keystore
+ * a FAPI object in the appropriate sub directory will be created.
+ * e.g. a certificate stored at 0x1c00002 will be stored at:
+ * /nv/Endorsement_Certificate/1c00002
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] ctx The context of the asynchronous state machine
+ *            which creates the nv keystore objects.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if a wrong type was passed.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ */
+TSS2_RC
+ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx)
+{
+    /* Check for NULL parameters */
+    check_not_null(ctx);
+    TPMS_CAPABILITY_DATA **capability = &ctx->capability;
+    TPM2B_NV_PUBLIC *existing_nv_public = NULL;
+    IFAPI_OBJECT object;
+    size_t i;
+    TSS2_RC r;
+
+    switch (ctx->state) {
+    statecase(ctx->state, CREATE_NV_CHECK_NV_OBJECTS_INIT);
+        /* Compute the list of all nv objects stored in keystore. */
+        r = ifapi_keystore_list_all(&fapi_ctx->keystore, "/nv", &ctx->pathlist,
+                                    &ctx->numPaths);
+        goto_if_error2(r, "Could not create list of nv objects", cleanup_return);
+
+        ctx->nv_idx_list = calloc(ctx->numPaths, sizeof(TPMI_RH_NV_INDEX));
+        ctx->path_idx = 0;
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_CHECK_NV_OBJECTS);
+        if (ctx->path_idx == ctx->numPaths) {
+            /* All nv files were read. */
+            ctx->state = CREATE_NV_GET_TPM_NV_HANDLES;
+            ctx->more_data = TPM2_YES;
+            ctx->nv_index = TPM2_NV_INDEX_FIRST;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+        r = ifapi_keystore_load_async(&fapi_ctx->keystore, &fapi_ctx->io,
+                                      ctx->pathlist[ctx->path_idx]);
+        goto_if_error2(r, "Could not open %s", cleanup_return,
+                       ctx->pathlist[ctx->path_idx]);
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_READ_NV_OBJECT);
+        r = ifapi_keystore_load_finish(&fapi_ctx->keystore, &fapi_ctx->io,
+                                       &object);
+        return_try_again(r);
+        goto_if_error2(r, "Could not open %s", cleanup_return,
+                       ctx->pathlist[ctx->path_idx]);
+        ctx->nv_idx_list[ctx->path_idx] = object.misc.nv.public.nvPublic.nvIndex;
+        ifapi_cleanup_ifapi_object(&object);
+        ctx->path_idx += 1;
+        ctx->state = CREATE_NV_CHECK_NV_OBJECTS;
+        return TSS2_FAPI_RC_TRY_AGAIN;
+
+    statecase(ctx->state, CREATE_NV_GET_TPM_NV_HANDLES);
+        /* Get the list of all nv indexes */
+        r = Esys_GetCapability_Async(fapi_ctx->esys,
+                               ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                               TPM2_CAP_HANDLES,
+                               ctx->nv_index,
+                               TPM2_MAX_CAP_HANDLES);
+        goto_if_error2(r, "GetCapability_Async", cleanup_return);
+
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_GET_TPM_NV_HANDLES2);
+        r = Esys_GetCapability_Finish(fapi_ctx->esys, &ctx->more_data,
+                                      capability);
+        return_try_again(r);
+        goto_if_error2(r, "GetCapability_Finish", cleanup_return);
+
+        ctx->nv_cap_idx = 0;
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_CHECK_NV_INDEX);
+        /* Async loop over all nv indexes */
+        if (ctx->nv_cap_idx == (*capability)->data.handles.count) {
+            /* All indexes from get capability processed. */
+            if (0 &&  ctx->more_data) {
+                /* Further call of get capability needed. */
+                ctx->state = CREATE_NV_GET_TPM_NV_HANDLES;
+                /* Define property for get capability. */
+                ctx->nv_index =
+                    (*capability)->data.handles.handle
+                        [(*capability)->data.handles.count - 1] + 1;
+                SAFE_FREE(*capability);
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            } else {
+                break;
+            }
+        }
+
+        if  ((*capability)->data.handles.handle[ctx->nv_cap_idx] >
+             TPM2_NV_INDEX_LAST) {
+            break;
+        }
+
+        /* Check whether nv index already exists in keystore. */
+        for (i = 0; i < ctx->numPaths; i++) {
+            if (ctx->nv_idx_list[i] ==
+                (*capability)->data.handles.handle[ctx->nv_cap_idx]) {
+                ctx->nv_cap_idx++;
+                return TSS2_FAPI_RC_TRY_AGAIN;
+            }
+        }
+
+        ctx->nv_index = (*capability)->data.handles.handle[ctx->nv_cap_idx];
+
+        r = Esys_TR_FromTPMPublic_Async(fapi_ctx->esys, ctx->nv_index,
+                                        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+        return_if_error(r, "Esys_TR_FromTPMPublic_Async");
+
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_NV_GET_ESYS_HANDLE);
+        r = Esys_TR_FromTPMPublic_Finish(fapi_ctx->esys, &ctx->esys_nv_handle);
+        return_try_again(r);
+
+        return_if_error(r, "Esys_TR_FromTPMPublic_Finish");
+
+        /* Read public from the existing nv object */
+        r = Esys_NV_ReadPublic_Async(fapi_ctx->esys, ctx->esys_nv_handle,
+                ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+        return_if_error(r, "Esys_NV_ReadPublic_Async");
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_NV_WAIT_FOR_READ_PUBLIC);
+        r = Esys_NV_ReadPublic_Finish(fapi_ctx->esys,
+                                  &existing_nv_public, NULL);
+        return_try_again(r);
+        return_if_error(r, "Error: nv read public");
+
+        ctx->path = NULL;
+
+        for (i = 0; i < ARRAY_LEN(nv_tab); i++) {
+            if (ctx->nv_index >= nv_tab[i].from &&
+                ctx->nv_index <= nv_tab[i].to) {
+                r = ifapi_asprintf(&ctx->path, "/nv/%s/%x", nv_tab[i].name,
+                                   ctx->nv_index);
+                return_if_error(r, "Can't create pathname for nv index.");
+            }
+        }
+
+        if (!ctx->path) {
+            LOG_WARNING("NV path can't be determined for handel 0x%x",
+                        ctx->nv_index);
+            ctx->nv_cap_idx++;
+            SAFE_FREE(existing_nv_public);
+            ctx->state = CREATE_NV_CHECK_NV_INDEX;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
+        if (existing_nv_public->nvPublic.authPolicy.size > 0) {
+            /* NV objects with existing policy will not be automatically added. */
+            ctx->nv_cap_idx++;
+            SAFE_FREE(existing_nv_public);
+            ctx->state = CREATE_NV_CHECK_NV_INDEX;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
+        memset(&ctx->nv_object, 0, sizeof(IFAPI_OBJECT));
+        ctx->nv_object.objectType = IFAPI_NV_OBJ;
+        if (existing_nv_public->nvPublic.attributes & TPMA_NV_PLATFORMCREATE) {
+            ctx->nv_object.misc.nv.hierarchy = ESYS_TR_RH_PLATFORM;
+        } else {
+            ctx->nv_object.misc.nv.hierarchy = ESYS_TR_RH_OWNER;
+        }
+        ctx->nv_object.system = TPM2_YES;
+
+        if (ctx->nv_index >= 0x01c00000 && ctx->nv_index <= 0x01c07fff) {
+            ctx->nv_object.misc.nv.with_auth = TPM2_NO;
+        } else {
+            ctx->nv_object.misc.nv.with_auth = TPM2_YES;
+        }
+        ctx->nv_object.misc.nv.public= *existing_nv_public;
+        ctx->nv_object.public.handle = ctx->esys_nv_handle;
+        SAFE_FREE(existing_nv_public);
+        /* Perform esys serialization  */
+        r = ifapi_esys_serialize_object(fapi_ctx->esys, &ctx->nv_object);
+        goto_if_error(r, "Prepare serialization", cleanup_return);
+
+        /* Check whether object already exists in key store.*/
+        r = ifapi_keystore_object_does_not_exist(&fapi_ctx->keystore,
+                                                 ctx->path,
+                                                 &ctx->nv_object);
+        goto_if_error2(r, "Could not write: %sh", cleanup_return,
+                       ctx->path);
+
+        /* Start writing the NV object to the key store */
+        r = ifapi_keystore_store_async(&fapi_ctx->keystore, &fapi_ctx->io,
+                                       ctx->path,
+                                       &ctx->nv_object);
+        goto_if_error2(r, "Could not open: %sh", cleanup_return,
+                       ctx->path);
+
+        fallthrough;
+
+    statecase(ctx->state, CREATE_NV_WRITE);
+        SAFE_FREE(ctx->path);
+        /* Finish writing the NV object to the key store */
+        r = ifapi_keystore_store_finish(&fapi_ctx->io);
+        return_try_again(r);
+        goto_if_error(r, "write_finish failed", cleanup_return);
+
+        ifapi_cleanup_ifapi_object(&ctx->nv_object);
+
+        ctx->nv_cap_idx++;
+        ctx->state = CREATE_NV_CHECK_NV_INDEX;
+        return TSS2_FAPI_RC_TRY_AGAIN;
+
+    statecasedefault(ctx->state);
+    }
+    ctx->state = CREATE_NV_CHECK_NV_OBJECTS_INIT;
+    SAFE_FREE(*capability);
+    for (i = 0; i < ctx->numPaths; i++) {
+        SAFE_FREE(ctx->pathlist[i]);
+    }
+    SAFE_FREE(ctx->pathlist);
+    SAFE_FREE(ctx->nv_idx_list);
+    LOG_TRACE("finished");
+    return TSS2_RC_SUCCESS;
+
+    cleanup_return:
+    /* Cleanup any intermediate results and state stored in the context. */
+    for (size_t i = 0; i < ctx->numPaths; i++) {
+        SAFE_FREE(ctx->pathlist[i]);
+    }
+    ifapi_cleanup_ifapi_object(&ctx->nv_object);
+    SAFE_FREE(ctx->pathlist);
+    SAFE_FREE(ctx->nv_idx_list);
+    SAFE_FREE(ctx->path);
+
+    return r;
+}
+
+/** Check whether an NV index exist on TPM and in keystore.
+ *
+ *  It will be checked whether an NV index exists in the TPM.
+ *  An error will be returned if the index already exists in
+ *  the keystore.
+ *
+ * @param[in] context The FAPI_CONTEXT.
+ * @param[in] template The template which defines the key attributes and whether the
+ *            key will be persistent.
+ * @param[out] The boolean which defines whether the index exists.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the index already exists.
+ * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ *         this function needs to be called again.
+ * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ *         object store.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
+ *         or contains illegal characters.
+ * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the object already exists in object store.
+ */
+TSS2_RC
+ifapi_check_existing_nv(FAPI_CONTEXT *context, TPMI_RH_NV_INDEX nv_index, bool *nv_exists,
+                        ESYS_TR *esys_nv_handle,
+                        TPM2B_NV_PUBLIC **nvPublic)
+{
+    TSS2_RC r;
+    *nv_exists = false;
+    TPMI_YES_NO moreData;
+    TPMS_CAPABILITY_DATA **capabilityData = &context->nv_cmd.capability;
+
+    switch (context->nv_cmd.nv_check) {
+    statecase(context->nv_cmd.nv_check, CHECK_NV_INIT);
+        *capabilityData = NULL;
+        r = Esys_GetCapability_Async(context->esys,
+                 ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, TPM2_CAP_HANDLES,
+                 nv_index, 1);
+        return_if_error(r, "Esys_GetCapability_Async");
+        fallthrough;
+    statecase(context->nv_cmd.nv_check, CHECK_NV_WAIT_FOR_GET_CAP);
+        r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
+        return_try_again(r);
+        return_if_error_reset_state(r, "GetCapablity_Finish");
+        if ((*capabilityData)->data.handles.count == 0 ||
+            (*capabilityData)->data.handles.handle[0] != nv_index) {
+            context->nv_cmd.nv_check = CHECK_NV_INIT;
+            SAFE_FREE(*capabilityData);
+            *nv_exists = false;
+            break;
+        }
+        SAFE_FREE(*capabilityData);
+
+        r = Esys_TR_FromTPMPublic_Async(context->esys, nv_index,
+                                        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+        return_if_error(r, "Esys_TR_FromTPMPublic_Async");
+
+        fallthrough;
+
+    statecase(context->nv_cmd.nv_check, CHECK_NV_GET_ESYS_HANDLE);
+        r = Esys_TR_FromTPMPublic_Finish(context->esys, esys_nv_handle);
+        return_try_again(r);
+
+        return_if_error(r, "Esys_TR_FromTPMPublic_Finish");
+
+        /* Read public from the existing nv object */
+        r = Esys_NV_ReadPublic_Async(context->esys, *esys_nv_handle,
+                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+        return_if_error(r, "Esys_NV_ReadPublic_Async");
+        fallthrough;
+
+    statecase(context->nv_cmd.nv_check, CHECK_NV_WAIT_FOR_READ_PUBLIC);
+        r = Esys_NV_ReadPublic_Finish(context->esys, nvPublic, NULL);
+        return_try_again(r);
+        return_if_error(r, "Error: nv read public");
+        *nv_exists = true;
+        break;
+    statecasedefault(context->cmd.Key_Create.state);
+    }
+
+    return TSS2_RC_SUCCESS;
 
 }

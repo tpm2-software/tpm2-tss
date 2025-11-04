@@ -5,18 +5,17 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
+#include <inttypes.h>     // for uint32_t, uint64_t, uint8_t
+#include <stdlib.h>       // for NULL, free, size_t, malloc
+#include <string.h>       // for memcpy, memset
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_esys.h"
+#include "../helper/cmocka_all.h"       // for assert_int_equal, CMUnitTest, assert_memory...
+#include "tss2_common.h"  // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_RC_BAD_...
+#include "tss2_esys.h"    // for ESYS_CONTEXT, Esys_Finalize, Esys_GetPollHa...
+#include "tss2_tcti.h"    // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_HANDLE
 
 #define LOGMODULE tests
 #include "util/log.h"

@@ -6,21 +6,22 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <string.h>
+#include <inttypes.h>         // for PRIxPTR, uintptr_t, uint8_t
+#include <string.h>           // for NULL, size_t, memset
 
-#include "tss2_mu.h"
+#include "tss2_common.h"      // for UINT32, TSS2_RC_SUCCESS, TSS2_RC, TSS2_...
+#include "tss2_mu.h"          // for Tss2_MU_UINT32_Marshal, Tss2_MU_UINT32_...
+#include "tss2_tpm2_types.h"  // for TPML_ACT_DATA, TPML_AC_CAPABILITIES
 
-#include "util/tss2_endian.h"
 #define LOGMODULE marshal
-#include "util/log.h"
+#include "util/log.h"         // for LOG_DEBUG, LOG_ERROR, LOG_TRACE, LOG_WA...
 
-#define ADDR &
+#define ADDR &  // NOLINT(bugprone-macro-parentheses)
 #define VAL
-#define TAB_SIZE(tab) (sizeof(tab) / sizeof(tab[0]))
+#define TAB_SIZE(tab) (sizeof(tab) / sizeof((tab)[0]))
 
 #define TPML_MARSHAL(type, marshal_func, buf_name, op) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -84,6 +85,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return TSS2_RC_SUCCESS; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPML_UNMARSHAL(type, unmarshal_func, buf_name) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -148,6 +150,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return TSS2_RC_SUCCESS; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*
  * These macros expand to (un)marshal functions for each of the TPML types

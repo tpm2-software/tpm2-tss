@@ -5,17 +5,18 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memset
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, ESYS_TR_PASSWORD
+#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPMT_PUBLIC, TPM2_ALG_SHA256
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR
 
 /** Test the ESYS commands: HMAC_Start, SequenceUpdate, and SequenceComplete.
  *

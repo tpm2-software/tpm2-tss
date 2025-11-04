@@ -6,18 +6,20 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <string.h>
+#include <inttypes.h>          // for PRIxPTR, uintptr_t, uint8_t
+#include <string.h>            // for NULL, size_t, memcpy
 
-#include "tss2_mu.h"
+#include "tss2_common.h"       // for UINT16, TSS2_MU_RC_INSUFFICIENT_BUFFER
+#include "tss2_mu.h"           // for Tss2_MU_UINT16_Marshal, Tss2_MU_UINT16...
+#include "tss2_tpm2_types.h"   // for TPM2B_ATTEST, TPM2B_AUTH, TPM2B_CONTEX...
+#include "util/tpm2b.h"        // for TPM2B
+#include "util/tss2_endian.h"  // for HOST_TO_BE_16
 
-#include "util/tpm2b.h"
-#include "util/tss2_endian.h"
 #define LOGMODULE marshal
-#include "util/log.h"
+#include "util/log.h"          // for LOG_DEBUG, LOG_WARNING, LOG_TRACE
 
 #define TPM2B_MARSHAL(type) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -86,6 +88,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return TSS2_RC_SUCCESS; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPM2B_UNMARSHAL(type, buf_name) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -144,7 +147,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     if (dest != NULL) { \
         dest->size = size; \
-        memcpy(((TPM2B *)dest)->buffer, &buffer[local_offset], size); \
+        memcpy(&dest->buf_name, &buffer[local_offset], size);    \
     } \
     local_offset += size; \
     if (offset != NULL) { \
@@ -154,6 +157,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return TSS2_RC_SUCCESS; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 #define TPM2B_MARSHAL_SUBTYPE(type, subtype, member) \
 TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
@@ -221,6 +225,7 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
     return TSS2_RC_SUCCESS; \
 }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TPM2B_UNMARSHAL_SUBTYPE(type, subtype, member) \
 TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
                                    size_t *offset, type *dest) \
@@ -292,6 +297,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     return TSS2_RC_SUCCESS; \
 }
+// NOLINTEND(bugprone-macro-parentheses)
 
 /*
  * These macros expand to (un)marshal functions for each of the TPM2B types

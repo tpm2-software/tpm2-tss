@@ -3,23 +3,18 @@
  * Copyright 2018-2019, Intel Corporation
  */
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <inttypes.h>               // for uint8_t, int32_t
+#include <stdbool.h>                // for true
+#include <stdio.h>                  // for NULL, size_t
+#include <stdlib.h>                 // for calloc, free
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_tcti.h"
-#include "tss2_tctildr.h"
-
-#include "tss2-tcti/tctildr.h"
-#include "tss2-tcti/tcti-common.h"
-#include "util/aux_util.h"
+#include "../helper/cmocka_all.h"                 // for assert_int_equal, cmocka_unit_tes...
+#include "tss2-tcti/tcti-common.h"  // for TCTI_VERSION
+#include "tss2-tcti/tctildr.h"      // for TSS2_TCTILDR_CONTEXT, tctildr_fin...
+#include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...
+#include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL...
+#include "tss2_tpm2_types.h"        // for TPM2_HANDLE, TPM2_YES
+#include "util/aux_util.h"          // for UNUSED
 
 #define TEST_MAGIC 0x1234321
 #define TEST_VERSION 2

@@ -5,18 +5,18 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h>       // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>       // for strlen
 
-#include "tss2_fapi.h"
+#include "tss2_common.h"  // for TSS2_RC
+#include "tss2_fapi.h"    // for Fapi_GetInfo, FAPI_CONTEXT
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "test-fapi.h"
+#include "test-fapi.h"    // for ASSERT, CHECK_JSON_FIELDS, ASSERT_SIZE, tes...
+#include "util/log.h"     // for SAFE_FREE, LOG_INFO, goto_if_error
 
 /** Test the FAPI functions for GetInfo.
  *

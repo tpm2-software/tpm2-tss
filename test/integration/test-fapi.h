@@ -9,7 +9,7 @@
 #include <config.h>
 #endif
 #include <assert.h>
-#include <json-c/json.h>
+#include <json.h>
 #include <json-c/json_util.h>
 #include <string.h>
 #include <stdbool.h>
@@ -115,7 +115,7 @@
         } \
         if (i >=  n) { \
             json_object_put(jso1); \
-            LOG_ERROR("Mismatch" ); \
+            LOG_ERROR("Could not find JSON in list: %s", JSO_STRING); \
             goto LABEL; \
         } \
        json_object_put(jso1); \

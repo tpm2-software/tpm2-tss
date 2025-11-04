@@ -5,25 +5,24 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"                         // for HAVE_REALLOCARRAY
 #endif
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include <json.h>                           // for json_object_get_string
+#include <stdint.h>                         // for uint8_t
+#include <stdlib.h>                         // for calloc, free, reallocarray
+#include <string.h>                         // for memset, strdup, strlen
 
-#include "tss2_common.h"
-
+#include "fapi_int.h"                       // for IFAPI_FILE_DELIM_CHAR
+#include "ifapi_helpers.h"                  // for ifapi_cleanup_policy, ifa...
+#include "ifapi_macros.h"                   // for check_not_null, goto_if_n...
+#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
 #include "ifapi_profiles.h"
+#include "tpm_json_deserialize.h"           // for ifapi_get_sub_object, ifa...
+#include "tss2_common.h"                    // for TSS2_FAPI_RC_BAD_VALUE
 
-#include "tpm_json_deserialize.h"
-#include "ifapi_policy_json_deserialize.h"
-#include "ifapi_json_deserialize.h"
-#include "ifapi_helpers.h"
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "ifapi_macros.h"
+#include "util/log.h"                       // for return_if_error, LOG_ERROR
 
 #define PROFILES_EXTENSION ".json"
 #define PROFILES_PREFIX "P_"
@@ -545,7 +544,6 @@ ifapi_profile_json_deserialize(
     } else {
         out->ignore_ek_template = TPM2_NO;
     }
-
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;

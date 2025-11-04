@@ -16,9 +16,12 @@
  * http://github.com/tpm2-software/tpm2-tss/tss2-dlopen
 */
 
-#include <dlfcn.h>
-#include <stdio.h>
-#include <tss2/tss2_tctildr.h>
+#include <dlfcn.h>              // for dlsym, dlerror, dlopen, RTLD_LOCAL
+#include <stdio.h>              // for fprintf, stderr, NULL
+#include <tss2/tss2_tctildr.h>  // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_F...
+
+#include "tss2_common.h"        // for TSS2_RC, TSS2_TCTI_RC_NOT_IMPLEMENTED
+#include "tss2_tcti.h"          // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
 
 #define str(s) xstr(s)
 #define xstr(s) #s

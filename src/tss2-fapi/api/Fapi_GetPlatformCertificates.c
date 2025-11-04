@@ -5,22 +5,26 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <stdint.h>         // for uint8_t
+#include <stdlib.h>         // for NULL, malloc, size_t
+#include <string.h>         // for memcpy
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"       // for FAPI_CONTEXT, GET_PLATFORM_CERTIFICATE
+#include "fapi_types.h"     // for NODE_OBJECT_T
+#include "fapi_util.h"      // for ifapi_get_certificates, ifapi_session_init
+#include "ifapi_helpers.h"  // for ifapi_free_node_list
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TR...
+#include "tss2_esys.h"      // for Esys_SetTimeout
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetPlatformCertificates
+#include "tss2_tcti.h"      // for TSS2_TCTI_TIMEOUT_BLOCK
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"       // for LOG_TRACE, SAFE_FREE, return_if_error
 
 /** One-Call function for Fapi_GetPlatformCertificates
  *
@@ -207,7 +211,6 @@ Fapi_GetPlatformCertificates_Finish(
 {
     LOG_TRACE("called for context:%p", context);
 
-    NODE_OBJECT_T *cert_list = NULL;
     TSS2_RC r;
 
     /* Check for NULL parameters */
@@ -220,59 +223,26 @@ Fapi_GetPlatformCertificates_Finish(
             /* Retrieve the certificates from the TPM's NV space. */
             r = ifapi_get_certificates(context, MIN_PLATFORM_CERT_HANDLE,
                                        MAX_PLATFORM_CERT_HANDLE,
-                                       &cert_list);
+                                       certificates,
+                                       certificatesSize);
             return_try_again(r);
             goto_if_error(r, "Get certificates.", error);
 
-            if (cert_list) {
-                /* Concatenate the found certificates */
-                size_t size;
-                NODE_OBJECT_T *cert = cert_list;
-                size = 0;
-                while (cert) {
-                    size += cert->size;
-                    cert = cert->next;
-                }
-                if (certificatesSize)
-                    *certificatesSize = size;
-                *certificates = malloc(size);
-                goto_if_null2(*certificates, "Out of memory.",
-                        r, TSS2_FAPI_RC_MEMORY, error);
-
-                cert = cert_list;
-                size = 0;
-                while (cert) {
-                    memcpy(&*(certificates)[size], cert->object, cert->size);
-                    size += cert->size;
-                    SAFE_FREE(cert->object);
-                    cert = cert->next;
-                }
-            } else {
-                *certificates = NULL;
-                if (certificatesSize)
-                    *certificatesSize = 0;
+            if (*certificatesSize == 0) {
                 goto_error(r, TSS2_FAPI_RC_NO_CERT,
-                        "No platform certificates available.", error);
+                           "No platform certificates available.", error);
             }
             break;
         statecasedefault(context->state);
     }
 
     /* Cleanup any intermediate results and state stored in the context. */
-    ifapi_free_node_list(cert_list);
-    context->state =  _FAPI_STATE_INIT;
+    context->state =  FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error:
     /* Cleanup any intermediate results and state stored in the context. */
-    context->state =  _FAPI_STATE_INIT;
-    NODE_OBJECT_T *cert = cert_list;
-    while (cert) {
-        SAFE_FREE(cert->object);
-        cert = cert->next;
-    }
-    ifapi_free_node_list(cert_list);
-    SAFE_FREE(*certificates);
+    context->state =  FAPI_STATE_INIT;
     return r;
 }

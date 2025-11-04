@@ -1,4 +1,11 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2015 - 2022 Intel
+# SPDX-FileCopyrightText: 2017 Bernhard M. Wiedemann
+# SPDX-FileCopyrightText: 2017 David Bild
+# SPDX-FileCopyrightText: 2018 - 2019 Fraunhofer SIT sponsored by Infineon
+# SPDX-FileCopyrightText: 2023 Infineon Technologies AG
+# SPDX-License-Identifier: BSD-2-Clause
+
 set -e
 
 git describe --tags --always --dirty > VERSION
@@ -56,16 +63,16 @@ echo "Generating file lists: ${VARS_FILE}"
   src_listvar "src/util-io" "*.h" "UTIL_IO_H"
   printf "UTIL_IO_SRC = \$(UTIL_IO_C) \$(UTIL_IO_H)\n"
 
-  src_listvar "src/tss2-sys/" "*.c" "TSS2_SYS_C"
-  src_listvar "src/tss2-sys/" "*.h" "TSS2_SYS_H"
+  src_listvar "src/tss2-sys" "*.c" "TSS2_SYS_C"
+  src_listvar "src/tss2-sys" "*.h" "TSS2_SYS_H"
   printf "TSS2_SYS_SRC = \$(TSS2_SYS_H) \$(TSS2_SYS_C)\n"
 
-  src_esys_listvar "src/tss2-esys/" "*.h" "TSS2_ESYS_H"  src/tss2-esys/esys_crypto_ossl.h src/tss2-esys/esys_crypto_mbed.h
-  src_esys_listvar "src/tss2-esys/" "*.c" "TSS2_ESYS_C" src/tss2-esys/esys_crypto_ossl.c src/tss2-esys/esys_crypto_mbed.c
+  src_esys_listvar "src/tss2-esys" "*.h" "TSS2_ESYS_H"  src/tss2-esys/esys_crypto_ossl.h src/tss2-esys/esys_crypto_mbed.h
+  src_esys_listvar "src/tss2-esys" "*.c" "TSS2_ESYS_C" src/tss2-esys/esys_crypto_ossl.c src/tss2-esys/esys_crypto_mbed.c
   printf "TSS2_ESYS_SRC = \$(TSS2_ESYS_H) \$(TSS2_ESYS_C)\n"
 
-  src_listvar "src/tss2-fapi/" "*.h" "TSS2_FAPI_H"
-  src_listvar "src/tss2-fapi/" "*.c" "TSS2_FAPI_C"
+  src_listvar "src/tss2-fapi" "*.h" "TSS2_FAPI_H"
+  src_listvar "src/tss2-fapi" "*.c" "TSS2_FAPI_C"
   printf "TSS2_FAPI_SRC = \$(TSS2_FAPI_H) \$(TSS2_FAPI_C)\n"
 
   src_listvar "src/tss2-mu" "*.c" "TSS2_MU_C"

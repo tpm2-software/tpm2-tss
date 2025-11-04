@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: 2024, Infineon Technologies AG
+# SPDX-License-Identifier: BSD-2-Clause
+# -bugprone-assignment-in-if-condition
+#   [TODO] opinionated, we might want to enable that at some point
+# -bugprone-branch-clone
+#   In some cases it is more readable to have identical branch blocks
+# -bugprone-easily-swappable-parameters:
+#   We have a lot integer-liky types (e.g. TPMI_RH_NV_INDEX) which we do not
+#   want to turn into opaque or strong types. They are part of the API.
+# -bugprone-implicit-widening-of-multiplication-result
+#   [TODO]
+#  -bugprone-reserved-identifier
+#   [TODO]
+#
+# -clang-analyzer-optin.performance.Padding
+#   We prefer logical/semantic order over (potentially insignificant)
+#   optimization.
+# -clang-analyzer-security.insecureAPI
+#   There is no real alternative to strcat etc. in C99.
+# -clang-analyzer-valist.Uninitialized
+#   Bugged: https://bugs.llvm.org/show_bug.cgi?id=41311
+
+---
+Checks: "\
+  bugprone*, \
+  -bugprone-assignment-in-if-condition, \
+  -bugprone-branch-clone, \
+  -bugprone-easily-swappable-parameters, \
+  -bugprone-implicit-widening-of-multiplication-result, \
+  -bugprone-reserved-identifier, \
+  \
+  clang-analyzer, \
+  -clang-analyzer-optin.performance.Padding, \
+  -clang-analyzer-security.insecureAPI.*, \
+  -clang-analyzer-valist.Uninitialized, \
+  \
+  clang-diagnostic*, \
+"
+WarningsAsErrors: "*"
+HeaderFilterRegex: "(src|include)/.*"

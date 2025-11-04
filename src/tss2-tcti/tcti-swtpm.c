@@ -5,29 +5,31 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <errno.h>                 // for errno
+#include <inttypes.h>              // for uint32_t, uint8_t, PRIx32, PRIu32
+#include <stdio.h>                 // for NULL, size_t, ssize_t, sscanf, EOF
+#include <stdlib.h>                // for free
+#include <string.h>                // for strcmp, memcpy, strerror, memset
 
 #ifndef _WIN32
-#include <sys/time.h>
-#include <unistd.h>
+#include <unistd.h>                // for read
 #endif
 
-#include "tss2_mu.h"
-#include "tss2_tcti_swtpm.h"
-
+#include "tcti-common.h"           // for TSS2_TCTI_COMMON_CONTEXT, tpm_head...
 #include "tcti-swtpm.h"
-#include "tcti-common.h"
-#include "util/key-value-parse.h"
-#include "util/tss2_endian.h"
+#include "tss2_common.h"           // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TCT...
+#include "tss2_mu.h"               // for Tss2_MU_UINT32_Marshal, Tss2_MU_UI...
+#include "tss2_tcti.h"             // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
+#include "tss2_tcti_swtpm.h"       // for Tss2_Tcti_Swtpm_Init, Tss2_Tcti_Sw...
+#include "util/aux_util.h"         // for UNUSED
+#include "util/key-value-parse.h"  // for key_value_t, parse_key_value_string
+#include "util/tss2_endian.h"      // for BE_TO_HOST_32
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"              // for LOG_ERROR, LOG_DEBUG, LOG_TRACE
 
 /*
  * swtpm control channel command codes
@@ -112,7 +114,7 @@ TSS2_RC tcti_control_command (
 {
     TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast(tctiContext);
     TSS2_RC rc = TSS2_RC_SUCCESS;
-    int ret;
+    size_t ret;
     uint32_t response_code;
 
     if (tcti_swtpm == NULL) {
@@ -172,8 +174,8 @@ TSS2_RC tcti_control_command (
     LOGBLOB_DEBUG(req_buf, req_buf_len, "Sending %zu bytes to socket %" PRIu32
                   ":", req_buf_len, tcti_swtpm->ctrl_sock);
     ret = write_all (tcti_swtpm->ctrl_sock, req_buf, req_buf_len);
-    if (ret < (ssize_t) req_buf_len) {
-        LOG_ERROR("Failed to send control command %d with error: %d",
+    if (ret < req_buf_len) {
+        LOG_ERROR("Failed to send control command %d with error: %zd",
                   cmd_code, ret);
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
@@ -391,7 +393,7 @@ tcti_swtpm_receive (
     TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast (tctiContext);
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast (tcti_swtpm);
     TSS2_RC rc;
-    int ret;
+    size_t ret;
 
     rc = tcti_common_receive_checks (tcti_common, response_size, TCTI_SWTPM_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
@@ -446,7 +448,7 @@ tcti_swtpm_receive (
         ret = socket_recv_buf (tcti_swtpm->tpm_sock,
                                (unsigned char *)&response_buffer[10],
                                tcti_common->header.size - 10);
-        if (ret < (ssize_t)tcti_common->header.size - 10) {
+        if (ret < tcti_common->header.size - 10) {
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto out;
         }

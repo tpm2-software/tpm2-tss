@@ -5,19 +5,21 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, asprintf, size_t
+#include <stdlib.h>           // for exit, free, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strlen, strstr
 
-#include "tss2_fapi.h"
+#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_ChangeAuth, Fapi_Crea...
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "test-fapi.h"
+#include "test-fapi.h"        // for ASSERT, fapi_profile, test_invoke_fapi
+#include "util/log.h"         // for goto_if_error, SAFE_FREE, UNUSED, retur...
 
 #define PASSWORD "abc"
 #define USER_DATA "my user data"
@@ -103,10 +105,12 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
     size_t signatureSize = 0;
 
     TPM2B_DIGEST digest = {
-        .size = 20,
+        .size = 32,
         .buffer = {
             0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f
+            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00,
         }
     };
 

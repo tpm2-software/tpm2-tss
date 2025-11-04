@@ -5,24 +5,18 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
+#include <inttypes.h>         // for PRIxPTR
 
 #include "tcti-common.h"
+#include "tss2_mu.h"          // for Tss2_MU_UINT32_Marshal, Tss2_MU_UINT32_...
+#include "tss2_tpm2_types.h"  // for TPM2_HANDLE
+#include "util/aux_util.h"    // for UNUSED
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"         // for LOG_ERROR, LOG_TRACE
 
 TSS2_TCTI_COMMON_CONTEXT*
 tcti_common_context_cast (TSS2_TCTI_CONTEXT *ctx)

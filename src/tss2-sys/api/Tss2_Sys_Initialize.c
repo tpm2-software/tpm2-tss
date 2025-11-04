@@ -8,18 +8,19 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
+#include <inttypes.h>     // for PRIu32, PRIx32
+#include <stddef.h>       // for NULL, size_t
 
-#include "tss2_common.h"
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
+#include "sysapi_util.h"  // for _TSS2_SYS_CONTEXT_BLOB, InitSysContextFields
+#include "tss2_common.h"  // for TSS2_ABI_VERSION, TSS2_ABI_VERSION_CURRENT
+#include "tss2_sys.h"     // for TSS2_SYS_CONTEXT, Tss2_Sys_Initialize
+#include "tss2_tcti.h"    // for TSS2_TCTI_CONTEXT, TSS2_TCTI_RECEIVE, TSS2_...
 
-#include "sysapi_util.h"
 #define LOGMODULE sys
-#include "util/log.h"
+#include "util/log.h"     // for LOG_ERROR
 
 static const TSS2_ABI_VERSION CURRENT = TSS2_ABI_VERSION_CURRENT;
 #define CURRENT_CREATOR (CURRENT.tssCreator)
@@ -33,12 +34,12 @@ TSS2_RC Tss2_Sys_Initialize(
     TSS2_TCTI_CONTEXT *tctiContext,
     TSS2_ABI_VERSION *abiVersion)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx || !tctiContext)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (contextSize < sizeof(_TSS2_SYS_CONTEXT_BLOB))
+    if (contextSize < sizeof(TSS2_SYS_CONTEXT_BLOB))
         return TSS2_SYS_RC_INSUFFICIENT_CONTEXT;
 
     if (!TSS2_TCTI_TRANSMIT (tctiContext) ||

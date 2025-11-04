@@ -5,18 +5,19 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <stdio.h>            // for NULL
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memcpy
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPMT_PUBLIC, TPM2B_DIGEST
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR
 
 /** This test is intended to test the ESYS command  Esys_HMAC with password
  *  authentication.

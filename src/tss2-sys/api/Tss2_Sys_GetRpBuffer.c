@@ -5,19 +5,24 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
+#include <stddef.h>           // for size_t
+#include <stdint.h>           // for uint8_t
+
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, TPM20_Header_Out
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, UINT8, TSS2_S...
+#include "tss2_mu.h"          // for Tss2_MU_UINT32_Unmarshal
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, Tss2_Sys_GetRpBuffer
+#include "tss2_tpm2_types.h"  // for TPM2_HANDLE, TPM2_PARAMETER_SIZE, TPM2_...
 
 TSS2_RC Tss2_Sys_GetRpBuffer(
     TSS2_SYS_CONTEXT *sysContext,
     size_t *rpBufferUsedSize,
     const uint8_t **rpBuffer)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx || !rpBufferUsedSize || !rpBuffer)

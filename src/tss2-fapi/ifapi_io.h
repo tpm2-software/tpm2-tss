@@ -7,10 +7,12 @@
 #ifndef IFAPI_IO_H
 #define IFAPI_IO_H
 
-#include <stdio.h>
-#include <stdbool.h>
-#include "tss2_common.h"
-#include "tss2_fapi.h"
+#include <stdbool.h>      // for bool
+#include <stdint.h>       // for uint8_t
+#include <stdio.h>        // for size_t, FILE
+
+#include "tss2_common.h"  // for TSS2_RC
+#include "tss2_fapi.h"    // for FAPI_POLL_HANDLE
 
 typedef struct IFAPI_IO {
     FILE *stream;
@@ -24,10 +26,10 @@ typedef struct IFAPI_IO {
 #ifdef TEST_FAPI_ASYNC
 #define _IFAPI_IO_RETRIES 1
 #else /* TEST_FAPI_ASYNC */
-#define _IFAPI_IO_RETRIES 0
+#define IFAPI_IO_RETRIES 0
 #endif /* TEST_FAPI_ASYNC */
 
-static int _ifapi_io_retry __attribute__((unused)) = _IFAPI_IO_RETRIES;
+static int ifapi_io_retry __attribute__((unused)) = IFAPI_IO_RETRIES;
 
 #define IFAPI_IO_STREAM context->io.stream
 #define IFAPI_IO_BUFF context->io.char_buffer

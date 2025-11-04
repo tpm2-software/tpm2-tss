@@ -5,7 +5,7 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
 #include <stdlib.h>
@@ -22,7 +22,5 @@
 void
 Fapi_Free(void *ptr)
 {
-    if (ptr != NULL) {
-        free(ptr);
-    }
+    free(ptr);
 }

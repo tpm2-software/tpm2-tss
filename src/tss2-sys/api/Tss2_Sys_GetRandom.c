@@ -5,18 +5,20 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE, UINT16
+#include "tss2_mu.h"          // for Tss2_MU_TPM2B_DIGEST_Unmarshal, Tss2_MU...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2_CC_GetRandom
 
 TSS2_RC Tss2_Sys_GetRandom_Prepare(
     TSS2_SYS_CONTEXT *sysContext,
     UINT16 bytesRequested)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -42,7 +44,7 @@ TSS2_RC Tss2_Sys_GetRandom_Complete(
     TSS2_SYS_CONTEXT *sysContext,
     TPM2B_DIGEST *randomBytes)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -64,7 +66,7 @@ TSS2_RC Tss2_Sys_GetRandom(
     TPM2B_DIGEST *randomBytes,
     TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     rval = Tss2_Sys_GetRandom_Prepare(sysContext, bytesRequested);

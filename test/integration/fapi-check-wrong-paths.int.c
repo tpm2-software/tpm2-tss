@@ -5,24 +5,17 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include <stdio.h>        // for NULL
+#include <stdlib.h>       // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_fapi.h"
+#include "test-fapi.h"    // for test_invoke_fapi
+#include "tss2_common.h"  // for TSS2_FAPI_RC_BAD_PATH, TSS2_RC_SUCCESS, TSS...
+#include "tss2_fapi.h"    // for Fapi_CreateKey, Fapi_Delete, Fapi_CreateNv
 
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"     // for goto_if_error, LOG_ERROR
 
 #define EVENT_SIZE 10
 

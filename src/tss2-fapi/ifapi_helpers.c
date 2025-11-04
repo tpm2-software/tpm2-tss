@@ -5,32 +5,44 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <dirent.h>
+#include <errno.h>                   // for EEXIST, errno
+#include <inttypes.h>                // for PRIu16, SCNx32, PRIi32, PRIu32
+#include <stdarg.h>                  // for va_list, va_end, va_copy, va_start
+#include <stdio.h>                   // for sscanf, vsnprintf, vsprintf, vas...
+#include <stdlib.h>                  // for malloc, calloc, free
+#include <string.h>                  // for strcmp, strncmp, strlen, strcat
+#include <strings.h>                 // for strcasecmp, strncasecmp
+#include <sys/stat.h>                // for mkdir, mode_t
 
-#include "tss2_mu.h"
-#include "fapi_util.h"
-#include "fapi_policy.h"
-#include "fapi_crypto.h"
+#include "efi_event.h"               // for EV_NO_ACTION_STRUCT, EV_EFI_HCRT...
+#include "fapi_crypto.h"             // for ifapi_crypto_hash_abort, ifapi_c...
+#include "ifapi_eventlog.h"          // for IFAPI_EVENT, FAPI_QUOTE_INFO
+#include "ifapi_eventlog_system.h"   // for IFAPI_FIRMWARE_EVENT
 #include "ifapi_helpers.h"
-#include "ifapi_json_serialize.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_eventlog.h"
+#include "ifapi_json_deserialize.h"  // for ifapi_json_FAPI_QUOTE_INFO_deser...
+#include "ifapi_json_serialize.h"    // for ifapi_json_FAPI_QUOTE_INFO_seria...
+#include "ifapi_macros.h"            // for strdup_check, goto_if_error2
+#include "ifapi_policy.h"            // for ifapi_compute_policy_digest
+#include "linkhash.h"                // for lh_entry
+#include "tpm_json_deserialize.h"    // for ifapi_parse_json
+#include "tss2_mu.h"                 // for Tss2_MU_TPMI_ALG_HASH_Marshal
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                // for SAFE_FREE, goto_error, LOG_ERROR
+
+/* Returns pointer to a char array if input starts with key=, else NULL */
+static const char *extract_value(const char *input, const char *key) {
+    size_t key_len = strlen(key);
+
+    if (strncmp(input, key, key_len) == 0 && input[key_len] == '=') {
+        return input + key_len + 1;
+    }
+
+    return NULL;
+}
 
 /** Create template for key creation based on type flags.
  *
@@ -54,6 +66,7 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
     UINT32 handle;
     int pos;
     bool exportable = false;
+    const char *unique_value;
 
     memset(template, 0, sizeof(IFAPI_KEY_TEMPLATE));
     type_dup = strdup(type);
@@ -61,6 +74,9 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
 
     char *saveptr;
     char *flag = strtok_r(type_dup, ", ", &saveptr);
+    template->unique_ecc_set = false;
+    template->unique_rsa_set = false;
+    template->unique_zero = false;
 
     /* The default store will be the user directory */
     template->system = TPM2_NO;
@@ -84,18 +100,58 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
         } else if (strcasecmp(flag, "noda") == 0) {
             attributes |= TPMA_OBJECT_NODA;
         } else if (strncmp(flag, "0x", 2) == 0) {
-            sscanf(&flag[2], "%"SCNx32 "%n", &handle, &pos);
-            if ((size_t)pos != strlen(flag) - 2) {
+            if (sscanf(&flag[2], "%"SCNx32 "%n", &handle, &pos) < 1 ||
+                (size_t)pos != strlen(flag) - 2) {
                 goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
                            error, flag);
             }
             template->persistent_handle = handle;
             template->persistent = TPM2_YES;
+        } else if ((unique_value = extract_value(flag, "unique_zero"))) {
+            char *endptr;
+            long num = strtol(unique_value, &endptr, 10);
+
+            if (endptr && *endptr == '\0') {
+                template->unique_zero = num;
+            } else {
+                 goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid unique_zero",
+                            error);
+            }
+        } else if ((unique_value = extract_value(flag, "unique"))) {
+            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_RSA_KEY_BYTES,
+                                      &template->public.publicArea.unique.rsa.buffer[0]);
+            goto_if_error(r, "Invalid unique field", error);
+
+            template->public.publicArea.unique.rsa.size = strlen(unique_value)/2;
+            template->unique_rsa_set = true;
+        } else if ((unique_value = extract_value(flag, "unique_x"))) {
+            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_ECC_KEY_BYTES,
+                                      &template->public.publicArea.unique.ecc.x.buffer[0]);
+            goto_if_error(r, "Invalid unique_x field", error);
+            template->public.publicArea.unique.ecc.x.size = strlen(unique_value)/2;
+            template->unique_ecc_set = true;
+        } else if ((unique_value = extract_value(flag, "unique_y"))) {
+            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_ECC_KEY_BYTES,
+                                      &template->public.publicArea.unique.ecc.y.buffer[0]);
+            goto_if_error(r, "Invalid unique_y field", error);
+
+            template->public.publicArea.unique.ecc.y.size = strlen(unique_value)/2;
+            template->unique_ecc_set = true;
         } else {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
                        error, flag);
         }
         flag = strtok_r(NULL, " ,", &saveptr);
+    }
+    if (template->unique_rsa_set && template->unique_ecc_set) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Only ECC or RSA unique can be set",
+                       error);
+    }
+
+    if ((template->unique_rsa_set || template->unique_ecc_set) &
+        template->unique_zero) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "unique can't be set if unique_zero is defined",
+                       error);
     }
     if (exportable) {
         /* Clear flags preventing duplication */
@@ -181,8 +237,8 @@ ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
         } else if (strcasecmp(flag, "noda") == 0) {
             attributes |= TPMA_NV_NO_DA;
         } else if (strncmp(flag, "0x", 2) == 0) {
-            sscanf(&flag[2], "%"SCNx32 "%n", &handle, &pos);
-            if ((size_t)pos != strlen(flag) - 2) {
+            if (sscanf(&flag[2], "%"SCNx32 "%n", &handle, &pos) < 1 ||
+                (size_t)pos != strlen(flag) - 2) {
                 goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
                            error, flag);
             }
@@ -910,7 +966,8 @@ push_object_to_list(void *object, NODE_OBJECT_T **object_list)
 TSS2_RC
 append_object_to_list(void *object, NODE_OBJECT_T **object_list)
 {
-    NODE_OBJECT_T *list, *last = calloc(1, sizeof(NODE_OBJECT_T));
+    NODE_OBJECT_T *list;
+    NODE_OBJECT_T *last = calloc(1, sizeof(NODE_OBJECT_T));
     return_if_null(last, "Out of space.", TSS2_FAPI_RC_MEMORY);
     last->object = object;
     if (!*object_list) {
@@ -1368,7 +1425,7 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
                      from_policy->element.PolicyAction.action, r, error);
         break;
     case POLICYNAMEHASH:
-        for (size_t i = 0; i < from_policy->element.PolicyNameHash.count; i++) {
+        for (i = 0; i < from_policy->element.PolicyNameHash.count; i++) {
             strdup_check(to_policy->element.PolicyNameHash.namePaths[i],
                     from_policy->element.PolicyNameHash.namePaths[i],
                     r, error);
@@ -1622,7 +1679,7 @@ ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal)
     }
     if (obj_name->size != ((TPM2B_NAME *)name)->size)
         return TSS2_RC_SUCCESS;
-    if (memcmp(&obj_name->name[0], &((TPM2B_NAME *)name)->name[0], obj_name->size))
+    if (memcmp(&obj_name->name[0], &((TPM2B_NAME *)name)->name[0], obj_name->size) != 0)
         /* The names are not equal */
         return TSS2_RC_SUCCESS;
     /* The two names are equal */
@@ -2156,7 +2213,7 @@ ifapi_calculate_pcrs(
     for (i = 0; i < pcr_selection->count; i++) {
         for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
             uint8_t byte_idx = pcr / 8;
-            uint8_t flag = 1 << (pcr % 8);
+            uint8_t flag = ((uint8_t)1) << (pcr % 8);
             if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
                 hash_size = ifapi_hash_get_digest_size(pcr_selection->pcrSelections[i].hash);
                 pcrs[n_pcrs].pcr = pcr;
@@ -2393,10 +2450,10 @@ ifapi_filter_pcr_selection_by_index(
     UINT8 selection[] = { 0, 0, 0, 0 };
 
     for (i = 0; i < pcr_count; i++) {
-        selection[0] |= (1 << pcr_index[i]) % 256;
-        selection[1] |= (1 << (pcr_index[i] - 8)) % 256;
-        selection[2] |= (1 << (pcr_index[i] - 16)) % 256;
-        selection[3] |= (1 << (pcr_index[i] - 24)) % 256;
+        selection[0] |= (((UINT32)1) << pcr_index[i]) % 256;
+        selection[1] |= (((UINT32)1) << (pcr_index[i] - 8)) % 256;
+        selection[2] |= (((UINT32)1) << (pcr_index[i] - 16)) % 256;
+        selection[3] |= (((UINT32)1) << (pcr_index[i] - 24)) % 256;
     };
 
     /* Remove unselected PCRs */
@@ -2494,7 +2551,7 @@ ifapi_compute_policy_digest(
         if (pcrIndex + 1 > max_pcr)
             max_pcr = pcrIndex + 1;
         pcr_selection->pcrSelections[j].pcrSelect[pcrIndex / 8] |=
-            1 << pcrIndex % 8;
+            ((BYTE)1) << pcrIndex % 8;
         if ((pcrIndex / 8) + 1 > pcr_selection->pcrSelections[j].sizeofSelect)
             pcr_selection->pcrSelections[j].sizeofSelect = (pcrIndex / 8) + 1;
     }
@@ -2517,7 +2574,7 @@ ifapi_compute_policy_digest(
                        hashAlg);
         }
         for (pcr = 0; pcr < max_pcr; pcr++) {
-            if ((selection.pcrSelect[pcr / 8]) & (1 << (pcr % 8))) {
+            if ((selection.pcrSelect[pcr / 8]) & (((BYTE)1) << (pcr % 8))) {
                 /* pcr selected */
                 for (j = 0; j < pcrs->count; j++) {
                     if (pcrs->pcrs[j].pcr == pcr) {
@@ -2648,7 +2705,7 @@ TSS2_RC ifapi_pcr_selection_to_pcrvalues(
     for (i = 0; i < pcr_selection->count; i++) {
         for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
             uint8_t byte_idx = pcr / 8;
-            uint8_t flag = 1 << (pcr % 8);
+            uint8_t flag = ((uint8_t)1) << (pcr % 8);
             /* Check whether PCR is used. */
             if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx])
                 n_pcrs += 1;
@@ -2664,7 +2721,7 @@ TSS2_RC ifapi_pcr_selection_to_pcrvalues(
     for (i = 0; i < pcr_selection->count; i++) {
         for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
             uint8_t byte_idx = pcr / 8;
-            uint8_t flag = 1 << (pcr % 8);
+            uint8_t flag = ((uint8_t)1) << (pcr % 8);
             /* Check whether PCR is used. */
             if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
                 pcr_values->pcrs[i_pcr].pcr = pcr;

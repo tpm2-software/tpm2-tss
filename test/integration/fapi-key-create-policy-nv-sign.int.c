@@ -5,22 +5,22 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>           // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strstr, strcmp
+#include <unistd.h>           // for read
 
-#include "tss2_fapi.h"
+#include "tss2_common.h"      // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_RC
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_CreateNv
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "test-fapi.h"
+#include "test-fapi.h"        // for ASSERT, test_invoke_fapi
+#include "util/log.h"         // for SAFE_FREE, goto_if_error, LOG_ERROR
 
 #define SIGN_TEMPLATE  "sign,noDa"
 #define PASSWORD NULL
@@ -109,10 +109,12 @@ test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
     size_t signatureSize = 0;
 
     TPM2B_DIGEST digest = {
-        .size = 20,
+        .size = 32,
         .buffer = {
             0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f
+            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00,
         }
     };
 
@@ -128,7 +130,7 @@ test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
 
     /* Check all possible nv paths to get exactly nvPathOrdinary by Fapi_List. */
     char *path_check[] = {
-        "nv", "/nv", "/nv/", "/nv/Owner", "/nv/Owner/", nvPathOrdinary };
+        "/nv/Owner", "/nv/Owner/", nvPathOrdinary };
 
     for (i = 0; i < sizeof(path_check) / sizeof(path_check[0]); i++) {
         r = Fapi_List(context, path_check[i], &pathList);

@@ -5,25 +5,18 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_fapi.h"
-#include "tss2_esys.h"
+#include "test-fapi.h"        // for test_invoke_fapi
+#include "tss2_common.h"      // for TSS2_RC
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_Provision, FAPI_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2_RC_N_MASK, TPM2_RC_NV_DEFINED
 
-#include "test-fapi.h"
-#include "fapi_util.h"
-#include "fapi_int.h"
-#include "tss2_esys.h"
-
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "tss2_mu.h"
-#include "fapi_int.h"
+#include "util/log.h"         // for goto_if_error
 
 
 /** Test the FAPI cleanup in an error case.

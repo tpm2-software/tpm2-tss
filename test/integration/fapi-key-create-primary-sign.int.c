@@ -5,22 +5,22 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#include <json.h>             // for json_object_put, json_object, json_obje...
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, size_t, sprintf
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strlen, strncmp
 
-#include "tss2_fapi.h"
+#include "test-fapi.h"        // for ASSERT, ASSERT_SIZE, fapi_profile, test...
+#include "tss2_common.h"      // for BYTE, TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_ChangeAuth, Fapi_Crea...
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
-#include "test-fapi.h"
-#include "fapi_util.h"
-#include "fapi_int.h"
-
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, goto_if_error, UNUSED, retur...
 
 #define PASSWORD "abc"
 #define SIGN_TEMPLATE  "sign,noDa"

@@ -6,25 +6,27 @@
 #ifndef UTIL_IO_H
 #define UTIL_IO_H
 
+#include <limits.h>       // for _POSIX_HOST_NAME_MAX
+#include <stdint.h>       // for uint8_t, uint16_t
+
+#include "tss2_common.h"  // for TSS2_RC
 #ifdef _WIN32
 #include <BaseTsd.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
 typedef SSIZE_T ssize_t;
-#define _HOST_NAME_MAX MAX_COMPUTERNAME_LENGTH
+#define POSIX_HOST_NAME_MAX MAX_COMPUTERNAME_LENGTH
 
 #else
-#include <arpa/inet.h>
-#include <errno.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#define _HOST_NAME_MAX _POSIX_HOST_NAME_MAX
-#define SOCKET int
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
-#endif
+#include <errno.h>        // for EINTR, errno
+#include <sys/socket.h>   // for size_t, ssize_t
 
-#include "tss2_tpm2_types.h"
+#define POSIX_HOST_NAME_MAX _POSIX_HOST_NAME_MAX
+#define SOCKET int
+#define INVALID_SOCKET ((-1))
+#define SOCKET_ERROR ((-1))
+#endif
 
 #ifdef _WIN32
 #define TEMP_RETRY(dest, exp) \
@@ -46,7 +48,7 @@ typedef SSIZE_T ssize_t;
     do { \
         __ret = exp; \
     } while (__ret == SOCKET_ERROR && errno == EINTR); \
-    dest =__ret; }
+    ((dest)) =__ret; }
 #endif
 
 #ifdef __cplusplus
@@ -59,7 +61,7 @@ extern "C" {
  * are detected. This is currently limited to interrupted system calls and
  * short reads.
  */
-ssize_t
+size_t
 read_all (
     SOCKET fd,
     uint8_t *data,
@@ -70,7 +72,7 @@ read_all (
  * are detected. This is currently limited to interrupted system calls and
  * short writes.
  */
-ssize_t
+size_t
 write_all (
     SOCKET fd,
     const uint8_t *buf,
@@ -102,7 +104,7 @@ socket_close (
 TSS2_RC
 socket_set_nonblock (
     SOCKET sock);
-ssize_t
+size_t
 socket_recv_buf (
     SOCKET sock,
     uint8_t *data,

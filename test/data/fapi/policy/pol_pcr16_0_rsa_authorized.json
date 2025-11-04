@@ -10,6 +10,7 @@
         {
             "type": "pem",
             "policyRef": [ 1, 2, 3, 4, 5 ],
+            // private key: test/data/fapi/policy/rsa2.pem
             "key": "-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoGL6IrCSAznmIIzBessI
 mW7tPOUy78uWTIaub32KnYHn78KXprrZ3ykp6WDrOQeMjv4AA+14mJbg77apVYXy

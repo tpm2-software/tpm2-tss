@@ -5,18 +5,20 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <inttypes.h>         // for PRIx32
+#include <stdio.h>            // for NULL
+#include <stdlib.h>           // for exit
 
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_RESMGR_R...
+#include "tss2_sys.h"         // for TSS2L_SYS_AUTH_COMMAND, Tss2_Sys_Execute
+#include "tss2_tpm2_types.h"  // for TPMS_AUTH_COMMAND, TPM2_RC_AUTH_CONTEXT
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
+#include "test.h"             // for test_invoke
+#include "util/log.h"         // for LOG_ERROR, LOG_INFO, LOG_WARNING
 
 #define EXIT_SKIP 77
 /*
@@ -28,15 +30,16 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
 {
     TSS2_RC rc, rc2;
     TPM2B_NONCE nonce_caller = {
-        .size   = TPM2_SHA1_DIGEST_SIZE,
+        .size   = TPM2_SHA256_DIGEST_SIZE,
         .buffer = {
                 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
                 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
-                0xde, 0xad, 0xbe, 0xef,
+                0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
+                0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
             }
     };
     TPM2B_NONCE nonce_tpm = {
-        .size   = TPM2_SHA1_DIGEST_SIZE,
+        .size   = TPM2_SHA256_DIGEST_SIZE,
         .buffer = { 0 }
     };
     TPM2B_ENCRYPTED_SECRET encrypted_salt = { 0 };
@@ -52,7 +55,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
                                     &encrypted_salt,
                                     TPM2_SE_HMAC,
                                     &symmetric,
-                                    TPM2_ALG_SHA1,
+                                    TPM2_ALG_SHA256,
                                     &session,
                                     &nonce_tpm,
                                     NULL);

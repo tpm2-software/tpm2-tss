@@ -6,9 +6,14 @@
 #ifndef IFAPI_IMA_EVENTLOG_H
 #define IFAPI_IMA_EVENTLOG_H
 
-#include <json-c/json.h>
+#include <json.h>             // for json_object
+#include <stdbool.h>          // for bool
+#include <stddef.h>           // for size_t
+#include <stdint.h>           // for uint32_t
 
-#include "fapi_types.h"
+#include "fapi_types.h"       // for UINT8_ARY
+#include "tss2_common.h"      // for UINT32, TSS2_RC, UINT8
+#include "tss2_tpm2_types.h"  // for TPM2_SHA512_DIGEST_SIZE, TPMI_ALG_HASH
 
 /* Defines from kernel ima.h" */
 #define TCG_EVENT_NAME_LEN_MAX 255

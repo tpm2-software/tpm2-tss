@@ -5,25 +5,28 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <inttypes.h>         // for uint8_t, PRIu16
+#include <stdlib.h>           // for malloc, size_t, NULL
+#include <string.h>           // for strncmp, memcpy, memset
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "ifapi_json_serialize.h"
-#include "fapi_policy.h"
+#include "fapi_int.h"         // for IFAPI_Data_EncryptDecrypt, FAPI_CONTEXT
+#include "fapi_util.h"        // for ifapi_allocate_object, ifapi_cleanup_se...
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"     // for check_not_null, statecase, goto_if_erro...
+#include "ifapi_profiles.h"   // for IFAPI_PROFILE, ifapi_profiles_get, IFAP...
+#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_FAPI_RC_MEMORY, TSS...
+#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_Encrypt, Fapi_Encryp...
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC_KEY_RSA, TPM2B_PUBLIC, TPM...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "fapi_crypto.h"
+#include "fapi_crypto.h"      // for ifapi_rsa_encrypt
+#include "util/log.h"         // for LOG_TRACE, SAFE_FREE, goto_if_error
 
 #define IV_SIZE 16
 
@@ -431,7 +434,7 @@ Fapi_Encrypt_Finish(
         statecasedefault(context->state);
     }
 
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
 
 error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */

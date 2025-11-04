@@ -251,7 +251,9 @@ typedef UINT32                                TPM2_CC;
 #define TPM2_CC_Policy_AC_SendSelect          ((TPM2_CC) 0x00000196)
 #define TPM2_CC_CertifyX509                   ((TPM2_CC) 0x00000197)
 #define TPM2_CC_ACT_SetTimeout                ((TPM2_CC) 0x00000198)
-#define TPM2_CC_LAST                          ((TPM2_CC) 0x00000198)
+#define TPM2_CC_ECC_Encrypt                   ((TPM2_CC) 0x00000199)
+#define TPM2_CC_ECC_Decrypt                   ((TPM2_CC) 0x0000019a)
+#define TPM2_CC_LAST                          ((TPM2_CC) 0x0000019a)
 #define TPM2_CC_Vendor_TCG_Test               ((TPM2_CC) 0x20000000)
 
 /* Definition of Types for Documentation Clarity */
@@ -671,13 +673,13 @@ typedef TPM2_HANDLE TPM2_HC;
 #define TPM2_HR_HANDLE_MASK       ((TPM2_HC) 0x00FFFFFF) /* to mask off the HR */
 #define TPM2_HR_RANGE_MASK        ((TPM2_HC) 0xFF000000) /* to mask off the variable part */
 #define TPM2_HR_SHIFT             ((TPM2_HC) 24)
-#define TPM2_HR_PCR               ((TPM2_HC) (TPM2_HT_PCR << TPM2_HR_SHIFT))
-#define TPM2_HR_HMAC_SESSION      ((TPM2_HC) (TPM2_HT_HMAC_SESSION << TPM2_HR_SHIFT))
-#define TPM2_HR_POLICY_SESSION    ((TPM2_HC) (TPM2_HT_POLICY_SESSION << TPM2_HR_SHIFT))
-#define TPM2_HR_TRANSIENT         ((TPM2_HC) (TPM2_HT_TRANSIENT << TPM2_HR_SHIFT))
-#define TPM2_HR_PERSISTENT        ((TPM2_HC) (TPM2_HT_PERSISTENT << TPM2_HR_SHIFT))
-#define TPM2_HR_NV_INDEX          ((TPM2_HC) (TPM2_HT_NV_INDEX << TPM2_HR_SHIFT))
-#define TPM2_HR_PERMANENT         ((TPM2_HC) (TPM2_HT_PERMANENT << TPM2_HR_SHIFT))
+#define TPM2_HR_PCR               (((TPM2_HC) TPM2_HT_PCR) << TPM2_HR_SHIFT)
+#define TPM2_HR_HMAC_SESSION      (((TPM2_HC) TPM2_HT_HMAC_SESSION) << TPM2_HR_SHIFT)
+#define TPM2_HR_POLICY_SESSION    (((TPM2_HC) TPM2_HT_POLICY_SESSION) << TPM2_HR_SHIFT)
+#define TPM2_HR_TRANSIENT         (((TPM2_HC) TPM2_HT_TRANSIENT) << TPM2_HR_SHIFT)
+#define TPM2_HR_PERSISTENT        (((TPM2_HC) TPM2_HT_PERSISTENT) << TPM2_HR_SHIFT)
+#define TPM2_HR_NV_INDEX          (((TPM2_HC) TPM2_HT_NV_INDEX) << TPM2_HR_SHIFT)
+#define TPM2_HR_PERMANENT         (((TPM2_HC) TPM2_HT_PERMANENT) << TPM2_HR_SHIFT)
 #define TPM2_PCR_FIRST            ((TPM2_HC) (TPM2_HR_PCR + 0)) /* first PCR */
 #define TPM2_PCR_LAST             ((TPM2_HC) (TPM2_PCR_FIRST + TPM2_MAX_PCRS - 1)) /* last PCR */
 #define TPM2_HMAC_SESSION_FIRST   ((TPM2_HC) (TPM2_HR_HMAC_SESSION + 0)) /* first HMAC session */

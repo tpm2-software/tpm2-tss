@@ -5,32 +5,40 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <inttypes.h>            // for uint8_t, PRIu16
+#include <stdbool.h>             // for false, true
+#include <stdlib.h>              // for NULL, size_t, calloc, getenv
+#include <string.h>              // for strlen, memset, memcpy, strcmp, memcmp
 
-#include "fapi_util.h"
-#include "tss2_tcti.h"
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_crypto.h"
-#include "fapi_policy.h"
-#include "ifapi_curl.h"
-#include "ifapi_get_web_cert.h"
-#include "ifapi_helpers.h"
-#include "tss2_mu.h"
+#include "fapi_crypto.h"         // for ifapi_cert_to_pem, ifapi_get_public_...
+#include "fapi_int.h"            // for IFAPI_Provision, FAPI_CONTEXT, IFAPI...
+#include "fapi_util.h"           // for ifapi_change_auth_hierarchy, ifapi_c...
+#include "ifapi_config.h"        // for IFAPI_CONFIG
+#include "ifapi_curl.h"          // for ifapi_curl_verify_ek_cert, ifapi_get...
+#include "ifapi_get_web_cert.h"  // for ifapi_get_web_ek_certificate
+#include "ifapi_helpers.h"       // for ifapi_init_hierarchy_object, ifapi_c...
+#include "ifapi_io.h"            // for ifapi_io_read_async, ifapi_io_read_f...
+#include "ifapi_keystore.h"      // for IFAPI_OBJECT, IFAPI_OBJECT_UNION
+#include "ifapi_macros.h"        // for statecase, fallthrough, goto_if_erro..
+#include "ifapi_verify_cert_chain.h" // for ifapi_verify_cert_chain
+#include "ifapi_profiles.h"      // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_common.h"         // for TSS2_FAPI_RC_TRY_AGAIN, BYTE, TSS2_RC
+#include "tss2_esys.h"           // for ESYS_TR_NONE, Esys_GetCapability_Async
+#include "tss2_fapi.h"           // for FAPI_CONTEXT, Fapi_Provision, Fapi_P...
+#include "tss2_mu.h"             // for Tss2_MU_TPMT_PUBLIC_Unmarshal
+#include "tss2_policy.h"         // for TSS2_OBJECT
+#include "tss2_tcti.h"           // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"     // for TPMS_CAPABILITY_DATA, TPMU_CAPABILITIES
 
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"            // for goto_if_error, SAFE_FREE, goto_error
 
 #define EK_CERT_RANGE (0x01c07fff)
+#define EK_CERT_CHAIN_MIN 0x01c00100
+#define EK_CERT_CHAIN_MAX 0x01c001ff
 #define RSA_EK_NONCE_NV_INDEX 0x01c00003
 #define RSA_EK_TEMPLATE_NV_INDEX 0x01c00004
 #define ECC_EK_NONCE_NV_INDEX 0x01c0000b
@@ -512,6 +520,16 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             command->auth_state =  (*capabilityData)->data.tpmProperties.tpmProperty[0].value;
             SAFE_FREE(*capabilityData);
 
+            if (command->auth_state & TPMA_PERMANENT_ENDORSEMENTAUTHSET) {
+                hierarchy_he->misc.hierarchy.with_auth = TPM2_YES;
+            }
+            if (command->auth_state & TPMA_PERMANENT_OWNERAUTHSET) {
+                hierarchy_hs->misc.hierarchy.with_auth = TPM2_YES;
+            }
+            if (command->auth_state & TPMA_PERMANENT_LOCKOUTAUTHSET) {
+                hierarchy_lockout->misc.hierarchy.with_auth = TPM2_YES;
+            }
+
             /* Check the TPM capabilities for the persistent handle. */
             if (command->public_templ.persistent_handle) {
                 r = Esys_GetCapability_Async(context->esys,
@@ -768,9 +786,14 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             command->cert_count = (*capabilityData)->data.handles.count;
 
             /* Filter out NV handles beyond the EK cert range */
-            for (size_t i = 0; i < command->cert_count; i++) {
-                if (command->capabilityData->data.handles.handle[i] > EK_CERT_RANGE) {
-                    command->cert_count = i;
+            for (size_t j = 0; j < command->cert_count; j++) {
+                /* Check whether a cert chain exists. */
+                if (command->capabilityData->data.handles.handle[j] >= EK_CERT_CHAIN_MIN &&
+                    command->capabilityData->data.handles.handle[j] <= EK_CERT_CHAIN_MAX) {
+                    command->cert_chain_exists = true;
+                }
+                if (command->capabilityData->data.handles.handle[j] > EK_CERT_RANGE) {
+                    command->cert_count = j;
                 }
             }
 
@@ -781,6 +804,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
                 context->state = PROVISION_CHECK_FOR_VENDOR_CERT;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
+
             fallthrough;
 
         statecase(context->state, PROVISION_GET_CERT_NV);
@@ -869,9 +893,13 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             SAFE_FREE(certData);
             goto_if_error(r, "Convert certificate to pem.", error_cleanup);
 
-            /* Check whether the EKs public key corresponds to the certificate. */
+            /* Check whether the EKs pifapi_cmp_public_keyublic key corresponds to the certificate. */
             if (ifapi_cmp_public_key(&pkeyObject->misc.key.public, &public_key)) {
-                context->state = PROVISION_PREPARE_READ_ROOT_CERT;
+                if (command->cert_chain_exists) {
+                    context->state = PROVISION_READ_CERT_CHAIN;
+                } else {
+                    context->state = PROVISION_PREPARE_READ_ROOT_CERT;
+                }
                 return TSS2_FAPI_RC_TRY_AGAIN;
             } else {
                 /* Certificate not appropriate for current EK key type */
@@ -886,6 +914,16 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
 
             goto_error(r, TSS2_FAPI_RC_NO_CERT, "No EK certificate found.",
                        error_cleanup);
+
+        statecase(context->state, PROVISION_READ_CERT_CHAIN);
+            /* Retrieve the certificate chains from the TPM's NV space . */
+            r = ifapi_get_certificates(context, EK_CERT_CHAIN_MIN ,
+                                       EK_CERT_CHAIN_MAX,
+                                       &command->certs,
+                                       &command->cert_list_size);
+            return_try_again(r);
+            goto_if_error(r, "Get certificates.", error_cleanup);
+            fallthrough;
 
         statecase(context->state, PROVISION_PREPARE_READ_ROOT_CERT);
             /* Prepare reading of root certificate. */
@@ -952,11 +990,14 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             fallthrough;
 
         statecase(context->state, PROVISION_EK_CHECK_CERT);
-            /* The EK certificate will be verified against the FAPI list of root certificates. */
-            r = ifapi_curl_verify_ek_cert(command->root_crt, command->intermed_crt, command->pem_cert);
+            /* Verify the EK certificate with the cert chain. */
+            r = ifapi_verify_cert_chain(command->pem_cert, command->certs,
+                                        command->cert_list_size,
+                                        command->root_crt, command->intermed_crt);
             SAFE_FREE(command->root_crt);
+            SAFE_FREE(command->certs);
             SAFE_FREE(command->intermed_crt);
-            goto_if_error2(r, "Verify EK certificate", error_cleanup);
+            goto_if_error(r, "Failed to verify certificate chain.", error_cleanup);
 
             fallthrough;
 
@@ -1526,7 +1567,14 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             r = ifapi_cleanup_session(context);
             try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-            context->state =_FAPI_STATE_INIT;
+            context->state =FAPI_STATE_INIT;
+            memset(&context->create_nv, 0, sizeof(IFAPI_CREATE_NV));
+            fallthrough;
+
+        statecase(context->state, PROVISION_CHECK_EXISTING_NV);
+            r = ifapi_create_nv_objects(context, &context->create_nv);
+            return_try_again(r);
+            goto_if_error_reset_state(r, "Read EK template", error_cleanup);
             break;
 
         statecase(context->state, PROVISION_WRITE_HIERARCHIES);
@@ -1633,7 +1681,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(hierarchy_he);
     ifapi_cleanup_ifapi_object(hierarchy_hn);
     ifapi_cleanup_ifapi_object(hierarchy_lockout);
-    for (size_t i = 0; i < command->numPaths; i++) {
+    for (i = 0; i < command->numPaths; i++) {
         SAFE_FREE(command->pathlist[i]);
     }
     SAFE_FREE(command->pathlist);
@@ -1656,12 +1704,12 @@ error_cleanup:
         SAFE_FREE(command->hierarchies);
     }
     if (command->pathlist) {
-        for (size_t i = 0; i < command->numPaths; i++) {
+        for (i = 0; i < command->numPaths; i++) {
             SAFE_FREE(command->pathlist[i]);
         }
         SAFE_FREE(command->pathlist);
     }
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

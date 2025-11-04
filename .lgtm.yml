@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2019 Jonas Witschel
+# SPDX-FileCopyrightText: 2021 Infineon Technologies AG
+# SPDX-License-Identifier: BSD-2-Clause
+
 extraction:
   cpp:
     prepare:

@@ -5,24 +5,21 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <inttypes.h>       // for PRIu16
+#include <stdlib.h>         // for size_t, NULL, malloc
+#include <string.h>         // for memcpy, memset
 
-#include "tss2_mu.h"
-#include "fapi_util.h"
-#include "fapi_crypto.h"
+#include "fapi_crypto.h"    // for ifapi_crypto_hash_finish, ifapi_crypto_ha...
+#include "ifapi_helpers.h"  // for ifapi_nv_get_name, append_object_to_list
+#include "ifapi_macros.h"   // for statecase, fallthrough, try_again_or_error
 #include "ifapi_policy_execute.h"
-#include "ifapi_helpers.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_policy_callbacks.h"
-#include "ifapi_policyutil_execute.h"
+#include "tss2_mu.h"        // for Tss2_MU_TPMT_PUBLIC_Marshal
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"       // for return_if_error, LOG_TRACE, goto_if_error
 
 /** Copy the policy digests from a branch list to a digest list.
  *

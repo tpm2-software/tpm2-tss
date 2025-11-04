@@ -5,19 +5,29 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_mu.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
-#include "fapi_policy.h"
-#include "fapi_crypto.h"
+#include <string.h>              // for memcpy, memset, size_t
+
+#include "fapi_int.h"            // for FAPI_CONTEXT, IFAPI_NV_Cmds, IFAPI_a...
+#include "fapi_util.h"           // for ifapi_cleanup_session, ifapi_esys_se...
+#include "ifapi_helpers.h"       // for ifapi_cleanup_policy
+#include "ifapi_io.h"            // for ifapi_io_poll
+#include "ifapi_keystore.h"      // for ifapi_cleanup_ifapi_object, IFAPI_OB...
+#include "ifapi_macros.h"        // for statecase, check_not_null, fallthrough
+#include "ifapi_policy.h"        // for ifapi_calculate_tree
+#include "ifapi_policy_store.h"  // for ifapi_policy_store_store_async, ifap...
+#include "ifapi_policy_types.h"  // for TPMS_POLICY
+#include "tss2_common.h"         // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
+#include "tss2_esys.h"           // for Esys_SetTimeout
+#include "tss2_fapi.h"           // for FAPI_CONTEXT, Fapi_WriteAuthorizeNv
+#include "tss2_mu.h"             // for Tss2_MU_TPMI_ALG_HASH_Marshal
+#include "tss2_tcti.h"           // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"     // for TPMI_ALG_HASH, TPM2B_NV_PUBLIC, TPMS...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"            // for LOG_TRACE, SAFE_FREE, return_if_error
 
 /** One-Call function for Fapi_WriteAuthorizeNv
  *
@@ -227,7 +237,6 @@ Fapi_WriteAuthorizeNv_Finish(
 
     TSS2_RC r;
     const size_t maxNvSize = sizeof(TPMU_HA) + sizeof(TPMI_ALG_HASH);
-    BYTE nvBuffer[maxNvSize];
     size_t offset = 0;
 
     /* Check for NULL parameters */
@@ -242,6 +251,7 @@ Fapi_WriteAuthorizeNv_Finish(
 
     switch (context->state) {
         statecase(context->state, WRITE_AUTHORIZE_NV_READ_NV)
+            nvCmd->nv_buffer = NULL;
             /* First check whether the file in object store can be updated. */
             r = ifapi_keystore_check_writeable(&context->keystore, nvCmd->nvPath);
             goto_if_error_reset_state(r,
@@ -275,25 +285,29 @@ Fapi_WriteAuthorizeNv_Finish(
 
         statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_NV_RAM_PREPARE)
 
+            nvCmd->nv_buffer = malloc(maxNvSize);
+            if (!nvCmd->nv_buffer) {
+                goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
+            }
+
             /* Copy hash alg followed by digest into a buffer to be written to NV ram */
             r = Tss2_MU_TPMI_ALG_HASH_Marshal(
                     object->misc.nv.public.nvPublic.nameAlg,
-                    &nvBuffer[0], maxNvSize, &offset);
+                    &nvCmd->nv_buffer[0], maxNvSize, &offset);
             goto_if_error_reset_state(r, "FAPI marshal hash alg", error_cleanup);
 
             void * currentDigest =
                 &policy->policyDigests.digests[command->digest_idx].digest;
-            memcpy(&nvBuffer[offset], currentDigest, command->hash_size);
+            memcpy(&nvCmd->nv_buffer[offset], currentDigest, command->hash_size);
 
             /* Store these data in the context to be used for re-entry on nv_write. */
-            nvCmd->data = &nvBuffer[0];
             nvCmd->numBytes = command->hash_size + sizeof(TPMI_ALG_HASH);
             fallthrough;
 
         statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_NV_RAM)
             /* Perform the actual NV Write operation. */
             r = ifapi_nv_write(context, nvCmd->nvPath, 0,
-                    nvCmd->data, context->nv_cmd.numBytes);
+                    nvCmd->nv_buffer, context->nv_cmd.numBytes);
             return_try_again(r);
             goto_if_error_reset_state(r, " FAPI NV Write", error_cleanup);
 
@@ -345,13 +359,14 @@ error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
     SAFE_FREE(command->policyPath);
     SAFE_FREE(nvCmd->nvPath);
+    SAFE_FREE(nvCmd->nv_buffer);
     ifapi_session_clean(context);
     ifapi_cleanup_policy(policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(object);
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return r;
 }

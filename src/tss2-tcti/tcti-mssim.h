@@ -7,16 +7,18 @@
 #ifndef TCTI_MSSIM_H
 #define TCTI_MSSIM_H
 
-#include <limits.h>
+#include <stdbool.h>      // for bool
+#include <stddef.h>       // for NULL
+#include <stdint.h>       // for uint16_t
 
-#include "tcti-common.h"
-#include "util-io/io.h"
+#include "tcti-common.h"  // for TSS2_TCTI_COMMON_CONTEXT
+#include "util-io/io.h"   // for _HOST_NAME_MAX, SOCKET
 
 /*
  * longest possible conf string:
- * HOST_NAME_MAX + max char uint16 (5) + strlen ("host=,port=") (11)
+ * POSIX_HOST_NAME_MAX + max char uint16 (5) + strlen ("host=,port=") (11)
  */
-#define TCTI_MSSIM_CONF_MAX (_HOST_NAME_MAX + 16)
+#define TCTI_MSSIM_CONF_MAX (POSIX_HOST_NAME_MAX + 16)
 #define TCTI_MSSIM_DEFAULT_HOST "localhost"
 #define TCTI_MSSIM_DEFAULT_PORT 2321
 #define TCTI_MSSIM_DEFAULT_PATH NULL

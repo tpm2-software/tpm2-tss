@@ -1,14 +1,20 @@
+/* SPDX-FileCopyrightText: 2018 - 2022, Intel */
+/* SPDX-FileCopyrightText: 2018 - 2020, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2019, Fabrice Funtaine */
+/* SPDX-FileCopyrightText: 2019, Alon Bar-Lev */
+/* SPDX-FileCopyrightText: 2019 - 2022, Infineon Technologies AG */
+/* SPDX-FileCopyrightText: 2022, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define LOGMODULE log
 #include "log.h"

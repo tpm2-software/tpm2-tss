@@ -4,21 +4,20 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdio.h>            // for NULL
+#include <string.h>           // for memcmp
 
-#include "tss2_sys.h"
+#include "session-util.h"     // for roll_nonces, SESSION, check_response_hmac
+#include "sys-util.h"         // for DefineNvIndex, TPM2B_SIZE, TSS2_RETRY_EXP
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, BYTE
+#include "tss2_sys.h"         // for Tss2_Sys_PolicyAuthValue, TSS2L_SYS_AUT...
+#include "tss2_tpm2_types.h"  // for TPM2_RH_NULL, TPMS_AUTH_COMMAND, TPM2B_...
 
-#include "sys-util.h"
-#include "session-util.h"
 #define LOGMODULE test
-#include "util/log.h"
+#include "util/log.h"         // for LOG_ERROR, LOG_INFO
 
 #define TPM20_INDEX_PASSWORD_TEST       0x01500020
 

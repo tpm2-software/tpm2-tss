@@ -1,17 +1,20 @@
+/* SPDX-FileCopyrightText: 2019 - 2023, Intel */
+/* SPDX-FileCopyrightText: 2019, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2022, Erik Larsson */
+/* SPDX-FileCopyrightText: 2023 - 2024, Infineon Technologies AG */
+/* SPDX-FileCopyrightText: 2023, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-#include <assert.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <inttypes.h>
+#include <assert.h>           // for assert
+#include <inttypes.h>         // for PRIX32, PRIX8, PRIX16
+#include <stdarg.h>           // for va_end, va_list, va_start
+#include <stdbool.h>          // for bool
+#include <stdio.h>            // for NULL, size_t, snprintf, vsnprintf
+#include <string.h>           // for memset, strlen
 
-#include "tss2_rc.h"
-#include "tss2_sys.h"
-#include "util/aux_util.h"
+#include "tss2_common.h"      // for UINT8, TSS2_RC, TSS2_RC_LAYER_MASK, TSS...
+#include "tss2_rc.h"          // for TSS2_RC_INFO, TSS2_RC_HANDLER, Tss2_RC_...
+#include "tss2_tpm2_types.h"  // for TPM2_RC, TPM2_RC_FMT1, TPM2_RC_VER1
+#include "util/aux_util.h"    // for ARRAY_LEN, COMPILER_ATTR
 
 /**
  * The maximum size of a layer name.
@@ -32,7 +35,7 @@
  *   The format specifier as understood by printf followed by the variadic
  *   parameters for the specifier.
  */
-#define catbuf(b, fmt, ...) _catbuf(b, sizeof(b), fmt, ##__VA_ARGS__)
+#define catbuf(b, fmt, ...) catbuf_internal(b, sizeof(b), fmt, ##__VA_ARGS__)
 
 /**
  * Clears out a static buffer by setting index 0 to the null byte.
@@ -58,7 +61,7 @@ clearbuf(char *buffer)
  *  DO NOT CALL DIRECTLY, use the catbuf() macro.
  */
 static void COMPILER_ATTR(format (printf, 3, 4))
-_catbuf(char *buf, size_t len, const char *fmt, ...)
+catbuf_internal(char *buf, size_t len, const char *fmt, ...)
 {
     va_list argptr;
     va_start(argptr, fmt);
@@ -117,7 +120,7 @@ tss2_rc_layer_number_get(TSS2_RC rc)
 static inline UINT8
 tpm2_rc_fmt1_N_get(TPM2_RC rc)
 {
-    return ((rc & (0xF << 8)) >> 8);
+    return ((rc & (((TPM2_RC)0xF) << 8)) >> 8);
 }
 
 /**
@@ -151,7 +154,7 @@ tpm2_rc_fmt1_N_is_handle(TPM2_RC rc)
 static inline UINT8
 tpm2_rc_fmt1_P_get(TPM2_RC rc)
 {
-    return ((rc & (1 << 6)) >> 6);
+    return ((rc & (((TPM2_RC)1) << 6)) >> 6);
 }
 
 static inline UINT8
@@ -169,19 +172,19 @@ tpm2_rc_fmt0_error_get(TPM2_RC rc)
 static inline UINT8
 tpm2_rc_tpm_fmt0_V_get(TPM2_RC rc)
 {
-    return ((rc & (1 << 8)) >> 8);
+    return ((rc & (((TPM2_RC)1) << 8)) >> 8);
 }
 
 static inline UINT8
 tpm2_rc_fmt0_T_get(TPM2_RC rc)
 {
-    return ((rc & (1 << 10)) >> 8);
+    return ((rc & (((TPM2_RC)1) << 10)) >> 8);
 }
 
 static inline UINT8
 tpm2_rc_fmt0_S_get(TSS2_RC rc)
 {
-    return ((rc & (1 << 11)) >> 8);
+    return ((rc & (((TPM2_RC)1) << 11)) >> 8);
 }
 
 /**
@@ -230,8 +233,7 @@ tss2_fmt1_err_strs_get(TSS2_RC error)
         /* 0xB - TPM2_RC_HANDLE */
         "the handle is not correct for the use",
         /* 0xC - TPM2_RC_KDF */
-        "unsupported key derivation function or function not appropriate for "
-        "use",
+        "unsupported key derivation function or function not appropriate for use",
         /* 0xD - TPM2_RC_RANGE */
         "value was out of allowed range",
         /* 0xE - TPM2_RC_AUTH_FAIL */
@@ -251,8 +253,7 @@ tss2_fmt1_err_strs_get(TSS2_RC error)
         /* 0x15 - TPM2_RC_SIZE */
         "structure is the wrong size",
         /* 0x16 - TPM2_RC_SYMMETRIC */
-        "unsupported symmetric algorithm or key size or not appropriate for"
-        " instance",
+        "unsupported symmetric algorithm or key size or not appropriate for instance",
         /* 0x17 - TPM2_RC_TAG */
         "incorrect structure tag",
         /* 0x18 - TPM2_RC_SELECTOR */
@@ -260,8 +261,7 @@ tss2_fmt1_err_strs_get(TSS2_RC error)
         /* 0x19 - EMPTY */
         NULL,
         /* 0x1A - TPM2_RC_INSUFFICIENT */
-        "the TPM was unable to unmarshal a value because there were not enough"
-        " octets in the input buffer",
+        "the TPM was unable to unmarshal a value because there were not enough octets in the input buffer",
         /* 0x1B - TPM2_RC_SIGNATURE */
         "the signature is not valid",
         /* 0x1C - TPM2_RC_KEY */
@@ -281,6 +281,7 @@ tss2_fmt1_err_strs_get(TSS2_RC error)
         /* 0x23 - TPM2_RC_EXPIRED */
         "the policy has expired",
         /* 0x24 - TPM2_RC_POLICY_CC */
+        // NOLINTNEXTLINE(bugprone-suspicious-missing-comma)
         "the commandCode in the policy is not the commandCode of the command"
         " or the command code in a policy command references a command that"
         " is not implemented",
@@ -486,8 +487,7 @@ tss2_fmt0_err_strs_get(TSS2_RC rc)
         /* 0x24 - TPM2_RC_AUTH_TYPE */
         "authorization handle is not correct for command",
         /* 0x25 - TPM2_RC_AUTH_MISSING */
-        "command requires an authorization session for handle and it is"
-        " not present",
+        "command requires an authorization session for handle and it is not present",
         /* 0x26 - TPM2_RC_POLICY */
         "policy failure in math operation or an invalid authPolicy value",
         /* 0x27 - TPM2_RC_PCR */
@@ -503,6 +503,7 @@ tss2_fmt0_err_strs_get(TSS2_RC rc)
         /* 0x2C - EMPTY */
         NULL,
         /* 0x2D - TPM2_RC_UPGRADE */
+        // NOLINTNEXTLINE(bugprone-suspicious-missing-comma)
         "For all commands, other than TPM2_FieldUpgradeData, "
         "this code indicates that the TPM is in field upgrade mode. "
         "For TPM2_FieldUpgradeData, this code indicates that the TPM "
@@ -696,7 +697,7 @@ tpm2_err_handler_fmt0(TSS2_RC rc)
 static inline UINT8
 tss2_rc_layer_format_get(TSS2_RC rc)
 {
-    return ((rc & (1 << 7)) >> 7);
+    return ((rc & (((TPM2_RC)1) << 7)) >> 7);
 }
 
 /**
@@ -761,6 +762,7 @@ tss_err_handler (TSS2_RC rc)
         /* 12 - TSS2_BASE_RC_NOT_PERMITTED */
         "Operation not permitted.",
         /* 13 - TSS2_BASE_RC_INVALID_SESSIONS */
+        // NOLINTNEXTLINE(bugprone-suspicious-missing-comma)
         "Session structures were sent, but command doesn't use them or doesn't"
         " use the specified number of them",
         /* 14 - TSS2_BASE_RC_NO_DECRYPT_PARAM */

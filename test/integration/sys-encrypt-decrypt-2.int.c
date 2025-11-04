@@ -5,18 +5,21 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
+#include <inttypes.h>         // for PRIx32
+#include <stdlib.h>           // for exit
+#include <string.h>           // for strcmp, strcpy, strlen
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "sys-util.h"
-#include "test-esys.h"
-#include "test.h"
+#include "sys-util.h"         // for create_aes_128_cfb, create_primary_rsa_...
+#include "test-esys.h"        // for EXIT_SKIP
+#include "test.h"             // for test_invoke
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_sys.h"         // for Tss2_Sys_FlushContext, TSS2_SYS_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2B_MAX_BUFFER, TPM2_HANDLE, TPM2_RC_...
+#include "util/log.h"         // for LOG_ERROR, LOG_INFO, LOG_WARNING
 
 #define ENC_STR "test-data-test-data-test-data"
 

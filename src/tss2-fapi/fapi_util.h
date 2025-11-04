@@ -6,18 +6,19 @@
 #ifndef FAPI_UTIL_H
 #define FAPI_UTIL_H
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <sys/stat.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <stdbool.h>             // for bool
+#include <stddef.h>              // for size_t
+#include <stdint.h>              // for uint8_t
 
-#include "util/aux_util.h"
-#include "tss2_esys.h"
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "ifapi_helpers.h"
+#include "fapi_int.h"            // for IFAPI_KEY_TEMPLATE, TSS2_KEY_TYPE
+#include "fapi_types.h"          // for NODE_OBJECT_T
+#include "ifapi_keystore.h"      // for IFAPI_OBJECT
+#include "ifapi_policy_types.h"  // for TPMS_POLICY
+#include "ifapi_profiles.h"      // for IFAPI_PROFILE
+#include "tss2_common.h"         // for TSS2_RC, UINT32
+#include "tss2_esys.h"           // for ESYS_TR, ESYS_CONTEXT
+#include "tss2_fapi.h"           // for FAPI_CONTEXT
+#include "tss2_tpm2_types.h"     // for TPM2_HANDLE, TPMA_SESSION, TPM2B_DIGEST
 
 TSS2_RC
 ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR session);
@@ -237,7 +238,8 @@ ifapi_get_certificates(
     FAPI_CONTEXT *context,
     UINT32 min_handle,
     UINT32 max_handle,
-    NODE_OBJECT_T **cert_list);
+    uint8_t **certs,
+    size_t *cert_list_size);
 
 TSS2_RC
 ifapi_initialize_object(
@@ -264,5 +266,13 @@ ifapi_get_key_properties(
 
 TSS2_RC
 ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template);
+
+TSS2_RC
+ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx);
+
+TSS2_RC
+ifapi_check_existing_nv(FAPI_CONTEXT *context, TPMI_RH_NV_INDEX nv_index,
+                        bool *nv_exists,
+                        ESYS_TR *esys_nv_handle, TPM2B_NV_PUBLIC **nvPublic);
 
 #endif /* FAPI_UTIL_H */

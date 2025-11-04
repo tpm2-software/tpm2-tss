@@ -5,19 +5,20 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"            // for HAVE_EVP_SM4_CFB
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
+#include <inttypes.h>          // for uint8_t
+#include <stdlib.h>            // for NULL, size_t, malloc
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_esys.h"
-#include "esys_crypto.h"
+#include "../helper/cmocka_all.h"            // for assert_int_equal, cmocka_unit_test
+#include "esys_crypto.h"       // for iesys_initialize_crypto_backend, iesys...
+#include "tss2_common.h"       // for TSS2_RC_SUCCESS, TSS2_ESYS_RC_BAD_REFE...
+#include "tss2_esys.h"         // for ESYS_CRYPTO_CALLBACKS, Esys_GetSysContext
+#include "tss2_sys.h"          // for TSS2_SYS_CONTEXT
+#include "tss2_tcti.h"         // for TSS2_TCTI_CONTEXT_COMMON_V1, TSS2_TCTI...
+#include "tss2_tpm2_types.h"   // for TPM2_ALG_CFB, TPM2_ALG_SM4, TPM2_ALG_AES
+#include "util/tpm2b.h"        // for TPM2B
 
 #define LOGMODULE tests
 #include "util/log.h"
@@ -348,7 +349,7 @@ check_get_sys_context(void **state)
 }
 
 #define CHECK_BACKEND_FN(backend, fn) \
-    assert_int_equal(backend.fn, _iesys_crypto_##fn)
+    assert_int_equal(backend.fn, iesys_crypto_##fn##_internal)
 
 static TSS2_RC
     crypto_init(void *userdata)

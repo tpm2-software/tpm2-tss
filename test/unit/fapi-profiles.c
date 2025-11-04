@@ -5,29 +5,24 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdarg.h>
-#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <json-c/json_object.h>
-#include <json-c/json_util.h>
-#include <json-c/json_tokener.h>
+#include <inttypes.h>              // for uint8_t
+#include <json.h>                  // for json_object, json_object_object_del
+#include <stdio.h>                 // for NULL, fopen, fclose, fileno, fseek
+#include <stdlib.h>                // for calloc, malloc
+#include <string.h>                // for strdup
+#include <unistd.h>                // for read
 
-#include <setjmp.h>
-#include <cmocka.h>
-#include <errno.h>
-
-#include "ifapi_io.h"
-#include "ifapi_profiles.h"
-#include "util/aux_util.h"
+#include "../helper/cmocka_all.h"  // for assert_ptr_not_equal, cmocka_unit_...
+#include "ifapi_io.h"              // for IFAPI_IO
+#include "ifapi_profiles.h"        // for IFAPI_PROFILES, IFAPI_PROFILE_ENTRY
+#include "tss2_common.h"           // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC
+#include "util/aux_util.h"         // for SAFE_FREE
 
 #define LOGMODULE tests
-#include "util/log.h"
+#include "util/log.h"              // for LOG_ERROR
 
 /*
  * The unit tests will test deserialization of FAPI profiles. It will be

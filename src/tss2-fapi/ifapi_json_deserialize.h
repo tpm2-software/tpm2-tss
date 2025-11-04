@@ -6,14 +6,13 @@
 #ifndef IFAPI_JSON_DESERIALIZE_H
 #define IFAPI_JSON_DESERIALIZE_H
 
-#include <stdbool.h>
-#include <json-c/json.h>
-#include <json-c/json_util.h>
+#include <json.h>            // for json_object
+#include <stdbool.h>         // for bool
 
-#include "tss2_tpm2_types.h"
-#include "ifapi_keystore.h"
-#include "fapi_int.h"
-#include "ifapi_eventlog_system.h"
+#include "ifapi_eventlog.h"  // for IFAPI_EVENT_TYPE, FAPI_QUOTE_INFO, IFAPI...
+#include "ifapi_keystore.h"  // for IFAPI_KEY, IFAPI_EXT_PUB_KEY, IFAPI_HIER...
+#include "ifapi_macros.h"    // for return_if_error2
+#include "tss2_common.h"     // for TSS2_RC, UINT32
 
 #define YES 1
 #define NO 0
@@ -36,7 +35,7 @@
     if (!ifapi_get_sub_object(jso, json_name, &jso2)) { \
         memset(&out->name, 0, sizeof(type)); \
     } else { \
-        cond_cnt++; \
+        (cond_cnt)++; \
         json_object* jso_size; \
         if (ifapi_get_sub_object(jso2, "size", &jso_size)) { \
             tpm2b_type tmp = { 0 }; \

@@ -1,28 +1,39 @@
+/* SPDX-FileCopyrightText: 2023, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <curl/curl.h>             // for curl_easy_cleanup, curl_easy_init
+#include <json.h>                  // for json_object_get_string, json_objec...
+#include <openssl/bio.h>           // for BIO_new, BIO_free_all, BIO_push
+#include <openssl/buffer.h>        // for buf_mem_st
+#include <openssl/evp.h>           // for EVP_DigestUpdate, BIO_f_base64
+#include <openssl/opensslv.h>      // for OPENSSL_VERSION_NUMBER
+#include <openssl/sha.h>           // for SHA256_DIGEST_LENGTH
+#include <stdbool.h>               // for bool, true
+#include <stdint.h>                // for uint8_t
+#include <stdio.h>                 // for NULL, size_t, snprintf, sprintf, FILE
+#include <stdlib.h>                // for free, malloc, calloc
+#include <string.h>                // for strdup, strlen
 
-#include <curl/curl.h>
-#include <openssl/buffer.h>
-#include <openssl/evp.h>
-#include <openssl/sha.h>
-#include <json-c/json.h>
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#include <openssl/aes.h>
+#endif
 
-#include "fapi_crypto.h"
-#include "ifapi_curl.h"
-#include "ifapi_helpers.h"
-#include "tpm_json_deserialize.h"
+#include "fapi_int.h"              // for FAPI_CONTEXT, VENDOR_AMD, VENDOR_INTC
+#include "ifapi_config.h"          // for IFAPI_CONFIG
+#include "ifapi_curl.h"            // for ifapi_get_curl_buffer
+#include "tpm_json_deserialize.h"  // for ifapi_parse_json
+#include "tss2_common.h"           // for BYTE, TSS2_FAPI_RC_GENERAL_FAILURE
+#include "tss2_fapi.h"             // for FAPI_CONTEXT
+#include "tss2_tpm2_types.h"       // for TPM2B_PUBLIC, TPMT_PUBLIC, TPMU_PU...
 
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"              // for LOG_ERROR, goto_error, SAFE_FREE
+
+struct tpm_getekcertificate_ctx;
 
 #define AMD_EK_URI_LEN 16 /*<< AMD EK takes first 16 hex chars of hash */
 #define NULL_TERM_LEN 1 // '\0'
@@ -251,7 +262,7 @@ base64_encode(const unsigned char* buffer)
 
     CURL *curl = curl_easy_init();
     if (curl) {
-        char *output = curl_easy_escape(curl, b64text, len);
+        char *output = curl_easy_escape(curl, b64text, (int) len);
         if (output) {
             final_string = strdup(output);
             curl_free(output);
@@ -300,7 +311,7 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
     if (curl) {
         /* Convert URL encoded string to a "plain string" */
         char *output = curl_easy_unescape(curl, (char *)buffer,
-                                          len, &unescape_len);
+                                          (int) len, &unescape_len);
         if (output) {
             unescaped_string = strdup(output);
             curl_free(output);

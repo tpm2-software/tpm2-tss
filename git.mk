@@ -375,6 +375,9 @@ $(srcdir)/.gitignore: Makefile.am $(top_srcdir)/git.mk $(top_srcdir)/configure.a
 			$(DEPDIR) \
 			"*.pem" \
 			"*_state[1|2]" \
+			".cache/" \
+			".clangd/" \
+			".vscode/" \
 		; do echo "$$x"; done; \
 	} | \
 	sed "s@^/`echo "$(srcdir)" | sed 's/\(.\)/[\1]/g'`/@/@" | \

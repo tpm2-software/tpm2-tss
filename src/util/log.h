@@ -1,13 +1,27 @@
+/* SPDX-FileCopyrightText: 2018 - 2022, Intel */
+/* SPDX-FileCopyrightText: 2018, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2019, Alon Bar-Lev */
+/* SPDX-FileCopyrightText: 2019, Infineon Technologies AG */
+/* SPDX-FileCopyrightText: 2022, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifndef LOG_H
 #define LOG_H
 
-#include <stdint.h>
-#include <stddef.h>
-#include "util/aux_util.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"         // for MAXLOGLEVEL
+#endif
+
+#include <stddef.h>         // for size_t
+#include <stdint.h>         // for uint8_t
+
+#include "util/aux_util.h"  // for COMPILER_ATTR
 
 #ifndef LOGMODULE
 #error "LOGMODULE must be set before including log/log.h"
+#endif
+
+#ifndef MAXLOGLEVEL
+#define MAXLOGLEVEL LOGLEVEL_TRACE
 #endif
 
 #ifndef LOGDEFAULT

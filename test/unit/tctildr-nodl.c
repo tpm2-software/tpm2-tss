@@ -5,22 +5,17 @@
  * All rights reserved.
  */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"                       // for TCTI_MSSIM, TCTI_SWTPM
 #endif
 
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
+#include <stddef.h>                       // for NULL, size_t
 
-#include <dlfcn.h>
+#include "../helper/cmocka_all.h"                       // for will_return, cmocka_unit_test
+#include "tss2-tcti/tctildr-interface.h"  // for tctildr_get_tcti, tctildr_f...
+#include "tss2-tcti/tctildr-nodl.h"       // for tctildr_get_default
+#include "tss2_common.h"                  // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_tcti.h"                    // for TSS2_TCTI_CONTEXT, TSS2_TCT...
 
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "tss2_tcti.h"
-
-#include "tss2-tcti/tctildr-interface.h"
-#include "tss2-tcti/tctildr-nodl.h"
 #define LOGMODULE test
 #include "util/log.h"
 

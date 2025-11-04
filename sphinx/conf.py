@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
+# SPDX-FileCopyrightText: 2019 Infineon Technologies AG
+# SPDX-FileCopyrightText: 2019 Jonas Witschel
+# SPDX-FileCopyrightText: 2021 - 2023 Intel
+# SPDX-License-Identifier: BSD-2-Clause
+#
 # tpm2-tss documentation build configuration file, created by
 # sphinx-quickstart on Thu Aug 29 14:00:06 2019.
 #
@@ -14,6 +19,7 @@
 # serve to show the default.
 
 import subprocess
+import os
 
 # Create (unused) root file
 with open("index.rst", "w") as index_rst:
@@ -306,3 +312,23 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
+
+# -- Extension configuration -------------------------------------------------
+
+# List of patterns, relative to source directory, that match files and
+# directories to ignore when looking for source files.
+# This pattern also affects html_static_path and html_extra_path.
+
+def builder_finished_handler(app, exception):
+    if exception is None:
+        os.environ["SPHINX_OUTDIR"] = str(app.outdir)
+        script = os.path.join(app.confdir, "sphinx-finished.sh")
+        subprocess.check_call(script, shell=True)
+
+
+#
+# Hook the setup of readthedocs so we can hook into events as defined in:
+# - https://www.sphinx-doc.org/en/master/extdev/appapi.html
+#
+def setup(app):
+    app.connect("build-finished", builder_finished_handler)

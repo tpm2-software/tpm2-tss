@@ -5,18 +5,18 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>       // for EXIT_FAILURE, EXIT_SUCCESS, NULL
+#include <string.h>       // for memcmp
 
-#include "tss2_esys.h"
-#include "esys_int.h"
+#include "esys_int.h"     // for ESYS_CONTEXT
+#include "tss2_common.h"  // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_ESYS_RC_BAD_...
+#include "tss2_esys.h"    // for ESYS_CONTEXT, ESYS_CRYPTO_CALLBACKS, Esys_S...
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"     // for LOG_ERROR, xstr
 
 #define TEST_FN_PTR ((void *)0xBADC0DE)
 

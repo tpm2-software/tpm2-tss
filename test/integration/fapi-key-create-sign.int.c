@@ -5,22 +5,23 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#include <json.h>             // for json_object_object_add, json_object_put
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, size_t, sprintf
+#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for strlen, strncmp
 
-#include "tss2_fapi.h"
+#include "ifapi_macros.h"     // for goto_if_null2
+#include "test-fapi.h"        // for ASSERT, FAPI_PROFILE, cmp_strtokens
+#include "tss2_common.h"      // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_FAPI_RC...
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_GetDescription, Fapi_...
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
 
-#include "test-fapi.h"
-#include "fapi_util.h"
-#include "fapi_int.h"
-
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for SAFE_FREE, goto_if_error, LOG_INFO, ret...
 
 #define PASSWORD "abc"
 #define SIGN_TEMPLATE  "sign,noDa"
@@ -206,7 +207,8 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     LOG_INFO("Path list: %s", path_list);
     char *check_path_list =
         "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE "/LOCKOUT:/" FAPI_PROFILE "/HE/EK:/" FAPI_PROFILE "/HE:"
-        "/" FAPI_PROFILE "/HN:/" FAPI_PROFILE "/HS/SRK/mySignKey2:/" FAPI_PROFILE "/HS/SRK/mySignKey";
+        "/" FAPI_PROFILE "/HN:/" FAPI_PROFILE "/HS/SRK/mySignKey2:/" FAPI_PROFILE "/HS/SRK/mySignKey"
+        ":/nv/Endorsement_Certificate/1c00002:/nv/Endorsement_Certificate/1c0000a";
     ASSERT(cmp_strtokens(path_list, check_path_list, ":"));
 
     /* We need to reset the passwords again, in order to not brick physical TPMs */

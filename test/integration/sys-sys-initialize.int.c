@@ -5,17 +5,19 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h>       // for exit
 
-#include "tss2_sys.h"
+#include "tss2_common.h"  // for TSS2_ABI_VERSION, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_sys.h"     // for Tss2_Sys_Initialize, TSS2_SYS_CONTEXT, Tss2...
+#include "tss2_tcti.h"    // for TSS2_TCTI_CONTEXT, TSS2_TCTI_RECEIVE, TSS2_...
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
+#include "test.h"         // for test_invoke
+#include "util/log.h"     // for LOG_ERROR, LOG_INFO
+
 /**
  */
 int

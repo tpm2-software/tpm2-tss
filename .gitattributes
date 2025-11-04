@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2015 Intel
+# SPDX-License-Identifier: BSD-2-Clause
+
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
 

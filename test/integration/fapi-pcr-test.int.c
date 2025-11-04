@@ -5,21 +5,21 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <inttypes.h>
+#include <inttypes.h>        // for uint8_t
+#include <stdio.h>           // for NULL, fprintf, size_t, stderr
+#include <stdlib.h>          // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>          // for strlen, strcmp
 
-#include "tss2_fapi.h"
+#include "ifapi_eventlog.h"  // for CONTENT, CONTENT_TYPE
+#include "test-fapi.h"       // for ASSERT, pcr_reset, ASSERT_SIZE, CHECK_JS...
+#include "tss2_common.h"     // for TSS2_RC
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_PcrRead, Fapi_PcrExtend
 
-#include "test-fapi.h"
-#include "ifapi_eventlog.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"        // for goto_if_error, SAFE_FREE, LOG_ERROR, LOG...
 
 #define EVENT_SIZE 10
 
@@ -70,6 +70,34 @@ const char *log_exp[] = {
         \"hashAlg\":\"sha1\",\n\
         \"digest\":\"494179714a6cd627239dfededf2de9ef994caf03\"\n\
       },\n\
+      {\n\
+        \"hashAlg\":\"sha256\",\n\
+        \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\"\n\
+      },\n\
+      {\n\
+        \"hashAlg\":\"sha384\",\n\
+        \"digest\":\"182e95266adff49059e706c61483478fe0688150c8d08b95fab5cfde961f12d903aaf44104af4ce72ba6a4bf20302b2e\"\n\
+      },\n\
+      {\n\
+        \"hashAlg\":\"sha512\",\n\
+        \"digest\":\"0f89ee1fcb7b0a4f7809d1267a029719004c5a5e5ec323a7c3523a20974f9a3f202f56fadba4cd9e8d654ab9f2e96dc5c795ea176fa20ede8d854c342f903533\"\n\
+      }\n\
+    ],\n\
+    \"" CONTENT_TYPE "\":\"tss2\",\n\
+    \"" CONTENT "\":{\n\
+      \"data\":\"00010203040506070809\",\n\
+      \"event\":{\n\
+        \"test\":\"myfile\"\n\
+      }\n\
+    }\n\
+  }\n\
+]",
+/* same as above, just without sha1 */
+"[\n\
+  {\n\
+    \"recnum\":0,\n\
+    \"pcr\":16,\n\
+    \"digests\":[\n\
       {\n\
         \"hashAlg\":\"sha256\",\n\
         \"digest\":\"1f825aa2f0020ef7cf91dfa30da4668d791c5d4824fc8e41354b89ec05795ab3\"\n\

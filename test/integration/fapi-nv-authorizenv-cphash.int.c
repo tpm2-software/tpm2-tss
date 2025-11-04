@@ -5,22 +5,24 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#include <unistd.h>
+#include <inttypes.h>         // for uint8_t
+#include <stdio.h>            // for NULL, fclose, fileno, fopen, FILE, size_t
+#include <stdlib.h>           // for free, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>           // for memset, strcmp
+#include <unistd.h>           // for read
 
-#include "tss2_fapi.h"
-#include "tss2_esys.h"
+#include "test-fapi.h"        // for FAPI_PROFILE, ASSERT, CHECK_JSON_FIELDS
+#include "tss2_common.h"      // for TSS2_RC, TSS2_FAPI_RC_NOT_IMPLEMENTED
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_Finalize, Esys_GetCa...
+#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateNv, Fapi_Import
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPMS_CAPABILITY_DATA, TPM2_CAP_COMMANDS
 
-#include "test-fapi.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR, SAFE_FREE
 
 static TSS2_RC
 check_tpm_cmd(FAPI_CONTEXT *context, TPM2_CC command_code)

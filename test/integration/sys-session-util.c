@@ -5,18 +5,27 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
+#include <inttypes.h>          // for PRIu16, uint8_t
+#include <stdbool.h>           // for bool, false, true
+#include <stdlib.h>            // for free, calloc
+#include <string.h>            // for memcpy, NULL, memset, strlen, size_t
+#include <uthash.h>            // for UT_hash_handle, HASH_DEL, HASH_FIND_INT
 
-#include "tss2_tcti.h"
-#include "test-common.h"
-#include "session-util.h"
-#include "sys-util.h"
-#include "util/tss2_endian.h"
+#include "session-util.h"      // for SESSION, GetEntity, ENTITY, KDFa, chec...
+#include "sys-util.h"          // for ConcatSizedByteBuffer, CopySizedByteBu...
+#include "test-common.h"       // for TEST_ABI_VERSION
+#include "tss2_common.h"       // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2_S...
+#include "tss2_sys.h"          // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tcti.h"         // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"   // for TPM2B_MAX_BUFFER, TPM2B_DIGEST, TPM2_R...
+#include "util/tpm2b.h"        // for TPM2B
+#include "util/tss2_endian.h"  // for BE_TO_HOST_32
+
 #define LOGMODULE test
-#include "util/log.h"
+#include "util/log.h"          // for LOGBLOB_DEBUG, LOG_ERROR, LOGBLOB_ERROR
 
 static SESSION *sessions = NULL;
 

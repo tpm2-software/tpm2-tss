@@ -5,18 +5,20 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <inttypes.h>         // for PRIx32
+#include <stdlib.h>           // for exit
 
-#include "tss2_sys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_sys.h"         // for Tss2_Sys_FlushContext, Tss2_Sys_StartAu...
+#include "tss2_tpm2_types.h"  // for TPM2B_NONCE, TPM2_RH_NULL, TPM2_SHA256_...
 
 #define LOGMODULE test
-#include "util/log.h"
-#include "test.h"
+#include "test.h"             // for test_invoke
+#include "util/log.h"         // for LOG_INFO, LOG_ERROR
+
 /*
  * This is an incredibly simple test to create the most simple session
  * (which ends up being a trial policy) and then just tear it down.

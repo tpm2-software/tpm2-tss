@@ -4,28 +4,34 @@
  * All rights reserved.
  */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <string.h>
-#include <stdio.h>
+#include <errno.h>       // for errno
+#include <fcntl.h>       // for fcntl, F_GETFL, F_SETFL, O_NONBLOCK
+#include <inttypes.h>    // for uint8_t, PRIxPTR, uintptr_t, uint16_t
+#include <stdio.h>       // for NULL, snprintf
+#include <string.h>      // for strerror
 
 #ifndef _WIN32
-#include <poll.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <unistd.h>
+#include <arpa/inet.h>   // for inet_ntop
+#ifdef __ZEPHYR__
+#include <zephyr/posix/netdb.h>   // for addrinfo, freeaddrinfo, gai_strerror, getadd...
+#else
+#include <netdb.h>       // for addrinfo, freeaddrinfo, gai_strerror, getadd...
+#endif
+#include <netinet/in.h>  // for IPPROTO_TCP, sockaddr_in, sockaddr_in6
+#include <poll.h>        // for pollfd, poll, POLLIN
+#ifndef __ZEPHYR__
+#include <sys/un.h>      // for sockaddr_un
+#endif
+#include <unistd.h>      // for close, read, write
 #endif
 
-#include "tss2_tpm2_types.h"
-
 #include "io.h"
+
 #define LOGMODULE tcti
-#include "util/log.h"
+#include "util/log.h"    // for LOG_WARNING, LOG_DEBUG, LOG_ERROR, LOGBLOB_D...
 
 #define MAX_PORT_STR_LEN    sizeof("65535")
 
@@ -41,7 +47,7 @@
  * once all of the requested data has been read, an error occurs, or EOF.
  * On error or EOF, the number of bytes read (if any) will be returned.
  */
-ssize_t
+size_t
 read_all (
     SOCKET fd,
     uint8_t *data,
@@ -81,7 +87,7 @@ read_all (
     return recvd_total;
 }
 
-ssize_t
+size_t
 write_all (
     SOCKET fd,
     const uint8_t *buf,
@@ -117,10 +123,10 @@ write_all (
         }
     } while (written_total < size);
 
-    return (ssize_t)written_total;
+    return written_total;
 }
 
-ssize_t
+size_t
 socket_recv_buf (
     SOCKET sock,
     uint8_t *data,
@@ -135,11 +141,11 @@ socket_xmit_buf (
     const void *buf,
     size_t size)
 {
-    int ret;
+    size_t ret;
 
     LOGBLOB_DEBUG (buf, size, "Writing %zu bytes to socket %d:", size, sock);
     ret = write_all (sock, buf, size);
-    if (ret < (ssize_t) size) {
+    if (ret < size) {
 #ifdef _WIN32
         LOG_ERROR ("write to fd %d failed, errno %d: %s", sock, WSAGetLastError(), strerror (WSAGetLastError()));
 #else
@@ -197,7 +203,7 @@ socket_connect (
     char port_str[MAX_PORT_STR_LEN];
     int ret = 0;
 #ifdef _WIN32
-    char host_buff[_HOST_NAME_MAX];
+    char host_buff[POSIX_HOST_NAME_MAX];
     const char *h = hostname;
     WSADATA wsaData;
     int iResult;
@@ -207,7 +213,7 @@ socket_connect (
         return TSS2_TCTI_RC_IO_ERROR;
     }
 #else
-    char host_buff[_HOST_NAME_MAX] __attribute__((unused));
+    char host_buff[POSIX_HOST_NAME_MAX] __attribute__((unused));
     const char *h __attribute__((unused)) = hostname;
 #endif
 

@@ -4,22 +4,21 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <assert.h>
-#include <inttypes.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <assert.h>           // for assert
+#include <inttypes.h>         // for uint8_t, PRIu32, PRIu8
+#include <string.h>           // for memcpy
 
-#include "tss2_sys.h"
+#include "sys-util.h"         // for GetDigestSize, TSS2_RETRY_EXP
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_RC_...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tcti.h"        // for Tss2_Tcti_SetLocality, TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2B_MAX_NV_BUFFER, TPM2...
 
-#include "sys-util.h"
-#include "util/aux_util.h"
 #define LOGMODULE test
-#include "util/log.h"
+#include "util/log.h"         // for return_if_error, LOG_INFO, goto_if_error
 
 #define NV_INDEX 0x01800003
 #define NV_SIZE 96
@@ -48,7 +47,7 @@ create_policy_session (TSS2_SYS_CONTEXT *sys_ctx,
 {
     TPMA_LOCALITY locality = TPMA_LOCALITY_TPM2_LOC_THREE |
         TPMA_LOCALITY_TPM2_LOC_FOUR;
-    TPM2B_NONCE nonce = { .size = GetDigestSize (TPM2_ALG_SHA1), };
+    TPM2B_NONCE nonce = { .size = GetDigestSize (TPM2_ALG_SHA256), };
     TPM2B_NONCE nonce_tpm = { 0, };
     TSS2_RC rc;
     TPM2B_ENCRYPTED_SECRET salt = { 0, };
@@ -62,7 +61,7 @@ create_policy_session (TSS2_SYS_CONTEXT *sys_ctx,
                                     &salt,
                                     TPM2_SE_POLICY,
                                     &symmetric,
-                                    TPM2_ALG_SHA1,
+                                    TPM2_ALG_SHA256,
                                     handle,
                                     &nonce_tpm,
                                     0);
@@ -93,9 +92,9 @@ setup_nv (TSS2_SYS_CONTEXT *sys_ctx)
         .nvPublic = {
             .attributes = TPMA_NV_AUTHREAD | TPMA_NV_POLICYWRITE |
                 TPMA_NV_PLATFORMCREATE, /* POLICYDELETE? */
-            .authPolicy = { .size = GetDigestSize (TPM2_ALG_SHA1), },
+            .authPolicy = { .size = GetDigestSize (TPM2_ALG_SHA256), },
             .dataSize = NV_SIZE,
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .nvIndex = NV_INDEX,
         },
     };

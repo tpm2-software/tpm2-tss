@@ -5,22 +5,26 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <string.h>
+#include <inttypes.h>          // for PRIu32, PRIx16, PRIx32, int32_t
+#include <string.h>            // for memcpy, NULL, size_t
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
-#include "util/tss2_endian.h"
+#include "sysapi_util.h"       // for _TSS2_SYS_CONTEXT_BLOB, TPM20_Header_Out
+#include "tss2_common.h"       // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"           // for Tss2_MU_UINT32_Unmarshal, Tss2_MU_TPM2...
+#include "tss2_sys.h"          // for TSS2_SYS_CONTEXT, Tss2_Sys_Execute
+#include "tss2_tcti.h"         // for Tss2_Tcti_Receive, TSS2_TCTI_TIMEOUT_B...
+#include "tss2_tpm2_types.h"   // for TPM2_RC_INITIALIZE, TPM2_ST_NO_SESSIONS
+#include "util/tss2_endian.h"  // for HOST_TO_BE_32
+
 #define LOGMODULE sys
-#include "util/log.h"
+#include "util/log.h"          // for LOG_ERROR
 
 TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
 
     if (!ctx)
@@ -47,7 +51,7 @@ TSS2_RC Tss2_Sys_ExecuteAsync(TSS2_SYS_CONTEXT *sysContext)
 
 TSS2_RC Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC rval;
     size_t response_size = 0;
 

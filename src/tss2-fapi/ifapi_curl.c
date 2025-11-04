@@ -1,21 +1,35 @@
+/* SPDX-FileCopyrightText: 2022, Intel */
+/* SPDX-FileCopyrightText: 2022, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2023, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"             // for HAVE_CURL_URL_STRERROR
 #endif
 
-#include <string.h>
+#include <curl/curl.h>          // for curl_easy_strerror, CURLE_OK, curl_ea...
+#include <openssl/bio.h>        // for BIO_free, BIO_new_mem_buf
+#include <openssl/evp.h>        // for X509, ASN1_IA5STRING, X509_CRL, DIST_...
+#include <openssl/obj_mac.h>    // for NID_crl_distribution_points, NID_info...
+#include <openssl/opensslv.h>   // for OPENSSL_VERSION_NUMBER
+#include <openssl/pem.h>        // for PEM_read_bio_X509
+#include <openssl/safestack.h>  // for STACK_OF
+#include <openssl/x509.h>       // for X509_free, X509_STORE_add_cert, X509_...
+#include <openssl/x509v3.h>     // for DIST_POINT_NAME, GENERAL_NAME, ACCESS...
+#include <stdbool.h>            // for bool, false, true
+#include <stdlib.h>             // for free, realloc
+#include <string.h>             // for memcpy, strdup, strlen
 
-#include <curl/curl.h>
-#include <openssl/x509v3.h>
-#include <openssl/err.h>
-#include <openssl/pem.h>
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#include <openssl/aes.h>
+#endif
 
-#include "fapi_certificates.h"
-#include "fapi_util.h"
-#include "util/aux_util.h"
+#include "fapi_certificates.h"  // for root_cert_list
+#include "fapi_int.h"           // for OSSL_FREE
 #include "ifapi_curl.h"
+#include "ifapi_macros.h"       // for goto_if_null2
+
 #define LOGMODULE fapi
-#include "util/log.h"
+#include "util/log.h"           // for LOG_ERROR, goto_error, SAFE_FREE, got...
 
 static X509
 *get_cert_from_buffer(unsigned char *cert_buffer, size_t cert_buffer_size)
@@ -26,7 +40,7 @@ static X509
     unsigned const char* tmp_ptr1 = buffer;
     unsigned const char** tmp_ptr2 = &tmp_ptr1;
 
-    if (!d2i_X509(&cert, tmp_ptr2, cert_buffer_size))
+    if (!d2i_X509(&cert, tmp_ptr2, (long) cert_buffer_size))
         return NULL;
     return cert;
 }
@@ -48,7 +62,7 @@ static X509
 
     /* Use BIO for conversion */
     size_t pem_length = strlen(pem_cert);
-    bufio = BIO_new_mem_buf((void *)pem_cert, pem_length);
+    bufio = BIO_new_mem_buf((void *)pem_cert, (int) pem_length);
     if (!bufio)
         return NULL;
     /* Convert the certificate */
@@ -65,8 +79,8 @@ static X509
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_NO_CERT if an error did occur during certificate downloading.
  */
-static TSS2_RC
-get_crl_from_cert(X509 *cert, X509_CRL **crl)
+TSS2_RC
+ifapi_get_crl_from_cert(X509 *cert, X509_CRL **crl)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
     unsigned char* url = NULL;
@@ -99,6 +113,12 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
         goto cleanup;
     }
 
+    if (strncmp((char *)url,"file:", strlen("file:")) == 0) {
+        /* Workaround if crl is not configured correctly. */
+        *crl = NULL;
+        goto cleanup;
+    }
+
     curl_rc = ifapi_get_curl_buffer(url, &crl_buffer, &crl_buffer_size);
     if (curl_rc != 0) {
         goto_error(r, TSS2_FAPI_RC_NO_CERT, "Get crl.", cleanup);
@@ -108,10 +128,12 @@ get_crl_from_cert(X509 *cert, X509_CRL **crl)
     unsigned const char** tmp_ptr2 = &tmp_ptr1;
 
     if (crl_buffer_size > 0) {
-        if (!d2i_X509_CRL(crl, tmp_ptr2, crl_buffer_size)) {
+        if (!d2i_X509_CRL(crl, tmp_ptr2, (long) crl_buffer_size)) {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Can't convert crl.", cleanup);
         }
     }
+
+    LOG_DEBUG("Downloaded CRL: %s", url);
 
 cleanup:
     SAFE_FREE(crl_buffer);
@@ -175,6 +197,16 @@ ifapi_curl_verify_ek_cert(
     goto_if_null2(ek_cert, "Failed to convert PEM certificate to DER.",
                   r, TSS2_FAPI_RC_BAD_VALUE, cleanup);
 
+    if (is_self_signed(ek_cert)) {
+        /* A self signed certificate was stored in the TPM and ek_cert_less was not set.*/
+        goto_error(r, TSS2_FAPI_RC_NO_CERT,
+                   "A self signed EK  certifcate for current crypto profile was found. "
+                   "You may want to switch the profile in fapi-config or "
+                   "set the ek_cert_less or ek_cert_file options in fapi-config. "
+                   "See also https://tpm2-software.github.io/2020/07/22/Fapi_Crypto_Profiles.html",
+                   cleanup);
+    }
+
     if (intermed_cert_pem) {
         intermed_cert = get_X509_from_pem(intermed_cert_pem);
         goto_if_null2(intermed_cert, "Failed to convert PEM certificate to DER.",
@@ -210,11 +242,11 @@ ifapi_curl_verify_ek_cert(
         }
 
          /* Get Certificate revocation list for Intermediate certificate */
-        r = get_crl_from_cert(intermed_cert, &crl_intermed);
+        r = ifapi_get_crl_from_cert(intermed_cert, &crl_intermed);
         goto_if_error(r, "Get crl for intermediate certificate.", cleanup);
 
         /* Get Certificate revocation list for EK certificate */
-        r = get_crl_from_cert(ek_cert, &crl_ek);
+        r = ifapi_get_crl_from_cert(ek_cert, &crl_ek);
         goto_if_error(r, "Get crl for ek certificate.", cleanup);
     }
 
@@ -434,7 +466,7 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
         goto out_easy_cleanup;
     }
 
-    rc = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+    rc = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     if (rc != CURLE_OK) {
         LOG_ERROR("curl_easy_setopt for CURLOPT_FOLLOWLOCATION failed: %s",
                   curl_easy_strerror(rc));

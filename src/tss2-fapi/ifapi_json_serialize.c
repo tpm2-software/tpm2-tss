@@ -5,24 +5,49 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>
-#include <string.h>
+#include <inttypes.h>                     // for PRIx32, uint8_t
+#include <stdbool.h>                      // for true
+#include <stdio.h>                        // for NULL, size_t, sprintf
+#include <stdlib.h>                       // for malloc
 
+#include "ifapi_config.h"                 // for IFAPI_CONFIG
 #include "ifapi_json_serialize.h"
-#include "tpm_json_serialize.h"
-#include "fapi_policy.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_policy_json_serialize.h"
-#include "ifapi_config.h"
-#include "ifapi_helpers.h"
+#include "ifapi_macros.h"                 // for check_oom, goto_if_null2
+#include "ifapi_policy_json_serialize.h"  // for ifapi_json_TPMS_POLICY_seri...
+#include "tpm_json_deserialize.h"         // for ifapi_parse_json
+#include "tpm_json_serialize.h"           // for ifapi_json_TPMI_YES_NO_seri...
+#include "tss2_tpm2_types.h"              // for TPM2B_DIGEST, TPM2B_PUBLIC
 
 #define LOGMODULE fapijson
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                     // for return_error, return_if_error
 
+#define CHECK_IN_LIST(type, needle, ...) \
+    type tab[] = { __VA_ARGS__ }; \
+    size_t i; \
+    for(i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) \
+        if (needle == tab[i]) \
+            break; \
+    if (i == sizeof(tab) / sizeof(tab[0])) { \
+        LOG_ERROR("Bad value"); \
+        return TSS2_FAPI_RC_BAD_VALUE; \
+    }
+
+#define JSON_CLEAR(jso) \
+    if (jso) {                   \
+        json_object_put(jso); \
+    }
+
+#define return_if_jso_error(r,msg, jso)       \
+    if ((r) != TSS2_RC_SUCCESS) { \
+        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
+        if (jso) {                                                   \
+            json_object_put(jso);                                    \
+        } \
+        return r;  \
+    }
 
 /** Serialize a character string to json.
  *
@@ -252,7 +277,23 @@ ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
         }
     }
 
+    if (in->unique_init_set) {
+        jso2 = NULL;
+        r = ifapi_json_TPMI_YES_NO_serialize(in->unique_init_set, &jso2);
+        return_if_error(r, "Serialize TPMI_YES_NO");
 
+        if (json_object_object_add(*jso, "unique_init_set", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
+
+        jso2 = NULL;
+        r = ifapi_json_TPMU_PUBLIC_ID_serialize(&in->unique_init, in->public.publicArea.type, &jso2);
+        return_if_error(r,"Serialize TPMU_PUBLIC_ID");
+
+        if (json_object_object_add(*jso, "unique_init", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
+    }
 
     return TSS2_RC_SUCCESS;
 }
@@ -571,7 +612,7 @@ TSS2_RC
 ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_serialize(const IFAPI_OBJECT_TYPE_CONSTANT
         in, json_object **jso)
 {
-    *jso = json_object_new_int(in);
+    *jso = json_object_new_int64((int64_t) in);
     if (*jso == NULL) {
         LOG_ERROR("Bad value %"PRIx32 "", in);
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -1217,9 +1258,9 @@ ifapi_json_TPMI_CELMGTTYPE_serialize(const TPMI_CELMGTTYPE in, json_object **jso
         { FIRMWARE_END, "firmware_end" }
     };
     CHECK_IN_LIST(TPMI_CELMGTTYPE, in, CEL_VERSION, FIRMWARE_END);
-    for (size_t i = 0; i < sizeof(jso_tab) / sizeof(jso_tab[0]); i++) {
-        if (jso_tab[i].in == in) {
-            *jso = json_object_new_string(jso_tab[i].name);
+    for (size_t j = 0; j < sizeof(jso_tab) / sizeof(jso_tab[0]); j++) {
+        if (jso_tab[j].in == in) {
+            *jso = json_object_new_string(jso_tab[j].name);
             check_oom(*jso);
             return TSS2_RC_SUCCESS;
         }

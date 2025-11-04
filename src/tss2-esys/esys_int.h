@@ -6,9 +6,15 @@
 #ifndef ESYS_INT_H
 #define ESYS_INT_H
 
-#include <stdint.h>
-#include "esys_crypto.h"
-#include "esys_types.h"
+#include <stddef.h>           // for NULL, size_t
+#include <stdint.h>           // for int32_t
+
+#include "esys_types.h"       // for IESYS_RESOURCE, IESYS_SESSION
+#include "tss2_common.h"      // for TSS2_ESYS_RC_BAD_REFERENCE
+#include "tss2_esys.h"        // for ESYS_TR, ESYS_CRYPTO_CALLBACKS
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2B_SENSITIVE_CREATE, TPM2B_AUTH, TPM...
 
 #ifdef __cplusplus
 extern "C" {
@@ -141,15 +147,15 @@ typedef union {
 } IESYS_CMD_IN_PARAM;
 
 /** The states for the ESAPI's internal state machine */
-enum _ESYS_STATE {
-    _ESYS_STATE_INIT = 0,     /**< The initial state after creation or after
+enum ESYS_STATE {
+    ESYS_STATE_INIT = 0,     /**< The initial state after creation or after
                                    finishing a command. A new command can only
                                    be issued in this state. */
-    _ESYS_STATE_SENT,         /**< The state after sending a command to the TPM
+    ESYS_STATE_SENT,         /**< The state after sending a command to the TPM
                                    before receiving a response. */
-    _ESYS_STATE_RESUBMISSION, /**< The state after receiving a response from the
+    ESYS_STATE_RESUBMISSION, /**< The state after receiving a response from the
                                    TPM that requires resending of the command.*/
-    _ESYS_STATE_INTERNALERROR /**< A non-recoverable error occured within the
+    ESYS_STATE_INTERNALERROR /**< A non-recoverable error occured within the
                                    ESAPI code. */
 };
 
@@ -160,7 +166,7 @@ enum _ESYS_STATE {
  * auths and similar things.
  */
 struct ESYS_CONTEXT {
-    enum _ESYS_STATE state;      /**< The current state of the ESAPI context. */
+    enum ESYS_STATE state;      /**< The current state of the ESAPI context. */
     TSS2_SYS_CONTEXT *sys;       /**< The SYS context used internally to talk to
                                       the TPM. */
     ESYS_TR esys_handle_cnt;     /**< The next free ESYS_TR number. */
@@ -171,6 +177,7 @@ struct ESYS_CONTEXT {
                                       current command execution. */
     RSRC_NODE_T *session_tab[3]; /**< The list of TPM session meta data in the
                                       current command execution. */
+    RSRC_NODE_T *auth_objects[3];/**< The list of objects to be authenticated */
     int encryptNonceIdx;         /**< The index of the encrypt session. */
     TPM2B_NONCE *encryptNonce;   /**< The nonce of the encrypt session, or NULL
                                       if no encrypt session exists. */
@@ -205,12 +212,12 @@ struct ESYS_CONTEXT {
  * The number of resubmissions before a TPM's TPM2_RC_YIELDED is forwarded to
  * the application.
  */
-#define _ESYS_MAX_SUBMISSIONS 5
+#define ESYS_MAX_SUBMISSIONS 5
 
 /** Makro testing parameters against null.
  */
-#define _ESYS_ASSERT_NON_NULL(x) \
-    if (x == NULL) { \
+#define ESYS_ASSERT_NON_NULL(x) \
+    if ((x) == NULL) { \
         LOG_ERROR(str(x) " == NULL."); \
         return TSS2_ESYS_RC_BAD_REFERENCE; \
     }

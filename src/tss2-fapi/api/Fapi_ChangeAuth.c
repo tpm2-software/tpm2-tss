@@ -5,23 +5,29 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#include <stdlib.h>           // for free, size_t, malloc, NULL
+#include <string.h>           // for strlen, memcpy, memset, strcmp
 
-#include "tss2_fapi.h"
-#include "fapi_int.h"
-#include "fapi_util.h"
-#include "tss2_esys.h"
+#include "fapi_int.h"         // for IFAPI_Entity_ChangeAuth, FAPI_CONTEXT
+#include "fapi_types.h"       // for UINT8_ARY
+#include "fapi_util.h"        // for ifapi_authorize_object, ifapi_initializ...
+#include "ifapi_helpers.h"    // for ifapi_get_hierary_handle, ifapi_path_ty...
+#include "ifapi_io.h"         // for ifapi_io_poll
+#include "ifapi_keystore.h"   // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"     // for statecase, fallthrough, return_try_again
+#include "ifapi_profiles.h"   // for ifapi_profiles_get, IFAPI_PROFILE
+#include "tss2_common.h"      // for TSS2_FAPI_RC_TRY_AGAIN, TSS2_RC, BYTE
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_FlushContext, Esys_F...
+#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_ChangeAuth, Fapi_Cha...
+#include "tss2_policy.h"      // for TSS2_OBJECT
+#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"  // for TPM2B_AUTH, TPM2B_PRIVATE, TPM2_NO, TPM...
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
-#include "fapi_crypto.h"
+#include "util/log.h"         // for goto_if_error, LOG_TRACE, SAFE_FREE
 
 /** One-Call function for Fapi_ChangeAuth
  *
@@ -413,10 +419,11 @@ Fapi_ChangeAuth_Finish(
                empty authorization or an actual password. */
             object = command->key_object;
 
-            if (strlen(command->authValue) > 0)
+            if (strlen(command->authValue) > 0) {
                 object->misc.key.with_auth = TPM2_YES;
-            else
+            } else {
                 object->misc.key.with_auth = TPM2_NO;
+            }
             fallthrough;
 
         statecase(context->state, ENTITY_CHANGE_AUTH_WRITE_PREPARE)
@@ -496,10 +503,19 @@ Fapi_ChangeAuth_Finish(
 
             /* Update the information about whether the new Auth is an empty
                authorization or an actual password. */
-            if (strlen(command->authValue) > 0)
+            if (strlen(command->authValue) > 0) {
+                if (object->misc.key.with_auth == TPM2_YES) {
+                     context->state = ENTITY_CHANGE_AUTH_CLEANUP;
+                     return TSS2_FAPI_RC_TRY_AGAIN;
+                }
                 object->misc.nv.with_auth = TPM2_YES;
-            else
+            } else {
+                if (object->misc.key.with_auth == TPM2_NO) {
+                     context->state = ENTITY_CHANGE_AUTH_CLEANUP;
+                     return TSS2_FAPI_RC_TRY_AGAIN;
+                }
                 object->misc.nv.with_auth = TPM2_NO;
+            }
 
             /* Jump over to the AUTH_WRITE_PREPARE state for storing the
                new metadata to the keystore. */
@@ -608,6 +624,6 @@ error_cleanup:
         SAFE_FREE(command->pathlist);
     }
     LOG_TRACE("finished");
-    context->state = _FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     return r;
 }

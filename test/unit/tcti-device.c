@@ -5,25 +5,26 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>
-#include <inttypes.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <poll.h>
+#include <errno.h>                  // for errno, EACCES, ENOENT
+#include <inttypes.h>               // for uint8_t
+#include <poll.h>                   // for pollfd, nfds_t
+#include <stdio.h>                  // for NULL, size_t, ssize_t
+#include <stdlib.h>                 // for calloc, free
+#include <string.h>                 // for memcpy, strlen, strncmp
 
-#include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"                 // for will_return, assert_true, assert_...
+#include "tss2-tcti/tcti-common.h"  // for tcti_common_context_cast, TSS2_TC...
+#include "tss2_common.h"            // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TC...
+#include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, TSS2_TCTI_TIME...
+#include "tss2_tcti_device.h"       // for Tss2_Tcti_Device_Init
 
-#include "tss2_mu.h"
-#include "tss2_tcti_device.h"
+#define LOGMODULE tests
+#include "util/log.h"
 
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-device.h"
+#define EXIT_SKIP 77
 
 /*
  * Size of the TPM2 buffer used in these tests. In some cases this will be
@@ -444,6 +445,12 @@ tcti_device_poll_io_error (void **state)
 int
 main(int argc, char* argv[])
 {
+#if _FILE_OFFSET_BITS == 64
+    // Would produce cmocka error
+    LOG_WARNING("_FILE_OFFSET == 64 would produce cmocka errors.");
+    return EXIT_SKIP;
+#endif
+
     const struct CMUnitTest tests[] = {
         cmocka_unit_test (tcti_device_init_all_null_test),
         cmocka_unit_test(tcti_device_init_size_test),

@@ -7,10 +7,10 @@
 #ifndef TEST_COMMON_H
 #define TEST_COMMON_H
 
-#include "tss2_tcti.h"
-#include "tss2_sys.h"
 #include "tss2_esys.h"
 #include "tss2_fapi.h"
+#include "tss2_sys.h"
+#include "tss2_tcti.h"
 
 #define ENV_TCTI "TPM20TEST_TCTI"
 

@@ -1,11 +1,13 @@
+/* SPDX-FileCopyrightText: 2021, Fraunhofer SIT sponsored by Infineon */
+/* SPDX-FileCopyrightText: 2023, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifndef TCG_EFI_EVENT_H
 #define TCG_EFI_EVENT_H 1
 
-#include <uuid/uuid.h>
-#include <uchar.h>
+#include <uchar.h>        // for char16_t
+#include <uuid/uuid.h>    // for uuid_t
 
-#include "tss2_tpm2_types.h"
+#include "tss2_common.h"  // for UINT32, BYTE, UINT64, UINT8, UINT16
 
 /*
  * Log event types. These are spread out over 2 specs:
@@ -34,17 +36,20 @@
 
 /* TCG EFI Platform Specification For TPM Family 1.1 or 1.2 */
 #define EV_EFI_EVENT_BASE                0x80000000
-#define EV_EFI_VARIABLE_DRIVER_CONFIG    EV_EFI_EVENT_BASE + 0x1
-#define EV_EFI_VARIABLE_BOOT             EV_EFI_EVENT_BASE + 0x2
-#define EV_EFI_BOOT_SERVICES_APPLICATION EV_EFI_EVENT_BASE + 0x3
-#define EV_EFI_BOOT_SERVICES_DRIVER      EV_EFI_EVENT_BASE + 0x4
-#define EV_EFI_RUNTIME_SERVICES_DRIVER   EV_EFI_EVENT_BASE + 0x5
-#define EV_EFI_GPT_EVENT                 EV_EFI_EVENT_BASE + 0x6
-#define EV_EFI_ACTION                    EV_EFI_EVENT_BASE + 0x7
-#define EV_EFI_PLATFORM_FIRMWARE_BLOB    EV_EFI_EVENT_BASE + 0x8
-#define EV_EFI_HANDOFF_TABLES            EV_EFI_EVENT_BASE + 0x9
-#define EV_EFI_HCRTM_EVENT               EV_EFI_EVENT_BASE + 0x10
-#define EV_EFI_VARIABLE_AUTHORITY        EV_EFI_EVENT_BASE + 0xe0
+#define EV_EFI_VARIABLE_DRIVER_CONFIG    (EV_EFI_EVENT_BASE + 0x1)
+#define EV_EFI_VARIABLE_BOOT             (EV_EFI_EVENT_BASE + 0x2)
+#define EV_EFI_BOOT_SERVICES_APPLICATION (EV_EFI_EVENT_BASE + 0x3)
+#define EV_EFI_BOOT_SERVICES_DRIVER      (EV_EFI_EVENT_BASE + 0x4)
+#define EV_EFI_RUNTIME_SERVICES_DRIVER   (EV_EFI_EVENT_BASE + 0x5)
+#define EV_EFI_GPT_EVENT                 (EV_EFI_EVENT_BASE + 0x6)
+#define EV_EFI_ACTION                    (EV_EFI_EVENT_BASE + 0x7)
+#define EV_EFI_PLATFORM_FIRMWARE_BLOB    (EV_EFI_EVENT_BASE + 0x8)
+#define EV_EFI_HANDOFF_TABLES            (EV_EFI_EVENT_BASE + 0x9)
+#define EV_EFI_PLATFORM_FIRMWARE_BLOB2   (EV_EFI_EVENT_BASE + 0xa)
+#define EV_EFI_HANDOFF_TABLES2           (EV_EFI_EVENT_BASE + 0xb)
+#define EV_EFI_VARIABLE_BOOT2            (EV_EFI_EVENT_BASE + 0xc)
+#define EV_EFI_HCRTM_EVENT               (EV_EFI_EVENT_BASE + 0x10)
+#define EV_EFI_VARIABLE_AUTHORITY        (EV_EFI_EVENT_BASE + 0xe0)
 
 #ifndef PACKED
 #define PACKED __attribute__((__packed__))

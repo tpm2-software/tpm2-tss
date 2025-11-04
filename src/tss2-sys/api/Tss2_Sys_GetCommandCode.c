@@ -4,21 +4,22 @@
  * All rights reserved.
  ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
+#include <string.h>            // for memcpy
 
-#include "tss2_tpm2_types.h"
-#include "tss2_mu.h"
-#include "sysapi_util.h"
-#include "util/tss2_endian.h"
+#include "sysapi_util.h"       // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"       // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_SYS_RC_...
+#include "tss2_sys.h"          // for TSS2_SYS_CONTEXT, Tss2_Sys_GetCommandCode
+#include "tss2_tpm2_types.h"   // for TPM2_CC
+#include "util/tss2_endian.h"  // for HOST_TO_BE_32
 
 TSS2_RC Tss2_Sys_GetCommandCode(
     TSS2_SYS_CONTEXT *sysContext,
     UINT8 *commandCode)
 {
-    _TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx || !commandCode)
         return TSS2_SYS_RC_BAD_REFERENCE;

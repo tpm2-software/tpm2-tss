@@ -5,26 +5,22 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>
-#include <stdlib.h>
+#include <stdbool.h>                 // for true
+#include <stdlib.h>                  // for calloc, NULL
 
-#include "tss2_mu.h"
-#include "fapi_util.h"
-#include "fapi_crypto.h"
+#include "ifapi_macros.h"            // for statecase, fallthrough, statecas...
+#include "ifapi_policy_callbacks.h"  // for IFAPI_POLICY_EXEC_CB_CTX, ifapi_...
 //#include "fapi_policy.h"
-#include "ifapi_policy_execute.h"
+#include "ifapi_policy_execute.h"    // for IFAPI_POLICY_EXEC_CTX, ifapi_pol...
 #include "ifapi_policyutil_execute.h"
-#include "ifapi_helpers.h"
-#include "ifapi_json_deserialize.h"
-#include "tpm_json_deserialize.h"
-#include "ifapi_policy_callbacks.h"
-#include "ifapi_policyutil_execute.h"
+#include "ifapi_profiles.h"          // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_policy.h"             // for TSS2_POLICY_EXEC_CALLBACKS
+
 #define LOGMODULE fapi
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"                // for SAFE_FREE, return_error, goto_if...
 
 /** Create a new policy on policy stack.
  *
@@ -42,12 +38,12 @@ new_policy(
     IFAPI_POLICY_EXEC_CTX *pol_exec_ctx;
     IFAPI_POLICY_EXEC_CB_CTX *pol_exec_cb_ctx;
 
-    *current_policy = calloc(sizeof(IFAPI_POLICYUTIL_STACK), 1);
+    *current_policy = calloc(1, sizeof(IFAPI_POLICYUTIL_STACK));
     if (!*current_policy) {
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
     }
 
-    pol_exec_ctx = calloc(sizeof(IFAPI_POLICY_EXEC_CTX), 1);
+    pol_exec_ctx = calloc(1, sizeof(IFAPI_POLICY_EXEC_CTX));
     if (!pol_exec_ctx) {
         SAFE_FREE(*current_policy);
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
@@ -73,7 +69,7 @@ new_policy(
     pol_exec_ctx->callbacks.cbaction = ifapi_policy_action;
     pol_exec_ctx->callbacks.cbaction_userdata = context;
 
-    pol_exec_cb_ctx = calloc(sizeof(IFAPI_POLICY_EXEC_CB_CTX), 1);
+    pol_exec_cb_ctx = calloc(1, sizeof(IFAPI_POLICY_EXEC_CB_CTX));
     if (!pol_exec_cb_ctx) {
         SAFE_FREE(*current_policy);
         return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
@@ -134,7 +130,7 @@ create_session(
         break;
 
     default:
-        context->state = _FAPI_STATE_INTERNALERROR;
+        context->state = FAPI_STATE_INTERNALERROR;
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid state for create session.",
                    cleanup);
     }

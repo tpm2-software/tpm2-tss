@@ -1,17 +1,18 @@
+/* SPDX-FileCopyrightText: 2023, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>
+#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_esys.h"
+#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, UINT16
+#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_Free, Esys_FlushContext
+#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256, TPM2B_PUBLIC, TPM2B_AUTH
 
-#include "esys_iutil.h"
 #define LOGMODULE test
-#include "util/log.h"
-#include "util/aux_util.h"
+#include "util/log.h"         // for goto_if_error, LOG_ERROR
 
 /** This test is intended to test trailing zeros in an auth value
  *
@@ -320,6 +321,7 @@ test_esys_trailing_zeros_in_auth(ESYS_CONTEXT * esys_context)
                                  ESYS_TR_NONE,
                                  ESYS_TR_NONE,
                                  &newAuth);
+    goto_if_error(r, "Error Esys_HierarchyChangeAuth", error);
 
     r = Esys_StartAuthSession(esys_context, primaryHandle, ESYS_TR_RH_OWNER, ESYS_TR_NONE,
                               ESYS_TR_NONE, ESYS_TR_NONE, NULL, TPM2_SE_HMAC,

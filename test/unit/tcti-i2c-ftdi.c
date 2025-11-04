@@ -21,26 +21,27 @@
  * SOFTWARE
  */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include <inttypes.h>                   // for uint8_t
+#include <stdbool.h>                    // for false, true
+#include <stdio.h>                      // for NULL, size_t
+#include <stdlib.h>                     // for malloc, free, calloc
+#include <string.h>                     // for strncmp, memcpy
+#include <sys/select.h>                 // for fd_set, timeval
 
-#include <setjmp.h>
-#include <cmocka.h>
+#include "../helper/cmocka_all.h"                     // for assert_int_equal, assert_true
+#include "tss2-tcti/mpsse/mpsse.h"      // for MPSSE_OK, ACK, I2C, MSB, ONE_...
+#include "tss2-tcti/tcti-common.h"      // for TCTI_VERSION
+#include "tss2-tcti/tcti-i2c-ftdi.h"    // for I2C_DEV_ADDR_DEFAULT
+#include "tss2-tcti/tcti-i2c-helper.h"  // for TCTI_I2C_HELPER_TPM_STS_COMMA...
+#include "tss2_common.h"                // for TSS2_RC_SUCCESS, TSS2_TCTI_RC...
+#include "tss2_tcti.h"                  // for TSS2_TCTI_CONTEXT, TSS2_TCTI_...
+#include "tss2_tcti_i2c_ftdi.h"         // for Tss2_Tcti_I2c_Ftdi_Init
 
-#include "tss2_tcti.h"
-#include "tss2_tcti_i2c_ftdi.h"
-
-#include "tss2-tcti/tcti-common.h"
-#include "tss2-tcti/tcti-i2c-ftdi.h"
-#include "tss2-tcti/tcti-i2c-helper.h"
-#include "util/key-value-parse.h"
+struct timeval;
+struct timezone;
 
 typedef enum {
     I2C_IDLE = 0,
