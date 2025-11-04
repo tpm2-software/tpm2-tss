@@ -151,6 +151,7 @@ Tss2_PolicyInit(
     return TSS2_RC_SUCCESS;
 
 cleanup:
+    ifapi_cleanup_policy(&tmp_policy);
     Tss2_PolicyFinalize(policy_ctx);
     return r;
 }
