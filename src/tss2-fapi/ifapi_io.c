@@ -564,7 +564,7 @@ ifapi_io_dirfiles(
     }
 
     paths = (char**)calloc(numentries, sizeof(*paths));
-    check_oom(paths);
+    goto_if_null2(paths, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_oom);
 
     /* Iterating through the list of entries inside the directory. */
     for (size_t i = 0; i < (size_t) numentries; i++) {
@@ -633,6 +633,8 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
     while ((entry = readdir(dir)) != NULL) {
         path = NULL;
         r = is_directory(dir_name, entry, &is_dir);
+        if (r)
+            closedir(dir);
         return_if_error(r, "directory check failed");
 
         if (is_dir) {
