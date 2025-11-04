@@ -29,4 +29,4 @@ task:
     #
     ./bootstrap &&
     ./configure --enable-self-generated-certificate --enable-unit=yes --enable-integration=yes --with-crypto=ossl --disable-doxygen-doc --enable-tcti-swtpm=yes --enable-tcti-libtpms=no --enable-tcti-mssim=no --disable-dependency-tracking &&
-    gmake -j check || { cat /tmp/cirrus-ci-build/tpm2-tss-*/_build/sub/test-suite.log; exit 1; }
+    gmake -j check || { cat /tmp/cirrus-ci-build/test-suite.log; exit 1; }
