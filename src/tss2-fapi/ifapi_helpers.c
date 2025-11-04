@@ -693,7 +693,7 @@ split_string(const char *string, char *delimiter)
     SAFE_FREE(stringdup);
     return start_node;
 error_cleanup:
-    SAFE_FREE(start_node);
+    free_string_list(start_node);
     SAFE_FREE(substr);
     SAFE_FREE(stringdup);
     return NULL;
