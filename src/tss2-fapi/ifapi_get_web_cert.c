@@ -5,48 +5,48 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <curl/curl.h>             // for curl_easy_cleanup, curl_easy_init
-#include <json.h>                  // for json_object_get_string, json_objec...
-#include <openssl/bio.h>           // for BIO_new, BIO_free_all, BIO_push
-#include <openssl/buffer.h>        // for buf_mem_st
-#include <openssl/evp.h>           // for EVP_DigestUpdate, BIO_f_base64
-#include <openssl/opensslv.h>      // for OPENSSL_VERSION_NUMBER
-#include <openssl/sha.h>           // for SHA256_DIGEST_LENGTH
-#include <stdbool.h>               // for bool, true
-#include <stdint.h>                // for uint8_t
-#include <stdio.h>                 // for NULL, size_t, snprintf, sprintf, FILE
-#include <stdlib.h>                // for free, malloc, calloc
-#include <string.h>                // for strdup, strlen
+#include <curl/curl.h>        // for curl_easy_cleanup, curl_easy_init
+#include <json.h>             // for json_object_get_string, json_objec...
+#include <openssl/bio.h>      // for BIO_new, BIO_free_all, BIO_push
+#include <openssl/buffer.h>   // for buf_mem_st
+#include <openssl/evp.h>      // for EVP_DigestUpdate, BIO_f_base64
+#include <openssl/opensslv.h> // for OPENSSL_VERSION_NUMBER
+#include <openssl/sha.h>      // for SHA256_DIGEST_LENGTH
+#include <stdbool.h>          // for bool, true
+#include <stdint.h>           // for uint8_t
+#include <stdio.h>            // for NULL, size_t, snprintf, sprintf, FILE
+#include <stdlib.h>           // for free, malloc, calloc
+#include <string.h>           // for strdup, strlen
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/aes.h>
 #endif
 
-#include "fapi_int.h"              // for FAPI_CONTEXT, VENDOR_AMD, VENDOR_INTC
-#include "ifapi_config.h"          // for IFAPI_CONFIG
-#include "ifapi_curl.h"            // for ifapi_get_curl_buffer
-#include "tpm_json_deserialize.h"  // for ifapi_parse_json
-#include "tss2_common.h"           // for BYTE, TSS2_FAPI_RC_GENERAL_FAILURE
-#include "tss2_fapi.h"             // for FAPI_CONTEXT
-#include "tss2_tpm2_types.h"       // for TPM2B_PUBLIC, TPMT_PUBLIC, TPMU_PU...
+#include "fapi_int.h"             // for FAPI_CONTEXT, VENDOR_AMD, VENDOR_INTC
+#include "ifapi_config.h"         // for IFAPI_CONFIG
+#include "ifapi_curl.h"           // for ifapi_get_curl_buffer
+#include "tpm_json_deserialize.h" // for ifapi_parse_json
+#include "tss2_common.h"          // for BYTE, TSS2_FAPI_RC_GENERAL_FAILURE
+#include "tss2_fapi.h"            // for FAPI_CONTEXT
+#include "tss2_tpm2_types.h"      // for TPM2B_PUBLIC, TPMT_PUBLIC, TPMU_PU...
 
 #define LOGMODULE fapi
-#include "util/log.h"              // for LOG_ERROR, goto_error, SAFE_FREE
+#include "util/log.h" // for LOG_ERROR, goto_error, SAFE_FREE
 
 struct tpm_getekcertificate_ctx;
 
 #define AMD_EK_URI_LEN 16 /*<< AMD EK takes first 16 hex chars of hash */
-#define NULL_TERM_LEN 1 // '\0'
+#define NULL_TERM_LEN  1  // '\0'
 
 typedef struct tpm_getekcertificate_ctx tpm_getekcertificate_ctx;
 struct tpm_getekcertificate_ctx {
-    char *ec_cert_path;
-    FILE *ec_cert_file_handle;
-    char *ek_server_addr;
-    unsigned int SSL_NO_VERIFY;
-    char *ek_path;
-    bool verbose;
-    bool is_tpm2_device_active;
+    char         *ec_cert_path;
+    FILE         *ec_cert_file_handle;
+    char         *ek_server_addr;
+    unsigned int  SSL_NO_VERIFY;
+    char         *ek_path;
+    bool          verbose;
+    bool          is_tpm2_device_active;
     TPM2B_PUBLIC *out_public;
 };
 
@@ -60,7 +60,8 @@ static tpm_getekcertificate_ctx ctx = {
  * @retval unsigned_char* The hash value.
  * @retval NULL If the computation of the hash fails.
  */
-static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor) {
+static unsigned char *
+hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor) {
     unsigned char *hash = (unsigned char *)malloc(SHA256_DIGEST_LENGTH);
     if (!hash) {
         LOG_ERROR("OOM");
@@ -99,18 +100,17 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor) {
                 LOG_WARNING("non-default exponent used");
             }
             buf[3] = (BYTE)exp;
-            buf[2] = (BYTE)(exp>>=8);
-            buf[1] = (BYTE)(exp>>=8);
-            buf[0] = (BYTE)(exp>>8);
+            buf[2] = (BYTE)(exp >>= 8);
+            buf[1] = (BYTE)(exp >>= 8);
+            buf[0] = (BYTE)(exp >> 8);
             is_success = EVP_DigestUpdate(sha256ctx, buf, sizeof(buf));
             if (!is_success) {
                 LOG_ERROR("EVP_DigestUpdate failed");
                 goto err;
             }
 
-            is_success = EVP_DigestUpdate(sha256ctx,
-                    ek_public->publicArea.unique.rsa.buffer,
-                    ek_public->publicArea.unique.rsa.size);
+            is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.rsa.buffer,
+                                          ek_public->publicArea.unique.rsa.size);
             if (!is_success) {
                 LOG_ERROR("EVP_DigestUpdate failed");
                 goto err;
@@ -127,17 +127,15 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor) {
                 LOG_ERROR("EVP_DigestUpdate failed");
                 goto err;
             }
-            is_success = EVP_DigestUpdate(sha256ctx,
-                    ek_public->publicArea.unique.ecc.x.buffer,
-                    ek_public->publicArea.unique.ecc.x.size);
+            is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.ecc.x.buffer,
+                                          ek_public->publicArea.unique.ecc.x.size);
             if (!is_success) {
                 LOG_ERROR("EVP_DigestUpdate failed");
                 goto err;
             }
 
-            is_success = EVP_DigestUpdate(sha256ctx,
-                    ek_public->publicArea.unique.ecc.y.buffer,
-                    ek_public->publicArea.unique.ecc.y.size);
+            is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.ecc.y.buffer,
+                                          ek_public->publicArea.unique.ecc.y.size);
             if (!is_success) {
                 LOG_ERROR("EVP_DigestUpdate failed");
                 goto err;
@@ -152,8 +150,7 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor) {
         switch (ek_public->publicArea.type) {
         case TPM2_ALG_RSA:
             /* Add public key to the hash. */
-            is_success = EVP_DigestUpdate(sha256ctx,
-                                          ek_public->publicArea.unique.rsa.buffer,
+            is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.rsa.buffer,
                                           ek_public->publicArea.unique.rsa.size);
             if (!is_success) {
                 LOG_ERROR("EVP_DigestUpdate failed");
@@ -175,8 +172,7 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor) {
             break;
 
         case TPM2_ALG_ECC:
-            is_success = EVP_DigestUpdate(sha256ctx,
-                                          ek_public->publicArea.unique.ecc.x.buffer,
+            is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.ecc.x.buffer,
                                           ek_public->publicArea.unique.ecc.x.size);
             if (!is_success) {
                 LOG_ERROR("EVP_DigestUpdate failed");
@@ -184,8 +180,7 @@ static unsigned char *hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor) {
             }
 
             /* Add public key to the hash. */
-            is_success = EVP_DigestUpdate(sha256ctx,
-                                          ek_public->publicArea.unique.ecc.y.buffer,
+            is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.ecc.y.buffer,
                                           ek_public->publicArea.unique.ecc.y.size);
             if (!is_success) {
                 LOG_ERROR("EVP_DigestUpdate failed");
@@ -223,9 +218,8 @@ err:
  * @retval NULL if the encoding fails.
  */
 static char *
-base64_encode(const unsigned char* buffer)
-{
-    BIO *bio, *b64;
+base64_encode(const unsigned char *buffer) {
+    BIO     *bio, *b64;
     BUF_MEM *buffer_pointer;
 
     LOG_INFO("Calculating the base64_encode of the hash of the Endorsement"
@@ -245,7 +239,7 @@ base64_encode(const unsigned char* buffer)
     BIO_get_mem_ptr(bio, &buffer_pointer);
 
     /* these are not NULL terminated */
-    char *b64text = buffer_pointer->data;
+    char  *b64text = buffer_pointer->data;
     size_t len = buffer_pointer->length;
 
     size_t i;
@@ -262,7 +256,7 @@ base64_encode(const unsigned char* buffer)
 
     CURL *curl = curl_easy_init();
     if (curl) {
-        char *output = curl_easy_escape(curl, b64text, (int) len);
+        char *output = curl_easy_escape(curl, b64text, (int)len);
         if (output) {
             final_string = strdup(output);
             curl_free(output);
@@ -285,11 +279,10 @@ base64_encode(const unsigned char* buffer)
  * @retval NULL if the decoding fails.
  */
 static char *
-base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
-{
+base64_decode(unsigned char *buffer, size_t len, size_t *new_len) {
     size_t i;
-    int unescape_len = 0, r = 0;
-    char *binary_data = NULL, *unescaped_string = NULL;
+    int    unescape_len = 0, r = 0;
+    char  *binary_data = NULL, *unescaped_string = NULL;
 
     LOG_INFO("Decoding the base64 encoded cert into binary form");
 
@@ -310,8 +303,7 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
     CURL *curl = curl_easy_init();
     if (curl) {
         /* Convert URL encoded string to a "plain string" */
-        char *output = curl_easy_unescape(curl, (char *)buffer,
-                                          (int) len, &unescape_len);
+        char *output = curl_easy_unescape(curl, (char *)buffer, (int)len, &unescape_len);
         if (output) {
             unescaped_string = strdup(output);
             curl_free(output);
@@ -331,7 +323,7 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
 
     binary_data = calloc(1, unescape_len);
     if (binary_data == NULL) {
-        free (unescaped_string);
+        free(unescaped_string);
         LOG_ERROR("Allocation of data for certificate failed.");
         return NULL;
     }
@@ -349,7 +341,7 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
     }
     *new_len = (size_t)r;
 
-    free (unescaped_string);
+    free(unescaped_string);
     BIO_free_all(bio);
     return binary_data;
 }
@@ -359,15 +351,15 @@ base64_decode(unsigned char* buffer, size_t len, size_t *new_len)
  * @param[in] hash The sha256 hash of the public ek.
  * @retval The encoded path.
  */
-static char *encode_ek_public(unsigned char *hash, UINT32 vendor) {
+static char *
+encode_ek_public(unsigned char *hash, UINT32 vendor) {
     if (vendor == VENDOR_INTC) {
         return base64_encode(hash);
     } else {
         char *hash_str = malloc(AMD_EK_URI_LEN * 2 + NULL_TERM_LEN);
-        for (size_t i = 0; i < AMD_EK_URI_LEN; i++)
-            {
-                sprintf((char*)(hash_str + (i*2)), "%02x", hash[i]);
-            }
+        for (size_t i = 0; i < AMD_EK_URI_LEN; i++) {
+            sprintf((char *)(hash_str + (i * 2)), "%02x", hash[i]);
+        }
         hash_str[AMD_EK_URI_LEN * 2] = '\0';
         return hash_str;
     }
@@ -383,12 +375,12 @@ static char *encode_ek_public(unsigned char *hash, UINT32 vendor) {
  * @param[out] buffer The json encoded certificate.
  * @param[out] cert_size The size of the certificate.
  */
-int retrieve_endorsement_certificate(char *path, unsigned char ** buffer,
-                                     size_t *cert_size) {
+int
+retrieve_endorsement_certificate(char *path, unsigned char **buffer, size_t *cert_size) {
     int ret = -1;
 
     size_t len = 1 + strlen(path) + strlen(ctx.ek_server_addr);
-    char *weblink = (char *) malloc(len);
+    char  *weblink = (char *)malloc(len);
 
     if (!weblink) {
         LOG_ERROR("oom");
@@ -397,8 +389,7 @@ int retrieve_endorsement_certificate(char *path, unsigned char ** buffer,
 
     snprintf(weblink, len, "%s%s", ctx.ek_server_addr, path);
 
-    CURLcode rc =  ifapi_get_curl_buffer((unsigned char *)weblink,
-                                         buffer, cert_size);
+    CURLcode rc = ifapi_get_curl_buffer((unsigned char *)weblink, buffer, cert_size);
     free(weblink);
     return rc;
 }
@@ -422,20 +413,20 @@ int retrieve_endorsement_certificate(char *path, unsigned char ** buffer,
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_get_web_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
-                              UINT32 vendor,
-                              unsigned char ** cert_buffer, size_t *cert_size)
-{
-    int rc = 1;
-    char *cert_ptr = NULL;
-    char *cert_start = NULL, *cert_bin = NULL;
-    char *path = NULL;
-    unsigned char *hash = hash_ek_public(ek_public, vendor);
+ifapi_get_web_ek_certificate(FAPI_CONTEXT   *context,
+                             TPM2B_PUBLIC   *ek_public,
+                             UINT32          vendor,
+                             unsigned char **cert_buffer,
+                             size_t         *cert_size) {
+    int                 rc = 1;
+    char               *cert_ptr = NULL;
+    char               *cert_start = NULL, *cert_bin = NULL;
+    char               *path = NULL;
+    unsigned char      *hash = hash_ek_public(ek_public, vendor);
     struct json_object *jso_cert, *jso = NULL;
 
     if (hash == NULL) {
-        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Compute EK hash failed.", out);
+        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE, "Compute EK hash failed.", out);
     }
 
     path = encode_ek_public(hash, vendor);
@@ -464,41 +455,37 @@ ifapi_get_web_ek_certificate(FAPI_CONTEXT *context, TPM2B_PUBLIC *ek_public,
     cert_ptr = (char *)*cert_buffer;
     LOGBLOB_DEBUG((uint8_t *)cert_ptr, *cert_size, "%s", "Certificate");
 
-    if (vendor == VENDOR_INTC ) {
+    if (vendor == VENDOR_INTC) {
         /* Parse certificate data out of the json structure */
         jso = ifapi_parse_json(cert_ptr);
         if (jso == NULL)
-            goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
-                       "Failed to parse EK cert data", out_free_json);
+            goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to parse EK cert data",
+                       out_free_json);
 
         if (!json_object_object_get_ex(jso, "certificate", &jso_cert))
-            goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
-                       "Could not find cert object", out_free_json);
+            goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not find cert object",
+                       out_free_json);
 
         if (!json_object_is_type(jso_cert, json_type_string))
-            goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
-                       "Invalid EK cert data", out_free_json);
+            goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid EK cert data", out_free_json);
 
         cert_start = strdup(json_object_get_string(jso_cert));
         if (!cert_start) {
             SAFE_FREE(cert_ptr);
-            goto_error(rc, TSS2_FAPI_RC_MEMORY,
-                       "Failed to duplicate cert", out_free_json);
+            goto_error(rc, TSS2_FAPI_RC_MEMORY, "Failed to duplicate cert", out_free_json);
         }
 
         *cert_size = strlen(cert_start);
 
         /* Base64 decode buffer into binary PEM format */
-        cert_bin = base64_decode((unsigned char *)cert_start,
-                                 *cert_size, cert_size);
+        cert_bin = base64_decode((unsigned char *)cert_start, *cert_size, cert_size);
         SAFE_FREE(cert_ptr);
         SAFE_FREE(cert_start);
     } else {
         cert_bin = cert_ptr;
     }
-      if (cert_bin == NULL) {
-        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Invalid EK cert data", out_free_json);
+    if (cert_bin == NULL) {
+        goto_error(rc, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid EK cert data", out_free_json);
     }
     LOG_DEBUG("Binary cert size %zu", *cert_size);
     *cert_buffer = (unsigned char *)cert_bin;

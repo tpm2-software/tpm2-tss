@@ -12,7 +12,7 @@
 
 typedef struct {
     TSS2_TCTI_COMMON_CONTEXT common;
-    int fd;
+    int                      fd;
 } TSS2_TCTI_DEVICE_CONTEXT;
 
 #endif /* TCTI_DEVICE_H */

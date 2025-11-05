@@ -8,27 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <limits.h>                        // for PATH_MAX
-#include <stddef.h>                        // for NULL, size_t
-#include <stdio.h>                         // for fclose, fopen, fprintf, fread
-#include <stdlib.h>                        // for calloc
-#include <string.h>                        // for memcpy, memset
+#include <limits.h> // for PATH_MAX
+#include <stddef.h> // for NULL, size_t
+#include <stdio.h>  // for fclose, fopen, fprintf, fread
+#include <stdlib.h> // for calloc
+#include <string.h> // for memcpy, memset
 
-#include "../helper/cmocka_all.h"                        // for assert_int_equal, assert_s...
-#include "tss2_common.h"                   // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_policy.h"                   // for TSS2_POLICY_PCR_SELECTION
-#include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMS_PCR_SEL...
+#include "../helper/cmocka_all.h" // for assert_int_equal, assert_s...
+#include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_policy.h"          // for TSS2_POLICY_PCR_SELECTION
+#include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPMS_PCR_SEL...
 
 #define LOGMODULE test
-#include "test/data/test-fapi-policies.h"  // for policy_digests, _test_fapi...
-#include "util/aux_util.h"                 // for UNUSED, SAFE_FREE, ARRAY_LEN
-#include "util/log.h"                      // for LOG_ERROR
+#include "test/data/test-fapi-policies.h" // for policy_digests, _test_fapi...
+#include "util/aux_util.h"                // for UNUSED, SAFE_FREE, ARRAY_LEN
+#include "util/log.h"                     // for LOG_ERROR
 
-#define TEST_LAYER        TSS2_RC_LAYER(19)
-#define TSS2_RC_TEST_NOT_SUPPORTED ((TSS2_RC)(TEST_LAYER | \
-                            TSS2_BASE_RC_NOT_SUPPORTED))
+#define TEST_LAYER                 TSS2_RC_LAYER(19)
+#define TSS2_RC_TEST_NOT_SUPPORTED ((TSS2_RC)(TEST_LAYER | TSS2_BASE_RC_NOT_SUPPORTED))
 
-static char *read_all(const char *path) {
+static char *
+read_all(const char *path) {
     FILE *f = fopen(path, "rb");
     if (!f) {
         return NULL;
@@ -53,14 +53,13 @@ static char *read_all(const char *path) {
     return buffer;
 }
 
-TSS2_RC policy_cb_pcr (
-    TSS2_POLICY_PCR_SELECTION *pcr_selection,
-    TPML_PCR_SELECTION *out_pcr_selection,
-    TPML_DIGEST *out_pcr_digests,
-    void *ctx)
-{
+TSS2_RC
+policy_cb_pcr(TSS2_POLICY_PCR_SELECTION *pcr_selection,
+              TPML_PCR_SELECTION        *out_pcr_selection,
+              TPML_DIGEST               *out_pcr_digests,
+              void                      *ctx) {
     TPML_PCR_SELECTION in_pcr_selection = { 0 };
-    TPML_DIGEST pcr_digests = { 0 };
+    TPML_DIGEST        pcr_digests = { 0 };
 
     /* Raw selector without bank specifier, figure out bank and copy
      * the raw selector over to the input selector */
@@ -69,10 +68,10 @@ TSS2_RC policy_cb_pcr (
         in_pcr_selection.pcrSelections[0].hash = TPM2_ALG_SHA256;
         in_pcr_selection.count = 1;
         memcpy(in_pcr_selection.pcrSelections[0].pcrSelect,
-                pcr_selection->selections.pcr_select.pcrSelect,
-                sizeof(pcr_selection->selections.pcr_select.pcrSelect));
-        in_pcr_selection.pcrSelections[0].sizeofSelect =
-                pcr_selection->selections.pcr_select.sizeofSelect;
+               pcr_selection->selections.pcr_select.pcrSelect,
+               sizeof(pcr_selection->selections.pcr_select.pcrSelect));
+        in_pcr_selection.pcrSelections[0].sizeofSelect
+            = pcr_selection->selections.pcr_select.sizeofSelect;
     } else {
         /* we have specified selection with bank, so just copy it. */
         in_pcr_selection = pcr_selection->selections.pcr_selection;
@@ -104,7 +103,7 @@ TSS2_RC policy_cb_pcr (
                     }
 
                     memset(pcr_digests.digests[pcr_digests.count].buffer, 0,
-                            pcr_digests.digests[pcr_digests.count].size);
+                           pcr_digests.digests[pcr_digests.count].size);
                     pcr_digests.count++;
                 }
             }
@@ -118,12 +117,11 @@ TSS2_RC policy_cb_pcr (
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC policy_cb_nvpublic (
-    const char *path,
-    TPMI_RH_NV_INDEX nv_index,
-    TPMS_NV_PUBLIC *nv_public,
-    void *userdata)
-{
+TSS2_RC
+policy_cb_nvpublic(const char      *path,
+                   TPMI_RH_NV_INDEX nv_index,
+                   TPMS_NV_PUBLIC  *nv_public,
+                   void            *userdata) {
     UNUSED(path);
     UNUSED(nv_index);
     UNUSED(nv_public);
@@ -134,11 +132,8 @@ TSS2_RC policy_cb_nvpublic (
     return TSS2_RC_TEST_NOT_SUPPORTED;
 }
 
-static void bin2hex (
-    const unsigned char *bin,
-    size_t len,
-    char *out)
-{
+static void
+bin2hex(const unsigned char *bin, size_t len, char *out) {
     size_t i;
 
     if (bin == NULL || len == 0) {
@@ -152,35 +147,28 @@ static void bin2hex (
     out[len * 2] = '\0';
 }
 
-static void test_policy_instantiate (
-    void **state)
-{
-    TSS2_POLICY_CALC_CALLBACKS callbacks = {
-        .cbpcr      = policy_cb_pcr,
-        .cbnvpublic = policy_cb_nvpublic
-    };
+static void
+test_policy_instantiate(void **state) {
+    TSS2_POLICY_CALC_CALLBACKS callbacks
+        = { .cbpcr = policy_cb_pcr, .cbnvpublic = policy_cb_nvpublic };
 
     unsigned i;
     for (i = 0; i < ARRAY_LEN(_test_fapi_policy_policies); i++) {
         policy_digests *p = &_test_fapi_policy_policies[i];
 
         char abs_path[PATH_MAX];
-        snprintf(abs_path, sizeof(abs_path),
-                TOP_SOURCEDIR"/test/data/fapi%s.json", p->path);
+        snprintf(abs_path, sizeof(abs_path), TOP_SOURCEDIR "/test/data/fapi%s.json", p->path);
 
         fprintf(stderr, "Calculating policy (%u): %s\n", i, p->path);
 
         unsigned expected_hash_size = 0;
         /* buffer for displaying a hash as a hex string */
-        char hexdigest[2 * sizeof(TPMU_HA) + 1] = { 0 };
-        TPM2B_DIGEST digest = { 0 };
+        char             hexdigest[2 * sizeof(TPMU_HA) + 1] = { 0 };
+        TPM2B_DIGEST     digest = { 0 };
         TSS2_POLICY_CTX *ctx = NULL;
 
         /* for each hash alg set... */
-        TPM2_ALG_ID halgs[] = {
-            TPM2_ALG_SHA256,
-            TPM2_ALG_SHA384
-        };
+        TPM2_ALG_ID halgs[] = { TPM2_ALG_SHA256, TPM2_ALG_SHA384 };
 
         unsigned j;
         for (j = 0; j < ARRAY_LEN(halgs); j++) {
@@ -224,31 +212,22 @@ static void test_policy_instantiate (
             }
 
             /* Get the calculated policy digest */
-            char *buffer = NULL;
+            char  *buffer = NULL;
             size_t size = 0;
-            rc = Tss2_PolicyGetCalculatedJSON(
-                    ctx,
-                    NULL,
-                    &size);
+            rc = Tss2_PolicyGetCalculatedJSON(ctx, NULL, &size);
             assert_int_equal(rc, TSS2_RC_SUCCESS);
 
             buffer = calloc(1, size);
             assert_non_null(buffer);
 
-            rc = Tss2_PolicyGetCalculatedJSON(
-                    ctx,
-                    buffer,
-                    &size);
+            rc = Tss2_PolicyGetCalculatedJSON(ctx, buffer, &size);
             assert_int_equal(rc, TSS2_RC_SUCCESS);
 
             /* done with that policy */
             Tss2_PolicyFinalize(&ctx);
 
             /* create one from calculated JSON */
-            rc = Tss2_PolicyInit(
-                buffer,
-                halg,
-                &ctx);
+            rc = Tss2_PolicyInit(buffer, halg, &ctx);
             assert_int_equal(rc, TSS2_RC_SUCCESS);
 
             rc = Tss2_PolicyCalculate(ctx);
@@ -273,16 +252,12 @@ static void test_policy_instantiate (
     } /* end for each policy file */
 } /* end of cmocka test */
 
-int main (
-    int argc,
-    char *argv[])
-{
+int
+main(int argc, char *argv[]) {
     UNUSED(argc);
     UNUSED(argv);
 
-    const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_policy_instantiate)
-    };
+    const struct CMUnitTest tests[] = { cmocka_unit_test(test_policy_instantiate) };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

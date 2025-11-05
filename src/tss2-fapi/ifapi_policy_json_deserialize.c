@@ -8,24 +8,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>                // for int64_t, PRId64, PRIx64
-#include <stdbool.h>                 // for bool, false, true
-#include <stdio.h>                   // for size_t, NULL, sscanf
-#include <stdlib.h>                  // for calloc
-#include <string.h>                  // for memset, strlen, strcmp, strncmp
-#include <strings.h>                 // for strncasecmp
+#include <inttypes.h> // for int64_t, PRId64, PRIx64
+#include <stdbool.h>  // for bool, false, true
+#include <stdio.h>    // for size_t, NULL, sscanf
+#include <stdlib.h>   // for calloc
+#include <string.h>   // for memset, strlen, strcmp, strncmp
+#include <strings.h>  // for strncasecmp
 
-#include "ifapi_helpers.h"           // for ifapi_check_json_object_fields
-#include "ifapi_json_deserialize.h"  // for ifapi_json_char_deserialize, GET...
-#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMI_POLICYTYP...
-#include "ifapi_policy_types.h"      // for TPMS_POLICYSIGNED, TPMU_POLICYEL...
-#include "tpm_json_deserialize.h"    // for ifapi_get_sub_object, ifapi_json...
-#include "tss2_common.h"             // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_policy.h"             // for TPMS_PCRVALUE, TPML_PCRVALUES
-#include "tss2_tpm2_types.h"         // for TPM2B_NAME, TPMT_RSA_SCHEME, TPM...
+#include "ifapi_helpers.h"                 // for ifapi_check_json_object_fields
+#include "ifapi_json_deserialize.h"        // for ifapi_json_char_deserialize, GET...
+#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMI_POLICYTYP...
+#include "ifapi_policy_types.h"            // for TPMS_POLICYSIGNED, TPMU_POLICYEL...
+#include "tpm_json_deserialize.h"          // for ifapi_get_sub_object, ifapi_json...
+#include "tss2_common.h"                   // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_policy.h"                   // for TPMS_PCRVALUE, TPML_PCRVALUES
+#include "tss2_tpm2_types.h"               // for TPM2B_NAME, TPMT_RSA_SCHEME, TPM...
 
 #define LOGMODULE fapijson
-#include "util/log.h"                // for return_if_error, LOG_TRACE, retu...
+#include "util/log.h" // for return_if_error, LOG_TRACE, retu...
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 
@@ -39,14 +39,12 @@ static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "PO
  * @retval 0 if no prefix is found.
  */
 static unsigned int
-get_token_start_idx(const char *token)
-{
+get_token_start_idx(const char *token) {
     unsigned int itoken = 0;
-    char *entry;
-    int i;
+    char        *entry;
+    int          i;
 
-    for (i = 0, entry = tss_const_prefixes[0]; entry != NULL;
-            i++, entry = tss_const_prefixes[i]) {
+    for (i = 0, entry = tss_const_prefixes[0]; entry != NULL; i++, entry = tss_const_prefixes[i]) {
         if (strncasecmp(token, entry, strlen(entry)) == 0) {
             itoken += strlen(entry);
             break;
@@ -66,15 +64,14 @@ get_token_start_idx(const char *token)
  * @retval false if token does not represent a number.
  */
 static bool
-get_number(const char *token, int64_t *num)
-{
+get_number(const char *token, int64_t *num) {
     int itoken = 0;
     int pos = 0;
     if (strncmp(token, "0x", 2) == 0) {
         itoken = 2;
-        sscanf(&token[itoken], "%"PRIx64"%n", num, &pos);
+        sscanf(&token[itoken], "%" PRIx64 "%n", num, &pos);
     } else {
-        sscanf(&token[itoken], "%"PRId64"%n", num, &pos);
+        sscanf(&token[itoken], "%" PRId64 "%n", num, &pos);
     }
     if ((size_t)pos == strlen(token) - itoken)
         return true;
@@ -90,15 +87,14 @@ get_number(const char *token, int64_t *num)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
 TSS2_RC
-ifapi_json_TPMI_POLICYTYPE_deserialize(json_object *jso, TPMI_POLICYTYPE *out)
-{
+ifapi_json_TPMI_POLICYTYPE_deserialize(json_object *jso, TPMI_POLICYTYPE *out) {
     LOG_TRACE("call");
     return ifapi_json_TPMI_POLICYTYPE_deserialize_txt(jso, out);
 }
 
 typedef struct {
     TPMI_POLICYTYPE in;
-    char *name;
+    char           *name;
 } IFAPI_TPMI_POLICYTYPE_ASSIGN;
 
 static IFAPI_TPMI_POLICYTYPE_ASSIGN deserialize_TPMI_POLICYTYPE_tab[] = {
@@ -131,14 +127,12 @@ static IFAPI_TPMI_POLICYTYPE_ASSIGN deserialize_TPMI_POLICYTYPE_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
 TSS2_RC
-ifapi_json_TPMI_POLICYTYPE_deserialize_txt(json_object *jso,
-        TPMI_POLICYTYPE *out)
-{
+ifapi_json_TPMI_POLICYTYPE_deserialize_txt(json_object *jso, TPMI_POLICYTYPE *out) {
     LOG_TRACE("call");
     const char *token = json_object_get_string(jso);
-    int64_t i64;
+    int64_t     i64;
     if (get_number(token, &i64)) {
-        *out = (TPMI_POLICYTYPE) i64;
+        *out = (TPMI_POLICYTYPE)i64;
         if ((int64_t)*out != i64) {
             LOG_ERROR("Bad value");
             return TSS2_FAPI_RC_BAD_VALUE;
@@ -147,49 +141,27 @@ ifapi_json_TPMI_POLICYTYPE_deserialize_txt(json_object *jso,
 
     } else {
         int unsigned itoken = get_token_start_idx(token);
-        size_t i;
-        size_t n = sizeof(deserialize_TPMI_POLICYTYPE_tab) /
-                   sizeof(deserialize_TPMI_POLICYTYPE_tab[0]);
+        size_t       i;
+        size_t       n
+            = sizeof(deserialize_TPMI_POLICYTYPE_tab) / sizeof(deserialize_TPMI_POLICYTYPE_tab[0]);
         size_t size = strlen(token) - itoken;
         for (i = 0; i < n; i++) {
-            if (strncasecmp(&token[itoken],
-                            &deserialize_TPMI_POLICYTYPE_tab[i].name[0],
-                            size) == 0) {
+            if (strncasecmp(&token[itoken], &deserialize_TPMI_POLICYTYPE_tab[i].name[0], size)
+                == 0) {
                 *out = deserialize_TPMI_POLICYTYPE_tab[i].in;
                 return TSS2_RC_SUCCESS;
             }
         }
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant.");
     }
-
 }
 
-static char *field_TPMS_POLICYSIGNED_tab[] = {
-    "cpHashA",
-    "cphasha",
-    "policyRef",
-    "policyref",
-    "keyPath",
-    "keypath",
-    "keyPublic",
-    "keypublic",
-    "keyPEM",
-    "keypem",
-    "publicKeyHint",
-    "publickeyhint",
-    "publicKey",
-    "publickey",
-    "keyPEMhashAlg",
-    "keypemhashalg",
-    "$schema",
-    "type",
-    "policyDigests",
-    "policydigests",
-    "nonceTPM",
-    "expiration",
-    "rsaScheme",
-    "rsascheme"
-};
+static char *field_TPMS_POLICYSIGNED_tab[]
+    = { "cpHashA",       "cphasha",       "policyRef", "policyref",     "keyPath",
+        "keypath",       "keyPublic",     "keypublic", "keyPEM",        "keypem",
+        "publicKeyHint", "publickeyhint", "publicKey", "publickey",     "keyPEMhashAlg",
+        "keypemhashalg", "$schema",       "type",      "policyDigests", "policydigests",
+        "nonceTPM",      "expiration",    "rsaScheme", "rsascheme" };
 
 /** Deserialize a TPMS_POLICYSIGNED json object.
  *
@@ -201,11 +173,9 @@ static char *field_TPMS_POLICYSIGNED_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
-        TPMS_POLICYSIGNED *out)
-{
+ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso, TPMS_POLICYSIGNED *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
     size_t cond_cnt = 0; /**< counter for conditional fields */
@@ -281,7 +251,7 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
         out->rsaScheme.details.rsapss.hashAlg = out->keyPEMhashAlg;
     }
 
-        /* Check whether only one condition field found in policy. */
+    /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
         return_error(TSS2_FAPI_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy signed.");
@@ -291,21 +261,10 @@ ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYSECRET_tab[] = {
-    "cpHashA",
-    "cphasha",
-    "policyRef",
-    "policyref",
-    "objectPath",
-    "objectpath",
-    "objectName",
-    "objectname",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM",
-    "expiration"
-};
+static char *field_TPMS_POLICYSECRET_tab[]
+    = { "cpHashA",       "cphasha",    "policyRef",  "policyref", "objectPath",
+        "objectpath",    "objectName", "objectname", "$schema",   "type",
+        "policyDigests", "nonceTPM",   "expiration" };
 
 /** Deserialize a TPMS_POLICYSECRET json object.
  *
@@ -317,12 +276,10 @@ static char *field_TPMS_POLICYSECRET_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso,
-        TPMS_POLICYSECRET *out)
-{
+ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso, TPMS_POLICYSECRET *out) {
     json_object *jso2;
-    TSS2_RC r;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    TSS2_RC      r;
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -360,20 +317,14 @@ ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso,
         return_if_error(r, "Bad value for field \"objectName\".");
     }
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Exactly one conditional needed for policy secret .");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional needed for policy secret .");
     }
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYLOCALITY_tab[] = {
-    "locality",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYLOCALITY_tab[]
+    = { "locality", "$schema", "type", "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYLOCALITY json object.
  *
@@ -384,11 +335,9 @@ static char *field_TPMS_POLICYLOCALITY_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYLOCALITY_deserialize(json_object *jso,
-        TPMS_POLICYLOCALITY *out)
-{
+ifapi_json_TPMS_POLICYLOCALITY_deserialize(json_object *jso, TPMS_POLICYLOCALITY *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -404,22 +353,9 @@ ifapi_json_TPMS_POLICYLOCALITY_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYNV_tab[] = {
-    "nvPath",
-    "nvpath",
-    "nvIndex",
-    "nvindex",
-    "nvPublic",
-    "nvpublic",
-    "operandB",
-    "operandb",
-    "offset",
-    "operation",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYNV_tab[]
+    = { "nvPath",   "nvpath", "nvIndex",   "nvindex", "nvPublic", "nvpublic",      "operandB",
+        "operandb", "offset", "operation", "$schema", "type",     "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYNV json object.
  *
@@ -431,11 +367,10 @@ static char *field_TPMS_POLICYNV_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso,  TPMS_POLICYNV *out)
-{
+ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso, TPMS_POLICYNV *out) {
     json_object *jso2;
-    TSS2_RC r;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    TSS2_RC      r;
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -489,24 +424,16 @@ ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso,  TPMS_POLICYNV *out)
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Exactly one conditional is allowed for policy NV.");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for policy NV.");
     }
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYCOUNTERTIMER_tab[] = {
-    "operandB",
-    "operandb",
-    "offset",
-    "operation",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYCOUNTERTIMER_tab[]
+    = { "operandB", "operandb", "offset",        "operation",
+        "$schema",  "type",     "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYCOUNTERTIMER json object.
  *
@@ -517,11 +444,9 @@ static char *field_TPMS_POLICYCOUNTERTIMER_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(json_object *jso,
-        TPMS_POLICYCOUNTERTIMER *out)
-{
+ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(json_object *jso, TPMS_POLICYCOUNTERTIMER *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -551,13 +476,8 @@ ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYCOMMANDCODE_tab[] = {
-    "code",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYCOMMANDCODE_tab[]
+    = { "code", "$schema", "type", "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYCOMMANDCODE json object.
  *
@@ -568,11 +488,9 @@ static char *field_TPMS_POLICYCOMMANDCODE_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYCOMMANDCODE_deserialize(json_object *jso,
-        TPMS_POLICYCOMMANDCODE *out)
-{
+ifapi_json_TPMS_POLICYCOMMANDCODE_deserialize(json_object *jso, TPMS_POLICYCOMMANDCODE *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -596,9 +514,8 @@ ifapi_json_TPMS_POLICYCOMMANDCODE_deserialize(json_object *jso,
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYPHYSICALPRESENCE_deserialize(json_object *jso,
-        TPMS_POLICYPHYSICALPRESENCE *out)
-{
+ifapi_json_TPMS_POLICYPHYSICALPRESENCE_deserialize(json_object                 *jso,
+                                                   TPMS_POLICYPHYSICALPRESENCE *out) {
     LOG_TRACE("call");
     UNUSED(jso);
     UNUSED(out);
@@ -607,14 +524,8 @@ ifapi_json_TPMS_POLICYPHYSICALPRESENCE_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYCPHASH_tab[] = {
-    "cpHash",
-    "cphash",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYCPHASH_tab[]
+    = { "cpHash", "cphash", "$schema", "type", "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYCPHASH json object.
  *
@@ -625,11 +536,9 @@ static char *field_TPMS_POLICYCPHASH_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYCPHASH_deserialize(json_object *jso,
-        TPMS_POLICYCPHASH *out)
-{
+ifapi_json_TPMS_POLICYCPHASH_deserialize(json_object *jso, TPMS_POLICYCPHASH *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -645,18 +554,9 @@ ifapi_json_TPMS_POLICYCPHASH_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYNAMEHASH_tab[] = {
-    "nameHash",
-    "namehash",
-    "namePaths",
-    "namepaths",
-    "objectNames",
-    "objectnames",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYNAMEHASH_tab[]
+    = { "nameHash",    "namehash", "namePaths", "namepaths",     "objectNames",
+        "objectnames", "$schema",  "type",      "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYNAMEHASH json object.
  *
@@ -668,13 +568,11 @@ static char *field_TPMS_POLICYNAMEHASH_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
-        TPMS_POLICYNAMEHASH *out)
-{
+ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso, TPMS_POLICYNAMEHASH *out) {
     json_object *jso2, *jso3;
-    TSS2_RC r;
-    size_t i, n_paths = 0, n_names = 0;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    TSS2_RC      r;
+    size_t       i, n_paths = 0, n_names = 0;
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     LOG_TRACE("call");
     memset(out, 0, sizeof(TPMS_POLICYNAMEHASH));
@@ -698,8 +596,7 @@ ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
         if (jso_type == json_type_array) {
             n_paths = json_object_array_length(jso2);
             if (n_paths > 3) {
-                return_error(TSS2_FAPI_RC_BAD_VALUE,
-                             "More than 3 path names in policy name hash.");
+                return_error(TSS2_FAPI_RC_BAD_VALUE, "More than 3 path names in policy name hash.");
             }
             for (i = 0; i < n_paths; i++) {
                 jso3 = json_object_array_get_idx(jso2, i);
@@ -711,20 +608,17 @@ ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
             LOG_ERROR("No list of name paths");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
-
     }
     if (ifapi_get_sub_object(jso, "objectNames", &jso2)) {
         json_type jso_type = json_object_get_type(jso);
         if (jso_type == json_type_array) {
             n_names = json_object_array_length(jso2);
             if (n_paths > 0 && n_names > 0) {
-                return_error(TSS2_FAPI_RC_BAD_VALUE,
-                             "Only pathname or only TPM names are allowed "
-                             "for policy name hash.");
+                return_error(TSS2_FAPI_RC_BAD_VALUE, "Only pathname or only TPM names are allowed "
+                                                     "for policy name hash.");
             }
             if (n_names > 3) {
-                return_error(TSS2_FAPI_RC_BAD_VALUE,
-                             "More than 3 names in policy name hash.");
+                return_error(TSS2_FAPI_RC_BAD_VALUE, "More than 3 names in policy name hash.");
             }
             for (i = 0; i < n_names; i++) {
                 jso3 = json_object_array_get_idx(jso, i);
@@ -749,22 +643,10 @@ ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYDUPLICATIONSELECT_tab[] = {
-    "includeObject",
-    "includeobject",
-    "newParentPath",
-    "newparentpath",
-    "objectName",
-    "objectname",
-    "newParentName",
-    "newparentname",
-    "newParentPublic",
-    "newparentpublic",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYDUPLICATIONSELECT_tab[]
+    = { "includeObject", "includeobject", "newParentPath", "newparentpath",   "objectName",
+        "objectname",    "newParentName", "newparentname", "newParentPublic", "newparentpublic",
+        "$schema",       "type",          "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYDUPLICATIONSELECT json object.
  *
@@ -776,12 +658,11 @@ static char *field_TPMS_POLICYDUPLICATIONSELECT_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object *jso,
-        TPMS_POLICYDUPLICATIONSELECT *out)
-{
+ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object                  *jso,
+                                                    TPMS_POLICYDUPLICATIONSELECT *out) {
     json_object *jso2;
-    TSS2_RC r;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    TSS2_RC      r;
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -801,8 +682,8 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object *jso,
         else
             out->includeObject = TPM2_NO;
     }
-    GET_CONDITIONAL_TPM2B(newParentPublic, "newParentPublic", TPM2B_PUBLIC, TPMT_PUBLIC,
-                          publicArea, cond_cnt);
+    GET_CONDITIONAL_TPM2B(newParentPublic, "newParentPublic", TPM2B_PUBLIC, TPMT_PUBLIC, publicArea,
+                          cond_cnt);
 
     if (!ifapi_get_sub_object(jso, "newParentPath", &jso2)) {
         if (!out->newParentPublic.type) {
@@ -819,36 +700,18 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object *jso,
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Exactly one conditional is allowed for "
-                     "policy duplication select.");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for "
+                                             "policy duplication select.");
     }
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYAUTHORIZE_tab[] = {
-    "approvedPolicy",
-    "approvedpolicy",
-    "policyRef",
-    "policyref",
-    "keyName",
-    "keyname",
-    "keyPath",
-    "keypath",
-    "keyPublic",
-    "keypublic",
-    "keyPEM",
-    "keypem",
-    "keyPEMhashAlg",
-    "keypemhashalg",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM",
-    "rsaScheme",
-    "rsascheme"
-};
+static char *field_TPMS_POLICYAUTHORIZE_tab[]
+    = { "approvedPolicy", "approvedpolicy", "policyRef",     "policyref",     "keyName",
+        "keyname",        "keyPath",        "keypath",       "keyPublic",     "keypublic",
+        "keyPEM",         "keypem",         "keyPEMhashAlg", "keypemhashalg", "$schema",
+        "type",           "policyDigests",  "nonceTPM",      "rsaScheme",     "rsascheme" };
 
 /** Deserialize a TPMS_POLICYAUTHORIZE json object.
  *
@@ -860,12 +723,10 @@ static char *field_TPMS_POLICYAUTHORIZE_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
-        TPMS_POLICYAUTHORIZE *out)
-{
+ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso, TPMS_POLICYAUTHORIZE *out) {
     json_object *jso2;
-    TSS2_RC r;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    TSS2_RC      r;
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -948,9 +809,7 @@ ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHVALUE_deserialize(json_object *jso,
-        TPMS_POLICYAUTHVALUE *out)
-{
+ifapi_json_TPMS_POLICYAUTHVALUE_deserialize(json_object *jso, TPMS_POLICYAUTHVALUE *out) {
     LOG_TRACE("call");
     UNUSED(out);
     UNUSED(jso);
@@ -967,9 +826,7 @@ ifapi_json_TPMS_POLICYAUTHVALUE_deserialize(json_object *jso,
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYPASSWORD_deserialize(json_object *jso,
-        TPMS_POLICYPASSWORD *out)
-{
+ifapi_json_TPMS_POLICYPASSWORD_deserialize(json_object *jso, TPMS_POLICYPASSWORD *out) {
     LOG_TRACE("call");
     UNUSED(jso);
     UNUSED(out);
@@ -978,14 +835,8 @@ ifapi_json_TPMS_POLICYPASSWORD_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYNVWRITTEN_tab[] = {
-    "writtenSet",
-    "writtenset",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYNVWRITTEN_tab[]
+    = { "writtenSet", "writtenset", "$schema", "type", "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYNVWRITTEN json object.
  *
@@ -996,11 +847,9 @@ static char *field_TPMS_POLICYNVWRITTEN_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYNVWRITTEN_deserialize(json_object *jso,
-        TPMS_POLICYNVWRITTEN *out)
-{
+ifapi_json_TPMS_POLICYNVWRITTEN_deserialize(json_object *jso, TPMS_POLICYNVWRITTEN *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -1016,18 +865,9 @@ ifapi_json_TPMS_POLICYNVWRITTEN_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYTEMPLATE_tab[] = {
-    "templateHash",
-    "templatehash",
-    "templatePublic",
-    "templatepublic",
-    "templateName",
-    "templatename",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYTEMPLATE_tab[]
+    = { "templateHash", "templatehash", "templatePublic", "templatepublic", "templateName",
+        "templatename", "$schema",      "type",           "policyDigests",  "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYTEMPLATE json object.
  *
@@ -1039,12 +879,10 @@ static char *field_TPMS_POLICYTEMPLATE_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
-        TPMS_POLICYTEMPLATE *out)
-{
+ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso, TPMS_POLICYTEMPLATE *out) {
     json_object *jso2;
-    TSS2_RC r;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    TSS2_RC      r;
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -1079,16 +917,9 @@ ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYAUTHORIZENV_tab[] = {
-    "nvPath",
-    "nvpath",
-    "nvPublic",
-    "nvpublic",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYAUTHORIZENV_tab[] = { "nvPath",        "nvpath",  "nvPublic",
+                                                    "nvpublic",      "$schema", "type",
+                                                    "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYAUTHORIZENV json object.
  *
@@ -1100,12 +931,10 @@ static char *field_TPMS_POLICYAUTHORIZENV_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
-        TPMS_POLICYAUTHORIZENV *out)
-{
+ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso, TPMS_POLICYAUTHORIZENV *out) {
     json_object *jso2;
-    TSS2_RC r;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    TSS2_RC      r;
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -1122,8 +951,8 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
         out->nvPath = NULL;
     }
 
-    GET_CONDITIONAL_TPM2B(nvPublic, "nvPublic", TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC,
-                          nvPublic, cond_cnt);
+    GET_CONDITIONAL_TPM2B(nvPublic, "nvPublic", TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, nvPublic,
+                          cond_cnt);
 
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
@@ -1135,13 +964,8 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYACTION_tab[] = {
-    "action",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYACTION_tab[]
+    = { "action", "$schema", "type", "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYACTION json object.
  *
@@ -1153,11 +977,9 @@ static char *field_TPMS_POLICYACTION_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYACTION_deserialize(json_object *jso,
-        TPMS_POLICYACTION *out)
-{
+ifapi_json_TPMS_POLICYACTION_deserialize(json_object *jso, TPMS_POLICYACTION *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -1175,13 +997,7 @@ ifapi_json_TPMS_POLICYACTION_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_PCRVALUE_tab[] = {
-    "pcr",
-    "hashAlg",
-    "hashalg",
-    "digest",
-    "$schema"
-};
+static char *field_TPMS_PCRVALUE_tab[] = { "pcr", "hashAlg", "hashalg", "digest", "$schema" };
 
 /** Deserialize a TPMS_PCRVALUE json object.
  *
@@ -1192,10 +1008,9 @@ static char *field_TPMS_PCRVALUE_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_PCRVALUE_deserialize(json_object *jso,  TPMS_PCRVALUE *out)
-{
+ifapi_json_TPMS_PCRVALUE_deserialize(json_object *jso, TPMS_PCRVALUE *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
 
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -1236,17 +1051,16 @@ ifapi_json_TPMS_PCRVALUE_deserialize(json_object *jso,  TPMS_PCRVALUE *out)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPML_PCRVALUES_deserialize(json_object *jso,  TPML_PCRVALUES **out)
-{
+ifapi_json_TPML_PCRVALUES_deserialize(json_object *jso, TPML_PCRVALUES **out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     json_type jso_type = json_object_get_type(jso);
     if (jso_type == json_type_array) {
-        *out = calloc(1, sizeof(TPML_PCRVALUES) +
-                      json_object_array_length(jso) * sizeof(TPMS_PCRVALUE));
+        *out = calloc(1, sizeof(TPML_PCRVALUES)
+                             + json_object_array_length(jso) * sizeof(TPMS_PCRVALUE));
         return_if_null(*out, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
         (*out)->count = json_object_array_length(jso);
@@ -1262,15 +1076,8 @@ ifapi_json_TPML_PCRVALUES_deserialize(json_object *jso,  TPML_PCRVALUES **out)
 }
 
 static char *field_TPMS_POLICYPCR_tab[] = {
-    "pcrs",
-    "currentPCRs",
-    "currentpcrs",
-    "currentPCRandBanks",
-    "currentpcrandbanks",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
+    "pcrs", "currentPCRs",   "currentpcrs", "currentPCRandBanks", "currentpcrandbanks", "$schema",
+    "type", "policyDigests", "nonceTPM"
 };
 
 /** Deserialize a TPMS_POLICYPCR json object.
@@ -1283,11 +1090,10 @@ static char *field_TPMS_POLICYPCR_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso,  TPMS_POLICYPCR *out)
-{
+ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso, TPMS_POLICYPCR *out) {
     json_object *jso2;
-    TSS2_RC r;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    TSS2_RC      r;
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -1320,31 +1126,17 @@ ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso,  TPMS_POLICYPCR *out)
 
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Exactly one conditional is allowed for policy PCR.");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for policy PCR.");
     }
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYAUTHORIZATION_tab[] = {
-    "type",
-    "key",
-    "policyRef",
-    "policyref",
-    "signature",
-    "$schema",
-    "policyDigests",
-    "nonceTPM",
-    "hashAlg",
-    "hashalg",
-    "rsaScheme",
-    "rsascheme",
-    "keyPEMhashAlg",
-    "keyPEM",
-    "rsaScheme"
-};
+static char *field_TPMS_POLICYAUTHORIZATION_tab[]
+    = { "type",      "key",           "policyRef",     "policyref", "signature",
+        "$schema",   "policyDigests", "nonceTPM",      "hashAlg",   "hashalg",
+        "rsaScheme", "rsascheme",     "keyPEMhashAlg", "keyPEM",    "rsaScheme" };
 
 /** Deserialize a TPMS_POLICYAUTHORIZATION json object.
  *
@@ -1356,11 +1148,9 @@ static char *field_TPMS_POLICYAUTHORIZATION_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
-        TPMS_POLICYAUTHORIZATION *out)
-{
+ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso, TPMS_POLICYAUTHORIZATION *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -1378,7 +1168,7 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 
-    if (strcmp(out->type,"tpm") == 0) {
+    if (strcmp(out->type, "tpm") == 0) {
         r = ifapi_json_TPMT_PUBLIC_deserialize(jso2, &out->key);
         return_if_error(r, "Bad value for field \"key\".");
 
@@ -1388,7 +1178,7 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
         }
         r = ifapi_json_TPMT_SIGNATURE_deserialize(jso2, &out->signature);
         return_if_error(r, "Bad value for field \"signature\".");
-    } else if  (strcmp(out->type,"pem") == 0) {
+    } else if (strcmp(out->type, "pem") == 0) {
         r = ifapi_json_char_deserialize(jso2, &out->keyPEM);
         return_if_error(r, "Bad value for field \"key\".");
         if (ifapi_get_sub_object(jso, "keyPEMhashAlg", &jso2)) {
@@ -1417,7 +1207,7 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
 
     } else {
         LOG_ERROR("Bad value for field \"type\" (should be: tpm or pem).");
-            return TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
 
     if (ifapi_get_sub_object(jso, "policyRef", &jso2)) {
@@ -1440,25 +1230,23 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(json_object *jso,
-        TPML_POLICYAUTHORIZATIONS **out)
-{
+ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(json_object                *jso,
+                                                 TPML_POLICYAUTHORIZATIONS **out) {
     json_object *jso2;
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC      r = TSS2_RC_SUCCESS;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     json_type jso_type = json_object_get_type(jso);
     if (jso_type == json_type_array) {
-        *out = calloc(1, sizeof(TPML_POLICYAUTHORIZATIONS) +
-                      json_object_array_length(jso) * sizeof(TPMS_POLICYAUTHORIZATION));
+        *out = calloc(1, sizeof(TPML_POLICYAUTHORIZATIONS)
+                             + json_object_array_length(jso) * sizeof(TPMS_POLICYAUTHORIZATION));
         return_if_null(*out, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
         (*out)->count = json_object_array_length(jso);
         for (size_t i = 0; i < (*out)->count; i++) {
             jso2 = json_object_array_get_idx(jso, i);
-            r = ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(jso2,
-                    &(*out)->authorizations[i]);
+            r = ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(jso2, &(*out)->authorizations[i]);
             return_if_error(r, "TPMS_POLICYAUTHORIZATION_deserialize");
         }
     } else {
@@ -1467,16 +1255,9 @@ ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYBRANCH_tab[] = {
-    "name",
-    "description",
-    "policy",
-    "policyDigests",
-    "policydigests",
-    "$schema",
-    "type",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYBRANCH_tab[]
+    = { "name",          "description", "policy", "policyDigests",
+        "policydigests", "$schema",     "type",   "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYBRANCH json object.
  *
@@ -1488,11 +1269,9 @@ static char *field_TPMS_POLICYBRANCH_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYBRANCH_deserialize(json_object *jso,
-        TPMS_POLICYBRANCH *out)
-{
+ifapi_json_TPMS_POLICYBRANCH_deserialize(json_object *jso, TPMS_POLICYBRANCH *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -1524,7 +1303,6 @@ ifapi_json_TPMS_POLICYBRANCH_deserialize(json_object *jso,
     } else {
         r = ifapi_json_TPML_DIGEST_VALUES_deserialize(jso2, &out->policyDigests);
         return_if_error(r, "Bad value for field \"policyDigests\".");
-
     }
 
     LOG_TRACE("true");
@@ -1541,18 +1319,16 @@ ifapi_json_TPMS_POLICYBRANCH_deserialize(json_object *jso,
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPML_POLICYBRANCHES_deserialize(json_object *jso,
-        TPML_POLICYBRANCHES **out)
-{
+ifapi_json_TPML_POLICYBRANCHES_deserialize(json_object *jso, TPML_POLICYBRANCHES **out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     json_type jso_type = json_object_get_type(jso);
     if (jso_type == json_type_array) {
-        *out = calloc(1, sizeof(TPML_POLICYBRANCHES) +
-                      json_object_array_length(jso) * sizeof(TPMS_POLICYBRANCH));
+        *out = calloc(1, sizeof(TPML_POLICYBRANCHES)
+                             + json_object_array_length(jso) * sizeof(TPMS_POLICYBRANCH));
         return_if_null(*out, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
         (*out)->count = json_object_array_length(jso);
@@ -1567,13 +1343,8 @@ ifapi_json_TPML_POLICYBRANCHES_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICYOR_tab[] = {
-    "branches",
-    "$schema",
-    "type",
-    "policyDigests",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICYOR_tab[]
+    = { "branches", "$schema", "type", "policyDigests", "nonceTPM" };
 
 /** Deserialize a TPMS_POLICYOR json object.
  *
@@ -1585,10 +1356,9 @@ static char *field_TPMS_POLICYOR_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYOR_deserialize(json_object *jso,  TPMS_POLICYOR *out)
-{
+ifapi_json_TPMS_POLICYOR_deserialize(json_object *jso, TPMS_POLICYOR *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -1616,11 +1386,9 @@ ifapi_json_TPMS_POLICYOR_deserialize(json_object *jso,  TPMS_POLICYOR *out)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMU_POLICYELEMENT_deserialize(
-    UINT32 selector,
-    json_object *jso,
-    TPMU_POLICYELEMENT *out)
-{
+ifapi_json_TPMU_POLICYELEMENT_deserialize(UINT32              selector,
+                                          json_object        *jso,
+                                          TPMU_POLICYELEMENT *out) {
     LOG_TRACE("call");
     switch (selector) {
     case POLICYOR:
@@ -1636,21 +1404,19 @@ ifapi_json_TPMU_POLICYELEMENT_deserialize(
     case POLICYNV:
         return ifapi_json_TPMS_POLICYNV_deserialize(jso, &out->PolicyNV);
     case POLICYCOUNTERTIMER:
-        return ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(jso,
-                &out->PolicyCounterTimer);
+        return ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(jso, &out->PolicyCounterTimer);
     case POLICYCOMMANDCODE:
-        return ifapi_json_TPMS_POLICYCOMMANDCODE_deserialize(jso,
-                &out->PolicyCommandCode);
+        return ifapi_json_TPMS_POLICYCOMMANDCODE_deserialize(jso, &out->PolicyCommandCode);
     case POLICYPHYSICALPRESENCE:
         return ifapi_json_TPMS_POLICYPHYSICALPRESENCE_deserialize(jso,
-                &out->PolicyPhysicalPresence);
+                                                                  &out->PolicyPhysicalPresence);
     case POLICYCPHASH:
         return ifapi_json_TPMS_POLICYCPHASH_deserialize(jso, &out->PolicyCpHash);
     case POLICYNAMEHASH:
         return ifapi_json_TPMS_POLICYNAMEHASH_deserialize(jso, &out->PolicyNameHash);
     case POLICYDUPLICATIONSELECT:
         return ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(jso,
-                &out->PolicyDuplicationSelect);
+                                                                   &out->PolicyDuplicationSelect);
     case POLICYAUTHORIZE:
         return ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(jso, &out->PolicyAuthorize);
     case POLICYAUTHVALUE:
@@ -1662,8 +1428,7 @@ ifapi_json_TPMU_POLICYELEMENT_deserialize(
     case POLICYTEMPLATE:
         return ifapi_json_TPMS_POLICYTEMPLATE_deserialize(jso, &out->PolicyTemplate);
     case POLICYAUTHORIZENV:
-        return ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(jso,
-                &out->PolicyAuthorizeNv);
+        return ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(jso, &out->PolicyAuthorizeNv);
     case POLICYACTION:
         return ifapi_json_TPMS_POLICYACTION_deserialize(jso, &out->PolicyAction);
     default:
@@ -1682,11 +1447,9 @@ ifapi_json_TPMU_POLICYELEMENT_deserialize(
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso,
-        TPMT_POLICYELEMENT *out)
-{
+ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso, TPMT_POLICYELEMENT *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -1702,7 +1465,6 @@ ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso,
     } else {
         r = ifapi_json_TPML_DIGEST_VALUES_deserialize(jso2, &out->policyDigests);
         return_if_error(r, "Bad value for field \"policyDigests\".");
-
     }
     r = ifapi_json_TPMU_POLICYELEMENT_deserialize(out->type, jso, &out->element);
     return_if_error(r, "Bad value for field \"element\".");
@@ -1721,18 +1483,16 @@ ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso,
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso,
-        TPML_POLICYELEMENTS **out)
-{
+ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso, TPML_POLICYELEMENTS **out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     json_type jso_type = json_object_get_type(jso);
     if (jso_type == json_type_array) {
-        *out = calloc(1, sizeof(TPML_POLICYELEMENTS) +
-                      json_object_array_length(jso) * sizeof(TPMT_POLICYELEMENT));
+        *out = calloc(1, sizeof(TPML_POLICYELEMENTS)
+                             + json_object_array_length(jso) * sizeof(TPMT_POLICYELEMENT));
         return_if_null(*out, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
         (*out)->count = json_object_array_length(jso);
@@ -1747,18 +1507,16 @@ ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso,
     return TSS2_RC_SUCCESS;
 }
 
-static char *field_TPMS_POLICY_tab[] = {
-    "description",
-    "policyDigests",
-    "policydigests",
-    "policyAuthorizations",
-    "policyauthorizations",
-    "policy",
-    "name",
-    "$schema",
-    "type",
-    "nonceTPM"
-};
+static char *field_TPMS_POLICY_tab[] = { "description",
+                                         "policyDigests",
+                                         "policydigests",
+                                         "policyAuthorizations",
+                                         "policyauthorizations",
+                                         "policy",
+                                         "name",
+                                         "$schema",
+                                         "type",
+                                         "nonceTPM" };
 
 /** Deserialize a TPMS_POLICY json object.
  *
@@ -1770,11 +1528,9 @@ static char *field_TPMS_POLICY_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICY_deserialize(json_object *jso,
-        TPMS_POLICY *out)
-{
+ifapi_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -1792,15 +1548,12 @@ ifapi_json_TPMS_POLICY_deserialize(json_object *jso,
     } else {
         r = ifapi_json_TPML_DIGEST_VALUES_deserialize(jso2, &out->policyDigests);
         return_if_error(r, "Bad value for field \"policyDigests\".");
-
     }
     if (!ifapi_get_sub_object(jso, "policyAuthorizations", &jso2)) {
         out->policyAuthorizations = NULL;
     } else {
-        r = ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(jso2,
-                &out->policyAuthorizations);
+        r = ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(jso2, &out->policyAuthorizations);
         return_if_error(r, "Bad value for field \"policyAuthorizations\".");
-
     }
     if (!ifapi_get_sub_object(jso, "policy", &jso2)) {
         LOG_ERROR("Field \"policy\" not found.");

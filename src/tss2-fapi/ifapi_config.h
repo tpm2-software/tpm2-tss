@@ -6,9 +6,9 @@
 #ifndef IFAPI_CONFIG_H
 #define IFAPI_CONFIG_H
 
-#include "ifapi_io.h"         // for IFAPI_IO
-#include "tss2_common.h"      // for TSS2_RC
-#include "tss2_tpm2_types.h"  // for TPMI_YES_NO, TPML_PCR_SELECTION, TPMT_HA
+#include "ifapi_io.h"        // for IFAPI_IO
+#include "tss2_common.h"     // for TSS2_RC
+#include "tss2_tpm2_types.h" // for TPMI_YES_NO, TPML_PCR_SELECTION, TPMT_HA
 
 #define ENV_FAPI_CONFIG "TSS2_FAPICONF"
 
@@ -17,43 +17,38 @@
  */
 typedef struct {
     /** Path for profile directory */
-    char                *profile_dir;
+    char *profile_dir;
     /** Directory storing NV objects */
-    char                *user_dir;
+    char *user_dir;
     /** Directory storing key and NV objects */
-    char                *keystore_dir;
+    char *keystore_dir;
     /** Name the used profile */
-    char                *profile_name;
+    char *profile_name;
     /** The used tcti interface */
-    char                *tcti;
+    char *tcti;
     /** The directory for event logs */
-    char                *log_dir;
+    char *log_dir;
     /** The PCRs used by IMA etc. */
-    TPML_PCR_SELECTION   system_pcrs;
+    TPML_PCR_SELECTION system_pcrs;
     /** Fingerprint of EK */
-    TPMT_HA              ek_fingerprint;
+    TPMT_HA ek_fingerprint;
     /* URL for EC certificate */
-    char                *ek_cert_file;
-     /* Switch whether certificate validation will done */
-    TPMI_YES_NO         ek_cert_less;
+    char *ek_cert_file;
+    /* Switch whether certificate validation will done */
+    TPMI_YES_NO ek_cert_less;
     /** Certificate service for Intel/AMD  TPMs */
-    char                *web_cert_service;
+    char *web_cert_service;
     /* File with firmware measurements. */
-    char                *firmware_log_file;
+    char *firmware_log_file;
     /* File with ima measurements. */
-    char                *ima_log_file;
+    char *ima_log_file;
 
 } IFAPI_CONFIG;
 
 TSS2_RC
-ifapi_config_initialize_async(
-    IFAPI_IO            *io
-        );
+ifapi_config_initialize_async(IFAPI_IO *io);
 
 TSS2_RC
-ifapi_config_initialize_finish(
-    IFAPI_IO            *io,
-    IFAPI_CONFIG        *config
-    );
+ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config);
 
 #endif /* IFAPI_CONFIG_H */

@@ -8,24 +8,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>              // for uintptr_t, uint8_t, int64_t, PRId64
-#include <stdio.h>                 // for sscanf
-#include <stdlib.h>                // for calloc
-#include <string.h>                // for strlen, strncmp, memcmp, strcmp
-#include <strings.h>               // for strncasecmp
-#include <sys/types.h>             // for uint
-#include <uchar.h>                 // for char16_t
+#include <inttypes.h>  // for uintptr_t, uint8_t, int64_t, PRId64
+#include <stdio.h>     // for sscanf
+#include <stdlib.h>    // for calloc
+#include <string.h>    // for strlen, strncmp, memcmp, strcmp
+#include <strings.h>   // for strncasecmp
+#include <sys/types.h> // for uint
+#include <uchar.h>     // for char16_t
 
-#include "efi_event.h"             // for TCG_EVENT, TCG_EVENT2, TCG_EVENT_H...
-#include "fapi_crypto.h"           // for ifapi_hash_get_digest_size
-#include "ifapi_eventlog.h"        // for IFAPI_EVENT_TYPE
+#include "efi_event.h"      // for TCG_EVENT, TCG_EVENT2, TCG_EVENT_H...
+#include "fapi_crypto.h"    // for ifapi_hash_get_digest_size
+#include "ifapi_eventlog.h" // for IFAPI_EVENT_TYPE
 #include "ifapi_eventlog_system.h"
-#include "ifapi_macros.h"          // for check_oom, return_error2
-#include "tpm_json_deserialize.h"  // for ifapi_get_sub_object, ifapi_json_U...
-#include "tss2_tpm2_types.h"       // for TPM2_MAX_PCRS, TPMI_ALG_HASH
+#include "ifapi_macros.h"         // for check_oom, return_error2
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifapi_json_U...
+#include "tss2_tpm2_types.h"      // for TPM2_MAX_PCRS, TPMI_ALG_HASH
 
 #define LOGMODULE fapi
-#include "util/log.h"              // for LOG_ERROR, LOG_TRACE, SAFE_FREE
+#include "util/log.h" // for LOG_ERROR, LOG_TRACE, SAFE_FREE
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 
@@ -40,15 +40,14 @@ static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "PO
  * @retval false if token does not represent a number.
  */
 static bool
-get_number(const char *token, int64_t *num)
-{
+get_number(const char *token, int64_t *num) {
     int itoken = 0;
     int pos = 0;
     if (strncmp(token, "0x", 2) == 0) {
         itoken = 2;
-        sscanf(&token[itoken], "%"PRIx64"%n", num, &pos);
+        sscanf(&token[itoken], "%" PRIx64 "%n", num, &pos);
     } else {
-        sscanf(&token[itoken], "%"PRId64"%n", num, &pos);
+        sscanf(&token[itoken], "%" PRId64 "%n", num, &pos);
     }
     if ((size_t)pos == strlen(token) - itoken)
         return true;
@@ -66,14 +65,12 @@ get_number(const char *token, int64_t *num)
  * @retval 0 if no prefix is found.
  */
 static unsigned int
-get_token_start_idx(const char *token)
-{
-    uint itoken = 0;
+get_token_start_idx(const char *token) {
+    uint  itoken = 0;
     char *entry;
-    uint i;
+    uint  i;
 
-    for (i = 0, entry = tss_const_prefixes[0]; entry != NULL;
-            i++, entry = tss_const_prefixes[i]) {
+    for (i = 0, entry = tss_const_prefixes[0]; entry != NULL; i++, entry = tss_const_prefixes[i]) {
         if (strncasecmp(token, entry, strlen(entry)) == 0) {
             itoken += strlen(entry);
             break;
@@ -82,13 +79,13 @@ get_token_start_idx(const char *token)
     return itoken;
 }
 
-bool digest2_accumulator_callback(TCG_DIGEST2 const *digest, size_t size,
-                                  void *data){
+bool
+digest2_accumulator_callback(TCG_DIGEST2 const *digest, size_t size, void *data) {
     if (digest == NULL || data == NULL) {
         LOG_ERROR("neither parameter may be NULL");
         return false;
     }
-    size_t *accumulator = (size_t*)data;
+    size_t *accumulator = (size_t *)data;
 
     *accumulator += sizeof(*digest) + size;
 
@@ -101,12 +98,12 @@ bool digest2_accumulator_callback(TCG_DIGEST2 const *digest, size_t size,
  * hold the digest. The size of the digest is passed to the callback in the
  * 'size' parameter.
  */
-bool foreach_digest2(
-    tpm2_eventlog_context *ctx,
-    UINT32 event_type,
-    TCG_DIGEST2 const *digest,
-    size_t count,
-    size_t size) {
+bool
+foreach_digest2(tpm2_eventlog_context *ctx,
+                UINT32                 event_type,
+                TCG_DIGEST2 const     *digest,
+                size_t                 count,
+                size_t                 size) {
 
     if (digest == NULL) {
         LOG_ERROR("digest cannot be NULL");
@@ -123,7 +120,7 @@ bool foreach_digest2(
         }
 
         const TPMI_ALG_HASH alg = digest->AlgorithmId;
-        const size_t alg_size = ifapi_hash_get_digest_size(alg);
+        const size_t        alg_size = ifapi_hash_get_digest_size(alg);
         if (size < sizeof(*digest) + alg_size) {
             LOG_ERROR("insufficient size for digest buffer");
             return false;
@@ -148,7 +145,7 @@ bool foreach_digest2(
         }
 
         size -= sizeof(*digest) + alg_size;
-        digest = (TCG_DIGEST2*)((uintptr_t)digest->Digest + alg_size);
+        digest = (TCG_DIGEST2 *)((uintptr_t)digest->Digest + alg_size);
     }
 
     return ret;
@@ -157,71 +154,62 @@ bool foreach_digest2(
  * given the provided event type, parse event to ensure the structure / data
  * in the buffer doesn't exceed the buffer size
  */
-bool parse_event2body(TCG_EVENT2 const *event, UINT32 type) {
+bool
+parse_event2body(TCG_EVENT2 const *event, UINT32 type) {
 
     switch (type) {
     /* TCG PC Client FPF section 9.2.6 */
     case EV_EFI_VARIABLE_DRIVER_CONFIG:
     case EV_EFI_VARIABLE_BOOT:
-    case EV_EFI_VARIABLE_AUTHORITY:
-        {
-            UEFI_VARIABLE_DATA *data = (UEFI_VARIABLE_DATA*)event->Event;
-            if (event->EventSize < sizeof(*data)) {
-                LOG_ERROR("size is insufficient for UEFI variable data");
-                return false;
-            }
-
-            if (event->EventSize < sizeof(*data) + data->UnicodeNameLength *
-                sizeof(char16_t) + data->VariableDataLength)
-            {
-                LOG_ERROR("size is insufficient for UEFI variable data");
-                return false;
-            }
+    case EV_EFI_VARIABLE_AUTHORITY: {
+        UEFI_VARIABLE_DATA *data = (UEFI_VARIABLE_DATA *)event->Event;
+        if (event->EventSize < sizeof(*data)) {
+            LOG_ERROR("size is insufficient for UEFI variable data");
+            return false;
         }
-        break;
+
+        if (event->EventSize < sizeof(*data) + data->UnicodeNameLength * sizeof(char16_t)
+                                   + data->VariableDataLength) {
+            LOG_ERROR("size is insufficient for UEFI variable data");
+            return false;
+        }
+    } break;
     /* TCG PC Client FPF section 2.3.4.1 and 9.4.1 */
     case EV_POST_CODE:
         // the event is a string, so there are no length requirements.
         break;
     /* TCG PC Client FPF section 9.2.5 */
     case EV_S_CRTM_CONTENTS:
-    case EV_EFI_PLATFORM_FIRMWARE_BLOB:
-        {
-            UEFI_PLATFORM_FIRMWARE_BLOB *data =
-                (UEFI_PLATFORM_FIRMWARE_BLOB*)event->Event;
-            UNUSED(data);
-            if (event->EventSize < sizeof(*data)) {
-                LOG_ERROR("size is insufficient for UEFI FW blob data");
-                return false;
-            }
+    case EV_EFI_PLATFORM_FIRMWARE_BLOB: {
+        UEFI_PLATFORM_FIRMWARE_BLOB *data = (UEFI_PLATFORM_FIRMWARE_BLOB *)event->Event;
+        UNUSED(data);
+        if (event->EventSize < sizeof(*data)) {
+            LOG_ERROR("size is insufficient for UEFI FW blob data");
+            return false;
         }
-        break;
+    } break;
     case EV_EFI_BOOT_SERVICES_APPLICATION:
     case EV_EFI_BOOT_SERVICES_DRIVER:
-    case EV_EFI_RUNTIME_SERVICES_DRIVER:
-        {
-            UEFI_IMAGE_LOAD_EVENT *data = (UEFI_IMAGE_LOAD_EVENT*)event->Event;
-            UNUSED(data);
-            if (event->EventSize < sizeof(*data)) {
-                LOG_ERROR("size is insufficient for UEFI image load event");
-                return false;
-            }
-            /* what about the device path? */
+    case EV_EFI_RUNTIME_SERVICES_DRIVER: {
+        UEFI_IMAGE_LOAD_EVENT *data = (UEFI_IMAGE_LOAD_EVENT *)event->Event;
+        UNUSED(data);
+        if (event->EventSize < sizeof(*data)) {
+            LOG_ERROR("size is insufficient for UEFI image load event");
+            return false;
         }
-        break;
-    /* TCG PC Client Platform Firmware Profile Specification Level 00 Version 1.05 Revision 23 section 10.4.1 */
-    case EV_EFI_HCRTM_EVENT:
-        {
-            const char hcrtm_data[] = "HCRTM";
-            size_t len = strlen(hcrtm_data);
-            BYTE *data = (BYTE *)event->Event;
-            if (event->EventSize != len ||
-                    strncmp((const char *)data, hcrtm_data, len) != 0) {
-                LOG_ERROR("HCRTM Event Data MUST be the string: \"%s\"", hcrtm_data);
-                return false;
-            }
+        /* what about the device path? */
+    } break;
+    /* TCG PC Client Platform Firmware Profile Specification Level 00 Version 1.05 Revision 23
+     * section 10.4.1 */
+    case EV_EFI_HCRTM_EVENT: {
+        const char hcrtm_data[] = "HCRTM";
+        size_t     len = strlen(hcrtm_data);
+        BYTE      *data = (BYTE *)event->Event;
+        if (event->EventSize != len || strncmp((const char *)data, hcrtm_data, len) != 0) {
+            LOG_ERROR("HCRTM Event Data MUST be the string: \"%s\"", hcrtm_data);
+            return false;
         }
-        break;
+    } break;
     default:
         /* no special handling */
         break;
@@ -233,8 +221,11 @@ bool parse_event2body(TCG_EVENT2 const *event, UINT32 type) {
  * parse event structure, including header, digests and event buffer ensuring
  * it all fits within the provided buffer (buf_size).
  */
-bool parse_event2(TCG_EVENT_HEADER2 const *eventhdr, size_t buf_size,
-                  size_t *event_size, size_t *digests_size) {
+bool
+parse_event2(TCG_EVENT_HEADER2 const *eventhdr,
+             size_t                   buf_size,
+             size_t                  *event_size,
+             size_t                  *digests_size) {
 
     bool ret;
 
@@ -248,15 +239,14 @@ bool parse_event2(TCG_EVENT_HEADER2 const *eventhdr, size_t buf_size,
         .data = digests_size,
         .digest2_cb = digest2_accumulator_callback,
     };
-    ret = foreach_digest2(&ctx, eventhdr->EventType,
-                          eventhdr->Digests, eventhdr->DigestCount,
+    ret = foreach_digest2(&ctx, eventhdr->EventType, eventhdr->Digests, eventhdr->DigestCount,
                           buf_size - sizeof(*eventhdr));
     if (ret != true) {
         return false;
     }
     *event_size += *digests_size;
 
-    TCG_EVENT2 *event = (TCG_EVENT2*)((uintptr_t)eventhdr + *event_size);
+    TCG_EVENT2 *event = (TCG_EVENT2 *)((uintptr_t)eventhdr + *event_size);
     if (buf_size < *event_size + sizeof(*event)) {
         LOG_ERROR("corrupted log: size insufficient for EventSize");
         return false;
@@ -272,8 +262,8 @@ bool parse_event2(TCG_EVENT_HEADER2 const *eventhdr, size_t buf_size,
     return true;
 }
 
-bool parse_sha1_log_event(TCG_EVENT const *event, size_t size,
-                          size_t *event_size) {
+bool
+parse_sha1_log_event(TCG_EVENT const *event, size_t size, size_t *event_size) {
 
     /* enough size for the 1.2 event structure */
     if (size < sizeof(*event)) {
@@ -287,8 +277,7 @@ bool parse_sha1_log_event(TCG_EVENT const *event, size_t size,
     *event_size = sizeof(*event);
 
     /* buffer size must be sufficient to hold event and event data */
-    if (size < sizeof(*event) + (sizeof(event->event[0]) *
-                                 event->eventDataSize)) {
+    if (size < sizeof(*event) + (sizeof(event->event[0]) * event->eventDataSize)) {
         LOG_ERROR("insufficient size for SpecID event data");
         return false;
     }
@@ -296,7 +285,8 @@ bool parse_sha1_log_event(TCG_EVENT const *event, size_t size,
     return true;
 }
 
-bool foreach_sha1_log_event(tpm2_eventlog_context *ctx, TCG_EVENT const *eventhdr_start, size_t size) {
+bool
+foreach_sha1_log_event(tpm2_eventlog_context *ctx, TCG_EVENT const *eventhdr_start, size_t size) {
 
     if (eventhdr_start == NULL) {
         LOG_ERROR("invalid parameter");
@@ -307,20 +297,18 @@ bool foreach_sha1_log_event(tpm2_eventlog_context *ctx, TCG_EVENT const *eventhd
     }
 
     TCG_EVENT const *eventhdr;
-    size_t event_size;
-    bool ret;
+    size_t           event_size;
+    bool             ret;
 
-    for (eventhdr = eventhdr_start, event_size = 0;
-         size > 0;
-         eventhdr = (TCG_EVENT*)((uintptr_t)eventhdr + event_size),
-         size -= event_size) {
+    for (eventhdr = eventhdr_start, event_size = 0; size > 0;
+         eventhdr = (TCG_EVENT *)((uintptr_t)eventhdr + event_size), size -= event_size) {
 
         ret = parse_sha1_log_event(eventhdr, size, &event_size);
         if (!ret) {
             return ret;
         }
 
-        TCG_EVENT2 *event = (TCG_EVENT2*)((uintptr_t)&eventhdr->eventDataSize);
+        TCG_EVENT2 *event = (TCG_EVENT2 *)((uintptr_t)&eventhdr->eventDataSize);
 
         /* event header callback */
         if (ctx->log_eventhdr_cb != NULL) {
@@ -347,7 +335,8 @@ bool foreach_sha1_log_event(tpm2_eventlog_context *ctx, TCG_EVENT const *eventhd
     return true;
 }
 
-bool foreach_event2(tpm2_eventlog_context *ctx, TCG_EVENT_HEADER2 const *eventhdr_start, size_t size) {
+bool
+foreach_event2(tpm2_eventlog_context *ctx, TCG_EVENT_HEADER2 const *eventhdr_start, size_t size) {
 
     if (eventhdr_start == NULL) {
         LOG_ERROR("invalid parameter");
@@ -358,13 +347,11 @@ bool foreach_event2(tpm2_eventlog_context *ctx, TCG_EVENT_HEADER2 const *eventhd
     }
 
     TCG_EVENT_HEADER2 const *eventhdr;
-    size_t event_size;
-    bool ret;
+    size_t                   event_size;
+    bool                     ret;
 
-    for (eventhdr = eventhdr_start, event_size = 0;
-         size > 0;
-         eventhdr = (TCG_EVENT_HEADER2*)((uintptr_t)eventhdr + event_size),
-         size -= event_size) {
+    for (eventhdr = eventhdr_start, event_size = 0; size > 0;
+         eventhdr = (TCG_EVENT_HEADER2 *)((uintptr_t)eventhdr + event_size), size -= event_size) {
 
         size_t digests_size = 0;
 
@@ -373,7 +360,7 @@ bool foreach_event2(tpm2_eventlog_context *ctx, TCG_EVENT_HEADER2 const *eventhd
             return ret;
         }
 
-        TCG_EVENT2 *event = (TCG_EVENT2*)((uintptr_t)eventhdr->Digests + digests_size);
+        TCG_EVENT2 *event = (TCG_EVENT2 *)((uintptr_t)eventhdr->Digests + digests_size);
 
         /* event header callback */
         if (ctx->event2hdr_cb != NULL) {
@@ -384,8 +371,8 @@ bool foreach_event2(tpm2_eventlog_context *ctx, TCG_EVENT_HEADER2 const *eventhd
         }
 
         /* digest callback foreach digest */
-        ret = foreach_digest2(ctx, eventhdr->EventType,
-                              eventhdr->Digests, eventhdr->DigestCount, digests_size);
+        ret = foreach_digest2(ctx, eventhdr->EventType, eventhdr->Digests, eventhdr->DigestCount,
+                              digests_size);
         if (ret != true) {
             return false;
         }
@@ -407,8 +394,8 @@ bool foreach_event2(tpm2_eventlog_context *ctx, TCG_EVENT_HEADER2 const *eventhd
     return true;
 }
 
-bool specid_event(TCG_EVENT const *event, size_t size,
-                  TCG_EVENT_HEADER2 **next) {
+bool
+specid_event(TCG_EVENT const *event, size_t size, TCG_EVENT_HEADER2 **next) {
 
     /* enough size for the 1.2 event structure */
     if (size < sizeof(*event)) {
@@ -441,13 +428,12 @@ bool specid_event(TCG_EVENT const *event, size_t size,
     }
 
     /* buffer size must be sufficient to hold event and event data */
-    if (size < sizeof(*event) + (sizeof(event->event[0]) *
-                                 event->eventDataSize)) {
+    if (size < sizeof(*event) + (sizeof(event->event[0]) * event->eventDataSize)) {
         LOG_ERROR("insufficient size for SpecID event data");
         return false;
     }
 
-    TCG_SPECID_EVENT *event_specid = (TCG_SPECID_EVENT*)event->event;
+    TCG_SPECID_EVENT *event_specid = (TCG_SPECID_EVENT *)event->event;
 
     /* Check the signature */
     if (strcmp((char *)&event_specid->Signature[0], "Spec ID Event03") != 0) {
@@ -462,33 +448,31 @@ bool specid_event(TCG_EVENT const *event, size_t size,
     }
 
     /* buffer size must be sufficient to hold event, specid event & algs */
-    if (size < sizeof(*event) + sizeof(*event_specid) +
-               sizeof(event_specid->digestSizes[0]) *
-               event_specid->numberOfAlgorithms) {
+    if (size < sizeof(*event) + sizeof(*event_specid)
+                   + sizeof(event_specid->digestSizes[0]) * event_specid->numberOfAlgorithms) {
         LOG_ERROR("insufficient size for SpecID algorithms");
         return false;
     }
 
     /* size must be sufficient for event, specid, algs & vendor stuff */
-    if (size < sizeof(*event) + sizeof(*event_specid) +
-               sizeof(event_specid->digestSizes[0]) *
-               event_specid->numberOfAlgorithms + sizeof(TCG_VENDOR_INFO)) {
+    if (size < sizeof(*event) + sizeof(*event_specid)
+                   + sizeof(event_specid->digestSizes[0]) * event_specid->numberOfAlgorithms
+                   + sizeof(TCG_VENDOR_INFO)) {
         LOG_ERROR("insufficient size for VendorStuff");
         return false;
     }
 
-    TCG_VENDOR_INFO *vendor = (TCG_VENDOR_INFO*)((uintptr_t)event_specid->digestSizes +
-                                                 sizeof(*event_specid->digestSizes) *
-                                                 event_specid->numberOfAlgorithms);
+    TCG_VENDOR_INFO *vendor = (TCG_VENDOR_INFO *)((uintptr_t)event_specid->digestSizes
+                                                  + sizeof(*event_specid->digestSizes)
+                                                        * event_specid->numberOfAlgorithms);
     /* size must be sufficient for vendorInfo */
-    if (size < sizeof(*event) + sizeof(*event_specid) +
-               sizeof(event_specid->digestSizes[0]) *
-               event_specid->numberOfAlgorithms + sizeof(*vendor) +
-               vendor->vendorInfoSize) {
+    if (size < sizeof(*event) + sizeof(*event_specid)
+                   + sizeof(event_specid->digestSizes[0]) * event_specid->numberOfAlgorithms
+                   + sizeof(*vendor) + vendor->vendorInfoSize) {
         LOG_ERROR("insufficient size for VendorStuff data");
         return false;
     }
-    *next = (TCG_EVENT_HEADER2*)((uintptr_t)vendor->vendorInfo + vendor->vendorInfoSize);
+    *next = (TCG_EVENT_HEADER2 *)((uintptr_t)vendor->vendorInfo + vendor->vendorInfoSize);
 
     return true;
 }
@@ -534,18 +518,16 @@ static TCG_EVENT_TYPE_ASSIGN deserialize_TCG_EVENT_TYPE_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
 TSS2_RC
-ifapi_json_TCG_EVENT_TYPE_deserialize_txt(json_object *jso,
-        IFAPI_EVENT_TYPE *out)
-{
+ifapi_json_TCG_EVENT_TYPE_deserialize_txt(json_object *jso, IFAPI_EVENT_TYPE *out) {
     LOG_TRACE("call");
-    int64_t i64;
+    int64_t     i64;
     const char *token = json_object_get_string(jso);
 
     check_oom(token);
     LOG_TRACE("TCG Event: %s", token);
 
     if (get_number(token, &i64)) {
-        *out = (IFAPI_EVENT_TYPE) i64;
+        *out = (IFAPI_EVENT_TYPE)i64;
         if ((int64_t)*out != i64) {
             LOG_ERROR("Bad value");
             return TSS2_FAPI_RC_BAD_VALUE;
@@ -554,21 +536,19 @@ ifapi_json_TCG_EVENT_TYPE_deserialize_txt(json_object *jso,
 
     } else {
         unsigned int itoken = get_token_start_idx(token);
-        size_t i;
-        size_t n = sizeof(deserialize_TCG_EVENT_TYPE_tab) /
-                   sizeof(deserialize_TCG_EVENT_TYPE_tab[0]);
+        size_t       i;
+        size_t       n
+            = sizeof(deserialize_TCG_EVENT_TYPE_tab) / sizeof(deserialize_TCG_EVENT_TYPE_tab[0]);
         size_t size = strlen(token) - itoken;
         for (i = 0; i < n; i++) {
-            if (strncasecmp(&token[itoken],
-                            &deserialize_TCG_EVENT_TYPE_tab[i].name[0],
-                            size) == 0) {
+            if (strncasecmp(&token[itoken], &deserialize_TCG_EVENT_TYPE_tab[i].name[0], size)
+                == 0) {
                 *out = deserialize_TCG_EVENT_TYPE_tab[i].in;
                 return TSS2_RC_SUCCESS;
             }
         }
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant.");
     }
-
 }
 
 /** Deserialize a TCG_EVENT_TYPE json object.
@@ -579,8 +559,7 @@ ifapi_json_TCG_EVENT_TYPE_deserialize_txt(json_object *jso,
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
 TSS2_RC
-ifapi_json_TCG_EVENT_TYPE_deserialize(json_object *jso, IFAPI_EVENT_TYPE *out)
-{
+ifapi_json_TCG_EVENT_TYPE_deserialize(json_object *jso, IFAPI_EVENT_TYPE *out) {
     LOG_TRACE("call");
 
     return ifapi_json_TCG_EVENT_TYPE_deserialize_txt(jso, out);
@@ -597,14 +576,12 @@ check_out_string(const IFAPI_FIRMWARE_EVENT *in, const char *string) {
         /* String without NULL terminator */
         return TSS2_RC_SUCCESS;
     }
-    if  (in->data.size == strlen(string) + 1 &&
-         in->data.buffer[strlen(string)] == '\0') {
+    if (in->data.size == strlen(string) + 1 && in->data.buffer[strlen(string)] == '\0') {
         /* String with NULL terminator */
         return TSS2_RC_SUCCESS;
     }
     return_error2(TSS2_FAPI_RC_BAD_VALUE, "Invalid event string. %s expected", string);
 }
-
 
 /** Deserialize a IFAPI_FIRMWARE_EVENT json object.
  *
@@ -617,14 +594,12 @@ check_out_string(const IFAPI_FIRMWARE_EVENT *in, const char *string) {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize(
-    json_object *jso,
-    IFAPI_FIRMWARE_EVENT *out,
-    bool *verify)
-{
+ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize(json_object          *jso,
+                                            IFAPI_FIRMWARE_EVENT *out,
+                                            bool                 *verify) {
     json_object *jso2;
-    TSS2_RC r;
-    UINT32  event_type;
+    TSS2_RC      r;
+    UINT32       event_type;
     LOG_TRACE("call");
 
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -635,8 +610,8 @@ ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize(
         LOG_ERROR("Bad value");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r =  ifapi_json_TCG_EVENT_TYPE_deserialize (jso2, &event_type);
-    return_if_error(r,"BAD VALUE");
+    r = ifapi_json_TCG_EVENT_TYPE_deserialize(jso2, &event_type);
+    return_if_error(r, "BAD VALUE");
 
     out->event_type = event_type;
 
@@ -655,9 +630,9 @@ ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize(
         BYTE event_0[4] = { 0, 0, 0, 0 };
         BYTE event_ff[4] = { 0xff, 0xff, 0xff, 0xff };
 
-        if (!(out->data.size == 4 &&
-              (memcmp(&event_0[0], &out->data.buffer[0], 4) == 0 ||
-               memcmp(&event_ff[0], &out->data.buffer[0], 4) == 0))) {
+        if (!(out->data.size == 4
+              && (memcmp(&event_0[0], &out->data.buffer[0], 4) == 0
+                  || memcmp(&event_ff[0], &out->data.buffer[0], 4) == 0))) {
             /* An error is signaled the hash of event_err will be
                used as digest. */
             SAFE_FREE(out->data.buffer);
@@ -679,41 +654,26 @@ ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize(
 
     /* Check whether digest computation for event is possible. */
     if (/* Verification is not possible */
-        event_type == EV_EFI_BOOT_SERVICES_APPLICATION ||
-        event_type == EV_NO_ACTION ||
-        event_type == EV_S_CRTM_CONTENTS ||
-        event_type == EV_POST_CODE ||
-        event_type == EV_EFI_HANDOFF_TABLES ||
-        event_type == EV_COMPACT_HASH ||
-        event_type == EV_EFI_BOOT_SERVICES_DRIVER ||
-        event_type == EV_EFI_PLATFORM_FIRMWARE_BLOB ||
-        event_type == EV_PREBOOT_CERT ||
-        event_type == EV_UNUSED ||
-        event_type == EV_ACTION ||
-        event_type == EV_CPU_MICROCODE ||
-        event_type == EV_IPL ||
-        event_type == EV_IPL_PARTITION_DATA ||
-        event_type == EV_NONHOST_CODE ||
-        event_type == EV_NONHOST_CONFIG ||
-        event_type == EV_EFI_RUNTIME_SERVICES_DRIVER ||
+        event_type == EV_EFI_BOOT_SERVICES_APPLICATION || event_type == EV_NO_ACTION
+        || event_type == EV_S_CRTM_CONTENTS || event_type == EV_POST_CODE
+        || event_type == EV_EFI_HANDOFF_TABLES || event_type == EV_COMPACT_HASH
+        || event_type == EV_EFI_BOOT_SERVICES_DRIVER || event_type == EV_EFI_PLATFORM_FIRMWARE_BLOB
+        || event_type == EV_PREBOOT_CERT || event_type == EV_UNUSED || event_type == EV_ACTION
+        || event_type == EV_CPU_MICROCODE || event_type == EV_IPL
+        || event_type == EV_IPL_PARTITION_DATA || event_type == EV_NONHOST_CODE
+        || event_type == EV_NONHOST_CONFIG || event_type == EV_EFI_RUNTIME_SERVICES_DRIVER ||
         /* Verification not possible. (TODO check) */
-        event_type == EV_EFI_HCRTM_EVENT ||
-        event_type == EV_EFI_VARIABLE_BOOT) {
+        event_type == EV_EFI_HCRTM_EVENT || event_type == EV_EFI_VARIABLE_BOOT) {
         *verify = false;
     } else if (
         /* Verification is possible. (TODO check) */
-        event_type == EV_EVENT_TAG ||
-        event_type == EV_TABLE_OF_DEVICES ||
-        event_type == EV_NONHOST_INFO ||
-        event_type == EV_OMIT_BOOT_DEVICE_EVENTS ||
-        event_type == EV_EFI_VARIABLE_AUTHORITY ||
+        event_type == EV_EVENT_TAG || event_type == EV_TABLE_OF_DEVICES
+        || event_type == EV_NONHOST_INFO || event_type == EV_OMIT_BOOT_DEVICE_EVENTS
+        || event_type == EV_EFI_VARIABLE_AUTHORITY ||
         /* Verification is possible. */
-        event_type == EV_S_CRTM_VERSION ||
-        event_type == EV_SEPARATOR ||
-        event_type == EV_EFI_VARIABLE_DRIVER_CONFIG ||
-        event_type == EV_EFI_GPT_EVENT ||
-        event_type == EV_PLATFORM_CONFIG_FLAGS ||
-        event_type == EV_EFI_ACTION) {
+        event_type == EV_S_CRTM_VERSION || event_type == EV_SEPARATOR
+        || event_type == EV_EFI_VARIABLE_DRIVER_CONFIG || event_type == EV_EFI_GPT_EVENT
+        || event_type == EV_PLATFORM_CONFIG_FLAGS || event_type == EV_EFI_ACTION) {
         *verify = true;
     } else {
         LOG_WARNING("Unknown Event: %x", event_type);
@@ -723,16 +683,17 @@ ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize(
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     SAFE_FREE(out->data.buffer);
     return r;
 }
 
-bool parse_eventlog(tpm2_eventlog_context *ctx, BYTE const *eventlog, size_t size) {
+bool
+parse_eventlog(tpm2_eventlog_context *ctx, BYTE const *eventlog, size_t size) {
 
     TCG_EVENT_HEADER2 *next;
-    TCG_EVENT *event = (TCG_EVENT*)eventlog;
-    bool ret;
+    TCG_EVENT         *event = (TCG_EVENT *)eventlog;
+    bool               ret;
 
     if (event->eventType == EV_NO_ACTION) {
         ret = specid_event(event, size, &next);

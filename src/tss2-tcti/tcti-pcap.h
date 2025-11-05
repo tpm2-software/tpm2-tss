@@ -19,8 +19,8 @@ typedef struct {
 
 typedef struct {
     TSS2_TCTI_COMMON_CONTEXT common;
-    pcap_buider_ctx pcap_builder;
-    TSS2_TCTI_CONTEXT *tcti_child;
+    pcap_buider_ctx          pcap_builder;
+    TSS2_TCTI_CONTEXT       *tcti_child;
 } TSS2_TCTI_PCAP_CONTEXT;
 
 #endif /* TCTI_PCAP_H */

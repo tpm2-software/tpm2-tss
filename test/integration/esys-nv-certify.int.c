@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_RESMGR_R...
-#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, ESYS_TR_PASSWORD
-#include "tss2_tpm2_types.h"  // for TPM2B_AUTH, TPM2_ALG_SHA256, TPM2_RC_CO...
+#include "test-esys.h"       // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_RESMGR_R...
+#include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, ESYS_TR_PASSWORD
+#include "tss2_tpm2_types.h" // for TPM2B_AUTH, TPM2_ALG_SHA256, TPM2_RC_CO...
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_INFO, LOG...
+#include "util/log.h" // for goto_if_error, LOG_ERROR, LOG_INFO, LOG...
 
 /** This test is intended to test the command Esys_NV_Certify.
  *
@@ -38,24 +38,20 @@
  */
 
 int
-test_esys_nv_certify(ESYS_CONTEXT * esys_context)
-{
+test_esys_nv_certify(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR signHandle = ESYS_TR_NONE;
     ESYS_TR nvHandle = ESYS_TR_NONE;
-    int failure_return = EXIT_FAILURE;
+    int     failure_return = EXIT_FAILURE;
 
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
-    TPM2B_ATTEST *certifyInfo = NULL;
-    TPMT_SIGNATURE *signature = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
+    TPMT_TK_CREATION    *creationTicket = NULL;
+    TPM2B_ATTEST        *certifyInfo = NULL;
+    TPMT_SIGNATURE      *signature = NULL;
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -110,17 +106,12 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
             },
         };
 
-    TPM2B_AUTH authValue = {
-                .size = 0,
-                .buffer = {}
-    };
-
+    TPM2B_AUTH authValue = { .size = 0, .buffer = {} };
 
     TPM2B_DATA outsideInfo = {
-            .size = 0,
-            .buffer = {},
+        .size = 0,
+        .buffer = {},
     };
-
 
     TPML_PCR_SELECTION creationPCR = {
         .count = 0,
@@ -131,16 +122,13 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
-                           &inPublic, &outsideInfo, &creationPCR,
-                           &signHandle, &outPublic, &creationData,
-                           &creationHash, &creationTicket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &signHandle, &outPublic, &creationData, &creationHash, &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    TPM2B_AUTH auth = {.size = 20,
-                       .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                                20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
+    TPM2B_AUTH auth = { .size = 20, .buffer = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                                20, 21, 22, 23, 24, 25, 26, 27, 28, 29 } };
 
     TPM2B_NV_PUBLIC publicInfo = {
         .size = 0,
@@ -163,52 +151,27 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
         }
     };
 
-    r = Esys_NV_DefineSpace(esys_context,
-                            ESYS_TR_RH_OWNER,
-                            ESYS_TR_PASSWORD,
-                            ESYS_TR_NONE,
-                            ESYS_TR_NONE,
-                            &auth,
-                            &publicInfo,
-                            &nvHandle);
+    r = Esys_NV_DefineSpace(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                            ESYS_TR_NONE, &auth, &publicInfo, &nvHandle);
     goto_if_error(r, "Error esys define nv space", error);
 
-    UINT16 offset = 0;
-    TPM2B_MAX_NV_BUFFER nv_test_data = { .size = 20,
-                                         .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-                                                  1, 2, 3, 4, 5, 6, 7, 8, 9}};
+    UINT16              offset = 0;
+    TPM2B_MAX_NV_BUFFER nv_test_data
+        = { .size = 20, .buffer = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } };
 
-    r = Esys_NV_Write(esys_context,
-                      nvHandle,
-                      nvHandle,
-                      ESYS_TR_PASSWORD,
-                      ESYS_TR_NONE,
-                      ESYS_TR_NONE,
-                      &nv_test_data,
-                      offset);
+    r = Esys_NV_Write(esys_context, nvHandle, nvHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                      ESYS_TR_NONE, &nv_test_data, offset);
     goto_if_error(r, "Error esys nv write", error);
 
-    TPM2B_DATA qualifyingData = {0};
+    TPM2B_DATA      qualifyingData = { 0 };
     TPMT_SIG_SCHEME inScheme = { .scheme = TPM2_ALG_NULL };
 
-    r = Esys_NV_Certify(
-        esys_context,
-        signHandle,
-        ESYS_TR_RH_OWNER,
-        nvHandle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        &qualifyingData,
-        &inScheme,
-        20,
-        0,
-        &certifyInfo,
-        &signature);
+    r = Esys_NV_Certify(esys_context, signHandle, ESYS_TR_RH_OWNER, nvHandle, ESYS_TR_PASSWORD,
+                        ESYS_TR_PASSWORD, ESYS_TR_NONE, &qualifyingData, &inScheme, 20, 0,
+                        &certifyInfo, &signature);
 
-    if ((r == TPM2_RC_COMMAND_CODE) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
+    if ((r == TPM2_RC_COMMAND_CODE) || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER))
+        || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_NV_Certify not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;
@@ -216,16 +179,11 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error: NV_Certify", error);
 
-    r = Esys_NV_UndefineSpace(esys_context,
-                              ESYS_TR_RH_OWNER,
-                              nvHandle,
-                              ESYS_TR_PASSWORD,
-                              ESYS_TR_NONE,
-                              ESYS_TR_NONE
-                              );
+    r = Esys_NV_UndefineSpace(esys_context, ESYS_TR_RH_OWNER, nvHandle, ESYS_TR_PASSWORD,
+                              ESYS_TR_NONE, ESYS_TR_NONE);
     goto_if_error(r, "Error: NV_UndefineSpace", error);
 
-    r = Esys_FlushContext(esys_context,signHandle);
+    r = Esys_FlushContext(esys_context, signHandle);
     goto_if_error(r, "Error: FlushContext", error);
 
     Esys_Free(outPublic);
@@ -236,7 +194,7 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
     Esys_Free(signature);
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (signHandle != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, signHandle) != TSS2_RC_SUCCESS) {
@@ -245,13 +203,10 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
     }
 
     if (nvHandle != ESYS_TR_NONE) {
-        if (Esys_NV_UndefineSpace(esys_context,
-                                  ESYS_TR_RH_OWNER,
-                                  nvHandle,
-                                  ESYS_TR_PASSWORD,
-                                  ESYS_TR_NONE,
-                                  ESYS_TR_NONE) != TSS2_RC_SUCCESS) {
-             LOG_ERROR("Cleanup nvHandle failed.");
+        if (Esys_NV_UndefineSpace(esys_context, ESYS_TR_RH_OWNER, nvHandle, ESYS_TR_PASSWORD,
+                                  ESYS_TR_NONE, ESYS_TR_NONE)
+            != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup nvHandle failed.");
         }
     }
 
@@ -265,6 +220,6 @@ test_esys_nv_certify(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_nv_certify(esys_context);
 }

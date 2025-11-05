@@ -8,21 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>       // for exit
+#include <stdlib.h> // for exit
 
-#include "tss2_common.h"  // for TSS2_ABI_VERSION, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_sys.h"     // for Tss2_Sys_Initialize, TSS2_SYS_CONTEXT, Tss2...
-#include "tss2_tcti.h"    // for TSS2_TCTI_CONTEXT, TSS2_TCTI_RECEIVE, TSS2_...
+#include "tss2_common.h" // for TSS2_ABI_VERSION, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_sys.h"    // for Tss2_Sys_Initialize, TSS2_SYS_CONTEXT, Tss2...
+#include "tss2_tcti.h"   // for TSS2_TCTI_CONTEXT, TSS2_TCTI_RECEIVE, TSS2_...
 
 #define LOGMODULE test
-#include "test.h"         // for test_invoke
-#include "util/log.h"     // for LOG_ERROR, LOG_INFO
+#include "test.h"     // for test_invoke
+#include "util/log.h" // for LOG_ERROR, LOG_INFO
 
 /**
  */
 int
-test_invoke (TSS2_SYS_CONTEXT *sys_context)
-{
+test_invoke(TSS2_SYS_CONTEXT *sys_context) {
     TSS2_RC rc;
 
     /* NOTE: this should never be done in real applications.
@@ -32,40 +31,45 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
 
     LOG_INFO("Sys_Initialize tests started.");
 
-    rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)0, 10, (TSS2_TCTI_CONTEXT *)1, (TSS2_ABI_VERSION *)1 );
-    if( rc != TSS2_SYS_RC_BAD_REFERENCE  ) {
+    rc = Tss2_Sys_Initialize((TSS2_SYS_CONTEXT *)0, 10, (TSS2_TCTI_CONTEXT *)1,
+                             (TSS2_ABI_VERSION *)1);
+    if (rc != TSS2_SYS_RC_BAD_REFERENCE) {
         LOG_ERROR("Sys_Initialize context NULL test FAILED! Response Code : %x", rc);
         exit(1);
     }
 
-    rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, 10, (TSS2_TCTI_CONTEXT *)0, (TSS2_ABI_VERSION *)1 );
-    if( rc != TSS2_SYS_RC_BAD_REFERENCE  ) {
+    rc = Tss2_Sys_Initialize((TSS2_SYS_CONTEXT *)1, 10, (TSS2_TCTI_CONTEXT *)0,
+                             (TSS2_ABI_VERSION *)1);
+    if (rc != TSS2_SYS_RC_BAD_REFERENCE) {
         LOG_ERROR("Sys_Initialize tcti  NULL test FAILED! Response Code : %x", rc);
         exit(1);
     }
 
-    rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, 10, (TSS2_TCTI_CONTEXT *)1, (TSS2_ABI_VERSION *)1 );
-    if( rc != TSS2_SYS_RC_INSUFFICIENT_CONTEXT ) {
+    rc = Tss2_Sys_Initialize((TSS2_SYS_CONTEXT *)1, 10, (TSS2_TCTI_CONTEXT *)1,
+                             (TSS2_ABI_VERSION *)1);
+    if (rc != TSS2_SYS_RC_INSUFFICIENT_CONTEXT) {
         LOG_ERROR("Sys_Initialize insufficient context FAILED! Response Code : %x", rc);
         exit(1);
     }
 
     /* NOTE: don't do this in real applications. */
-    TSS2_TCTI_RECEIVE (&tctiContext) = (TSS2_TCTI_RECEIVE_FCN)1;
-    TSS2_TCTI_TRANSMIT (&tctiContext) = (TSS2_TCTI_TRANSMIT_FCN)0;
+    TSS2_TCTI_RECEIVE(&tctiContext) = (TSS2_TCTI_RECEIVE_FCN)1;
+    TSS2_TCTI_TRANSMIT(&tctiContext) = (TSS2_TCTI_TRANSMIT_FCN)0;
 
-    rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, Tss2_Sys_GetContextSize (0), (TSS2_TCTI_CONTEXT *)&tctiContext, (TSS2_ABI_VERSION *)1 );
-    if( rc != TSS2_SYS_RC_BAD_TCTI_STRUCTURE ) {
+    rc = Tss2_Sys_Initialize((TSS2_SYS_CONTEXT *)1, Tss2_Sys_GetContextSize(0),
+                             (TSS2_TCTI_CONTEXT *)&tctiContext, (TSS2_ABI_VERSION *)1);
+    if (rc != TSS2_SYS_RC_BAD_TCTI_STRUCTURE) {
         LOG_ERROR("Sys_Initialize FAILED! Response Code : %x", rc);
         exit(1);
     }
 
     /* NOTE: don't do this in real applications. */
-    TSS2_TCTI_RECEIVE (&tctiContext) = (TSS2_TCTI_RECEIVE_FCN)0;
-    TSS2_TCTI_TRANSMIT (&tctiContext) = (TSS2_TCTI_TRANSMIT_FCN)1;
+    TSS2_TCTI_RECEIVE(&tctiContext) = (TSS2_TCTI_RECEIVE_FCN)0;
+    TSS2_TCTI_TRANSMIT(&tctiContext) = (TSS2_TCTI_TRANSMIT_FCN)1;
 
-    rc = Tss2_Sys_Initialize( (TSS2_SYS_CONTEXT *)1, Tss2_Sys_GetContextSize (0), (TSS2_TCTI_CONTEXT *)&tctiContext, (TSS2_ABI_VERSION *)1 );
-    if( rc != TSS2_SYS_RC_BAD_TCTI_STRUCTURE ) {
+    rc = Tss2_Sys_Initialize((TSS2_SYS_CONTEXT *)1, Tss2_Sys_GetContextSize(0),
+                             (TSS2_TCTI_CONTEXT *)&tctiContext, (TSS2_ABI_VERSION *)1);
+    if (rc != TSS2_SYS_RC_BAD_TCTI_STRUCTURE) {
         LOG_ERROR("Sys_Initialize FAILED! Response Code : %x", rc);
         exit(1);
     }

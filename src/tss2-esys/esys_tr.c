@@ -8,22 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, uint8_t, SIZE_MAX, int32_t
-#include <stdbool.h>          // for bool, false, true
-#include <stdlib.h>           // for NULL, malloc, size_t, calloc
-#include <string.h>           // for memcmp
+#include <inttypes.h> // for PRIx32, uint8_t, SIZE_MAX, int32_t
+#include <stdbool.h>  // for bool, false, true
+#include <stdlib.h>   // for NULL, malloc, size_t, calloc
+#include <string.h>   // for memcmp
 
-#include "esys_int.h"         // for RSRC_NODE_T, ESYS_CONTEXT, _ESYS_ASSERT...
-#include "esys_iutil.h"       // for esys_GetResourceObject, iesys_compute_s...
-#include "esys_mu.h"          // for iesys_MU_IESYS_RESOURCE_Marshal, iesys_...
-#include "esys_types.h"       // for IESYS_RESOURCE, IESYS_RSRC_UNION, IESYS...
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_ESYS_RC_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, ESYS_TR_NONE
-#include "tss2_mu.h"          // for Tss2_MU_TPM2_HANDLE_Marshal
-#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2_HANDLE, TPM2_HR_SHIFT
+#include "esys_int.h"        // for RSRC_NODE_T, ESYS_CONTEXT, _ESYS_ASSERT...
+#include "esys_iutil.h"      // for esys_GetResourceObject, iesys_compute_s...
+#include "esys_mu.h"         // for iesys_MU_IESYS_RESOURCE_Marshal, iesys_...
+#include "esys_types.h"      // for IESYS_RESOURCE, IESYS_RSRC_UNION, IESYS...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_ESYS_RC_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, ESYS_TR_NONE
+#include "tss2_mu.h"         // for Tss2_MU_TPM2_HANDLE_Marshal
+#include "tss2_tpm2_types.h" // for TPM2B_NAME, TPM2_HANDLE, TPM2_HR_SHIFT
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_if_error, SAFE_FREE, goto_if_error
+#include "util/log.h" // for return_if_error, SAFE_FREE, goto_if_error
 
 /** Serialization of an ESYS_TR into a byte buffer.
  *
@@ -44,27 +44,25 @@
  * @retval TSS2_RCs produced by lower layers of the software stack.
  */
 TSS2_RC
-Esys_TR_Serialize(ESYS_CONTEXT * esys_context,
-                  ESYS_TR esys_handle, uint8_t ** buffer, size_t * buffer_size)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
+Esys_TR_Serialize(ESYS_CONTEXT *esys_context,
+                  ESYS_TR       esys_handle,
+                  uint8_t     **buffer,
+                  size_t       *buffer_size) {
+    TSS2_RC      r = TSS2_RC_SUCCESS;
     RSRC_NODE_T *esys_object;
-    size_t offset = 0;
+    size_t       offset = 0;
     *buffer_size = 0;
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
 
-    r = iesys_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, NULL, SIZE_MAX,
-                                        buffer_size);
+    r = iesys_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, NULL, SIZE_MAX, buffer_size);
     return_if_error(r, "Marshal resource object");
 
     *buffer = malloc(*buffer_size);
-    return_if_null(*buffer, "Buffer could not be allocated",
-                   TSS2_ESYS_RC_MEMORY);
+    return_if_null(*buffer, "Buffer could not be allocated", TSS2_ESYS_RC_MEMORY);
 
-    r = iesys_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, *buffer,
-                                        *buffer_size, &offset);
+    r = iesys_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, *buffer, *buffer_size, &offset);
     return_if_error(r, "Marshal resource object");
 
     return TSS2_RC_SUCCESS;
@@ -86,22 +84,21 @@ Esys_TR_Serialize(ESYS_CONTEXT * esys_context,
  * @retval TSS2_RCs produced by lower layers of the software stack.
  */
 TSS2_RC
-Esys_TR_Deserialize(ESYS_CONTEXT * esys_context,
+Esys_TR_Deserialize(ESYS_CONTEXT  *esys_context,
                     uint8_t const *buffer,
-                    size_t buffer_size, ESYS_TR * esys_handle)
-{
+                    size_t         buffer_size,
+                    ESYS_TR       *esys_handle) {
     TSS2_RC r;
 
     RSRC_NODE_T *esys_object;
-    size_t offset = 0;
+    size_t       offset = 0;
 
     ESYS_ASSERT_NON_NULL(esys_context);
     *esys_handle = esys_context->esys_handle_cnt++;
     r = esys_CreateResourceObject(esys_context, *esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
 
-    r = iesys_MU_IESYS_RESOURCE_Unmarshal(buffer, buffer_size, &offset,
-                                          &esys_object->rsrc);
+    r = iesys_MU_IESYS_RESOURCE_Unmarshal(buffer, buffer_size, &offset, &esys_object->rsrc);
     return_if_error(r, "Unmarshal resource object");
 
     return TSS2_RC_SUCCESS;
@@ -133,26 +130,25 @@ Esys_TR_Deserialize(ESYS_CONTEXT * esys_context,
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
-                            TPM2_HANDLE tpm_handle,
-                            ESYS_TR shandle1,
-                            ESYS_TR shandle2, ESYS_TR shandle3)
-{
+Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT *esys_context,
+                            TPM2_HANDLE   tpm_handle,
+                            ESYS_TR       shandle1,
+                            ESYS_TR       shandle2,
+                            ESYS_TR       shandle3) {
     TSS2_RC r;
     ESYS_ASSERT_NON_NULL(esys_context);
-    ESYS_TR esys_handle = esys_context->esys_handle_cnt++;
+    ESYS_TR      esys_handle = esys_context->esys_handle_cnt++;
     RSRC_NODE_T *esysHandleNode = NULL;
     RSRC_NODE_T *node_rsrc = NULL;
     RSRC_NODE_T *next_node_rsrc;
 
-    for (node_rsrc = esys_context->rsrc_list; node_rsrc != NULL;
-         node_rsrc = next_node_rsrc) {
-         if (node_rsrc->rsrc.handle == tpm_handle) {
-             esysHandleNode = node_rsrc;
-             esys_context->esys_handle = node_rsrc->esys_handle;
-             break;
-         }
-         next_node_rsrc = node_rsrc->next;
+    for (node_rsrc = esys_context->rsrc_list; node_rsrc != NULL; node_rsrc = next_node_rsrc) {
+        if (node_rsrc->rsrc.handle == tpm_handle) {
+            esysHandleNode = node_rsrc;
+            esys_context->esys_handle = node_rsrc->esys_handle;
+            break;
+        }
+        next_node_rsrc = node_rsrc->next;
     }
 
     if (!esysHandleNode) {
@@ -179,21 +175,19 @@ Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
     }
 
     if (tpm_handle >= TPM2_NV_INDEX_FIRST && tpm_handle <= TPM2_NV_INDEX_LAST) {
-        r = Esys_NV_ReadPublic_Async(esys_context, esys_handle, shandle1,
-                                     shandle2, shandle3);
+        r = Esys_NV_ReadPublic_Async(esys_context, esys_handle, shandle1, shandle2, shandle3);
         goto_if_error(r, "Error NV_ReadPublic", error_cleanup);
 
-    } else if(tpm_handle >> TPM2_HR_SHIFT == TPM2_HT_LOADED_SESSION
-            || tpm_handle >> TPM2_HR_SHIFT == TPM2_HT_SAVED_SESSION) {
+    } else if (tpm_handle >> TPM2_HR_SHIFT == TPM2_HT_LOADED_SESSION
+               || tpm_handle >> TPM2_HR_SHIFT == TPM2_HT_SAVED_SESSION) {
         // no readpublic call for loaded or saved sessions.
         r = TSS2_RC_SUCCESS;
     } else {
-        r = Esys_ReadPublic_Async(esys_context, esys_handle, shandle1, shandle2,
-                                  shandle3);
+        r = Esys_ReadPublic_Async(esys_context, esys_handle, shandle1, shandle2, shandle3);
         goto_if_error(r, "Error ReadPublic", error_cleanup);
     }
     return r;
- error_cleanup:
+error_cleanup:
     Esys_TR_Close(esys_context, &esys_handle);
     return r;
 }
@@ -222,12 +216,11 @@ Esys_TR_FromTPMPublic_Async(ESYS_CONTEXT * esys_context,
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    ESYS_TR objectHandle = ESYS_TR_NONE;
+Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT *esys_context, ESYS_TR *object) {
+    TSS2_RC      r = TSS2_RC_SUCCESS;
+    ESYS_TR      objectHandle = ESYS_TR_NONE;
     RSRC_NODE_T *objectHandleNode;
-    bool first_call;
+    bool         first_call;
 
     ESYS_ASSERT_NON_NULL(esys_context);
 
@@ -242,11 +235,10 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
     if (objectHandleNode->rsrc.handle >= TPM2_NV_INDEX_FIRST
         && objectHandleNode->rsrc.handle <= TPM2_NV_INDEX_LAST) {
         TPM2B_NV_PUBLIC *nvPublic;
-        TPM2B_NAME *nvName;
+        TPM2B_NAME      *nvName;
         r = Esys_NV_ReadPublic_Finish(esys_context, &nvPublic, &nvName);
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
             return r;
         }
         goto_if_error(r, "Error NV_ReadPublic", error_cleanup);
@@ -257,8 +249,9 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
             objectHandleNode->rsrc.name = *nvName;
             objectHandleNode->rsrc.misc.rsrc_nv_pub = *nvPublic;
         } else {
-            if (objectHandleNode->rsrc.name.size != nvName->size ||
-                memcmp(&objectHandleNode->rsrc.name.name[0], &nvName->name[0], nvName->size) != 0) {
+            if (objectHandleNode->rsrc.name.size != nvName->size
+                || memcmp(&objectHandleNode->rsrc.name.name[0], &nvName->name[0], nvName->size)
+                       != 0) {
                 is_nvname_mismatch = true;
             }
         }
@@ -266,22 +259,18 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
         SAFE_FREE(nvName);
         if (is_nvname_mismatch) {
             goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                "Name mismatch between two calls of Esys_TR_FromTPMPublic",
-                error_cleanup);
+                       "Name mismatch between two calls of Esys_TR_FromTPMPublic", error_cleanup);
         }
-    }
-    else if(objectHandleNode->rsrc.handle >> TPM2_HR_SHIFT == TPM2_HT_LOADED_SESSION
-       || objectHandleNode->rsrc.handle >> TPM2_HR_SHIFT == TPM2_HT_SAVED_SESSION) {
+    } else if (objectHandleNode->rsrc.handle >> TPM2_HR_SHIFT == TPM2_HT_LOADED_SESSION
+               || objectHandleNode->rsrc.handle >> TPM2_HR_SHIFT == TPM2_HT_SAVED_SESSION) {
         objectHandleNode->rsrc.rsrcType = IESYSC_DEGRADED_SESSION_RSRC;
     } else {
         TPM2B_PUBLIC *public;
         TPM2B_NAME *name = NULL;
         TPM2B_NAME *qualifiedName = NULL;
-        r = Esys_ReadPublic_Finish(esys_context, &public, &name,
-                                   &qualifiedName);
+        r = Esys_ReadPublic_Finish(esys_context, &public, &name, &qualifiedName);
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
             return r;
         }
         goto_if_error(r, "Error ReadPublic", error_cleanup);
@@ -291,8 +280,8 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
             objectHandleNode->rsrc.name = *name;
             objectHandleNode->rsrc.misc.rsrc_key_pub = *public;
         } else {
-            if (objectHandleNode->rsrc.name.size != name->size ||
-                memcmp(&objectHandleNode->rsrc.name.name[0], &name->name[0], name->size) != 0) {
+            if (objectHandleNode->rsrc.name.size != name->size
+                || memcmp(&objectHandleNode->rsrc.name.name[0], &name->name[0], name->size) != 0) {
                 SAFE_FREE(public);
                 SAFE_FREE(name);
                 SAFE_FREE(qualifiedName);
@@ -308,20 +297,19 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
 
     if (esys_context->sav_session1 != ESYS_TR_NONE && first_call) {
         /* Initialize second call if session is used */
-        r = init_session_tab(esys_context, esys_context->sav_session1,
-                            esys_context->sav_session2, esys_context->sav_session3);
+        r = init_session_tab(esys_context, esys_context->sav_session1, esys_context->sav_session2,
+                             esys_context->sav_session3);
         return_if_error(r, "Initialize session resources");
 
-        iesys_compute_session_value(esys_context->session_tab[0],
-                                    &objectHandleNode->rsrc.name, NULL);
+        iesys_compute_session_value(esys_context->session_tab[0], &objectHandleNode->rsrc.name,
+                                    NULL);
         iesys_compute_session_value(esys_context->session_tab[1], NULL, NULL);
         iesys_compute_session_value(esys_context->session_tab[2], NULL, NULL);
-        r = Esys_TR_FromTPMPublic_Async(esys_context, objectHandleNode->rsrc.handle,
-                                        esys_context->session_tab[0]->esys_handle,
-                                        esys_context->session_tab[1] ?
-                                        esys_context->session_tab[1]->esys_handle : ESYS_TR_NONE,
-                                        esys_context->session_tab[2] ?
-                                        esys_context->session_tab[2]->esys_handle : ESYS_TR_NONE);
+        r = Esys_TR_FromTPMPublic_Async(
+            esys_context, objectHandleNode->rsrc.handle, esys_context->session_tab[0]->esys_handle,
+            esys_context->session_tab[1] ? esys_context->session_tab[1]->esys_handle : ESYS_TR_NONE,
+            esys_context->session_tab[2] ? esys_context->session_tab[2]->esys_handle
+                                         : ESYS_TR_NONE);
         return_if_error(r, "Error TR FromTPMPublic");
         return TSS2_ESYS_RC_TRY_AGAIN;
     } else {
@@ -330,7 +318,7 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
         return TSS2_RC_SUCCESS;
     }
 
- error_cleanup:
+error_cleanup:
     Esys_TR_Close(esys_context, &objectHandle);
     return r;
 }
@@ -377,16 +365,16 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT * esys_context, ESYS_TR * object)
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_TR_FromTPMPublic(ESYS_CONTEXT * esys_context,
-                      TPM2_HANDLE tpm_handle,
-                      ESYS_TR shandle1,
-                      ESYS_TR shandle2, ESYS_TR shandle3, ESYS_TR * object)
-{
+Esys_TR_FromTPMPublic(ESYS_CONTEXT *esys_context,
+                      TPM2_HANDLE   tpm_handle,
+                      ESYS_TR       shandle1,
+                      ESYS_TR       shandle2,
+                      ESYS_TR       shandle3,
+                      ESYS_TR      *object) {
     TSS2_RC r;
 
     ESYS_ASSERT_NON_NULL(esys_context);
-    r = Esys_TR_FromTPMPublic_Async(esys_context, tpm_handle,
-                                    shandle1, shandle2, shandle3);
+    r = Esys_TR_FromTPMPublic_Async(esys_context, tpm_handle, shandle1, shandle2, shandle3);
     return_if_error(r, "Error TR FromTPMPublic");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -402,8 +390,7 @@ Esys_TR_FromTPMPublic(ESYS_CONTEXT * esys_context,
     do {
         r = Esys_TR_FromTPMPublic_Finish(esys_context, object);
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -427,15 +414,12 @@ Esys_TR_FromTPMPublic(ESYS_CONTEXT * esys_context,
  *         ESYS_CONTEXT.
  */
 TSS2_RC
-Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
-{
-    RSRC_NODE_T *node;
+Esys_TR_Close(ESYS_CONTEXT *esys_context, ESYS_TR *object) {
+    RSRC_NODE_T  *node;
     RSRC_NODE_T **update_ptr;
 
     ESYS_ASSERT_NON_NULL(esys_context);
-    for (node = esys_context->rsrc_list,
-         update_ptr = &esys_context->rsrc_list;
-         node != NULL;
+    for (node = esys_context->rsrc_list, update_ptr = &esys_context->rsrc_list; node != NULL;
          update_ptr = &node->next, node = node->next) {
         if (node->esys_handle == *object) {
             if (node->reference_count > 1) {
@@ -448,7 +432,7 @@ Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
             return TSS2_RC_SUCCESS;
         }
     }
-    LOG_ERROR("Error: Esys handle does not exist (0x%08"PRIx32").", TSS2_ESYS_RC_BAD_TR);
+    LOG_ERROR("Error: Esys handle does not exist (0x%08" PRIx32 ").", TSS2_ESYS_RC_BAD_TR);
     return TSS2_ESYS_RC_BAD_TR;
 }
 
@@ -470,16 +454,14 @@ Esys_TR_Close(ESYS_CONTEXT * esys_context, ESYS_TR * object)
  *         ESYS_CONTEXT or it equals ESYS_TR_NONE.
  */
 TSS2_RC
-Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
-                TPM2B_AUTH const *authValue)
-{
-    RSRC_NODE_T *esys_object;
-    TSS2_RC r;
+Esys_TR_SetAuth(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, TPM2B_AUTH const *authValue) {
+    RSRC_NODE_T  *esys_object;
+    TSS2_RC       r;
     TPMI_ALG_HASH name_alg = TPM2_ALG_NULL;
 
     ESYS_ASSERT_NON_NULL(esys_context);
     if (esys_handle == ESYS_TR_NONE) {
-      return_error(TSS2_ESYS_RC_BAD_TR, "esys_handle can't be ESYS_TR_NONE.");
+        return_error(TSS2_ESYS_RC_BAD_TR, "esys_handle can't be ESYS_TR_NONE.");
     }
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     if (r != TPM2_RC_SUCCESS)
@@ -503,13 +485,11 @@ Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 
         /* Adapt auth value. */
         if (name_alg != TPM2_ALG_NULL) {
-            r = iesys_adapt_auth_value(&esys_context->crypto_backend,
-                    &esys_object->auth, name_alg);
+            r = iesys_adapt_auth_value(&esys_context->crypto_backend, &esys_object->auth, name_alg);
             return_if_error(r, "Hashing overlength authValue failed.");
         } else {
             iesys_strip_trailing_zeros(&esys_object->auth);
         }
-
     }
     return TSS2_RC_SUCCESS;
 }
@@ -529,11 +509,9 @@ Esys_TR_SetAuth(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
-Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
-                TPM2B_NAME ** name)
-{
+Esys_TR_GetName(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, TPM2B_NAME **name) {
     RSRC_NODE_T *esys_object;
-    TSS2_RC r;
+    TSS2_RC      r;
     ESYS_ASSERT_NON_NULL(esys_context);
 
     if (esys_handle == ESYS_TR_NONE) {
@@ -549,31 +527,29 @@ Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
         return TSS2_ESYS_RC_MEMORY;
     }
     if (esys_object->rsrc.rsrcType == IESYSC_KEY_RSRC) {
-        r = iesys_get_name(&esys_context->crypto_backend,
-                &esys_object->rsrc.misc.rsrc_key_pub, *name);
+        r = iesys_get_name(&esys_context->crypto_backend, &esys_object->rsrc.misc.rsrc_key_pub,
+                           *name);
         goto_if_error(r, "Error get name", error_cleanup);
 
     } else {
         if (esys_object->rsrc.rsrcType == IESYSC_NV_RSRC) {
             r = iesys_nv_get_name(&esys_context->crypto_backend,
-                    &esys_object->rsrc.misc.rsrc_nv_pub, *name);
+                                  &esys_object->rsrc.misc.rsrc_nv_pub, *name);
             goto_if_error(r, "Error get name", error_cleanup);
 
         } else {
             size_t offset = 0;
-            r = Tss2_MU_TPM2_HANDLE_Marshal(esys_object->rsrc.handle,
-                                            &(*name)->name[0], sizeof(TPM2_HANDLE),
-                                            &offset);
+            r = Tss2_MU_TPM2_HANDLE_Marshal(esys_object->rsrc.handle, &(*name)->name[0],
+                                            sizeof(TPM2_HANDLE), &offset);
             goto_if_error(r, "Error get name", error_cleanup);
             (*name)->size = offset;
         }
     }
     return r;
- error_cleanup:
+error_cleanup:
     SAFE_FREE(*name);
     return r;
 }
-
 
 /** Retrieve the Session Attributes of the ESYS_TR session.
  *
@@ -589,9 +565,7 @@ Esys_TR_GetName(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
  *         ESYS_CONTEXT or ESYS_TR object is not a session object.
  */
 TSS2_RC
-Esys_TRSess_GetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
-                          TPMA_SESSION * flags)
-{
+Esys_TRSess_GetAttributes(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, TPMA_SESSION *flags) {
     RSRC_NODE_T *esys_object;
 
     ESYS_ASSERT_NON_NULL(esys_context);
@@ -619,9 +593,10 @@ Esys_TRSess_GetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
  *         ESYS_CONTEXT or ESYS_TR object is not a session object.
  */
 TSS2_RC
-Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
-                          TPMA_SESSION flags, TPMA_SESSION mask)
-{
+Esys_TRSess_SetAttributes(ESYS_CONTEXT *esys_context,
+                          ESYS_TR       esys_handle,
+                          TPMA_SESSION  flags,
+                          TPMA_SESSION  mask) {
     RSRC_NODE_T *esys_object;
 
     ESYS_ASSERT_NON_NULL(esys_context);
@@ -632,9 +607,8 @@ Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
 
     if (esys_object->rsrc.rsrcType != IESYSC_SESSION_RSRC)
         return_error(TSS2_ESYS_RC_BAD_TR, "Object is not a session object");
-    esys_object->rsrc.misc.rsrc_session.sessionAttributes =
-        (esys_object->rsrc.misc.rsrc_session.
-         sessionAttributes & ~mask) | (flags & mask);
+    esys_object->rsrc.misc.rsrc_session.sessionAttributes
+        = (esys_object->rsrc.misc.rsrc_session.sessionAttributes & ~mask) | (flags & mask);
     if (esys_object->rsrc.misc.rsrc_session.sessionAttributes & TPMA_SESSION_AUDIT)
         esys_object->rsrc.misc.rsrc_session.bound_entity.size = 0;
     return TSS2_RC_SUCCESS;
@@ -655,11 +629,9 @@ Esys_TRSess_SetAttributes(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
-Esys_TRSess_GetNonceTPM(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
-                TPM2B_NONCE **nonceTPM)
-{
+Esys_TRSess_GetNonceTPM(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, TPM2B_NONCE **nonceTPM) {
     RSRC_NODE_T *esys_object;
-    TSS2_RC r;
+    TSS2_RC      r;
     ESYS_ASSERT_NON_NULL(esys_context);
     ESYS_ASSERT_NON_NULL(nonceTPM);
 
@@ -672,15 +644,13 @@ Esys_TRSess_GetNonceTPM(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
         return TSS2_ESYS_RC_MEMORY;
     }
     if (esys_object->rsrc.rsrcType != IESYSC_SESSION_RSRC) {
-        goto_error(r, TSS2_ESYS_RC_BAD_TR,
-                   "NonceTPM for non-session object requested.",
+        goto_error(r, TSS2_ESYS_RC_BAD_TR, "NonceTPM for non-session object requested.",
                    error_cleanup);
-
     }
     **nonceTPM = esys_object->rsrc.misc.rsrc_session.nonceTPM;
 
     return r;
- error_cleanup:
+error_cleanup:
     SAFE_FREE(*nonceTPM);
     return r;
 }
@@ -703,10 +673,8 @@ Esys_TRSess_GetNonceTPM(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
  * @retval TSS2_ESYS_RC_BAD_REFERENCE For invalid ESYS_CONTEXT.
  */
 TSS2_RC
-Esys_TR_GetTpmHandle(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
-                  TPM2_HANDLE * tpm_handle)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
+Esys_TR_GetTpmHandle(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, TPM2_HANDLE *tpm_handle) {
+    TSS2_RC      r = TSS2_RC_SUCCESS;
     RSRC_NODE_T *esys_object;
 
     ESYS_ASSERT_NON_NULL(esys_context);
@@ -738,26 +706,24 @@ Esys_TR_GetTpmHandle(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
-Esys_TRSess_GetAuthRequired(ESYS_CONTEXT * esys_context, ESYS_TR esys_handle,
-                            TPMI_YES_NO *auth_needed)
-{
+Esys_TRSess_GetAuthRequired(ESYS_CONTEXT *esys_context,
+                            ESYS_TR       esys_handle,
+                            TPMI_YES_NO  *auth_needed) {
     RSRC_NODE_T *esys_object;
-    TSS2_RC r;
+    TSS2_RC      r;
     ESYS_ASSERT_NON_NULL(esys_context);
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
 
     if (esys_object->rsrc.rsrcType != IESYSC_SESSION_RSRC) {
-        return_if_error(TSS2_ESYS_RC_BAD_TR,
-                        "Auth value needed for non-session object requested.");
+        return_if_error(TSS2_ESYS_RC_BAD_TR, "Auth value needed for non-session object requested.");
     }
 
-    if (esys_object->rsrc.misc.rsrc_session.type_policy_session == POLICY_AUTH ||
-        esys_object->rsrc.misc.rsrc_session.type_policy_session == POLICY_PASSWORD)
+    if (esys_object->rsrc.misc.rsrc_session.type_policy_session == POLICY_AUTH
+        || esys_object->rsrc.misc.rsrc_session.type_policy_session == POLICY_PASSWORD)
         *auth_needed = TPM2_YES;
     else
         *auth_needed = TPM2_NO;
     return TSS2_RC_SUCCESS;
-
 }

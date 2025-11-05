@@ -8,24 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <ctype.h>                   // for isalnum
-#include <json.h>                    // for json_object_put, json_object_to_...
-#include <stdint.h>                  // for uint8_t
-#include <string.h>                  // for strcmp, strncmp, strlen, strdup
-#include <sys/stat.h>                // for stat
+#include <ctype.h>    // for isalnum
+#include <json.h>     // for json_object_put, json_object_to_...
+#include <stdint.h>   // for uint8_t
+#include <string.h>   // for strcmp, strncmp, strlen, strdup
+#include <sys/stat.h> // for stat
 
-#include "fapi_int.h"                // for IFAPI_POLICY_PATH, IFAPI_NV_PATH
-#include "ifapi_helpers.h"           // for free_string_list, ifapi_asprintf
-#include "ifapi_io.h"                // for ifapi_io_path_exists, IFAPI_IO
-#include "ifapi_json_deserialize.h"  // for ifapi_json_IFAPI_OBJECT_deserialize
-#include "ifapi_json_serialize.h"    // for ifapi_json_IFAPI_OBJECT_serialize
+#include "fapi_int.h"               // for IFAPI_POLICY_PATH, IFAPI_NV_PATH
+#include "ifapi_helpers.h"          // for free_string_list, ifapi_asprintf
+#include "ifapi_io.h"               // for ifapi_io_path_exists, IFAPI_IO
+#include "ifapi_json_deserialize.h" // for ifapi_json_IFAPI_OBJECT_deserialize
+#include "ifapi_json_serialize.h"   // for ifapi_json_IFAPI_OBJECT_serialize
 #include "ifapi_keystore.h"
-#include "ifapi_macros.h"            // for goto_if_error2, strdup_check
-#include "tpm_json_deserialize.h"    // for ifapi_parse_json
+#include "ifapi_macros.h"         // for goto_if_error2, strdup_check
+#include "tpm_json_deserialize.h" // for ifapi_parse_json
 
 #define LOGMODULE fapi
-#include "util/log.h"                // for SAFE_FREE, goto_if_error, LOG_ERROR
-
+#include "util/log.h" // for SAFE_FREE, goto_if_error, LOG_ERROR
 
 /** Check whether pathname is valid.
  *
@@ -36,14 +35,9 @@
  * @retval TSS2_FAPI_RC_BAD_PATH If not valid characters are detected.
  */
 TSS2_RC
-ifapi_check_valid_path(
-    const char *path)
-{
+ifapi_check_valid_path(const char *path) {
     for (size_t i = 0; i < strlen(path); i++) {
-        if (!(isalnum(path[i]) ||
-              path[i] == '_' ||
-              path[i] == '-' ||
-              path[i] == '/')) {
+        if (!(isalnum(path[i]) || path[i] == '_' || path[i] == '-' || path[i] == '/')) {
             LOG_ERROR("Invalid character %c in path %s", path[i], path);
             return TSS2_FAPI_RC_BAD_PATH;
         }
@@ -71,18 +65,16 @@ ifapi_check_valid_path(
  * @retval TSS2_FAPI_RC_BAD_PATH if no valid key path could be created.
  */
 static TSS2_RC
-initialize_explicit_key_path(
-    const char *context_profile,
-    const char *ipath,
-    NODE_STR_T **list_node1,
-    NODE_STR_T **current_list_node,
-    NODE_STR_T **result)
-{
+initialize_explicit_key_path(const char  *context_profile,
+                             const char  *ipath,
+                             NODE_STR_T **list_node1,
+                             NODE_STR_T **current_list_node,
+                             NODE_STR_T **result) {
     *list_node1 = split_string(ipath, IFAPI_FILE_DELIM);
     NODE_STR_T *list_node = *list_node1;
     char const *profile;
-    char *hierarchy = NULL;
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    char       *hierarchy = NULL;
+    TSS2_RC     r = TSS2_RC_SUCCESS;
 
     *result = NULL;
     if (list_node == NULL) {
@@ -104,9 +96,8 @@ initialize_explicit_key_path(
         LOG_ERROR("Out of memory");
         return TSS2_FAPI_RC_MEMORY;
     }
-    if (strcmp(list_node->str, "HS") == 0 ||
-        strcmp(list_node->str, "HE") == 0 ||
-        strcmp(list_node->str, "HN") == 0) {
+    if (strcmp(list_node->str, "HS") == 0 || strcmp(list_node->str, "HE") == 0
+        || strcmp(list_node->str, "HN") == 0) {
         hierarchy = list_node->str;
         list_node = list_node->next;
     } else if (strcmp(list_node->str, "LOCKOUT") == 0) {
@@ -118,8 +109,7 @@ initialize_explicit_key_path(
     } else if (strcmp(list_node->str, "EK") == 0) {
         /* The hierarchy for an endorsement key will be added. */
         hierarchy = "HE";
-    } else if (list_node->str != NULL &&
-               strcmp(list_node->str, "SRK") == 0) {
+    } else if (list_node->str != NULL && strcmp(list_node->str, "SRK") == 0) {
         /* The storage hierachy will be added. */
         hierarchy = "HS";
     } else {
@@ -134,8 +124,7 @@ initialize_explicit_key_path(
         goto error;
     }
     if (list_node == NULL) {
-        goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Explicit path can't be determined.",
-                   error);
+        goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Explicit path can't be determined.", error);
     }
 
     /* Add the primary directory to the linked list. */
@@ -157,8 +146,8 @@ initialize_explicit_key_path(
         goto error;
     }
 
-    if (hierarchy && strcmp(hierarchy, "HN") == 0 &&
-        (strcmp(list_node->str, "SRK") == 0 || strcmp(list_node->str, "EK") == 0)) {
+    if (hierarchy && strcmp(hierarchy, "HN") == 0
+        && (strcmp(list_node->str, "SRK") == 0 || strcmp(list_node->str, "EK") == 0)) {
         LOG_ERROR("Key EK and SRK cannot be created in NULL hierarchy.");
         r = TSS2_FAPI_RC_BAD_PATH;
         goto error;
@@ -194,15 +183,11 @@ error:
  *         during authorization.
  */
 static TSS2_RC
-get_explicit_key_path(
-    IFAPI_KEYSTORE *keystore,
-    const char *ipath,
-    NODE_STR_T **result)
-{
+get_explicit_key_path(IFAPI_KEYSTORE *keystore, const char *ipath, NODE_STR_T **result) {
     NODE_STR_T *list_node1 = NULL;
     NODE_STR_T *list_node = NULL;
-    TSS2_RC r = initialize_explicit_key_path(keystore->defaultprofile, ipath,
-                                             &list_node1, &list_node, result);
+    TSS2_RC     r = initialize_explicit_key_path(keystore->defaultprofile, ipath, &list_node1,
+                                                 &list_node, result);
     goto_if_error(r, "init_explicit_key_path", error);
 
     while (list_node != NULL) {
@@ -233,12 +218,11 @@ error:
  * @param[in,out] path The absolute path.
  */
 void
-full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
-{
-    unsigned int start_pos, end_pos, i;
+full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path) {
+    unsigned int       start_pos, end_pos, i;
     const unsigned int path_length = strlen(path);
-    size_t keystore_length = strlen(keystore->userdir);
-    char fapi_path_delim;
+    size_t             keystore_length = strlen(keystore->userdir);
+    char               fapi_path_delim;
 
     start_pos = 0;
 
@@ -264,7 +248,7 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
     /* Remove double / */
     while (ip < lp) {
         if (strncmp(&path[ip], "//", 2) == 0) {
-            memmove(&path[ip], &path[ip+1], lp-ip);
+            memmove(&path[ip], &path[ip + 1], lp - ip);
             lp -= 1;
         } else {
             ip += 1;
@@ -306,11 +290,10 @@ full_path_to_fapi_path(IFAPI_KEYSTORE *keystore, char *path)
  *         during authorization.
  */
 static TSS2_RC
-expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
-{
-    TSS2_RC r;
+expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name) {
+    TSS2_RC     r;
     NODE_STR_T *node_list = NULL;
-    size_t pos = 0;
+    size_t      pos = 0;
     *file_name = NULL;
 
     check_not_null(path);
@@ -326,14 +309,13 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
         } else {
             if (strncmp("/", path, 1) == 0)
                 pos = 1;
-            r = ifapi_asprintf(file_name, "/%s%s%s", keystore->defaultprofile,
-                               IFAPI_FILE_DELIM, &path[pos]);
+            r = ifapi_asprintf(file_name, "/%s%s%s", keystore->defaultprofile, IFAPI_FILE_DELIM,
+                               &path[pos]);
             return_if_error(r, "Out of memory.");
         }
-    } else if (ifapi_path_type_p(path, IFAPI_NV_PATH)
-               || ifapi_path_type_p(path, IFAPI_POLICY_PATH)
-               || ifapi_path_type_p(path, IFAPI_EXT_PATH)
-               || strncmp(path, "/P_", 3) == 0 || strncmp(path, "P_", 2) == 0) {
+    } else if (ifapi_path_type_p(path, IFAPI_NV_PATH) || ifapi_path_type_p(path, IFAPI_POLICY_PATH)
+               || ifapi_path_type_p(path, IFAPI_EXT_PATH) || strncmp(path, "/P_", 3) == 0
+               || strncmp(path, "P_", 2) == 0) {
         *file_name = strdup(path);
         return_if_null(*file_name, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
@@ -356,7 +338,7 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name)
         goto_if_null(aux_str, "Out of memory", TSS2_FAPI_RC_MEMORY, error);
 
         aux_str[0] = '/';
-        memcpy(&aux_str[1], &(*file_name)[0], strlen(*file_name)+1);
+        memcpy(&aux_str[1], &(*file_name)[0], strlen(*file_name) + 1);
         SAFE_FREE(*file_name);
         *file_name = aux_str;
     }
@@ -386,15 +368,13 @@ error:
  *         during authorization.
  */
 static TSS2_RC
-expand_path_to_object(
-    IFAPI_KEYSTORE *keystore,
-    const char *path,
-    const char *dir,
-    char **file_name)
-{
+expand_path_to_object(IFAPI_KEYSTORE *keystore,
+                      const char     *path,
+                      const char     *dir,
+                      char          **file_name) {
 
     TSS2_RC r;
-    char *expanded_path = NULL;
+    char   *expanded_path = NULL;
 
     /* Expand implicit path to explicit path. */
     r = expand_path(keystore, path, &expanded_path);
@@ -425,12 +405,10 @@ expand_path_to_object(
  *         the function.
  */
 TSS2_RC
-ifapi_keystore_initialize(
-    IFAPI_KEYSTORE *keystore,
-    const char *config_systemdir,
-    const char *config_userdir,
-    const char *config_defaultprofile)
-{
+ifapi_keystore_initialize(IFAPI_KEYSTORE *keystore,
+                          const char     *config_systemdir,
+                          const char     *config_userdir,
+                          const char     *config_defaultprofile) {
     TSS2_RC r;
 
     memset(keystore, 0, sizeof(IFAPI_KEYSTORE));
@@ -440,16 +418,13 @@ ifapi_keystore_initialize(
     goto_if_error2(r, "User directory %s can't be created.", error, keystore->userdir);
 
     keystore->userdir = strdup(config_userdir);
-    goto_if_null2(keystore->userdir, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                  error);
+    goto_if_null2(keystore->userdir, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error);
 
     keystore->systemdir = strdup(config_systemdir);
-    goto_if_null2(keystore->systemdir, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                  error);
+    goto_if_null2(keystore->systemdir, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error);
 
     keystore->defaultprofile = strdup(config_defaultprofile);
-    goto_if_null2(keystore->defaultprofile, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                  error);
+    goto_if_null2(keystore->defaultprofile, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error);
 
     return TSS2_RC_SUCCESS;
 
@@ -482,29 +457,22 @@ error:
  *         or contains illegal characters.
  */
 static TSS2_RC
-rel_path_to_abs_path(
-        IFAPI_KEYSTORE *keystore,
-        const char *rel_path,
-        char **abs_path)
-{
+rel_path_to_abs_path(IFAPI_KEYSTORE *keystore, const char *rel_path, char **abs_path) {
     TSS2_RC r;
-    char *directory = NULL;
-    bool provision_check_ok;
+    char   *directory = NULL;
+    bool    provision_check_ok;
 
     /* First expand path in user directory  */
     r = expand_path(keystore, rel_path, &directory);
     goto_if_error(r, "Expand path", cleanup);
 
-    r = expand_path_to_object(keystore, directory,
-            keystore->userdir, abs_path);
+    r = expand_path_to_object(keystore, directory, keystore->userdir, abs_path);
     goto_if_error2(r, "Object path %s could not be created.", cleanup, directory);
-
 
     if (!ifapi_io_path_exists(*abs_path)) {
         /* Second try system directory if object not found in user directory */
         SAFE_FREE(*abs_path);
-        r = expand_path_to_object(keystore, directory,
-                keystore->systemdir, abs_path);
+        r = expand_path_to_object(keystore, directory, keystore->systemdir, abs_path);
         goto_if_error2(r, "Object path %s could not be created.", cleanup, directory);
 
         if (ifapi_io_path_exists(*abs_path)) {
@@ -517,26 +485,22 @@ rel_path_to_abs_path(
         goto_if_error(r, "Provisioning check.", cleanup);
 
         if (!provision_check_ok) {
-            goto_error(r, TSS2_FAPI_RC_NOT_PROVISIONED,
-                       "FAPI not provisioned for path: %s.",
+            goto_error(r, TSS2_FAPI_RC_NOT_PROVISIONED, "FAPI not provisioned for path: %s.",
                        cleanup, rel_path);
         }
 
         /* Check type of object which does not exist. */
         if (ifapi_path_type_p(rel_path, IFAPI_NV_PATH)) {
             /* NV directory does not exist. */
-            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND,
-                    "File %s does not exist.",
-                    cleanup, rel_path);
+            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "File %s does not exist.", cleanup,
+                       rel_path);
         } else if (ifapi_hierarchy_path_p(rel_path)) {
             /* Hierarchy which should be created during provisioning could not be loaded. */
-            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND,
-                    "Hierarchy file %s does not exist.",
-                    cleanup, rel_path);
+            goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Hierarchy file %s does not exist.", cleanup,
+                       rel_path);
         } else {
             /* Object file for key does not exist in keystore */
-            goto_error(r, TSS2_FAPI_RC_KEY_NOT_FOUND,
-                    "Key %s not found.", cleanup, rel_path);
+            goto_error(r, TSS2_FAPI_RC_KEY_NOT_FOUND, "Key %s not found.", cleanup, rel_path);
         }
     }
 
@@ -566,13 +530,9 @@ cleanup:
  *         or contains illegal characters.
  */
 TSS2_RC
-ifapi_keystore_load_async(
-    IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io,
-    const char *path)
-{
+ifapi_keystore_load_async(IFAPI_KEYSTORE *keystore, IFAPI_IO *io, const char *path) {
     TSS2_RC r;
-    char *abs_path = NULL;
+    char   *abs_path = NULL;
 
     LOG_TRACE("Load object: %s", path);
 
@@ -592,7 +552,7 @@ ifapi_keystore_load_async(
     SAFE_FREE(abs_path);
     return r;
 
- error_cleanup:
+error_cleanup:
     SAFE_FREE(abs_path);
     SAFE_FREE(keystore->rel_path);
     return r;
@@ -615,14 +575,12 @@ ifapi_keystore_load_async(
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_keystore_load_finish(
-    IFAPI_KEYSTORE *keystore MAYBE_UNUSED,
-    IFAPI_IO *io,
-    IFAPI_OBJECT *object)
-{
-    TSS2_RC r;
+ifapi_keystore_load_finish(IFAPI_KEYSTORE *keystore MAYBE_UNUSED,
+                           IFAPI_IO                *io,
+                           IFAPI_OBJECT            *object) {
+    TSS2_RC      r;
     json_object *jso = NULL;
-    uint8_t *buffer = NULL;
+    uint8_t     *buffer = NULL;
 
     r = ifapi_io_read_finish(io, &buffer, NULL);
     return_try_again(r);
@@ -644,7 +602,7 @@ ifapi_keystore_load_finish(
     LOG_TRACE("Return %x", r);
     return r;
 
- error_cleanup:
+error_cleanup:
     SAFE_FREE(buffer);
     if (jso)
         json_object_put(jso);
@@ -676,16 +634,14 @@ ifapi_keystore_load_finish(
  *         during authorization.
  */
 TSS2_RC
-ifapi_keystore_store_async(
-    IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io,
-    const char *path,
-    const IFAPI_OBJECT *object)
-{
-    TSS2_RC r;
-    char *directory = NULL;
-    char *file = NULL;
-    char *jso_string = NULL;
+ifapi_keystore_store_async(IFAPI_KEYSTORE     *keystore,
+                           IFAPI_IO           *io,
+                           const char         *path,
+                           const IFAPI_OBJECT *object) {
+    TSS2_RC      r;
+    char        *directory = NULL;
+    char        *file = NULL;
+    char        *jso_string = NULL;
     json_object *jso = NULL;
 
     LOG_TRACE("Store object: %s", path);
@@ -698,14 +654,12 @@ ifapi_keystore_store_async(
         r = ifapi_create_dirs(keystore->systemdir, directory);
         goto_if_error2(r, "Directory %s could not be created.", cleanup, directory);
 
-        r = expand_path_to_object(keystore, directory,
-                                  keystore->systemdir, &file);
+        r = expand_path_to_object(keystore, directory, keystore->systemdir, &file);
     } else {
         r = ifapi_create_dirs(keystore->userdir, directory);
         goto_if_error2(r, "Directory %s could not be created.", cleanup, directory);
 
-        r = expand_path_to_object(keystore, directory,
-                                  keystore->userdir, &file);
+        r = expand_path_to_object(keystore, directory, keystore->userdir, &file);
     }
     goto_if_error2(r, "Object path %s could not be created.", cleanup, directory);
 
@@ -713,13 +667,11 @@ ifapi_keystore_store_async(
     r = ifapi_json_IFAPI_OBJECT_serialize(object, &jso);
     goto_if_error2(r, "Object for %s could not be serialized.", cleanup, file);
 
-    jso_string = strdup(json_object_to_json_string_ext(jso,
-                                                       JSON_C_TO_STRING_PRETTY));
-    goto_if_null2(jso_string, "Converting json to string", r, TSS2_FAPI_RC_MEMORY,
-                  cleanup);
+    jso_string = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
+    goto_if_null2(jso_string, "Converting json to string", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
     /* Start writing the json string to disk */
-    r = ifapi_io_write_async(io, file, (uint8_t *) jso_string, strlen(jso_string));
+    r = ifapi_io_write_async(io, file, (uint8_t *)jso_string, strlen(jso_string));
     free(jso_string);
     goto_if_error(r, "write_async failed", cleanup);
 
@@ -755,14 +707,12 @@ cleanup:
  *         during authorization.
  */
 TSS2_RC
-ifapi_keystore_object_does_not_exist(
-    IFAPI_KEYSTORE *keystore,
-    const char *path,
-    const IFAPI_OBJECT *object)
-{
+ifapi_keystore_object_does_not_exist(IFAPI_KEYSTORE     *keystore,
+                                     const char         *path,
+                                     const IFAPI_OBJECT *object) {
     TSS2_RC r;
-    char *directory = NULL;
-    char *file = NULL;
+    char   *directory = NULL;
+    char   *file = NULL;
 
     LOG_TRACE("Store object: %s", path);
 
@@ -771,11 +721,9 @@ ifapi_keystore_object_does_not_exist(
     goto_if_error(r, "Expand path", cleanup);
 
     if (object->system) {
-        r = expand_path_to_object(keystore, directory,
-                                  keystore->systemdir, &file);
+        r = expand_path_to_object(keystore, directory, keystore->systemdir, &file);
     } else {
-        r = expand_path_to_object(keystore, directory,
-                                  keystore->userdir, &file);
+        r = expand_path_to_object(keystore, directory, keystore->userdir, &file);
     }
 
     goto_if_error2(r, "Object path %s could not be created.", cleanup, directory);
@@ -801,9 +749,7 @@ cleanup:
  *         Call this function again later.
  */
 TSS2_RC
-ifapi_keystore_store_finish(
-    IFAPI_IO *io)
-{
+ifapi_keystore_store_finish(IFAPI_IO *io) {
     TSS2_RC r;
 
     /* Finish writing the object */
@@ -835,16 +781,14 @@ ifapi_keystore_store_finish(
  *         during authorization.
  */
 static TSS2_RC
-keystore_list_all_abs(
-    IFAPI_KEYSTORE *keystore,
-    const char *searchpath,
-    char ***results,
-    size_t *numresults)
-{
+keystore_list_all_abs(IFAPI_KEYSTORE *keystore,
+                      const char     *searchpath,
+                      char         ***results,
+                      size_t         *numresults) {
     TSS2_RC r;
-    char *expanded_search_path = NULL, *full_search_path = NULL;
-    size_t num_paths_system, num_paths_user, i, j;
-    char **file_ary, **file_ary_system, **file_ary_user;
+    char   *expanded_search_path = NULL, *full_search_path = NULL;
+    size_t  num_paths_system, num_paths_user, i, j;
+    char  **file_ary, **file_ary_system, **file_ary_user;
 
     *numresults = 0;
     file_ary_user = NULL;
@@ -881,9 +825,8 @@ keystore_list_all_abs(
     if (*numresults > 0) {
 
         /* Move file names from list to combined array */
-        file_ary = (char**) calloc(*numresults, sizeof(char *));
-        goto_if_null(file_ary, "Out of memory.", TSS2_FAPI_RC_MEMORY,
-                    cleanup);
+        file_ary = (char **)calloc(*numresults, sizeof(char *));
+        goto_if_null(file_ary, "Out of memory.", TSS2_FAPI_RC_MEMORY, cleanup);
         i = 0;
         for (j = 0; j < num_paths_system; j++)
             file_ary[i++] = file_ary_system[j];
@@ -923,14 +866,12 @@ cleanup:
  *         during authorization.
  */
 TSS2_RC
-ifapi_keystore_list_all(
-    IFAPI_KEYSTORE *keystore,
-    const char *searchpath,
-    char ***results,
-    size_t *numresults)
-{
+ifapi_keystore_list_all(IFAPI_KEYSTORE *keystore,
+                        const char     *searchpath,
+                        char         ***results,
+                        size_t         *numresults) {
     TSS2_RC r;
-    size_t i;
+    size_t  i;
 
     r = keystore_list_all_abs(keystore, searchpath, results, numresults);
     return_if_error(r, "Get all keystore objects.");
@@ -962,12 +903,9 @@ ifapi_keystore_list_all(
  *         or contains illegal characters.
  */
 TSS2_RC
-ifapi_keystore_delete(
-    IFAPI_KEYSTORE * keystore,
-    char *path)
-{
+ifapi_keystore_delete(IFAPI_KEYSTORE *keystore, char *path) {
     TSS2_RC r;
-    char *abs_path = NULL;
+    char   *abs_path = NULL;
 
     /* Convert relative path to absolute path in keystore */
     r = rel_path_to_abs_path(keystore, path, &abs_path);
@@ -999,18 +937,16 @@ cleanup:
  *         during authorization.
  */
 static TSS2_RC
-expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_name)
-{
+expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_name) {
     TSS2_RC r;
 
     if (path && strcmp(path, "") != 0 && strcmp(path, "/") != 0) {
         size_t start_pos = 0;
         if (path[0] == IFAPI_FILE_DELIM_CHAR)
             start_pos = 1;
-        if ((strncmp(&path[start_pos], "HS", 2) == 0 ||
-             strncmp(&path[start_pos], "HN", 2) == 0 ||
-             strncmp(&path[start_pos], "HE", 2) == 0) &&
-            strlen(&path[start_pos]) <= 3) {
+        if ((strncmp(&path[start_pos], "HS", 2) == 0 || strncmp(&path[start_pos], "HN", 2) == 0
+             || strncmp(&path[start_pos], "HE", 2) == 0)
+            && strlen(&path[start_pos]) <= 3) {
             /* Root directory is hierarchy */
             r = ifapi_asprintf(directory_name, "/%s/%s/", keystore->defaultprofile,
                                &path[start_pos]);
@@ -1045,13 +981,12 @@ expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_na
  *         during authorization.
  */
 TSS2_RC
-ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    char *absolute_dir_path = NULL;
-    char *exp_dir_name = NULL;
+ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name) {
+    TSS2_RC     r = TSS2_RC_SUCCESS;
+    char       *absolute_dir_path = NULL;
+    char       *exp_dir_name = NULL;
     struct stat fbuffer;
-    size_t pos;
+    size_t      pos;
 
     r = expand_directory(keystore, dir_name, &exp_dir_name);
     return_if_error(r, "Expand path string.");
@@ -1102,10 +1037,7 @@ cleanup:
  * @retval true if the comparison is successful.
  * @retval true if the comparison is not successful.
  */
-typedef TSS2_RC (*ifapi_keystore_object_cmp) (
-    IFAPI_OBJECT *object,
-    void *cmp_object,
-    bool *equal);
+typedef TSS2_RC (*ifapi_keystore_object_cmp)(IFAPI_OBJECT *object, void *cmp_object, bool *equal);
 
 /** Search object with a certain propoerty in keystore.
  *
@@ -1134,35 +1066,31 @@ typedef TSS2_RC (*ifapi_keystore_object_cmp) (
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 static TSS2_RC
-keystore_search_obj(
-    IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io,
-    void *cmp_object,
-    ifapi_keystore_object_cmp cmp_function,
-    char **found_path)
-{
-    TSS2_RC r;
-    UINT32 path_idx;
-    char *path;
+keystore_search_obj(IFAPI_KEYSTORE           *keystore,
+                    IFAPI_IO                 *io,
+                    void                     *cmp_object,
+                    ifapi_keystore_object_cmp cmp_function,
+                    char                    **found_path) {
+    TSS2_RC      r;
+    UINT32       path_idx;
+    char        *path;
     IFAPI_OBJECT object;
-    size_t i;
+    size_t       i;
 
     /* Mark object "unread" */
     object.objectType = IFAPI_OBJ_NONE;
 
     switch (keystore->key_search.state) {
     statecase(keystore->key_search.state, KSEARCH_INIT)
-        r = ifapi_keystore_list_all(keystore,
-                                    "/", /**< search keys and NV objects in store */
-                                    &keystore->key_search.pathlist,
-                                    &keystore->key_search.numPaths);
+        r = ifapi_keystore_list_all(keystore, "/", /**< search keys and NV objects in store */
+                                    &keystore->key_search.pathlist, &keystore->key_search.numPaths);
         goto_if_error2(r, "Get entities.", cleanup);
 
         keystore->key_search.path_idx = keystore->key_search.numPaths;
         fallthrough;
 
     statecase(keystore->key_search.state, KSEARCH_SEARCH_OBJECT)
-        /* Use the next object in the path list */
+    /* Use the next object in the path list */
         if (keystore->key_search.path_idx == 0) {
             goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Key or NV object not found.", cleanup);
         }
@@ -1200,8 +1128,7 @@ keystore_search_obj(
         /* Key found, the absolute path will be converted to relative path. */
         path_idx = keystore->key_search.path_idx;
         *found_path = strdup(keystore->key_search.pathlist[path_idx]);
-        goto_if_null(*found_path, "Out of memory.",
-                     TSS2_FAPI_RC_MEMORY, cleanup);
+        goto_if_null(*found_path, "Out of memory.", TSS2_FAPI_RC_MEMORY, cleanup);
         full_path_to_fapi_path(keystore, *found_path);
         break;
 
@@ -1210,7 +1137,7 @@ keystore_search_obj(
 cleanup:
     for (i = 0; i < keystore->key_search.numPaths; i++)
         free(keystore->key_search.pathlist[i]);
-    free((void*)keystore->key_search.pathlist);
+    free((void *)keystore->key_search.pathlist);
     if (!*found_path) {
         LOG_ERROR("Object not found");
         r = TSS2_FAPI_RC_KEY_NOT_FOUND;
@@ -1247,14 +1174,11 @@ cleanup:
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-ifapi_keystore_search_obj(
-    IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io,
-    TPM2B_NAME *name,
-    char **found_path)
-{
-    return keystore_search_obj(keystore, io, name,
-                               ifapi_object_cmp_name, found_path);
+ifapi_keystore_search_obj(IFAPI_KEYSTORE *keystore,
+                          IFAPI_IO       *io,
+                          TPM2B_NAME     *name,
+                          char          **found_path) {
+    return keystore_search_obj(keystore, io, name, ifapi_object_cmp_name, found_path);
 }
 
 /** Search nv object with a certain nv_index (from nv_public) in keystore.
@@ -1285,57 +1209,47 @@ ifapi_keystore_search_obj(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-ifapi_keystore_search_nv_obj(
-    IFAPI_KEYSTORE *keystore,
-    IFAPI_IO *io,
-    TPM2B_NV_PUBLIC *nv_public,
-    char **found_path)
-{
-    return keystore_search_obj(keystore, io, nv_public,
-                               ifapi_object_cmp_nv_public, found_path);
+ifapi_keystore_search_nv_obj(IFAPI_KEYSTORE  *keystore,
+                             IFAPI_IO        *io,
+                             TPM2B_NV_PUBLIC *nv_public,
+                             char           **found_path) {
+    return keystore_search_obj(keystore, io, nv_public, ifapi_object_cmp_nv_public, found_path);
 }
 
- /** Check whether keystore object already exists.
-  *
-  * The passed relative path will be expanded for user store and system store.
-  *
-  * @param[in] keystore The key directories and default profile.
-  * @param[in] path The relative path of the object. For keys the path will
-  *            expanded if possible.
-  * @retval TSS2_RC_SUCCESS if the object does not exist.
-  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the file exists in the keystore.
-  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
-  */
+/** Check whether keystore object already exists.
+ *
+ * The passed relative path will be expanded for user store and system store.
+ *
+ * @param[in] keystore The key directories and default profile.
+ * @param[in] path The relative path of the object. For keys the path will
+ *            expanded if possible.
+ * @retval TSS2_RC_SUCCESS if the object does not exist.
+ * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the file exists in the keystore.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
+ */
 TSS2_RC
-ifapi_keystore_check_overwrite(
-    IFAPI_KEYSTORE *keystore,
-    const char *path)
-{
+ifapi_keystore_check_overwrite(IFAPI_KEYSTORE *keystore, const char *path) {
     TSS2_RC r;
-    char *directory = NULL;
-    char *file = NULL;
+    char   *directory = NULL;
+    char   *file = NULL;
 
     /* Expand relative path */
     r = expand_path(keystore, path, &directory);
     goto_if_error(r, "Expand path", cleanup);
 
     /* Expand absolute path for user and system directory */
-    r = expand_path_to_object(keystore, directory,
-                              keystore->systemdir, &file);
+    r = expand_path_to_object(keystore, directory, keystore->systemdir, &file);
     goto_if_error(r, "Expand path to object", cleanup);
 
     if (ifapi_io_path_exists(file)) {
-        goto_error(r, TSS2_FAPI_RC_PATH_ALREADY_EXISTS,
-                   "Object %s already exists.", cleanup, path);
+        goto_error(r, TSS2_FAPI_RC_PATH_ALREADY_EXISTS, "Object %s already exists.", cleanup, path);
     }
     SAFE_FREE(file);
-    r = expand_path_to_object(keystore, directory,
-                              keystore->userdir, &file);
+    r = expand_path_to_object(keystore, directory, keystore->userdir, &file);
     goto_if_error(r, "Expand path to object", cleanup);
 
     if (ifapi_io_path_exists(file)) {
-        goto_error(r, TSS2_FAPI_RC_PATH_ALREADY_EXISTS,
-                   "Object %s already exists.", cleanup, path);
+        goto_error(r, TSS2_FAPI_RC_PATH_ALREADY_EXISTS, "Object %s already exists.", cleanup, path);
     }
     r = TSS2_RC_SUCCESS;
 
@@ -1369,21 +1283,17 @@ cleanup:
  *         during authorization.
  */
 TSS2_RC
-ifapi_keystore_check_writeable(
-    IFAPI_KEYSTORE *keystore,
-    const char *path)
-{
+ifapi_keystore_check_writeable(IFAPI_KEYSTORE *keystore, const char *path) {
     TSS2_RC r;
-    char *directory = NULL;
-    char *file = NULL;
+    char   *directory = NULL;
+    char   *file = NULL;
 
     /* Expand relative path */
     r = expand_path(keystore, path, &directory);
     goto_if_error(r, "Expand path", cleanup);
 
     /* Expand absolute path for user and system directory */
-    r = expand_path_to_object(keystore, directory,
-                              keystore->userdir, &file);
+    r = expand_path_to_object(keystore, directory, keystore->userdir, &file);
     goto_if_error(r, "Expand path to object", cleanup);
 
     if (ifapi_io_path_exists(file)) {
@@ -1394,16 +1304,15 @@ ifapi_keystore_check_writeable(
         goto cleanup;
     } else {
         SAFE_FREE(file);
-        r = expand_path_to_object(keystore, directory,
-                                  keystore->systemdir, &file);
+        r = expand_path_to_object(keystore, directory, keystore->systemdir, &file);
         goto_if_error(r, "Expand path to object", cleanup);
 
         if (ifapi_io_path_exists(file)) {
-             r = ifapi_io_check_file_writeable(file);
-             goto_if_error2(r, "Object %s is not writable.", cleanup, path);
+            r = ifapi_io_check_file_writeable(file);
+            goto_if_error2(r, "Object %s is not writable.", cleanup, path);
 
-             /* File can be written */
-             goto cleanup;
+            /* File can be written */
+            goto cleanup;
         }
     }
 
@@ -1423,7 +1332,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TSS2_RC
-copy_uint8_ary(UINT8_ARY *dest, const UINT8_ARY * src) {
+copy_uint8_ary(UINT8_ARY *dest, const UINT8_ARY *src) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     /* Check the parameters if they are valid */
@@ -1460,7 +1369,7 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_copy_ifapi_key(IFAPI_KEY * dest, const IFAPI_KEY * src) {
+ifapi_copy_ifapi_key(IFAPI_KEY *dest, const IFAPI_KEY *src) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     /* Check the parameters if they are valid */
@@ -1516,7 +1425,7 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_copy_ifapi_hierarchy(IFAPI_HIERARCHY * dest, const IFAPI_HIERARCHY * src) {
+ifapi_copy_ifapi_hierarchy(IFAPI_HIERARCHY *dest, const IFAPI_HIERARCHY *src) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     /* Check the parameters if they are valid */
@@ -1546,7 +1455,7 @@ error_cleanup:
  *
  */
 void
-ifapi_cleanup_ifapi_key(IFAPI_KEY * key) {
+ifapi_cleanup_ifapi_key(IFAPI_KEY *key) {
     if (key != NULL) {
         SAFE_FREE(key->policyInstance);
         SAFE_FREE(key->serialization.buffer);
@@ -1565,7 +1474,7 @@ ifapi_cleanup_ifapi_key(IFAPI_KEY * key) {
  * @param[in] key The pubkey object to be cleaned up.
  */
 void
-ifapi_cleanup_ifapi_ext_pub_key(IFAPI_EXT_PUB_KEY * key) {
+ifapi_cleanup_ifapi_ext_pub_key(IFAPI_EXT_PUB_KEY *key) {
     if (key != NULL) {
         SAFE_FREE(key->pem_ext_public);
         SAFE_FREE(key->certificate);
@@ -1579,7 +1488,7 @@ ifapi_cleanup_ifapi_ext_pub_key(IFAPI_EXT_PUB_KEY * key) {
  * @param[in] hierarchy The hierarchy object to be cleaned up.
  */
 void
-ifapi_cleanup_ifapi_hierarchy(IFAPI_HIERARCHY * hierarchy) {
+ifapi_cleanup_ifapi_hierarchy(IFAPI_HIERARCHY *hierarchy) {
     if (hierarchy != NULL) {
         SAFE_FREE(hierarchy->description);
     }
@@ -1592,7 +1501,7 @@ ifapi_cleanup_ifapi_hierarchy(IFAPI_HIERARCHY * hierarchy) {
  * @param[in] nv The nv object to be cleaned up.
  */
 void
-ifapi_cleanup_ifapi_nv(IFAPI_NV * nv) {
+ifapi_cleanup_ifapi_nv(IFAPI_NV *nv) {
     if (nv != NULL) {
         SAFE_FREE(nv->serialization.buffer);
         SAFE_FREE(nv->appData.buffer);
@@ -1609,7 +1518,7 @@ ifapi_cleanup_ifapi_nv(IFAPI_NV * nv) {
  * @param[in] duplicate The duplicate object to be cleaned up.
  */
 void
-ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE * duplicate) {
+ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE *duplicate) {
     if (duplicate != NULL) {
         SAFE_FREE(duplicate->certificate);
     }
@@ -1622,7 +1531,7 @@ ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE * duplicate) {
  * @param[in] keystore The kystore object to be cleaned up.
  */
 void
-ifapi_cleanup_ifapi_keystore(IFAPI_KEYSTORE * keystore) {
+ifapi_cleanup_ifapi_keystore(IFAPI_KEYSTORE *keystore) {
     if (keystore != NULL) {
         SAFE_FREE(keystore->systemdir);
         SAFE_FREE(keystore->userdir);
@@ -1644,7 +1553,7 @@ ifapi_cleanup_ifapi_keystore(IFAPI_KEYSTORE * keystore) {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_copy_ifapi_key_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {
+ifapi_copy_ifapi_key_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     /* Check the parameters if they are valid */
@@ -1695,7 +1604,7 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_copy_ifapi_hierarchy_object(IFAPI_OBJECT * dest, const IFAPI_OBJECT * src) {
+ifapi_copy_ifapi_hierarchy_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     /* Check the parameters if they are valid */
@@ -1735,9 +1644,7 @@ error_cleanup:
  *
  */
 void
-ifapi_cleanup_ifapi_object(
-    IFAPI_OBJECT * object)
-{
+ifapi_cleanup_ifapi_object(IFAPI_OBJECT *object) {
     if (object != NULL) {
         if (object->objectType != IFAPI_OBJ_NONE) {
             if (object->objectType == IFAPI_KEY_OBJ) {
@@ -1772,22 +1679,17 @@ ifapi_cleanup_ifapi_object(
  * the absolute paths.
  */
 TSS2_RC
-ifapi_check_provisioned(
-    IFAPI_KEYSTORE *keystore,
-    const char *rel_path,
-    bool *ok)
-{
+ifapi_check_provisioned(IFAPI_KEYSTORE *keystore, const char *rel_path, bool *ok) {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    char *directory = NULL;
-    char *profile_dir = NULL;
-    char *end_profile;
+    char   *directory = NULL;
+    char   *profile_dir = NULL;
+    char   *end_profile;
 
     *ok = false;
 
     /* No profile in path, test can be skipped. */
-    if (ifapi_path_type_p(rel_path, IFAPI_NV_PATH) ||
-        ifapi_path_type_p(rel_path, IFAPI_POLICY_PATH) ||
-        ifapi_path_type_p(rel_path, IFAPI_EXT_PATH)) {
+    if (ifapi_path_type_p(rel_path, IFAPI_NV_PATH) || ifapi_path_type_p(rel_path, IFAPI_POLICY_PATH)
+        || ifapi_path_type_p(rel_path, IFAPI_EXT_PATH)) {
         *ok = true;
         return TSS2_RC_SUCCESS;
     }
@@ -1806,24 +1708,24 @@ ifapi_check_provisioned(
         r = ifapi_asprintf(&profile_dir, "%s/%s", keystore->userdir, directory);
         goto_if_error2(r, "Profile path could not be created.", cleanup);
 
-         if (ifapi_io_path_exists(profile_dir)) {
-             *ok = true;
-             goto cleanup;
-         }
-         /* Compute system path of the profile. */
-         SAFE_FREE(profile_dir);
-         r = ifapi_asprintf(&profile_dir, "%s/%s", keystore->systemdir, directory);
-         goto_if_error2(r, "Profile path could not be created.", cleanup);
+        if (ifapi_io_path_exists(profile_dir)) {
+            *ok = true;
+            goto cleanup;
+        }
+        /* Compute system path of the profile. */
+        SAFE_FREE(profile_dir);
+        r = ifapi_asprintf(&profile_dir, "%s/%s", keystore->systemdir, directory);
+        goto_if_error2(r, "Profile path could not be created.", cleanup);
 
-         if (ifapi_io_path_exists(profile_dir)) {
-             *ok = true;
-             goto cleanup;
-         }
+        if (ifapi_io_path_exists(profile_dir)) {
+            *ok = true;
+            goto cleanup;
+        }
     } else {
         /* No check needed because no profile found in the path. */
         *ok = true;
     }
- cleanup:
+cleanup:
     SAFE_FREE(profile_dir);
     SAFE_FREE(directory);
     return r;

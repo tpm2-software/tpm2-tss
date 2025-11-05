@@ -5,46 +5,46 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"                // for PACKAGE_STRING
+#include "config.h" // for PACKAGE_STRING
 #endif
 
-#include <json.h>                  // for json_object_put, json_object_to_js...
-#include <string.h>                // for memset, strdup, NULL, size_t
+#include <json.h>   // for json_object_put, json_object_to_js...
+#include <string.h> // for memset, strdup, NULL, size_t
 
-#include "fapi_int.h"              // for FAPI_CONTEXT, IFAPI_GetInfo, IFAPI...
-#include "fapi_util.h"             // for ifapi_capability_get, ifapi_capabi...
-#include "ifapi_io.h"              // for ifapi_io_poll
-#include "ifapi_json_serialize.h"  // for ifapi_json_IFAPI_INFO_serialize
-#include "ifapi_macros.h"          // for check_not_null, return_if_error_re...
-#include "ifapi_policy_types.h"    // for TPMI_POLICYTYPE
-#include "tss2_common.h"           // for TSS2_RC, TSS2_RC_SUCCESS, UINT32
-#include "tss2_esys.h"             // for Esys_SetTimeout
-#include "tss2_fapi.h"             // for FAPI_CONTEXT, Fapi_GetInfo, Fapi_G...
-#include "tss2_tcti.h"             // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"       // for TPM2_CAP_HANDLES, TPM2_MAX_CAP_HAN...
+#include "fapi_int.h"             // for FAPI_CONTEXT, IFAPI_GetInfo, IFAPI...
+#include "fapi_util.h"            // for ifapi_capability_get, ifapi_capabi...
+#include "ifapi_io.h"             // for ifapi_io_poll
+#include "ifapi_json_serialize.h" // for ifapi_json_IFAPI_INFO_serialize
+#include "ifapi_macros.h"         // for check_not_null, return_if_error_re...
+#include "ifapi_policy_types.h"   // for TPMI_POLICYTYPE
+#include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, UINT32
+#include "tss2_esys.h"            // for Esys_SetTimeout
+#include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_GetInfo, Fapi_G...
+#include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"      // for TPM2_CAP_HANDLES, TPM2_MAX_CAP_HAN...
 
 #define LOGMODULE fapi
-#include "util/log.h"              // for LOG_TRACE, return_if_error, goto_i...
+#include "util/log.h" // for LOG_TRACE, return_if_error, goto_i...
 
 typedef struct {
-    char *description;
+    char           *description;
     TPMI_POLICYTYPE capability;
-    UINT32 property;
-    UINT32 max;
+    UINT32          property;
+    UINT32          max;
 } IFAPI_INFO_CAP;
 
 #define CAP_IDX_PT_FIXED 9
 
 static IFAPI_INFO_CAP info_cap_tab[] = {
-    { "algorithms", TPM2_CAP_ALGS,  TPM2_ALG_FIRST, TPM2_MAX_CAP_ALGS},
-    { "handles-transient", TPM2_CAP_HANDLES, TPM2_TRANSIENT_FIRST, TPM2_MAX_CAP_HANDLES},
-    { "handles-persistent", TPM2_CAP_HANDLES, TPM2_PERSISTENT_FIRST, TPM2_MAX_CAP_HANDLES},
-    { "handles-permanent", TPM2_CAP_HANDLES, TPM2_PERMANENT_FIRST, TPM2_MAX_CAP_HANDLES},
-    { "handles-pcr", TPM2_CAP_HANDLES, TPM2_PCR_FIRST, TPM2_MAX_CAP_HANDLES},
-    { "handles-nv-index", TPM2_CAP_HANDLES, TPM2_NV_INDEX_FIRST, TPM2_MAX_CAP_HANDLES},
-    { "handles-loaded-session", TPM2_CAP_HANDLES, TPM2_LOADED_SESSION_FIRST, TPM2_MAX_CAP_HANDLES},
-    { "handles-action-session", TPM2_CAP_HANDLES, TPM2_ACTIVE_SESSION_FIRST, TPM2_MAX_CAP_HANDLES},
-    { "handles-saved-session", TPM2_CAP_HANDLES, TPM2_ACTIVE_SESSION_FIRST, TPM2_MAX_CAP_HANDLES},
+    { "algorithms", TPM2_CAP_ALGS, TPM2_ALG_FIRST, TPM2_MAX_CAP_ALGS },
+    { "handles-transient", TPM2_CAP_HANDLES, TPM2_TRANSIENT_FIRST, TPM2_MAX_CAP_HANDLES },
+    { "handles-persistent", TPM2_CAP_HANDLES, TPM2_PERSISTENT_FIRST, TPM2_MAX_CAP_HANDLES },
+    { "handles-permanent", TPM2_CAP_HANDLES, TPM2_PERMANENT_FIRST, TPM2_MAX_CAP_HANDLES },
+    { "handles-pcr", TPM2_CAP_HANDLES, TPM2_PCR_FIRST, TPM2_MAX_CAP_HANDLES },
+    { "handles-nv-index", TPM2_CAP_HANDLES, TPM2_NV_INDEX_FIRST, TPM2_MAX_CAP_HANDLES },
+    { "handles-loaded-session", TPM2_CAP_HANDLES, TPM2_LOADED_SESSION_FIRST, TPM2_MAX_CAP_HANDLES },
+    { "handles-action-session", TPM2_CAP_HANDLES, TPM2_ACTIVE_SESSION_FIRST, TPM2_MAX_CAP_HANDLES },
+    { "handles-saved-session", TPM2_CAP_HANDLES, TPM2_ACTIVE_SESSION_FIRST, TPM2_MAX_CAP_HANDLES },
     { "properties-fixed", TPM2_CAP_TPM_PROPERTIES, TPM2_PT_FIXED, TPM2_MAX_TPM_PROPERTIES },
     { "properties-variable", TPM2_CAP_TPM_PROPERTIES, TPM2_PT_VAR, TPM2_MAX_TPM_PROPERTIES },
     { "commands", TPM2_CAP_COMMANDS, TPM2_CC_FIRST, TPM2_MAX_CAP_CC },
@@ -81,10 +81,7 @@ static IFAPI_INFO_CAP info_cap_tab[] = {
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-Fapi_GetInfo(
-    FAPI_CONTEXT *context,
-    char        **info)
-{
+Fapi_GetInfo(FAPI_CONTEXT *context, char **info) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -152,9 +149,7 @@ Fapi_GetInfo(
  *         config file.
  */
 TSS2_RC
-Fapi_GetInfo_Async(
-    FAPI_CONTEXT *context)
-{
+Fapi_GetInfo_Async(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -166,7 +161,7 @@ Fapi_GetInfo_Async(
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
     /* Helpful alias pointers */
-    IFAPI_GetInfo * command = &context->cmd.GetInfo;
+    IFAPI_GetInfo *command = &context->cmd.GetInfo;
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -207,23 +202,20 @@ Fapi_GetInfo_Async(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-Fapi_GetInfo_Finish(
-    FAPI_CONTEXT *context,
-    char        **info)
-{
+Fapi_GetInfo_Finish(FAPI_CONTEXT *context, char **info) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso = NULL;
-    size_t capIdx, i;
+    size_t       capIdx, i;
 
     /* Check for NULL parameters */
     check_not_null(context);
     check_not_null(info);
 
     /* Helpful alias pointers */
-    IFAPI_GetInfo * command = &context->cmd.GetInfo;
-    IFAPI_INFO *infoObj = &command->info_obj;
+    IFAPI_GetInfo        *command = &context->cmd.GetInfo;
+    IFAPI_INFO           *infoObj = &command->info_obj;
     TPMS_CAPABILITY_DATA *capabilityData = NULL;
 
     LOG_TRACE("Current state is: %i", context->state);
@@ -231,8 +223,7 @@ Fapi_GetInfo_Finish(
     switch (context->state) {
     case GET_INFO_GET_CAP:
         /* Initialize the property for the first ESAPI call */
-        command->property
-            = info_cap_tab[command->idx_info_cap].property;
+        command->property = info_cap_tab[command->idx_info_cap].property;
         fallthrough;
 
     case GET_INFO_GET_CAP_MORE:
@@ -242,19 +233,17 @@ Fapi_GetInfo_Finish(
     case GET_INFO_WAIT_FOR_CAP:
         /* State will be set by sub routine */
         capIdx = command->idx_info_cap;
-        r = ifapi_capability_get(context,
-                                 info_cap_tab[capIdx].capability,
-                                 info_cap_tab[capIdx].max,
+        r = ifapi_capability_get(context, info_cap_tab[capIdx].capability, info_cap_tab[capIdx].max,
                                  &capabilityData);
         return_try_again(r);
         goto_if_error(r, "Get capability", cleanup);
 
-        if (info_cap_tab[capIdx].capability == TPM2_CAP_TPM_PROPERTIES &&
-            info_cap_tab[capIdx].property == TPM2_PT_FIXED) {
+        if (info_cap_tab[capIdx].capability == TPM2_CAP_TPM_PROPERTIES
+            && info_cap_tab[capIdx].property == TPM2_PT_FIXED) {
             /* Adapt count to number of fixed properties. */
-            for (i = 0; i <  capabilityData->data.tpmProperties.count; i++) {
+            for (i = 0; i < capabilityData->data.tpmProperties.count; i++) {
                 /* TPM2_PT_MODES is the last fixed property. */
-                if (capabilityData->data.tpmProperties.tpmProperty[i].property ==  TPM2_PT_MODES) {
+                if (capabilityData->data.tpmProperties.tpmProperty[i].property == TPM2_PT_MODES) {
                     capabilityData->data.tpmProperties.count = i + 1;
                     break;
                 }
@@ -265,8 +254,7 @@ Fapi_GetInfo_Finish(
         infoObj->cap[capIdx].capability = capabilityData;
         command->property_count = 0;
         command->idx_info_cap += 1;
-        if (command->idx_info_cap <  sizeof(info_cap_tab)
-                / sizeof(info_cap_tab[0])) {
+        if (command->idx_info_cap < sizeof(info_cap_tab) / sizeof(info_cap_tab[0])) {
             /* Not all capabilities have been collected */
             context->state = GET_INFO_GET_CAP;
             return TSS2_FAPI_RC_TRY_AGAIN;
@@ -281,9 +269,10 @@ Fapi_GetInfo_Finish(
 
         /* Duplicate the information to be returned to the caller. */
 #ifdef JSON_C_TO_STRING_NOSLASHESCAPE
-        *info = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY | JSON_C_TO_STRING_NOSLASHESCAPE));
+        *info = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY
+                                                               | JSON_C_TO_STRING_NOSLASHESCAPE));
 #else
-         *info = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
+        *info = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
 #endif
         goto_if_null2(*info, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 

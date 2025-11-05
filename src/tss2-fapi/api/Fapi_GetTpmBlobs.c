@@ -8,25 +8,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>                         // for json_object_put, json_objec...
-#include <stdint.h>                       // for uint8_t
-#include <stdlib.h>                       // for malloc, size_t, NULL
-#include <string.h>                       // for memcpy
+#include <json.h>   // for json_object_put, json_objec...
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for malloc, size_t, NULL
+#include <string.h> // for memcpy
 
-#include "fapi_int.h"                     // for FAPI_CONTEXT, ENTITY_GET_TP...
-#include "fapi_types.h"                   // for UINT8_ARY
-#include "ifapi_io.h"                     // for ifapi_io_poll
-#include "ifapi_keystore.h"               // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"                 // for check_not_null, return_if_e...
-#include "ifapi_policy_json_serialize.h"  // for ifapi_json_TPMS_POLICY_seri...
-#include "tss2_common.h"                  // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_fapi.h"                    // for FAPI_CONTEXT, Fapi_GetTpmBlobs
-#include "tss2_mu.h"                      // for Tss2_MU_TPM2B_PUBLIC_Marshal
-#include "tss2_tpm2_types.h"              // for TPM2B_PUBLIC, TPM2B_PRIVATE
+#include "fapi_int.h"                    // for FAPI_CONTEXT, ENTITY_GET_TP...
+#include "fapi_types.h"                  // for UINT8_ARY
+#include "ifapi_io.h"                    // for ifapi_io_poll
+#include "ifapi_keystore.h"              // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"                // for check_not_null, return_if_e...
+#include "ifapi_policy_json_serialize.h" // for ifapi_json_TPMS_POLICY_seri...
+#include "tss2_common.h"                 // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_fapi.h"                   // for FAPI_CONTEXT, Fapi_GetTpmBlobs
+#include "tss2_mu.h"                     // for Tss2_MU_TPM2B_PUBLIC_Marshal
+#include "tss2_tpm2_types.h"             // for TPM2B_PUBLIC, TPM2B_PRIVATE
 
 #define LOGMODULE fapi
-#include "util/log.h"                     // for LOG_TRACE, goto_if_error
-
+#include "util/log.h" // for LOG_TRACE, goto_if_error
 
 /** One-Call function for Fapi_GetTpmBlobs
  *
@@ -63,15 +62,13 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_GetTpmBlobs(
-    FAPI_CONTEXT   *context,
-    char     const *path,
-    uint8_t       **tpm2bPublic,
-    size_t         *tpm2bPublicSize,
-    uint8_t       **tpm2bPrivate,
-    size_t         *tpm2bPrivateSize,
-    char          **policy)
-{
+Fapi_GetTpmBlobs(FAPI_CONTEXT *context,
+                 char const   *path,
+                 uint8_t     **tpm2bPublic,
+                 size_t       *tpm2bPublicSize,
+                 uint8_t     **tpm2bPrivate,
+                 size_t       *tpm2bPrivateSize,
+                 char        **policy) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -128,10 +125,7 @@ Fapi_GetTpmBlobs(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_GetTpmBlobs_Async(
-    FAPI_CONTEXT   *context,
-    char     const *path)
-{
+Fapi_GetTpmBlobs_Async(FAPI_CONTEXT *context, char const *path) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
 
@@ -185,90 +179,82 @@ Fapi_GetTpmBlobs_Async(
  *         the function.
  */
 TSS2_RC
-Fapi_GetTpmBlobs_Finish(
-    FAPI_CONTEXT   *context,
-    uint8_t       **tpm2bPublic,
-    size_t         *tpm2bPublicSize,
-    uint8_t       **tpm2bPrivate,
-    size_t         *tpm2bPrivateSize,
-    char          **policy)
-{
+Fapi_GetTpmBlobs_Finish(FAPI_CONTEXT *context,
+                        uint8_t     **tpm2bPublic,
+                        size_t       *tpm2bPublicSize,
+                        uint8_t     **tpm2bPrivate,
+                        size_t       *tpm2bPrivateSize,
+                        char        **policy) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     IFAPI_OBJECT object;
-    UINT16 private_size;
-    size_t offset;
+    UINT16       private_size;
+    size_t       offset;
     json_object *jso = NULL;
 
     /* Check for NULL parameters */
     check_not_null(context);
 
     switch (context->state) {
-        statecase(context->state, ENTITY_GET_TPM_BLOBS_READ);
-            /* Finish readon the metadata from key store. */
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-            return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+    statecase(context->state, ENTITY_GET_TPM_BLOBS_READ);
+        /* Finish readon the metadata from key store. */
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
+        return_try_again(r);
+        return_if_error_reset_state(r, "read_finish failed");
 
-            if (object.objectType != IFAPI_KEY_OBJ) {
-                goto_error(r, TSS2_FAPI_RC_BAD_PATH, "No key object.", error_cleanup);
+        if (object.objectType != IFAPI_KEY_OBJ) {
+            goto_error(r, TSS2_FAPI_RC_BAD_PATH, "No key object.", error_cleanup);
+        }
+
+        /* Marshal the public data to the output parameter. */
+        if (tpm2bPublic && tpm2bPublicSize) {
+            // NOLINTNEXTLINE(bugprone-sizeof-expression)
+            *tpm2bPublic = malloc(sizeof(uint8_t) * sizeof(TPM2B_PUBLIC));
+            goto_if_null(*tpm2bPublic, "Out of memory.", TSS2_FAPI_RC_MEMORY, error_cleanup);
+            offset = 0;
+            r = Tss2_MU_TPM2B_PUBLIC_Marshal(&object.misc.key.public, *tpm2bPublic,
+                                             sizeof(TPM2B_PUBLIC), &offset);
+            goto_if_error_reset_state(r, "FAPI marshal TPM2B_PUBLIC", error_cleanup);
+
+            *tpm2bPublicSize = offset;
+            goto_if_error(r, "Marshaling TPM2B_PUBLIC", error_cleanup);
+        }
+
+        /* Marshal the private data to the output parameter. */
+        if (tpm2bPrivate && tpm2bPrivateSize) {
+            private_size = object.misc.key.private.size;
+            *tpm2bPrivateSize = private_size + sizeof(UINT16);
+            *tpm2bPrivate = malloc(*tpm2bPrivateSize);
+            goto_if_null(*tpm2bPrivate, "Out of memory.", TSS2_FAPI_RC_MEMORY, error_cleanup);
+            offset = 0;
+            r = Tss2_MU_UINT16_Marshal(private_size, *tpm2bPrivate, sizeof(TPM2B_PRIVATE), &offset);
+            goto_if_error_reset_state(r, "FAPI marshal UINT16", error_cleanup);
+
+            memcpy(*tpm2bPrivate + offset, &object.misc.key.private.buffer[0], private_size);
+        }
+
+        /* Duplicate the policy to the output parameter. */
+        if (object.policy && policy) {
+            r = ifapi_json_TPMS_POLICY_serialize(object.policy, &jso);
+            goto_if_error(r, "Serialize policy", error_cleanup);
+
+            strdup_check(*policy, json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY), r,
+                         error_cleanup);
+            json_object_put(jso);
+        } else {
+            if (policy) {
+                strdup_check(*policy, "", r, error_cleanup);
             }
+        }
 
-            /* Marshal the public data to the output parameter. */
-            if (tpm2bPublic && tpm2bPublicSize) {
-                // NOLINTNEXTLINE(bugprone-sizeof-expression)
-                *tpm2bPublic = malloc(sizeof(uint8_t) * sizeof(TPM2B_PUBLIC));
-                goto_if_null(*tpm2bPublic, "Out of memory.",
-                        TSS2_FAPI_RC_MEMORY, error_cleanup);
-                offset = 0;
-                r = Tss2_MU_TPM2B_PUBLIC_Marshal(&object.misc.key.public,
-                        *tpm2bPublic, sizeof(TPM2B_PUBLIC), &offset);
-                goto_if_error_reset_state(r, "FAPI marshal TPM2B_PUBLIC",
-                        error_cleanup);
+        /* Cleanup any intermediate results and state stored in the context. */
+        ifapi_cleanup_ifapi_object(&object);
+        context->state = FAPI_STATE_INIT;
+        LOG_TRACE("finished");
+        return TSS2_RC_SUCCESS;
 
-                *tpm2bPublicSize = offset;
-                goto_if_error(r, "Marshaling TPM2B_PUBLIC", error_cleanup);
-            }
-
-            /* Marshal the private data to the output parameter. */
-            if (tpm2bPrivate && tpm2bPrivateSize) {
-                private_size = object.misc.key.private.size;
-                *tpm2bPrivateSize = private_size + sizeof(UINT16);
-                *tpm2bPrivate = malloc(*tpm2bPrivateSize);
-                goto_if_null(*tpm2bPrivate, "Out of memory.",
-                        TSS2_FAPI_RC_MEMORY, error_cleanup);
-                offset = 0;
-                r = Tss2_MU_UINT16_Marshal(private_size,
-                                           *tpm2bPrivate, sizeof(TPM2B_PRIVATE), &offset);
-                goto_if_error_reset_state(r, "FAPI marshal UINT16", error_cleanup);
-
-                memcpy(*tpm2bPrivate + offset, &object.misc.key.private.buffer[0], private_size);
-            }
-
-            /* Duplicate the policy to the output parameter. */
-            if (object.policy && policy) {
-                r = ifapi_json_TPMS_POLICY_serialize(
-                        object.policy, &jso);
-                goto_if_error(r, "Serialize policy", error_cleanup);
-
-                strdup_check(*policy,
-                        json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY),
-                        r, error_cleanup);
-                json_object_put(jso);
-            } else {
-                if (policy) {
-                    strdup_check(*policy, "", r, error_cleanup);
-                }
-            }
-
-            /* Cleanup any intermediate results and state stored in the context. */
-            ifapi_cleanup_ifapi_object(&object);
-            context->state = FAPI_STATE_INIT;
-            LOG_TRACE("finished");
-            return TSS2_RC_SUCCESS;
-
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */

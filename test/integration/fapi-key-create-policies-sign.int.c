@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
-#include <stdlib.h>           // for malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strstr
-#include <unistd.h>           // for read
+#include <stdint.h> // for uint8_t
+#include <stdio.h>  // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h> // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for strstr
+#include <unistd.h> // for read
 
-#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_Import
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_CreateKey, Fapi_Import
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "test-fapi.h"        // for ASSERT, pcr_reset, FAPI_POLICIES, test_...
-#include "util/log.h"         // for goto_if_error, SAFE_FREE, LOG_ERROR
+#include "test-fapi.h" // for ASSERT, pcr_reset, FAPI_POLICIES, test_...
+#include "util/log.h"  // for goto_if_error, SAFE_FREE, LOG_ERROR
 
 #ifdef TEST_PASSWORD
 #define PASSWORD "abc"
@@ -29,12 +29,7 @@
 #endif
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -45,7 +40,7 @@ auth_callback(
     *auth = PASSWORD;
     return TSS2_RC_SUCCESS;
 }
-#define SIGN_TEMPLATE  "sign,noDa"
+#define SIGN_TEMPLATE "sign,noDa"
 
 /** Test several FAPI policies by usage of signing key.
  *
@@ -74,8 +69,7 @@ auth_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_key_create_policies_sign(FAPI_CONTEXT *context)
-{
+test_fapi_key_create_policies_sign(FAPI_CONTEXT *context) {
     TSS2_RC r;
 
 #if defined(TEST_POLICY_PASSWORD)
@@ -97,15 +91,16 @@ test_fapi_key_create_policies_sign(FAPI_CONTEXT *context)
     char *policy_name = "/policy/pol_countertimer";
     char *policy_file = FAPI_POLICIES "/policy/pol_countertimer.json";
 #else
-#error "Please define POLICY_PASSWORD,_AUTH_VALUE,_LOCALITY,_PHYSICAL_PRESENCE,_COMMAND_CODE,_COUNTERTIMER"
+#error                                                                                             \
+    "Please define POLICY_PASSWORD,_AUTH_VALUE,_LOCALITY,_PHYSICAL_PRESENCE,_COMMAND_CODE,_COUNTERTIMER"
 #endif
 
-    FILE *stream = NULL;
-    uint8_t *signature =NULL;
+    FILE    *stream = NULL;
+    uint8_t *signature = NULL;
     char    *publicKey = NULL;
     char    *certificate = NULL;
-    char *json_policy = NULL;
-    long policy_size;
+    char    *json_policy = NULL;
+    long     policy_size;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -122,9 +117,8 @@ test_fapi_key_create_policies_sign(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -136,32 +130,28 @@ test_fapi_key_create_policies_sign(FAPI_CONTEXT *context)
     r = Fapi_Import(context, policy_name, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE,
-                       policy_name, PASSWORD);
+    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE, policy_name, PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
-        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey",
+                            "-----BEGIN "
+                            "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     size_t signatureSize = 0;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00,
-        }
-    };
+    TPM2B_DIGEST digest = { .size = 32,
+                            .buffer = {
+                                0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+                                0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            } };
 
     r = Fapi_SetAuthCB(context, auth_callback, "");
     goto_if_error(r, "Error SetPolicyAuthCallback", error);
 
-    r = Fapi_Sign(context, "HS/SRK/mySignKey", NULL,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, &certificate);
+    r = Fapi_Sign(context, "HS/SRK/mySignKey", NULL, &digest.buffer[0], digest.size, &signature,
+                  &signatureSize, &publicKey, &certificate);
 
 #if defined(TEST_POLICY_PHYSICAL_PRESENCE)
     if (number_rc(r) == TPM2_RC_PP) {
@@ -218,7 +208,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_key_create_policies_sign(fapi_context);
 }

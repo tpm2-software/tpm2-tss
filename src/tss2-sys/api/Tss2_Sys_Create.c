@@ -8,22 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_mu.h"          // for Tss2_MU_UINT16_Marshal, Tss2_MU_TPM2B_C...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPM2B_CREATION_DATA, TPM2...
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_UINT16_Marshal, Tss2_MU_TPM2B_C...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPM2B_CREATION_DATA, TPM2...
 
-TSS2_RC Tss2_Sys_Create_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT parentHandle,
-    const TPM2B_SENSITIVE_CREATE *inSensitive,
-    const TPM2B_PUBLIC *inPublic,
-    const TPM2B_DATA *outsideInfo,
-    const TPML_PCR_SELECTION *creationPCR)
-{
+TSS2_RC
+Tss2_Sys_Create_Prepare(TSS2_SYS_CONTEXT             *sysContext,
+                        TPMI_DH_OBJECT                parentHandle,
+                        const TPM2B_SENSITIVE_CREATE *inSensitive,
+                        const TPM2B_PUBLIC           *inPublic,
+                        const TPM2B_DATA             *outsideInfo,
+                        const TPML_PCR_SELECTION     *creationPCR) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx || !creationPCR)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -36,23 +35,17 @@ TSS2_RC Tss2_Sys_Create_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(parentHandle, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(parentHandle, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
     if (!inSensitive) {
         ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_SENSITIVE_CREATE_Marshal(inSensitive,
-                                                      ctx->cmdBuffer,
-                                                      ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_SENSITIVE_CREATE_Marshal(inSensitive, ctx->cmdBuffer, ctx->maxCmdSize,
                                                       &ctx->nextData);
     }
 
@@ -60,9 +53,7 @@ TSS2_RC Tss2_Sys_Create_Prepare(
         return rval;
 
     if (!inPublic) {
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
 
     } else {
 
@@ -71,8 +62,7 @@ TSS2_RC Tss2_Sys_Create_Prepare(
         if (rval)
             return rval;
 
-        rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, ctx->cmdBuffer,
-                                            ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, ctx->cmdBuffer, ctx->maxCmdSize,
                                             &ctx->nextData);
     }
 
@@ -80,23 +70,18 @@ TSS2_RC Tss2_Sys_Create_Prepare(
         return rval;
 
     if (!outsideInfo) {
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
 
     } else {
 
-        rval = Tss2_MU_TPM2B_DATA_Marshal(outsideInfo, ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_DATA_Marshal(outsideInfo, ctx->cmdBuffer, ctx->maxCmdSize,
                                           &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPML_PCR_SELECTION_Marshal(creationPCR,
-                                              ctx->cmdBuffer,
-                                              ctx->maxCmdSize,
+    rval = Tss2_MU_TPML_PCR_SELECTION_Marshal(creationPCR, ctx->cmdBuffer, ctx->maxCmdSize,
                                               &ctx->nextData);
     if (rval)
         return rval;
@@ -108,16 +93,15 @@ TSS2_RC Tss2_Sys_Create_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_Create_Complete(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_PRIVATE *outPrivate,
-    TPM2B_PUBLIC *outPublic,
-    TPM2B_CREATION_DATA *creationData,
-    TPM2B_DIGEST *creationHash,
-    TPMT_TK_CREATION *creationTicket)
-{
+TSS2_RC
+Tss2_Sys_Create_Complete(TSS2_SYS_CONTEXT    *sysContext,
+                         TPM2B_PRIVATE       *outPrivate,
+                         TPM2B_PUBLIC        *outPublic,
+                         TPM2B_CREATION_DATA *creationData,
+                         TPM2B_DIGEST        *creationHash,
+                         TPMT_TK_CREATION    *creationTicket) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -126,63 +110,52 @@ TSS2_RC Tss2_Sys_Create_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer,
-                                           ctx->maxCmdSize,
-                                           &ctx->nextData,
+    rval = Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
                                            outPrivate);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PUBLIC_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
-                                          &ctx->nextData,
+    rval = Tss2_MU_TPM2B_PUBLIC_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
                                           outPublic);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_CREATION_DATA_Unmarshal(ctx->cmdBuffer,
-                                                 ctx->maxCmdSize,
-                                                 &ctx->nextData,
+    rval = Tss2_MU_TPM2B_CREATION_DATA_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
                                                  creationData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
-                                          &ctx->nextData,
+    rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
                                           creationHash);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_TK_CREATION_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
-                                          &ctx->nextData,
-                                          creationTicket);
+    return Tss2_MU_TPMT_TK_CREATION_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
+                                              creationTicket);
 }
 
-TSS2_RC Tss2_Sys_Create(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT parentHandle,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    const TPM2B_SENSITIVE_CREATE *inSensitive,
-    const TPM2B_PUBLIC *inPublic,
-    const TPM2B_DATA *outsideInfo,
-    const TPML_PCR_SELECTION *creationPCR,
-    TPM2B_PRIVATE *outPrivate,
-    TPM2B_PUBLIC *outPublic,
-    TPM2B_CREATION_DATA *creationData,
-    TPM2B_DIGEST *creationHash,
-    TPMT_TK_CREATION *creationTicket,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_Create(TSS2_SYS_CONTEXT             *sysContext,
+                TPMI_DH_OBJECT                parentHandle,
+                TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                const TPM2B_SENSITIVE_CREATE *inSensitive,
+                const TPM2B_PUBLIC           *inPublic,
+                const TPM2B_DATA             *outsideInfo,
+                const TPML_PCR_SELECTION     *creationPCR,
+                TPM2B_PRIVATE                *outPrivate,
+                TPM2B_PUBLIC                 *outPublic,
+                TPM2B_CREATION_DATA          *creationData,
+                TPM2B_DIGEST                 *creationHash,
+                TPMT_TK_CREATION             *creationTicket,
+                TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!creationPCR)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_Create_Prepare(sysContext, parentHandle, inSensitive,
-                                   inPublic, outsideInfo, creationPCR);
+    rval = Tss2_Sys_Create_Prepare(sysContext, parentHandle, inSensitive, inPublic, outsideInfo,
+                                   creationPCR);
     if (rval)
         return rval;
 
@@ -190,6 +163,6 @@ TSS2_RC Tss2_Sys_Create(
     if (rval)
         return rval;
 
-    return Tss2_Sys_Create_Complete(sysContext, outPrivate, outPublic,
-                                    creationData, creationHash, creationTicket);
+    return Tss2_Sys_Create_Complete(sysContext, outPrivate, outPublic, creationData, creationHash,
+                                    creationTicket);
 }

@@ -7,13 +7,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
-#include "fapi_int.h"      // for FAPI_CONTEXT, IFAPI_CALLBACKS
-#include "ifapi_macros.h"  // for check_not_null
-#include "tss2_common.h"   // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_fapi.h"     // for FAPI_CONTEXT, Fapi_CB_Auth, Fapi_CB_Branch
+#include "fapi_int.h"     // for FAPI_CONTEXT, IFAPI_CALLBACKS
+#include "ifapi_macros.h" // for check_not_null
+#include "tss2_common.h"  // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_fapi.h"    // for FAPI_CONTEXT, Fapi_CB_Auth, Fapi_CB_Branch
 
 #define LOGMODULE fapi
-#include "util/log.h"      // for LOG_TRACE
+#include "util/log.h" // for LOG_TRACE
 
 /**
  * This function registers a callback that will be invoked whenever the FAPI has
@@ -36,11 +36,7 @@
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  */
 TSS2_RC
-Fapi_SetBranchCB(
-    FAPI_CONTEXT                      *context,
-    Fapi_CB_Branch                     callback,
-    void                              *userData)
-{
+Fapi_SetBranchCB(FAPI_CONTEXT *context, Fapi_CB_Branch callback, void *userData) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("Callback %p Userdata %p", callback, userData);
 
@@ -75,11 +71,7 @@ Fapi_SetBranchCB(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  */
 TSS2_RC
-Fapi_SetAuthCB(
-    FAPI_CONTEXT           *context,
-    Fapi_CB_Auth           callback,
-    void                   *userData)
-{
+Fapi_SetAuthCB(FAPI_CONTEXT *context, Fapi_CB_Auth callback, void *userData) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("Callback %p Userdata %p", callback, userData);
 
@@ -114,11 +106,7 @@ Fapi_SetAuthCB(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  */
 TSS2_RC
-Fapi_SetSignCB(
-    FAPI_CONTEXT                *context,
-    Fapi_CB_Sign                callback,
-    void                        *userData)
-{
+Fapi_SetSignCB(FAPI_CONTEXT *context, Fapi_CB_Sign callback, void *userData) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("Callback %p Userdata %p", callback, userData);
 
@@ -132,7 +120,6 @@ Fapi_SetSignCB(
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 }
-
 
 /**
  * Fapi_SetActionCB() registers an application-defined function as a callback
@@ -154,11 +141,7 @@ Fapi_SetSignCB(
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
  */
 TSS2_RC
-Fapi_SetPolicyActionCB(
-    FAPI_CONTEXT                *context,
-    Fapi_CB_PolicyAction         callback,
-    void                        *userData)
-{
+Fapi_SetPolicyActionCB(FAPI_CONTEXT *context, Fapi_CB_PolicyAction callback, void *userData) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("Callback %p Userdata %p", callback, userData);
 

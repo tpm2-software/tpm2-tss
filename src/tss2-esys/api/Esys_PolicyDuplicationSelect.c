@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, PRIx8, int32_t
-#include <stddef.h>           // for NULL
+#include <inttypes.h> // for PRIx32, PRIx8, int32_t
+#include <stddef.h>   // for NULL
 
-#include "esys_int.h"         // for ESYS_CONTEXT, _ESYS_STATE_INIT, _ESYS_S...
-#include "esys_iutil.h"       // for iesys_compute_session_value, check_sess...
-#include "esys_types.h"       // for IESYS_RESOURCE
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_PolicyDupli...
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
-#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPMI_YES_NO, TPM2_RC_RETRY
+#include "esys_int.h"        // for ESYS_CONTEXT, _ESYS_STATE_INIT, _ESYS_S...
+#include "esys_iutil.h"      // for iesys_compute_session_value, check_sess...
+#include "esys_types.h"      // for IESYS_RESOURCE
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, Esys_PolicyDupli...
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h" // for TPM2B_NAME, TPMI_YES_NO, TPM2_RC_RETRY
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
+#include "util/log.h" // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** One-Call function for TPM2_PolicyDuplicationSelect
  *
@@ -68,21 +68,18 @@
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_PolicyDuplicationSelect(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR policySession,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_NAME *objectName,
-    const TPM2B_NAME *newParentName,
-    TPMI_YES_NO includeObject)
-{
+Esys_PolicyDuplicationSelect(ESYS_CONTEXT     *esysContext,
+                             ESYS_TR           policySession,
+                             ESYS_TR           shandle1,
+                             ESYS_TR           shandle2,
+                             ESYS_TR           shandle3,
+                             const TPM2B_NAME *objectName,
+                             const TPM2B_NAME *newParentName,
+                             TPMI_YES_NO       includeObject) {
     TSS2_RC r;
 
-    r = Esys_PolicyDuplicationSelect_Async(esysContext, policySession, shandle1,
-                                           shandle2, shandle3, objectName,
-                                           newParentName, includeObject);
+    r = Esys_PolicyDuplicationSelect_Async(esysContext, policySession, shandle1, shandle2, shandle3,
+                                           objectName, newParentName, includeObject);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -100,8 +97,7 @@ Esys_PolicyDuplicationSelect(
         /* This is just debug information about the reattempt to finish the
            command */
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -150,22 +146,20 @@ Esys_PolicyDuplicationSelect(
  *          of the first response parameter.
  */
 TSS2_RC
-Esys_PolicyDuplicationSelect_Async(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR policySession,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_NAME *objectName,
-    const TPM2B_NAME *newParentName,
-    TPMI_YES_NO includeObject)
-{
+Esys_PolicyDuplicationSelect_Async(ESYS_CONTEXT     *esysContext,
+                                   ESYS_TR           policySession,
+                                   ESYS_TR           shandle1,
+                                   ESYS_TR           shandle2,
+                                   ESYS_TR           shandle3,
+                                   const TPM2B_NAME *objectName,
+                                   const TPM2B_NAME *newParentName,
+                                   TPMI_YES_NO       includeObject) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, policySession=%"PRIx32 ", objectName=%p,"
-              "newParentName=%p, includeObject=%02"PRIx8"",
+    LOG_TRACE("context=%p, policySession=%" PRIx32 ", objectName=%p,"
+              "newParentName=%p, includeObject=%02" PRIx8 "",
               esysContext, policySession, objectName, newParentName, includeObject);
     TSS2L_SYS_AUTH_COMMAND auths;
-    RSRC_NODE_T *policySessionNode;
+    RSRC_NODE_T           *policySessionNode;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -186,12 +180,10 @@ Esys_PolicyDuplicationSelect_Async(
     return_state_if_error(r, ESYS_STATE_INIT, "policySession unknown.");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_PolicyDuplicationSelect_Prepare(esysContext->sys,
-                                                 (policySessionNode == NULL)
-                                                  ? TPM2_RH_NULL
-                                                  : policySessionNode->rsrc.handle,
-                                                 objectName, newParentName,
-                                                 includeObject);
+    r = Tss2_Sys_PolicyDuplicationSelect_Prepare(
+        esysContext->sys,
+        (policySessionNode == NULL) ? TPM2_RH_NULL : policySessionNode->rsrc.handle, objectName,
+        newParentName, includeObject);
     return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -203,8 +195,7 @@ Esys_PolicyDuplicationSelect_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, policySessionNode, NULL, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT,
-                          "Error in computation of auth values");
+    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
@@ -214,8 +205,7 @@ Esys_PolicyDuplicationSelect_Async(
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Finish (Execute Async)");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
 
@@ -250,12 +240,9 @@ Esys_PolicyDuplicationSelect_Async(
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_PolicyDuplicationSelect_Finish(
-    ESYS_CONTEXT *esysContext)
-{
+Esys_PolicyDuplicationSelect_Finish(ESYS_CONTEXT *esysContext) {
     TSS2_RC r;
-    LOG_TRACE("context=%p",
-              esysContext);
+    LOG_TRACE("context=%p", esysContext);
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -263,8 +250,7 @@ Esys_PolicyDuplicationSelect_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != ESYS_STATE_SENT &&
-        esysContext->state != ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT && esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -281,7 +267,8 @@ Esys_PolicyDuplicationSelect_Finish(
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
-            "resubmission: %" PRIx32, r);
+                  "resubmission: %" PRIx32,
+                  r);
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
@@ -315,16 +302,14 @@ Esys_PolicyDuplicationSelect_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Error: check response");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response");
 
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_PolicyDuplicationSelect_Complete(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Received error from SAPI unmarshaling" );
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling");
 
     esysContext->state = ESYS_STATE_INIT;
 

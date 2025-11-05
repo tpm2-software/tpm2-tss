@@ -5,113 +5,115 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"               // for FAPI_TEST_EK_CERT_LESS
+#include "config.h" // for FAPI_TEST_EK_CERT_LESS
 #endif
 
-#include <inttypes.h>             // for PRIx32, int64_t, PRId64, PRIu16
-#include <json.h>                 // for json_object_get_string, json_object...
-#include <openssl/asn1.h>         // for ASN1_INTEGER_free, ASN1_INTEGER_new
-#include <openssl/bio.h>          // for BIO_free_all, BIO_new, BIO_s_file
-#include <openssl/bn.h>           // for BN_free, BN_bin2bn, BN_new
-#include <openssl/buffer.h>       // for buf_mem_st
-#include <openssl/crypto.h>       // for OPENSSL_free
-#include <openssl/ec.h>           // for EC_GROUP_free, EC_GROUP_new_by_curv...
-#include <openssl/evp.h>          // for EVP_PKEY_free, EVP_PKEY, EVP_PKEY_C...
-#include <openssl/obj_mac.h>      // for NID_sm2, NID_X9_62_prime192v1, NID_...
-#include <openssl/objects.h>      // for OBJ_nid2sn
-#include <openssl/opensslv.h>     // for OPENSSL_VERSION_NUMBER
-#include <openssl/pem.h>          // for PEM_read_bio_PrivateKey, PEM_read_b...
-#include <openssl/rsa.h>          // for EVP_PKEY_CTX_set_rsa_keygen_bits
-#include <openssl/x509.h>         // for X509_REQ_free, X509_free, X509_gmti...
-#include <stdbool.h>              // for false, bool, true
-#include <stdio.h>                // for NULL, asprintf, size_t, perror, sscanf
-#include <stdlib.h>               // for free, calloc, setenv, malloc, mkdtemp
-#include <string.h>               // for strtok_r, memcpy, strdup, strcmp
-#include <sys/stat.h>             // for stat
+#include <inttypes.h>         // for PRIx32, int64_t, PRId64, PRIu16
+#include <json.h>             // for json_object_get_string, json_object...
+#include <openssl/asn1.h>     // for ASN1_INTEGER_free, ASN1_INTEGER_new
+#include <openssl/bio.h>      // for BIO_free_all, BIO_new, BIO_s_file
+#include <openssl/bn.h>       // for BN_free, BN_bin2bn, BN_new
+#include <openssl/buffer.h>   // for buf_mem_st
+#include <openssl/crypto.h>   // for OPENSSL_free
+#include <openssl/ec.h>       // for EC_GROUP_free, EC_GROUP_new_by_curv...
+#include <openssl/evp.h>      // for EVP_PKEY_free, EVP_PKEY, EVP_PKEY_C...
+#include <openssl/obj_mac.h>  // for NID_sm2, NID_X9_62_prime192v1, NID_...
+#include <openssl/objects.h>  // for OBJ_nid2sn
+#include <openssl/opensslv.h> // for OPENSSL_VERSION_NUMBER
+#include <openssl/pem.h>      // for PEM_read_bio_PrivateKey, PEM_read_b...
+#include <openssl/rsa.h>      // for EVP_PKEY_CTX_set_rsa_keygen_bits
+#include <openssl/x509.h>     // for X509_REQ_free, X509_free, X509_gmti...
+#include <stdbool.h>          // for false, bool, true
+#include <stdio.h>            // for NULL, asprintf, size_t, perror, sscanf
+#include <stdlib.h>           // for free, calloc, setenv, malloc, mkdtemp
+#include <string.h>           // for strtok_r, memcpy, strdup, strcmp
+#include <sys/stat.h>         // for stat
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/aes.h>
 
-#include "ifapi_macros.h"         // for goto_if_null2
+#include "ifapi_macros.h" // for goto_if_null2
 #else
-#include <openssl/core_names.h>   // for OSSL_PKEY_PARAM_GROUP_NAME, OSSL_PK...
-#include <openssl/param_build.h>  // for OSSL_PARAM_BLD_free, OSSL_PARAM_BLD...
-#include <openssl/params.h>       // for OSSL_PARAM_free
+#include <openssl/core_names.h>  // for OSSL_PKEY_PARAM_GROUP_NAME, OSSL_PK...
+#include <openssl/param_build.h> // for OSSL_PARAM_BLD_free, OSSL_PARAM_BLD...
+#include <openssl/params.h>      // for OSSL_PARAM_free
 #endif
-#include <openssl/err.h>          // for ERR_error_string_n, ERR_get_error
+#include <openssl/err.h> // for ERR_error_string_n, ERR_get_error
 
-#include "fapi_int.h"             // for OSSL_FREE, FAPI_CONTEXT
-#include "linkhash.h"             // for lh_entry
-#include "test-common.h"          // for TSS2_TEST_FAPI_CONTEXT, TSS2_TEST_E...
-#include "test-fapi.h"            // for EXIT_ERROR, test_invoke_fapi, ASSERT
-#include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_FAPI...
-#include "tss2_esys.h"            // for Esys_Finalize, Esys_Initialize, ESY...
-#include "tss2_fapi.h"            // for Fapi_GetTcti, Fapi_Finalize, FAPI_C...
-#include "tss2_rc.h"              // for Tss2_RC_Decode
-#include "tss2_sys.h"             // for TSS2_SYS_CONTEXT, Tss2_Sys_CreatePr...
-#include "tss2_tcti.h"            // for TSS2_TCTI_CONTEXT
-#include "tss2_tpm2_types.h"      // for TPM2B_MAX_NV_BUFFER, TPM2B_PUBLIC
+#include "fapi_int.h"        // for OSSL_FREE, FAPI_CONTEXT
+#include "linkhash.h"        // for lh_entry
+#include "test-common.h"     // for TSS2_TEST_FAPI_CONTEXT, TSS2_TEST_E...
+#include "test-fapi.h"       // for EXIT_ERROR, test_invoke_fapi, ASSERT
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_FAPI...
+#include "tss2_esys.h"       // for Esys_Finalize, Esys_Initialize, ESY...
+#include "tss2_fapi.h"       // for Fapi_GetTcti, Fapi_Finalize, FAPI_C...
+#include "tss2_rc.h"         // for Tss2_RC_Decode
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, Tss2_Sys_CreatePr...
+#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h" // for TPM2B_MAX_NV_BUFFER, TPM2B_PUBLIC
 
 #define LOGDEFAULT LOGLEVEL_INFO
-#define LOGMODULE test
-#include "util/log.h"             // for LOGLEVEL_INFO, LOG_ERROR, SAFE_FREE
+#define LOGMODULE  test
+#include "util/log.h" // for LOGLEVEL_INFO, LOG_ERROR, SAFE_FREE
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101000L
-#define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
-        EC_POINT_set_affine_coordinates(group, tpm_pub_key, bn_x, bn_y, dmy)
+#define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy)                   \
+    EC_POINT_set_affine_coordinates(group, tpm_pub_key, bn_x, bn_y, dmy)
 
-#define EC_POINT_get_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
-        EC_POINT_get_affine_coordinates(group, tpm_pub_key, bn_x, bn_y, dmy)
+#define EC_POINT_get_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy)                   \
+    EC_POINT_get_affine_coordinates(group, tpm_pub_key, bn_x, bn_y, dmy)
 
 #else
-#define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
-        EC_POINT_set_affine_coordinates_GFp(group, tpm_pub_key, bn_x, bn_y, dmy)
+#define EC_POINT_set_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy)                   \
+    EC_POINT_set_affine_coordinates_GFp(group, tpm_pub_key, bn_x, bn_y, dmy)
 
-#define EC_POINT_get_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy) \
-        EC_POINT_get_affine_coordinates_GFp(group, tpm_pub_key, bn_x, bn_y, dmy)
+#define EC_POINT_get_affine_coordinates_tss(group, tpm_pub_key, bn_x, bn_y, dmy)                   \
+    EC_POINT_get_affine_coordinates_GFp(group, tpm_pub_key, bn_x, bn_y, dmy)
 #endif /* OPENSSL_VERSION_NUMBER >= 0x10101000L */
 
-#define SYS_CALL(rc,fu,...) \
-    do { \
-        rc = fu(__VA_ARGS__);                       \
-    } while (rc == TPM2_RC_YIELDED); \
-    if (rc != TPM2_RC_SUCCESS) {    \
-        LOG_ERROR("%s FAILED: 0x%"PRIx32, #fu, rc);            \
-        return rc;                                            \
+#define SYS_CALL(rc, fu, ...)                                                                      \
+    do {                                                                                           \
+        rc = fu(__VA_ARGS__);                                                                      \
+    } while (rc == TPM2_RC_YIELDED);                                                               \
+    if (rc != TPM2_RC_SUCCESS) {                                                                   \
+        LOG_ERROR("%s FAILED: 0x%" PRIx32, #fu, rc);                                               \
+        return rc;                                                                                 \
     }
 
-char *fapi_profile = NULL;
+char                   *fapi_profile = NULL;
 TSS2_TEST_FAPI_CONTEXT *fapi_test_ctx = NULL;
-char *config_env = NULL;
+char                   *config_env = NULL;
 
 struct tpm_state {
     TPMS_CAPABILITY_DATA capabilities[7];
 };
 
-bool file_exists (char *path) {
-  struct stat   buffer;
-  return (stat (path, &buffer) == 0);
+bool
+file_exists(char *path) {
+    struct stat buffer;
+    return (stat(path, &buffer) == 0);
 }
 
 /* Determine integer number from json object. */
 static int64_t
 get_number(json_object *jso) {
-    const char* token;
-    int itoken = 0;
-    int pos = 0;
-    int64_t num;
+    const char *token;
+    int         itoken = 0;
+    int         pos = 0;
+    int64_t     num;
 
     token = json_object_get_string(jso);
     if (strncmp(token, "0x", 2) == 0) {
         itoken = 2;
-        sscanf(&token[itoken], "%"PRIx64"%n", &num, &pos);
+        sscanf(&token[itoken], "%" PRIx64 "%n", &num, &pos);
     } else {
-        sscanf(&token[itoken], "%"PRId64"%n", &num, &pos);
+        sscanf(&token[itoken], "%" PRId64 "%n", &num, &pos);
     }
     return num;
 }
 
 /* Determine number of fields in a json object. */
-size_t nmb_of_fields(json_object *jso) {
+size_t
+nmb_of_fields(json_object *jso) {
     size_t n = 0;
     json_object_object_foreach(jso, key, val) {
         UNUSED(val);
@@ -125,9 +127,10 @@ size_t nmb_of_fields(json_object *jso) {
  *
  * Only strings, integers, array and json objects are supported.
  */
-bool cmp_jso(json_object *jso1, json_object *jso2) {
+bool
+cmp_jso(json_object *jso1, json_object *jso2) {
     enum json_type type1, type2;
-    size_t i, size;
+    size_t         i, size;
     type1 = json_object_get_type(jso1);
     type2 = json_object_get_type(jso2);
     if (type1 != type2) {
@@ -143,7 +146,7 @@ bool cmp_jso(json_object *jso1, json_object *jso2) {
                 return false;
             }
             if (!cmp_jso(jso_sub1, jso_sub2)) {
-                    return false;
+                return false;
             }
         }
         return true;
@@ -157,23 +160,22 @@ bool cmp_jso(json_object *jso1, json_object *jso2) {
             return false;
         }
         for (i = 0; i < size; i++) {
-            if (!cmp_jso(json_object_array_get_idx(jso1, i),
-                         json_object_array_get_idx(jso2, i))) {
+            if (!cmp_jso(json_object_array_get_idx(jso1, i), json_object_array_get_idx(jso2, i))) {
                 return false;
             }
         }
         return true;
     } else if (type1 == json_type_string) {
-        return (strcmp(json_object_get_string(jso1),
-                       json_object_get_string(jso2)) == 0);
+        return (strcmp(json_object_get_string(jso1), json_object_get_string(jso2)) == 0);
     } else {
         return false;
     }
 }
 
 /* Compare two delimiter separated token lists. */
-bool cmp_strtokens(char* string1, char *string2, char *delimiter) {
-    bool found = false;
+bool
+cmp_strtokens(char *string1, char *string2, char *delimiter) {
+    bool  found = false;
     char *token1 = NULL;
     char *token2 = NULL;
     char *end_token1;
@@ -183,7 +185,7 @@ bool cmp_strtokens(char* string1, char *string2, char *delimiter) {
     string1 = strdup(string1);
     ASSERT(string1);
     token1 = strtok_r(string1, delimiter, &end_token1);
-    while(token1 != NULL) {
+    while (token1 != NULL) {
         found = false;
         string2_copy = strdup(string2);
         ASSERT(string2_copy);
@@ -204,17 +206,16 @@ bool cmp_strtokens(char* string1, char *string2, char *delimiter) {
     free(string1);
     return found;
 
- error:
+error:
     SAFE_FREE(string1);
     return false;
 }
 
 TSS2_RC
-pcr_reset(FAPI_CONTEXT *context, UINT32 pcr)
-{
-    TSS2_RC r;
+pcr_reset(FAPI_CONTEXT *context, UINT32 pcr) {
+    TSS2_RC            r;
     TSS2_TCTI_CONTEXT *tcti;
-    ESYS_CONTEXT *esys;
+    ESYS_CONTEXT      *esys;
 
     r = Fapi_GetTcti(context, &tcti);
     goto_if_error(r, "Error Fapi_GetTcti", error);
@@ -222,8 +223,7 @@ pcr_reset(FAPI_CONTEXT *context, UINT32 pcr)
     r = Esys_Initialize(&esys, tcti, NULL);
     goto_if_error(r, "Error Fapi_GetTcti", error);
 
-    r = Esys_PCR_Reset(esys, pcr,
-                       ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
+    r = Esys_PCR_Reset(esys, pcr, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
     Esys_Finalize(&esys);
     goto_if_error(r, "Error Eys_PCR_Reset", error);
 
@@ -232,23 +232,18 @@ error:
 }
 
 TSS2_RC
-pcr_bank_sha1_exists(FAPI_CONTEXT *context, bool *exists)
-{
-    TSS2_RC r;
+pcr_bank_sha1_exists(FAPI_CONTEXT *context, bool *exists) {
+    TSS2_RC            r;
     TSS2_TCTI_CONTEXT *tcti;
-    ESYS_CONTEXT *esys;
-    TPML_PCR_SELECTION pcrSelectionIn = {
-        .count = 1,
-        .pcrSelections = {
-            { .hash = TPM2_ALG_SHA1,
-              .sizeofSelect = 3,
-              .pcrSelect = { 1, 0, 0}
-            },
-        }
-    };
-    UINT32 pcrUpdateCounter;
+    ESYS_CONTEXT      *esys;
+    TPML_PCR_SELECTION pcrSelectionIn
+        = { .count = 1,
+            .pcrSelections = {
+                { .hash = TPM2_ALG_SHA1, .sizeofSelect = 3, .pcrSelect = { 1, 0, 0 } },
+            } };
+    UINT32              pcrUpdateCounter;
     TPML_PCR_SELECTION *pcrSelectionOut = NULL;
-    TPML_DIGEST *pcrValues = NULL;
+    TPML_DIGEST        *pcrValues = NULL;
 
     r = Fapi_GetTcti(context, &tcti);
     goto_if_error(r, "Error Fapi_GetTcti", error);
@@ -256,8 +251,8 @@ pcr_bank_sha1_exists(FAPI_CONTEXT *context, bool *exists)
     r = Esys_Initialize(&esys, tcti, NULL);
     goto_if_error(r, "Error Fapi_GetTcti", error);
 
-    r = Esys_PCR_Read(esys, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-        &pcrSelectionIn, &pcrUpdateCounter, &pcrSelectionOut, &pcrValues);
+    r = Esys_PCR_Read(esys, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, &pcrSelectionIn,
+                      &pcrUpdateCounter, &pcrSelectionOut, &pcrValues);
     goto_if_error(r, "Error: PCR_Read", error);
     if (!pcrSelectionOut->pcrSelections[0].pcrSelect[0]) {
         *exists = false;
@@ -273,13 +268,11 @@ error:
     return r;
 }
 
-
 TSS2_RC
-pcr_extend(FAPI_CONTEXT *context, UINT32 pcr, TPML_DIGEST_VALUES *digest_values)
-{
-    TSS2_RC r;
+pcr_extend(FAPI_CONTEXT *context, UINT32 pcr, TPML_DIGEST_VALUES *digest_values) {
+    TSS2_RC            r;
     TSS2_TCTI_CONTEXT *tcti;
-    ESYS_CONTEXT *esys;
+    ESYS_CONTEXT      *esys;
 
     r = Fapi_GetTcti(context, &tcti);
     goto_if_error(r, "Error Fapi_GetTcti", error);
@@ -287,9 +280,7 @@ pcr_extend(FAPI_CONTEXT *context, UINT32 pcr, TPML_DIGEST_VALUES *digest_values)
     r = Esys_Initialize(&esys, tcti, NULL);
     goto_if_error(r, "Error Fapi_GetTcti", error);
 
-    r = Esys_PCR_Extend(esys, pcr,
-                        ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                        digest_values);
+    r = Esys_PCR_Extend(esys, pcr, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, digest_values);
     Esys_Finalize(&esys);
     goto_if_error(r, "Error Eys_PCR_Reset", error);
 
@@ -297,22 +288,23 @@ error:
     return r;
 }
 
-int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
-{
+int
+init_fapi(char *profile, FAPI_CONTEXT **fapi_context) {
     TSS2_RC rc;
-    int ret, size;
-    char *config = NULL;
-    char *config_path = NULL;
-    char *config_bak = NULL;
-    FILE *config_file;
-    char *tmpdir;
+    int     ret, size;
+    char   *config = NULL;
+    char   *config_path = NULL;
+    char   *config_bak = NULL;
+    FILE   *config_file;
+    char   *tmpdir;
 
     fapi_profile = profile;
     tmpdir = fapi_test_ctx->tmpdir;
 
     /* First we construct a fapi config file */
 #if defined(FAPI_NONTPM)
-    size = asprintf(&config, "{\n"
+    size = asprintf(&config,
+                    "{\n"
                     "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
@@ -323,7 +315,8 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
                     "}\n",
                     profile, tmpdir, tmpdir, tmpdir);
 #elif defined(FAPI_TEST_FINGERPRINT)
-    size = asprintf(&config, "{\n"
+    size = asprintf(&config,
+                    "{\n"
                     "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
@@ -337,14 +330,15 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
                     "     \"ek_fingerprint\": { \"hashAlg\": \"sha256\", \"digest\": \"%s\" },\n"
 #endif
                     "}\n",
-                    profile, tmpdir, tmpdir, tmpdir,
-                    getenv(ENV_TCTI)
+                    profile, tmpdir, tmpdir, tmpdir, getenv(ENV_TCTI)
 #if !defined(FAPI_TEST_EK_CERT_LESS)
-                    , getenv("FAPI_TEST_FINGERPRINT")
+                                                         ,
+                    getenv("FAPI_TEST_FINGERPRINT")
 #endif
-                   );
+    );
 #elif defined(FAPI_TEST_CERTIFICATE)
-    size = asprintf(&config, "{\n"
+    size = asprintf(&config,
+                    "{\n"
                     "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
@@ -358,14 +352,15 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
                     "     \"ek_cert_file\": \"file:%s\",\n"
 #endif
                     "}\n",
-                    profile, tmpdir, tmpdir, tmpdir,
-                    getenv(ENV_TCTI)
+                    profile, tmpdir, tmpdir, tmpdir, getenv(ENV_TCTI)
 #if !defined(FAPI_TEST_EK_CERT_LESS)
-                    , getenv("FAPI_TEST_CERTIFICATE")
+                                                         ,
+                    getenv("FAPI_TEST_CERTIFICATE")
 #endif
-                   );
+    );
 #elif defined(FAPI_TEST_FINGERPRINT_ECC)
-    size = asprintf(&config, "{\n"
+    size = asprintf(&config,
+                    "{\n"
                     "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
@@ -379,14 +374,15 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
                     "     \"ek_fingerprint\": { \"hashAlg\": \"sha256\", \"digest\": \"%s\" },\n"
 #endif
                     "}\n",
-                    profile, tmpdir, tmpdir, tmpdir,
-                    getenv(ENV_TCTI)
+                    profile, tmpdir, tmpdir, tmpdir, getenv(ENV_TCTI)
 #if !defined(FAPI_TEST_EK_CERT_LESS)
-                    , getenv("FAPI_TEST_FINGERPRINT_ECC")
+                                                         ,
+                    getenv("FAPI_TEST_FINGERPRINT_ECC")
 #endif
-                   );
+    );
 #elif defined(FAPI_TEST_CERTIFICATE_ECC)
-    size = asprintf(&config, "{\n"
+    size = asprintf(&config,
+                    "{\n"
                     "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
@@ -400,15 +396,16 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
                     "     \"ek_cert_file\": \"file:%s\",\n"
 #endif
                     "}\n",
-                    profile, tmpdir, tmpdir, tmpdir,
-                    getenv(ENV_TCTI)
+                    profile, tmpdir, tmpdir, tmpdir, getenv(ENV_TCTI)
 #if defined(FAPI_TEST_EK_CERT_LESS)
 #else
-                    , getenv("FAPI_TEST_CERTIFICATE_ECC")
+                                                         ,
+                    getenv("FAPI_TEST_CERTIFICATE_ECC")
 #endif
-                   );
+    );
 #else /* FAPI_NONTPM */
-    size = asprintf(&config, "{\n"
+    size = asprintf(&config,
+                    "{\n"
                     "     \"profile_name\": \"%s\",\n"
                     "     \"profile_dir\": \"" TOP_SOURCEDIR "/test/data/fapi/\",\n"
                     "     \"user_dir\": \"%s/user/dir\",\n"
@@ -420,8 +417,7 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
                     "     \"ek_cert_less\": \"yes\",\n"
 #endif
                     "",
-                    profile, tmpdir, tmpdir, tmpdir,
-                    getenv(ENV_TCTI));
+                    profile, tmpdir, tmpdir, tmpdir, getenv(ENV_TCTI));
 #endif /* FAPI_NONTPM */
 
     if (size < 0) {
@@ -430,9 +426,10 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
         goto error;
     }
 
-#if defined (FAPI_TEST_FIRMWARE_LOG_FILE)
+#if defined(FAPI_TEST_FIRMWARE_LOG_FILE)
     config_bak = config;
-    size = asprintf(&config, "%s%s", config_bak, "     \"firmware_log_file\": \""  FAPI_TEST_FIRMWARE_LOG_FILE "\",\n");
+    size = asprintf(&config, "%s%s", config_bak,
+                    "     \"firmware_log_file\": \"" FAPI_TEST_FIRMWARE_LOG_FILE "\",\n");
     if (size < 0) {
         LOG_ERROR("Out of memory");
         ret = EXIT_ERROR;
@@ -440,9 +437,10 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
     }
     SAFE_FREE(config_bak);
 #endif
-#if defined (FAPI_TEST_IMA_LOG_FILE)
+#if defined(FAPI_TEST_IMA_LOG_FILE)
     config_bak = config;
-    size = asprintf(&config, "%s%s", config_bak, "     \"ima_log_file\": \"" FAPI_TEST_IMA_LOG_FILE "\",\n");
+    size = asprintf(&config, "%s%s", config_bak,
+                    "     \"ima_log_file\": \"" FAPI_TEST_IMA_LOG_FILE "\",\n");
     if (size < 0) {
         LOG_ERROR("Out of memory");
         ret = EXIT_ERROR;
@@ -450,9 +448,10 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
     }
     SAFE_FREE(config_bak);
 #endif
-#if defined (FAPI_TEST_FIRMWARE_LOG_FILE_ABS)
+#if defined(FAPI_TEST_FIRMWARE_LOG_FILE_ABS)
     config_bak = config;
-    size = asprintf(&config, "%s%s", config_bak, "     \"firmware_log_file\": \"" FAPI_TEST_FIRMWARE_LOG_FILE_ABS "\",\n");
+    size = asprintf(&config, "%s%s", config_bak,
+                    "     \"firmware_log_file\": \"" FAPI_TEST_FIRMWARE_LOG_FILE_ABS "\",\n");
     if (size < 0) {
         LOG_ERROR("Out of memory");
         ret = EXIT_ERROR;
@@ -460,9 +459,10 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
     }
     SAFE_FREE(config_bak);
 #endif
-#if defined (FAPI_TEST_IMA_LOG_FILE_ABS)
+#if defined(FAPI_TEST_IMA_LOG_FILE_ABS)
     config_bak = config;
-    size = asprintf(&config, "%s%s", config_bak, "     \"ima_log_file\": \"" FAPI_TEST_IMA_LOG_FILE_ABS "\",\n");
+    size = asprintf(&config, "%s%s", config_bak,
+                    "     \"ima_log_file\": \"" FAPI_TEST_IMA_LOG_FILE_ABS "\",\n");
     if (size < 0) {
         LOG_ERROR("Out of memory");
         ret = EXIT_ERROR;
@@ -470,7 +470,6 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
     }
     SAFE_FREE(config_bak);
 #endif
-
 
     config_bak = config;
     size = asprintf(&config, "%s}", config_bak);
@@ -532,7 +531,6 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
      * Call FAPI
      ***********/
 
-
     rc = Fapi_Initialize(fapi_context, NULL);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Esys_Initialize FAILED! Response Code : 0x%x", rc);
@@ -545,23 +543,24 @@ int init_fapi(char *profile, FAPI_CONTEXT **fapi_context)
     SAFE_FREE(config_path);
     return 0;
 
- error:
+error:
     Fapi_Finalize(fapi_context);
 
-    if (config) free(config);
-    if (config_path) free(config_path);
+    if (config)
+        free(config);
+    if (config_path)
+        free(config_path);
 
     return ret;
 }
 TSS2_RC
-rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
-{
+rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey) {
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     RSA *rsa = NULL;
 #else
     OSSL_PARAM_BLD *build = NULL;
-    OSSL_PARAM *params = NULL;
-    EVP_PKEY_CTX *ctx = NULL;
+    OSSL_PARAM     *params = NULL;
+    EVP_PKEY_CTX   *ctx = NULL;
 #endif
 
     /* Check for NULL parameters */
@@ -592,13 +591,11 @@ rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
         goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
     }
     if (1 != BN_set_word(e, exp)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Could not set exponent.", error_cleanup);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not set exponent.", error_cleanup);
     }
 
     if (!RSA_set0_key(rsa, n, e, NULL)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Could not set public key.", error_cleanup);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not set public key.", error_cleanup);
     }
     n = NULL; /* ownership transferred */
     e = NULL;
@@ -609,26 +606,23 @@ rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
     /* Assign the parameters to the key */
     if (!EVP_PKEY_assign_RSA(*evpPublicKey, rsa)) {
         EVP_PKEY_free(*evpPublicKey);
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Assign rsa key",
-                   error_cleanup);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Assign rsa key", error_cleanup);
     }
     rsa = NULL; /* ownership transferred */
 error_cleanup:
     OSSL_FREE(rsa, RSA);
-#else /* OPENSSL_VERSION_NUMBER < 0x30000000L */
+#else  /* OPENSSL_VERSION_NUMBER < 0x30000000L */
     if ((build = OSSL_PARAM_BLD_new()) == NULL
-            || !OSSL_PARAM_BLD_push_BN(build, OSSL_PKEY_PARAM_RSA_N, n)
-            || !OSSL_PARAM_BLD_push_uint32(build, OSSL_PKEY_PARAM_RSA_E, exp)
-            || (params = OSSL_PARAM_BLD_to_param(build)) == NULL) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create rsa key parameters",
-                   error_cleanup);
+        || !OSSL_PARAM_BLD_push_BN(build, OSSL_PKEY_PARAM_RSA_N, n)
+        || !OSSL_PARAM_BLD_push_uint32(build, OSSL_PKEY_PARAM_RSA_E, exp)
+        || (params = OSSL_PARAM_BLD_to_param(build)) == NULL) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create rsa key parameters", error_cleanup);
     }
 
     if ((ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL)) == NULL
-            || EVP_PKEY_fromdata_init(ctx) <= 0
-            || EVP_PKEY_fromdata(ctx, evpPublicKey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create rsa key",
-                   error_cleanup);
+        || EVP_PKEY_fromdata_init(ctx) <= 0
+        || EVP_PKEY_fromdata(ctx, evpPublicKey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create rsa key", error_cleanup);
     }
 error_cleanup:
     OSSL_FREE(ctx, EVP_PKEY_CTX);
@@ -641,25 +635,24 @@ error_cleanup:
 }
 
 TSS2_RC
-ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
-{
+ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey) {
     /* Check for NULL parameters */
     return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(evpPublicKey, "evpPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC   r = TSS2_RC_SUCCESS;
     EC_GROUP *ecgroup = NULL;
-    int curveId;
-    BIGNUM *x = NULL, *y = NULL;
+    int       curveId;
+    BIGNUM   *x = NULL, *y = NULL;
     EC_POINT *ecPoint = NULL;
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     EC_KEY *ecKey = NULL;
 #else
     OSSL_PARAM_BLD *build = NULL;
-    OSSL_PARAM *params = NULL;
-    EVP_PKEY_CTX *ctx = NULL;
-    unsigned char *puboct = NULL;
-    size_t bsize;
+    OSSL_PARAM     *params = NULL;
+    EVP_PKEY_CTX   *ctx = NULL;
+    unsigned char  *puboct = NULL;
+    size_t          bsize;
 #endif
 
     /* Find the curve of the ECC key */
@@ -685,14 +678,12 @@ ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
         break;
 #endif
     default:
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "ECC curve not implemented.");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "ECC curve not implemented.");
     }
 
     /* Initialize the OpenSSL ECC key with its group */
     ecgroup = EC_GROUP_new_by_curve_name(curveId);
-    goto_if_null(ecgroup, "new EC group.", TSS2_FAPI_RC_GENERAL_FAILURE,
-                  error_cleanup);
+    goto_if_null(ecgroup, "new EC group.", TSS2_FAPI_RC_GENERAL_FAILURE, error_cleanup);
 
     /* Set the ECC parameters in the OpenSSL key */
     x = BN_bin2bn(tpmPublicKey->publicArea.unique.ecc.x.buffer,
@@ -706,7 +697,7 @@ ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
     }
 
     if ((ecPoint = EC_POINT_new(ecgroup)) == NULL
-            || !EC_POINT_set_affine_coordinates_tss(ecgroup, ecPoint, x, y, NULL)) {
+        || !EC_POINT_set_affine_coordinates_tss(ecgroup, ecPoint, x, y, NULL)) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EC_POINT_set_affine_coordinates",
                    error_cleanup);
     }
@@ -716,13 +707,11 @@ ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
     return_if_null(ecKey, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     if (!EC_KEY_set_group(ecKey, ecgroup)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EC_KEY_set_group",
-                   error_cleanup);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EC_KEY_set_group", error_cleanup);
     }
 
     if (!EC_KEY_set_public_key(ecKey, ecPoint)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "EC_KEY_set_public_key", error_cleanup);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EC_KEY_set_public_key", error_cleanup);
     }
 
     *evpPublicKey = EVP_PKEY_new();
@@ -730,31 +719,27 @@ ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
 
     if (!EVP_PKEY_assign_EC_KEY(*evpPublicKey, ecKey)) {
         EVP_PKEY_free(*evpPublicKey);
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Assign ecc key",
-                   error_cleanup);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Assign ecc key", error_cleanup);
     }
     ecKey = NULL; /* ownership transferred */
 error_cleanup:
     OSSL_FREE(ecKey, EC_KEY);
 #else
     if ((build = OSSL_PARAM_BLD_new()) == NULL
-            || !OSSL_PARAM_BLD_push_utf8_string(build, OSSL_PKEY_PARAM_GROUP_NAME,
-                                                (char *)OBJ_nid2sn(curveId), 0)
-            || (bsize = EC_POINT_point2buf(ecgroup, ecPoint,
-                                           POINT_CONVERSION_COMPRESSED,
-                                           &puboct, NULL)) == 0
-            || !OSSL_PARAM_BLD_push_octet_string(build, OSSL_PKEY_PARAM_PUB_KEY,
-                                                 puboct, bsize)
-            || (params = OSSL_PARAM_BLD_to_param(build)) == NULL) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create ecc key parameters",
-                   error_cleanup);
+        || !OSSL_PARAM_BLD_push_utf8_string(build, OSSL_PKEY_PARAM_GROUP_NAME,
+                                            (char *)OBJ_nid2sn(curveId), 0)
+        || (bsize
+            = EC_POINT_point2buf(ecgroup, ecPoint, POINT_CONVERSION_COMPRESSED, &puboct, NULL))
+               == 0
+        || !OSSL_PARAM_BLD_push_octet_string(build, OSSL_PKEY_PARAM_PUB_KEY, puboct, bsize)
+        || (params = OSSL_PARAM_BLD_to_param(build)) == NULL) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create ecc key parameters", error_cleanup);
     }
 
     if ((ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL)) == NULL
-            || EVP_PKEY_fromdata_init(ctx) <= 0
-            || EVP_PKEY_fromdata(ctx, evpPublicKey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create ecc key",
-                   error_cleanup);
+        || EVP_PKEY_fromdata_init(ctx) <= 0
+        || EVP_PKEY_fromdata(ctx, evpPublicKey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create ecc key", error_cleanup);
     }
 error_cleanup:
     EVP_PKEY_CTX_free(ctx);
@@ -770,13 +755,9 @@ error_cleanup:
 }
 
 TPM2_RC
-get_rsa_ek_public(TSS2_SYS_CONTEXT *sys_context, EVP_PKEY **evp_pub)
-{
-    TSS2_RC rc;
-    TSS2L_SYS_AUTH_COMMAND auth_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RH_PW }},
-        .count = 1
-    };
+get_rsa_ek_public(TSS2_SYS_CONTEXT *sys_context, EVP_PKEY **evp_pub) {
+    TSS2_RC                rc;
+    TSS2L_SYS_AUTH_COMMAND auth_cmd = { .auths = { { .sessionHandle = TPM2_RH_PW } }, .count = 1 };
     TPM2B_SENSITIVE_CREATE in_sensitive = { 0 };
     TPM2B_PUBLIC in_public = {
         .publicArea = {
@@ -817,25 +798,22 @@ get_rsa_ek_public(TSS2_SYS_CONTEXT *sys_context, EVP_PKEY **evp_pub)
             }
         }
     };
-    TPML_PCR_SELECTION creation_pcr = { 0 };
-    TPM2_HANDLE handle;
-    TPM2B_PUBLIC out_public = { 0 };
-    TSS2L_SYS_AUTH_RESPONSE auth_rsp = {
-        .count = 0
-    };
+    TPML_PCR_SELECTION      creation_pcr = { 0 };
+    TPM2_HANDLE             handle;
+    TPM2B_PUBLIC            out_public = { 0 };
+    TSS2L_SYS_AUTH_RESPONSE auth_rsp = { .count = 0 };
 
     /* Generate the EK key */
 
-    SYS_CALL(rc, Tss2_Sys_CreatePrimary,
-             sys_context, TPM2_RH_ENDORSEMENT, &auth_cmd,
-             &in_sensitive, &in_public, NULL, &creation_pcr,
-             &handle, &out_public, NULL, NULL, NULL, NULL, &auth_rsp);
+    SYS_CALL(rc, Tss2_Sys_CreatePrimary, sys_context, TPM2_RH_ENDORSEMENT, &auth_cmd, &in_sensitive,
+             &in_public, NULL, &creation_pcr, &handle, &out_public, NULL, NULL, NULL, NULL,
+             &auth_rsp);
 
     SYS_CALL(rc, Tss2_Sys_FlushContext, sys_context, handle);
 
     rc = rsa_pub_from_tpm(&out_public, evp_pub);
     if (rc != TPM2_RC_SUCCESS) {
-        LOG_ERROR("Failed to create EVP key from RSA EK: 0x%"PRIx32, rc);
+        LOG_ERROR("Failed to create EVP key from RSA EK: 0x%" PRIx32, rc);
         return rc;
     }
 
@@ -843,13 +821,9 @@ get_rsa_ek_public(TSS2_SYS_CONTEXT *sys_context, EVP_PKEY **evp_pub)
 }
 
 TSS2_RC
-get_ecc_ek_public(TSS2_SYS_CONTEXT *sys_context, EVP_PKEY **evp_pub)
-{
-    TSS2_RC rc;
-    TSS2L_SYS_AUTH_COMMAND auth_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RH_PW }},
-        .count = 1
-    };
+get_ecc_ek_public(TSS2_SYS_CONTEXT *sys_context, EVP_PKEY **evp_pub) {
+    TSS2_RC                rc;
+    TSS2L_SYS_AUTH_COMMAND auth_cmd = { .auths = { { .sessionHandle = TPM2_RH_PW } }, .count = 1 };
     TPM2B_SENSITIVE_CREATE in_sensitive = { 0 };
     TPM2B_PUBLIC in_public = {
         .publicArea = {
@@ -893,47 +867,38 @@ get_ecc_ek_public(TSS2_SYS_CONTEXT *sys_context, EVP_PKEY **evp_pub)
             }
         }
     };
-    TPML_PCR_SELECTION creation_pcr = { 0 };
-    TPM2_HANDLE handle;
-    TPM2B_PUBLIC out_public = { 0 };
-    TSS2L_SYS_AUTH_RESPONSE auth_rsp = {
-        .count = 0
-    };
-    SYS_CALL(rc, Tss2_Sys_CreatePrimary,
-             sys_context, TPM2_RH_ENDORSEMENT, &auth_cmd,
-             &in_sensitive, &in_public, NULL, &creation_pcr,
-             &handle, &out_public, NULL, NULL, NULL, NULL, &auth_rsp);
-
+    TPML_PCR_SELECTION      creation_pcr = { 0 };
+    TPM2_HANDLE             handle;
+    TPM2B_PUBLIC            out_public = { 0 };
+    TSS2L_SYS_AUTH_RESPONSE auth_rsp = { .count = 0 };
+    SYS_CALL(rc, Tss2_Sys_CreatePrimary, sys_context, TPM2_RH_ENDORSEMENT, &auth_cmd, &in_sensitive,
+             &in_public, NULL, &creation_pcr, &handle, &out_public, NULL, NULL, NULL, NULL,
+             &auth_rsp);
 
     SYS_CALL(rc, Tss2_Sys_FlushContext, sys_context, handle);
 
     rc = ecc_pub_from_tpm(&out_public, evp_pub);
     if (rc != TPM2_RC_SUCCESS) {
-        LOG_ERROR("Failed to create EVP key from ECC EK: 0x%"PRIx32, rc);
+        LOG_ERROR("Failed to create EVP key from ECC EK: 0x%" PRIx32, rc);
         return rc;
     }
 
     return TSS2_RC_SUCCESS;
-
 }
 
 char pwd[] = "123456";
 
-int pass_cb(char *buf, int size, int rwflag, void *u)
-{
+int
+pass_cb(char *buf, int size, int rwflag, void *u) {
     (void)rwflag;
     memcpy(buf, &pwd[0], sizeof(pwd));
     return sizeof(pwd);
 }
 
 TSS2_RC
-nv_write(TSS2_SYS_CONTEXT *sys_context, TPMI_RH_NV_INDEX nvIndex, X509 *cert)
-{
-    TSS2_RC rc;
-    TSS2L_SYS_AUTH_COMMAND auth_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RH_PW }},
-        .count = 1
-    };
+nv_write(TSS2_SYS_CONTEXT *sys_context, TPMI_RH_NV_INDEX nvIndex, X509 *cert) {
+    TSS2_RC                rc;
+    TSS2L_SYS_AUTH_COMMAND auth_cmd = { .auths = { { .sessionHandle = TPM2_RH_PW } }, .count = 1 };
 
     if (!nvIndex) {
         nvIndex = 0x01c00002;
@@ -950,13 +915,11 @@ nv_write(TSS2_SYS_CONTEXT *sys_context, TPMI_RH_NV_INDEX nvIndex, X509 *cert)
         },
     };
 
-    TSS2L_SYS_AUTH_RESPONSE auth_rsp = {
-        .count = 0
-    };
-    TPM2B_MAX_NV_BUFFER buf1 = { 0 };
-    TPM2B_MAX_NV_BUFFER buf2 = { 0 };
-    unsigned char *cert_buf = NULL;
-    int cert_size;
+    TSS2L_SYS_AUTH_RESPONSE auth_rsp = { .count = 0 };
+    TPM2B_MAX_NV_BUFFER     buf1 = { 0 };
+    TPM2B_MAX_NV_BUFFER     buf2 = { 0 };
+    unsigned char          *cert_buf = NULL;
+    int                     cert_size;
 
     cert_size = i2d_X509(cert, &cert_buf);
     if (cert_size < 0) {
@@ -972,14 +935,13 @@ nv_write(TSS2_SYS_CONTEXT *sys_context, TPMI_RH_NV_INDEX nvIndex, X509 *cert)
     free(cert_buf);
 
     /* First make sure that not EK certificate is currently loaded */
-    LOG_WARNING("Cert input size is %"PRIu16, buf1.size);
+    LOG_WARNING("Cert input size is %" PRIu16, buf1.size);
     public_info.nvPublic.dataSize = buf1.size;
 
     LOG_WARNING("Define NV cert with nv index: %x", public_info.nvPublic.nvIndex);
 
-    SYS_CALL(rc, Tss2_Sys_NV_DefineSpace,
-             sys_context, TPM2_RH_PLATFORM, &auth_cmd,
-             &nv_auth, &public_info, &auth_rsp);
+    SYS_CALL(rc, Tss2_Sys_NV_DefineSpace, sys_context, TPM2_RH_PLATFORM, &auth_cmd, &nv_auth,
+             &public_info, &auth_rsp);
 
     /* Split the input buffer into 2 chunks */
     buf2.size = buf1.size;
@@ -987,19 +949,20 @@ nv_write(TSS2_SYS_CONTEXT *sys_context, TPMI_RH_NV_INDEX nvIndex, X509 *cert)
     buf2.size -= buf1.size;
     memcpy(&buf2.buffer[0], &buf1.buffer[buf1.size], buf2.size);
 
-    SYS_CALL(rc, Tss2_Sys_NV_Write, sys_context, TPM2_RH_PLATFORM, nvIndex, &auth_cmd,
-             &buf1, 0, &auth_rsp);
+    SYS_CALL(rc, Tss2_Sys_NV_Write, sys_context, TPM2_RH_PLATFORM, nvIndex, &auth_cmd, &buf1, 0,
+             &auth_rsp);
 
-    SYS_CALL(rc, Tss2_Sys_NV_Write, sys_context, TPM2_RH_PLATFORM, nvIndex, &auth_cmd,
-             &buf2, buf1.size, &auth_rsp);
+    SYS_CALL(rc, Tss2_Sys_NV_Write, sys_context, TPM2_RH_PLATFORM, nvIndex, &auth_cmd, &buf2,
+             buf1.size, &auth_rsp);
 
     return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC
-load_intermed_cert_and_key(const char *ca_key_path, EVP_PKEY **ca_key,
-                               const char *ca_cert_path, X509 **ca_crt)
-{
+load_intermed_cert_and_key(const char *ca_key_path,
+                           EVP_PKEY  **ca_key,
+                           const char *ca_cert_path,
+                           X509      **ca_crt) {
     BIO *bio = NULL;
     *ca_crt = NULL;
     *ca_key = NULL;
@@ -1008,7 +971,7 @@ load_intermed_cert_and_key(const char *ca_key_path, EVP_PKEY **ca_key,
     bio = BIO_new(BIO_s_file());
     if (!bio || !BIO_read_filename(bio, ca_cert_path)) {
         unsigned long err = ERR_get_error();
-        char err_buffer[256];
+        char          err_buffer[256];
         ERR_error_string_n(err, err_buffer, sizeof(err_buffer));
         LOG_ERROR("Failure in BIO_read_filename \"%s\" %s", ca_cert_path, err_buffer);
         goto error_cleanup;
@@ -1022,9 +985,9 @@ load_intermed_cert_and_key(const char *ca_key_path, EVP_PKEY **ca_key,
 
     /* Load the intermediate key. */
     bio = BIO_new(BIO_s_file());
-    if (!bio  || !BIO_read_filename(bio, ca_key_path)) {
+    if (!bio || !BIO_read_filename(bio, ca_key_path)) {
         unsigned long err = ERR_get_error();
-        char err_buffer[256];
+        char          err_buffer[256];
         ERR_error_string_n(err, err_buffer, sizeof(err_buffer));
         LOG_ERROR("Failure in BIO_read_filename \"%s\" %s", ca_key_path, err_buffer);
         goto error_cleanup;
@@ -1037,7 +1000,7 @@ load_intermed_cert_and_key(const char *ca_key_path, EVP_PKEY **ca_key,
     BIO_free_all(bio);
     return TSS2_RC_SUCCESS;
 
- error_cleanup:
+error_cleanup:
     BIO_free_all(bio);
     X509_free(*ca_crt);
     EVP_PKEY_free(*ca_key);
@@ -1045,8 +1008,7 @@ load_intermed_cert_and_key(const char *ca_key_path, EVP_PKEY **ca_key,
 }
 
 TSS2_RC
-get_dummy_csr(EVP_PKEY **dmy_key, X509_REQ **req)
-{
+get_dummy_csr(EVP_PKEY **dmy_key, X509_REQ **req) {
     *dmy_key = NULL;
     *req = NULL;
     EVP_PKEY_CTX *ctx = NULL;
@@ -1066,9 +1028,8 @@ get_dummy_csr(EVP_PKEY **dmy_key, X509_REQ **req)
 
     /* Create dummy key */
 
-    if (EVP_PKEY_keygen_init(ctx) <= 0 ||
-        EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, 2048) <= 0 ||
-        EVP_PKEY_keygen(ctx, dmy_key) <= 0) {
+    if (EVP_PKEY_keygen_init(ctx) <= 0 || EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, 2048) <= 0
+        || EVP_PKEY_keygen(ctx, dmy_key) <= 0) {
         LOG_ERROR("Failed to create key");
         goto error_cleanup;
     }
@@ -1083,7 +1044,7 @@ get_dummy_csr(EVP_PKEY **dmy_key, X509_REQ **req)
     EVP_PKEY_CTX_free(ctx);
     return TSS2_RC_SUCCESS;
 
- error_cleanup:
+error_cleanup:
     if (dmy_key)
         EVP_PKEY_free(*dmy_key);
     if (req)
@@ -1094,11 +1055,8 @@ get_dummy_csr(EVP_PKEY **dmy_key, X509_REQ **req)
 }
 
 TSS2_RC
-get_ek_certificate(EVP_PKEY *ca_key, X509 *ca_cert,
-                   X509_REQ *req,
-                   EVP_PKEY *ek, X509 **ek_cert)
-{
-    BIGNUM *bn = NULL;
+get_ek_certificate(EVP_PKEY *ca_key, X509 *ca_cert, X509_REQ *req, EVP_PKEY *ek, X509 **ek_cert) {
+    BIGNUM       *bn = NULL;
     unsigned char serial_ary[5] = { 0x01, 0x02, 0x03, 0x04, 0x05 };
     ASN1_INTEGER *serial_asn1 = NULL;
 
@@ -1107,7 +1065,8 @@ get_ek_certificate(EVP_PKEY *ca_key, X509 *ca_cert,
         LOG_ERROR("Failed to allocate Memory for PKEY context");
         goto error_cleanup;
     }
-    if (X509_set_version(*ek_cert, 2) <= 0) goto error_cleanup;
+    if (X509_set_version(*ek_cert, 2) <= 0)
+        goto error_cleanup;
     bn = BN_new();
     if (!bn) {
         LOG_ERROR("Failed to allocate BN");
@@ -1122,14 +1081,14 @@ get_ek_certificate(EVP_PKEY *ca_key, X509 *ca_cert,
 
     BN_to_ASN1_INTEGER(bn, serial_asn1);
 
-    if (X509_set_serialNumber(*ek_cert, serial_asn1) <= 0 ||
-        X509_set_issuer_name(*ek_cert, X509_get_subject_name(ca_cert)) <= 0) {
+    if (X509_set_serialNumber(*ek_cert, serial_asn1) <= 0
+        || X509_set_issuer_name(*ek_cert, X509_get_subject_name(ca_cert)) <= 0) {
         LOG_ERROR("Failed to initialize EK cert.");
         goto error_cleanup;
     }
 
     X509_gmtime_adj(X509_get_notBefore(*ek_cert), 0);
-    X509_gmtime_adj(X509_get_notAfter(*ek_cert), (long)3*365*24*3600);
+    X509_gmtime_adj(X509_get_notAfter(*ek_cert), (long)3 * 365 * 24 * 3600);
 
     ASN1_INTEGER_free(serial_asn1);
     BN_free(bn);
@@ -1148,7 +1107,7 @@ get_ek_certificate(EVP_PKEY *ca_key, X509 *ca_cert,
     X509_REQ_free(req);
     return TSS2_RC_SUCCESS;
 
- error_cleanup:
+error_cleanup:
     X509_REQ_free(req);
     if (bn)
         BN_free(bn);
@@ -1160,12 +1119,11 @@ get_ek_certificate(EVP_PKEY *ca_key, X509 *ca_cert,
 }
 
 TSS2_RC
-get_pubkey_fingerprint(EVP_PKEY *key, char **fingerprint)
-{
-    TPM2_RC rc = TSS2_FAPI_RC_GENERAL_FAILURE;
-    size_t size_der_pub;
+get_pubkey_fingerprint(EVP_PKEY *key, char **fingerprint) {
+    TPM2_RC        rc = TSS2_FAPI_RC_GENERAL_FAILURE;
+    size_t         size_der_pub;
     unsigned char *der_key = NULL;
-    BUF_MEM *bio_mem_data = NULL;
+    BUF_MEM       *bio_mem_data = NULL;
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     SHA256_CTX sha256_context;
 #else
@@ -1187,15 +1145,16 @@ get_pubkey_fingerprint(EVP_PKEY *key, char **fingerprint)
     size_der_pub = bio_mem_data->length;
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
-    if (SHA256_Init(&sha256_context) == 0 ||
-        SHA256_Update(&sha256_context, der_key, size_der_pub) == 0 ||
-        SHA256_Final(&fingerprint_digest[0], &sha256_context) == 0) {
+    if (SHA256_Init(&sha256_context) == 0
+        || SHA256_Update(&sha256_context, der_key, size_der_pub) == 0
+        || SHA256_Final(&fingerprint_digest[0], &sha256_context) == 0) {
         LOG_ERROR("sha256 update failed.");
         goto error_cleanup;
     }
 #else
-    if (EVP_Q_digest(NULL, "sha256", NULL, der_key, size_der_pub,
-                     &fingerprint_digest[0], &size_hash) == 0) {
+    if (EVP_Q_digest(NULL, "sha256", NULL, der_key, size_der_pub, &fingerprint_digest[0],
+                     &size_hash)
+        == 0) {
         LOG_ERROR("sha256 update failed.");
         goto error_cleanup;
     }
@@ -1211,17 +1170,15 @@ get_pubkey_fingerprint(EVP_PKEY *key, char **fingerprint)
     }
     rc = TSS2_RC_SUCCESS;
 
- error_cleanup:
+error_cleanup:
     if (bio_mem)
         BIO_free_all(bio_mem);
     return rc;
- }
+}
 
 TSS2_RC
-get_ek_fingerprints(TSS2_SYS_CONTEXT *sys_ctx,
-                    char **rsa_fingerprint, char **ecc_fingerprint)
-{
-    TSS2_RC rc;
+get_ek_fingerprints(TSS2_SYS_CONTEXT *sys_ctx, char **rsa_fingerprint, char **ecc_fingerprint) {
+    TSS2_RC   rc;
     EVP_PKEY *ecc_ek_key_pub = NULL;
     EVP_PKEY *rsa_ek_key_pub = NULL;
 
@@ -1247,7 +1204,7 @@ get_ek_fingerprints(TSS2_SYS_CONTEXT *sys_ctx,
         goto error_cleanup;
     }
 
- error_cleanup:
+error_cleanup:
     if (ecc_ek_key_pub)
         EVP_PKEY_free(ecc_ek_key_pub);
     if (rsa_ek_key_pub)
@@ -1256,8 +1213,10 @@ get_ek_fingerprints(TSS2_SYS_CONTEXT *sys_ctx,
 }
 
 TSS2_RC
-prepare_certificate(TSS2_SYS_CONTEXT *sys_ctx, X509 *ek_cert,
-                    TPM2_NV_INDEX nv_index, char* env_var) {
+prepare_certificate(TSS2_SYS_CONTEXT *sys_ctx,
+                    X509             *ek_cert,
+                    TPM2_NV_INDEX     nv_index,
+                    char             *env_var) {
     TSS2_RC rc;
 
 #if defined(FAPI_TEST_CERTIFICATE) || defined(FAPI_TEST_CERTIFICATE_ECC)
@@ -1296,21 +1255,20 @@ prepare_certificate(TSS2_SYS_CONTEXT *sys_ctx, X509 *ek_cert,
 #endif
     rc = TSS2_RC_SUCCESS;
 
- error_cleanup:
+error_cleanup:
     return rc;
 }
 
 TSS2_RC
-init_ek_certificates(TSS2_SYS_CONTEXT *sys_ctx)
-{
-    TSS2_RC rc;
+init_ek_certificates(TSS2_SYS_CONTEXT *sys_ctx) {
+    TSS2_RC   rc;
     X509_REQ *req = NULL;
     EVP_PKEY *dmy_key = NULL;
-    X509 *ecc_ek_cert = NULL;
+    X509     *ecc_ek_cert = NULL;
     EVP_PKEY *ecc_ek_key_pub = NULL;
-    X509 *rsa_ek_cert = NULL;
+    X509     *rsa_ek_cert = NULL;
     EVP_PKEY *rsa_ek_key_pub = NULL;
-    X509 *intermed_cert = NULL;
+    X509     *intermed_cert = NULL;
     EVP_PKEY *intermed_key = NULL;
 
     rc = get_ecc_ek_public(sys_ctx, &ecc_ek_key_pub);
@@ -1327,18 +1285,14 @@ init_ek_certificates(TSS2_SYS_CONTEXT *sys_ctx)
 
 #ifdef SELF_SIGNED_CERTIFICATE
     /* The self signed root cert will be used as intermediate certificate. */
-    rc = load_intermed_cert_and_key("./ca/root-ca/private/root-ca.key.pem",
-                                    &intermed_key,
-                                    "./ca/root-ca/root-ca.cert.pem",
-                                    &intermed_cert);
+    rc = load_intermed_cert_and_key("./ca/root-ca/private/root-ca.key.pem", &intermed_key,
+                                    "./ca/root-ca/root-ca.cert.pem", &intermed_cert);
 #else
-    rc = load_intermed_cert_and_key("./ca/intermed-ca/private/intermed-ca.key.pem",
-                                    &intermed_key,
-                                    "./ca/intermed-ca/intermed-ca.cert.pem",
-                                    &intermed_cert);
+    rc = load_intermed_cert_and_key("./ca/intermed-ca/private/intermed-ca.key.pem", &intermed_key,
+                                    "./ca/intermed-ca/intermed-ca.cert.pem", &intermed_cert);
 #endif
 
-     if (rc != TSS2_RC_SUCCESS) {
+    if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to load intermediate key and cert %s\n", Tss2_RC_Decode(rc));
         goto error_cleanup;
     }
@@ -1349,15 +1303,13 @@ init_ek_certificates(TSS2_SYS_CONTEXT *sys_ctx)
         goto error_cleanup;
     }
 
-    rc = get_ek_certificate(intermed_key, intermed_cert, req,
-                            ecc_ek_key_pub, &ecc_ek_cert);
+    rc = get_ek_certificate(intermed_key, intermed_cert, req, ecc_ek_key_pub, &ecc_ek_cert);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to get ECC EK cert.");
         goto error_cleanup;
     }
 
-    rc = prepare_certificate(sys_ctx, ecc_ek_cert, 0x1c0000a,
-                             "FAPI_TEST_CERTIFICATE_ECC");
+    rc = prepare_certificate(sys_ctx, ecc_ek_cert, 0x1c0000a, "FAPI_TEST_CERTIFICATE_ECC");
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to prepare ECC EK cert.");
         goto error_cleanup;
@@ -1374,15 +1326,13 @@ init_ek_certificates(TSS2_SYS_CONTEXT *sys_ctx)
         goto error_cleanup;
     }
 
-    rc = get_ek_certificate(intermed_key, intermed_cert, req,
-                            rsa_ek_key_pub, &rsa_ek_cert);
+    rc = get_ek_certificate(intermed_key, intermed_cert, req, rsa_ek_key_pub, &rsa_ek_cert);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to get RSA EK cert.");
         goto error_cleanup;
     }
 
-    rc = prepare_certificate(sys_ctx, rsa_ek_cert, 0x1c00002,
-                             "FAPI_TEST_CERTIFICATE");
+    rc = prepare_certificate(sys_ctx, rsa_ek_cert, 0x1c00002, "FAPI_TEST_CERTIFICATE");
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to prepare RSA EK cert.");
         goto error_cleanup;
@@ -1390,7 +1340,7 @@ init_ek_certificates(TSS2_SYS_CONTEXT *sys_ctx)
 
     rc = TSS2_RC_SUCCESS;
 
- error_cleanup:
+error_cleanup:
     if (req)
         X509_REQ_free(req);
     if (rsa_ek_cert)
@@ -1412,11 +1362,10 @@ init_ek_certificates(TSS2_SYS_CONTEXT *sys_ctx)
 }
 
 int
-test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx)
-{
+test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx) {
     char template[] = "/tmp/fapi_tmpdir.XXXXXX";
     size_t size;
-    int ret;
+    int    ret;
 
     size = sizeof(TSS2_TEST_FAPI_CONTEXT);
     *test_ctx = calloc(1, size);
@@ -1446,14 +1395,13 @@ test_fapi_setup(TSS2_TEST_FAPI_CONTEXT **test_ctx)
 
     return ret;
 
- error:
+error:
     SAFE_FREE(*test_ctx);
     return EXIT_ERROR;
 }
 
 void
-test_fapi_teardown(TSS2_TEST_FAPI_CONTEXT *test_ctx)
-{
+test_fapi_teardown(TSS2_TEST_FAPI_CONTEXT *test_ctx) {
     if (test_ctx) {
         if (test_ctx->fapi_ctx) {
             Fapi_Finalize(&test_ctx->fapi_ctx);
@@ -1471,10 +1419,9 @@ test_fapi_teardown(TSS2_TEST_FAPI_CONTEXT *test_ctx)
  * to specify which TCTI to use for the test using getenv("TPM20TEST_TCTI").
  */
 int
-main(int argc, char *argv[])
-{
-    int ret, size;
-    char *remove_cmd = NULL;
+main(int argc, char *argv[]) {
+    int                     ret, size;
+    char                   *remove_cmd = NULL;
     TSS2_TEST_FAPI_CONTEXT *test_ctx = NULL;
 
     TSS2_TEST_ESYS_CONTEXT *test_esys_ctx;
@@ -1483,10 +1430,10 @@ main(int argc, char *argv[])
     if (ret != 0) {
         return ret;
     }
-#if !defined(FAPI_NONTPM) && !defined(DLOPEN) && defined(SELF_GENERATED_CERTIFICATE) && \
-    !defined(FAPI_TEST_FINGERPRINT) && !defined(FAPI_TEST_FINGERPRINT_ECC)
+#if !defined(FAPI_NONTPM) && !defined(DLOPEN) && defined(SELF_GENERATED_CERTIFICATE)               \
+    && !defined(FAPI_TEST_FINGERPRINT) && !defined(FAPI_TEST_FINGERPRINT_ECC)
     TSS2_SYS_CONTEXT *sys_ctx;
-    TSS2_RC rc;
+    TSS2_RC           rc;
 
     rc = Esys_GetSysContext(test_esys_ctx->esys_ctx, &sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
@@ -1496,16 +1443,15 @@ main(int argc, char *argv[])
     }
     rc = init_ek_certificates(sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to initialize EK certificates: %s\n",
-                  Tss2_RC_Decode(rc));
+        LOG_ERROR("Failed to initialize EK certificates: %s\n", Tss2_RC_Decode(rc));
         ret = 1;
         goto error;
     }
 #else
-    char *ecc_fingerprint = NULL;
-    char *rsa_fingerprint = NULL;
+    char             *ecc_fingerprint = NULL;
+    char             *rsa_fingerprint = NULL;
     TSS2_SYS_CONTEXT *sys_ctx;
-    TSS2_RC rc;
+    TSS2_RC           rc;
 
     rc = Esys_GetSysContext(test_esys_ctx->esys_ctx, &sys_ctx);
     if (rc != TSS2_RC_SUCCESS) {
@@ -1539,7 +1485,8 @@ main(int argc, char *argv[])
 
     ret = test_invoke_fapi(test_ctx->fapi_ctx);
     LOG_INFO("Test returned %i", ret);
-    if (ret) goto error;
+    if (ret)
+        goto error;
 
 #if !defined(FAPI_NONTPM) && !defined(DLOPEN)
     test_ctx->test_esys_ctx.esys_ctx = test_ctx->fapi_ctx->esys;

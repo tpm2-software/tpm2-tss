@@ -8,24 +8,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t
-#include <stdlib.h>           // for malloc, size_t, NULL
-#include <string.h>           // for memcpy, memset
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for malloc, size_t, NULL
+#include <string.h> // for memcpy, memset
 
-#include "fapi_int.h"         // for IFAPI_Data_EncryptDecrypt, FAPI_CONTEXT
-#include "fapi_util.h"        // for ifapi_authorize_object, ifapi_cleanup_s...
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"     // for check_not_null, return_try_again, state...
-#include "ifapi_profiles.h"   // for ifapi_profiles_get, IFAPI_PROFILE, IFAP...
-#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2_BA...
-#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_Decrypt, Fapi_Decryp...
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC_KEY_RSA, TPM2B_PUBLIC, TPM...
+#include "fapi_int.h"        // for IFAPI_Data_EncryptDecrypt, FAPI_CONTEXT
+#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_cleanup_s...
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"    // for check_not_null, return_try_again, state...
+#include "ifapi_profiles.h"  // for ifapi_profiles_get, IFAPI_PROFILE, IFAP...
+#include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2_BA...
+#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Decrypt, Fapi_Decryp...
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC_KEY_RSA, TPM2B_PUBLIC, TPM...
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for SAFE_FREE, LOG_TRACE, goto_if_error
+#include "util/log.h" // for SAFE_FREE, LOG_TRACE, goto_if_error
 
 /** One-Call function for Fapi_Decrypt
  *
@@ -70,14 +70,12 @@
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_Decrypt(
-    FAPI_CONTEXT    *context,
-    char      const *keyPath,
-    uint8_t   const *cipherText,
-    size_t           cipherTextSize,
-    uint8_t        **plainText,
-    size_t          *plainTextSize)
-{
+Fapi_Decrypt(FAPI_CONTEXT  *context,
+             char const    *keyPath,
+             uint8_t const *cipherText,
+             size_t         cipherTextSize,
+             uint8_t      **plainText,
+             size_t        *plainTextSize) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -153,12 +151,10 @@ Fapi_Decrypt(
  *         config file.
  */
 TSS2_RC
-Fapi_Decrypt_Async(
-    FAPI_CONTEXT  *context,
-    char    const *keyPath,
-    uint8_t const *cipherText,
-    size_t         cipherTextSize)
-{
+Fapi_Decrypt_Async(FAPI_CONTEXT  *context,
+                   char const    *keyPath,
+                   uint8_t const *cipherText,
+                   size_t         cipherTextSize) {
     LOG_TRACE("called for context:%p", context);
     LOGBLOB_TRACE(cipherText, cipherTextSize, "cipherText");
 
@@ -173,7 +169,7 @@ Fapi_Decrypt_Async(
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
     /* Helpful alias pointers */
-    IFAPI_Data_EncryptDecrypt * command = &(context->cmd.Data_EncryptDecrypt);
+    IFAPI_Data_EncryptDecrypt *command = &(context->cmd.Data_EncryptDecrypt);
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -241,142 +237,128 @@ error_cleanup:
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_Decrypt_Finish(
-    FAPI_CONTEXT *context,
-    uint8_t     **plainText,
-    size_t       *plainTextSize)
-{
+Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTextSize) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
+    TSS2_RC               r;
     TPM2B_PUBLIC_KEY_RSA *tpmPlainText = NULL;
 
     /* Check for NULL parameters */
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_OBJECT *encKeyObject = NULL;
-    IFAPI_Data_EncryptDecrypt * command = &(context->cmd.Data_EncryptDecrypt);
+    IFAPI_OBJECT              *encKeyObject = NULL;
+    IFAPI_Data_EncryptDecrypt *command = &(context->cmd.Data_EncryptDecrypt);
 
     switch (context->state) {
-        statecase(context->state, DATA_DECRYPT_WAIT_FOR_PROFILE);
-            /* Retrieve the profile for the provided key in order to get the
-               encryption scheme below. */
-            r = ifapi_profiles_get(&context->profiles, command->keyPath,
-                                   &command->profile);
+    statecase(context->state, DATA_DECRYPT_WAIT_FOR_PROFILE);
+        /* Retrieve the profile for the provided key in order to get the
+           encryption scheme below. */
+        r = ifapi_profiles_get(&context->profiles, command->keyPath, &command->profile);
+        return_try_again(r);
+        goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+
+        /* Initialize a session used for authorization and parameter encryption. */
+        r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
+                                     TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
+        goto_if_error_reset_state(r, "Create sessions", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->state, DATA_DECRYPT_WAIT_FOR_SESSION);
+        r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
+                                      context->profiles.default_profile.nameAlg);
+        return_try_again(r);
+        goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+
+        /* Load the key used for decryption. */
+        r = ifapi_load_keys_async(context, command->keyPath);
+        return_try_again(r);
+        goto_if_error(r, "Load keys.", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->state, DATA_DECRYPT_WAIT_FOR_KEY);
+        r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT, &command->key_handle,
+                                   &command->key_object);
+        return_try_again(r);
+        goto_if_error_reset_state(r, " Load key.", error_cleanup);
+
+        encKeyObject = command->key_object;
+
+        if (encKeyObject->misc.key.public.publicArea.type != TPM2_ALG_RSA
+            && encKeyObject->misc.key.public.publicArea.type != TPM2_ALG_ECC) {
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid algorithm", error_cleanup);
+        }
+        fallthrough;
+
+    statecase(context->state, DATA_DECRYPT_AUTHORIZE_KEY);
+        /* Authorize for the key with password or policy. */
+        r = ifapi_authorize_object(context, command->key_object, &command->auth_session);
+        return_try_again(r);
+        goto_if_error(r, "Authorize key.", error_cleanup);
+        TPM2B_DATA null_data = { .size = 0, .buffer = {} };
+
+        /* Copy cipher data to tpm object */
+        TPM2B_PUBLIC_KEY_RSA *aux_data = (TPM2B_PUBLIC_KEY_RSA *)&context->aux_data;
+        aux_data->size = context->cmd.Data_EncryptDecrypt.numBytes;
+        memcpy(&aux_data->buffer[0], context->cmd.Data_EncryptDecrypt.in_data, aux_data->size);
+
+        /* Decrypt the actual data. */
+        r = Esys_RSA_Decrypt_Async(context->esys, context->cmd.Data_EncryptDecrypt.key_handle,
+                                   command->auth_session,
+                                   ENC_SESSION_IF_POLICY(command->auth_session), ESYS_TR_NONE,
+                                   aux_data, &command->profile->rsa_decrypt_scheme, &null_data);
+        goto_if_error(r, "Error esys rsa decrypt", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->state, DATA_DECRYPT_WAIT_FOR_RSA_DECRYPTION);
+        r = Esys_RSA_Decrypt_Finish(context->esys, &tpmPlainText);
+        return_try_again(r);
+        goto_if_error_reset_state(r, "RSA decryption.", error_cleanup);
+
+        /* Duplicate the decrypted plaintext for returning to the user. */
+        if (plainTextSize)
+            command->plainTextSize = tpmPlainText->size;
+        if (plainText) {
+            command->plainText = malloc(tpmPlainText->size);
+            goto_if_null(command->plainText, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+
+            memcpy(command->plainText, &tpmPlainText->buffer[0], tpmPlainText->size);
+            SAFE_FREE(tpmPlainText);
+        }
+
+        /* Flush the used key. */
+        if (!command->key_object->misc.key.persistent_handle) {
+            r = Esys_FlushContext_Async(context->esys, command->key_handle);
+            goto_if_error(r, "Error: FlushContext", error_cleanup);
+        }
+
+        fallthrough;
+
+    statecase(context->state, DATA_DECRYPT_WAIT_FOR_FLUSH);
+        if (!command->key_object->misc.key.persistent_handle) {
+            r = Esys_FlushContext_Finish(context->esys);
             return_try_again(r);
-            goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-            /* Initialize a session used for authorization and parameter encryption. */
-            r = ifapi_get_sessions_async(context,
-                                         IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
-                                         TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
-            goto_if_error_reset_state(r, "Create sessions", error_cleanup);
+            goto_if_error(r, "Error: FlushContext", error_cleanup);
+        }
+        command->key_handle = ESYS_TR_NONE;
+        fallthrough;
 
-            fallthrough;
+    statecase(context->state, DATA_DECRYPT_CLEANUP)
+    /* Cleanup session. */
+        r = ifapi_cleanup_session(context);
+        try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-        statecase(context->state, DATA_DECRYPT_WAIT_FOR_SESSION);
-            r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
-                                          context->profiles.default_profile.nameAlg);
-            return_try_again(r);
-            goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+        if (plainText)
+            *plainText = command->plainText;
+        if (plainTextSize)
+            *plainTextSize = command->plainTextSize;
+        break;
 
-            /* Load the key used for decryption. */
-            r = ifapi_load_keys_async(context, command->keyPath);
-            return_try_again(r);
-            goto_if_error(r, "Load keys.", error_cleanup);
-
-            fallthrough;
-
-        statecase(context->state, DATA_DECRYPT_WAIT_FOR_KEY);
-            r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT,
-                                       &command->key_handle,
-                                       &command->key_object);
-            return_try_again(r);
-            goto_if_error_reset_state(r, " Load key.", error_cleanup);
-
-            encKeyObject = command->key_object;
-
-            if (encKeyObject->misc.key.public.publicArea.type != TPM2_ALG_RSA &&
-                 encKeyObject->misc.key.public.publicArea.type != TPM2_ALG_ECC) {
-                goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid algorithm", error_cleanup);
-            }
-            fallthrough;
-
-        statecase(context->state, DATA_DECRYPT_AUTHORIZE_KEY);
-            /* Authorize for the key with password or policy. */
-            r = ifapi_authorize_object(context, command->key_object, &command->auth_session);
-            return_try_again(r);
-            goto_if_error(r, "Authorize key.", error_cleanup);
-            TPM2B_DATA null_data = {.size = 0, .buffer = {} };
-
-            /* Copy cipher data to tpm object */
-            TPM2B_PUBLIC_KEY_RSA *aux_data = (TPM2B_PUBLIC_KEY_RSA *)&context->aux_data;
-            aux_data->size = context->cmd.Data_EncryptDecrypt.numBytes;
-            memcpy(&aux_data->buffer[0], context->cmd.Data_EncryptDecrypt.in_data,
-                   aux_data->size);
-
-            /* Decrypt the actual data. */
-            r = Esys_RSA_Decrypt_Async(context->esys,
-                                       context->cmd.Data_EncryptDecrypt.key_handle,
-                                       command->auth_session,
-                                       ENC_SESSION_IF_POLICY(command->auth_session),
-                                       ESYS_TR_NONE,
-                                       aux_data,
-                                       &command->profile->rsa_decrypt_scheme,
-                                       &null_data);
-            goto_if_error(r, "Error esys rsa decrypt", error_cleanup);
-
-            fallthrough;
-
-        statecase(context->state, DATA_DECRYPT_WAIT_FOR_RSA_DECRYPTION);
-            r = Esys_RSA_Decrypt_Finish(context->esys, &tpmPlainText);
-            return_try_again(r);
-            goto_if_error_reset_state(r, "RSA decryption.", error_cleanup);
-
-            /* Duplicate the decrypted plaintext for returning to the user. */
-            if (plainTextSize)
-                command->plainTextSize = tpmPlainText->size;
-            if (plainText) {
-                command->plainText = malloc(tpmPlainText->size);
-                goto_if_null(command->plainText, "Out of memory",
-                             TSS2_FAPI_RC_MEMORY, error_cleanup);
-
-                memcpy(command->plainText, &tpmPlainText->buffer[0], tpmPlainText->size);
-                SAFE_FREE(tpmPlainText);
-            }
-
-            /* Flush the used key. */
-            if (!command->key_object->misc.key.persistent_handle) {
-                r = Esys_FlushContext_Async(context->esys,
-                                            command->key_handle);
-                goto_if_error(r, "Error: FlushContext", error_cleanup);
-            }
-
-            fallthrough;
-
-        statecase(context->state, DATA_DECRYPT_WAIT_FOR_FLUSH);
-            if (!command->key_object->misc.key.persistent_handle) {
-                r = Esys_FlushContext_Finish(context->esys);
-                return_try_again(r);
-
-                goto_if_error(r, "Error: FlushContext", error_cleanup);
-            }
-            command->key_handle = ESYS_TR_NONE;
-            fallthrough;
-
-        statecase(context->state, DATA_DECRYPT_CLEANUP)
-            /* Cleanup session. */
-            r = ifapi_cleanup_session(context);
-            try_again_or_error_goto(r, "Cleanup", error_cleanup);
-
-            if (plainText)
-                *plainText = command->plainText;
-            if (plainTextSize)
-                *plainTextSize = command->plainTextSize;
-            break;
-
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
     context->state = FAPI_STATE_INIT;

@@ -5,20 +5,20 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"            // for HAVE_EVP_SM4_CFB
+#include "config.h" // for HAVE_EVP_SM4_CFB
 #endif
 
-#include <inttypes.h>          // for uint8_t
-#include <stdlib.h>            // for NULL, size_t, malloc
+#include <inttypes.h> // for uint8_t
+#include <stdlib.h>   // for NULL, size_t, malloc
 
-#include "../helper/cmocka_all.h"            // for assert_int_equal, cmocka_unit_test
-#include "esys_crypto.h"       // for iesys_initialize_crypto_backend, iesys...
-#include "tss2_common.h"       // for TSS2_RC_SUCCESS, TSS2_ESYS_RC_BAD_REFE...
-#include "tss2_esys.h"         // for ESYS_CRYPTO_CALLBACKS, Esys_GetSysContext
-#include "tss2_sys.h"          // for TSS2_SYS_CONTEXT
-#include "tss2_tcti.h"         // for TSS2_TCTI_CONTEXT_COMMON_V1, TSS2_TCTI...
-#include "tss2_tpm2_types.h"   // for TPM2_ALG_CFB, TPM2_ALG_SM4, TPM2_ALG_AES
-#include "util/tpm2b.h"        // for TPM2B
+#include "../helper/cmocka_all.h" // for assert_int_equal, cmocka_unit_test
+#include "esys_crypto.h"          // for iesys_initialize_crypto_backend, iesys...
+#include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_ESYS_RC_BAD_REFE...
+#include "tss2_esys.h"            // for ESYS_CRYPTO_CALLBACKS, Esys_GetSysContext
+#include "tss2_sys.h"             // for TSS2_SYS_CONTEXT
+#include "tss2_tcti.h"            // for TSS2_TCTI_CONTEXT_COMMON_V1, TSS2_TCTI...
+#include "tss2_tpm2_types.h"      // for TPM2_ALG_CFB, TPM2_ALG_SM4, TPM2_ALG_AES
+#include "util/tpm2b.h"           // for TPM2B
 
 #define LOGMODULE tests
 #include "util/log.h"
@@ -29,140 +29,136 @@
  */
 
 static void
-check_hash_functions(void **state)
-{
-    TSS2_RC rc;
+check_hash_functions(void **state) {
+    TSS2_RC                   rc;
     ESYS_CRYPTO_CONTEXT_BLOB *context;
-    uint8_t buffer[10] = { 0 };
-    TPM2B tpm2b;
-    size_t size = 0;
+    uint8_t                   buffer[10] = { 0 };
+    TPM2B                     tpm2b;
+    size_t                    size = 0;
 
     ESYS_CRYPTO_CALLBACKS crypto_cb = { 0 };
     rc = iesys_initialize_crypto_backend(&crypto_cb, NULL);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     rc = iesys_crypto_hash_start(&crypto_cb, NULL, TPM2_ALG_SHA384);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     rc = iesys_crypto_hash_start(&crypto_cb, &context, 0);
-    assert_int_equal (rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
+    assert_int_equal(rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
 
     rc = iesys_crypto_hash_start(&crypto_cb, &context, TPM2_ALG_SHA512);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     rc = iesys_crypto_hash_finish(&crypto_cb, NULL, &buffer[0], &size);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     rc = iesys_crypto_hash_finish(&crypto_cb, &context, &buffer[0], &size);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_SIZE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_SIZE);
 
     iesys_crypto_hash_abort(&crypto_cb, NULL);
     iesys_crypto_hash_abort(&crypto_cb, &context);
 
     rc = iesys_crypto_hash_update(&crypto_cb, NULL, &buffer[0], 10);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     rc = iesys_crypto_hash_update2b(&crypto_cb, NULL, &tpm2b);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     /* Create invalid context */
     rc = iesys_crypto_hmac_start(&crypto_cb, &context, TPM2_ALG_SHA1, &buffer[0], 10);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     iesys_crypto_hash_abort(&crypto_cb, &context);
 
     rc = iesys_crypto_hash_update(&crypto_cb, context, &buffer[0], 10);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     rc = iesys_crypto_hash_finish(&crypto_cb, &context, &buffer[0], &size);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     /* cleanup */
     iesys_crypto_hmac_abort(&crypto_cb, &context);
 }
 
 static void
-check_hmac_functions(void **state)
-{
-    TSS2_RC rc;
+check_hmac_functions(void **state) {
+    TSS2_RC                   rc;
     ESYS_CRYPTO_CONTEXT_BLOB *context;
-    uint8_t buffer[10] = { 0 };
-    TPM2B tpm2b;
-    size_t size = 0;
+    uint8_t                   buffer[10] = { 0 };
+    TPM2B                     tpm2b;
+    size_t                    size = 0;
 
     ESYS_CRYPTO_CALLBACKS crypto_cb = { 0 };
     rc = iesys_initialize_crypto_backend(&crypto_cb, NULL);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     rc = iesys_crypto_hmac_start(&crypto_cb, NULL, TPM2_ALG_SHA384, &buffer[0], 10);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     rc = iesys_crypto_hmac_start(&crypto_cb, &context, TPM2_ALG_SHA512, &buffer[0], 10);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     iesys_crypto_hmac_abort(&crypto_cb, &context);
 
-    rc = iesys_crypto_hmac_start(&crypto_cb, &context, 0,  &buffer[0], 10);
-    assert_int_equal (rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
+    rc = iesys_crypto_hmac_start(&crypto_cb, &context, 0, &buffer[0], 10);
+    assert_int_equal(rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
 
-    rc = iesys_crypto_hmac_start(&crypto_cb, &context, TPM2_ALG_SHA1,  &buffer[0], 10);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    rc = iesys_crypto_hmac_start(&crypto_cb, &context, TPM2_ALG_SHA1, &buffer[0], 10);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     rc = iesys_crypto_hmac_finish(&crypto_cb, NULL, &buffer[0], &size);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     rc = iesys_crypto_hmac_finish2b(&crypto_cb, NULL, &tpm2b);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     rc = iesys_crypto_hmac_finish(&crypto_cb, &context, &buffer[0], &size);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_SIZE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_SIZE);
 
     iesys_crypto_hmac_abort(&crypto_cb, NULL);
     iesys_crypto_hmac_abort(&crypto_cb, &context);
 
     rc = iesys_crypto_hmac_update(&crypto_cb, NULL, &buffer[0], 10);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     rc = iesys_crypto_hmac_update2b(&crypto_cb, NULL, &tpm2b);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     /* Create invalid context */
     rc = iesys_crypto_hash_start(&crypto_cb, &context, TPM2_ALG_SHA1);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     iesys_crypto_hmac_abort(&crypto_cb, &context);
 
     rc = iesys_crypto_hmac_update(&crypto_cb, context, &buffer[0], 10);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     rc = iesys_crypto_hmac_finish(&crypto_cb, &context, &buffer[0], &size);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     /* cleanup */
     iesys_crypto_hash_abort(&crypto_cb, &context);
 }
 
 static void
-check_random(void **state)
-{
-    TSS2_RC rc;
-    size_t num_bytes = 0;
+check_random(void **state) {
+    TSS2_RC     rc;
+    size_t      num_bytes = 0;
     TPM2B_NONCE nonce;
 
     ESYS_CRYPTO_CALLBACKS crypto_cb = { 0 };
     rc = iesys_initialize_crypto_backend(&crypto_cb, NULL);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     rc = iesys_crypto_get_random2b(&crypto_cb, &nonce, num_bytes);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 }
 
 static void
-check_pk_encrypt(void **state)
-{
+check_pk_encrypt(void **state) {
     TSS2_RC rc;
     uint8_t in_buffer[5] = { 1, 2, 3, 4, 5 };
-    size_t size = 5;
+    size_t  size = 5;
     uint8_t out_buffer[5];
     TPM2B_PUBLIC inPublicRSA = {
         .size = 0,
@@ -203,120 +199,119 @@ check_pk_encrypt(void **state)
 
     ESYS_CRYPTO_CALLBACKS crypto_cb = { 0 };
     rc = iesys_initialize_crypto_backend(&crypto_cb, NULL);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
-    rc = iesys_crypto_rsa_pk_encrypt(&crypto_cb, &inPublicRSA, size, &in_buffer[0], size, &out_buffer[0], &size, "LABEL");
-    assert_int_equal (rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
+    rc = iesys_crypto_rsa_pk_encrypt(&crypto_cb, &inPublicRSA, size, &in_buffer[0], size,
+                                     &out_buffer[0], &size, "LABEL");
+    assert_int_equal(rc, TSS2_ESYS_RC_NOT_IMPLEMENTED);
 
     inPublicRSA.publicArea.nameAlg = TPM2_ALG_SHA1;
     inPublicRSA.publicArea.parameters.rsaDetail.scheme.scheme = 0;
-    rc = iesys_crypto_rsa_pk_encrypt(&crypto_cb, &inPublicRSA, size, &in_buffer[0], size, &out_buffer[0], &size, "LABEL");
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_rsa_pk_encrypt(&crypto_cb, &inPublicRSA, size, &in_buffer[0], size,
+                                     &out_buffer[0], &size, "LABEL");
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 }
 
 static void
-check_aes_encrypt(void **state)
-{
+check_aes_encrypt(void **state) {
     TSS2_RC rc;
-    uint8_t key[32] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-                       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16  };
+    uint8_t key[32] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+                        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
     uint8_t buffer[5] = { 1, 2, 3, 4, 5 };
-    size_t size = 5;
+    size_t  size = 5;
 
     ESYS_CRYPTO_CALLBACKS crypto_cb = { 0 };
     rc = iesys_initialize_crypto_backend(&crypto_cb, NULL);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
-    rc = iesys_crypto_aes_encrypt(&crypto_cb, NULL, TPM2_ALG_AES, 192, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    rc = iesys_crypto_aes_encrypt(&crypto_cb, NULL, TPM2_ALG_AES, 192, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    rc = iesys_crypto_aes_encrypt(&crypto_cb, &key[0], TPM2_ALG_AES, 192, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
-    rc = iesys_crypto_aes_encrypt(&crypto_cb, &key[0], TPM2_ALG_AES, 256, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    rc = iesys_crypto_aes_encrypt(&crypto_cb, &key[0], TPM2_ALG_AES, 192, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    rc = iesys_crypto_aes_encrypt(&crypto_cb, &key[0], TPM2_ALG_AES, 256, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
-    rc = iesys_crypto_aes_encrypt(&crypto_cb, &key[0], 0, 256, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_aes_encrypt(&crypto_cb, &key[0], 0, 256, TPM2_ALG_CFB, &buffer[0], size,
+                                  &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_aes_encrypt(&crypto_cb, &key[0], TPM2_ALG_AES, 256, 0,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_aes_encrypt(&crypto_cb, &key[0], TPM2_ALG_AES, 256, 0, &buffer[0], size,
+                                  &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_aes_encrypt(&crypto_cb, &key[0], TPM2_ALG_AES, 999, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_aes_encrypt(&crypto_cb, &key[0], TPM2_ALG_AES, 999, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_aes_decrypt(&crypto_cb, NULL, TPM2_ALG_AES, 192, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    rc = iesys_crypto_aes_decrypt(&crypto_cb, NULL, TPM2_ALG_AES, 192, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    rc = iesys_crypto_aes_decrypt(&crypto_cb, &key[0], 0, 192, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_aes_decrypt(&crypto_cb, &key[0], 0, 192, TPM2_ALG_CFB, &buffer[0], size,
+                                  &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 }
 
 #if HAVE_EVP_SM4_CFB && !defined(OPENSSL_NO_SM4)
 static void
-check_sm4_encrypt(void **state)
-{
+check_sm4_encrypt(void **state) {
     TSS2_RC rc;
-    uint8_t key[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    uint8_t key[16] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
     uint8_t buffer[5] = { 1, 2, 3, 4, 5 };
-    size_t size = sizeof(buffer);
+    size_t  size = sizeof(buffer);
 
     ESYS_CRYPTO_CALLBACKS crypto_cb = { 0 };
     rc = iesys_initialize_crypto_backend(&crypto_cb, NULL);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
-    rc = iesys_crypto_sm4_encrypt(&crypto_cb, NULL, TPM2_ALG_SM4, 128, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    rc = iesys_crypto_sm4_encrypt(&crypto_cb, NULL, TPM2_ALG_SM4, 128, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], 0, 128, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], 0, 128, TPM2_ALG_CFB, &buffer[0], size,
+                                  &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, 0,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, 0, &buffer[0], size,
+                                  &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 999, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 999, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    rc = iesys_crypto_sm4_encrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
-    rc = iesys_crypto_sm4_decrypt(&crypto_cb, NULL, TPM2_ALG_SM4, 128, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_REFERENCE);
+    rc = iesys_crypto_sm4_decrypt(&crypto_cb, NULL, TPM2_ALG_SM4, 128, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], 0, 128, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], 0, 128, TPM2_ALG_CFB, &buffer[0], size,
+                                  &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, 0,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, 0, &buffer[0], size,
+                                  &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 999, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_ESYS_RC_BAD_VALUE);
+    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 999, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_ESYS_RC_BAD_VALUE);
 
-    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, TPM2_ALG_CFB,
-                                      &buffer[0], size, &key[0]);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    rc = iesys_crypto_sm4_decrypt(&crypto_cb, &key[0], TPM2_ALG_SM4, 128, TPM2_ALG_CFB, &buffer[0],
+                                  size, &key[0]);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 }
 #endif
 
 static void
-check_free(void **state)
-{
+check_free(void **state) {
     uint8_t *buffer;
 
     buffer = malloc(10);
@@ -324,21 +319,20 @@ check_free(void **state)
 }
 
 static void
-check_get_sys_context(void **state)
-{
-    ESYS_CONTEXT *ctx;
-    TSS2_TCTI_CONTEXT_COMMON_V1 tcti = {0};
-    TSS2_SYS_CONTEXT *sys_ctx = NULL;
-    TSS2_RC rc;
+check_get_sys_context(void **state) {
+    ESYS_CONTEXT               *ctx;
+    TSS2_TCTI_CONTEXT_COMMON_V1 tcti = { 0 };
+    TSS2_SYS_CONTEXT           *sys_ctx = NULL;
+    TSS2_RC                     rc;
 
     rc = Esys_GetSysContext(NULL, NULL);
     assert_int_equal(rc, TSS2_ESYS_RC_BAD_REFERENCE);
 
     tcti.version = 1;
-    tcti.transmit = (void*) 0xdeadbeef;
-    tcti.receive = (void*) 0xdeadbeef;
+    tcti.transmit = (void *)0xdeadbeef;
+    tcti.receive = (void *)0xdeadbeef;
 
-    rc = Esys_Initialize(&ctx, (TSS2_TCTI_CONTEXT *) &tcti, NULL);
+    rc = Esys_Initialize(&ctx, (TSS2_TCTI_CONTEXT *)&tcti, NULL);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     rc = Esys_GetSysContext(ctx, &sys_ctx);
@@ -348,22 +342,21 @@ check_get_sys_context(void **state)
     Esys_Finalize(&ctx);
 }
 
-#define CHECK_BACKEND_FN(backend, fn) \
-    assert_int_equal((backend).fn, iesys_crypto_##fn##_internal)
+#define CHECK_BACKEND_FN(backend, fn) assert_int_equal((backend).fn, iesys_crypto_##fn##_internal)
 
 static TSS2_RC
-    crypto_init(void *userdata)
-{
+crypto_init(void *userdata) {
     void *dummy = (void *)0xDEADBEEF;
     assert_int_equal(userdata, dummy);
     return 0x42;
 }
 
-static void test_backend_set(void **state) {
+static void
+test_backend_set(void **state) {
 
     ESYS_CRYPTO_CALLBACKS crypto_cb = { 0 };
-    TSS2_RC rc = iesys_initialize_crypto_backend(&crypto_cb, NULL);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    TSS2_RC               rc = iesys_initialize_crypto_backend(&crypto_cb, NULL);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     CHECK_BACKEND_FN(crypto_cb, hash_start);
     CHECK_BACKEND_FN(crypto_cb, hash_update);
@@ -384,33 +377,31 @@ static void test_backend_set(void **state) {
     CHECK_BACKEND_FN(crypto_cb, rsa_pk_encrypt);
 
     /* test a user change */
-    ESYS_CRYPTO_CALLBACKS user_cb = {
-        .aes_decrypt = (void *)0xBADCC0DE,
-        .aes_encrypt = (void *)0xBADCC0DE,
-        .sm4_decrypt = (void *)0xBADCC0DE,
-        .sm4_encrypt = (void *)0xBADCC0DE,
-        .get_ecdh_point = (void *)0xBADCC0DE,
-        .get_random2b = (void *)0xBADCC0DE,
-        .rsa_pk_encrypt = (void *)0xBADCC0DE,
-        .hash_abort = (void *)0xBADCC0DE,
-        .hash_finish = (void *)0xBADCC0DE,
-        .hash_start = (void *)0xBADCC0DE,
-        .hash_update = (void *)0xBADCC0DE,
-        .hmac_abort = (void *)0xBADCC0DE,
-        .hmac_finish = (void *)0xBADCC0DE,
-        .hmac_start = (void *)0xBADCC0DE,
-        .hmac_update = (void *)0xBADCC0DE,
-        .init = crypto_init,
-        .userdata = (void *)0xDEADBEEF
-    };
+    ESYS_CRYPTO_CALLBACKS user_cb = { .aes_decrypt = (void *)0xBADCC0DE,
+                                      .aes_encrypt = (void *)0xBADCC0DE,
+                                      .sm4_decrypt = (void *)0xBADCC0DE,
+                                      .sm4_encrypt = (void *)0xBADCC0DE,
+                                      .get_ecdh_point = (void *)0xBADCC0DE,
+                                      .get_random2b = (void *)0xBADCC0DE,
+                                      .rsa_pk_encrypt = (void *)0xBADCC0DE,
+                                      .hash_abort = (void *)0xBADCC0DE,
+                                      .hash_finish = (void *)0xBADCC0DE,
+                                      .hash_start = (void *)0xBADCC0DE,
+                                      .hash_update = (void *)0xBADCC0DE,
+                                      .hmac_abort = (void *)0xBADCC0DE,
+                                      .hmac_finish = (void *)0xBADCC0DE,
+                                      .hmac_start = (void *)0xBADCC0DE,
+                                      .hmac_update = (void *)0xBADCC0DE,
+                                      .init = crypto_init,
+                                      .userdata = (void *)0xDEADBEEF };
 
     rc = iesys_initialize_crypto_backend(&crypto_cb, &user_cb);
-    assert_int_equal (rc, 0x42);
+    assert_int_equal(rc, 0x42);
     assert_memory_equal(&crypto_cb, &user_cb, sizeof(crypto_cb));
 
     /* reset state */
     rc = iesys_initialize_crypto_backend(&crypto_cb, NULL);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     CHECK_BACKEND_FN(crypto_cb, hash_start);
     CHECK_BACKEND_FN(crypto_cb, hash_update);
@@ -430,20 +421,15 @@ static void test_backend_set(void **state) {
 }
 
 int
-main(int argc, char *argv[])
-{
-    const struct CMUnitTest tests[] = {
-        cmocka_unit_test(check_hash_functions),
-        cmocka_unit_test(check_hmac_functions),
-        cmocka_unit_test(check_random),
-        cmocka_unit_test(check_pk_encrypt),
-        cmocka_unit_test(check_aes_encrypt),
+main(int argc, char *argv[]) {
+    const struct CMUnitTest tests[]
+        = { cmocka_unit_test(check_hash_functions), cmocka_unit_test(check_hmac_functions),
+            cmocka_unit_test(check_random),         cmocka_unit_test(check_pk_encrypt),
+            cmocka_unit_test(check_aes_encrypt),
 #if HAVE_EVP_SM4_CFB && !defined(OPENSSL_NO_SM4)
-        cmocka_unit_test(check_sm4_encrypt),
+            cmocka_unit_test(check_sm4_encrypt),
 #endif
-        cmocka_unit_test(check_free),
-        cmocka_unit_test(check_get_sys_context),
-        cmocka_unit_test(test_backend_set)
-    };
+            cmocka_unit_test(check_free),           cmocka_unit_test(check_get_sys_context),
+            cmocka_unit_test(test_backend_set) };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

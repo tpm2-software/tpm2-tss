@@ -8,26 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t
-#include <stdlib.h>           // for size_t
-#include <string.h>           // for memset
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for size_t
+#include <string.h> // for memset
 
-#include "fapi_int.h"         // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_READ_READ
-#include "fapi_util.h"        // for ifapi_cleanup_session, ifapi_get_sessio...
-#include "ifapi_helpers.h"    // for ifapi_init_hierarchy_object
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"     // for check_not_null, goto_if_error_reset_state
-#include "ifapi_profiles.h"   // for IFAPI_PROFILES
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR_RH_OWNER, ESYS...
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_NvRead, Fapi_NvRead_...
-#include "tss2_policy.h"      // for TSS2_OBJECT
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
+#include "fapi_int.h"        // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_READ_READ
+#include "fapi_util.h"       // for ifapi_cleanup_session, ifapi_get_sessio...
+#include "ifapi_helpers.h"   // for ifapi_init_hierarchy_object
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"    // for check_not_null, goto_if_error_reset_state
+#include "ifapi_profiles.h"  // for IFAPI_PROFILES
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_RH_OWNER, ESYS...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_NvRead, Fapi_NvRead_...
+#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for LOG_TRACE, return_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE, return_if_error, SAFE_FREE
 
 /** One-Call function for Fapi_NvRead
  *
@@ -70,13 +70,11 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvRead(
-    FAPI_CONTEXT   *context,
-    char     const *nvPath,
-    uint8_t       **data,
-    size_t         *size,
-    char          **logData)
-{
+Fapi_NvRead(FAPI_CONTEXT *context,
+            char const   *nvPath,
+            uint8_t     **data,
+            size_t       *size,
+            char        **logData) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -157,10 +155,7 @@ Fapi_NvRead(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvRead_Async(
-    FAPI_CONTEXT   *context,
-    char     const *nvPath)
-{
+Fapi_NvRead_Async(FAPI_CONTEXT *context, char const *nvPath) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("nvPath: %s", nvPath);
 
@@ -174,7 +169,7 @@ Fapi_NvRead_Async(
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
     /* Helpful alias pointers */
-    IFAPI_NV_Cmds * command = &context->nv_cmd;
+    IFAPI_NV_Cmds *command = &context->nv_cmd;
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -237,17 +232,12 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvRead_Finish(
-    FAPI_CONTEXT   *context,
-    uint8_t       **data,
-    size_t         *size,
-    char          **logData)
-{
+Fapi_NvRead_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size, char **logData) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
     ESYS_TR authIndex;
-    size_t readSize;
+    size_t  readSize;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -255,8 +245,8 @@ Fapi_NvRead_Finish(
 
     /* Helpful alias pointers */
     IFAPI_NV_Cmds *command = &context->nv_cmd;
-    IFAPI_OBJECT *object = &command->nv_object;
-    IFAPI_OBJECT *authObject = &command->auth_object;
+    IFAPI_OBJECT  *object = &command->nv_object;
+    IFAPI_OBJECT  *authObject = &command->auth_object;
 
     switch (context->state) {
     statecase(context->state, NV_READ_READ)
@@ -294,8 +284,7 @@ Fapi_NvRead_Finish(
         context->primary_state = PRIMARY_INIT;
 
         /* Prepare session for authorization and data encryption. */
-        r = ifapi_get_sessions_async(context,
-                                     IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
+        r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
                                      TPMA_SESSION_ENCRYPT, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
@@ -326,13 +315,13 @@ Fapi_NvRead_Finish(
             if (object->misc.nv.event_log) {
                 strdup_check(command->logData, object->misc.nv.event_log, r, error_cleanup);
             } else {
-               strdup_check(command->logData, "", r, error_cleanup);
+                strdup_check(command->logData, "", r, error_cleanup);
             }
         }
         fallthrough;
 
     statecase(context->state, NV_READ_CLEANUP)
-        /* Cleanup the session used for authorization. */
+    /* Cleanup the session used for authorization. */
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 

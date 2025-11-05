@@ -8,21 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>          // for uint8_t
-#include <stdlib.h>          // for malloc, size_t, NULL
-#include <string.h>          // for memcpy
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for malloc, size_t, NULL
+#include <string.h> // for memcpy
 
-#include "fapi_int.h"        // for FAPI_CONTEXT, PATH_GET_DESCRIPTION_READ
-#include "fapi_types.h"      // for UINT8_ARY
-#include "fapi_util.h"       // for ifapi_session_init
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_GetAppData, Fapi_GetA...
+#include "fapi_int.h"       // for FAPI_CONTEXT, PATH_GET_DESCRIPTION_READ
+#include "fapi_types.h"     // for UINT8_ARY
+#include "fapi_util.h"      // for ifapi_session_init
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetAppData, Fapi_GetA...
 
 #define LOGMODULE fapi
-#include "util/log.h"        // for LOG_TRACE, return_if_error, base_rc, got...
+#include "util/log.h" // for LOG_TRACE, return_if_error, base_rc, got...
 
 /** One-Call function for Fapi_GetAppData
  *
@@ -56,12 +56,7 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_GetAppData(
-    FAPI_CONTEXT *context,
-    char   const *path,
-    uint8_t    **appData,
-    size_t      *appDataSize)
-{
+Fapi_GetAppData(FAPI_CONTEXT *context, char const *path, uint8_t **appData, size_t *appDataSize) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -119,10 +114,7 @@ Fapi_GetAppData(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_GetAppData_Async(
-    FAPI_CONTEXT *context,
-    char   const *path)
-{
+Fapi_GetAppData_Async(FAPI_CONTEXT *context, char const *path) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
 
@@ -170,57 +162,51 @@ Fapi_GetAppData_Async(
  *         the function.
  */
 TSS2_RC
-Fapi_GetAppData_Finish(
-    FAPI_CONTEXT *context,
-    uint8_t     **appData,
-    size_t       *appDataSize)
-{
+Fapi_GetAppData_Finish(FAPI_CONTEXT *context, uint8_t **appData, size_t *appDataSize) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     IFAPI_OBJECT object;
-    UINT8_ARY *objAppData;
+    UINT8_ARY   *objAppData;
 
     /* Check for NULL parameters */
     check_not_null(context);
 
     switch (context->state) {
-        statecase(context->state, PATH_GET_DESCRIPTION_READ);
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-            return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+    statecase(context->state, PATH_GET_DESCRIPTION_READ);
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
+        return_try_again(r);
+        return_if_error_reset_state(r, "read_finish failed");
 
-            /* Get the application data from the metadata objects. */
-            switch (object.objectType) {
-                case IFAPI_KEY_OBJ:
-                    objAppData = &object.misc.key.appData;
-                    break;
-                case IFAPI_NV_OBJ:
-                    objAppData = &object.misc.nv.appData;
-                    break;
-                default:
-                    goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Object has no app data.", cleanup);
-            }
-
-            if (appData) {
-                /* Duplicate the application data to be returned to the caller. */
-                if (objAppData->size) {
-                    *appData = malloc(objAppData->size);
-                    goto_if_null2(*appData, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                                  cleanup);
-                    memcpy(*appData, &objAppData->buffer[0],
-                           objAppData->size);
-                } else {
-                    *appData = NULL;
-                }
-            }
-            if (appDataSize)
-                *appDataSize = objAppData->size;
-
-            r = TSS2_RC_SUCCESS;
+        /* Get the application data from the metadata objects. */
+        switch (object.objectType) {
+        case IFAPI_KEY_OBJ:
+            objAppData = &object.misc.key.appData;
             break;
+        case IFAPI_NV_OBJ:
+            objAppData = &object.misc.nv.appData;
+            break;
+        default:
+            goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Object has no app data.", cleanup);
+        }
 
-        statecasedefault(context->state);
+        if (appData) {
+            /* Duplicate the application data to be returned to the caller. */
+            if (objAppData->size) {
+                *appData = malloc(objAppData->size);
+                goto_if_null2(*appData, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
+                memcpy(*appData, &objAppData->buffer[0], objAppData->size);
+            } else {
+                *appData = NULL;
+            }
+        }
+        if (appDataSize)
+            *appDataSize = objAppData->size;
+
+        r = TSS2_RC_SUCCESS;
+        break;
+
+    statecasedefault(context->state);
     }
 
 cleanup:

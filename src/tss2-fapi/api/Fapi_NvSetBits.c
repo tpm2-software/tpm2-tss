@@ -8,27 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for uint64_t, PRIx64
-#include <json.h>             // for json_object
-#include <stdlib.h>           // for NULL
-#include <string.h>           // for memset
+#include <inttypes.h> // for uint64_t, PRIx64
+#include <json.h>     // for json_object
+#include <stdlib.h>   // for NULL
+#include <string.h>   // for memset
 
-#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_NV_Cmds, NV_SET_BIT...
-#include "fapi_util.h"        // for ifapi_authorize_object, ifapi_cleanup_s...
-#include "ifapi_helpers.h"    // for ifapi_init_hierarchy_object
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"     // for goto_if_error_reset_state, statecase
-#include "ifapi_profiles.h"   // for IFAPI_PROFILES
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR, Esys_NV_SetBi...
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_NvSetBits, Fapi_NvSe...
-#include "tss2_policy.h"      // for TSS2_OBJECT
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
+#include "fapi_int.h"        // for FAPI_CONTEXT, IFAPI_NV_Cmds, NV_SET_BIT...
+#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_cleanup_s...
+#include "ifapi_helpers.h"   // for ifapi_init_hierarchy_object
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"    // for goto_if_error_reset_state, statecase
+#include "ifapi_profiles.h"  // for IFAPI_PROFILES
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR, Esys_NV_SetBi...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_NvSetBits, Fapi_NvSe...
+#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for LOG_TRACE, SAFE_FREE, goto_if_error
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
 
 /** One-Call function for Fapi_NvSetBits
  *
@@ -69,11 +69,7 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvSetBits(
-    FAPI_CONTEXT *context,
-    char   const *nvPath,
-    uint64_t      bitmap)
-{
+Fapi_NvSetBits(FAPI_CONTEXT *context, char const *nvPath, uint64_t bitmap) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -154,11 +150,7 @@ Fapi_NvSetBits(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvSetBits_Async(
-    FAPI_CONTEXT *context,
-    char   const *nvPath,
-    uint64_t      bitmap)
-{
+Fapi_NvSetBits_Async(FAPI_CONTEXT *context, char const *nvPath, uint64_t bitmap) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("nvPath: %s", nvPath);
     LOG_TRACE("bitmap: 0x%" PRIx64, bitmap);
@@ -170,7 +162,7 @@ Fapi_NvSetBits_Async(
     check_not_null(nvPath);
 
     /* Helpful alias pointers */
-    IFAPI_NV_Cmds * command = &context->nv_cmd;
+    IFAPI_NV_Cmds *command = &context->nv_cmd;
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -231,30 +223,29 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvSetBits_Finish(
-    FAPI_CONTEXT *context)
-{
+Fapi_NvSetBits_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso = NULL;
-    ESYS_TR authIndex;
-    ESYS_TR auth_session;
+    ESYS_TR      authIndex;
+    ESYS_TR      auth_session;
 
     /* Check for NULL parameters */
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_NV_Cmds * command = &context->nv_cmd;
-    IFAPI_OBJECT *object = &command->nv_object;
-    ESYS_TR nvIndex = command->esys_handle;
-    IFAPI_OBJECT *authObject = &command->auth_object;
+    IFAPI_NV_Cmds *command = &context->nv_cmd;
+    IFAPI_OBJECT  *object = &command->nv_object;
+    ESYS_TR        nvIndex = command->esys_handle;
+    IFAPI_OBJECT  *authObject = &command->auth_object;
 
     switch (context->state) {
     statecase(context->state, NV_SET_BITS_READ)
-        /* First check whether the file in object store can be updated. */
+    /* First check whether the file in object store can be updated. */
         r = ifapi_keystore_check_writeable(&context->keystore, command->nvPath);
-        goto_if_error_reset_state(r, "Check whether update object store is possible.", error_cleanup);
+        goto_if_error_reset_state(r, "Check whether update object store is possible.",
+                                  error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
         return_try_again(r);
@@ -289,8 +280,7 @@ Fapi_NvSetBits_Finish(
         context->primary_state = PRIMARY_INIT;
 
         /* Prepare session for authorization */
-        r = ifapi_get_sessions_async(context,
-                                     IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
+        r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
                                      TPMA_SESSION_DECRYPT, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
@@ -306,16 +296,14 @@ Fapi_NvSetBits_Finish(
         fallthrough;
 
     statecase(context->state, NV_SET_BITS_AUTHORIZE)
-        /* Authorize the session to be used for accessing the NV index. */
+    /* Authorize the session to be used for accessing the NV index. */
         r = ifapi_authorize_object(context, authObject, &auth_session);
         return_try_again(r);
         goto_if_error(r, "Authorize NV object.", error_cleanup);
 
         /* Call the SetBit TPM operation. */
-        r = Esys_NV_SetBits_Async(context->esys,  command->auth_index, nvIndex,
-                                  auth_session,
-                                  ESYS_TR_NONE, ESYS_TR_NONE,
-                                  command->bitmap);
+        r = Esys_NV_SetBits_Async(context->esys, command->auth_index, nvIndex, auth_session,
+                                  ESYS_TR_NONE, ESYS_TR_NONE, command->bitmap);
 
         goto_if_error_reset_state(r, " Fapi_NvSetBits_Async", error_cleanup);
 
@@ -334,15 +322,12 @@ Fapi_NvSetBits_Finish(
         goto_if_error(r, "Prepare serialization", error_cleanup);
 
         /* Start writing the NV object to the key store */
-        r = ifapi_keystore_store_async(&context->keystore, &context->io,
-                                       command->nvPath,
-                                       object);
-        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
-                                  command->nvPath);
+        r = ifapi_keystore_store_async(&context->keystore, &context->io, command->nvPath, object);
+        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, command->nvPath);
         fallthrough;
 
     statecase(context->state, NV_SET_BITS_WRITE)
-        /* Finish writing the NV object to the key store */
+    /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
         return_try_again(r);
         goto_if_error(r, "write_finish failed", error_cleanup);
@@ -350,7 +335,7 @@ Fapi_NvSetBits_Finish(
         fallthrough;
 
     statecase(context->state, NV_SET_BITS_CLEANUP)
-        /* Cleanup the session used for authorization. */
+    /* Cleanup the session used for authorization. */
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 

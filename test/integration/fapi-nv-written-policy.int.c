@@ -8,21 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>     // for uint8_t
-#include <stdio.h>        // for NULL, fopen, fclose, fileno, fseek, ftell
-#include <stdlib.h>       // for calloc, malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>       // for memcmp
-#include <unistd.h>       // for read
+#include <inttypes.h> // for uint8_t
+#include <stdio.h>    // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>   // for calloc, malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>   // for memcmp
+#include <unistd.h>   // for read
 
-#include "test-fapi.h"    // for ASSERT, test_invoke_fapi
-#include "tss2_common.h"  // for TSS2_FAPI_RC_MEMORY, TSS2_RC
-#include "tss2_fapi.h"    // for Fapi_Delete, Fapi_CreateNv, Fapi_GetAppData
+#include "test-fapi.h"   // for ASSERT, test_invoke_fapi
+#include "tss2_common.h" // for TSS2_FAPI_RC_MEMORY, TSS2_RC
+#include "tss2_fapi.h"   // for Fapi_Delete, Fapi_CreateNv, Fapi_GetAppData
 
 #define LOGMODULE test
-#include "util/log.h"     // for goto_if_error, SAFE_FREE, LOG_ERROR, goto_i...
+#include "util/log.h" // for goto_if_error, SAFE_FREE, LOG_ERROR, goto_i...
 
-#define NV_SIZE 10
-#define APP_DATA_SIZE (10*1024*1024)
+#define NV_SIZE       10
+#define APP_DATA_SIZE (10 * 1024 * 1024)
 
 /** Test the FAPI policy PolicyNvWritten.
  *
@@ -42,23 +42,22 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_nv_written_policy(FAPI_CONTEXT *context)
-{
-    TSS2_RC r;
-    char *nvPathOrdinary = "/nv/Owner/myNV";
-    char *policy_name =  "/policy/pol_nv_written";
-    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_nv_written.json";
-    FILE *stream = NULL;
-    char *json_policy = NULL;
-    long policy_size;
+test_fapi_nv_written_policy(FAPI_CONTEXT *context) {
+    TSS2_RC  r;
+    char    *nvPathOrdinary = "/nv/Owner/myNV";
+    char    *policy_name = "/policy/pol_nv_written";
+    char    *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_nv_written.json";
+    FILE    *stream = NULL;
+    char    *json_policy = NULL;
+    long     policy_size;
     uint8_t *appDataOut = NULL;
-    size_t appDataOutSize, i;
+    size_t   appDataOutSize, i;
     uint8_t *appDataIn = NULL;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
-    uint8_t data_src[NV_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    uint8_t data_src[NV_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
     appDataIn = calloc(1, APP_DATA_SIZE);
     if (!appDataIn) {
@@ -77,9 +76,8 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
 
     stream = fopen(policy_file, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);
@@ -103,8 +101,7 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_GetAppData", error);
     ASSERT(appDataOut != NULL);
 
-    if (APP_DATA_SIZE != appDataOutSize ||
-            memcmp(appDataOut, &appDataIn[0], appDataOutSize) != 0) {
+    if (APP_DATA_SIZE != appDataOutSize || memcmp(appDataOut, &appDataIn[0], appDataOutSize) != 0) {
         LOG_ERROR("Error: AppData  equal to origin");
         goto error;
     }
@@ -117,7 +114,6 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context)
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
-
 
     SAFE_FREE(json_policy);
     SAFE_FREE(appDataOut);
@@ -135,7 +131,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *context)
-{
+test_invoke_fapi(FAPI_CONTEXT *context) {
     return test_fapi_nv_written_policy(context);
 }

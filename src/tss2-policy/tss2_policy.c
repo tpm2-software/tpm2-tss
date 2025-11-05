@@ -5,64 +5,68 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>                       // for PRIx16, PRIx32
-#include <json.h>                           // for json_object_put, json_obj...
-#include <stdbool.h>                        // for true, bool, false
-#include <stdlib.h>                         // for NULL, free, size_t, calloc
-#include <string.h>                         // for memcpy, memset, strlen
+#include <inttypes.h> // for PRIx16, PRIx32
+#include <json.h>     // for json_object_put, json_obj...
+#include <stdbool.h>  // for true, bool, false
+#include <stdlib.h>   // for NULL, free, size_t, calloc
+#include <string.h>   // for memcpy, memset, strlen
 
-#include "fapi_crypto.h"                    // for ifapi_hash_get_digest_size
-#include "fapi_int.h"                       // for IFAPI_POLICY_EXEC_CTX
-#include "ifapi_helpers.h"                  // for ifapi_cleanup_policy
-#include "ifapi_io.h"                       // for ifapi_io_poll, IFAPI_IO
-#include "ifapi_policy.h"                   // for ifapi_calculate_tree_ex
-#include "ifapi_policy_execute.h"           // for IFAPI_POLICY_EXEC_CTX
-#include "ifapi_policy_instantiate.h"       // for IFAPI_POLICY_EVAL_INST_CTX
-#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
-#include "ifapi_policy_json_serialize.h"    // for ifapi_json_TPMS_POLICY_se...
-#include "ifapi_policy_types.h"             // for TPMS_POLICY
-#include "tpm_json_deserialize.h"           // for ifapi_parse_json
-#include "tss2_common.h"                    // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_esys.h"                      // for ESYS_CONTEXT, ESYS_TR
-#include "tss2_policy.h"                    // for TSS2_POLICY_CTX, TSS2_POL...
-#include "tss2_tpm2_types.h"                // for TPM2B_DIGEST, TPMT_HA
+#include "fapi_crypto.h"                   // for ifapi_hash_get_digest_size
+#include "fapi_int.h"                      // for IFAPI_POLICY_EXEC_CTX
+#include "ifapi_helpers.h"                 // for ifapi_cleanup_policy
+#include "ifapi_io.h"                      // for ifapi_io_poll, IFAPI_IO
+#include "ifapi_policy.h"                  // for ifapi_calculate_tree_ex
+#include "ifapi_policy_execute.h"          // for IFAPI_POLICY_EXEC_CTX
+#include "ifapi_policy_instantiate.h"      // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
+#include "ifapi_policy_types.h"            // for TPMS_POLICY
+#include "tpm_json_deserialize.h"          // for ifapi_parse_json
+#include "tss2_common.h"                   // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"                     // for ESYS_CONTEXT, ESYS_TR
+#include "tss2_policy.h"                   // for TSS2_POLICY_CTX, TSS2_POL...
+#include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMT_HA
 
 #define LOGMODULE "policy"
-#include "util/log.h"                       // for LOG_ERROR, str, LOG_TRACE
+#include "util/log.h" // for LOG_ERROR, str, LOG_TRACE
 
-#define JSON_OBJECT_SAFE_PUT(o) do { json_object_put(o); (o) = NULL; } while(0)
+#define JSON_OBJECT_SAFE_PUT(o)                                                                    \
+    do {                                                                                           \
+        json_object_put(o);                                                                        \
+        (o) = NULL;                                                                                \
+    } while (0)
 
-#define policy_check_not_null(X) \
-    if ((X) == NULL) { \
-        LOG_ERROR(str(X) " is NULL: BAD_REFERENCE"); \
-        return TSS2_POLICY_RC_BAD_REFERENCE; \
+#define policy_check_not_null(X)                                                                   \
+    if ((X) == NULL) {                                                                             \
+        LOG_ERROR(str(X) " is NULL: BAD_REFERENCE");                                               \
+        return TSS2_POLICY_RC_BAD_REFERENCE;                                                       \
     }
 
 struct TSS2_POLICY_CTX {
-    bool is_calculated;
-    char *path;
-    TPM2B_DIGEST digest;
-    TPM2_ALG_ID hash_alg;
+    bool                       is_calculated;
+    char                      *path;
+    TPM2B_DIGEST               digest;
+    TPM2_ALG_ID                hash_alg;
     TSS2_POLICY_CALC_CALLBACKS calc_callbacks;
     TSS2_POLICY_EXEC_CALLBACKS exec_callbacks;
-    TPMS_POLICY policy;
+    TPMS_POLICY                policy;
     struct {
         struct {
             size_t len;
-            char *string;
+            char  *string;
         } json;
     } calculated;
 };
 
-static inline TSS2_RC fapi_to_policy_rc(TSS2_RC rc)
-{
-    return (rc_layer(rc) == TSS2_FEATURE_RC_LAYER) ?
-            TSS2_POLICY_RC_LAYER | (rc & ~TSS2_RC_LAYER_MASK) :
-            rc;
+static inline TSS2_RC
+fapi_to_policy_rc(TSS2_RC rc) {
+    return (rc_layer(rc) == TSS2_FEATURE_RC_LAYER)
+               ? TSS2_POLICY_RC_LAYER | (rc & ~TSS2_RC_LAYER_MASK)
+               : rc;
 }
 
-static inline TSS2_RC is_try_again(TSS2_RC rc)
-{
+static inline TSS2_RC
+is_try_again(TSS2_RC rc) {
     TSS2_RC layer = rc_layer(rc);
     /*
      * We only care about TSS2_BASE_RC_TRY_AGAIN
@@ -71,32 +75,27 @@ static inline TSS2_RC is_try_again(TSS2_RC rc)
      * defined LAYER for their callback routine or
      * another portion of their custom stack.
      */
-    return (base_rc(rc) == TSS2_BASE_RC_TRY_AGAIN) &&
-            (layer == TSS2_FEATURE_RC_LAYER ||
-             layer == TSS2_ESAPI_RC_LAYER ||
-             layer == TSS2_SYS_RC_LAYER ||
-             layer == TSS2_POLICY_RC_LAYER ||
-             layer == TSS2_TCTI_RC_LAYER);
+    return (base_rc(rc) == TSS2_BASE_RC_TRY_AGAIN)
+           && (layer == TSS2_FEATURE_RC_LAYER || layer == TSS2_ESAPI_RC_LAYER
+               || layer == TSS2_SYS_RC_LAYER || layer == TSS2_POLICY_RC_LAYER
+               || layer == TSS2_TCTI_RC_LAYER);
 }
-
 
 #define CALL_FAPI(fn) fapi_to_policy_rc(fn)
 
 TSS2_RC
-Tss2_PolicyInit(
-    const char *json_policy,
-    TPM2_ALG_ID hash_alg,
-    TSS2_POLICY_CTX **policy_ctx) {
+Tss2_PolicyInit(const char *json_policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX **policy_ctx) {
 
     policy_check_not_null(json_policy);
     policy_check_not_null(policy_ctx);
 
-    TPMS_POLICY tmp_policy = { 0 };
+    TPMS_POLICY  tmp_policy = { 0 };
     json_object *jso;
-    TSS2_RC r;
+    TSS2_RC      r;
 
     *policy_ctx = calloc(1, sizeof(TSS2_POLICY_CTX));
-    goto_if_null(*policy_ctx, "Could not allocate policy structure", TSS2_POLICY_RC_MEMORY, cleanup);
+    goto_if_null(*policy_ctx, "Could not allocate policy structure", TSS2_POLICY_RC_MEMORY,
+                 cleanup);
 
     jso = ifapi_parse_json(json_policy);
     goto_if_null(jso, "Policy could not be parsed.", TSS2_POLICY_RC_BAD_VALUE, cleanup);
@@ -112,7 +111,7 @@ Tss2_PolicyInit(
      */
     UINT32 i;
     size_t digest_idx = 0;
-    for (i=0; i < tmp_policy.policyDigests.count; i++) {
+    for (i = 0; i < tmp_policy.policyDigests.count; i++) {
         if (hash_alg == tmp_policy.policyDigests.digests[i].hashAlg) {
             (*policy_ctx)->is_calculated = true;
             digest_idx = i;
@@ -126,9 +125,8 @@ Tss2_PolicyInit(
         /* get the hash algorithm size */
         size_t hash_size = ifapi_hash_get_digest_size(hash_alg);
         if (hash_size == 0) {
-            goto_error(r, TSS2_POLICY_RC_BAD_VALUE,
-                       "Unsupported hash algorithm (%#" PRIx16 ")", cleanup,
-                       hash_alg);
+            goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%#" PRIx16 ")",
+                       cleanup, hash_alg);
         }
 
         /* copy to our internal TPM2b (sized) buffer over the TPMU_HA which is
@@ -136,9 +134,8 @@ Tss2_PolicyInit(
          * later).
          */
         memcpy(&(*policy_ctx)->digest.buffer,
-                /* Grab any buffer, it's a union of bytes */
-                tmp_policy.policyDigests.digests[digest_idx].digest.sha512,
-                hash_size);
+               /* Grab any buffer, it's a union of bytes */
+               tmp_policy.policyDigests.digests[digest_idx].digest.sha512, hash_size);
         (*policy_ctx)->digest.size = hash_size;
 
         /* calculation success */
@@ -156,11 +153,9 @@ cleanup:
     return r;
 }
 
-
 TSS2_RC
-Tss2_PolicySetCalcCallbacks(
-    TSS2_POLICY_CTX *policy_ctx,
-    TSS2_POLICY_CALC_CALLBACKS *calc_callbacks) {
+Tss2_PolicySetCalcCallbacks(TSS2_POLICY_CTX            *policy_ctx,
+                            TSS2_POLICY_CALC_CALLBACKS *calc_callbacks) {
 
     policy_check_not_null(policy_ctx);
 
@@ -174,9 +169,8 @@ Tss2_PolicySetCalcCallbacks(
 }
 
 TSS2_RC
-Tss2_PolicySetExecCallbacks(
-    TSS2_POLICY_CTX *policy_ctx,
-    TSS2_POLICY_EXEC_CALLBACKS *exec_callbacks) {
+Tss2_PolicySetExecCallbacks(TSS2_POLICY_CTX            *policy_ctx,
+                            TSS2_POLICY_EXEC_CALLBACKS *exec_callbacks) {
 
     policy_check_not_null(policy_ctx);
 
@@ -214,16 +208,11 @@ Tss2_PolicySetExecCallbacks(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-Tss2_PolicyExecute(
-    TSS2_POLICY_CTX *policy_ctx,
-    ESYS_CONTEXT *esys_ctx,
-    ESYS_TR session)
-{
+Tss2_PolicyExecute(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, ESYS_TR session) {
     policy_check_not_null(policy_ctx);
     policy_check_not_null(esys_ctx);
 
-    LOG_TRACE("called for policy_path(%s)",
-            policy_ctx->path);
+    LOG_TRACE("called for policy_path(%s)", policy_ctx->path);
 
     TSS2_RC r = TSS2_POLICY_RC_GENERAL_FAILURE;
 
@@ -232,10 +221,10 @@ Tss2_PolicyExecute(
         return_if_error(r, "Could not calculate policy");
     }
 
-    enum IFAPI_STATE_POLICY state = POLICY_INIT;
-    IFAPI_POLICY_EXEC_CTX context = { 0 };
+    enum IFAPI_STATE_POLICY    state = POLICY_INIT;
+    IFAPI_POLICY_EXEC_CTX      context = { 0 };
     IFAPI_POLICY_EVAL_INST_CTX eval_ctx = { 0 };
-    IFAPI_IO io = { 0 };
+    IFAPI_IO                   io = { 0 };
 
     context.session = session;
     context.callbacks = policy_ctx->exec_callbacks;
@@ -249,22 +238,15 @@ Tss2_PolicyExecute(
         }
 
         r = CALL_FAPI(ifapi_execute_tree_ex(
-            &state,
-            &context,
-            &eval_ctx,
-            NULL, /* don't use the fapi policy store *aka pstore */
-            &io,
-            NULL, /* cause it skip loading policy path */
-            &policy_ctx->policy,
-            esys_ctx,
-            policy_ctx->hash_alg,
-            false));
+            &state, &context, &eval_ctx, NULL, /* don't use the fapi policy store *aka pstore */
+            &io, NULL,                         /* cause it skip loading policy path */
+            &policy_ctx->policy, esys_ctx, policy_ctx->hash_alg, false));
 
         /* Repeatedly call the finish function, until FAPI has transitioned
           through all execution stages / states of this invocation. */
-     } while (is_try_again(r));
+    } while (is_try_again(r));
 
-    LOG_TRACE("finished, returning: 0x%"PRIx32, r);
+    LOG_TRACE("finished, returning: 0x%" PRIx32, r);
 
     return r;
 }
@@ -288,13 +270,10 @@ Tss2_PolicyExecute(
  *         calculation.
  */
 TSS2_RC
-Tss2_PolicyCalculate(
-        TSS2_POLICY_CTX *policy_ctx)
-{
+Tss2_PolicyCalculate(TSS2_POLICY_CTX *policy_ctx) {
     policy_check_not_null(policy_ctx);
 
-    LOG_TRACE("called for policy_path(%s)",
-            policy_ctx->path);
+    LOG_TRACE("called for policy_path(%s)", policy_ctx->path);
 
     if (policy_ctx->is_calculated) {
         return TSS2_RC_SUCCESS;
@@ -305,8 +284,8 @@ Tss2_PolicyCalculate(
     IFAPI_POLICY_CTX context = { 0 };
     context.eval_ctx.callbacks = policy_ctx->calc_callbacks;
 
-    size_t digest_idx = 0;
-    size_t hash_size = 0;
+    size_t   digest_idx = 0;
+    size_t   hash_size = 0;
     IFAPI_IO io = { 0 };
 
     do {
@@ -316,23 +295,16 @@ Tss2_PolicyCalculate(
         }
 
         r = CALL_FAPI(ifapi_calculate_tree_ex(
-                &context,
-                NULL, /* don't use the fapi policy store *aka pstore */
-                &io,
-                NULL, /* cause it skip loading policy path */
-                &policy_ctx->policy,
-                policy_ctx->hash_alg,
-                &digest_idx,
-                &hash_size
-                ));
+            &context, NULL, /* don't use the fapi policy store *aka pstore */
+            &io, NULL,      /* cause it skip loading policy path */
+            &policy_ctx->policy, policy_ctx->hash_alg, &digest_idx, &hash_size));
         /* Only consider FAPI and below TRY_AGAIN */
     } while (is_try_again(r));
     return_if_error(r, "Something went wrong when calculating the policy tree");
 
     memcpy(&policy_ctx->digest.buffer,
-            /* Grab any buffer, it's a union of bytes */
-            policy_ctx->policy.policyDigests.digests[digest_idx].digest.sha512,
-            hash_size);
+           /* Grab any buffer, it's a union of bytes */
+           policy_ctx->policy.policyDigests.digests[digest_idx].digest.sha512, hash_size);
     policy_ctx->digest.size = hash_size;
 
     /* calculation success */
@@ -344,16 +316,12 @@ Tss2_PolicyCalculate(
 }
 
 TSS2_RC
-Tss2_PolicyGetCalculatedJSON(
-        TSS2_POLICY_CTX *policy_ctx,
-        char *buffer,
-        size_t *size) {
+Tss2_PolicyGetCalculatedJSON(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *size) {
 
     policy_check_not_null(policy_ctx);
     policy_check_not_null(size);
 
-    LOG_TRACE("called for policy_path(%s)",
-            policy_ctx->path);
+    LOG_TRACE("called for policy_path(%s)", policy_ctx->path);
 
     if (!policy_ctx->is_calculated) {
         return TSS2_POLICY_RC_POLICY_NOT_CALCULATED;
@@ -363,13 +331,14 @@ Tss2_PolicyGetCalculatedJSON(
     if (!policy_ctx->calculated.json.string) {
         /* Generate JSON string of the policy */
         json_object *jso = NULL;
-        TSS2_RC rc = CALL_FAPI(ifapi_json_TPMS_POLICY_serialize(&policy_ctx->policy, &jso));
+        TSS2_RC      rc = CALL_FAPI(ifapi_json_TPMS_POLICY_serialize(&policy_ctx->policy, &jso));
         return_if_error(rc, "Policy could not be serialized.");
 
-        policy_ctx->calculated.json.string = strdup(json_object_to_json_string_ext(jso,
-                                                             JSON_C_TO_STRING_PRETTY));
+        policy_ctx->calculated.json.string
+            = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
         JSON_OBJECT_SAFE_PUT(jso);
-        return_if_null(policy_ctx->calculated.json.string, "Converting json to string", TSS2_POLICY_RC_MEMORY);
+        return_if_null(policy_ctx->calculated.json.string, "Converting json to string",
+                       TSS2_POLICY_RC_MEMORY);
 
         /* add extra byte so we can NULL terminate it */
         policy_ctx->calculated.json.len = strlen(policy_ctx->calculated.json.string) + 1;
@@ -406,16 +375,11 @@ Tss2_PolicyGetCalculatedJSON(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-Tss2_PolicyGetDescription(
-        TSS2_POLICY_CTX *policy_ctx,
-        char *buffer,
-        size_t *size)
-{
+Tss2_PolicyGetDescription(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *size) {
     policy_check_not_null(policy_ctx);
     policy_check_not_null(size);
 
-    LOG_TRACE("called for policy_path(%s)",
-            policy_ctx->path);
+    LOG_TRACE("called for policy_path(%s)", policy_ctx->path);
 
     const char *description = policy_ctx->policy.description;
     /* length including null termination */
@@ -442,15 +406,11 @@ Tss2_PolicyGetDescription(
 }
 
 TSS2_RC
-Tss2_PolicyGetCalculatedDigest(
-        TSS2_POLICY_CTX *policy_ctx,
-        TPM2B_DIGEST *digest)
-{
+Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest) {
     policy_check_not_null(policy_ctx);
     policy_check_not_null(digest);
 
-    LOG_TRACE("called for policy_path(%s)",
-            policy_ctx->path);
+    LOG_TRACE("called for policy_path(%s)", policy_ctx->path);
 
     if (!policy_ctx->is_calculated) {
         return TSS2_POLICY_RC_POLICY_NOT_CALCULATED;
@@ -463,9 +423,7 @@ Tss2_PolicyGetCalculatedDigest(
 }
 
 void
-Tss2_PolicyFinalize(
-        TSS2_POLICY_CTX **policy_ctx)
-{
+Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy_ctx) {
     if (!policy_ctx) {
         return;
     }

@@ -8,17 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>                // for false
-#include <stdio.h>                  // for NULL, size_t
-#include <stdlib.h>                 // for free, malloc, calloc
-#include <string.h>                 // for memcmp, memcpy
-#include <sys/select.h>             // for fd_set, timeval
+#include <stdbool.h>    // for false
+#include <stdio.h>      // for NULL, size_t
+#include <stdlib.h>     // for free, malloc, calloc
+#include <string.h>     // for memcmp, memcpy
+#include <sys/select.h> // for fd_set, timeval
 
-#include "../helper/cmocka_all.h"                 // for assert_int_equal, assert_ptr_equal
-#include "tss2-tcti/mpsse/mpsse.h"  // for MPSSE_OK, GPIOL0, FIFTEEN_MHZ, MSB
-#include "tss2_common.h"            // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, TSS2_TCTI_FINA...
-#include "tss2_tcti_spi_ftdi.h"     // for Tss2_Tcti_Spi_Ftdi_Init
+#include "../helper/cmocka_all.h"  // for assert_int_equal, assert_ptr_equal
+#include "tss2-tcti/mpsse/mpsse.h" // for MPSSE_OK, GPIOL0, FIFTEEN_MHZ, MSB
+#include "tss2_common.h"           // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_tcti.h"             // for TSS2_TCTI_CONTEXT, TSS2_TCTI_FINA...
+#include "tss2_tcti_spi_ftdi.h"    // for Tss2_Tcti_Spi_Ftdi_Init
 
 struct timeval;
 struct timezone;
@@ -31,28 +31,31 @@ typedef enum {
     TPM_RID,
 } tpm_state_t;
 
-static const unsigned char TPM_DID_VID_0[] = {0x83, 0xd4, 0x0f, 0x00, 0xd1, 0x15, 0x1b, 0x00};
-static const unsigned char TPM_ACCESS_0[] = {0x80, 0xd4, 0x00, 0x00, 0xa1};
-static const unsigned char TPM_STS_0_CMD_NOT_READY[] = {0x83, 0xd4, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00};
-static const unsigned char TPM_STS_0_CMD_READY[] = {0x83, 0xd4, 0x00, 0x18, 0x40, 0x00, 0x00, 0x00};
-static const unsigned char TPM_RID_0[] = {0x80, 0xd4, 0x0f, 0x04, 0x00};
+static const unsigned char TPM_DID_VID_0[] = { 0x83, 0xd4, 0x0f, 0x00, 0xd1, 0x15, 0x1b, 0x00 };
+static const unsigned char TPM_ACCESS_0[] = { 0x80, 0xd4, 0x00, 0x00, 0xa1 };
+static const unsigned char TPM_STS_0_CMD_NOT_READY[]
+    = { 0x83, 0xd4, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00 };
+static const unsigned char TPM_STS_0_CMD_READY[]
+    = { 0x83, 0xd4, 0x00, 0x18, 0x40, 0x00, 0x00, 0x00 };
+static const unsigned char TPM_RID_0[] = { 0x80, 0xd4, 0x0f, 0x04, 0x00 };
 
 static struct mpsse_context *_mpsse;
 
 /*
  * Mock function select
  */
-int __wrap_select (int nfds, fd_set *readfds,
-                   fd_set *writefds,
-                   fd_set *exceptfds,
-                   struct timeval *timeout)
-{
+int
+__wrap_select(int             nfds,
+              fd_set         *readfds,
+              fd_set         *writefds,
+              fd_set         *exceptfds,
+              struct timeval *timeout) {
 
-    assert_int_equal (nfds, 0);
-    assert_null (readfds);
-    assert_null (writefds);
-    assert_null (exceptfds);
-    assert_non_null (timeout);
+    assert_int_equal(nfds, 0);
+    assert_null(readfds);
+    assert_null(writefds);
+    assert_null(exceptfds);
+    assert_non_null(timeout);
 
     return 0;
 }
@@ -60,11 +63,10 @@ int __wrap_select (int nfds, fd_set *readfds,
 /*
  * Mock function gettimeofday
  */
-int __wrap_gettimeofday (struct timeval *tv,
-                         struct timezone *tz)
-{
-    assert_null (tz);
-    assert_non_null (tv);
+int
+__wrap_gettimeofday(struct timeval *tv, struct timezone *tz) {
+    assert_null(tz);
+    assert_non_null(tv);
 
     tv->tv_sec = 0;
     tv->tv_usec = 0;
@@ -75,13 +77,13 @@ int __wrap_gettimeofday (struct timeval *tv,
 /*
  * Mock function MPSSE
  */
-struct mpsse_context *__wrap_MPSSE (enum modes mode, int freq, int endianess)
-{
-    assert_int_equal (mode, SPI0);
-    assert_int_equal (freq, FIFTEEN_MHZ);
-    assert_int_equal (endianess, MSB);
+struct mpsse_context *
+__wrap_MPSSE(enum modes mode, int freq, int endianess) {
+    assert_int_equal(mode, SPI0);
+    assert_int_equal(freq, FIFTEEN_MHZ);
+    assert_int_equal(endianess, MSB);
 
-    _mpsse = malloc (sizeof (struct mpsse_context));
+    _mpsse = malloc(sizeof(struct mpsse_context));
 
     return _mpsse;
 }
@@ -89,10 +91,10 @@ struct mpsse_context *__wrap_MPSSE (enum modes mode, int freq, int endianess)
 /*
  * Mock function PinLow
  */
-int __wrap_PinLow (struct mpsse_context *mpsse, int pin)
-{
-    assert_ptr_equal (mpsse, _mpsse);
-    assert_int_equal (pin, GPIOL0);
+int
+__wrap_PinLow(struct mpsse_context *mpsse, int pin) {
+    assert_ptr_equal(mpsse, _mpsse);
+    assert_int_equal(pin, GPIOL0);
 
     return MPSSE_OK;
 }
@@ -100,10 +102,10 @@ int __wrap_PinLow (struct mpsse_context *mpsse, int pin)
 /*
  * Mock function PinHigh
  */
-int __wrap_PinHigh (struct mpsse_context *mpsse, int pin)
-{
-    assert_ptr_equal (mpsse, _mpsse);
-    assert_int_equal (pin, GPIOL0);
+int
+__wrap_PinHigh(struct mpsse_context *mpsse, int pin) {
+    assert_ptr_equal(mpsse, _mpsse);
+    assert_int_equal(pin, GPIOL0);
 
     return MPSSE_OK;
 }
@@ -111,52 +113,52 @@ int __wrap_PinHigh (struct mpsse_context *mpsse, int pin)
 /*
  * Mock function Start
  */
-int __wrap_Start (struct mpsse_context *mpsse)
-{
-    assert_ptr_equal (mpsse, _mpsse);
+int
+__wrap_Start(struct mpsse_context *mpsse) {
+    assert_ptr_equal(mpsse, _mpsse);
     return MPSSE_OK;
 }
 
 /*
  * Mock function Transfer
  */
-char *__wrap_Transfer (struct mpsse_context *mpsse, char *data, int size)
-{
+char *
+__wrap_Transfer(struct mpsse_context *mpsse, char *data, int size) {
 
     static tpm_state_t tpm_state = TPM_DID_VID;
-    char *ret = malloc (size);
+    char              *ret = malloc(size);
 
-    assert_non_null (ret);
-    assert_ptr_equal (mpsse, _mpsse);
+    assert_non_null(ret);
+    assert_ptr_equal(mpsse, _mpsse);
 
     switch (tpm_state++) {
     case TPM_DID_VID:
-        assert_int_equal (size, 8);
-        assert_true (!memcmp (data, TPM_DID_VID_0, 4));
-        memcpy (ret, TPM_DID_VID_0, sizeof (TPM_DID_VID_0));
+        assert_int_equal(size, 8);
+        assert_true(!memcmp(data, TPM_DID_VID_0, 4));
+        memcpy(ret, TPM_DID_VID_0, sizeof(TPM_DID_VID_0));
         break;
     case TPM_ACCESS:
-        assert_int_equal (size, 5);
-        assert_true (!memcmp (data, TPM_ACCESS_0, 4));
-        memcpy (ret, TPM_ACCESS_0, sizeof (TPM_ACCESS_0));
+        assert_int_equal(size, 5);
+        assert_true(!memcmp(data, TPM_ACCESS_0, 4));
+        memcpy(ret, TPM_ACCESS_0, sizeof(TPM_ACCESS_0));
         break;
     case TPM_STS_CMD_NOT_READY:
-        assert_int_equal (size, 8);
-        assert_true (!memcmp (data, TPM_STS_0_CMD_NOT_READY, 4));
-        memcpy (ret, TPM_STS_0_CMD_NOT_READY, sizeof (TPM_STS_0_CMD_NOT_READY));
+        assert_int_equal(size, 8);
+        assert_true(!memcmp(data, TPM_STS_0_CMD_NOT_READY, 4));
+        memcpy(ret, TPM_STS_0_CMD_NOT_READY, sizeof(TPM_STS_0_CMD_NOT_READY));
         break;
     case TPM_STS_CMD_READY:
-        assert_int_equal (size, 8);
-        assert_true (!memcmp (data, TPM_STS_0_CMD_READY, 4));
-        memcpy (ret, TPM_STS_0_CMD_READY, sizeof (TPM_STS_0_CMD_READY));
+        assert_int_equal(size, 8);
+        assert_true(!memcmp(data, TPM_STS_0_CMD_READY, 4));
+        memcpy(ret, TPM_STS_0_CMD_READY, sizeof(TPM_STS_0_CMD_READY));
         break;
     case TPM_RID:
-        assert_int_equal (size, 5);
-        assert_true (!memcmp (data, TPM_RID_0, 4));
-        memcpy (ret, TPM_RID_0, sizeof (TPM_RID_0));
+        assert_int_equal(size, 5);
+        assert_true(!memcmp(data, TPM_RID_0, 4));
+        memcpy(ret, TPM_RID_0, sizeof(TPM_RID_0));
         break;
     default:
-        assert_true (false);
+        assert_true(false);
     }
 
     return ret;
@@ -165,19 +167,19 @@ char *__wrap_Transfer (struct mpsse_context *mpsse, char *data, int size)
 /*
  * Mock function Stop
  */
-int __wrap_Stop (struct mpsse_context *mpsse)
-{
-    assert_ptr_equal (mpsse, _mpsse);
+int
+__wrap_Stop(struct mpsse_context *mpsse) {
+    assert_ptr_equal(mpsse, _mpsse);
     return MPSSE_OK;
 }
 
 /*
  * Mock function Close
  */
-void __wrap_Close (struct mpsse_context *mpsse)
-{
-    assert_ptr_equal (mpsse, _mpsse);
-    free (_mpsse);
+void
+__wrap_Close(struct mpsse_context *mpsse) {
+    assert_ptr_equal(mpsse, _mpsse);
+    free(_mpsse);
     _mpsse = NULL;
 }
 
@@ -189,37 +191,34 @@ void __wrap_Close (struct mpsse_context *mpsse)
  * SPI wait state is not supported in this test.
  */
 static void
-tcti_spi_no_wait_state_success_test (void **state)
-{
-    TSS2_RC rc;
-    size_t size;
-    TSS2_TCTI_CONTEXT* tcti_ctx;
+tcti_spi_no_wait_state_success_test(void **state) {
+    TSS2_RC            rc;
+    size_t             size;
+    TSS2_TCTI_CONTEXT *tcti_ctx;
 
     // Get requested TCTI context size
-    rc = Tss2_Tcti_Spi_Ftdi_Init (NULL, &size, NULL);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    rc = Tss2_Tcti_Spi_Ftdi_Init(NULL, &size, NULL);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     // Allocate TCTI context size
-    tcti_ctx = (TSS2_TCTI_CONTEXT*) calloc (1, size);
-    assert_non_null (tcti_ctx);
+    tcti_ctx = (TSS2_TCTI_CONTEXT *)calloc(1, size);
+    assert_non_null(tcti_ctx);
 
     // Initialize TCTI context
-    rc = Tss2_Tcti_Spi_Ftdi_Init (tcti_ctx, &size, NULL);
-    assert_int_equal (rc, TSS2_RC_SUCCESS);
+    rc = Tss2_Tcti_Spi_Ftdi_Init(tcti_ctx, &size, NULL);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     // Finalize
     TSS2_TCTI_FINALIZE(tcti_ctx)(tcti_ctx);
 
-    free (tcti_ctx);
+    free(tcti_ctx);
 }
 
 int
-main (int   argc,
-      char *argv[])
-{
+main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test (tcti_spi_no_wait_state_success_test),
+        cmocka_unit_test(tcti_spi_no_wait_state_success_test),
     };
 
-    return cmocka_run_group_tests (tests, NULL, NULL);
+    return cmocka_run_group_tests(tests, NULL, NULL);
 }

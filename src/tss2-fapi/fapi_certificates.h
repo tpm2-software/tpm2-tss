@@ -6,7 +6,7 @@
 #ifndef FAPI_CERTIFICATES_H
 #define FAPI_CERTIFICATES_H
 
-static char * root_cert_list[] = {
+static char *root_cert_list[] = {
     /* NTZ root certificate */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICRDCCAcqgAwIBAgIBATAKBggqhkjOPQQDAzBrMQswCQYDVQQGEwJDTjEhMB8G\n"
@@ -435,7 +435,7 @@ static char * root_cert_list[] = {
     "2N/xZkcohRZIAiBDufnmhZWCbX4pibbzAOgcxjsc5+qmpAovxW9ipWJEsA==\n"
     "-----END CERTIFICATE-----\n",
 
-     /* Nuvoton TPM Root CA 1210 */
+    /* Nuvoton TPM Root CA 1210 */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICHTCCAaOgAwIBAgIBATAKBggqhkjOPQQDAzBVMR0wGwYDVQQDExROdXZvdG9u\n"
     "VFBNUm9vdENBMTIxMDEnMCUGA1UEChMeTnV2b3RvbiBUZWNobm9sb2d5IENvcnBv\n"
@@ -529,7 +529,7 @@ static char * root_cert_list[] = {
     "6I5w6hPTLigCIQDLLFlXK1xw1a1D1/idVhdd3a8gkE0FnTJO890WwiQbpg==\n"
     "-----END CERTIFICATE-----",
 
-     /* Nuvoton TPM Root CA 2112 */
+    /* Nuvoton TPM Root CA 2112 */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICBjCCAa2gAwIBAgIJAOmPfeHxqsTXMAoGCCqGSM49BAMCMFUxUzAfBgNVBAMT\n"
     "GE51dm90b24gVFBNIFJvb3QgQ0EgMjExMjAlBgNVBAoTHk51dm90b24gVGVjaG5v\n"

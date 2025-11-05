@@ -8,30 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, int32_t
-#include <string.h>           // for NULL, memset
+#include <inttypes.h> // for PRIx32, int32_t
+#include <string.h>   // for NULL, memset
 
-#include "esys_int.h"         // for ESYS_CONTEXT, RSRC_NODE_T, HierarchyCha...
-#include "esys_iutil.h"       // for iesys_compute_session_value, esys_GetRe...
-#include "esys_types.h"       // for IESYS_RESOURCE
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_HierarchyCh...
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
-#include "tss2_tpm2_types.h"  // for TPM2B_AUTH, TPM2_RC_RETRY, TPM2_RC_TESTING
+#include "esys_int.h"        // for ESYS_CONTEXT, RSRC_NODE_T, HierarchyCha...
+#include "esys_iutil.h"      // for iesys_compute_session_value, esys_GetRe...
+#include "esys_types.h"      // for IESYS_RESOURCE
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, Esys_HierarchyCh...
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h" // for TPM2B_AUTH, TPM2_RC_RETRY, TPM2_RC_TESTING
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
+#include "util/log.h" // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
-static void store_input_parameters (
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR authHandle,
-    const TPM2B_AUTH *newAuth)
-{
+static void
+store_input_parameters(ESYS_CONTEXT *esysContext, ESYS_TR authHandle, const TPM2B_AUTH *newAuth) {
     esysContext->in.HierarchyChangeAuth.authHandle = authHandle;
     if (newAuth == NULL) {
         memset(&esysContext->in.HierarchyChangeAuth.newAuth, 0,
-                sizeof(esysContext->in.HierarchyChangeAuth.newAuth));
+               sizeof(esysContext->in.HierarchyChangeAuth.newAuth));
     } else {
         esysContext->in.HierarchyChangeAuth.newAuth = *newAuth;
         iesys_strip_trailing_zeros(&esysContext->in.HierarchyChangeAuth.newAuth);
@@ -79,18 +76,16 @@ static void store_input_parameters (
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_HierarchyChangeAuth(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR authHandle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_AUTH *newAuth)
-{
+Esys_HierarchyChangeAuth(ESYS_CONTEXT     *esysContext,
+                         ESYS_TR           authHandle,
+                         ESYS_TR           shandle1,
+                         ESYS_TR           shandle2,
+                         ESYS_TR           shandle3,
+                         const TPM2B_AUTH *newAuth) {
     TSS2_RC r;
 
-    r = Esys_HierarchyChangeAuth_Async(esysContext, authHandle, shandle1,
-                                       shandle2, shandle3, newAuth);
+    r = Esys_HierarchyChangeAuth_Async(esysContext, authHandle, shandle1, shandle2, shandle3,
+                                       newAuth);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -108,8 +103,7 @@ Esys_HierarchyChangeAuth(
         /* This is just debug information about the reattempt to finish the
            command */
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -153,19 +147,16 @@ Esys_HierarchyChangeAuth(
  *          of the first response parameter.
  */
 TSS2_RC
-Esys_HierarchyChangeAuth_Async(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR authHandle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_AUTH *newAuth)
-{
+Esys_HierarchyChangeAuth_Async(ESYS_CONTEXT     *esysContext,
+                               ESYS_TR           authHandle,
+                               ESYS_TR           shandle1,
+                               ESYS_TR           shandle2,
+                               ESYS_TR           shandle3,
+                               const TPM2B_AUTH *newAuth) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, authHandle=%"PRIx32 ", newAuth=%p",
-              esysContext, authHandle, newAuth);
+    LOG_TRACE("context=%p, authHandle=%" PRIx32 ", newAuth=%p", esysContext, authHandle, newAuth);
     TSS2L_SYS_AUTH_COMMAND auths;
-    RSRC_NODE_T *authHandleNode;
+    RSRC_NODE_T           *authHandleNode;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -189,19 +180,17 @@ Esys_HierarchyChangeAuth_Async(
     return_state_if_error(r, ESYS_STATE_INIT, "authHandle unknown.");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_HierarchyChangeAuth_Prepare(esysContext->sys,
-                                             (authHandleNode == NULL)
-                                              ? TPM2_RH_NULL
-                                              : authHandleNode->rsrc.handle,
-                                             &esysContext->in.HierarchyChangeAuth.newAuth);
+    r = Tss2_Sys_HierarchyChangeAuth_Prepare(
+        esysContext->sys, (authHandleNode == NULL) ? TPM2_RH_NULL : authHandleNode->rsrc.handle,
+        &esysContext->in.HierarchyChangeAuth.newAuth);
     return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
     return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
     if (authHandleNode != NULL)
-        iesys_compute_session_value(esysContext->session_tab[0],
-                &authHandleNode->rsrc.name, &authHandleNode->auth);
+        iesys_compute_session_value(esysContext->session_tab[0], &authHandleNode->rsrc.name,
+                                    &authHandleNode->auth);
     else
         iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
 
@@ -210,8 +199,7 @@ Esys_HierarchyChangeAuth_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, authHandleNode, NULL, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT,
-                          "Error in computation of auth values");
+    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
@@ -221,8 +209,7 @@ Esys_HierarchyChangeAuth_Async(
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Finish (Execute Async)");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
 
@@ -257,15 +244,12 @@ Esys_HierarchyChangeAuth_Async(
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_HierarchyChangeAuth_Finish(
-    ESYS_CONTEXT *esysContext)
-{
-    ESYS_TR authHandle;
+Esys_HierarchyChangeAuth_Finish(ESYS_CONTEXT *esysContext) {
+    ESYS_TR      authHandle;
     RSRC_NODE_T *authHandleNode;
 
     TSS2_RC r;
-    LOG_TRACE("context=%p",
-              esysContext);
+    LOG_TRACE("context=%p", esysContext);
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -273,8 +257,7 @@ Esys_HierarchyChangeAuth_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != ESYS_STATE_SENT &&
-        esysContext->state != ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT && esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -291,7 +274,8 @@ Esys_HierarchyChangeAuth_Finish(
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
-            "resubmission: %" PRIx32, r);
+                  "resubmission: %" PRIx32,
+                  r);
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
@@ -328,24 +312,22 @@ Esys_HierarchyChangeAuth_Finish(
     return_if_error(r, "get resource");
 
     authHandleNode->auth = esysContext->in.HierarchyChangeAuth.newAuth;
-    iesys_compute_session_value(esysContext->session_tab[0],
-                                &authHandleNode->rsrc.name, &authHandleNode->auth);
+    iesys_compute_session_value(esysContext->session_tab[0], &authHandleNode->rsrc.name,
+                                &authHandleNode->auth);
 
     /*
      * Now the verification of the response (hmac check) and if necessary the
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Error: check response");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response");
 
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_HierarchyChangeAuth_Complete(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Received error from SAPI unmarshaling" );
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling");
 
     esysContext->state = ESYS_STATE_INIT;
 

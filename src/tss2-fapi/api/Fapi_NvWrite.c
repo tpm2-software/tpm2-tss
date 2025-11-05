@@ -8,23 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>            // for json_object
-#include <stdint.h>          // for uint8_t
-#include <stdlib.h>          // for NULL, malloc, size_t
-#include <string.h>          // for memcpy, memset
+#include <json.h>   // for json_object
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for NULL, malloc, size_t
+#include <string.h> // for memcpy, memset
 
-#include "fapi_int.h"        // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_WRITE_READ
-#include "fapi_util.h"       // for ifapi_cleanup_session, ifapi_esys_serial...
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, ifapi_keysto...
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_esys.h"       // for Esys_SetTimeout
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_NvWrite, Fapi_NvWrite...
-#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "fapi_int.h"       // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_WRITE_READ
+#include "fapi_util.h"      // for ifapi_cleanup_session, ifapi_esys_serial...
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_esys.h"      // for Esys_SetTimeout
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_NvWrite, Fapi_NvWrite...
+#include "tss2_tcti.h"      // for TSS2_TCTI_TIMEOUT_BLOCK
 
 #define LOGMODULE fapi
-#include "util/log.h"        // for LOG_TRACE, SAFE_FREE, return_if_error
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_if_error
 
 /** One-Call function for Fapi_NvWrite
  *
@@ -66,12 +66,7 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvWrite(
-    FAPI_CONTEXT  *context,
-    char    const *nvPath,
-    uint8_t const *data,
-    size_t         size)
-{
+Fapi_NvWrite(FAPI_CONTEXT *context, char const *nvPath, uint8_t const *data, size_t size) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -148,12 +143,7 @@ Fapi_NvWrite(
  *         config file.
  */
 TSS2_RC
-Fapi_NvWrite_Async(
-    FAPI_CONTEXT  *context,
-    char    const *nvPath,
-    uint8_t const *data,
-    size_t         size)
-{
+Fapi_NvWrite_Async(FAPI_CONTEXT *context, char const *nvPath, uint8_t const *data, size_t size) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("nvPath: %s", nvPath);
     if (data) {
@@ -170,25 +160,23 @@ Fapi_NvWrite_Async(
     check_not_null(data);
 
     /* Helpful alias pointers */
-    IFAPI_NV_Cmds * command = &context->nv_cmd;
+    IFAPI_NV_Cmds *command = &context->nv_cmd;
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize NV_Write");
 
     /* Initialize the command */
-    uint8_t * commandData = NULL;
+    uint8_t *commandData = NULL;
     memset(&context->nv_cmd, 0, sizeof(IFAPI_NV_Cmds));
     command->offset = 0;
     command->data = NULL;
-
 
     /* Copy parameters to context for use during _Finish. */
     strdup_check(command->nvPath, nvPath, r, error_cleanup);
 
     commandData = malloc(size);
-    goto_if_null2(commandData, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-            error_cleanup);
+    goto_if_null2(commandData, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
     memcpy(commandData, data, size);
     command->data = commandData;
 
@@ -240,25 +228,23 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvWrite_Finish(
-    FAPI_CONTEXT  *context)
-{
+Fapi_NvWrite_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso = NULL;
 
     /* Check for NULL parameters */
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_NV_Cmds * command = &context->nv_cmd;
+    IFAPI_NV_Cmds *command = &context->nv_cmd;
 
     switch (context->state) {
     statecase(context->state, NV_WRITE_READ);
         /* Write to the NV index. */
-        r = ifapi_nv_write(context, command->nvPath, command->offset,
-                           command->data, command->numBytes);
+        r = ifapi_nv_write(context, command->nvPath, command->offset, command->data,
+                           command->numBytes);
 
         return_try_again(r);
         goto_if_error_reset_state(r, " FAPI NV Write", error_cleanup);
@@ -266,7 +252,7 @@ Fapi_NvWrite_Finish(
         fallthrough;
 
     statecase(context->state, NV_WRITE_CLEANUP)
-        /* Cleanup the authorization session. */
+    /* Cleanup the authorization session. */
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 

@@ -8,20 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_mu.h"          // for Tss2_MU_UINT32_Marshal, Tss2_MU_UINT8_M...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPMI_RH_ENABLES, TPMI_RH_HIERARCHY, TPM...
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_UINT32_Marshal, Tss2_MU_UINT8_M...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPMI_RH_ENABLES, TPMI_RH_HIERARCHY, TPM...
 
-TSS2_RC Tss2_Sys_HierarchyControl_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_HIERARCHY authHandle,
-    TPMI_RH_ENABLES enable,
-    TPMI_YES_NO state)
-{
+TSS2_RC
+Tss2_Sys_HierarchyControl_Prepare(TSS2_SYS_CONTEXT *sysContext,
+                                  TPMI_RH_HIERARCHY authHandle,
+                                  TPMI_RH_ENABLES   enable,
+                                  TPMI_YES_NO       state) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -30,21 +29,15 @@ TSS2_RC Tss2_Sys_HierarchyControl_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(authHandle, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(authHandle, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(enable, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(enable, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT8_Marshal(state, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT8_Marshal(state, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
@@ -55,9 +48,8 @@ TSS2_RC Tss2_Sys_HierarchyControl_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_HierarchyControl_Complete (
-    TSS2_SYS_CONTEXT *sysContext)
-{
+TSS2_RC
+Tss2_Sys_HierarchyControl_Complete(TSS2_SYS_CONTEXT *sysContext) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
@@ -66,16 +58,15 @@ TSS2_RC Tss2_Sys_HierarchyControl_Complete (
     return CommonComplete(ctx);
 }
 
-TSS2_RC Tss2_Sys_HierarchyControl(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_HIERARCHY authHandle,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    TPMI_RH_ENABLES enable,
-    TPMI_YES_NO state,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_HierarchyControl(TSS2_SYS_CONTEXT             *sysContext,
+                          TPMI_RH_HIERARCHY             authHandle,
+                          TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                          TPMI_RH_ENABLES               enable,
+                          TPMI_YES_NO                   state,
+                          TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     rval = Tss2_Sys_HierarchyControl_Prepare(sysContext, authHandle, enable, state);
     if (rval)

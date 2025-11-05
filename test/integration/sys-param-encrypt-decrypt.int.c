@@ -8,52 +8,44 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, uint8_t
+#include <inttypes.h> // for PRIx32, uint8_t
+#include <stdio.h>    // for size_t
 #include <stdlib.h>
-#include <stdio.h>            // for size_t
-#include <string.h>           // for memcpy, memcmp
+#include <string.h> // for memcpy, memcmp
 
-#include "session-util.h"     // for roll_nonces, end_auth_session, SESSION
-#include "sys-util.h"         // for CopySizedByteBuffer
-#include "tss2_common.h"      // for TSS2_RC, UINT32
-#include "tss2_sys.h"         // for TSS2L_SYS_AUTH_COMMAND, Tss2_Sys_Execute
-#include "tss2_tpm2_types.h"  // for TPMS_AUTH_COMMAND, TPM2B_MAX_NV_BUFFER
-#include "util/tpm2b.h"       // for TPM2B
+#include "session-util.h"    // for roll_nonces, end_auth_session, SESSION
+#include "sys-util.h"        // for CopySizedByteBuffer
+#include "tss2_common.h"     // for TSS2_RC, UINT32
+#include "tss2_sys.h"        // for TSS2L_SYS_AUTH_COMMAND, Tss2_Sys_Execute
+#include "tss2_tpm2_types.h" // for TPMS_AUTH_COMMAND, TPM2B_MAX_NV_BUFFER
+#include "util/tpm2b.h"      // for TPM2B
 
 #define LOGMODULE test
-#include "test.h"             // for test_invoke
-#include "util/log.h"         // for LOG_ERROR, LOG_INFO, LOGBLOB_ERROR, LOG...
+#include "test.h"     // for test_invoke
+#include "util/log.h" // for LOG_ERROR, LOG_INFO, LOGBLOB_ERROR, LOG...
 
-#define TEST_DATA "test data to encrypt"
+#define TEST_DATA     "test data to encrypt"
 #define TEST_DATA_LEN 21
 
 int
-test_invoke (TSS2_SYS_CONTEXT *sys_context)
-{
-    TSS2_RC rc, rc2;
-    SESSION *session;
-    TPM2B_MAX_NV_BUFFER data_to_write, data_read;
-    TPM2B_MAX_BUFFER encrypted_param, decrypted_param;
-    TPMI_RH_NV_INDEX nv_index = TPM2_HR_NV_INDEX | 0x01;
-    size_t decrypt_param_size, encrypt_param_size;
-    const uint8_t *decrypt_param_ptr, *encrypt_param_ptr;
-    TPM2B_AUTH nv_auth;
-    TPM2B_NV_PUBLIC nv_public;
-    TPM2B_DIGEST policy_auth;
-    TPMA_NV nv_attribs;
-    TPM2B_NONCE nonce_caller;
-    TPMT_SYM_DEF symmetric;
-    TSS2L_SYS_AUTH_COMMAND req_auth = {
-        .auths = {{ .sessionHandle = TPM2_RH_PW }},
-        .count = 1
-    };
-    TSS2L_SYS_AUTH_RESPONSE resp_auth = {
-        .count = 0
-    };
+test_invoke(TSS2_SYS_CONTEXT *sys_context) {
+    TSS2_RC                 rc, rc2;
+    SESSION                *session;
+    TPM2B_MAX_NV_BUFFER     data_to_write, data_read;
+    TPM2B_MAX_BUFFER        encrypted_param, decrypted_param;
+    TPMI_RH_NV_INDEX        nv_index = TPM2_HR_NV_INDEX | 0x01;
+    size_t                  decrypt_param_size, encrypt_param_size;
+    const uint8_t          *decrypt_param_ptr, *encrypt_param_ptr;
+    TPM2B_AUTH              nv_auth;
+    TPM2B_NV_PUBLIC         nv_public;
+    TPM2B_DIGEST            policy_auth;
+    TPMA_NV                 nv_attribs;
+    TPM2B_NONCE             nonce_caller;
+    TPMT_SYM_DEF            symmetric;
+    TSS2L_SYS_AUTH_COMMAND  req_auth = { .auths = { { .sessionHandle = TPM2_RH_PW } }, .count = 1 };
+    TSS2L_SYS_AUTH_RESPONSE resp_auth = { .count = 0 };
 
-    nv_attribs = TPMA_NV_AUTHREAD |
-                 TPMA_NV_AUTHWRITE |
-                 TPMA_NV_ORDERLY;
+    nv_attribs = TPMA_NV_AUTHREAD | TPMA_NV_AUTHWRITE | TPMA_NV_ORDERLY;
 
     nonce_caller.size = 0;
     policy_auth.size = 0;
@@ -68,11 +60,11 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     nv_public.nvPublic.nvIndex = nv_index;
     nv_public.nvPublic.nameAlg = TPM2_ALG_SHA256;
 
-    rc = Tss2_Sys_NV_DefineSpace(sys_context, TPM2_RH_OWNER, &req_auth,
-                                 &nv_auth, &nv_public, &resp_auth);
+    rc = Tss2_Sys_NV_DefineSpace(sys_context, TPM2_RH_OWNER, &req_auth, &nv_auth, &nv_public,
+                                 &resp_auth);
     if (rc) {
         LOG_ERROR("Tss2_Sys_NV_DefineSpace failed 0x%" PRIx32, rc);
-        return (rc)? EXIT_FAILURE : EXIT_SUCCESS;
+        return (rc) ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
     symmetric.algorithm = TPM2_ALG_AES;
@@ -80,9 +72,8 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     symmetric.mode.aes = TPM2_ALG_CFB;
 
 retry:
-    rc = create_auth_session(&session, TPM2_RH_NULL, 0,
-                TPM2_RH_NULL, 0, &nonce_caller, 0, TPM2_SE_POLICY,
-                &symmetric, TPM2_ALG_SHA256, sys_context);
+    rc = create_auth_session(&session, TPM2_RH_NULL, 0, TPM2_RH_NULL, 0, &nonce_caller, 0,
+                             TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, sys_context);
     if (rc) {
         LOG_ERROR("create_auth_session failed 0x%" PRIx32, rc);
         goto clean;
@@ -91,8 +82,7 @@ retry:
     memcpy(data_to_write.buffer, TEST_DATA, TEST_DATA_LEN);
     data_to_write.size = TEST_DATA_LEN;
 
-    rc = Tss2_Sys_NV_Write_Prepare(sys_context, nv_index, nv_index,
-                                   &data_to_write, 0);
+    rc = Tss2_Sys_NV_Write_Prepare(sys_context, nv_index, nv_index, &data_to_write, 0);
     if (rc) {
         LOG_ERROR("Tss2_Sys_NV_Write_Prepare failed 0x%" PRIx32, rc);
         goto clean;
@@ -104,8 +94,7 @@ retry:
     req_auth.auths[0].nonce.size = 0;
     req_auth.auths[0].sessionAttributes = 0;
     req_auth.auths[0].hmac.size = nv_auth.size;
-    memcpy(req_auth.auths[0].hmac.buffer, nv_auth.buffer,
-           req_auth.auths[0].hmac.size);
+    memcpy(req_auth.auths[0].hmac.buffer, nv_auth.buffer, req_auth.auths[0].hmac.size);
 
     /* Set up encrypt/decrypt session structure */
     req_auth.auths[1].sessionHandle = session->sessionHandle;
@@ -133,15 +122,14 @@ retry:
 
     roll_nonces(session, &req_auth.auths[1].nonce);
 
-    rc = encrypt_command_param(session, &encrypted_param,
-                               (TPM2B_MAX_BUFFER *)&data_to_write, &nv_auth);
+    rc = encrypt_command_param(session, &encrypted_param, (TPM2B_MAX_BUFFER *)&data_to_write,
+                               &nv_auth);
     if (rc) {
         LOG_ERROR("encrypt_command_param failed 0x%" PRIx32, rc);
         goto clean;
     }
 
-    rc = Tss2_Sys_SetDecryptParam(sys_context, encrypted_param.size,
-                                  encrypted_param.buffer);
+    rc = Tss2_Sys_SetDecryptParam(sys_context, encrypted_param.size, encrypted_param.buffer);
     if (rc) {
         LOG_ERROR("Tss2_Sys_SetDecryptParam failed 0x%" PRIx32, rc);
         goto clean;
@@ -174,8 +162,8 @@ retry:
 
     req_auth.count = 1;
 
-    rc = Tss2_Sys_NV_Read(sys_context, nv_index, nv_index, &req_auth,
-                          TEST_DATA_LEN, 0, &data_read, &resp_auth);
+    rc = Tss2_Sys_NV_Read(sys_context, nv_index, nv_index, &req_auth, TEST_DATA_LEN, 0, &data_read,
+                          &resp_auth);
     if (rc) {
         LOG_ERROR("Tss2_Sys_NV_Read failed 0x%" PRIx32, rc);
         goto clean;
@@ -233,8 +221,7 @@ retry:
     encrypted_param.size = encrypt_param_size;
     memcpy(encrypted_param.buffer, encrypt_param_ptr, encrypt_param_size);
 
-    rc = decrypt_response_param(session, &decrypted_param,
-                                &encrypted_param, &nv_auth);
+    rc = decrypt_response_param(session, &decrypted_param, &encrypted_param, &nv_auth);
     if (rc) {
         LOG_ERROR("decrypt_response_param failed 0x%" PRIx32, rc);
         goto clean;
@@ -242,8 +229,7 @@ retry:
 
     roll_nonces(session, &resp_auth.auths[1].nonce);
 
-    rc = Tss2_Sys_SetEncryptParam(sys_context, decrypted_param.size,
-                                  decrypted_param.buffer);
+    rc = Tss2_Sys_SetEncryptParam(sys_context, decrypted_param.size, decrypted_param.buffer);
     if (rc) {
         LOG_ERROR("Tss2_Sys_SetEncryptParam failed 0x%" PRIx32, rc);
         goto clean;
@@ -273,13 +259,12 @@ clean:
     req_auth.count = 1;
     req_auth.auths[0].sessionHandle = TPM2_RH_PW;
 
-    rc2 = Tss2_Sys_NV_UndefineSpace(sys_context, TPM2_RH_OWNER,
-                                    nv_index, &req_auth, 0);
+    rc2 = Tss2_Sys_NV_UndefineSpace(sys_context, TPM2_RH_OWNER, nv_index, &req_auth, 0);
     if (rc2)
         LOG_ERROR("Tss2_Sys_NV_UndefineSpace failed 0x%" PRIx32, rc);
 
     if (rc == 0)
         LOG_INFO("param-encrypt-decrypt test PASSED");
 
-    return (rc)? EXIT_FAILURE : EXIT_SUCCESS;
+    return (rc) ? EXIT_FAILURE : EXIT_SUCCESS;
 }

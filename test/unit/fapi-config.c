@@ -8,20 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>              // for uint8_t
-#include <json.h>                  // for json_object_object_del, json_objec...
-#include <stdio.h>                 // for NULL, size_t
-#include <stdlib.h>                // for getenv
-#include <string.h>                // for strlen, strncmp, strdup
+#include <inttypes.h> // for uint8_t
+#include <json.h>     // for json_object_object_del, json_objec...
+#include <stdio.h>    // for NULL, size_t
+#include <stdlib.h>   // for getenv
+#include <string.h>   // for strlen, strncmp, strdup
 
-#include "../helper/cmocka_all.h"  // for assert_ptr_not_equal, assert_true
-#include "ifapi_config.h"          // for IFAPI_CONFIG, ifapi_config_initial...
-#include "ifapi_io.h"              // for IFAPI_IO
-#include "tss2_common.h"           // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC
-#include "util/aux_util.h"         // for SAFE_FREE
+#include "../helper/cmocka_all.h" // for assert_ptr_not_equal, assert_true
+#include "ifapi_config.h"         // for IFAPI_CONFIG, ifapi_config_initial...
+#include "ifapi_io.h"             // for IFAPI_IO
+#include "tss2_common.h"          // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC
+#include "util/aux_util.h"        // for SAFE_FREE
 
 #define LOGMODULE tests
-#include "util/log.h"              // for LOG_WARNING
+#include "util/log.h" // for LOG_WARNING
 
 /*
  * The unit tests will test deserialization of FAPI config files. It will be
@@ -36,45 +36,36 @@ char *wrap_config_file_content;
 /* JSON field which will be removed for the test. */
 char *wrap_remove_field;
 
-static char* config_tilde =
-    "{" \
-    "     \"profile_name\": \"P_ECCP256SHA256\"," \
-    "     \"profile_dir\": \"~/profile\"," \
-    "     \"user_dir\": \"~/user_dir\"," \
-    "     \"system_dir\": \"~/system_dir\"," \
-    "     \"log_dir\": \"~/log_dir\"," \
-    "     \"tcti\": \"\"," \
-    "     \"system_pcrs\" : []" \
-    "}";
+static char *config_tilde = "{"
+                            "     \"profile_name\": \"P_ECCP256SHA256\","
+                            "     \"profile_dir\": \"~/profile\","
+                            "     \"user_dir\": \"~/user_dir\","
+                            "     \"system_dir\": \"~/system_dir\","
+                            "     \"log_dir\": \"~/log_dir\","
+                            "     \"tcti\": \"\","
+                            "     \"system_pcrs\" : []"
+                            "}";
 
-static char* config_home =
-    "{" \
-    "     \"profile_name\": \"P_ECCP256SHA256\"," \
-    "     \"profile_dir\": \"$HOME/profile\"," \
-    "     \"user_dir\": \"$HOME/user_dir\"," \
-    "     \"system_dir\": \"$HOME/system_dir\"," \
-    "     \"log_dir\": \"$HOME/log_dir\"," \
-    "     \"tcti\": \"\"," \
-    "     \"system_pcrs\" : []" \
-    "}";
+static char *config_home = "{"
+                           "     \"profile_name\": \"P_ECCP256SHA256\","
+                           "     \"profile_dir\": \"$HOME/profile\","
+                           "     \"user_dir\": \"$HOME/user_dir\","
+                           "     \"system_dir\": \"$HOME/system_dir\","
+                           "     \"log_dir\": \"$HOME/log_dir\","
+                           "     \"tcti\": \"\","
+                           "     \"system_pcrs\" : []"
+                           "}";
 
 /*
  * Wrappers for reading the JSON profile.
  */
 TSS2_RC
-__wrap_ifapi_io_read_finish(
-    struct IFAPI_IO *io,
-    uint8_t **buffer,
-    size_t *length, ...);
+__wrap_ifapi_io_read_finish(struct IFAPI_IO *io, uint8_t **buffer, size_t *length, ...);
 
 TSS2_RC
-__wrap_ifapi_io_read_finish(
-    struct IFAPI_IO *io,
-    uint8_t **buffer,
-    size_t *length, ...)
-{
+__wrap_ifapi_io_read_finish(struct IFAPI_IO *io, uint8_t **buffer, size_t *length, ...) {
     json_object *jso = NULL;
-    const char *jso_string = NULL;
+    const char  *jso_string = NULL;
 
     jso = json_tokener_parse(wrap_config_file_content);
     assert_ptr_not_equal(jso, NULL);
@@ -89,12 +80,12 @@ __wrap_ifapi_io_read_finish(
 }
 
 /* Function to remove the field and check the initialization of the configuration. */
-void check_remove_field(char *file_content, char* fname, TSS2_RC rc)
-{
-    IFAPI_IO io;
+void
+check_remove_field(char *file_content, char *fname, TSS2_RC rc) {
+    IFAPI_IO     io;
     IFAPI_CONFIG config;
-    TSS2_RC r;
-    char *home_dir = getenv("HOME");
+    TSS2_RC      r;
+    char        *home_dir = getenv("HOME");
 
     assert_ptr_not_equal(home_dir, NULL);
     if (home_dir == NULL)
@@ -116,7 +107,7 @@ void check_remove_field(char *file_content, char* fname, TSS2_RC rc)
         SAFE_FREE(config.tcti);
         SAFE_FREE(config.ek_cert_file);
         SAFE_FREE(config.web_cert_service)
-            }
+    }
 }
 
 /* Function to remove the field and check the initialization of the configuration. */
@@ -138,8 +129,7 @@ check_config_json_remove_field_not_allowed(void **state) {
 }
 
 int
-main(int argc, char *argv[])
-{
+main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(check_config_json_remove_field_allowed),
         cmocka_unit_test(check_config_json_remove_field_not_allowed),

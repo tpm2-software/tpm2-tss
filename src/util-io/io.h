@@ -6,10 +6,10 @@
 #ifndef UTIL_IO_H
 #define UTIL_IO_H
 
-#include <limits.h>       // for _POSIX_HOST_NAME_MAX
-#include <stdint.h>       // for uint8_t, uint16_t
+#include <limits.h> // for _POSIX_HOST_NAME_MAX
+#include <stdint.h> // for uint8_t, uint16_t
 
-#include "tss2_common.h"  // for TSS2_RC
+#include "tss2_common.h" // for TSS2_RC
 #ifdef _WIN32
 #include <BaseTsd.h>
 #include <winsock2.h>
@@ -19,39 +19,45 @@ typedef SSIZE_T ssize_t;
 #define POSIX_HOST_NAME_MAX MAX_COMPUTERNAME_LENGTH
 
 #else
-#include <errno.h>        // for EINTR, errno
-#include <sys/socket.h>   // for size_t, ssize_t
+#include <errno.h>      // for EINTR, errno
+#include <sys/socket.h> // for size_t, ssize_t
 
 #define POSIX_HOST_NAME_MAX _POSIX_HOST_NAME_MAX
-#define SOCKET int
-#define INVALID_SOCKET ((-1))
-#define SOCKET_ERROR ((-1))
+#define SOCKET              int
+#define INVALID_SOCKET      ((-1))
+#define SOCKET_ERROR        ((-1))
 #endif
 
 #define SOCKET_POLL_RD 1
 #define SOCKET_POLL_WR 2
 
 #ifdef _WIN32
-#define TEMP_RETRY(dest, exp) \
-{   int __ret; \
-    do { \
-        __ret = exp; \
-    } while (__ret == SOCKET_ERROR && WSAGetLastError() == WSAEINTR); \
-    dest = __ret; }
-#elif defined (__FreeBSD__)
-#define TEMP_RETRY(dest, exp) \
-{   ssize_t __ret; \
-    do { \
-        __ret = exp; \
-    } while ((__ret == SOCKET_ERROR) && (errno == EINTR || errno == EAGAIN)); \
-    dest =__ret; }
+#define TEMP_RETRY(dest, exp)                                                                      \
+    {                                                                                              \
+        int __ret;                                                                                 \
+        do {                                                                                       \
+            __ret = exp;                                                                           \
+        } while (__ret == SOCKET_ERROR && WSAGetLastError() == WSAEINTR);                          \
+        dest = __ret;                                                                              \
+    }
+#elif defined(__FreeBSD__)
+#define TEMP_RETRY(dest, exp)                                                                      \
+    {                                                                                              \
+        ssize_t __ret;                                                                             \
+        do {                                                                                       \
+            __ret = exp;                                                                           \
+        } while ((__ret == SOCKET_ERROR) && (errno == EINTR || errno == EAGAIN));                  \
+        dest = __ret;                                                                              \
+    }
 #else
-#define TEMP_RETRY(dest, exp) \
-{   ssize_t __ret; \
-    do { \
-        __ret = exp; \
-    } while (__ret == SOCKET_ERROR && errno == EINTR); \
-    ((dest)) =__ret; }
+#define TEMP_RETRY(dest, exp)                                                                      \
+    {                                                                                              \
+        ssize_t __ret;                                                                             \
+        do {                                                                                       \
+            __ret = exp;                                                                           \
+        } while (__ret == SOCKET_ERROR && errno == EINTR);                                         \
+        ((dest)) = __ret;                                                                          \
+    }
 #endif
 
 #ifdef __cplusplus
@@ -64,24 +70,14 @@ extern "C" {
  * are detected. This is currently limited to interrupted system calls and
  * short reads.
  */
-size_t
-read_all (
-    SOCKET fd,
-    uint8_t *data,
-    size_t size,
-    int timeout);
+size_t read_all(SOCKET fd, uint8_t *data, size_t size, int timeout);
 /*
  * Write 'size' bytes from 'buf' to file descriptor 'fd'. Additionally this
  * function will retry calls to the 'write' function when recoverable errors
  * are detected. This is currently limited to interrupted system calls and
  * short writes.
  */
-size_t
-write_all (
-    SOCKET fd,
-    const uint8_t *buf,
-    size_t size,
-    int timeout);
+size_t write_all(SOCKET fd, const uint8_t *buf, size_t size, int timeout);
 /*
  * Connect to the given target using TCP. 'control' is to distinguish the data
  * socket from the control socket. For TCP, the data socket and control socket
@@ -89,43 +85,22 @@ write_all (
  * is incremented by 1 if 'control' is non-zero.
  */
 TSS2_RC
-socket_connect (
-    const char *hostname,
-    uint16_t port,
-    int control,
-    SOCKET *socket);
+socket_connect(const char *hostname, uint16_t port, int control, SOCKET *socket);
 /*
  * Connect to the given target using unix domain sockets. (Not available on
  * "_WIN32".) If 'control' is non-zero, ".ctrl" is appended to 'path'.
  */
 TSS2_RC
-socket_connect_unix (
-    const char *path,
-    int control,
-    SOCKET *socket);
+socket_connect_unix(const char *path, int control, SOCKET *socket);
 TSS2_RC
-socket_close (
-    SOCKET *socket);
+socket_close(SOCKET *socket);
 TSS2_RC
-socket_set_nonblock (
-    SOCKET sock);
-size_t
-socket_recv_buf (
-    SOCKET sock,
-    uint8_t *data,
-    size_t size,
-    int timeout);
+socket_set_nonblock(SOCKET sock);
+size_t socket_recv_buf(SOCKET sock, uint8_t *data, size_t size, int timeout);
 TSS2_RC
-socket_xmit_buf (
-    SOCKET sock,
-    const void *buf,
-    size_t size,
-    int timeout);
+socket_xmit_buf(SOCKET sock, const void *buf, size_t size, int timeout);
 TSS2_RC
-socket_poll (
-    SOCKET sock,
-    int wait_flags,
-    int timeout);
+socket_poll(SOCKET sock, int wait_flags, int timeout);
 
 #ifdef __cplusplus
 }

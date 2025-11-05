@@ -12,24 +12,21 @@
 #include <stdlib.h>
 
 #define LOGMODULE test
+#include "tcti/tcti-fuzzing.h"
+#include "test.h"
+#include "tss2-sys/sysapi_util.h"
 #include "tss2_sys.h"
 #include "tss2_tcti.h"
 #include "util/log.h"
-#include "test.h"
-#include "tss2-sys/sysapi_util.h"
-#include "tcti/tcti-fuzzing.h"
 
 #include "test-common.h"
 
 int
-LLVMFuzzerTestOneInput (
-        const uint8_t *Data,
-        size_t Size)
-{
-    TSS2_TEST_SYS_CONTEXT *test_sys_ctx;
+LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
+    TSS2_TEST_SYS_CONTEXT     *test_sys_ctx;
     TSS2_TCTI_FUZZING_CONTEXT *tcti_fuzzing = NULL;
-    TSS2_RC rc;
-    int ret;
+    TSS2_RC                    rc;
+    int                        ret;
 
     ret = test_sys_setup(&test_sys_ctx);
     if (ret != 0) {
@@ -58,5 +55,5 @@ LLVMFuzzerTestOneInput (
 
     test_sys_teardown(test_sys_ctx);
 
-    return 0;  // Non-zero return values are reserved for future use.
+    return 0; // Non-zero return values are reserved for future use.
 }

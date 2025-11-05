@@ -8,24 +8,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t
-#include <stdlib.h>           // for malloc, size_t
-#include <string.h>           // for memset, memcpy
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for malloc, size_t
+#include <string.h> // for memset, memcpy
 
-#include "fapi_int.h"         // for IFAPI_Unseal, FAPI_CONTEXT, IFAPI_CMD_S...
-#include "fapi_util.h"        // for ifapi_authorize_object, ifapi_cleanup_s...
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"     // for check_not_null, statecase, fallthrough
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_BA...
-#include "tss2_esys.h"        // for Esys_SetTimeout, Esys_FlushContext_Async
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_Unseal, Fapi_Unseal_...
-#include "tss2_policy.h"      // for TSS2_OBJECT
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPM2B_SENSITIVE_DATA
+#include "fapi_int.h"        // for IFAPI_Unseal, FAPI_CONTEXT, IFAPI_CMD_S...
+#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_cleanup_s...
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"    // for check_not_null, statecase, fallthrough
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_BA...
+#include "tss2_esys.h"       // for Esys_SetTimeout, Esys_FlushContext_Async
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Unseal, Fapi_Unseal_...
+#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_SENSITIVE_DATA
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for LOG_TRACE, goto_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE, goto_if_error, SAFE_FREE
 
 /** One-Call function for Fapi_Unseal
  *
@@ -65,12 +65,7 @@
  *         was not successful.
  */
 TSS2_RC
-Fapi_Unseal(
-    FAPI_CONTEXT  *context,
-    char    const *path,
-    uint8_t      **data,
-    size_t        *size)
-{
+Fapi_Unseal(FAPI_CONTEXT *context, char const *path, uint8_t **data, size_t *size) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -143,10 +138,7 @@ Fapi_Unseal(
  *         config file.
  */
 TSS2_RC
-Fapi_Unseal_Async(
-    FAPI_CONTEXT  *context,
-    char    const *path)
-{
+Fapi_Unseal_Async(FAPI_CONTEXT *context, char const *path) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
 
@@ -157,8 +149,8 @@ Fapi_Unseal_Async(
     check_not_null(path);
 
     /* Helpful alias pointers */
-    IFAPI_Unseal * command = &context->cmd.Unseal;
-    memset(command, 0 ,sizeof(IFAPI_Unseal));
+    IFAPI_Unseal *command = &context->cmd.Unseal;
+    memset(command, 0, sizeof(IFAPI_Unseal));
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -215,11 +207,7 @@ error_cleanup:
  *         was not successful.
  */
 TSS2_RC
-Fapi_Unseal_Finish(
-    FAPI_CONTEXT *context,
-    uint8_t     **data,
-    size_t       *size)
-{
+Fapi_Unseal_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -229,76 +217,72 @@ Fapi_Unseal_Finish(
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_Unseal * command = &context->cmd.Unseal;
+    IFAPI_Unseal *command = &context->cmd.Unseal;
 
     switch (context->state) {
-        statecase(context->state, UNSEAL_WAIT_FOR_KEY);
-            /* Load the key to be used for unsealing from the keystore. */
-            r = ifapi_load_key(context, command->keyPath,
-                               &command->object);
+    statecase(context->state, UNSEAL_WAIT_FOR_KEY);
+        /* Load the key to be used for unsealing from the keystore. */
+        r = ifapi_load_key(context, command->keyPath, &command->object);
+        return_try_again(r);
+        goto_if_error(r, "Fapi load key.", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->state, UNSEAL_AUTHORIZE_OBJECT);
+        /* Authorize the session for use with with key. */
+        r = ifapi_authorize_object(context, command->object, &auth_session);
+        return_try_again(r);
+        goto_if_error(r, "Authorize sealed object.", error_cleanup);
+
+        /* Perform the unseal operation with the TPM. */
+        r = Esys_Unseal_Async(context->esys, command->object->public.handle, auth_session,
+                              ENC_SESSION_IF_POLICY(auth_session), ESYS_TR_NONE);
+        goto_if_error(r, "Error esys Unseal ", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->state, UNSEAL_WAIT_FOR_UNSEAL);
+        r = Esys_Unseal_Finish(context->esys, &command->unseal_data);
+        return_try_again(r);
+        goto_if_error(r, "Unseal_Finish", error_cleanup);
+
+        /* Flush the used key from the TPM. */
+        if (!command->object->misc.key.persistent_handle) {
+            r = Esys_FlushContext_Async(context->esys, command->object->public.handle);
+            goto_if_error(r, "Error Esys Flush ", error_cleanup);
+        }
+
+        fallthrough;
+
+    statecase(context->state, UNSEAL_WAIT_FOR_FLUSH);
+        if (!command->object->misc.key.persistent_handle) {
+            r = Esys_FlushContext_Finish(context->esys);
             return_try_again(r);
-            goto_if_error(r, "Fapi load key.", error_cleanup);
+            goto_if_error(r, "Unseal_Flush", error_cleanup);
+        }
 
-            fallthrough;
+        fallthrough;
 
-        statecase(context->state, UNSEAL_AUTHORIZE_OBJECT);
-            /* Authorize the session for use with with key. */
-            r = ifapi_authorize_object(context, command->object, &auth_session);
-            return_try_again(r);
-            goto_if_error(r, "Authorize sealed object.", error_cleanup);
+    statecase(context->state, UNSEAL_CLEANUP)
+    /* Cleanup the session used for authentication. */
+        r = ifapi_cleanup_session(context);
+        try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-            /* Perform the unseal operation with the TPM. */
-            r = Esys_Unseal_Async(context->esys, command->object->public.handle,
-                    auth_session,
-                    ENC_SESSION_IF_POLICY(auth_session),
-                    ESYS_TR_NONE);
-            goto_if_error(r, "Error esys Unseal ", error_cleanup);
+        /* Return the data as requested by the caller.
+           Duplicate the unseal_data as necessary. */
+        if (size)
+            *size = command->unseal_data->size;
+        if (data) {
+            *data = malloc(command->unseal_data->size);
+            goto_if_null2(*data, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
 
-            fallthrough;
+            memcpy(*data, &command->unseal_data->buffer[0], command->unseal_data->size);
+        }
+        SAFE_FREE(command->unseal_data);
 
-        statecase(context->state, UNSEAL_WAIT_FOR_UNSEAL);
-            r = Esys_Unseal_Finish(context->esys, &command->unseal_data);
-            return_try_again(r);
-            goto_if_error(r, "Unseal_Finish", error_cleanup);
+        break;
 
-            /* Flush the used key from the TPM. */
-            if (!command->object->misc.key.persistent_handle) {
-                r = Esys_FlushContext_Async(context->esys, command->object->public.handle);
-                goto_if_error(r, "Error Esys Flush ", error_cleanup);
-            }
-
-            fallthrough;
-
-        statecase(context->state, UNSEAL_WAIT_FOR_FLUSH);
-            if (!command->object->misc.key.persistent_handle) {
-                r = Esys_FlushContext_Finish(context->esys);
-                return_try_again(r);
-                goto_if_error(r, "Unseal_Flush", error_cleanup);
-            }
-
-            fallthrough;
-
-        statecase(context->state, UNSEAL_CLEANUP)
-            /* Cleanup the session used for authentication. */
-            r = ifapi_cleanup_session(context);
-            try_again_or_error_goto(r, "Cleanup", error_cleanup);
-
-            /* Return the data as requested by the caller.
-               Duplicate the unseal_data as necessary. */
-            if (size)
-                *size = command->unseal_data->size;
-            if (data) {
-                *data = malloc(command->unseal_data->size);
-                goto_if_null2(*data, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
-
-                memcpy(*data, &command->unseal_data->buffer[0],
-                       command->unseal_data->size);
-            }
-            SAFE_FREE(command->unseal_data);
-
-            break;
-
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
 error_cleanup:

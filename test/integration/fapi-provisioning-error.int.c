@@ -8,16 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-fapi.h"        // for test_invoke_fapi
-#include "tss2_common.h"      // for TSS2_RC
-#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_Provision, FAPI_CONTEXT
-#include "tss2_tpm2_types.h"  // for TPM2_RC_N_MASK, TPM2_RC_NV_DEFINED
+#include "test-fapi.h"       // for test_invoke_fapi
+#include "tss2_common.h"     // for TSS2_RC
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_Provision, FAPI_CONTEXT
+#include "tss2_tpm2_types.h" // for TPM2_RC_N_MASK, TPM2_RC_NV_DEFINED
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error
-
+#include "util/log.h" // for goto_if_error
 
 /** Test the FAPI cleanup in an error case.
  *
@@ -29,8 +28,7 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_test_provisioning_error(FAPI_CONTEXT *context)
-{
+test_fapi_test_provisioning_error(FAPI_CONTEXT *context) {
     TSS2_RC r;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
@@ -47,7 +45,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_test_provisioning_error(fapi_context);
 }

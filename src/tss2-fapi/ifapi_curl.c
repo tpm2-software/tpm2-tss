@@ -3,44 +3,43 @@
 /* SPDX-FileCopyrightText: 2023, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
-#include "config.h"             // for HAVE_CURL_URL_STRERROR
+#include "config.h" // for HAVE_CURL_URL_STRERROR
 #endif
 
-#include <curl/curl.h>          // for curl_easy_strerror, CURLE_OK, curl_ea...
-#include <openssl/bio.h>        // for BIO_free, BIO_new_mem_buf
-#include <openssl/evp.h>        // for X509, ASN1_IA5STRING, X509_CRL, DIST_...
-#include <openssl/obj_mac.h>    // for NID_crl_distribution_points, NID_info...
-#include <openssl/opensslv.h>   // for OPENSSL_VERSION_NUMBER
-#include <openssl/pem.h>        // for PEM_read_bio_X509
-#include <openssl/safestack.h>  // for STACK_OF
-#include <openssl/x509.h>       // for X509_free, X509_STORE_add_cert, X509_...
-#include <openssl/x509v3.h>     // for DIST_POINT_NAME, GENERAL_NAME, ACCESS...
-#include <stdbool.h>            // for bool, false, true
-#include <stdlib.h>             // for free, realloc
-#include <string.h>             // for memcpy, strdup, strlen
+#include <curl/curl.h>         // for curl_easy_strerror, CURLE_OK, curl_ea...
+#include <openssl/bio.h>       // for BIO_free, BIO_new_mem_buf
+#include <openssl/evp.h>       // for X509, ASN1_IA5STRING, X509_CRL, DIST_...
+#include <openssl/obj_mac.h>   // for NID_crl_distribution_points, NID_info...
+#include <openssl/opensslv.h>  // for OPENSSL_VERSION_NUMBER
+#include <openssl/pem.h>       // for PEM_read_bio_X509
+#include <openssl/safestack.h> // for STACK_OF
+#include <openssl/x509.h>      // for X509_free, X509_STORE_add_cert, X509_...
+#include <openssl/x509v3.h>    // for DIST_POINT_NAME, GENERAL_NAME, ACCESS...
+#include <stdbool.h>           // for bool, false, true
+#include <stdlib.h>            // for free, realloc
+#include <string.h>            // for memcpy, strdup, strlen
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/aes.h>
 #endif
 
-#include "fapi_certificates.h"  // for root_cert_list
-#include "fapi_int.h"           // for OSSL_FREE
+#include "fapi_certificates.h" // for root_cert_list
+#include "fapi_int.h"          // for OSSL_FREE
 #include "ifapi_curl.h"
-#include "ifapi_macros.h"       // for goto_if_null2
+#include "ifapi_macros.h" // for goto_if_null2
 
 #define LOGMODULE fapi
-#include "util/log.h"           // for LOG_ERROR, goto_error, SAFE_FREE, got...
+#include "util/log.h" // for LOG_ERROR, goto_error, SAFE_FREE, got...
 
-static X509
-*get_cert_from_buffer(unsigned char *cert_buffer, size_t cert_buffer_size)
-{
+static X509 *
+get_cert_from_buffer(unsigned char *cert_buffer, size_t cert_buffer_size) {
     unsigned char *buffer = cert_buffer;
-    X509 *cert = NULL;
+    X509          *cert = NULL;
 
-    unsigned const char* tmp_ptr1 = buffer;
-    unsigned const char** tmp_ptr2 = &tmp_ptr1;
+    unsigned const char  *tmp_ptr1 = buffer;
+    unsigned const char **tmp_ptr2 = &tmp_ptr1;
 
-    if (!d2i_X509(&cert, tmp_ptr2, (long) cert_buffer_size))
+    if (!d2i_X509(&cert, tmp_ptr2, (long)cert_buffer_size))
         return NULL;
     return cert;
 }
@@ -51,18 +50,17 @@ static X509
  * @retval X509 OSSL certificate object.
  * @retval NULL If the conversion fails.
  */
-static X509
-*get_X509_from_pem(const char *pem_cert)
-{
+static X509 *
+get_X509_from_pem(const char *pem_cert) {
     if (!pem_cert) {
         return NULL;
     }
-    BIO *bufio = NULL;
+    BIO  *bufio = NULL;
     X509 *cert = NULL;
 
     /* Use BIO for conversion */
     size_t pem_length = strlen(pem_cert);
-    bufio = BIO_new_mem_buf((void *)pem_cert, (int) pem_length);
+    bufio = BIO_new_mem_buf((void *)pem_cert, (int)pem_length);
     if (!bufio)
         return NULL;
     /* Convert the certificate */
@@ -80,26 +78,23 @@ static X509
  * @retval TSS2_FAPI_RC_NO_CERT if an error did occur during certificate downloading.
  */
 TSS2_RC
-ifapi_get_crl_from_cert(X509 *cert, X509_CRL **crl)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    unsigned char* url = NULL;
+ifapi_get_crl_from_cert(X509 *cert, X509_CRL **crl) {
+    TSS2_RC        r = TSS2_RC_SUCCESS;
+    unsigned char *url = NULL;
     unsigned char *crl_buffer = NULL;
-    size_t crl_buffer_size;
-    int nid = NID_crl_distribution_points;
-    STACK_OF(DIST_POINT) * dist_points = (STACK_OF(DIST_POINT) *)X509_get_ext_d2i(cert, nid, NULL, NULL);
+    size_t         crl_buffer_size;
+    int            nid = NID_crl_distribution_points;
+    STACK_OF(DIST_POINT) *dist_points
+        = (STACK_OF(DIST_POINT) *)X509_get_ext_d2i(cert, nid, NULL, NULL);
     int curl_rc;
 
     *crl = NULL;
-    for (int i = 0; i < sk_DIST_POINT_num(dist_points); i++)
-    {
-        DIST_POINT *dp = sk_DIST_POINT_value(dist_points, i);
-        DIST_POINT_NAME    *distpoint = dp->distpoint;
-        if (distpoint->type==0)
-        {
-            for (int j = 0; j < sk_GENERAL_NAME_num(distpoint->name.fullname); j++)
-            {
-                GENERAL_NAME *gen_name = sk_GENERAL_NAME_value(distpoint->name.fullname, j);
+    for (int i = 0; i < sk_DIST_POINT_num(dist_points); i++) {
+        DIST_POINT      *dp = sk_DIST_POINT_value(dist_points, i);
+        DIST_POINT_NAME *distpoint = dp->distpoint;
+        if (distpoint->type == 0) {
+            for (int j = 0; j < sk_GENERAL_NAME_num(distpoint->name.fullname); j++) {
+                GENERAL_NAME   *gen_name = sk_GENERAL_NAME_value(distpoint->name.fullname, j);
                 ASN1_IA5STRING *asn1_str = gen_name->d.uniformResourceIdentifier;
                 SAFE_FREE(url);
                 url = (unsigned char *)strdup((char *)asn1_str->data);
@@ -113,7 +108,7 @@ ifapi_get_crl_from_cert(X509 *cert, X509_CRL **crl)
         goto cleanup;
     }
 
-    if (strncmp((char *)url,"file:", strlen("file:")) == 0) {
+    if (strncmp((char *)url, "file:", strlen("file:")) == 0) {
         /* Workaround if crl is not configured correctly. */
         *crl = NULL;
         goto cleanup;
@@ -124,11 +119,11 @@ ifapi_get_crl_from_cert(X509 *cert, X509_CRL **crl)
         goto_error(r, TSS2_FAPI_RC_NO_CERT, "Get crl.", cleanup);
     }
 
-    unsigned const char* tmp_ptr1 = crl_buffer;
-    unsigned const char** tmp_ptr2 = &tmp_ptr1;
+    unsigned const char  *tmp_ptr1 = crl_buffer;
+    unsigned const char **tmp_ptr2 = &tmp_ptr1;
 
     if (crl_buffer_size > 0) {
-        if (!d2i_X509_CRL(crl, tmp_ptr2, (long) crl_buffer_size)) {
+        if (!d2i_X509_CRL(crl, tmp_ptr2, (long)crl_buffer_size)) {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Can't convert crl.", cleanup);
         }
     }
@@ -169,33 +164,29 @@ is_self_signed(X509 *cert) {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_curl_verify_ek_cert(
-    char* root_cert_pem,
-    char* intermed_cert_pem,
-    char* ek_cert_pem)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    X509 *root_cert = NULL;
-    X509 *intermed_cert = NULL;
-    X509 *ek_cert = NULL;
-    X509_STORE *store = NULL;
-    X509_STORE_CTX *ctx = NULL;
-    X509_CRL *crl_intermed = NULL;
-    X509_CRL *crl_ek = NULL;
-    int i;
-    size_t ui;
+ifapi_curl_verify_ek_cert(char *root_cert_pem, char *intermed_cert_pem, char *ek_cert_pem) {
+    TSS2_RC                r = TSS2_RC_SUCCESS;
+    X509                  *root_cert = NULL;
+    X509                  *intermed_cert = NULL;
+    X509                  *ek_cert = NULL;
+    X509_STORE            *store = NULL;
+    X509_STORE_CTX        *ctx = NULL;
+    X509_CRL              *crl_intermed = NULL;
+    X509_CRL              *crl_ek = NULL;
+    int                    i;
+    size_t                 ui;
     AUTHORITY_INFO_ACCESS *info = NULL;
-    ASN1_IA5STRING *uri = NULL;
-    unsigned char * url;
-    unsigned char *cert_buffer = NULL;
-    size_t cert_buffer_size;
-    int curl_rc;
+    ASN1_IA5STRING        *uri = NULL;
+    unsigned char         *url;
+    unsigned char         *cert_buffer = NULL;
+    size_t                 cert_buffer_size;
+    int                    curl_rc;
 
     LOG_DEBUG("EK Certificate: %s", ek_cert_pem);
 
     ek_cert = get_X509_from_pem(ek_cert_pem);
-    goto_if_null2(ek_cert, "Failed to convert PEM certificate to DER.",
-                  r, TSS2_FAPI_RC_BAD_VALUE, cleanup);
+    goto_if_null2(ek_cert, "Failed to convert PEM certificate to DER.", r, TSS2_FAPI_RC_BAD_VALUE,
+                  cleanup);
 
     if (is_self_signed(ek_cert)) {
         /* A self signed certificate was stored in the TPM and ek_cert_less was not set.*/
@@ -209,8 +200,8 @@ ifapi_curl_verify_ek_cert(
 
     if (intermed_cert_pem) {
         intermed_cert = get_X509_from_pem(intermed_cert_pem);
-        goto_if_null2(intermed_cert, "Failed to convert PEM certificate to DER.",
-                      r, TSS2_FAPI_RC_BAD_VALUE, cleanup);
+        goto_if_null2(intermed_cert, "Failed to convert PEM certificate to DER.", r,
+                      TSS2_FAPI_RC_BAD_VALUE, cleanup);
     } else {
         /* Get uri for ek intermediate certificate. */
         info = X509_get_ext_d2i(ek_cert, NID_info_access, NULL, NULL);
@@ -226,12 +217,11 @@ ifapi_curl_verify_ek_cert(
             if (curl_rc != 0) {
                 goto_error(r, TSS2_FAPI_RC_NO_CERT, "Get certificate.", cleanup);
             }
-            goto_if_null2(cert_buffer, "No certificate downloaded", r,
-                          TSS2_FAPI_RC_NO_CERT, cleanup);
+            goto_if_null2(cert_buffer, "No certificate downloaded", r, TSS2_FAPI_RC_NO_CERT,
+                          cleanup);
             LOGBLOB_DEBUG(cert_buffer, cert_buffer_size, "Intermediate certificate:");
         }
-        goto_if_null2(cert_buffer, "No certificate downloaded", r,
-                      TSS2_FAPI_RC_NO_CERT, cleanup);
+        goto_if_null2(cert_buffer, "No certificate downloaded", r, TSS2_FAPI_RC_NO_CERT, cleanup);
 
         intermed_cert = get_cert_from_buffer(cert_buffer, cert_buffer_size);
         if (!intermed_cert) {
@@ -241,7 +231,7 @@ ifapi_curl_verify_ek_cert(
             goto cleanup;
         }
 
-         /* Get Certificate revocation list for Intermediate certificate */
+        /* Get Certificate revocation list for Intermediate certificate */
         r = ifapi_get_crl_from_cert(intermed_cert, &crl_intermed);
         goto_if_error(r, "Get crl for intermediate certificate.", cleanup);
 
@@ -254,16 +244,14 @@ ifapi_curl_verify_ek_cert(
 
     store = X509_STORE_new();
 
-    goto_if_null2(store, "Failed to create X509 store.",
-                  r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+    goto_if_null2(store, "Failed to create X509 store.", r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
 
     /* Add Certificate revocation list for EK certificate if one exists. */
     if (crl_ek) {
         /* Set the flags of the store to use CRLs. */
         X509_STORE_set_flags(store, X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
         if (1 != X509_STORE_add_crl(store, crl_ek)) {
-            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                       "Failed to add intermediate crl.", cleanup);
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to add intermediate crl.", cleanup);
         }
     }
 
@@ -272,19 +260,17 @@ ifapi_curl_verify_ek_cert(
         /* Set the flags of the store to use CRLs. */
         X509_STORE_set_flags(store, X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
         if (1 != X509_STORE_add_crl(store, crl_intermed)) {
-            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                       "Failed to add intermediate crl.", cleanup);
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to add intermediate crl.", cleanup);
         }
     }
 
     /* Add stored root certificates */
     for (ui = 0; ui < sizeof(root_cert_list) / sizeof(char *); ui++) {
-         root_cert = get_X509_from_pem(root_cert_list[ui]);
-         goto_if_null2(root_cert, "Failed to convert PEM certificate to DER.",
-                       r, TSS2_FAPI_RC_BAD_VALUE, cleanup);
-         if (1 != X509_STORE_add_cert(store, root_cert)) {
-             goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                        "Failed to add root certificate", cleanup);
+        root_cert = get_X509_from_pem(root_cert_list[ui]);
+        goto_if_null2(root_cert, "Failed to convert PEM certificate to DER.", r,
+                      TSS2_FAPI_RC_BAD_VALUE, cleanup);
+        if (1 != X509_STORE_add_cert(store, root_cert)) {
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to add root certificate", cleanup);
         }
         OSSL_FREE(root_cert, X509);
     }
@@ -292,12 +278,11 @@ ifapi_curl_verify_ek_cert(
     /* Create root cert if passed as parameter */
     if (root_cert_pem) {
         root_cert = get_X509_from_pem(root_cert_pem);
-        goto_if_null2(root_cert, "Failed to convert PEM certificate to DER.",
-                      r, TSS2_FAPI_RC_BAD_VALUE, cleanup);
+        goto_if_null2(root_cert, "Failed to convert PEM certificate to DER.", r,
+                      TSS2_FAPI_RC_BAD_VALUE, cleanup);
 
         if (1 != X509_STORE_add_cert(store, root_cert)) {
-            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                       "Failed to add root certificate", cleanup);
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to add root certificate", cleanup);
         }
         OSSL_FREE(root_cert, X509);
     }
@@ -305,21 +290,21 @@ ifapi_curl_verify_ek_cert(
     /* Verify intermediate certificate */
     if (!is_self_signed(intermed_cert)) {
         ctx = X509_STORE_CTX_new();
-        goto_if_null2(ctx, "Failed to create X509 store context.",
-                      r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+        goto_if_null2(ctx, "Failed to create X509 store context.", r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                      cleanup);
 
         if (1 != X509_STORE_CTX_init(ctx, store, intermed_cert, NULL)) {
-            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                       "Failed to initialize X509 context.", cleanup);
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to initialize X509 context.",
+                       cleanup);
         }
         if (1 != X509_verify_cert(ctx)) {
             LOG_ERROR("%s", X509_verify_cert_error_string(X509_STORE_CTX_get_error(ctx)));
-            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                       "Failed to verify intermediate certificate", cleanup);
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to verify intermediate certificate",
+                       cleanup);
         }
         if (1 != X509_STORE_add_cert(store, intermed_cert)) {
-            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                       "Failed to add intermediate certificate", cleanup);
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to add intermediate certificate",
+                       cleanup);
         }
 
         X509_STORE_CTX_cleanup(ctx);
@@ -327,18 +312,16 @@ ifapi_curl_verify_ek_cert(
     }
     ctx = NULL;
     ctx = X509_STORE_CTX_new();
-    goto_if_null2(ctx, "Failed to create X509 store context.",
-                  r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+    goto_if_null2(ctx, "Failed to create X509 store context.", r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                  cleanup);
 
     if (1 != X509_STORE_CTX_init(ctx, store, ek_cert, NULL)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Failed to initialize X509 context.", cleanup);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to initialize X509 context.", cleanup);
     }
     /* Verify the EK certificate. */
     if (1 != X509_verify_cert(ctx)) {
         LOG_ERROR("%s", X509_verify_cert_error_string(X509_STORE_CTX_get_error(ctx)));
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "Failed to verify EK certificate", cleanup);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to verify EK certificate", cleanup);
     }
 
 cleanup:
@@ -359,8 +342,8 @@ cleanup:
 }
 
 struct CurlBufferStruct {
-  unsigned char *buffer;
-  size_t size;
+    unsigned char *buffer;
+    size_t         size;
 };
 
 /** Callback for copying received curl data to a buffer.
@@ -373,9 +356,8 @@ struct CurlBufferStruct {
  * @retval realsize The byte size of the data.
  */
 static size_t
-write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
-{
-    size_t realsize = size * nmemb;
+write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t                   realsize = size * nmemb;
     struct CurlBufferStruct *curl_buf = (struct CurlBufferStruct *)userp;
 
     unsigned char *tmp_ptr = realloc(curl_buf->buffer, curl_buf->size + realsize + 1);
@@ -401,11 +383,10 @@ write_curl_buffer_cb(void *contents, size_t size, size_t nmemb, void *userp)
  * @retval -1 if an error did occur
  */
 int
-ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
-                          size_t *buffer_size) {
-    int ret = -1;
+ifapi_get_curl_buffer(unsigned char *url, unsigned char **buffer, size_t *buffer_size) {
+    int                     ret = -1;
     struct CurlBufferStruct curl_buffer = { .size = 0, .buffer = NULL };
-    long http_code;
+    long                    http_code;
 #ifdef CURLU_ALLOW_SPACE
     CURLU *urlp = NULL;
 #endif
@@ -429,11 +410,11 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
         goto out_easy_cleanup;
     }
     CURLUcode url_rc;
-    url_rc = curl_url_set(urlp, CURLUPART_URL, (const char *)url, CURLU_ALLOW_SPACE | CURLU_URLENCODE);
+    url_rc
+        = curl_url_set(urlp, CURLUPART_URL, (const char *)url, CURLU_ALLOW_SPACE | CURLU_URLENCODE);
     if (url_rc) {
 #ifdef HAVE_CURL_URL_STRERROR
-        LOG_ERROR("curl_url_set for CURUPART_URL failed: %s",
-                  curl_url_strerror(url_rc));
+        LOG_ERROR("curl_url_set for CURUPART_URL failed: %s", curl_url_strerror(url_rc));
 #else
         LOG_ERROR("curl_url_set for CURUPART_URL failed: %u", url_rc);
 #endif
@@ -445,31 +426,25 @@ ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
 #endif
 
     if (rc != CURLE_OK) {
-        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
-                curl_easy_strerror(rc));
+        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s", curl_easy_strerror(rc));
         goto out_easy_cleanup;
     }
 
-    rc = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,
-                          write_curl_buffer_cb);
+    rc = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_buffer_cb);
     if (rc != CURLE_OK) {
-        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
-                curl_easy_strerror(rc));
+        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s", curl_easy_strerror(rc));
         goto out_easy_cleanup;
     }
 
-    rc = curl_easy_setopt(curl, CURLOPT_WRITEDATA,
-                          (void *)&curl_buffer);
+    rc = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&curl_buffer);
     if (rc != CURLE_OK) {
-        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s",
-                curl_easy_strerror(rc));
+        LOG_ERROR("curl_easy_setopt for CURLOPT_URL failed: %s", curl_easy_strerror(rc));
         goto out_easy_cleanup;
     }
 
     rc = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     if (rc != CURLE_OK) {
-        LOG_ERROR("curl_easy_setopt for CURLOPT_FOLLOWLOCATION failed: %s",
-                  curl_easy_strerror(rc));
+        LOG_ERROR("curl_easy_setopt for CURLOPT_FOLLOWLOCATION failed: %s", curl_easy_strerror(rc));
         goto out_easy_cleanup;
     }
 
