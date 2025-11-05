@@ -122,7 +122,7 @@ def gen_file(function):
     """
     # Parse the function name from the function definition
     function_name = (
-        function.split("\n")[0].replace("TSS2_RC", "").replace("(", "").strip()
+        function.split("\n")[0].split("(")[0].replace("TSS2_RC", "").strip()
     )
     # Parse the function arguments into an array. Do not include sysContext.
     args = [
