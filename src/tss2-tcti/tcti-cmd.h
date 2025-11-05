@@ -6,20 +6,21 @@
 #define TCTI_CMD_H
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>       // for UNIT
+#include <config.h> // for UNIT
 #endif
 
-#include <signal.h>       // for sigset_t, pid_t
-#include <stdio.h>        // for FILE, size_t
+#include <signal.h> // for sigset_t, pid_t
+#include <stdio.h>  // for FILE, size_t
 
-#include "tcti-common.h"  // for TSS2_TCTI_COMMON_CONTEXT
+#include "tcti-common.h" // for TSS2_TCTI_COMMON_CONTEXT
 
 struct TSS2_TCTI_CMD_CONTEXT;
 
-#define TCTI_CMD_NAME "tcti-cmd"
+#define TCTI_CMD_NAME        "tcti-cmd"
 #define TCTI_CMD_DESCRIPTION "TCTI module for using a process to send and receive data."
-#define TCTI_CMD_HELP "string used as command, passed to " \
-                "execl(\"/bin/sh\", \"sh\", \"-c\", command, (char *) 0);."
+#define TCTI_CMD_HELP                                                                              \
+    "string used as command, passed to "                                                           \
+    "execl(\"/bin/sh\", \"sh\", \"-c\", command, (char *) 0);."
 
 #define TCTI_CMD_MAGIC 0xf05b04cd9f02728dULL
 
@@ -42,14 +43,13 @@ struct TSS2_TCTI_CMD_CONTEXT {
 #ifdef UNIT
 #define WEAK __attribute__((weak))
 
-WEAK int tcti_cmd_pipe (int pipefd[2]);
-WEAK int tcti_cmd_fork (void);
-WEAK FILE *tcti_cmd_fdopen (int fd, const char *mode);
-WEAK int tcti_cmd_sigprocmask (int how, const sigset_t *set, sigset_t *oldset);
-WEAK size_t tcti_cmd_fwrite (const void *ptr, size_t size, size_t nmemb,
-        FILE *stream);
-WEAK size_t tcti_cmd_fread (void *ptr, size_t size, size_t nmemb, FILE *stream);
-WEAK int tcti_cmd_ferror (FILE *stream);
+WEAK int    tcti_cmd_pipe(int pipefd[2]);
+WEAK int    tcti_cmd_fork(void);
+WEAK FILE  *tcti_cmd_fdopen(int fd, const char *mode);
+WEAK int    tcti_cmd_sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+WEAK size_t tcti_cmd_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+WEAK size_t tcti_cmd_fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+WEAK int    tcti_cmd_ferror(FILE *stream);
 #endif
 
 #endif /* TCTI_CMD_H */

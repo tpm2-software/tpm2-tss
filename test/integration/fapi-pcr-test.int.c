@@ -8,25 +8,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>        // for uint8_t
-#include <stdio.h>           // for NULL, fprintf, size_t, stderr
-#include <stdlib.h>          // for EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>          // for strlen, strcmp
+#include <inttypes.h> // for uint8_t
+#include <stdio.h>    // for NULL, fprintf, size_t, stderr
+#include <stdlib.h>   // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>   // for strlen, strcmp
 
-#include "ifapi_eventlog.h"  // for CONTENT, CONTENT_TYPE
-#include "test-fapi.h"       // for ASSERT, pcr_reset, ASSERT_SIZE, CHECK_JS...
-#include "tss2_common.h"     // for TSS2_RC
-#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_PcrRead, Fapi_PcrExtend
+#include "ifapi_eventlog.h" // for CONTENT, CONTENT_TYPE
+#include "test-fapi.h"      // for ASSERT, pcr_reset, ASSERT_SIZE, CHECK_JS...
+#include "tss2_common.h"    // for TSS2_RC
+#include "tss2_fapi.h"      // for Fapi_Delete, Fapi_PcrRead, Fapi_PcrExtend
 
 #define LOGMODULE test
-#include "util/log.h"        // for goto_if_error, SAFE_FREE, LOG_ERROR, LOG...
+#include "util/log.h" // for goto_if_error, SAFE_FREE, LOG_ERROR, LOG...
 
 #define EVENT_SIZE 10
 
 /* This is a list of expected value from the test. Possible returns (for different PCR bank
    configurations) are concatenated into a long string and the test uses strstr() to find a match.*/
-const char *log_exp[] = {
-"[\n\
+const char *log_exp[] = { "[\n\
   {\n\
     \"recnum\":0,\n\
     \"pcr\":16,\n\
@@ -61,7 +60,7 @@ const char *log_exp[] = {
     }\n\
   }\n\
 ]",
-"[\n\
+                          "[\n\
   {\n\
     \"recnum\":0,\n\
     \"pcr\":16,\n\
@@ -92,8 +91,8 @@ const char *log_exp[] = {
     }\n\
   }\n\
 ]",
-/* same as above, just without sha1 */
-"[\n\
+                          /* same as above, just without sha1 */
+                          "[\n\
   {\n\
     \"recnum\":0,\n\
     \"pcr\":16,\n\
@@ -120,7 +119,7 @@ const char *log_exp[] = {
     }\n\
   }\n\
 ]",
-"[\n\
+                          "[\n\
   {\n\
     \"recnum\":0,\n\
     \"pcr\":16,\n\
@@ -147,7 +146,7 @@ const char *log_exp[] = {
     }\n\
   }\n\
 ]",
-"[\n\
+                          "[\n\
   {\n\
     \"recnum\":0,\n\
     \"pcr\":16,\n\
@@ -170,7 +169,7 @@ const char *log_exp[] = {
     }\n\
   }\n\
 ]",
-"[\n\
+                          "[\n\
   {\n\
     \"recnum\":0,\n\
     \"pcr\":16,\n\
@@ -189,7 +188,7 @@ const char *log_exp[] = {
     }\n\
   }\n\
 ]",
-"[\n\
+                          "[\n\
   {\n\
     \"recnum\":1,\n\
     \"pcr\":16,\n\
@@ -222,14 +221,13 @@ const char *log_exp[] = {
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_pcr_test(FAPI_CONTEXT *context)
-{
-    TSS2_RC r;
-    size_t i;
-    uint8_t data[EVENT_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    size_t pcr_digest_size;
+test_fapi_pcr_test(FAPI_CONTEXT *context) {
+    TSS2_RC  r;
+    size_t   i;
+    uint8_t  data[EVENT_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    size_t   pcr_digest_size;
     uint8_t *pcr_digest = NULL;
-    char *log = NULL;
+    char    *log = NULL;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -240,8 +238,7 @@ test_fapi_pcr_test(FAPI_CONTEXT *context)
     r = Fapi_PcrExtend(context, 16, data, EVENT_SIZE, "{ \"test\": \"myfile\" }");
     goto_if_error(r, "Error Fapi_PcrExtend", error);
 
-    r = Fapi_PcrRead(context, 16, &pcr_digest,
-                     &pcr_digest_size, &log);
+    r = Fapi_PcrRead(context, 16, &pcr_digest, &pcr_digest_size, &log);
     goto_if_error(r, "Error Fapi_PcrRead", error);
     ASSERT(pcr_digest != NULL);
     ASSERT(log != NULL);
@@ -266,14 +263,12 @@ test_fapi_pcr_test(FAPI_CONTEXT *context)
 
     pcr_digest = NULL;
     log = NULL;
-    r = Fapi_PcrRead(context, 16, &pcr_digest,
-                     &pcr_digest_size, &log);
+    r = Fapi_PcrRead(context, 16, &pcr_digest, &pcr_digest_size, &log);
     goto_if_error(r, "Error Fapi_PcrRead", error);
     ASSERT(pcr_digest != NULL);
     ASSERT(log != NULL);
     ASSERT(strlen(log) > ASSERT_SIZE);
     LOG_INFO("\nTEST_JSON\nLog:\n%s\nEND_JSON", log);
-
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
@@ -290,7 +285,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *context)
-{
+test_invoke_fapi(FAPI_CONTEXT *context) {
     return test_fapi_pcr_test(context);
 }

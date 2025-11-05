@@ -8,20 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_mu.h"          // for Tss2_MU_UINT16_Marshal, Tss2_MU_TPM2B_N...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2B_PUBLIC, TPM2B_SENSITIVE
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_UINT16_Marshal, Tss2_MU_TPM2B_N...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPM2B_NAME, TPM2B_PUBLIC, TPM2B_SENSITIVE
 
-TSS2_RC Tss2_Sys_LoadExternal_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    const TPM2B_SENSITIVE *inPrivate,
-    const TPM2B_PUBLIC *inPublic,
-    TPMI_RH_HIERARCHY hierarchy)
-{
+TSS2_RC
+Tss2_Sys_LoadExternal_Prepare(TSS2_SYS_CONTEXT      *sysContext,
+                              const TPM2B_SENSITIVE *inPrivate,
+                              const TPM2B_PUBLIC    *inPublic,
+                              TPMI_RH_HIERARCHY      hierarchy) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -34,14 +33,10 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
     if (!inPrivate) {
         ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_SENSITIVE_Marshal(inPrivate,
-                                               ctx->cmdBuffer,
-                                               ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_SENSITIVE_Marshal(inPrivate, ctx->cmdBuffer, ctx->maxCmdSize,
                                                &ctx->nextData);
     }
 
@@ -49,9 +44,7 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
         return rval;
 
     if (!inPublic) {
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
 
     } else {
         rval = ValidatePublicTemplate(inPublic);
@@ -59,17 +52,14 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
         if (rval)
             return rval;
 
-        rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, ctx->cmdBuffer,
-                                            ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_PUBLIC_Marshal(inPublic, ctx->cmdBuffer, ctx->maxCmdSize,
                                             &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(hierarchy, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(hierarchy, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
@@ -80,21 +70,17 @@ TSS2_RC Tss2_Sys_LoadExternal_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_LoadExternal_Complete(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2_HANDLE *objectHandle,
-    TPM2B_NAME *name)
-{
+TSS2_RC
+Tss2_Sys_LoadExternal_Complete(TSS2_SYS_CONTEXT *sysContext,
+                               TPM2_HANDLE      *objectHandle,
+                               TPM2B_NAME       *name) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
-                                    ctx->maxCmdSize,
-                                    &ctx->nextData,
-                                    objectHandle);
+    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, objectHandle);
     if (rval)
         return rval;
 
@@ -102,23 +88,20 @@ TSS2_RC Tss2_Sys_LoadExternal_Complete(
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer,
-                                        ctx->maxCmdSize,
-                                        &ctx->nextData, name);
+    return Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, name);
 }
 
-TSS2_RC Tss2_Sys_LoadExternal(
-    TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    const TPM2B_SENSITIVE *inPrivate,
-    const TPM2B_PUBLIC *inPublic,
-    TPMI_RH_HIERARCHY hierarchy,
-    TPM2_HANDLE *objectHandle,
-    TPM2B_NAME *name,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_LoadExternal(TSS2_SYS_CONTEXT             *sysContext,
+                      TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                      const TPM2B_SENSITIVE        *inPrivate,
+                      const TPM2B_PUBLIC           *inPublic,
+                      TPMI_RH_HIERARCHY             hierarchy,
+                      TPM2_HANDLE                  *objectHandle,
+                      TPM2B_NAME                   *name,
+                      TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     rval = Tss2_Sys_LoadExternal_Prepare(sysContext, inPrivate, inPublic, hierarchy);
     if (rval)

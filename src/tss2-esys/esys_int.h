@@ -6,15 +6,15 @@
 #ifndef ESYS_INT_H
 #define ESYS_INT_H
 
-#include <stddef.h>           // for NULL, size_t
-#include <stdint.h>           // for int32_t
+#include <stddef.h> // for NULL, size_t
+#include <stdint.h> // for int32_t
 
-#include "esys_types.h"       // for IESYS_RESOURCE, IESYS_SESSION
-#include "tss2_common.h"      // for TSS2_ESYS_RC_BAD_REFERENCE
-#include "tss2_esys.h"        // for ESYS_TR, ESYS_CRYPTO_CALLBACKS
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT
-#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
-#include "tss2_tpm2_types.h"  // for TPM2B_SENSITIVE_CREATE, TPM2B_AUTH, TPM...
+#include "esys_types.h"      // for IESYS_RESOURCE, IESYS_SESSION
+#include "tss2_common.h"     // for TSS2_ESYS_RC_BAD_REFERENCE
+#include "tss2_esys.h"       // for ESYS_TR, ESYS_CRYPTO_CALLBACKS
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT
+#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h" // for TPM2B_SENSITIVE_CREATE, TPM2B_AUTH, TPM...
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,33 +26,33 @@ extern "C" {
  * type IESYS_RESOURCE.
  */
 typedef struct RSRC_NODE_T {
-    ESYS_TR esys_handle;        /**< The ESYS_TR handle used by the application
-                                     to reference this entry. */
-    TPM2B_AUTH auth;            /**< The authValue for this resource object. */
-    IESYS_RESOURCE rsrc;        /**< The meta data for this resource object. */
-    size_t reference_count;     /**< Reference Count for Esys_TR_FromTPMPublic */
-    struct RSRC_NODE_T * next;  /**< The next object in the linked list. */
+    ESYS_TR esys_handle;                 /**< The ESYS_TR handle used by the application
+                                              to reference this entry. */
+    TPM2B_AUTH          auth;            /**< The authValue for this resource object. */
+    IESYS_RESOURCE      rsrc;            /**< The meta data for this resource object. */
+    size_t              reference_count; /**< Reference Count for Esys_TR_FromTPMPublic */
+    struct RSRC_NODE_T *next;            /**< The next object in the linked list. */
 } RSRC_NODE_T;
 
 typedef struct {
-    ESYS_TR tpmKey;
-    ESYS_TR bind;
-    TPM2_SE sessionType;
+    ESYS_TR       tpmKey;
+    ESYS_TR       bind;
+    TPM2_SE       sessionType;
     TPMI_ALG_HASH authHash;
-    TPM2B_NONCE *nonceCaller;
-    TPM2B_NONCE nonceCallerData;
+    TPM2B_NONCE  *nonceCaller;
+    TPM2B_NONCE   nonceCallerData;
     TPMT_SYM_DEF *symmetric;
-    TPMT_SYM_DEF symmetricData;
+    TPMT_SYM_DEF  symmetricData;
 } StartAuthSession_IN;
 
 typedef struct {
     TPM2B_SENSITIVE_CREATE *inSensitive;
-    TPM2B_SENSITIVE_CREATE inSensitiveData;
+    TPM2B_SENSITIVE_CREATE  inSensitiveData;
 } CreatePrimary_IN;
 
 typedef struct {
     TPM2B_SENSITIVE_CREATE *inSensitive;
-    TPM2B_SENSITIVE_CREATE inSensitiveData;
+    TPM2B_SENSITIVE_CREATE  inSensitiveData;
 } Create_IN;
 
 typedef struct {
@@ -61,28 +61,28 @@ typedef struct {
 
 typedef struct {
     TPMS_CONTEXT *context;
-    TPMS_CONTEXT contextData;
+    TPMS_CONTEXT  contextData;
 } ContextLoad_IN;
 
 typedef struct {
     TPM2B_PUBLIC *inPublic;
-    TPM2B_PUBLIC inPublicData;
+    TPM2B_PUBLIC  inPublicData;
 } Load_IN;
 
 typedef struct {
     TPM2B_PUBLIC *inPublic;
-    TPM2B_PUBLIC inPublicData;
+    TPM2B_PUBLIC  inPublicData;
 } LoadExternal_IN;
 
 typedef struct {
     TPM2B_SENSITIVE_CREATE *inSensitive;
-    TPM2B_SENSITIVE_CREATE inSensitiveData;
-    TPM2B_TEMPLATE *inPublic;
-    TPM2B_TEMPLATE inPublicData;
+    TPM2B_SENSITIVE_CREATE  inSensitiveData;
+    TPM2B_TEMPLATE         *inPublic;
+    TPM2B_TEMPLATE          inPublicData;
 } CreateLoaded_IN;
 
 typedef struct {
-    ESYS_TR objectHandle;
+    ESYS_TR            objectHandle;
     TPMI_DH_PERSISTENT persistentHandle;
 } EvictControl_IN;
 
@@ -93,7 +93,7 @@ typedef struct {
 typedef HMAC_Start_IN MAC_Start_IN;
 
 typedef struct {
-    ESYS_TR authHandle;
+    ESYS_TR    authHandle;
     TPM2B_AUTH newAuth;
 } HierarchyChangeAuth_IN;
 
@@ -106,10 +106,10 @@ typedef struct {
 } Policy_IN;
 
 typedef struct {
-    ESYS_TR nvIndex;
-    TPM2B_AUTH authData;
+    ESYS_TR          nvIndex;
+    TPM2B_AUTH       authData;
     TPM2B_NV_PUBLIC *publicInfo;
-    TPM2B_NV_PUBLIC publicInfoData;
+    TPM2B_NV_PUBLIC  publicInfoData;
 } NV_IN;
 
 typedef struct {
@@ -117,7 +117,7 @@ typedef struct {
 } FlushContext_IN;
 
 typedef struct {
-    ESYS_TR pcrHandle;
+    ESYS_TR    pcrHandle;
     TPM2B_AUTH authData;
 } PCR_IN;
 
@@ -127,23 +127,23 @@ typedef struct {
  * in corresponding _Finish() function.
  */
 typedef union {
-    StartAuthSession_IN StartAuthSession;
-    CreatePrimary_IN CreatePrimary;
-    Create_IN Create;
-    ContextSave_IN ContextSave;
-    ContextLoad_IN ContextLoad;
-    Load_IN Load;
-    LoadExternal_IN LoadExternal;
-    CreateLoaded_IN CreateLoaded;
-    EvictControl_IN EvictControl;
-    HMAC_Start_IN HMAC_Start;
-    MAC_Start_IN MAC_Start;
+    StartAuthSession_IN    StartAuthSession;
+    CreatePrimary_IN       CreatePrimary;
+    Create_IN              Create;
+    ContextSave_IN         ContextSave;
+    ContextLoad_IN         ContextLoad;
+    Load_IN                Load;
+    LoadExternal_IN        LoadExternal;
+    CreateLoaded_IN        CreateLoaded;
+    EvictControl_IN        EvictControl;
+    HMAC_Start_IN          HMAC_Start;
+    MAC_Start_IN           MAC_Start;
     HierarchyChangeAuth_IN HierarchyChangeAuth;
-    SequenceComplete_IN SequenceComplete;
-    Policy_IN Policy;
-    NV_IN NV;
-    FlushContext_IN FlushContext;
-    PCR_IN PCR;
+    SequenceComplete_IN    SequenceComplete;
+    Policy_IN              Policy;
+    NV_IN                  NV;
+    FlushContext_IN        FlushContext;
+    PCR_IN                 PCR;
 } IESYS_CMD_IN_PARAM;
 
 /** The states for the ESAPI's internal state machine */
@@ -166,40 +166,40 @@ enum ESYS_STATE {
  * auths and similar things.
  */
 struct ESYS_CONTEXT {
-    enum ESYS_STATE state;      /**< The current state of the ESAPI context. */
-    TSS2_SYS_CONTEXT *sys;       /**< The SYS context used internally to talk to
-                                      the TPM. */
-    ESYS_TR esys_handle_cnt;     /**< The next free ESYS_TR number. */
-    RSRC_NODE_T *rsrc_list;      /**< The linked list of all ESYS_TR objects. */
-    int32_t timeout;             /**< The timeout to be used during
-                                      Tss2_Sys_ExecuteFinish. */
-    ESYS_TR session_type[3];     /**< The list of TPM session handles in the
-                                      current command execution. */
-    RSRC_NODE_T *session_tab[3]; /**< The list of TPM session meta data in the
-                                      current command execution. */
-    RSRC_NODE_T *auth_objects[3];/**< The list of objects to be authenticated */
-    int encryptNonceIdx;         /**< The index of the encrypt session. */
-    TPM2B_NONCE *encryptNonce;   /**< The nonce of the encrypt session, or NULL
-                                      if no encrypt session exists. */
-    int authsCount;              /**< The number of session provided during the
-                                      command. */
-    int submissionCount;         /**< The current number of submissions of this
-                                      command to the TPM. */
-    TPM2B_DATA salt;             /**< The salt used during a StartAuthSession.*/
-    IESYS_CMD_IN_PARAM in;       /**< Temporary storage for Input parameters
-                                      needed in corresponding _Finish function*/
-    ESYS_TR esys_handle;         /**< Temporary storage for the object's TPM
-                                      handle during Esys_TR_FromTPMPublic. */
-    TSS2_TCTI_CONTEXT *tcti_app_param;/**< The TCTI context provided by the
-                                           application during Esys_Initialize()
-                                           to be returned from Esys_GetTcti().*/
-    void *dlhandle;              /**< The handle of dlopen if the tcti was
-                                      automatically loaded. */
-    IESYS_SESSION *enc_session;  /**< Ptr to the enc param session.
-                                      Used to restore session attributes */
-    ESYS_TR sav_session1;        /**< Used to store session for cases where call
-                                      with ESYS_TR_NONE is needed to determine object
-                                      name */
+    enum ESYS_STATE   state;           /**< The current state of the ESAPI context. */
+    TSS2_SYS_CONTEXT *sys;             /**< The SYS context used internally to talk to
+                                            the TPM. */
+    ESYS_TR      esys_handle_cnt;      /**< The next free ESYS_TR number. */
+    RSRC_NODE_T *rsrc_list;            /**< The linked list of all ESYS_TR objects. */
+    int32_t      timeout;              /**< The timeout to be used during
+                                            Tss2_Sys_ExecuteFinish. */
+    ESYS_TR session_type[3];           /**< The list of TPM session handles in the
+                                            current command execution. */
+    RSRC_NODE_T *session_tab[3];       /**< The list of TPM session meta data in the
+                                            current command execution. */
+    RSRC_NODE_T *auth_objects[3];      /**< The list of objects to be authenticated */
+    int          encryptNonceIdx;      /**< The index of the encrypt session. */
+    TPM2B_NONCE *encryptNonce;         /**< The nonce of the encrypt session, or NULL
+                                            if no encrypt session exists. */
+    int authsCount;                    /**< The number of session provided during the
+                                            command. */
+    int submissionCount;               /**< The current number of submissions of this
+                                            command to the TPM. */
+    TPM2B_DATA         salt;           /**< The salt used during a StartAuthSession.*/
+    IESYS_CMD_IN_PARAM in;             /**< Temporary storage for Input parameters
+                                            needed in corresponding _Finish function*/
+    ESYS_TR esys_handle;               /**< Temporary storage for the object's TPM
+                                            handle during Esys_TR_FromTPMPublic. */
+    TSS2_TCTI_CONTEXT *tcti_app_param; /**< The TCTI context provided by the
+                                            application during Esys_Initialize()
+                                            to be returned from Esys_GetTcti().*/
+    void *dlhandle;                    /**< The handle of dlopen if the tcti was
+                                            automatically loaded. */
+    IESYS_SESSION *enc_session;        /**< Ptr to the enc param session.
+                                            Used to restore session attributes */
+    ESYS_TR sav_session1;              /**< Used to store session for cases where call
+                                            with ESYS_TR_NONE is needed to determine object
+                                            name */
     ESYS_TR sav_session2;
     ESYS_TR sav_session3;
 
@@ -216,10 +216,10 @@ struct ESYS_CONTEXT {
 
 /** Makro testing parameters against null.
  */
-#define ESYS_ASSERT_NON_NULL(x) \
-    if ((x) == NULL) { \
-        LOG_ERROR(str(x) " == NULL."); \
-        return TSS2_ESYS_RC_BAD_REFERENCE; \
+#define ESYS_ASSERT_NON_NULL(x)                                                                    \
+    if ((x) == NULL) {                                                                             \
+        LOG_ERROR(str(x) " == NULL.");                                                             \
+        return TSS2_ESYS_RC_BAD_REFERENCE;                                                         \
     }
 
 #ifdef __cplusplus

@@ -8,45 +8,45 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>                     // for PRIx32, uint8_t
-#include <stdbool.h>                      // for true
-#include <stdio.h>                        // for NULL, size_t, sprintf
-#include <stdlib.h>                       // for malloc
+#include <inttypes.h> // for PRIx32, uint8_t
+#include <stdbool.h>  // for true
+#include <stdio.h>    // for NULL, size_t, sprintf
+#include <stdlib.h>   // for malloc
 
-#include "ifapi_config.h"                 // for IFAPI_CONFIG
+#include "ifapi_config.h" // for IFAPI_CONFIG
 #include "ifapi_json_serialize.h"
-#include "ifapi_macros.h"                 // for check_oom, goto_if_null2
-#include "ifapi_policy_json_serialize.h"  // for ifapi_json_TPMS_POLICY_seri...
-#include "tpm_json_deserialize.h"         // for ifapi_parse_json
-#include "tpm_json_serialize.h"           // for ifapi_json_TPMI_YES_NO_seri...
-#include "tss2_tpm2_types.h"              // for TPM2B_DIGEST, TPM2B_PUBLIC
+#include "ifapi_macros.h"                // for check_oom, goto_if_null2
+#include "ifapi_policy_json_serialize.h" // for ifapi_json_TPMS_POLICY_seri...
+#include "tpm_json_deserialize.h"        // for ifapi_parse_json
+#include "tpm_json_serialize.h"          // for ifapi_json_TPMI_YES_NO_seri...
+#include "tss2_tpm2_types.h"             // for TPM2B_DIGEST, TPM2B_PUBLIC
 
 #define LOGMODULE fapijson
-#include "util/log.h"                     // for return_error, return_if_error
+#include "util/log.h" // for return_error, return_if_error
 
-#define CHECK_IN_LIST(type, needle, ...) \
-    type tab[] = { __VA_ARGS__ }; \
-    size_t i; \
-    for(i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) \
-        if (needle == tab[i]) \
-            break; \
-    if (i == sizeof(tab) / sizeof(tab[0])) { \
-        LOG_ERROR("Bad value"); \
-        return TSS2_FAPI_RC_BAD_VALUE; \
+#define CHECK_IN_LIST(type, needle, ...)                                                           \
+    type   tab[] = { __VA_ARGS__ };                                                                \
+    size_t i;                                                                                      \
+    for (i = 0; i < sizeof(tab) / sizeof(tab[0]); i++)                                             \
+        if (needle == tab[i])                                                                      \
+            break;                                                                                 \
+    if (i == sizeof(tab) / sizeof(tab[0])) {                                                       \
+        LOG_ERROR("Bad value");                                                                    \
+        return TSS2_FAPI_RC_BAD_VALUE;                                                             \
     }
 
-#define JSON_CLEAR(jso) \
-    if (jso) {                   \
-        json_object_put(jso); \
+#define JSON_CLEAR(jso)                                                                            \
+    if (jso) {                                                                                     \
+        json_object_put(jso);                                                                      \
     }
 
-#define return_if_jso_error(r,msg, jso)       \
-    if ((r) != TSS2_RC_SUCCESS) { \
-        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
-        if (jso) {                                                   \
-            json_object_put(jso);                                    \
-        } \
-        return r;  \
+#define return_if_jso_error(r, msg, jso)                                                           \
+    if ((r) != TSS2_RC_SUCCESS) {                                                                  \
+        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r));                               \
+        if (jso) {                                                                                 \
+            json_object_put(jso);                                                                  \
+        }                                                                                          \
+        return r;                                                                                  \
     }
 
 /** Serialize a character string to json.
@@ -57,10 +57,7 @@
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  */
 TSS2_RC
-ifapi_json_char_serialize(
-    const char *in,
-    json_object **jso)
-{
+ifapi_json_char_serialize(const char *in, json_object **jso) {
     if (in == NULL) {
         *jso = json_object_new_string("");
     } else {
@@ -80,8 +77,7 @@ ifapi_json_char_serialize(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso)
-{
+ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso) {
     TSS2_RC r;
 
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -102,7 +98,7 @@ ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso)
     SAFE_FREE(hex_string);
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     SAFE_FREE(hex_string);
     return r;
 }
@@ -117,11 +113,10 @@ ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
-{
+ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -287,8 +282,9 @@ ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
         }
 
         jso2 = NULL;
-        r = ifapi_json_TPMU_PUBLIC_ID_serialize(&in->unique_init, in->public.publicArea.type, &jso2);
-        return_if_error(r,"Serialize TPMU_PUBLIC_ID");
+        r = ifapi_json_TPMU_PUBLIC_ID_serialize(&in->unique_init, in->public.publicArea.type,
+                                                &jso2);
+        return_if_error(r, "Serialize TPMU_PUBLIC_ID");
 
         if (json_object_object_add(*jso, "unique_init", jso2)) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -308,12 +304,10 @@ ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_EXT_PUB_KEY_serialize(const IFAPI_EXT_PUB_KEY *in,
-                                       json_object **jso)
-{
+ifapi_json_IFAPI_EXT_PUB_KEY_serialize(const IFAPI_EXT_PUB_KEY *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -357,11 +351,10 @@ ifapi_json_IFAPI_EXT_PUB_KEY_serialize(const IFAPI_EXT_PUB_KEY *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_NV_serialize(const IFAPI_NV *in, json_object **jso)
-{
+ifapi_json_IFAPI_NV_serialize(const IFAPI_NV *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -447,11 +440,10 @@ ifapi_json_IFAPI_NV_serialize(const IFAPI_NV *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_HIERARCHY_serialize(const IFAPI_HIERARCHY *in, json_object **jso)
-{
+ifapi_json_IFAPI_HIERARCHY_serialize(const IFAPI_HIERARCHY *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -501,12 +493,10 @@ ifapi_json_IFAPI_HIERARCHY_serialize(const IFAPI_HIERARCHY *in, json_object **js
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_FAPI_QUOTE_INFO_serialize(const FAPI_QUOTE_INFO *in,
-                                     json_object **jso)
-{
+ifapi_json_FAPI_QUOTE_INFO_serialize(const FAPI_QUOTE_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -528,7 +518,6 @@ ifapi_json_FAPI_QUOTE_INFO_serialize(const FAPI_QUOTE_INFO *in,
     return TSS2_RC_SUCCESS;
 }
 
-
 /** Serialize value of type IFAPI_DUPLICATE to json.
  *
  * @param[in] in value to be serialized.
@@ -539,12 +528,10 @@ ifapi_json_FAPI_QUOTE_INFO_serialize(const FAPI_QUOTE_INFO *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_DUPLICATE_serialize(const IFAPI_DUPLICATE *in,
-                                     json_object **jso)
-{
+ifapi_json_IFAPI_DUPLICATE_serialize(const IFAPI_DUPLICATE *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -609,12 +596,11 @@ ifapi_json_IFAPI_DUPLICATE_serialize(const IFAPI_DUPLICATE *in,
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPM2_HANDLE.
  */
 TSS2_RC
-ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_serialize(const IFAPI_OBJECT_TYPE_CONSTANT
-        in, json_object **jso)
-{
-    *jso = json_object_new_int64((int64_t) in);
+ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_serialize(const IFAPI_OBJECT_TYPE_CONSTANT in,
+                                                json_object                    **jso) {
+    *jso = json_object_new_int64((int64_t)in);
     if (*jso == NULL) {
-        LOG_ERROR("Bad value %"PRIx32 "", in);
+        LOG_ERROR("Bad value %" PRIx32 "", in);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;
@@ -631,9 +617,7 @@ ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_serialize(const IFAPI_OBJECT_TYPE_CONSTANT
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_OBJECT_serialize(const IFAPI_OBJECT *in,
-                                  json_object **jso)
-{
+ifapi_json_IFAPI_OBJECT_serialize(const IFAPI_OBJECT *in, json_object **jso) {
     TSS2_RC r;
 
     if (*jso == NULL)
@@ -721,11 +705,10 @@ ifapi_json_IFAPI_OBJECT_serialize(const IFAPI_OBJECT *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_CAP_INFO_serialize(const IFAPI_CAP_INFO *in, json_object **jso)
-{
+ifapi_json_IFAPI_CAP_INFO_serialize(const IFAPI_CAP_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -759,14 +742,13 @@ ifapi_json_IFAPI_CAP_INFO_serialize(const IFAPI_CAP_INFO *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_INFO_serialize(const IFAPI_INFO *in, json_object **jso)
-{
+ifapi_json_IFAPI_INFO_serialize(const IFAPI_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     json_object *jso_cap_list;
-    size_t i;
+    size_t       i;
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -794,7 +776,6 @@ ifapi_json_IFAPI_INFO_serialize(const IFAPI_INFO *in, json_object **jso)
         if (json_object_array_add(jso_cap_list, jso2)) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
         }
-
     }
     if (json_object_object_add(*jso, "capabilities", jso_cap_list)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -812,22 +793,20 @@ ifapi_json_IFAPI_INFO_serialize(const IFAPI_INFO *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type IFAPI_EVENT_TYPE.
  */
 TSS2_RC
-ifapi_json_IFAPI_EVENT_TYPE_serialize(const IFAPI_EVENT_TYPE in,
-                                      json_object **jso)
-{
+ifapi_json_IFAPI_EVENT_TYPE_serialize(const IFAPI_EVENT_TYPE in, json_object **jso) {
     return ifapi_json_IFAPI_EVENT_TYPE_serialize_txt(in, jso);
 }
 
 typedef struct {
     IFAPI_EVENT_TYPE in;
-    char *name;
+    char            *name;
 } IFAPI_EVENT_TYPE_ASSIGN;
 
 static IFAPI_EVENT_TYPE_ASSIGN serialize_IFAPI_EVENT_TYPE_tab[] = {
-    { IFAPI_IMA_EVENT_TAG,         "ima_template" },
-    { IFAPI_PC_CLIENT,             "pcclient_std" },
-    { IFAPI_TSS_EVENT_TAG,         "tss2" },
-    { IFAPI_CEL_TAG,               "cel"  },
+    { IFAPI_IMA_EVENT_TAG, "ima_template" },
+    { IFAPI_PC_CLIENT, "pcclient_std" },
+    { IFAPI_TSS_EVENT_TAG, "tss2" },
+    { IFAPI_CEL_TAG, "cel" },
 };
 
 /** Get json object for a constant, if a variable is actually of type IFAPI_EVENT_TYPE.
@@ -839,12 +818,8 @@ static IFAPI_EVENT_TYPE_ASSIGN serialize_IFAPI_EVENT_TYPE_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type IFAPI_EVENT_TYPE.
  */
 TSS2_RC
-ifapi_json_IFAPI_EVENT_TYPE_serialize_txt(
-    const IFAPI_EVENT_TYPE in,
-    json_object **str_jso)
-{
-    size_t n = sizeof(serialize_IFAPI_EVENT_TYPE_tab) / sizeof(
-                   serialize_IFAPI_EVENT_TYPE_tab[0]);
+ifapi_json_IFAPI_EVENT_TYPE_serialize_txt(const IFAPI_EVENT_TYPE in, json_object **str_jso) {
+    size_t n = sizeof(serialize_IFAPI_EVENT_TYPE_tab) / sizeof(serialize_IFAPI_EVENT_TYPE_tab[0]);
     size_t i;
     for (i = 0; i < n; i++) {
         if (serialize_IFAPI_EVENT_TYPE_tab[i].in == in) {
@@ -867,12 +842,10 @@ ifapi_json_IFAPI_EVENT_TYPE_serialize_txt(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_TSS_EVENT_serialize(const IFAPI_TSS_EVENT *in,
-                                     json_object **jso)
-{
+ifapi_json_IFAPI_TSS_EVENT_serialize(const IFAPI_TSS_EVENT *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -910,12 +883,10 @@ ifapi_json_IFAPI_TSS_EVENT_serialize(const IFAPI_TSS_EVENT *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_IMA_EVENT_serialize(const IFAPI_IMA_EVENT *in,
-                                     json_object **jso)
-{
+ifapi_json_IFAPI_IMA_EVENT_serialize(const IFAPI_IMA_EVENT *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -943,8 +914,8 @@ ifapi_json_IFAPI_IMA_EVENT_serialize(const IFAPI_IMA_EVENT *in,
  */
 TSS2_RC
 ifapi_json_IFAPI_EVENT_UNION_serialize(const IFAPI_EVENT_UNION *in,
-                                       UINT32 selector, json_object **jso)
-{
+                                       UINT32                   selector,
+                                       json_object            **jso) {
     if (*jso == NULL)
         *jso = json_object_new_object();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
@@ -957,7 +928,7 @@ ifapi_json_IFAPI_EVENT_UNION_serialize(const IFAPI_EVENT_UNION *in,
     case IFAPI_CEL_TAG:
         return ifapi_json_TPMS_EVENT_CELMGT_serialize(&in->cel_event, jso);
     default:
-        LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
         return TSS2_SYS_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
@@ -973,11 +944,10 @@ ifapi_json_IFAPI_EVENT_UNION_serialize(const IFAPI_EVENT_UNION *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_EVENT_serialize(const IFAPI_EVENT *in, json_object **jso)
-{
+ifapi_json_IFAPI_EVENT_serialize(const IFAPI_EVENT *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *recnum = NULL;
     json_object *pcr = NULL;
     json_object *digests = NULL;
@@ -1048,128 +1018,127 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_IFAPI_CONFIG_serialize(const IFAPI_CONFIG *in, json_object **jso)
- {
-     TSS2_RC r;
-     json_object *jso2;
+ifapi_json_IFAPI_CONFIG_serialize(const IFAPI_CONFIG *in, json_object **jso) {
+    TSS2_RC      r;
+    json_object *jso2;
 
-     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-     if (*jso == NULL)
-         *jso = json_object_new_object();
+    if (*jso == NULL)
+        *jso = json_object_new_object();
 
-     jso2 = NULL;
-     r = ifapi_json_char_serialize(in->profile_dir, &jso2);
-     return_if_error(r, "Serialize char");
+    jso2 = NULL;
+    r = ifapi_json_char_serialize(in->profile_dir, &jso2);
+    return_if_error(r, "Serialize char");
 
-     if (json_object_object_add(*jso, "profile_dir", jso2)) {
-         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-     }
+    if (json_object_object_add(*jso, "profile_dir", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-     jso2 = NULL;
-     r = ifapi_json_char_serialize(in->user_dir, &jso2);
-     return_if_error(r, "Serialize char");
+    jso2 = NULL;
+    r = ifapi_json_char_serialize(in->user_dir, &jso2);
+    return_if_error(r, "Serialize char");
 
-     if (json_object_object_add(*jso, "user_dir", jso2)) {
-         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-     }
+    if (json_object_object_add(*jso, "user_dir", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-     jso2 = NULL;
-     r = ifapi_json_char_serialize(in->keystore_dir, &jso2);
-     return_if_error(r, "Serialize char");
+    jso2 = NULL;
+    r = ifapi_json_char_serialize(in->keystore_dir, &jso2);
+    return_if_error(r, "Serialize char");
 
-     if (json_object_object_add(*jso, "system_dir", jso2)) {
-         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-     }
+    if (json_object_object_add(*jso, "system_dir", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-     jso2 = NULL;
-     r = ifapi_json_char_serialize(in->log_dir, &jso2);
-     return_if_error(r, "Serialize char");
+    jso2 = NULL;
+    r = ifapi_json_char_serialize(in->log_dir, &jso2);
+    return_if_error(r, "Serialize char");
 
-     if (json_object_object_add(*jso, "log_dir", jso2)) {
-         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-     }
+    if (json_object_object_add(*jso, "log_dir", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-     jso2 = NULL;
-     r = ifapi_json_char_serialize(in->profile_name, &jso2);
-     return_if_error(r, "Serialize char");
+    jso2 = NULL;
+    r = ifapi_json_char_serialize(in->profile_name, &jso2);
+    return_if_error(r, "Serialize char");
 
-     if (json_object_object_add(*jso, "profile_name", jso2)) {
-         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-     }
+    if (json_object_object_add(*jso, "profile_name", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-     jso2 = NULL;
-     r = ifapi_json_char_serialize(in->tcti, &jso2);
-     return_if_error(r, "Serialize char");
+    jso2 = NULL;
+    r = ifapi_json_char_serialize(in->tcti, &jso2);
+    return_if_error(r, "Serialize char");
 
-     if (json_object_object_add(*jso, "tcti", jso2)) {
-         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-     }
+    if (json_object_object_add(*jso, "tcti", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-     jso2 = NULL;
-     r = ifapi_json_TPML_PCR_SELECTION_serialize(&in->system_pcrs, &jso2);
-     return_if_error(r, "Serialize char");
+    jso2 = NULL;
+    r = ifapi_json_TPML_PCR_SELECTION_serialize(&in->system_pcrs, &jso2);
+    return_if_error(r, "Serialize char");
 
-     if (json_object_object_add(*jso, "system_pcrs", jso2)) {
-         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-     }
+    if (json_object_object_add(*jso, "system_pcrs", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-     jso2 = NULL;
-     r = ifapi_json_char_serialize(in->ek_cert_file, &jso2);
-     return_if_error(r, "Serialize char");
+    jso2 = NULL;
+    r = ifapi_json_char_serialize(in->ek_cert_file, &jso2);
+    return_if_error(r, "Serialize char");
 
-     if (json_object_object_add(*jso, "ek_cert_file", jso2)) {
-         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-     }
+    if (json_object_object_add(*jso, "ek_cert_file", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-     jso2 = NULL;
-     r = ifapi_json_TPMI_YES_NO_serialize(in->ek_cert_less, &jso2);
-     return_if_error(r, "Serialize yes no");
+    jso2 = NULL;
+    r = ifapi_json_TPMI_YES_NO_serialize(in->ek_cert_less, &jso2);
+    return_if_error(r, "Serialize yes no");
 
-     if (json_object_object_add(*jso, "ek_cert_less", jso2)) {
-         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-     }
+    if (json_object_object_add(*jso, "ek_cert_less", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-     if (in->ek_fingerprint.hashAlg) {
-         jso2 = NULL;
-         ifapi_json_TPMT_HA_serialize(&in->ek_fingerprint, &jso2);
-         return_if_error(r, "Serialize char");
+    if (in->ek_fingerprint.hashAlg) {
+        jso2 = NULL;
+        ifapi_json_TPMT_HA_serialize(&in->ek_fingerprint, &jso2);
+        return_if_error(r, "Serialize char");
 
-         if (json_object_object_add(*jso, "ek_fingerprint", jso2)) {
-             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-         }
-     }
+        if (json_object_object_add(*jso, "ek_fingerprint", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
+    }
 
-     jso2 = NULL;
-     r = ifapi_json_char_serialize(in->web_cert_service, &jso2);
-     return_if_error(r, "Serialize char");
+    jso2 = NULL;
+    r = ifapi_json_char_serialize(in->web_cert_service, &jso2);
+    return_if_error(r, "Serialize char");
 
-     if (json_object_object_add(*jso, "web_cert_service", jso2)) {
-         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-     }
+    if (json_object_object_add(*jso, "web_cert_service", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
 
-     if (in->firmware_log_file) {
-         jso2 = NULL;
-         r = ifapi_json_char_serialize(in->firmware_log_file, &jso2);
-         return_if_error(r, "Serialize char");
+    if (in->firmware_log_file) {
+        jso2 = NULL;
+        r = ifapi_json_char_serialize(in->firmware_log_file, &jso2);
+        return_if_error(r, "Serialize char");
 
-         if (json_object_object_add(*jso, "firmware_log_file", jso2)) {
-             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-         }
-     }
+        if (json_object_object_add(*jso, "firmware_log_file", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
+    }
 
-     if (in->ima_log_file) {
-         jso2 = NULL;
-         r = ifapi_json_char_serialize(in->ima_log_file, &jso2);
-         return_if_error(r, "Serialize char");
+    if (in->ima_log_file) {
+        jso2 = NULL;
+        r = ifapi_json_char_serialize(in->ima_log_file, &jso2);
+        return_if_error(r, "Serialize char");
 
-         if (json_object_object_add(*jso, "ima_log_file", jso2)) {
-             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-         }
-     }
+        if (json_object_object_add(*jso, "ima_log_file", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
+    }
 
-     return TSS2_RC_SUCCESS;
- }
+    return TSS2_RC_SUCCESS;
+}
 
 /** Serialize a TPMS_CEL_VERSION structure to json.
  *
@@ -1180,15 +1149,12 @@ ifapi_json_IFAPI_CONFIG_serialize(const IFAPI_CONFIG *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_PCR_SELECTION.
  */
 TSS2_RC
-ifapi_json_TPMS_CEL_VERSION_serialize(
-    const TPMS_CEL_VERSION *in,
-    json_object **jso)
-{
+ifapi_json_TPMS_CEL_VERSION_serialize(const TPMS_CEL_VERSION *in, json_object **jso) {
     if (*jso == NULL) {
         *jso = json_object_new_object();
         return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     }
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2 = NULL;
     r = ifapi_json_UINT16_serialize(in->major, &jso2);
     return_if_error(r, "Serialize major version");
@@ -1206,7 +1172,6 @@ ifapi_json_TPMS_CEL_VERSION_serialize(
     return TSS2_RC_SUCCESS;
 }
 
-
 /**  Serialize a IFAPI_CELU to json.
  *
  * Serialize canonical eventlog management events.
@@ -1219,25 +1184,24 @@ ifapi_json_TPMS_CEL_VERSION_serialize(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_CELMGT_serialize(const TPMU_CELMGT *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_CELMGT_serialize(const TPMU_CELMGT *in, UINT32 selector, json_object **jso) {
     json_object *jso2;
     switch (selector) {
-        case CEL_VERSION:
-            return ifapi_json_TPMS_CEL_VERSION_serialize(&in->cel_version, jso);
-        case FIRMWARE_END:
-            return ifapi_json_TPMS_EMPTY_serialize(&in->firmware_end, jso);
-        case CEL_TIMESTAMP:
-            jso2 = NULL;
-            if (ifapi_json_UINT64_serialize(in->cel_timestamp, &jso2))
-                 return TSS2_FAPI_RC_BAD_VALUE;
-            if (json_object_object_add(*jso, "cel_timestamp", jso2)) {
-                return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-            }
-            break;
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
+    case CEL_VERSION:
+        return ifapi_json_TPMS_CEL_VERSION_serialize(&in->cel_version, jso);
+    case FIRMWARE_END:
+        return ifapi_json_TPMS_EMPTY_serialize(&in->firmware_end, jso);
+    case CEL_TIMESTAMP:
+        jso2 = NULL;
+        if (ifapi_json_UINT64_serialize(in->cel_timestamp, &jso2))
             return TSS2_FAPI_RC_BAD_VALUE;
+        if (json_object_object_add(*jso, "cel_timestamp", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
+        break;
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -1251,12 +1215,11 @@ ifapi_json_TPMU_CELMGT_serialize(const TPMU_CELMGT *in, UINT32 selector, json_ob
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_CELMGTTYPE_serialize(const TPMI_CELMGTTYPE in, json_object **jso)
-{
-    static const struct { TPMI_CELMGTTYPE in; const char *name; } jso_tab[] = {
-        { CEL_VERSION, "cel_version" },
-        { FIRMWARE_END, "firmware_end" }
-    };
+ifapi_json_TPMI_CELMGTTYPE_serialize(const TPMI_CELMGTTYPE in, json_object **jso) {
+    static const struct {
+        TPMI_CELMGTTYPE in;
+        const char     *name;
+    } jso_tab[] = { { CEL_VERSION, "cel_version" }, { FIRMWARE_END, "firmware_end" } };
     CHECK_IN_LIST(TPMI_CELMGTTYPE, in, CEL_VERSION, FIRMWARE_END);
     for (size_t j = 0; j < sizeof(jso_tab) / sizeof(jso_tab[0]); j++) {
         if (jso_tab[j].in == in) {
@@ -1278,14 +1241,13 @@ ifapi_json_TPMI_CELMGTTYPE_serialize(const TPMI_CELMGTTYPE in, json_object **jso
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_EVENT_CELMGT_serialize(const TPMS_EVENT_CELMGT *in, json_object **jso)
-{
+ifapi_json_TPMS_EVENT_CELMGT_serialize(const TPMS_EVENT_CELMGT *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     jso2 = NULL;
     r = ifapi_json_TPMI_CELMGTTYPE_serialize(in->type, &jso2);
@@ -1296,7 +1258,7 @@ ifapi_json_TPMS_EVENT_CELMGT_serialize(const TPMS_EVENT_CELMGT *in, json_object 
     }
     jso2 = NULL;
     r = ifapi_json_TPMU_CELMGT_serialize(&in->data, in->type, &jso2);
-    return_if_jso_error(r,"Serialize TPMU_CELMGT", jso2);
+    return_if_jso_error(r, "Serialize TPMU_CELMGT", jso2);
 
     if (jso2) {
         if (json_object_object_add(*jso, "data", jso2)) {

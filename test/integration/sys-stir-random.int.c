@@ -8,16 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>            // for NULL
-#include <stdlib.h>           // for exit
+#include <stdio.h>  // for NULL
+#include <stdlib.h> // for exit
 
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_SYS_RC_B...
-#include "tss2_sys.h"         // for Tss2_Sys_StirRandom, TSS2_SYS_CONTEXT
-#include "tss2_tpm2_types.h"  // for TPM2B_SENSITIVE_DATA
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_SYS_RC_B...
+#include "tss2_sys.h"        // for Tss2_Sys_StirRandom, TSS2_SYS_CONTEXT
+#include "tss2_tpm2_types.h" // for TPM2B_SENSITIVE_DATA
 
 #define LOGMODULE test
-#include "test.h"             // for test_invoke
-#include "util/log.h"         // for LOG_ERROR, LOG_INFO
+#include "test.h"     // for test_invoke
+#include "util/log.h" // for LOG_ERROR, LOG_INFO
 
 /**
  * This program contains integration test for SYS Tss2_Sys_StirRandom.
@@ -25,14 +25,11 @@
  * supply correct parameters.
  */
 int
-test_invoke (TSS2_SYS_CONTEXT *sys_context)
-{
-    TSS2_RC rc;
-    TPM2B_SENSITIVE_DATA inData  = {
-        .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
-    };
+test_invoke(TSS2_SYS_CONTEXT *sys_context) {
+    TSS2_RC              rc;
+    TPM2B_SENSITIVE_DATA inData
+        = { .size = 20,
+            .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 } };
 
     LOG_INFO("StirRandom tests started.");
     /* Check invalid context */

@@ -8,33 +8,28 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>     // for uint8_t
-#include <stdio.h>        // for NULL, fopen, fclose, fileno, fseek, ftell
-#include <stdlib.h>       // for exit, malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>       // for strlen, memcmp, strcmp, memset
-#include <unistd.h>       // for read
+#include <inttypes.h> // for uint8_t
+#include <stdio.h>    // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>   // for exit, malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>   // for strlen, memcmp, strcmp, memset
+#include <unistd.h>   // for read
 
-#include "test-fapi.h"    // for ASSERT, pcr_reset, test_invoke_fapi
-#include "tss2_common.h"  // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SU...
-#include "tss2_fapi.h"    // for Fapi_Delete, Fapi_CreateNv, Fapi_NvRead
+#include "test-fapi.h"   // for ASSERT, pcr_reset, test_invoke_fapi
+#include "tss2_common.h" // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SU...
+#include "tss2_fapi.h"   // for Fapi_Delete, Fapi_CreateNv, Fapi_NvRead
 
 #define LOGMODULE test
-#include "util/log.h"     // for goto_if_error, SAFE_FREE, LOG_ERROR, UNUSED
+#include "util/log.h" // for goto_if_error, SAFE_FREE, LOG_ERROR, UNUSED
 
-#define NV_SIZE 1200
+#define NV_SIZE   1200
 
-#define PASSWORD "abc"
+#define PASSWORD  "abc"
 #define USER_DATA "my user data"
 
 static char *password;
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -47,17 +42,13 @@ auth_callback(
 }
 
 static TSS2_RC
-action_callback(
-    const char *objectPath,
-    const char *action,
-    void *userData)
-{
+action_callback(const char *objectPath, const char *action, void *userData) {
     UNUSED(userData);
 
     ASSERT(objectPath != NULL);
     ASSERT(action != NULL);
 
-    ASSERT(strlen(userData) == strlen((char*)USER_DATA));
+    ASSERT(strlen(userData) == strlen((char *)USER_DATA));
 
     if (strcmp(objectPath, "/nv/Owner/myNV") != 0) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Unexpected path");
@@ -69,17 +60,16 @@ action_callback(
     }
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     exit(EXIT_FAILURE);
 }
 
 static char *
-read_policy(FAPI_CONTEXT *context, char *policy_name)
-{
+read_policy(FAPI_CONTEXT *context, char *policy_name) {
     FILE *stream = NULL;
-    long policy_size;
+    long  policy_size;
     char *json_policy = NULL;
-    char policy_file[1024];
+    char  policy_file[1024];
 
     if (snprintf(&policy_file[0], 1023, TOP_SOURCEDIR "/test/data/fapi/%s.json", policy_name) < 0)
         return NULL;
@@ -93,9 +83,7 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    return_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            NULL);
+    return_if_null(json_policy, "Could not allocate memory for the JSON policy", NULL);
     stream = fopen(policy_file, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -128,19 +116,18 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_nv_ordinary(FAPI_CONTEXT *context)
-{
-    TSS2_RC r;
-    char *nvPathOrdinary = "/nv/Owner/myNV";
-    uint8_t data_src[NV_SIZE];
+test_fapi_nv_ordinary(FAPI_CONTEXT *context) {
+    TSS2_RC  r;
+    char    *nvPathOrdinary = "/nv/Owner/myNV";
+    uint8_t  data_src[NV_SIZE];
     uint8_t *data_dest = NULL;
-    char *logData = NULL;
-    size_t dest_size = NV_SIZE;
-    char *description1 = "nvDescription";
-    char *description2 = NULL;
-    char *policy_action = "/policy/pol_action";
-    char *policy_pcr8_0 = "/policy/pol_pcr8_0";
-    char *json_policy = NULL;
+    char    *logData = NULL;
+    size_t   dest_size = NV_SIZE;
+    char    *description1 = "nvDescription";
+    char    *description2 = NULL;
+    char    *policy_action = "/policy/pol_action";
+    char    *policy_pcr8_0 = "/policy/pol_pcr8_0";
+    char    *json_policy = NULL;
 
     for (int i = 0; i < NV_SIZE; i++) {
         data_src[i] = (i % 10) + 1;
@@ -175,8 +162,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     ASSERT(logData != NULL);
     ASSERT(strlen(logData) == 0);
 
-    if (dest_size != NV_SIZE ||
-        memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE || memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
@@ -189,13 +175,12 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     /* Test with pcr policy with pcr 8. */
 
     uint8_t *pcr_digest = NULL;
-    char *pcrLog = NULL;
-    size_t pcr_digest_size = 0;
-    uint8_t zero_digest[32];
+    char    *pcrLog = NULL;
+    size_t   pcr_digest_size = 0;
+    uint8_t  zero_digest[32];
     memset(&zero_digest[0], 0, 32);
 
-    r = Fapi_PcrRead(context, 8, &pcr_digest,
-                     &pcr_digest_size, &pcrLog);
+    r = Fapi_PcrRead(context, 8, &pcr_digest, &pcr_digest_size, &pcrLog);
     goto_if_error(r, "Error Fapi_PcrRead", error);
     ASSERT(pcr_digest != NULL);
     ASSERT(pcrLog != NULL);
@@ -229,8 +214,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
         ASSERT(logData != NULL);
         ASSERT(strlen(logData) == 0);
 
-        if (dest_size != NV_SIZE ||
-            memcmp(data_src, data_dest, dest_size) != 0) {
+        if (dest_size != NV_SIZE || memcmp(data_src, data_dest, dest_size) != 0) {
             LOG_ERROR("Error: result of nv read is wrong.");
             goto error;
         }
@@ -256,8 +240,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     ASSERT(logData != NULL);
     ASSERT(strlen(logData) == 0);
 
-    if (dest_size != NV_SIZE ||
-        memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE || memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
@@ -289,8 +272,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     ASSERT(logData != NULL);
     ASSERT(strlen(logData) == 0);
 
-    if (dest_size != NV_SIZE ||
-        memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE || memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
@@ -327,8 +309,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     ASSERT(logData != NULL);
     ASSERT(strlen(logData) == 0);
 
-    if (dest_size != NV_SIZE ||
-        memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE || memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
@@ -357,8 +338,7 @@ test_fapi_nv_ordinary(FAPI_CONTEXT *context)
     ASSERT(logData != NULL);
     ASSERT(strlen(logData) == 0);
 
-    if (dest_size != NV_SIZE ||
-        memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE || memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
@@ -384,7 +364,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *context)
-{
+test_invoke_fapi(FAPI_CONTEXT *context) {
     return test_fapi_nv_ordinary(context);
 }

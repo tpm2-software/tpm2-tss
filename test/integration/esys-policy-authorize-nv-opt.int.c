@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>          // for false, bool, true
-#include <stdlib.h>           // for free, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for memcmp
+#include <stdbool.h> // for false, bool, true
+#include <stdlib.h>  // for free, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>  // for memcmp
 
-#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
-#include "tss2_common.h"      // for BYTE, TSS2_RC, TSS2_RC_SUCCESS, TSS2_RE...
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_FlushContext, Esys_N...
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2_RC_COMMAND_CODE, TPM...
+#include "test-esys.h"       // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"     // for BYTE, TSS2_RC, TSS2_RC_SUCCESS, TSS2_RE...
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_FlushContext, Esys_N...
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPM2_RC_COMMAND_CODE, TPM...
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOGBLOB_DEBUG
+#include "util/log.h" // for goto_if_error, LOG_ERROR, LOGBLOB_DEBUG
 
-#define FLUSH true
+#define FLUSH     true
 #define NOT_FLUSH false
 
 /*
@@ -28,30 +28,25 @@
  * The digest is computed with Esys_PolicyGetDigest.
  */
 bool
-cmp_policy_digest(ESYS_CONTEXT * esys_context,
-                  ESYS_TR * session,
-                  TPM2B_DIGEST * expected_digest,
-                  char *comment, bool flush_session)
-{
+cmp_policy_digest(ESYS_CONTEXT *esys_context,
+                  ESYS_TR      *session,
+                  TPM2B_DIGEST *expected_digest,
+                  char         *comment,
+                  bool          flush_session) {
 
-    TSS2_RC r;
+    TSS2_RC       r;
     TPM2B_DIGEST *policyDigest;
 
-    r = Esys_PolicyGetDigest(esys_context,
-                             *session,
-                             ESYS_TR_NONE,
-                             ESYS_TR_NONE, ESYS_TR_NONE, &policyDigest);
+    r = Esys_PolicyGetDigest(esys_context, *session, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                             &policyDigest);
     goto_if_error(r, "Error: PolicyGetDigest", error);
 
-    LOGBLOB_DEBUG(&policyDigest->buffer[0], policyDigest->size,
-                  "POLICY DIGEST");
+    LOGBLOB_DEBUG(&policyDigest->buffer[0], policyDigest->size, "POLICY DIGEST");
 
     if (policyDigest->size != 32
-        || memcmp(&policyDigest->buffer[0], &expected_digest->buffer[0],
-                  policyDigest->size) != 0) {
+        || memcmp(&policyDigest->buffer[0], &expected_digest->buffer[0], policyDigest->size) != 0) {
         free(policyDigest);
-        LOG_ERROR("Error: Policy%s digest did not match expected policy.",
-                  comment);
+        LOG_ERROR("Error: Policy%s digest did not match expected policy.", comment);
         return false;
     }
     free(policyDigest);
@@ -63,7 +58,7 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
 
     return true;
 
- error:
+error:
     return false;
 }
 
@@ -84,29 +79,23 @@ cmp_policy_digest(ESYS_CONTEXT * esys_context,
  * @retval EXIT_SUCCESS
  */
 int
-test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
-{
+test_esys_policy_authorize_nv_opt(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
-    int failure_return = EXIT_FAILURE;
+    int     failure_return = EXIT_FAILURE;
     ESYS_TR nvHandle = ESYS_TR_NONE;
 
     /* Dummy parameters for trial sessoin  */
-    ESYS_TR sessionTrial = ESYS_TR_NONE;
-    TPMT_SYM_DEF symmetricTrial = {.algorithm = TPM2_ALG_AES,
-        .keyBits = {.aes = 128},
-        .mode = {.aes = TPM2_ALG_CFB}
-    };
-    TPM2B_NONCE nonceCallerTrial = {
-        .size = 32,
-        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
-                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
-    };
+    ESYS_TR      sessionTrial = ESYS_TR_NONE;
+    TPMT_SYM_DEF symmetricTrial
+        = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
+    TPM2B_NONCE nonceCallerTrial
+        = { .size = 32,
+            .buffer = { 1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16,
+                        17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32 } };
 
     /* Create valid NV handle */
-    TPM2B_AUTH auth = {.size = 20,
-        .buffer = {10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                   20, 21, 22, 23, 24, 25, 26, 27, 28, 29}
-    };
+    TPM2B_AUTH auth = { .size = 20, .buffer = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                                20, 21, 22, 23, 24, 25, 26, 27, 28, 29 } };
 
     TPM2B_NV_PUBLIC publicInfo = {
         .size = 0,
@@ -128,10 +117,7 @@ test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
                      }
     };
 
-    r = Esys_NV_DefineSpace(esys_context,
-                            ESYS_TR_RH_OWNER,
-                            ESYS_TR_PASSWORD,
-                            ESYS_TR_NONE,
+    r = Esys_NV_DefineSpace(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
                             ESYS_TR_NONE, &auth, &publicInfo, &nvHandle);
 
     goto_if_error(r, "Error esys define nv space", error);
@@ -139,52 +125,36 @@ test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
     /*
      * Test PolicyNV
      */
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
-                              &sessionTrial);
-    goto_if_error(r, "Error: During initialization of policy trial session",
-                  error);
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, &nonceCallerTrial, TPM2_SE_TRIAL, &symmetricTrial,
+                              TPM2_ALG_SHA256, &sessionTrial);
+    goto_if_error(r, "Error: During initialization of policy trial session", error);
 
-    UINT16 offset = 0;
-    TPM2_EO operation = TPM2_EO_EQ;
-    TPM2B_OPERAND operandB = {
-        .size = 8,
-        .buffer = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x08, 0x09}
-    };
+    UINT16        offset = 0;
+    TPM2_EO       operation = TPM2_EO_EQ;
+    TPM2B_OPERAND operandB
+        = { .size = 8, .buffer = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x08, 0x09 } };
 
-    r = Esys_PolicyNV(esys_context,
-                      ESYS_TR_RH_OWNER,
-                      nvHandle,
-                      sessionTrial,
-                      ESYS_TR_PASSWORD,
+    r = Esys_PolicyNV(esys_context, ESYS_TR_RH_OWNER, nvHandle, sessionTrial, ESYS_TR_PASSWORD,
                       ESYS_TR_NONE, ESYS_TR_NONE, &operandB, offset, operation);
     goto_if_error(r, "Error: PolicyNV", error);
 
-    TPM2B_DIGEST expectedPolicyNV = {
-        .size = 32,
-        .buffer = { 0xe3, 0x60, 0x27, 0x10, 0xe7, 0x58, 0x18, 0xc5, 0x96, 0xed, 0xf4,
-                    0x32, 0x6a, 0x84, 0x06, 0x65, 0x85, 0x8e, 0x67, 0x8b, 0x0c, 0xb7,
-                    0x0f, 0x60, 0x85, 0xc9, 0xa6, 0xc5, 0xb1, 0x4e, 0x22, 0x45 }
-    };
+    TPM2B_DIGEST expectedPolicyNV
+        = { .size = 32,
+            .buffer = { 0xe3, 0x60, 0x27, 0x10, 0xe7, 0x58, 0x18, 0xc5, 0x96, 0xed, 0xf4,
+                        0x32, 0x6a, 0x84, 0x06, 0x65, 0x85, 0x8e, 0x67, 0x8b, 0x0c, 0xb7,
+                        0x0f, 0x60, 0x85, 0xc9, 0xa6, 0xc5, 0xb1, 0x4e, 0x22, 0x45 } };
 
-    if (!cmp_policy_digest(esys_context, &sessionTrial, &expectedPolicyNV,
-                           "NV", NOT_FLUSH))
+    if (!cmp_policy_digest(esys_context, &sessionTrial, &expectedPolicyNV, "NV", NOT_FLUSH))
         goto error;
 
     /*
      * Test PolicyAuthorizeNV
      */
-    r = Esys_PolicyAuthorizeNV(esys_context,
-                               ESYS_TR_RH_OWNER,
-                               nvHandle,
-                               sessionTrial,
-                               ESYS_TR_PASSWORD,
-                               ESYS_TR_NONE, ESYS_TR_NONE);
-    if ((r == TPM2_RC_COMMAND_CODE) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
+    r = Esys_PolicyAuthorizeNV(esys_context, ESYS_TR_RH_OWNER, nvHandle, sessionTrial,
+                               ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
+    if ((r == TPM2_RC_COMMAND_CODE) || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER))
+        || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_PolicyAuthorizeNV  not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;
@@ -196,13 +166,8 @@ test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
      * Space not needed for further tests.
      */
 
-    r = Esys_NV_UndefineSpace(esys_context,
-                              ESYS_TR_RH_OWNER,
-                              nvHandle,
-                              ESYS_TR_PASSWORD,
-                              ESYS_TR_NONE,
-                              ESYS_TR_NONE
-                              );
+    r = Esys_NV_UndefineSpace(esys_context, ESYS_TR_RH_OWNER, nvHandle, ESYS_TR_PASSWORD,
+                              ESYS_TR_NONE, ESYS_TR_NONE);
     goto_if_error(r, "Error: NV_UndefineSpace", error);
     nvHandle = ESYS_TR_NONE;
 
@@ -212,7 +177,7 @@ test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
 
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (sessionTrial != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, sessionTrial) != TSS2_RC_SUCCESS) {
@@ -221,13 +186,10 @@ test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
     }
 
     if (nvHandle != ESYS_TR_NONE) {
-        if (Esys_NV_UndefineSpace(esys_context,
-                                  ESYS_TR_RH_OWNER,
-                                  nvHandle,
-                                  ESYS_TR_PASSWORD,
-                                  ESYS_TR_NONE,
-                                  ESYS_TR_NONE) != TSS2_RC_SUCCESS) {
-             LOG_ERROR("Cleanup nvHandle failed.");
+        if (Esys_NV_UndefineSpace(esys_context, ESYS_TR_RH_OWNER, nvHandle, ESYS_TR_PASSWORD,
+                                  ESYS_TR_NONE, ESYS_TR_NONE)
+            != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup nvHandle failed.");
         }
     }
 
@@ -235,6 +197,6 @@ test_esys_policy_authorize_nv_opt(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_policy_authorize_nv_opt(esys_context);
 }

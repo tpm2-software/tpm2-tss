@@ -6,54 +6,55 @@
 
 #ifndef TSS2_SYSAPI_UTIL_H
 #define TSS2_SYSAPI_UTIL_H
-#include <stddef.h>           // for size_t
+#include <stddef.h> // for size_t
 
-#include "tss2_common.h"      // for UINT32, TSS2_RC, UINT8, TSS2_RC_SUCCESS
-#include "tss2_sys.h"         // for TSS2L_SYS_AUTH_COMMAND, TSS2L_SYS_AUTH_...
-#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
-#include "tss2_tpm2_types.h"  // for TPM2_CC, TPM2_ST
+#include "tss2_common.h"     // for UINT32, TSS2_RC, UINT8, TSS2_RC_SUCCESS
+#include "tss2_sys.h"        // for TSS2L_SYS_AUTH_COMMAND, TSS2L_SYS_AUTH_...
+#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h" // for TPM2_CC, TPM2_ST
 
-enum cmdStates {CMD_STAGE_INITIALIZE,
-                CMD_STAGE_PREPARE,
-                CMD_STAGE_SEND_COMMAND,
-                CMD_STAGE_RECEIVE_RESPONSE,
-                CMD_STAGE_ALL = 0xff };
+enum cmdStates {
+    CMD_STAGE_INITIALIZE,
+    CMD_STAGE_PREPARE,
+    CMD_STAGE_SEND_COMMAND,
+    CMD_STAGE_RECEIVE_RESPONSE,
+    CMD_STAGE_ALL = 0xff
+};
 
 #pragma pack(push, 1)
 typedef struct TPM20_Header_In {
-  TPM2_ST tag;
-  UINT32 commandSize;
-  UINT32 commandCode;
+    TPM2_ST tag;
+    UINT32  commandSize;
+    UINT32  commandCode;
 } TPM20_Header_In;
 
 typedef struct TPM20_Header_Out {
-  TPM2_ST tag;
-  UINT32 responseSize;
-  UINT32 responseCode;
+    TPM2_ST tag;
+    UINT32  responseSize;
+    UINT32  responseCode;
 } TPM20_Header_Out;
 #pragma pack(pop)
 
 typedef struct {
     TSS2_TCTI_CONTEXT *tctiContext;
-    UINT8 *cmdBuffer;
-    UINT32 maxCmdSize;
+    UINT8             *cmdBuffer;
+    UINT32             maxCmdSize;
     UINT8 cmd_header[sizeof(TPM20_Header_In)]; /* Copy of the cmd header to allow reissue */
     TPM20_Header_Out rsp_header;
 
-    TPM2_CC commandCode;    /* In host endian */
-    UINT32 cpBufferUsedSize;
-    UINT8 *cpBuffer;
+    TPM2_CC commandCode; /* In host endian */
+    UINT32  cpBufferUsedSize;
+    UINT8  *cpBuffer;
     UINT32 *rspParamsSize;
-    UINT8 previousStage;
-    UINT8 authsCount;
-    UINT8 numResponseHandles;
+    UINT8   previousStage;
+    UINT8   authsCount;
+    UINT8   numResponseHandles;
 
-    struct
-    {
-        UINT16 decryptAllowed:1;
-        UINT16 encryptAllowed:1;
-        UINT16 decryptNull:1;
-        UINT16 authAllowed:1;
+    struct {
+        UINT16 decryptAllowed : 1;
+        UINT16 encryptAllowed : 1;
+        UINT16 decryptNull : 1;
+        UINT16 authAllowed : 1;
     };
 
     /* Offset to next data in command/response buffer. */
@@ -61,27 +62,24 @@ typedef struct {
 } TSS2_SYS_CONTEXT_BLOB;
 
 static inline TSS2_SYS_CONTEXT_BLOB *
-syscontext_cast(TSS2_SYS_CONTEXT *ctx)
-{
-    return (TSS2_SYS_CONTEXT_BLOB*) ctx;
+syscontext_cast(TSS2_SYS_CONTEXT *ctx) {
+    return (TSS2_SYS_CONTEXT_BLOB *)ctx;
 }
 
 static inline TPM20_Header_Out *
-resp_header_from_cxt(TSS2_SYS_CONTEXT_BLOB *ctx)
-{
+resp_header_from_cxt(TSS2_SYS_CONTEXT_BLOB *ctx) {
     return (TPM20_Header_Out *)ctx->cmdBuffer;
 }
 
 static inline TPM20_Header_In *
-req_header_from_cxt(TSS2_SYS_CONTEXT_BLOB *ctx)
-{
+req_header_from_cxt(TSS2_SYS_CONTEXT_BLOB *ctx) {
     return (TPM20_Header_In *)ctx->cmdBuffer;
 }
 
 typedef struct {
     TPM2_CC commandCode;
-    int numCommandHandles;
-    int numResponseHandles;
+    int     numCommandHandles;
+    int     numResponseHandles;
 } COMMAND_HANDLES;
 
 #ifdef __cplusplus
@@ -89,25 +87,22 @@ extern "C" {
 #endif
 
 TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode);
-UINT32 GetCommandSize(TSS2_SYS_CONTEXT_BLOB *ctx);
-void InitSysContextFields(TSS2_SYS_CONTEXT_BLOB *ctx);
-void InitSysContextPtrs(TSS2_SYS_CONTEXT_BLOB *ctx, size_t contextSize);
+UINT32  GetCommandSize(TSS2_SYS_CONTEXT_BLOB *ctx);
+void    InitSysContextFields(TSS2_SYS_CONTEXT_BLOB *ctx);
+void    InitSysContextPtrs(TSS2_SYS_CONTEXT_BLOB *ctx, size_t contextSize);
 TSS2_RC CompleteChecks(TSS2_SYS_CONTEXT_BLOB *ctx);
 TSS2_RC CommonComplete(TSS2_SYS_CONTEXT_BLOB *ctx);
 
-TSS2_RC CommonOneCall(
-    TSS2_SYS_CONTEXT_BLOB *ctx,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray);
+TSS2_RC CommonOneCall(TSS2_SYS_CONTEXT_BLOB        *ctx,
+                      TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                      TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray);
 
-TSS2_RC CommonPreparePrologue(
-    TSS2_SYS_CONTEXT_BLOB *ctx,
-    TPM2_CC commandCode);
+TSS2_RC CommonPreparePrologue(TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode);
 
 TSS2_RC CommonPrepareEpilogue(TSS2_SYS_CONTEXT_BLOB *ctx);
 
 #ifdef DISABLE_WEAK_CRYPTO
-bool IsAlgorithmWeak(TPM2_ALG_ID algorith, TPM2_KEY_SIZE key_size);
+bool    IsAlgorithmWeak(TPM2_ALG_ID algorith, TPM2_KEY_SIZE key_size);
 TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *pub);
 TSS2_RC ValidateNV_Public(const TPM2B_NV_PUBLIC *nv_public_info);
 TSS2_RC ValidateTPML_PCR_SELECTION(const TPML_PCR_SELECTION *pcr_selection);
@@ -116,9 +111,9 @@ TSS2_RC ValidateTPML_PCR_SELECTION(const TPML_PCR_SELECTION *pcr_selection);
  * static inline is not portable, so make these empty defines to reduce generating functions
  * and thus binary size for them.
  */
-#define IsAlgorithmWeak(...) TSS2_RC_SUCCESS
-#define ValidatePublicTemplate(...) TSS2_RC_SUCCESS
-#define ValidateNV_Public(...) TSS2_RC_SUCCESS
+#define IsAlgorithmWeak(...)            TSS2_RC_SUCCESS
+#define ValidatePublicTemplate(...)     TSS2_RC_SUCCESS
+#define ValidateNV_Public(...)          TSS2_RC_SUCCESS
 #define ValidateTPML_PCR_SELECTION(...) TSS2_RC_SUCCESS
 #endif
 

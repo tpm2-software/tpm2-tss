@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
-#include "tss2_common.h"      // for UINT32, TSS2_RC, TSS2_RESMGR_RC_LAYER
-#include "tss2_esys.h"        // for ESYS_TR_NONE, ESYS_TR_PASSWORD, Esys_Di...
-#include "tss2_tpm2_types.h"  // for TPM2_RC_COMMAND_CODE, TPM2_RC_BAD_AUTH
+#include "test-esys.h"       // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"     // for UINT32, TSS2_RC, TSS2_RESMGR_RC_LAYER
+#include "tss2_esys.h"       // for ESYS_TR_NONE, ESYS_TR_PASSWORD, Esys_Di...
+#include "tss2_tpm2_types.h" // for TPM2_RC_COMMAND_CODE, TPM2_RC_BAD_AUTH
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_WARNING, number_rc
+#include "util/log.h" // for goto_if_error, LOG_WARNING, number_rc
 
 /** Test the ESYS functions related to TPM locks.
  *
@@ -34,36 +34,28 @@
  */
 
 int
-test_esys_lock(ESYS_CONTEXT * esys_context)
-{
+test_esys_lock(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
-    int failure_return = EXIT_FAILURE;
+    int     failure_return = EXIT_FAILURE;
 
-    r = Esys_DictionaryAttackLockReset(
-        esys_context,
-        ESYS_TR_RH_LOCKOUT,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE);
+    r = Esys_DictionaryAttackLockReset(esys_context, ESYS_TR_RH_LOCKOUT, ESYS_TR_PASSWORD,
+                                       ESYS_TR_NONE, ESYS_TR_NONE);
     goto_if_error(r, "Error: DictionaryAttackLockReset", error);
 
     UINT32 newMaxTries = 3;
     UINT32 newRecoveryTime = 3600;
     UINT32 lockoutRecovery = 1000;
 
-    r = Esys_DictionaryAttackParameters(esys_context, ESYS_TR_RH_LOCKOUT,
-                                        ESYS_TR_PASSWORD, ESYS_TR_NONE,
-                                        ESYS_TR_NONE,
-                                        newMaxTries, newRecoveryTime,
+    r = Esys_DictionaryAttackParameters(esys_context, ESYS_TR_RH_LOCKOUT, ESYS_TR_PASSWORD,
+                                        ESYS_TR_NONE, ESYS_TR_NONE, newMaxTries, newRecoveryTime,
                                         lockoutRecovery);
     goto_if_error(r, "Error: DictionaryAttackParameters", error);
 
-    r = Esys_NV_GlobalWriteLock(esys_context, ESYS_TR_RH_PLATFORM,
-                                ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
+    r = Esys_NV_GlobalWriteLock(esys_context, ESYS_TR_RH_PLATFORM, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                                ESYS_TR_NONE);
 
-    if ((r == TPM2_RC_COMMAND_CODE) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
+    if ((r == TPM2_RC_COMMAND_CODE) || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER))
+        || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_NV_GlobalWriteLock not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;
@@ -78,11 +70,11 @@ test_esys_lock(ESYS_CONTEXT * esys_context)
 
     return EXIT_SUCCESS;
 
-  error:
+error:
     return failure_return;
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_lock(esys_context);
 }

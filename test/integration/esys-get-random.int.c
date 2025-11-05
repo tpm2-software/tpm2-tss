@@ -8,14 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for free, NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for free, NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_common.h"      // for BYTE, TSS2_RC
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_GetRandom, Esys_Star...
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2_RC_SUCCESS, TPMA_SES...
+#include "tss2_common.h"     // for BYTE, TSS2_RC
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_GetRandom, Esys_Star...
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPM2_RC_SUCCESS, TPMA_SES...
 
 #define LOGMODULE test
-#include "util/log.h"         // for LOG_ERROR, LOGBLOB_DEBUG, LOG_INFO
+#include "util/log.h" // for LOG_ERROR, LOGBLOB_DEBUG, LOG_INFO
 
 /** Test the ESYS function Esys_GetRandom.
  *
@@ -28,14 +28,12 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_esys_get_random(ESYS_CONTEXT * esys_context)
-{
+test_esys_get_random(ESYS_CONTEXT *esys_context) {
 
     TSS2_RC r;
 
     TPM2B_DIGEST *randomBytes;
-    r = Esys_GetRandom(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                       48, &randomBytes);
+    r = Esys_GetRandom(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 48, &randomBytes);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("GetRandom FAILED! Response Code : 0x%x", r);
         goto error;
@@ -47,17 +45,12 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
 
     LOG_INFO("GetRandom Test Passed!");
 
-    ESYS_TR session = ESYS_TR_NONE;
-    const TPMT_SYM_DEF symmetric = {
-        .algorithm = TPM2_ALG_AES,
-        .keyBits = {.aes = 128},
-        .mode = {.aes = TPM2_ALG_CFB}
-    };
+    ESYS_TR            session = ESYS_TR_NONE;
+    const TPMT_SYM_DEF symmetric
+        = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("Esys_StartAuthSession FAILED! Response Code : 0x%x", r);
@@ -71,8 +64,7 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
         goto error_cleansession;
     }
 
-    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48,
-                       &randomBytes);
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48, &randomBytes);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("GetRandom with session FAILED! Response Code : 0x%x", r);
         goto error_cleansession;
@@ -82,10 +74,8 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
                   "Randoms (count=%i):", randomBytes->size);
     free(randomBytes);
 
-      r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("Esys_StartAuthSession FAILED! Response Code : 0x%x", r);
@@ -99,8 +89,7 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
         goto error_cleansession;
     }
 
-    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48,
-                       &randomBytes);
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48, &randomBytes);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("GetRandom with session FAILED! Response Code : 0x%x", r);
         goto error_cleansession;
@@ -110,10 +99,8 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
                   "Randoms (count=%i):", randomBytes->size);
     free(randomBytes);
 
-      r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("Esys_StartAuthSession FAILED! Response Code : 0x%x", r);
@@ -127,8 +114,7 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
         goto error_cleansession;
     }
 
-    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48,
-                       &randomBytes);
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48, &randomBytes);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("GetRandom with session FAILED! Response Code : 0x%x", r);
         goto error_cleansession;
@@ -138,10 +124,8 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
                   "Randoms (count=%i):", randomBytes->size);
     free(randomBytes);
 
-      r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("Esys_StartAuthSession FAILED! Response Code : 0x%x", r);
@@ -155,8 +139,7 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
         goto error_cleansession;
     }
 
-    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48,
-                       &randomBytes);
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48, &randomBytes);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("GetRandom with session FAILED! Response Code : 0x%x", r);
         goto error_cleansession;
@@ -166,10 +149,8 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
                   "Randoms (count=%i):", randomBytes->size);
     free(randomBytes);
 
-      r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("Esys_StartAuthSession FAILED! Response Code : 0x%x", r);
@@ -183,8 +164,7 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
         goto error_cleansession;
     }
 
-    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48,
-                       &randomBytes);
+    r = Esys_GetRandom(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, 48, &randomBytes);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("GetRandom with session FAILED! Response Code : 0x%x", r);
         goto error_cleansession;
@@ -196,7 +176,7 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
 
     LOG_INFO("GetRandom with session Test Passed!");
 
-    //r = Esys_FlushContext(esys_context, session);
+    // r = Esys_FlushContext(esys_context, session);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("FlushContext with session FAILED! Response Code : 0x%x", r);
         goto error_cleansession;
@@ -204,16 +184,16 @@ test_esys_get_random(ESYS_CONTEXT * esys_context)
 
     return EXIT_SUCCESS;
 
- error_cleansession:
+error_cleansession:
     r = Esys_FlushContext(esys_context, session);
     if (r != TPM2_RC_SUCCESS) {
         LOG_ERROR("FlushContext FAILED! Response Code : 0x%x", r);
     }
- error:
+error:
     return EXIT_FAILURE;
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_get_random(esys_context);
 }

@@ -6,85 +6,70 @@
 #ifndef IFAPI_POLICY_JSON_DESERIALIZE_H
 #define IFAPI_POLICY_JSON_DESERIALIZE_H
 
-#include <json.h>                // for json_object
+#include <json.h> // for json_object
 
-#include "ifapi_policy_types.h"  // for TPMI_POLICYTYPE, TPML_POLICYAUTHORIZ...
-#include "tss2_common.h"         // for TSS2_RC, UINT32
-#include "tss2_policy.h"         // for TPML_PCRVALUES, TPMS_PCRVALUE
+#include "ifapi_policy_types.h" // for TPMI_POLICYTYPE, TPML_POLICYAUTHORIZ...
+#include "tss2_common.h"        // for TSS2_RC, UINT32
+#include "tss2_policy.h"        // for TPML_PCRVALUES, TPMS_PCRVALUE
 
 TSS2_RC
 ifapi_json_TPMI_POLICYTYPE_deserialize(json_object *jso, TPMI_POLICYTYPE *out);
 
 TSS2_RC
-ifapi_json_TPMI_POLICYTYPE_deserialize_txt(json_object *jso,
-        TPMI_POLICYTYPE *out);
+ifapi_json_TPMI_POLICYTYPE_deserialize_txt(json_object *jso, TPMI_POLICYTYPE *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso,
-        TPMS_POLICYSIGNED *out);
+ifapi_json_TPMS_POLICYSIGNED_deserialize(json_object *jso, TPMS_POLICYSIGNED *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso,
-        TPMS_POLICYSECRET *out);
+ifapi_json_TPMS_POLICYSECRET_deserialize(json_object *jso, TPMS_POLICYSECRET *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYLOCALITY_deserialize(json_object *jso,
-        TPMS_POLICYLOCALITY *out);
+ifapi_json_TPMS_POLICYLOCALITY_deserialize(json_object *jso, TPMS_POLICYLOCALITY *out);
 
 TSS2_RC
 ifapi_json_TPMS_POLICYNV_deserialize(json_object *jso, TPMS_POLICYNV *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(json_object *jso,
-        TPMS_POLICYCOUNTERTIMER *out);
+ifapi_json_TPMS_POLICYCOUNTERTIMER_deserialize(json_object *jso, TPMS_POLICYCOUNTERTIMER *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYCOMMANDCODE_deserialize(json_object *jso,
-        TPMS_POLICYCOMMANDCODE *out);
+ifapi_json_TPMS_POLICYCOMMANDCODE_deserialize(json_object *jso, TPMS_POLICYCOMMANDCODE *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYPHYSICALPRESENCE_deserialize(json_object *jso,
-        TPMS_POLICYPHYSICALPRESENCE *out);
+ifapi_json_TPMS_POLICYPHYSICALPRESENCE_deserialize(json_object                 *jso,
+                                                   TPMS_POLICYPHYSICALPRESENCE *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYCPHASH_deserialize(json_object *jso,
-        TPMS_POLICYCPHASH *out);
+ifapi_json_TPMS_POLICYCPHASH_deserialize(json_object *jso, TPMS_POLICYCPHASH *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso,
-        TPMS_POLICYNAMEHASH *out);
+ifapi_json_TPMS_POLICYNAMEHASH_deserialize(json_object *jso, TPMS_POLICYNAMEHASH *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object *jso,
-        TPMS_POLICYDUPLICATIONSELECT *out);
+ifapi_json_TPMS_POLICYDUPLICATIONSELECT_deserialize(json_object                  *jso,
+                                                    TPMS_POLICYDUPLICATIONSELECT *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso,
-        TPMS_POLICYAUTHORIZE *out);
+ifapi_json_TPMS_POLICYAUTHORIZE_deserialize(json_object *jso, TPMS_POLICYAUTHORIZE *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHVALUE_deserialize(json_object *jso,
-        TPMS_POLICYAUTHVALUE *out);
+ifapi_json_TPMS_POLICYAUTHVALUE_deserialize(json_object *jso, TPMS_POLICYAUTHVALUE *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYPASSWORD_deserialize(json_object *jso,
-        TPMS_POLICYPASSWORD *out);
+ifapi_json_TPMS_POLICYPASSWORD_deserialize(json_object *jso, TPMS_POLICYPASSWORD *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYNVWRITTEN_deserialize(json_object *jso,
-        TPMS_POLICYNVWRITTEN *out);
+ifapi_json_TPMS_POLICYNVWRITTEN_deserialize(json_object *jso, TPMS_POLICYNVWRITTEN *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
-        TPMS_POLICYTEMPLATE *out);
+ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso, TPMS_POLICYTEMPLATE *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso,
-        TPMS_POLICYAUTHORIZENV *out);
+ifapi_json_TPMS_POLICYAUTHORIZENV_deserialize(json_object *jso, TPMS_POLICYAUTHORIZENV *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYACTION_deserialize(json_object *jso,
-        TPMS_POLICYACTION *out);
+ifapi_json_TPMS_POLICYACTION_deserialize(json_object *jso, TPMS_POLICYACTION *out);
 
 TSS2_RC
 ifapi_json_TPMS_PCRVALUE_deserialize(json_object *jso, TPMS_PCRVALUE *out);
@@ -96,38 +81,32 @@ TSS2_RC
 ifapi_json_TPMS_POLICYPCR_deserialize(json_object *jso, TPMS_POLICYPCR *out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso,
-        TPMS_POLICYAUTHORIZATION *out);
+ifapi_json_TPMS_POLICYAUTHORIZATION_deserialize(json_object *jso, TPMS_POLICYAUTHORIZATION *out);
 
 TSS2_RC
-ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(json_object *jso,
-        TPML_POLICYAUTHORIZATIONS **out);
+ifapi_json_TPML_POLICYAUTHORIZATIONS_deserialize(json_object *jso, TPML_POLICYAUTHORIZATIONS **out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICYBRANCH_deserialize(json_object *jso,
-        TPMS_POLICYBRANCH *out);
+ifapi_json_TPMS_POLICYBRANCH_deserialize(json_object *jso, TPMS_POLICYBRANCH *out);
 
 TSS2_RC
-ifapi_json_TPML_POLICYBRANCHES_deserialize(json_object *jso,
-        TPML_POLICYBRANCHES **out);
+ifapi_json_TPML_POLICYBRANCHES_deserialize(json_object *jso, TPML_POLICYBRANCHES **out);
 
 TSS2_RC
 ifapi_json_TPMS_POLICYOR_deserialize(json_object *jso, TPMS_POLICYOR *out);
 
 TSS2_RC
-ifapi_json_TPMU_POLICYELEMENT_deserialize(UINT32 selector, json_object *jso,
-        TPMU_POLICYELEMENT *out);
+ifapi_json_TPMU_POLICYELEMENT_deserialize(UINT32              selector,
+                                          json_object        *jso,
+                                          TPMU_POLICYELEMENT *out);
 
 TSS2_RC
-ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso,
-        TPMT_POLICYELEMENT *out);
+ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso, TPMT_POLICYELEMENT *out);
 
 TSS2_RC
-ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso,
-        TPML_POLICYELEMENTS **out);
+ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso, TPML_POLICYELEMENTS **out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICY_deserialize(json_object *jso,
-        TPMS_POLICY *out);
+ifapi_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY *out);
 
 #endif /* IFAPI_POLICY_JSON_DESERIALIZE_H */

@@ -8,14 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for free, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for free, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_ESYS_RC_GENERAL_F...
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_FlushContext, Esys_S...
-#include "tss2_tpm2_types.h"  // for TPM2B_MAX_NV_BUFFER, TPM2_ALG_SHA256
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_ESYS_RC_GENERAL_F...
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_FlushContext, Esys_S...
+#include "tss2_tpm2_types.h" // for TPM2B_MAX_NV_BUFFER, TPM2_ALG_SHA256
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR
+#include "util/log.h" // for goto_if_error, LOG_ERROR
 
 /** This test is intended to test auto adjust and restore session flags in ESYS
  *
@@ -33,52 +33,41 @@
  */
 
 int
-test_esys_auto_flags(ESYS_CONTEXT * esys_context)
-{
+test_esys_auto_flags(ESYS_CONTEXT *esys_context) {
 
-    TSS2_RC r;
-    int test_ret = EXIT_SUCCESS ;
-    ESYS_TR nvHandle = ESYS_TR_NONE;
-    ESYS_TR session_auth = ESYS_TR_NONE;
-    ESYS_TR session_enc = ESYS_TR_NONE;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
-                              .keyBits = {.aes = 128},
-                              .mode = {.aes = TPM2_ALG_CFB}
-    };
+    TSS2_RC      r;
+    int          test_ret = EXIT_SUCCESS;
+    ESYS_TR      nvHandle = ESYS_TR_NONE;
+    ESYS_TR      session_auth = ESYS_TR_NONE;
+    ESYS_TR      session_enc = ESYS_TR_NONE;
+    TPMT_SYM_DEF symmetric
+        = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
 
-    TPM2B_NONCE nonceCaller = {
-        .size = 20,
-        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
-                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
-    };
+    TPM2B_NONCE nonceCaller = { .size = 20, .buffer = { 1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
+                                                        12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+                                                        23, 24, 25, 26, 27, 28, 29, 30, 31, 32 } };
 
     /* Auth session */
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, &nonceCaller, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session_auth);
     goto_if_error(r, "Error: During initialization of session_auth", error);
 
     /* Enc param session */
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, &nonceCaller, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session_enc);
     goto_if_error(r, "Error: During initialization of session_enc", error);
 
     /* Set both ENC and DEC flags for the enc session */
-    TPMA_SESSION sessionAttributes = TPMA_SESSION_DECRYPT |
-                                     TPMA_SESSION_ENCRYPT |
-                                     TPMA_SESSION_CONTINUESESSION;
+    TPMA_SESSION sessionAttributes
+        = TPMA_SESSION_DECRYPT | TPMA_SESSION_ENCRYPT | TPMA_SESSION_CONTINUESESSION;
 
     r = Esys_TRSess_SetAttributes(esys_context, session_enc, sessionAttributes, 0xFF);
     goto_if_error(r, "Error: During SetAttributes", error);
 
-    TPM2B_AUTH auth = {.size = 20,
-                       .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                                20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
+    TPM2B_AUTH auth = { .size = 20, .buffer = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                                20, 21, 22, 23, 24, 25, 26, 27, 28, 29 } };
 
     TPM2B_NV_PUBLIC publicInfo = {
         .size = 0,
@@ -101,44 +90,28 @@ test_esys_auto_flags(ESYS_CONTEXT * esys_context)
         }
     };
 
-    r = Esys_NV_DefineSpace (
-        esys_context,
-        ESYS_TR_RH_OWNER,
-        session_auth,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        &auth,
-        &publicInfo,
-        &nvHandle);
+    r = Esys_NV_DefineSpace(esys_context, ESYS_TR_RH_OWNER, session_auth, ESYS_TR_NONE,
+                            ESYS_TR_NONE, &auth, &publicInfo, &nvHandle);
     goto_if_error(r, "Error esys define nv space", error);
 
-    TPM2B_MAX_NV_BUFFER nv_test_data = { .size = 20,
-                                         .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-                                                  1, 2, 3, 4, 5, 6, 7, 8, 9}};
+    TPM2B_MAX_NV_BUFFER nv_test_data
+        = { .size = 20, .buffer = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } };
     const TPM2B_MAX_NV_BUFFER *nv_test_data_ptr = &nv_test_data;
 
     /* NV_Write cmd does not support TPMA_SESSION_ENCRYPT - the flag should
      * be auto cleared by ESYS */
-    r = Esys_NV_Write(
-        esys_context,
-        nvHandle,
-        nvHandle,
-        session_enc,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        nv_test_data_ptr,
-        0);
+    r = Esys_NV_Write(esys_context, nvHandle, nvHandle, session_enc, ESYS_TR_NONE, ESYS_TR_NONE,
+                      nv_test_data_ptr, 0);
     goto_if_error(r, "Error esys nv write", error);
 
     /* Verify that the same session flags are still set after the test */
     TPMA_SESSION sessionAttributesVerify;
-    r = Esys_TRSess_GetAttributes(esys_context, session_enc,
-                                  &sessionAttributesVerify);
+    r = Esys_TRSess_GetAttributes(esys_context, session_enc, &sessionAttributesVerify);
     goto_if_error(r, "Error: During GetAttributes", error);
 
     if (sessionAttributes != sessionAttributesVerify) {
-        LOG_ERROR("Session flags not equal after write %x, %x",
-                  sessionAttributes, sessionAttributesVerify);
+        LOG_ERROR("Session flags not equal after write %x, %x", sessionAttributes,
+                  sessionAttributesVerify);
         r = TSS2_ESYS_RC_GENERAL_FAILURE;
         goto_if_error(r, "Error esys nv write", error);
     }
@@ -147,39 +120,29 @@ test_esys_auto_flags(ESYS_CONTEXT * esys_context)
 
     /* NV_Read cmd does not support TPMA_SESSION_DECRYPT - the flags should
      * be auto cleared by ESYS */
-    r = Esys_NV_Read(
-        esys_context,
-        nvHandle,
-        nvHandle,
-        session_enc,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        20, 0, &data);
+    r = Esys_NV_Read(esys_context, nvHandle, nvHandle, session_enc, ESYS_TR_NONE, ESYS_TR_NONE, 20,
+                     0, &data);
     goto_if_error(r, "Error: nv read", error);
     free(data);
 
     /* Verify that the same session flags are still set after the test */
-    r = Esys_TRSess_GetAttributes(esys_context, session_enc,
-                                  &sessionAttributesVerify);
+    r = Esys_TRSess_GetAttributes(esys_context, session_enc, &sessionAttributesVerify);
     goto_if_error(r, "Error: During GetAttributes", error);
 
     if (sessionAttributes != sessionAttributesVerify) {
-        LOG_ERROR("Session flags not equal after read %x, %x",
-                  sessionAttributes, sessionAttributesVerify);
-       r = TSS2_ESYS_RC_GENERAL_FAILURE;
+        LOG_ERROR("Session flags not equal after read %x, %x", sessionAttributes,
+                  sessionAttributesVerify);
+        r = TSS2_ESYS_RC_GENERAL_FAILURE;
     }
 
- error:
+error:
     if (r)
         test_ret = EXIT_FAILURE;
 
     if (nvHandle != ESYS_TR_NONE) {
-        if (Esys_NV_UndefineSpace(esys_context,
-                                  ESYS_TR_RH_OWNER,
-                                  nvHandle,
-                                  session_auth,
-                                  ESYS_TR_NONE,
-                                  ESYS_TR_NONE) != TSS2_RC_SUCCESS) {
+        if (Esys_NV_UndefineSpace(esys_context, ESYS_TR_RH_OWNER, nvHandle, session_auth,
+                                  ESYS_TR_NONE, ESYS_TR_NONE)
+            != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup nvHandle failed.");
         }
     }
@@ -199,6 +162,6 @@ test_esys_auto_flags(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_auto_flags(esys_context);
 }

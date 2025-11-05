@@ -8,36 +8,28 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>        // for EINVAL, ENOTSOCK, errno
-#include <inttypes.h>     // for uint8_t, PRIxPTR, uintptr_t
-#include <stdio.h>        // for ssize_t, NULL, size_t
-#include <string.h>       // for memset
-#include <sys/socket.h>   // for socklen_t
+#include <errno.h>      // for EINVAL, ENOTSOCK, errno
+#include <inttypes.h>   // for uint8_t, PRIxPTR, uintptr_t
+#include <stdio.h>      // for ssize_t, NULL, size_t
+#include <string.h>     // for memset
+#include <sys/socket.h> // for socklen_t
 
-#include "../helper/cmocka_all.h"       // for will_return, assert_int_equal, cmocka_unit_...
-#include "tss2_common.h"  // for TSS2_RC, TSS2_TCTI_RC_IO_ERROR, TSS2_RC_SUC...
-#include "util-io/io.h"   // for socket_connect, SOCKET, socket_connect_unix
+#include "../helper/cmocka_all.h" // for will_return, assert_int_equal, cmocka_unit_...
+#include "tss2_common.h"          // for TSS2_RC, TSS2_TCTI_RC_IO_ERROR, TSS2_RC_SUC...
+#include "util-io/io.h"           // for socket_connect, SOCKET, socket_connect_unix
 
 #define LOGMODULE test
-#include "util/log.h"     // for LOG_DEBUG
+#include "util/log.h" // for LOG_DEBUG
 
 int
-__wrap_socket (
-    int domain,
-    int type,
-    int protocol)
-{
-    errno = mock_type (int);
-    return mock_type (int);
+__wrap_socket(int domain, int type, int protocol) {
+    errno = mock_type(int);
+    return mock_type(int);
 }
 int
-__wrap_connect (
-    int sockfd,
-    const struct sockaddr *addr,
-    socklen_t addrlen)
-{
-    errno = mock_type (int);
-    return mock_type (int);
+__wrap_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+    errno = mock_type(int);
+    return mock_type(int);
 }
 
 /*
@@ -46,22 +38,20 @@ __wrap_connect (
  * a buffer to copy data from to return to the caller.
  */
 ssize_t
-__wrap_read (int fd, void *buffer, size_t count)
-{
-    LOG_DEBUG ("%s: reading %zu bytes from fd: %d to buffer at 0x%" PRIxPTR,
-               __func__, count, fd, (uintptr_t)buffer);
-    int r = mock_type (ssize_t);
+__wrap_read(int fd, void *buffer, size_t count) {
+    LOG_DEBUG("%s: reading %zu bytes from fd: %d to buffer at 0x%" PRIxPTR, __func__, count, fd,
+              (uintptr_t)buffer);
+    int r = mock_type(ssize_t);
     if (r > 0)
         memset(buffer, 0x66, r);
     return r;
 }
 
 ssize_t
-__wrap_write (int fd, const void *buffer, size_t buffer_size)
-{
-    LOG_DEBUG ("writing %zd bytes from 0x%" PRIxPTR " to fd: %d",
-               buffer_size, (uintptr_t)buffer, fd);
-    return mock_type (ssize_t);
+__wrap_write(int fd, const void *buffer, size_t buffer_size) {
+    LOG_DEBUG("writing %zd bytes from 0x%" PRIxPTR " to fd: %d", buffer_size, (uintptr_t)buffer,
+              fd);
+    return mock_type(ssize_t);
 }
 
 /*
@@ -72,28 +62,26 @@ __wrap_write (int fd, const void *buffer, size_t buffer_size)
  * data received.
  */
 static void
-write_all_simple_success_test (void **state)
-{
-    size_t ret;
-    uint8_t buf [10];
+write_all_simple_success_test(void **state) {
+    size_t  ret;
+    uint8_t buf[10];
 
-    will_return (__wrap_write, sizeof (buf));
-    ret = write_all (99, buf, sizeof (buf), -1);
-    assert_int_equal(ret, sizeof (buf));
+    will_return(__wrap_write, sizeof(buf));
+    ret = write_all(99, buf, sizeof(buf), -1);
+    assert_int_equal(ret, sizeof(buf));
 }
 /*
  * This test causes the underlying 'read' operation to return '0' bytes
  * indicating EOF.
  */
 static void
-read_all_eof_test (void **state)
-{
-    size_t ret;
-    uint8_t buf [10];
+read_all_eof_test(void **state) {
+    size_t  ret;
+    uint8_t buf[10];
 
-    will_return (__wrap_read, 0);
-    ret = read_all (10, buf, sizeof (buf), -1);
-    assert_int_equal (ret, 0);
+    will_return(__wrap_read, 0);
+    ret = read_all(10, buf, sizeof(buf), -1);
+    assert_int_equal(ret, 0);
 }
 /*
  * This test is a minor variation on the 'read_all_eof_test'. We still get
@@ -101,181 +89,167 @@ read_all_eof_test (void **state)
  * that's less than what was requested.
  */
 static void
-read_all_twice_eof (void **state)
-{
-    size_t ret;
-    uint8_t buf [10];
+read_all_twice_eof(void **state) {
+    size_t  ret;
+    uint8_t buf[10];
 
-    will_return (__wrap_read, 5);
-    will_return (__wrap_read, 0);
-    ret = read_all (10, buf, 10, -1);
-    assert_int_equal (ret, 5);
+    will_return(__wrap_read, 5);
+    will_return(__wrap_read, 0);
+    ret = read_all(10, buf, 10, -1);
+    assert_int_equal(ret, 5);
 }
 /* When passed all NULL values ensure that we get back the expected RC. */
 static void
-socket_connect_test (void **state)
-{
+socket_connect_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
-    int ctrl;
+    SOCKET  sock;
+    int     ctrl;
 
     for (ctrl = 0; ctrl < 2; ctrl++) {
-        will_return (__wrap_socket, 0);
-        will_return (__wrap_socket, 1);
-        will_return (__wrap_connect, 0);
-        will_return (__wrap_connect, 1);
-        rc = socket_connect ("127.0.0.1", 666, ctrl, &sock);
-        assert_int_equal (rc, TSS2_RC_SUCCESS);
+        will_return(__wrap_socket, 0);
+        will_return(__wrap_socket, 1);
+        will_return(__wrap_connect, 0);
+        will_return(__wrap_connect, 1);
+        rc = socket_connect("127.0.0.1", 666, ctrl, &sock);
+        assert_int_equal(rc, TSS2_RC_SUCCESS);
     }
 }
 static void
-socket_connect_socket_fail_test (void **state)
-{
+socket_connect_socket_fail_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
+    SOCKET  sock;
 
-    will_return (__wrap_socket, EINVAL);
-    will_return (__wrap_socket, -1);
-    rc = socket_connect ("127.0.0.1", 555, 0, &sock);
-    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+    will_return(__wrap_socket, EINVAL);
+    will_return(__wrap_socket, -1);
+    rc = socket_connect("127.0.0.1", 555, 0, &sock);
+    assert_int_equal(rc, TSS2_TCTI_RC_IO_ERROR);
 }
 static void
-socket_connect_connect_fail_test (void **state)
-{
+socket_connect_connect_fail_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
+    SOCKET  sock;
 
-    will_return (__wrap_socket, 0);
-    will_return (__wrap_socket, 1);
-    will_return (__wrap_connect, ENOTSOCK);
-    will_return (__wrap_connect, -1);
-    rc = socket_connect ("127.0.0.1", 444, 0, &sock);
-    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+    will_return(__wrap_socket, 0);
+    will_return(__wrap_socket, 1);
+    will_return(__wrap_connect, ENOTSOCK);
+    will_return(__wrap_connect, -1);
+    rc = socket_connect("127.0.0.1", 444, 0, &sock);
+    assert_int_equal(rc, TSS2_TCTI_RC_IO_ERROR);
 }
 
 /* When passed all NULL values ensure that we get back the expected RC. */
 static void
-socket_ipv6_connect_test (void **state)
-{
+socket_ipv6_connect_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
-    int ctrl;
+    SOCKET  sock;
+    int     ctrl;
 
     for (ctrl = 0; ctrl < 2; ctrl++) {
-        will_return (__wrap_socket, 0);
-        will_return (__wrap_socket, 1);
-        will_return (__wrap_connect, 0);
-        will_return (__wrap_connect, 1);
-        rc = socket_connect ("::1", 666, ctrl, &sock);
-        assert_int_equal (rc, TSS2_RC_SUCCESS);
+        will_return(__wrap_socket, 0);
+        will_return(__wrap_socket, 1);
+        will_return(__wrap_connect, 0);
+        will_return(__wrap_connect, 1);
+        rc = socket_connect("::1", 666, ctrl, &sock);
+        assert_int_equal(rc, TSS2_RC_SUCCESS);
     }
 }
 static void
-socket_ipv6_connect_socket_fail_test (void **state)
-{
+socket_ipv6_connect_socket_fail_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
+    SOCKET  sock;
 
-    will_return (__wrap_socket, EINVAL);
-    will_return (__wrap_socket, -1);
-    rc = socket_connect ("::1", 555, 0, &sock);
-    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+    will_return(__wrap_socket, EINVAL);
+    will_return(__wrap_socket, -1);
+    rc = socket_connect("::1", 555, 0, &sock);
+    assert_int_equal(rc, TSS2_TCTI_RC_IO_ERROR);
 }
 static void
-socket_ipv6_connect_connect_fail_test (void **state)
-{
+socket_ipv6_connect_connect_fail_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
+    SOCKET  sock;
 
-    will_return (__wrap_socket, 0);
-    will_return (__wrap_socket, 1);
-    will_return (__wrap_connect, ENOTSOCK);
-    will_return (__wrap_connect, -1);
-    rc = socket_connect ("::1", 444, 0, &sock);
-    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+    will_return(__wrap_socket, 0);
+    will_return(__wrap_socket, 1);
+    will_return(__wrap_connect, ENOTSOCK);
+    will_return(__wrap_connect, -1);
+    rc = socket_connect("::1", 444, 0, &sock);
+    assert_int_equal(rc, TSS2_TCTI_RC_IO_ERROR);
 }
 
 #ifdef _WIN32
 static void
-socket_connect_unix_win32_fail_test (void **state)
-{
+socket_connect_unix_win32_fail_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
+    SOCKET  sock;
 
-    rc = socket_connect_unix ("/some/path", 0, &sock);
-    assert_int_equal (rc, TSS2_RC_BAD_REFERENCE);
+    rc = socket_connect_unix("/some/path", 0, &sock);
+    assert_int_equal(rc, TSS2_RC_BAD_REFERENCE);
 }
 #else
 static void
-socket_connect_unix_test (void **state)
-{
+socket_connect_unix_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
-    int ctrl;
+    SOCKET  sock;
+    int     ctrl;
 
     for (ctrl = 0; ctrl < 2; ctrl++) {
-        will_return (__wrap_socket, 0);
-        will_return (__wrap_socket, 1);
-        will_return (__wrap_connect, 0);
-        will_return (__wrap_connect, 1);
-        rc = socket_connect_unix ("/some/path", ctrl, &sock);
-        assert_int_equal (rc, TSS2_RC_SUCCESS);
+        will_return(__wrap_socket, 0);
+        will_return(__wrap_socket, 1);
+        will_return(__wrap_connect, 0);
+        will_return(__wrap_connect, 1);
+        rc = socket_connect_unix("/some/path", ctrl, &sock);
+        assert_int_equal(rc, TSS2_RC_SUCCESS);
     }
 }
 static void
-socket_connect_unix_socket_fail_test (void **state)
-{
+socket_connect_unix_socket_fail_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
+    SOCKET  sock;
 
-    will_return (__wrap_socket, EINVAL);
-    will_return (__wrap_socket, -1);
-    rc = socket_connect_unix ("/some/path", 0, &sock);
-    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+    will_return(__wrap_socket, EINVAL);
+    will_return(__wrap_socket, -1);
+    rc = socket_connect_unix("/some/path", 0, &sock);
+    assert_int_equal(rc, TSS2_TCTI_RC_IO_ERROR);
 }
 static void
-socket_connect_unix_connect_fail_test (void **state)
-{
+socket_connect_unix_connect_fail_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
+    SOCKET  sock;
 
-    will_return (__wrap_socket, 0);
-    will_return (__wrap_socket, 1);
-    will_return (__wrap_connect, ENOTSOCK);
-    will_return (__wrap_connect, -1);
-    rc = socket_connect_unix ("/some/path", 0, &sock);
-    assert_int_equal (rc, TSS2_TCTI_RC_IO_ERROR);
+    will_return(__wrap_socket, 0);
+    will_return(__wrap_socket, 1);
+    will_return(__wrap_connect, ENOTSOCK);
+    will_return(__wrap_connect, -1);
+    rc = socket_connect_unix("/some/path", 0, &sock);
+    assert_int_equal(rc, TSS2_TCTI_RC_IO_ERROR);
 }
 #endif
 
 static void
-socket_connect_null_test (void **state)
-{
+socket_connect_null_test(void **state) {
     TSS2_RC rc;
-    SOCKET sock;
+    SOCKET  sock;
 
-    rc = socket_connect (NULL, 444, 0, &sock);
-    assert_int_equal (rc, TSS2_TCTI_RC_BAD_REFERENCE);
+    rc = socket_connect(NULL, 444, 0, &sock);
+    assert_int_equal(rc, TSS2_TCTI_RC_BAD_REFERENCE);
 }
 
 int
-main (int   argc,
-      char *argv[])
-{
+main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test (write_all_simple_success_test),
-        cmocka_unit_test (read_all_eof_test),
-        cmocka_unit_test (read_all_twice_eof),
-        cmocka_unit_test (socket_connect_test),
-        cmocka_unit_test (socket_connect_null_test),
-        cmocka_unit_test (socket_connect_socket_fail_test),
-        cmocka_unit_test (socket_connect_connect_fail_test),
-        cmocka_unit_test (socket_ipv6_connect_test),
-        cmocka_unit_test (socket_ipv6_connect_socket_fail_test),
-        cmocka_unit_test (socket_ipv6_connect_connect_fail_test),
-        cmocka_unit_test (socket_connect_unix_test),
-        cmocka_unit_test (socket_connect_unix_socket_fail_test),
-        cmocka_unit_test (socket_connect_unix_connect_fail_test),
+        cmocka_unit_test(write_all_simple_success_test),
+        cmocka_unit_test(read_all_eof_test),
+        cmocka_unit_test(read_all_twice_eof),
+        cmocka_unit_test(socket_connect_test),
+        cmocka_unit_test(socket_connect_null_test),
+        cmocka_unit_test(socket_connect_socket_fail_test),
+        cmocka_unit_test(socket_connect_connect_fail_test),
+        cmocka_unit_test(socket_ipv6_connect_test),
+        cmocka_unit_test(socket_ipv6_connect_socket_fail_test),
+        cmocka_unit_test(socket_ipv6_connect_connect_fail_test),
+        cmocka_unit_test(socket_connect_unix_test),
+        cmocka_unit_test(socket_connect_unix_socket_fail_test),
+        cmocka_unit_test(socket_connect_unix_connect_fail_test),
     };
-    return cmocka_run_group_tests (tests, NULL, NULL);
+    return cmocka_run_group_tests(tests, NULL, NULL);
 }

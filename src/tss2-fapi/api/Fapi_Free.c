@@ -20,7 +20,6 @@
  * @param[in] ptr A pointer to the object that is to be freed.
  */
 void
-Fapi_Free(void *ptr)
-{
+Fapi_Free(void *ptr) {
     free(ptr);
 }

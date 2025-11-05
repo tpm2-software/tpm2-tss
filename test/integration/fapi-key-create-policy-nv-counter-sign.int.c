@@ -8,24 +8,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
-#include <stdlib.h>           // for malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strstr
-#include <unistd.h>           // for read
+#include <stdint.h> // for uint8_t
+#include <stdio.h>  // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h> // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for strstr
+#include <unistd.h> // for read
 
-#include "tss2_common.h"      // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_RC
-#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_CreateNv
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "tss2_common.h"     // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_RC
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_CreateKey, Fapi_CreateNv
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "test-fapi.h"        // for ASSERT, test_invoke_fapi
-#include "util/log.h"         // for goto_if_error, SAFE_FREE, LOG_ERROR
+#include "test-fapi.h" // for ASSERT, test_invoke_fapi
+#include "util/log.h"  // for goto_if_error, SAFE_FREE, LOG_ERROR
 
-#define SIGN_TEMPLATE  "sign,noDa"
-#define PASSWORD NULL
+#define SIGN_TEMPLATE "sign,noDa"
+#define PASSWORD      NULL
 
-#define NV_SIZE 4
+#define NV_SIZE       4
 
 /** Test the FAPI functions for NV writing and key usage with PolicyNV (counter)
  *
@@ -45,23 +45,23 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
-{
+test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context) {
     TSS2_RC r;
-    char *policy_name = "/policy/pol_nv";
-    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_nv_counter.json";;
-    FILE *stream = NULL;
-    char *json_policy = NULL;
+    char   *policy_name = "/policy/pol_nv";
+    char   *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_nv_counter.json";
+    ;
+    FILE    *stream = NULL;
+    char    *json_policy = NULL;
     uint8_t *signature = NULL;
     char    *publicKey = NULL;
     char    *certificate = NULL;
-    long policy_size;
-    char *nvPathOrdinary = "/nv/Owner/myNV";
+    long     policy_size;
+    char    *nvPathOrdinary = "/nv/Owner/myNV";
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
-    r = Fapi_CreateNv(context, nvPathOrdinary, "noda,counter", 8,  "", "");
+    r = Fapi_CreateNv(context, nvPathOrdinary, "noda,counter", 8, "", "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
 
     r = Fapi_NvIncrement(context, nvPathOrdinary);
@@ -76,9 +76,8 @@ test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -90,29 +89,25 @@ test_fapi_key_create_policy_nv_sign(FAPI_CONTEXT *context)
     r = Fapi_Import(context, policy_name, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE,
-                       policy_name, PASSWORD);
+    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE, policy_name, PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
-        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey",
+                            "-----BEGIN "
+                            "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     size_t signatureSize = 0;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00,
-        }
-    };
+    TPM2B_DIGEST digest = { .size = 32,
+                            .buffer = {
+                                0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+                                0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            } };
 
-    r = Fapi_Sign(context, "HS/SRK/mySignKey", NULL,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, &certificate);
+    r = Fapi_Sign(context, "HS/SRK/mySignKey", NULL, &digest.buffer[0], digest.size, &signature,
+                  &signatureSize, &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
     ASSERT(signature != NULL);
     ASSERT(publicKey != NULL);
@@ -142,7 +137,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_key_create_policy_nv_sign(fapi_context);
 }

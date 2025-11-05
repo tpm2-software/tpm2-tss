@@ -5,54 +5,54 @@
  ******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"                 // for MAXLOGLEVEL
+#include "config.h" // for MAXLOGLEVEL
 #endif
 
-#include <errno.h>                  // for errno
-#include <inttypes.h>               // for PRIu8, PRIu64, PRIu16, PRIu32
-#include <stdio.h>                  // for fclose, fread, fopen, sprintf, FILE
-#include <stdlib.h>                 // for free, calloc, malloc, realloc
-#include <string.h>                 // for strlen, memcpy, strerror, memset
-#include <uchar.h>                  // for char16_t, c16rtomb
-#include <uuid/uuid.h>              // for uuid_unparse_lower, uuid_t
-#include <wchar.h>                  // for mbstate_t
+#include <errno.h>     // for errno
+#include <inttypes.h>  // for PRIu8, PRIu64, PRIu16, PRIu32
+#include <stdio.h>     // for fclose, fread, fopen, sprintf, FILE
+#include <stdlib.h>    // for free, calloc, malloc, realloc
+#include <string.h>    // for strlen, memcpy, strerror, memset
+#include <uchar.h>     // for char16_t, c16rtomb
+#include <uuid/uuid.h> // for uuid_unparse_lower, uuid_t
+#include <wchar.h>     // for mbstate_t
 
-#include "efi_event.h"              // for TCG_EVENT2, TCG_SPECID_EVENT, UEF...
-#include "fapi_crypto.h"            // for ifapi_hash_get_digest_size
-#include "ifapi_eventlog.h"         // for CONTENT, CONTENT_TYPE
-#include "ifapi_eventlog_system.h"  // for parse_eventlog, tpm2_eventlog_con...
+#include "efi_event.h"             // for TCG_EVENT2, TCG_SPECID_EVENT, UEF...
+#include "fapi_crypto.h"           // for ifapi_hash_get_digest_size
+#include "ifapi_eventlog.h"        // for CONTENT, CONTENT_TYPE
+#include "ifapi_eventlog_system.h" // for parse_eventlog, tpm2_eventlog_con...
 #include "ifapi_json_eventlog_serialize.h"
-#include "ifapi_macros.h"           // for return_error2
-#include "tpm_json_deserialize.h"   // for ifapi_get_sub_object
-#include "tpm_json_serialize.h"     // for ifapi_json_TPM2_ALG_ID_serialize
-#include "tss2_common.h"            // for TSS2_RC, TSS2_FAPI_RC_GENERAL_FAI...
-#include "tss2_tpm2_types.h"        // for TPM2_ALG_SHA1, TPM2_MAX_PCRS
+#include "ifapi_macros.h"         // for return_error2
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object
+#include "tpm_json_serialize.h"   // for ifapi_json_TPM2_ALG_ID_serialize
+#include "tss2_common.h"          // for TSS2_RC, TSS2_FAPI_RC_GENERAL_FAI...
+#include "tss2_tpm2_types.h"      // for TPM2_ALG_SHA1, TPM2_MAX_PCRS
 
 #define LOGMODULE fapifirmware
-#include "util/log.h"               // for return_if_null, return_error, LOG...
+#include "util/log.h" // for return_if_null, return_error, LOG...
 
-#define JSON_CLEAR(jso) \
-    if (jso) {                   \
-        json_object_put(jso); \
+#define JSON_CLEAR(jso)                                                                            \
+    if (jso) {                                                                                     \
+        json_object_put(jso);                                                                      \
     }
 
-#define return_if_jso_error(r,msg, jso)       \
-    if ((r) != TSS2_RC_SUCCESS) { \
-        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
-        if (jso) {                                                   \
-            json_object_put(jso);                                    \
-        } \
-        return r;  \
+#define return_if_jso_error(r, msg, jso)                                                           \
+    if ((r) != TSS2_RC_SUCCESS) {                                                                  \
+        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r));                               \
+        if (jso) {                                                                                 \
+            json_object_put(jso);                                                                  \
+        }                                                                                          \
+        return r;                                                                                  \
     }
 
-bool ifapi_pcr_used(uint32_t pcr, const uint32_t *pcr_list,  size_t pcr_list_size)
-{
+bool
+ifapi_pcr_used(uint32_t pcr, const uint32_t *pcr_list, size_t pcr_list_size) {
     size_t i;
 
     if (pcr_list_size) {
         for (i = 0; i < pcr_list_size; i++) {
             if (pcr_list[i] == pcr)
-               return true;
+                return true;
         }
     } else {
         return true;
@@ -60,10 +60,8 @@ bool ifapi_pcr_used(uint32_t pcr, const uint32_t *pcr_list,  size_t pcr_list_siz
     return false;
 }
 
-
 static TSS2_RC
-add_string_to_json(const char *string, json_object *jso, const char *jso_tag)
-{
+add_string_to_json(const char *string, json_object *jso, const char *jso_tag) {
     json_object *jso_string = NULL;
 
     return_if_null(string, "Bad reference.", TSS2_FAPI_RC_BAD_VALUE);
@@ -78,7 +76,8 @@ add_string_to_json(const char *string, json_object *jso, const char *jso_tag)
     return TSS2_RC_SUCCESS;
 }
 
-char const *eventtype_to_string (UINT32 event_type) {
+char const *
+eventtype_to_string(UINT32 event_type) {
     switch (event_type) {
     case EV_PREBOOT_CERT:
         return "EV_PREBOOT_CERT";
@@ -160,15 +159,15 @@ char const *eventtype_to_string (UINT32 event_type) {
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPM2B_DIGEST.
  */
-TSS2_RC ifapi_json_BYTE_ARY_serialize(const uint8_t *buffer, size_t size,json_object **jso)
-{
+TSS2_RC
+ifapi_json_BYTE_ARY_serialize(const uint8_t *buffer, size_t size, json_object **jso) {
     return_if_null(buffer, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    char hex_string[(size)*2+1];
-    for (size_t i = 0, off = 0; i < size; i++, off+=2)
+    char hex_string[(size) * 2 + 1];
+    for (size_t i = 0, off = 0; i < size; i++, off += 2)
         sprintf(&hex_string[off], "%02x", buffer[i]);
     hex_string[size * 2] = '\0';
-    *jso = json_object_new_string (hex_string);
+    *jso = json_object_new_string(hex_string);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
@@ -183,16 +182,14 @@ TSS2_RC ifapi_json_BYTE_ARY_serialize(const uint8_t *buffer, size_t size,json_ob
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type UINT16.
  */
 TSS2_RC
-ifapi_json_UINT8_serialize(const UINT8 in, json_object **jso)
-{
+ifapi_json_UINT8_serialize(const UINT8 in, json_object **jso) {
     *jso = json_object_new_int64(in);
     if (*jso == NULL) {
-        LOG_ERROR("Bad value %04"PRIx16"", in);
+        LOG_ERROR("Bad value %04" PRIx16 "", in);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;
 }
-
 
 /** Serialize value of type TCG_DIGEST2 to json.
  *
@@ -202,17 +199,17 @@ ifapi_json_UINT8_serialize(const UINT8 in, json_object **jso)
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TCG_DIGEST2.
  */
-TSS2_RC ifapi_json_TCG_DIGEST2_serialize(const TCG_DIGEST2 *in, json_object **jso)
-{
+TSS2_RC
+ifapi_json_TCG_DIGEST2_serialize(const TCG_DIGEST2 *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
-    size_t size;
+    size_t       size;
 
     if (*jso == NULL) {
         *jso = json_object_new_object();
-         return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     }
 
     jso2 = NULL;
@@ -234,15 +231,14 @@ TSS2_RC ifapi_json_TCG_DIGEST2_serialize(const TCG_DIGEST2 *in, json_object **js
     return TSS2_RC_SUCCESS;
 }
 
-
-bool ifapi_json_TCG_DIGEST2_cb(const TCG_DIGEST2 *in, size_t size, void *data)
-{
-    TSS2_RC r;
-    json_object *jso = NULL;
-    json_object *jso_digests, *jso_digest;
+bool
+ifapi_json_TCG_DIGEST2_cb(const TCG_DIGEST2 *in, size_t size, void *data) {
+    TSS2_RC        r;
+    json_object   *jso = NULL;
+    json_object   *jso_digests, *jso_digest;
     callback_data *cb_data = data;
-    json_object *jso_event_list = cb_data->jso_event_list;
-    size_t number_of_events;
+    json_object   *jso_event_list = cb_data->jso_event_list;
+    size_t         number_of_events;
     (void)size;
 
     LOG_TRACE("call");
@@ -283,8 +279,7 @@ check_event_string(const TCG_EVENT2 *in, const char *string) {
         /* String without NULL terminator */
         return TSS2_RC_SUCCESS;
     }
-    if  (in->EventSize == strlen(string) + 1 &&
-         in->Event[strlen(string)] == '\0') {
+    if (in->EventSize == strlen(string) + 1 && in->Event[strlen(string)] == '\0') {
         /* String with NULL terminator */
         return TSS2_RC_SUCCESS;
     }
@@ -300,12 +295,10 @@ check_event_string(const TCG_EVENT2 *in, const char *string) {
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type UEFI_VARIABLE_DATA.
  */
-TSS2_RC trace_unicodename(
-    const char16_t *UnicodeName,
-    UINT64 UnicodeNameLength)
-{
-    size_t ret = 0;
-    char *mbstr = NULL, *tmp = NULL;
+TSS2_RC
+trace_unicodename(const char16_t *UnicodeName, UINT64 UnicodeNameLength) {
+    size_t    ret = 0;
+    char     *mbstr = NULL, *tmp = NULL;
     mbstate_t st;
 
     memset(&st, '\0', sizeof(st));
@@ -316,9 +309,9 @@ TSS2_RC trace_unicodename(
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 
-    for(size_t i = 0; i < UnicodeNameLength; ++i, tmp += ret) {
+    for (size_t i = 0; i < UnicodeNameLength; ++i, tmp += ret) {
         ret = c16rtomb(tmp, UnicodeName[i], &st);
-        if (ret == (size_t) -1) {
+        if (ret == (size_t)-1) {
             LOG_ERROR("c16rtomb failed: %s", strerror(errno));
             free(mbstr);
             return TSS2_FAPI_RC_BAD_VALUE;
@@ -339,11 +332,11 @@ TSS2_RC trace_unicodename(
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TCG_EVENT2.
  */
-TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type, json_object **jso)
-{
+TSS2_RC
+ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2 = NULL;
 
     if (*jso == NULL) {
@@ -358,54 +351,52 @@ TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type,
         return_if_error(r, "Check event string.");
         break;
     case EV_OMIT_BOOT_DEVICE_EVENTS:
-          r = check_event_string(in, "BOOT ATTEMPTS OMITTED");
-          return_if_error(r, "Check event string.");
-          break;
+        r = check_event_string(in, "BOOT ATTEMPTS OMITTED");
+        return_if_error(r, "Check event string.");
+        break;
     /* TCG PC Client FPF section 9.2.6 */
     case EV_EFI_VARIABLE_DRIVER_CONFIG:
     case EV_EFI_VARIABLE_BOOT:
     case EV_EFI_VARIABLE_BOOT2:
-    case EV_EFI_VARIABLE_AUTHORITY:
-        {
+    case EV_EFI_VARIABLE_AUTHORITY: {
 #if (MAXLOGLEVEL != LOGL_NONE)
-            UEFI_VARIABLE_DATA *data = (UEFI_VARIABLE_DATA*)in->Event;
-            BYTE *variableData;
-            char uuidstr[37] = { 0 };
+        UEFI_VARIABLE_DATA *data = (UEFI_VARIABLE_DATA *)in->Event;
+        BYTE               *variableData;
+        char                uuidstr[37] = { 0 };
 
-            if (in->EventSize < sizeof(*data)) {
-                LOG_ERROR("size is insufficient for UEFI variable data");
-                return false;
-            }
-
-            UINT64 size_name = (UINT64)data->UnicodeNameLength;
-            UINT64 size_vdata = (UINT64)data->VariableDataLength;
-
-            if  (size_name > UINT64_MAX / sizeof(UTF16_CHAR) ||
-                 size_name * sizeof(UTF16_CHAR) > UINT64_MAX - size_vdata ||
-                 size_name + size_vdata > UINT64_MAX - sizeof(*data) ||
-                in->EventSize < (in->EventSize < sizeof(*data) + data->UnicodeNameLength *
-                                 sizeof(UTF16_CHAR) + data->VariableDataLength))
-            {
-                LOG_ERROR("size is insufficient for UEFI variable data");
-                return false;
-            }
-
-            uuid_unparse_lower(data->VariableName, uuidstr);
-            LOG_TRACE("FIRMWARE VariableName: %s", uuidstr);
-            char16_t *name = malloc(size_name * sizeof(char16_t));
-            return_if_null(name, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-            memcpy(name, &data->UnicodeName[0], data->UnicodeNameLength  * sizeof(char16_t));
-            return_if_null(name, "Out of memory", TSS2_FAPI_RC_MEMORY);
-
-            r = trace_unicodename(name, size_name);
-            SAFE_FREE(name);
-            return_if_error(r, "Trace unicodename");
-
-            variableData = (BYTE *)&data->UnicodeName + data->UnicodeNameLength * sizeof(char16_t);
-            LOGBLOB_TRACE(variableData, data->VariableDataLength, "FIRMWARE VariableData:");
-#endif
+        if (in->EventSize < sizeof(*data)) {
+            LOG_ERROR("size is insufficient for UEFI variable data");
+            return false;
         }
-        break;
+
+        UINT64 size_name = (UINT64)data->UnicodeNameLength;
+        UINT64 size_vdata = (UINT64)data->VariableDataLength;
+
+        if (size_name > UINT64_MAX / sizeof(UTF16_CHAR)
+            || size_name * sizeof(UTF16_CHAR) > UINT64_MAX - size_vdata
+            || size_name + size_vdata > UINT64_MAX - sizeof(*data)
+            || in->EventSize
+                   < (in->EventSize < sizeof(*data) + data->UnicodeNameLength * sizeof(UTF16_CHAR)
+                                          + data->VariableDataLength)) {
+            LOG_ERROR("size is insufficient for UEFI variable data");
+            return false;
+        }
+
+        uuid_unparse_lower(data->VariableName, uuidstr);
+        LOG_TRACE("FIRMWARE VariableName: %s", uuidstr);
+        char16_t *name = malloc(size_name * sizeof(char16_t));
+        return_if_null(name, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        memcpy(name, &data->UnicodeName[0], data->UnicodeNameLength * sizeof(char16_t));
+        return_if_null(name, "Out of memory", TSS2_FAPI_RC_MEMORY);
+
+        r = trace_unicodename(name, size_name);
+        SAFE_FREE(name);
+        return_if_error(r, "Trace unicodename");
+
+        variableData = (BYTE *)&data->UnicodeName + data->UnicodeNameLength * sizeof(char16_t);
+        LOGBLOB_TRACE(variableData, data->VariableDataLength, "FIRMWARE VariableData:");
+#endif
+    } break;
     /* TCG PC Client FPF section 2.3.4.1 and 9.4.1 */
     case EV_POST_CODE:
         // the event is a string, so there are no length requirements.
@@ -413,44 +404,38 @@ TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type,
     /* TCG PC Client FPF section 9.2.5 */
     case EV_S_CRTM_CONTENTS:
     case EV_EFI_PLATFORM_FIRMWARE_BLOB:
-    case EV_EFI_PLATFORM_FIRMWARE_BLOB2:
-        {
-            UEFI_PLATFORM_FIRMWARE_BLOB *data =
-                (UEFI_PLATFORM_FIRMWARE_BLOB*)in->Event;
-            return_if_null(data, "Invalid UEFI data.", TSS2_FAPI_RC_BAD_VALUE);
+    case EV_EFI_PLATFORM_FIRMWARE_BLOB2: {
+        UEFI_PLATFORM_FIRMWARE_BLOB *data = (UEFI_PLATFORM_FIRMWARE_BLOB *)in->Event;
+        return_if_null(data, "Invalid UEFI data.", TSS2_FAPI_RC_BAD_VALUE);
 
-            if (in->EventSize < sizeof(*data)) {
-                LOG_ERROR("size is insufficient for UEFI FW blob data");
-                return false;
-            }
-
-            LOG_TRACE("FIRMWARE BlobBase: %"PRIu64, data->BlobBase);
-            LOG_TRACE("FIRMWARE BlobLength: %"PRIu64, data->BlobLength);
+        if (in->EventSize < sizeof(*data)) {
+            LOG_ERROR("size is insufficient for UEFI FW blob data");
+            return false;
         }
-        break;
+
+        LOG_TRACE("FIRMWARE BlobBase: %" PRIu64, data->BlobBase);
+        LOG_TRACE("FIRMWARE BlobLength: %" PRIu64, data->BlobLength);
+    } break;
     case EV_EFI_BOOT_SERVICES_APPLICATION:
     case EV_EFI_BOOT_SERVICES_DRIVER:
-    case EV_EFI_RUNTIME_SERVICES_DRIVER:
-        {
-            UEFI_IMAGE_LOAD_EVENT *data = (UEFI_IMAGE_LOAD_EVENT*)in->Event;
-            return_if_null(data, "Invalid UEFI data.", TSS2_FAPI_RC_BAD_VALUE);
+    case EV_EFI_RUNTIME_SERVICES_DRIVER: {
+        UEFI_IMAGE_LOAD_EVENT *data = (UEFI_IMAGE_LOAD_EVENT *)in->Event;
+        return_if_null(data, "Invalid UEFI data.", TSS2_FAPI_RC_BAD_VALUE);
 
-            if (in->EventSize < sizeof(*data) ||
-                data->LengthOfDevicePath > UINT64_MAX - sizeof(*data) ||
-                in->EventSize < sizeof(*data) + data->LengthOfDevicePath) {
-                LOG_ERROR("size is insufficient for UEFI image load event");
-                return false;
-            }
-            /* what about the device path? */
-            LOG_TRACE("FIRMWARE ImageLocationInMemory: %"PRIu64, data->ImageLocationInMemory);
-            LOG_TRACE("FIRMWARE ImageLengthInMemory: %"PRIu64, data->ImageLengthInMemory);
-            LOG_TRACE("FIRMWARE ImageLinkTimeAddress: %"PRIu64, data->ImageLinkTimeAddress);
-            LOGBLOB_TRACE(&data->DevicePath[0], data->LengthOfDevicePath, "DevicePath:");
+        if (in->EventSize < sizeof(*data) || data->LengthOfDevicePath > UINT64_MAX - sizeof(*data)
+            || in->EventSize < sizeof(*data) + data->LengthOfDevicePath) {
+            LOG_ERROR("size is insufficient for UEFI image load event");
+            return false;
         }
+        /* what about the device path? */
+        LOG_TRACE("FIRMWARE ImageLocationInMemory: %" PRIu64, data->ImageLocationInMemory);
+        LOG_TRACE("FIRMWARE ImageLengthInMemory: %" PRIu64, data->ImageLengthInMemory);
+        LOG_TRACE("FIRMWARE ImageLinkTimeAddress: %" PRIu64, data->ImageLinkTimeAddress);
+        LOGBLOB_TRACE(&data->DevicePath[0], data->LengthOfDevicePath, "DevicePath:");
+    } break;
+    default:
+        LOG_WARNING("Unknown event type %" PRIu32 "", event_type);
         break;
-        default:
-            LOG_WARNING("Unknown event type %"PRIu32"", event_type);
-            break;
     }
     /* Check whether data has already been added (for legacy events). */
     if (!ifapi_get_sub_object(*jso, "event_data", &jso2)) {
@@ -465,14 +450,14 @@ TSS2_RC ifapi_json_TCG_EVENT2_serialize(const TCG_EVENT2 *in, UINT32 event_type,
     return TSS2_RC_SUCCESS;
 }
 
-bool ifapi_json_TCG_EVENT2_cb(const TCG_EVENT2 *in, UINT32 event_type, void *data)
-{
-    json_object *jso = NULL;
+bool
+ifapi_json_TCG_EVENT2_cb(const TCG_EVENT2 *in, UINT32 event_type, void *data) {
+    json_object   *jso = NULL;
     callback_data *cb_data = data;
-    json_object *jso_event_list = cb_data->jso_event_list;
-    json_object *jso_sub = NULL;
-    TSS2_RC r;
-    size_t number_of_events;
+    json_object   *jso_event_list = cb_data->jso_event_list;
+    json_object   *jso_sub = NULL;
+    TSS2_RC        r;
+    size_t         number_of_events;
 
     LOG_TRACE("call");
 
@@ -486,9 +471,9 @@ bool ifapi_json_TCG_EVENT2_cb(const TCG_EVENT2 *in, UINT32 event_type, void *dat
     if (!ifapi_get_sub_object(jso, CONTENT, &jso_sub)) {
         LOG_ERROR("content expected.");
         JSON_CLEAR(jso_sub);
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r =  ifapi_json_TCG_EVENT2_serialize(in, event_type, &jso_sub);
+    r = ifapi_json_TCG_EVENT2_serialize(in, event_type, &jso_sub);
     if (r) {
         return false;
     }
@@ -504,17 +489,16 @@ bool ifapi_json_TCG_EVENT2_cb(const TCG_EVENT2 *in, UINT32 event_type, void *dat
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TCG_EVENT_HEADER2.
  */
-TSS2_RC ifapi_json_TCG_EVENT_HEADER2_serialize(
-    const TCG_EVENT_HEADER2 *in,
-    size_t size,
-    size_t recnum,
-    json_object **jso)
-{
+TSS2_RC
+ifapi_json_TCG_EVENT_HEADER2_serialize(const TCG_EVENT_HEADER2 *in,
+                                       size_t                   size,
+                                       size_t                   recnum,
+                                       json_object            **jso) {
     (void)size;
 
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     json_object *jso_sub;
     json_object *jso_ary;
@@ -540,7 +524,7 @@ TSS2_RC ifapi_json_TCG_EVENT_HEADER2_serialize(
     }
     jso2 = NULL;
 
-    jso2 = json_object_new_int64((int64_t) recnum);
+    jso2 = json_object_new_int64((int64_t)recnum);
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     if (json_object_object_add(*jso, "recnum", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -561,28 +545,22 @@ TSS2_RC ifapi_json_TCG_EVENT_HEADER2_serialize(
     return TSS2_RC_SUCCESS;
 }
 
-bool ifapi_json_TCG_EVENT_HEADER2_cb(
-    const TCG_EVENT_HEADER2 *in,
-    size_t size,
-    void *data)
-{
-    TSS2_RC r;
-    json_object *jso = NULL;
+bool
+ifapi_json_TCG_EVENT_HEADER2_cb(const TCG_EVENT_HEADER2 *in, size_t size, void *data) {
+    TSS2_RC        r;
+    json_object   *jso = NULL;
     callback_data *cb_data = data;
-    json_object *jso_event_list = cb_data->jso_event_list;
+    json_object   *jso_event_list = cb_data->jso_event_list;
 
     LOG_TRACE("call");
 
     cb_data->skip_event = true;
 
-    cb_data->skip_event = !ifapi_pcr_used(in->PCRIndex, cb_data->pcr_list,
-                                          cb_data->pcr_list_size);
+    cb_data->skip_event = !ifapi_pcr_used(in->PCRIndex, cb_data->pcr_list, cb_data->pcr_list_size);
     if (cb_data->skip_event)
         return true;
 
-    r = ifapi_json_TCG_EVENT_HEADER2_serialize(in, size,
-                                               cb_data->recnum_tab[in->PCRIndex],
-                                               &jso);
+    r = ifapi_json_TCG_EVENT_HEADER2_serialize(in, size, cb_data->recnum_tab[in->PCRIndex], &jso);
     if (r) {
         JSON_CLEAR(jso);
         return false;
@@ -604,14 +582,15 @@ bool ifapi_json_TCG_EVENT_HEADER2_cb(
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type UEFI_VARIABLE_DATA.
  */
-TSS2_RC ifapi_json_uuid_t_serialize(const uuid_t *in, json_object **jso) {
-       char uuidstr[37] = { 0 };
+TSS2_RC
+ifapi_json_uuid_t_serialize(const uuid_t *in, json_object **jso) {
+    char uuidstr[37] = { 0 };
 
-       uuid_unparse_lower(*in, uuidstr);
-       *jso = json_object_new_string (uuidstr);
-       return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    uuid_unparse_lower(*in, uuidstr);
+    *jso = json_object_new_string(uuidstr);
+    return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-       return TSS2_RC_SUCCESS;
+    return TSS2_RC_SUCCESS;
 }
 
 /** Serialize value of type TCG_EVENT to json.
@@ -622,11 +601,11 @@ TSS2_RC ifapi_json_uuid_t_serialize(const uuid_t *in, json_object **jso) {
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TCG_EVENT.
  */
-TSS2_RC ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_object **jso)
-{
+TSS2_RC
+ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2, *jso_sub, *jso_digest, *jso_ary;
 
     if (*jso == NULL) {
@@ -644,7 +623,7 @@ TSS2_RC ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_
     if (json_object_object_add(*jso, "pcr", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
-    jso2 = json_object_new_int64((int64_t) recnum);
+    jso2 = json_object_new_int64((int64_t)recnum);
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     if (json_object_object_add(*jso, "recnum", jso2)) {
@@ -702,31 +681,28 @@ TSS2_RC ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_
     return TSS2_RC_SUCCESS;
 }
 
-bool ifapi_json_TCG_EVENT_cb(const TCG_EVENT *in, size_t size, void *data)
-{
-    TSS2_RC r;
-    json_object *jso = NULL;
+bool
+ifapi_json_TCG_EVENT_cb(const TCG_EVENT *in, size_t size, void *data) {
+    TSS2_RC        r;
+    json_object   *jso = NULL;
     callback_data *cb_data = data;
-    json_object *jso_event_list = cb_data->jso_event_list;
+    json_object   *jso_event_list = cb_data->jso_event_list;
     (void)size;
 
     LOG_TRACE("call");
 
-    cb_data->skip_event = !ifapi_pcr_used(in->pcrIndex, cb_data->pcr_list,
-                                          cb_data->pcr_list_size);
+    cb_data->skip_event = !ifapi_pcr_used(in->pcrIndex, cb_data->pcr_list, cb_data->pcr_list_size);
 
     if (cb_data->skip_event)
         return true;
 
-    r = ifapi_json_TCG_EVENT_serialize(in,
-                                       cb_data->recnum_tab[in->pcrIndex],
-                                       &jso);
+    r = ifapi_json_TCG_EVENT_serialize(in, cb_data->recnum_tab[in->pcrIndex], &jso);
     if (r) {
         JSON_CLEAR(jso);
         return false;
     }
 
-     cb_data->recnum_tab[in->pcrIndex]++;
+    cb_data->recnum_tab[in->pcrIndex]++;
 
     if (json_object_array_add(jso_event_list, jso)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -742,18 +718,16 @@ bool ifapi_json_TCG_EVENT_cb(const TCG_EVENT *in, size_t size, void *data)
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TCG_SPECID_ALG.
  */
-TSS2_RC ifapi_json_TCG_SPECID_ALG_serialize(
-    const TCG_SPECID_ALG *in,
-    json_object **jso)
-{
+TSS2_RC
+ifapi_json_TCG_SPECID_ALG_serialize(const TCG_SPECID_ALG *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL) {
         *jso = json_object_new_object();
-         return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     }
 
     jso2 = NULL;
@@ -781,11 +755,11 @@ TSS2_RC ifapi_json_TCG_SPECID_ALG_serialize(
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TCG_VENDOR_INFO.
  */
-TSS2_RC ifapi_json_TCG_VENDOR_INFO_serialize(const TCG_VENDOR_INFO *in, json_object **jso)
-{
+TSS2_RC
+ifapi_json_TCG_VENDOR_INFO_serialize(const TCG_VENDOR_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (!in->vendorInfoSize)
@@ -814,8 +788,8 @@ TSS2_RC ifapi_json_TCG_VENDOR_INFO_serialize(const TCG_VENDOR_INFO *in, json_obj
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TCG_SPECID_EVENT.
  */
-TSS2_RC ifapi_json_TCG_SPECID_EVENT_serialize(const TCG_SPECID_EVENT *in, json_object **jso)
-{
+TSS2_RC
+ifapi_json_TCG_SPECID_EVENT_serialize(const TCG_SPECID_EVENT *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     size_t i;
@@ -824,59 +798,55 @@ TSS2_RC ifapi_json_TCG_SPECID_EVENT_serialize(const TCG_SPECID_EVENT *in, json_o
 
     if (*jso == NULL) {
         *jso = json_object_new_object();
-         return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     }
 
     /* 'Signature' defined as byte buf, spec treats it like string w/o null. */
-    char sig_str[sizeof(in->Signature) + 1] = { '\0', };
+    char sig_str[sizeof(in->Signature) + 1] = {
+        '\0',
+    };
     memcpy(sig_str, in->Signature, sizeof(in->Signature));
 
     LOG_TRACE("Signature: %s", sig_str);
-    LOG_TRACE("platformClass: %"PRIu32, in->platformClass);
-    LOG_TRACE("specVersionMajor: %"PRIu8, in->specVersionMajor);
-    LOG_TRACE("specVersionMinor: %"PRIu8, in->specVersionMinor);
-    LOG_TRACE("specErrata: %"PRIu8, in->specErrata);
-    LOG_TRACE("uintnSize: %"PRIu8, in->uintnSize);
-    LOG_TRACE("specErrata: %"PRIu8, in->specErrata);
-    LOG_TRACE("numberOfAlgorithms: %"PRIu32, in->numberOfAlgorithms);
-
+    LOG_TRACE("platformClass: %" PRIu32, in->platformClass);
+    LOG_TRACE("specVersionMajor: %" PRIu8, in->specVersionMajor);
+    LOG_TRACE("specVersionMinor: %" PRIu8, in->specVersionMinor);
+    LOG_TRACE("specErrata: %" PRIu8, in->specErrata);
+    LOG_TRACE("uintnSize: %" PRIu8, in->uintnSize);
+    LOG_TRACE("specErrata: %" PRIu8, in->specErrata);
+    LOG_TRACE("numberOfAlgorithms: %" PRIu32, in->numberOfAlgorithms);
 
     for (i = 0; i < in->numberOfAlgorithms; i++) {
-        LOG_TRACE(" %zu AlgID: %"PRIu16, i, in->digestSizes[i].algorithmId);
-        LOG_TRACE(" %zu DigestSize: %"PRIu16, i, in->digestSizes[i].digestSize);
+        LOG_TRACE(" %zu AlgID: %" PRIu16, i, in->digestSizes[i].algorithmId);
+        LOG_TRACE(" %zu DigestSize: %" PRIu16, i, in->digestSizes[i].digestSize);
     }
 #if (MAXLOGLEVEL != LOGL_NONE)
-    size_t offset = in->numberOfAlgorithms * sizeof(TCG_SPECID_ALG);
+    size_t           offset = in->numberOfAlgorithms * sizeof(TCG_SPECID_ALG);
     TCG_VENDOR_INFO *vendor_info = (TCG_VENDOR_INFO *)&in->digestSizes[0] + offset;
 
-    LOG_TRACE("vendorInfoSize: %"PRIu8, vendor_info->vendorInfoSize);
-    LOGBLOB_TRACE(&vendor_info->vendorInfo[0], vendor_info->vendorInfoSize,
-                  "vendorInfo");
+    LOG_TRACE("vendorInfoSize: %" PRIu8, vendor_info->vendorInfoSize);
+    LOGBLOB_TRACE(&vendor_info->vendorInfo[0], vendor_info->vendorInfoSize, "vendorInfo");
 #endif
 
     return TSS2_RC_SUCCESS;
 }
 
-bool ifapi_json_TCG_SPECID_EVENT_cb(
-    const TCG_EVENT *tcg_event,
-    void *data)
-{
-    TSS2_RC r;
-    json_object *jso = NULL, *jso_sub;
-    callback_data *cb_data = data;
-    json_object *jso_event_list = cb_data->jso_event_list;
-    TCG_SPECID_EVENT *event_specid = (TCG_SPECID_EVENT*)tcg_event->event;
+bool
+ifapi_json_TCG_SPECID_EVENT_cb(const TCG_EVENT *tcg_event, void *data) {
+    TSS2_RC           r;
+    json_object      *jso = NULL, *jso_sub;
+    callback_data    *cb_data = data;
+    json_object      *jso_event_list = cb_data->jso_event_list;
+    TCG_SPECID_EVENT *event_specid = (TCG_SPECID_EVENT *)tcg_event->event;
 
     if (cb_data->skip_event)
         return true;
 
-    if (!ifapi_pcr_used(0, cb_data->pcr_list,cb_data->pcr_list_size))
+    if (!ifapi_pcr_used(0, cb_data->pcr_list, cb_data->pcr_list_size))
         /* PCR 0 not used */
         return true;
 
-    r = ifapi_json_TCG_EVENT_serialize(tcg_event,
-                                       cb_data->recnum_tab[0],
-                                       &jso);
+    r = ifapi_json_TCG_EVENT_serialize(tcg_event, cb_data->recnum_tab[0], &jso);
     if (r) {
         JSON_CLEAR(jso);
         return false;
@@ -886,7 +856,7 @@ bool ifapi_json_TCG_SPECID_EVENT_cb(
 
     if (!ifapi_get_sub_object(jso, CONTENT, &jso_sub)) {
         LOG_ERROR("content expected.");
-        return  TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
 
     r = ifapi_json_TCG_SPECID_EVENT_serialize(event_specid, &jso_sub);
@@ -902,21 +872,21 @@ bool ifapi_json_TCG_SPECID_EVENT_cb(
 }
 
 typedef struct {
-	json_object_iter *jso_event_list;
-    const uint32_t *pcr_list;
-    size_t size_of_pcr_list;
+    json_object_iter *jso_event_list;
+    const uint32_t   *pcr_list;
+    size_t            size_of_pcr_list;
 } cb_data;
 
-TSS2_RC ifapi_tcg_eventlog_serialize(
-    UINT8 const *eventlog,
-    size_t size,
-    const uint32_t *pcr_list,
-    size_t  pcr_list_size,
-    json_object **eventlog_json) {
+TSS2_RC
+ifapi_tcg_eventlog_serialize(UINT8 const    *eventlog,
+                             size_t          size,
+                             const uint32_t *pcr_list,
+                             size_t          pcr_list_size,
+                             json_object   **eventlog_json) {
 
-    TSS2_RC r;
-    size_t i;
-    json_object *jso_ary = NULL;
+    TSS2_RC       r;
+    size_t        i;
+    json_object  *jso_ary = NULL;
     callback_data callback_data;
 
     tpm2_eventlog_context ctx = {
@@ -941,7 +911,7 @@ TSS2_RC ifapi_tcg_eventlog_serialize(
     if (*eventlog_json) {
         jso_ary = *eventlog_json;
     } else {
-        jso_ary =  json_object_new_array();
+        jso_ary = json_object_new_array();
         return_if_null(jso_ary, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     }
     callback_data.jso_event_list = jso_ary;
@@ -956,15 +926,14 @@ TSS2_RC ifapi_tcg_eventlog_serialize(
     *eventlog_json = jso_ary;
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     if (jso_ary)
         json_object_put(jso_ary);
     return r;
 }
 
 static TSS2_RC
-file_to_buffer(const char *filename, size_t *size, uint8_t **eventlog)
-{
+file_to_buffer(const char *filename, size_t *size, uint8_t **eventlog) {
     return_if_null(eventlog, "Invalid buffer.", TSS2_FAPI_RC_BAD_VALUE);
     size_t alloc_size = UINT16_MAX;
     size_t alloc_buf_size;
@@ -980,7 +949,7 @@ file_to_buffer(const char *filename, size_t *size, uint8_t **eventlog)
     *size = 0;
     *eventlog = calloc(1, alloc_size);
     if (!*eventlog) {
-	fclose(fp);
+        fclose(fp);
         return_error2(TSS2_FAPI_RC_IO_ERROR, "Could not read %s", filename);
     }
     read_size = fread(*eventlog, 1, alloc_size, fp);
@@ -989,7 +958,7 @@ file_to_buffer(const char *filename, size_t *size, uint8_t **eventlog)
 
     while (file_size == alloc_buf_size) {
         n_alloc += 1;
-        uint8_t* tmp_buff = realloc(*eventlog, file_size + alloc_size);
+        uint8_t *tmp_buff = realloc(*eventlog, file_size + alloc_size);
         if (!tmp_buff) {
             fclose(fp);
             free(*eventlog);
@@ -1005,27 +974,25 @@ file_to_buffer(const char *filename, size_t *size, uint8_t **eventlog)
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC ifapi_get_tcg_firmware_event_list(
-    char const *filename,
-    const uint32_t *pcr_list,
-    size_t  pcr_list_size,
-    json_object **json_eventlog)
-{
-    TSS2_RC r;
+TSS2_RC
+ifapi_get_tcg_firmware_event_list(char const     *filename,
+                                  const uint32_t *pcr_list,
+                                  size_t          pcr_list_size,
+                                  json_object   **json_eventlog) {
+    TSS2_RC  r;
     uint8_t *eventlog_buffer = NULL;
-    size_t size;
+    size_t   size;
 
     r = file_to_buffer(filename, &size, &eventlog_buffer);
     return_if_error(r, "Read eventlog.");
 
-    r = ifapi_tcg_eventlog_serialize(eventlog_buffer, size, pcr_list,
-                                     pcr_list_size, json_eventlog);
+    r = ifapi_tcg_eventlog_serialize(eventlog_buffer, size, pcr_list, pcr_list_size, json_eventlog);
     goto_if_error(r, "Serialize eventlog.", error);
 
     SAFE_FREE(eventlog_buffer);
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     SAFE_FREE(eventlog_buffer);
     return r;
 }

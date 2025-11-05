@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>       // for NULL, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>       // for strlen
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for strlen
 
-#include "tss2_common.h"  // for TSS2_RC
-#include "tss2_fapi.h"    // for Fapi_GetInfo, FAPI_CONTEXT
+#include "tss2_common.h" // for TSS2_RC
+#include "tss2_fapi.h"   // for Fapi_GetInfo, FAPI_CONTEXT
 
 #define LOGMODULE test
-#include "test-fapi.h"    // for ASSERT, CHECK_JSON_FIELDS, ASSERT_SIZE, tes...
-#include "util/log.h"     // for SAFE_FREE, LOG_INFO, goto_if_error
+#include "test-fapi.h" // for ASSERT, CHECK_JSON_FIELDS, ASSERT_SIZE, tes...
+#include "util/log.h"  // for SAFE_FREE, LOG_INFO, goto_if_error
 
 /** Test the FAPI functions for GetInfo.
  *
@@ -30,11 +30,10 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_info(FAPI_CONTEXT *context)
-{
+test_fapi_info(FAPI_CONTEXT *context) {
 
     TSS2_RC r;
-    char *info = NULL;
+    char   *info = NULL;
 
     r = Fapi_GetInfo(context, &info);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -43,10 +42,10 @@ test_fapi_info(FAPI_CONTEXT *context)
 
     LOG_INFO("%s", info);
 
-    char *fields_config[] =  { "fapi_config" };
+    char *fields_config[] = { "fapi_config" };
     CHECK_JSON_FIELDS(info, fields_config, "", error);
 
-    char *fields_info[] =  { "capabilities" };
+    char *fields_info[] = { "capabilities" };
     CHECK_JSON_FIELDS(info, fields_info, "", error);
 
     SAFE_FREE(info);
@@ -58,7 +57,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_info(fapi_context);
 }

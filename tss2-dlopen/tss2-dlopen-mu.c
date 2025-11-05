@@ -14,31 +14,35 @@
  *
  * For new versions of this file, please check:
  * http://github.com/tpm2-software/tpm2-tss/tss2-dlopen
-*/
+ */
 
-#include <dlfcn.h>            // for dlsym, dlerror, dlopen, RTLD_LOCAL, RTL...
-#include <stdint.h>           // for uint8_t, uint32_t
-#include <stdio.h>            // for size_t, fprintf, NULL, stderr
-#include <tss2/tss2_mu.h>     // for Tss2_MU_BYTE_Marshal, Tss2_MU_BYTE_Unma...
+#include <dlfcn.h>        // for dlsym, dlerror, dlopen, RTLD_LOCAL, RTL...
+#include <stdint.h>       // for uint8_t, uint32_t
+#include <stdio.h>        // for size_t, fprintf, NULL, stderr
+#include <tss2/tss2_mu.h> // for Tss2_MU_BYTE_Marshal, Tss2_MU_BYTE_Unma...
 
-#include "tss2_common.h"      // for TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_RC
-#include "tss2_tpm2_types.h"  // for TPM2B_ATTEST, TPM2B_AUTH, TPM2B_CONTEXT...
+#include "tss2_common.h"     // for TSS2_BASE_RC_NOT_IMPLEMENTED, TSS2_RC
+#include "tss2_tpm2_types.h" // for TPM2B_ATTEST, TPM2B_AUTH, TPM2B_CONTEXT...
 
-#define str(s) xstr(s)
+#define str(s)  xstr(s)
 #define xstr(s) #s
 
 #ifdef ENABLE_WARN
-#define WARN(str, ...) do { fprintf(stderr, "WARNING: " str "\n", ## __VA_ARGS__); } while (0)
+#define WARN(str, ...)                                                                             \
+    do {                                                                                           \
+        fprintf(stderr, "WARNING: " str "\n", ##__VA_ARGS__);                                      \
+    } while (0)
 #else /* ENABLE_WARN */
-#define WARN(...) do { } while (0)
+#define WARN(...)                                                                                  \
+    do {                                                                                           \
+    } while (0)
 #endif /* ENABLE_WARN */
 
 #define LIB "libtss2-mu.so.0"
 static void *dlhandle = NULL;
 
 static TSS2_RC
-init_dlhandle(void)
-{
+init_dlhandle(void) {
     if (dlhandle)
         return TSS2_RC_SUCCESS;
     dlhandle = dlopen(LIB, RTLD_NOW | RTLD_LOCAL);
@@ -50,115 +54,89 @@ init_dlhandle(void)
 }
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define MAKE_MU_BASE(typ) \
-TSS2_RC Tss2_MU_ ## typ ## _Marshal ( \
-    typ             src, \
-    uint8_t         buffer[], \
-    size_t          buffer_size, \
-    size_t         *offset) \
-{ \
-    if (init_dlhandle() != TSS2_RC_SUCCESS) \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    static TSS2_RC (*sym) (typ, uint8_t [], size_t, size_t *) = NULL; \
-    if (!sym) \
-        sym = dlsym(dlhandle, str(Tss2_MU_ ## typ ## _Marshal)); \
-    if (!sym) { \
-        WARN("Function " str(Tss2_MU_ ## typ ## _Marshal) " not found."); \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    } \
-    return sym(src, buffer, buffer_size, offset); \
-} \
-TSS2_RC Tss2_MU_ ## typ ## _Unmarshal ( \
-    uint8_t const   buffer[], \
-    size_t          buffer_size, \
-    size_t         *offset, \
-    typ            *dest) \
-{ \
-    if (init_dlhandle() != TSS2_RC_SUCCESS) \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    static TSS2_RC (*sym) (const uint8_t [], size_t, size_t *, typ *) = NULL; \
-    if (!sym) \
-        sym = dlsym(dlhandle, str(Tss2_MU_ ## typ ## _Unmarshal)); \
-    if (!sym) { \
-        WARN("Function " str(Tss2_MU_ ## typ ## _Unmarshal) " not found."); \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    } \
-    return sym(buffer, buffer_size, offset, dest); \
-}
+#define MAKE_MU_BASE(typ)                                                                          \
+    TSS2_RC Tss2_MU_##typ##_Marshal(typ src, uint8_t buffer[], size_t buffer_size,                 \
+                                    size_t *offset) {                                              \
+        if (init_dlhandle() != TSS2_RC_SUCCESS)                                                    \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        static TSS2_RC (*sym)(typ, uint8_t[], size_t, size_t *) = NULL;                            \
+        if (!sym)                                                                                  \
+            sym = dlsym(dlhandle, str(Tss2_MU_##typ##_Marshal));                                   \
+        if (!sym) {                                                                                \
+            WARN("Function " str(Tss2_MU_##typ##_Marshal) " not found.");                          \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        }                                                                                          \
+        return sym(src, buffer, buffer_size, offset);                                              \
+    }                                                                                              \
+    TSS2_RC Tss2_MU_##typ##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *offset,  \
+                                      typ *dest) {                                                 \
+        if (init_dlhandle() != TSS2_RC_SUCCESS)                                                    \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        static TSS2_RC (*sym)(const uint8_t[], size_t, size_t *, typ *) = NULL;                    \
+        if (!sym)                                                                                  \
+            sym = dlsym(dlhandle, str(Tss2_MU_##typ##_Unmarshal));                                 \
+        if (!sym) {                                                                                \
+            WARN("Function " str(Tss2_MU_##typ##_Unmarshal) " not found.");                        \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        }                                                                                          \
+        return sym(buffer, buffer_size, offset, dest);                                             \
+    }
 
-#define MAKE_MU_STRUCT(typ) \
-TSS2_RC Tss2_MU_ ## typ ## _Marshal ( \
-    typ const      *src, \
-    uint8_t         buffer[], \
-    size_t          buffer_size, \
-    size_t         *offset) \
-{ \
-    if (init_dlhandle() != TSS2_RC_SUCCESS) \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    static TSS2_RC (*sym) (const typ *, uint8_t [], size_t, size_t *) = NULL; \
-    if (!sym) \
-        sym = dlsym(dlhandle, str(Tss2_MU_ ## typ ## _Marshal)); \
-    if (!sym) { \
-        WARN("Function " str(Tss2_MU_ ## typ ## _Marshal) " not found."); \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    } \
-    return sym(src, buffer, buffer_size, offset); \
-} \
-TSS2_RC Tss2_MU_ ## typ ## _Unmarshal ( \
-    uint8_t const   buffer[], \
-    size_t          buffer_size, \
-    size_t         *offset, \
-    typ            *dest) \
-{ \
-    if (init_dlhandle() != TSS2_RC_SUCCESS) \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    static TSS2_RC (*sym) (const uint8_t [], size_t, size_t *, typ *) = NULL; \
-    if (!sym) \
-        sym = dlsym(dlhandle, str(Tss2_MU_ ## typ ## _Unmarshal)); \
-    if (!sym) { \
-        WARN("Function " str(Tss2_MU_ ## typ ## _Unmarshal) " not found."); \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    } \
-    return sym(buffer, buffer_size, offset, dest); \
-}
+#define MAKE_MU_STRUCT(typ)                                                                        \
+    TSS2_RC Tss2_MU_##typ##_Marshal(typ const *src, uint8_t buffer[], size_t buffer_size,          \
+                                    size_t *offset) {                                              \
+        if (init_dlhandle() != TSS2_RC_SUCCESS)                                                    \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        static TSS2_RC (*sym)(const typ *, uint8_t[], size_t, size_t *) = NULL;                    \
+        if (!sym)                                                                                  \
+            sym = dlsym(dlhandle, str(Tss2_MU_##typ##_Marshal));                                   \
+        if (!sym) {                                                                                \
+            WARN("Function " str(Tss2_MU_##typ##_Marshal) " not found.");                          \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        }                                                                                          \
+        return sym(src, buffer, buffer_size, offset);                                              \
+    }                                                                                              \
+    TSS2_RC Tss2_MU_##typ##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *offset,  \
+                                      typ *dest) {                                                 \
+        if (init_dlhandle() != TSS2_RC_SUCCESS)                                                    \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        static TSS2_RC (*sym)(const uint8_t[], size_t, size_t *, typ *) = NULL;                    \
+        if (!sym)                                                                                  \
+            sym = dlsym(dlhandle, str(Tss2_MU_##typ##_Unmarshal));                                 \
+        if (!sym) {                                                                                \
+            WARN("Function " str(Tss2_MU_##typ##_Unmarshal) " not found.");                        \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        }                                                                                          \
+        return sym(buffer, buffer_size, offset, dest);                                             \
+    }
 
-#define MAKE_MU_UNION(typ) \
-TSS2_RC Tss2_MU_ ## typ ## _Marshal ( \
-    typ const      *src, \
-    uint32_t        selector_value, \
-    uint8_t         buffer[], \
-    size_t          buffer_size, \
-    size_t         *offset) \
-{ \
-    if (init_dlhandle() != TSS2_RC_SUCCESS) \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    static TSS2_RC (*sym) (const typ *, uint32_t, uint8_t [], size_t, size_t *) = NULL; \
-    if (!sym) \
-        sym = dlsym(dlhandle, str(Tss2_MU_ ## typ ## _Marshal)); \
-    if (!sym) { \
-        WARN("Function " str(Tss2_MU_ ## typ ## _Marshal) " not found."); \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    } \
-    return sym(src, selector_value, buffer, buffer_size, offset); \
-} \
-TSS2_RC Tss2_MU_ ## typ ## _Unmarshal ( \
-    uint8_t const   buffer[], \
-    size_t          buffer_size, \
-    size_t         *offset, \
-    uint32_t        selector_value, \
-    typ            *dest) \
-{ \
-    if (init_dlhandle() != TSS2_RC_SUCCESS) \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    static TSS2_RC (*sym) (const uint8_t [], size_t, size_t *, uint32_t, typ *) = NULL; \
-    if (!sym) \
-        sym = dlsym(dlhandle, str(Tss2_MU_ ## typ ## _Unmarshal)); \
-    if (!sym) { \
-        WARN("Function " str(Tss2_MU_ ## typ ## _Unmarshal) " not found."); \
-        return TSS2_BASE_RC_NOT_IMPLEMENTED; \
-    } \
-    return sym(buffer, buffer_size, offset, selector_value, dest); \
-}
+#define MAKE_MU_UNION(typ)                                                                         \
+    TSS2_RC Tss2_MU_##typ##_Marshal(typ const *src, uint32_t selector_value, uint8_t buffer[],     \
+                                    size_t buffer_size, size_t *offset) {                          \
+        if (init_dlhandle() != TSS2_RC_SUCCESS)                                                    \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        static TSS2_RC (*sym)(const typ *, uint32_t, uint8_t[], size_t, size_t *) = NULL;          \
+        if (!sym)                                                                                  \
+            sym = dlsym(dlhandle, str(Tss2_MU_##typ##_Marshal));                                   \
+        if (!sym) {                                                                                \
+            WARN("Function " str(Tss2_MU_##typ##_Marshal) " not found.");                          \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        }                                                                                          \
+        return sym(src, selector_value, buffer, buffer_size, offset);                              \
+    }                                                                                              \
+    TSS2_RC Tss2_MU_##typ##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *offset,  \
+                                      uint32_t selector_value, typ *dest) {                        \
+        if (init_dlhandle() != TSS2_RC_SUCCESS)                                                    \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        static TSS2_RC (*sym)(const uint8_t[], size_t, size_t *, uint32_t, typ *) = NULL;          \
+        if (!sym)                                                                                  \
+            sym = dlsym(dlhandle, str(Tss2_MU_##typ##_Unmarshal));                                 \
+        if (!sym) {                                                                                \
+            WARN("Function " str(Tss2_MU_##typ##_Unmarshal) " not found.");                        \
+            return TSS2_BASE_RC_NOT_IMPLEMENTED;                                                   \
+        }                                                                                          \
+        return sym(buffer, buffer_size, offset, selector_value, dest);                             \
+    }
 // NOLINTEND(bugprone-macro-parentheses)
 
 MAKE_MU_BASE(INT8);

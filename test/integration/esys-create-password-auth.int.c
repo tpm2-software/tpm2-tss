@@ -8,17 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "esys_int.h"         // for RSRC_NODE_T
-#include "esys_iutil.h"       // for esys_GetResourceObject
-#include "esys_types.h"       // for IESYS_RESOURCE
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
-#include "tss2_tpm2_types.h"  // for TPM2B_SENSITIVE_CREATE, TPM2B_PUBLIC
+#include "esys_int.h"        // for RSRC_NODE_T
+#include "esys_iutil.h"      // for esys_GetResourceObject
+#include "esys_types.h"      // for IESYS_RESOURCE
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h" // for TPM2B_SENSITIVE_CREATE, TPM2B_PUBLIC
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_INFO, LOG_ERROR
+#include "util/log.h" // for goto_if_error, LOG_INFO, LOG_ERROR
 
 /** This test is intended to test password authentication for the ESYS command
  *  Create.
@@ -43,27 +43,23 @@
  */
 
 int
-test_esys_create_password_auth(ESYS_CONTEXT * esys_context)
-{
+test_esys_create_password_auth(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     ESYS_TR loadedKeyHandle = ESYS_TR_NONE;
 
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
+    TPMT_TK_CREATION    *creationTicket = NULL;
 
-    TPM2B_PUBLIC *outPublic2 = NULL;
-    TPM2B_PRIVATE *outPrivate2 = NULL;
+    TPM2B_PUBLIC        *outPublic2 = NULL;
+    TPM2B_PRIVATE       *outPrivate2 = NULL;
     TPM2B_CREATION_DATA *creationData2 = NULL;
-    TPM2B_DIGEST *creationHash2 = NULL;
-    TPMT_TK_CREATION *creationTicket2 = NULL;
+    TPM2B_DIGEST        *creationHash2 = NULL;
+    TPMT_TK_CREATION    *creationTicket2 = NULL;
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -163,67 +159,38 @@ test_esys_create_password_auth(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_AUTH authValue = {
-        .size = 0,
-        .buffer = {}
-    };
+    TPM2B_AUTH authValue = { .size = 0, .buffer = {} };
 
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     RSRC_NODE_T *primaryHandle_node = NULL;
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle,
-                           &outPublic, &creationData, &creationHash,
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &primaryHandle, &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = esys_GetResourceObject(esys_context, primaryHandle,
-                               &primaryHandle_node);
+    r = esys_GetResourceObject(esys_context, primaryHandle, &primaryHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
 
-    LOG_INFO("Created Primary with handle 0x%08x...",
-             primaryHandle_node->rsrc.handle);
+    LOG_INFO("Created Primary with handle 0x%08x...", primaryHandle_node->rsrc.handle);
 
     r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    TPM2B_AUTH authKey2 = {
-        .size = 6,
-        .buffer = {6, 7, 8, 9, 10, 11}
-    };
+    TPM2B_AUTH authKey2 = { .size = 6, .buffer = { 6, 7, 8, 9, 10, 11 } };
 
-    TPM2B_SENSITIVE_CREATE inSensitive2 = {
-        .size = 0,
-        .sensitive = {
-            .userAuth = {
-                 .size = 0,
-                 .buffer = {0}
-             },
-            .data = {
-                 .size = 0,
-                 .buffer = {}
-             }
-        }
-    };
+    TPM2B_SENSITIVE_CREATE inSensitive2
+        = { .size = 0,
+            .sensitive
+            = { .userAuth = { .size = 0, .buffer = { 0 } }, .data = { .size = 0, .buffer = {} } } };
 
     inSensitive2.sensitive.userAuth = authKey2;
 
-    TPM2B_SENSITIVE_CREATE inSensitive3 = {
-        .size = 0,
-        .sensitive = {
-            .userAuth = {
-                 .size = 0,
-                 .buffer = {}
-             },
-            .data = {
-                 .size = 0,
-                 .buffer = {}
-             }
-        }
-    };
+    TPM2B_SENSITIVE_CREATE inSensitive3 = { .size = 0,
+                                            .sensitive = { .userAuth = { .size = 0, .buffer = {} },
+                                                           .data = { .size = 0, .buffer = {} } } };
 
     TPM2B_PUBLIC inPublic2 = {
         .size = 0,
@@ -263,33 +230,22 @@ test_esys_create_password_auth(ESYS_CONTEXT * esys_context)
 
     TPM2B_DATA outsideInfo2 = {
         .size = 0,
-        .buffer = {}
-        ,
+        .buffer = {},
     };
 
     TPML_PCR_SELECTION creationPCR2 = {
         .count = 0,
     };
 
-    r = Esys_Create(esys_context,
-                    primaryHandle,
-                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                    &inSensitive2,
-                    &inPublic2,
-                    &outsideInfo2,
-                    &creationPCR2,
-                    &outPrivate2,
-                    &outPublic2,
-                    &creationData2, &creationHash2, &creationTicket2);
+    r = Esys_Create(esys_context, primaryHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                    &inSensitive2, &inPublic2, &outsideInfo2, &creationPCR2, &outPrivate2,
+                    &outPublic2, &creationData2, &creationHash2, &creationTicket2);
     goto_if_error(r, "Error esys create ", error);
 
     LOG_INFO("\nSecond key created.");
 
-    r = Esys_Load(esys_context,
-                  primaryHandle,
-                  ESYS_TR_PASSWORD,
-                  ESYS_TR_NONE,
-                  ESYS_TR_NONE, outPrivate2, outPublic2, &loadedKeyHandle);
+    r = Esys_Load(esys_context, primaryHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                  outPrivate2, outPublic2, &loadedKeyHandle);
     goto_if_error(r, "Error esys load ", error);
 
     LOG_INFO("\nSecond Key loaded.");
@@ -303,16 +259,9 @@ test_esys_create_password_auth(ESYS_CONTEXT * esys_context)
     Esys_Free(creationHash2);
     Esys_Free(creationTicket2);
 
-    r = Esys_Create(esys_context,
-                    loadedKeyHandle,
-                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                    &inSensitive3,
-                    &inPublic2,
-                    &outsideInfo2,
-                    &creationPCR2,
-                    &outPrivate2,
-                    &outPublic2,
-                    &creationData2, &creationHash2, &creationTicket2);
+    r = Esys_Create(esys_context, loadedKeyHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                    &inSensitive3, &inPublic2, &outsideInfo2, &creationPCR2, &outPrivate2,
+                    &outPublic2, &creationData2, &creationHash2, &creationTicket2);
     goto_if_error(r, "Error esys second create ", error);
 
     r = Esys_FlushContext(esys_context, primaryHandle);
@@ -334,7 +283,7 @@ test_esys_create_password_auth(ESYS_CONTEXT * esys_context)
     Esys_Free(creationTicket2);
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (loadedKeyHandle != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, loadedKeyHandle) != TSS2_RC_SUCCESS) {
@@ -343,7 +292,7 @@ test_esys_create_password_auth(ESYS_CONTEXT * esys_context)
     }
 
     if (primaryHandle != ESYS_TR_NONE) {
-         if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup primaryHandle failed.");
         }
     }
@@ -361,6 +310,6 @@ test_esys_create_password_auth(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_create_password_auth(esys_context);
 }

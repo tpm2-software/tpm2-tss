@@ -7,26 +7,26 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
-#include <json.h>             // for json_object_put, json_object, json_obje...
-#include <stdbool.h>          // for bool
-#include <stdint.h>           // for uint8_t, uint32_t
-#include <stdio.h>            // for NULL, size_t
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strlen, strdup
+#include <json.h>    // for json_object_put, json_object, json_obje...
+#include <stdbool.h> // for bool
+#include <stdint.h>  // for uint8_t, uint32_t
+#include <stdio.h>   // for NULL, size_t
+#include <stdlib.h>  // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>  // for strlen, strdup
 
-#include "test-fapi.h"        // for ASSERT, ASSERT_SIZE, pcr_bank_sha1_exists
-#include "tss2_common.h"      // for TSS2_FAPI_RC_MEMORY, TSS2_FAPI_RC_GENER...
-#include "tss2_fapi.h"        // for Fapi_PcrExtend, Fapi_Delete, Fapi_Verif...
-#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPML_DI...
+#include "test-fapi.h"       // for ASSERT, ASSERT_SIZE, pcr_bank_sha1_exists
+#include "tss2_common.h"     // for TSS2_FAPI_RC_MEMORY, TSS2_FAPI_RC_GENER...
+#include "tss2_fapi.h"       // for Fapi_PcrExtend, Fapi_Delete, Fapi_Verif...
+#include "tss2_tpm2_types.h" // for TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPML_DI...
 
-#define LOGMODULE test
+#define LOGMODULE  test
 #define LOGDEFAULT LOGLEVEL_INFO
-#include "util/log.h"         // for LOGLEVEL_INFO, SAFE_FREE, goto_if_error
+#include "util/log.h" // for LOGLEVEL_INFO, SAFE_FREE, goto_if_error
 
 #define EVENT_SIZE 10
 
 typedef struct {
-	uint32_t pcr;
+    uint32_t           pcr;
     TPML_DIGEST_VALUES digest;
 } test_digest;
 
@@ -737,238 +737,168 @@ test_digest digest_list[38] = {
 #ifdef FAPI_TEST_FIRMWARE_NUC /* Test the NUC firmware */
 test_digest digest_list[23] = {
     { .pcr = 10,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x1d, 0x8d, 0x53, 0x2d, 0x46, 0x3c, 0x9f, 0x8c, 0x20, 0x5d,
-                        0x0d, 0xf7, 0x78, 0x76, 0x69, 0xa8, 0x5f, 0x93, 0xe2, 0x60
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x1d, 0x8d, 0x53, 0x2d, 0x46, 0x3c, 0x9f,
+                                               0x8c, 0x20, 0x5d, 0x0d, 0xf7, 0x78, 0x76,
+                                               0x69, 0xa8, 0x5f, 0x93, 0xe2, 0x60 } } } } } },
     { .pcr = 10,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x97, 0x2d, 0x62, 0xff, 0x5b, 0x3a, 0x74, 0xe8, 0x99, 0x52,
-                        0xe0, 0x98, 0x0b, 0x20, 0x99, 0xee, 0xd4, 0x9b, 0xf8, 0xf0
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x97, 0x2d, 0x62, 0xff, 0x5b, 0x3a, 0x74,
+                                               0xe8, 0x99, 0x52, 0xe0, 0x98, 0x0b, 0x20,
+                                               0x99, 0xee, 0xd4, 0x9b, 0xf8, 0xf0 } } } } } },
     { .pcr = 10,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0xc7, 0x6e, 0xe5, 0x4d, 0x77, 0x35, 0x2b, 0xee, 0x74, 0x5c,
-                        0xe4, 0x38, 0x29, 0x24, 0x7f, 0xf1, 0x70, 0x68, 0x86, 0xdf
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0xc7, 0x6e, 0xe5, 0x4d, 0x77, 0x35, 0x2b,
+                                               0xee, 0x74, 0x5c, 0xe4, 0x38, 0x29, 0x24,
+                                               0x7f, 0xf1, 0x70, 0x68, 0x86, 0xdf } } } } } },
     { .pcr = 10,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0xef, 0x88, 0x5d, 0xd4, 0x11, 0x40, 0xc5, 0xfb, 0x99, 0x31,
-                        0x88, 0xf6, 0x0a, 0x29, 0x8c, 0x5a, 0x9b, 0x31, 0xd0, 0x38
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0xef, 0x88, 0x5d, 0xd4, 0x11, 0x40, 0xc5,
+                                               0xfb, 0x99, 0x31, 0x88, 0xf6, 0x0a, 0x29,
+                                               0x8c, 0x5a, 0x9b, 0x31, 0xd0, 0x38 } } } } } },
     { .pcr = 10,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0xa8, 0xfe, 0x19, 0xf5, 0xa9, 0x77, 0x3e, 0xde, 0xbf, 0x7b,
-                        0x7d, 0xf9, 0x0b, 0xf9, 0xce, 0x38, 0xb0, 0x71, 0xe6, 0x84
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0xa8, 0xfe, 0x19, 0xf5, 0xa9, 0x77, 0x3e,
+                                               0xde, 0xbf, 0x7b, 0x7d, 0xf9, 0x0b, 0xf9,
+                                               0xce, 0x38, 0xb0, 0x71, 0xe6, 0x84 } } } } } },
     { .pcr = 10,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x08, 0x01, 0xda, 0xa9, 0x4a, 0x2c, 0x43, 0xf4, 0x12, 0x00,
-                        0x14, 0x3b, 0x31, 0x9f, 0x19, 0xb2, 0x8b, 0x43, 0xf7, 0x45
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x08, 0x01, 0xda, 0xa9, 0x4a, 0x2c, 0x43,
+                                               0xf4, 0x12, 0x00, 0x14, 0x3b, 0x31, 0x9f,
+                                               0x19, 0xb2, 0x8b, 0x43, 0xf7, 0x45 } } } } } },
     { .pcr = 0,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0xc4, 0x2f, 0xed, 0xad, 0x26, 0x82, 0x00, 0xcb, 0x1d, 0x15,
-                        0xf9, 0x78, 0x41, 0xc3, 0x44, 0xe7, 0x9d, 0xae, 0x33, 0x20
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0xc4, 0x2f, 0xed, 0xad, 0x26, 0x82, 0x00,
+                                               0xcb, 0x1d, 0x15, 0xf9, 0x78, 0x41, 0xc3,
+                                               0x44, 0xe7, 0x9d, 0xae, 0x33, 0x20 } } } } } },
     { .pcr = 7,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x2f, 0x20, 0x11, 0x2a, 0x3f, 0x55, 0x39, 0x8b, 0x20, 0x8e,
-                        0x0c, 0x42, 0x68, 0x13, 0x89, 0xb4, 0xcb, 0x5b, 0x18, 0x23
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x2f, 0x20, 0x11, 0x2a, 0x3f, 0x55, 0x39,
+                                               0x8b, 0x20, 0x8e, 0x0c, 0x42, 0x68, 0x13,
+                                               0x89, 0xb4, 0xcb, 0x5b, 0x18, 0x23 } } } } } },
     { .pcr = 7,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x9b, 0x13, 0x87, 0x30, 0x6e, 0xbb, 0x7f, 0xf8, 0xe7, 0x95,
-                        0xe7, 0xbe, 0x77, 0x56, 0x36, 0x66, 0xbb, 0xf4, 0x51, 0x6e
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x9b, 0x13, 0x87, 0x30, 0x6e, 0xbb, 0x7f,
+                                               0xf8, 0xe7, 0x95, 0xe7, 0xbe, 0x77, 0x56,
+                                               0x36, 0x66, 0xbb, 0xf4, 0x51, 0x6e } } } } } },
     { .pcr = 7,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x13, 0xf0, 0x2f, 0xbc, 0x73, 0x83, 0xed, 0x7c, 0x89, 0x01,
-                        0x7e, 0x0b, 0x32, 0xf6, 0x0e, 0x38, 0xe2, 0x82, 0x05, 0x6c
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x13, 0xf0, 0x2f, 0xbc, 0x73, 0x83, 0xed,
+                                               0x7c, 0x89, 0x01, 0x7e, 0x0b, 0x32, 0xf6,
+                                               0x0e, 0x38, 0xe2, 0x82, 0x05, 0x6c } } } } } },
     { .pcr = 7,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0xa2, 0x33, 0xad, 0xbc, 0x63, 0xe3, 0xfd, 0xc5, 0xf7, 0x36,
-                        0x93, 0xa3, 0xcc, 0x4a, 0x27, 0x04, 0x17, 0x14, 0x38, 0x3f
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0xa2, 0x33, 0xad, 0xbc, 0x63, 0xe3, 0xfd,
+                                               0xc5, 0xf7, 0x36, 0x93, 0xa3, 0xcc, 0x4a,
+                                               0x27, 0x04, 0x17, 0x14, 0x38, 0x3f } } } } } },
     { .pcr = 7,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x67, 0xe4, 0x8e, 0x75, 0x99, 0x54, 0x34, 0x95, 0x37, 0xed,
-                        0x49, 0x02, 0xba, 0x1a, 0x8e, 0xef, 0x74, 0xdb, 0xd1, 0xb5
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x67, 0xe4, 0x8e, 0x75, 0x99, 0x54, 0x34,
+                                               0x95, 0x37, 0xed, 0x49, 0x02, 0xba, 0x1a,
+                                               0x8e, 0xef, 0x74, 0xdb, 0xd1, 0xb5 } } } } } },
     { .pcr = 0,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a, 0x28, 0x51, 0x73,
-                        0x43, 0x1b, 0x3e, 0x52, 0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a,
+                                               0x28, 0x51, 0x73, 0x43, 0x1b, 0x3e, 0x52,
+                                               0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73 } } } } } },
     { .pcr = 1,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a, 0x28, 0x51, 0x73,
-                        0x43, 0x1b, 0x3e, 0x52, 0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a,
+                                               0x28, 0x51, 0x73, 0x43, 0x1b, 0x3e, 0x52,
+                                               0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73 } } } } } },
     { .pcr = 2,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a, 0x28, 0x51, 0x73,
-                        0x43, 0x1b, 0x3e, 0x52, 0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a,
+                                               0x28, 0x51, 0x73, 0x43, 0x1b, 0x3e, 0x52,
+                                               0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73 } } } } } },
     { .pcr = 3,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a, 0x28, 0x51, 0x73,
-                        0x43, 0x1b, 0x3e, 0x52, 0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a,
+                                               0x28, 0x51, 0x73, 0x43, 0x1b, 0x3e, 0x52,
+                                               0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73 } } } } } },
     { .pcr = 4,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a, 0x28, 0x51, 0x73,
-                        0x43, 0x1b, 0x3e, 0x52, 0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a,
+                                               0x28, 0x51, 0x73, 0x43, 0x1b, 0x3e, 0x52,
+                                               0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73 } } } } } },
     { .pcr = 5,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a, 0x28, 0x51, 0x73,
-                        0x43, 0x1b, 0x3e, 0x52, 0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a,
+                                               0x28, 0x51, 0x73, 0x43, 0x1b, 0x3e, 0x52,
+                                               0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73 } } } } } },
     { .pcr = 6,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a, 0x28, 0x51, 0x73,
-                        0x43, 0x1b, 0x3e, 0x52, 0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a,
+                                               0x28, 0x51, 0x73, 0x43, 0x1b, 0x3e, 0x52,
+                                               0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73 } } } } } },
     { .pcr = 7,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a, 0x28, 0x51, 0x73,
-                        0x43, 0x1b, 0x3e, 0x52, 0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x90, 0x69, 0xca, 0x78, 0xe7, 0x45, 0x0a,
+                                               0x28, 0x51, 0x73, 0x43, 0x1b, 0x3e, 0x52,
+                                               0xc5, 0xc2, 0x52, 0x99, 0xe4, 0x73 } } } } } },
     { .pcr = 5,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0xf8, 0x83, 0x0f, 0x40, 0xb1, 0x40, 0x64, 0xe7, 0xcc, 0x4e,
-                        0x80, 0x08, 0x98, 0xaf, 0xb9, 0x46, 0xad, 0x86, 0x5e, 0xdd
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0xf8, 0x83, 0x0f, 0x40, 0xb1, 0x40, 0x64,
+                                               0xe7, 0xcc, 0x4e, 0x80, 0x08, 0x98, 0xaf,
+                                               0xb9, 0x46, 0xad, 0x86, 0x5e, 0xdd } } } } } },
     { .pcr = 4,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0xd0, 0xe6, 0xf9, 0x39, 0xf1, 0x30, 0x4a, 0x83, 0x97, 0x5f,
-                        0x34, 0xff, 0x67, 0x8d, 0xa5, 0x73, 0xae, 0x2b, 0x3e, 0xe5
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0xd0, 0xe6, 0xf9, 0x39, 0xf1, 0x30, 0x4a,
+                                               0x83, 0x97, 0x5f, 0x34, 0xff, 0x67, 0x8d,
+                                               0xa5, 0x73, 0xae, 0x2b, 0x3e, 0xe5 } } } } } },
     { .pcr = 4,
-      .digest =
-      { .count = 1,
-        .digests =
-        { { .hashAlg = TPM2_ALG_SHA1,
-            .digest = {
-                    .sha1 = {
-                        0x5b, 0x13, 0x53, 0x51, 0xac, 0x81, 0xe9, 0x3f, 0x17, 0xc4,
-                        0x3e, 0xc6, 0x5e, 0xc0, 0xe4, 0x75, 0x5e, 0xc2, 0x9e, 0x45
-                    }}}}}},
+      .digest
+      = { .count = 1,
+          .digests = { { .hashAlg = TPM2_ALG_SHA1,
+                         .digest = { .sha1 = { 0x5b, 0x13, 0x53, 0x51, 0xac, 0x81, 0xe9,
+                                               0x3f, 0x17, 0xc4, 0x3e, 0xc6, 0x5e, 0xc0,
+                                               0xe4, 0x75, 0x5e, 0xc2, 0x9e, 0x45 } } } } } },
 };
 #endif
-
 
 /** Test the FAPI functions for quote commands.
  *
@@ -986,31 +916,30 @@ test_digest digest_list[23] = {
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_quote_destructive(FAPI_CONTEXT *context)
-{
-    TSS2_RC r;
-    char *pubkey_pem = NULL;
-    uint8_t *signature = NULL;
-    char *quoteInfo = NULL;
-    char *pcrEventLog = NULL;
-    char *pcrEventLog2 = NULL;
-    char *certificate = NULL;
-    char *export_data = NULL;
-    uint8_t *pcr_digest = NULL;
-    char *log = NULL;
-    char *pathlist = NULL;
-    size_t i;
+test_fapi_quote_destructive(FAPI_CONTEXT *context) {
+    TSS2_RC      r;
+    char        *pubkey_pem = NULL;
+    uint8_t     *signature = NULL;
+    char        *quoteInfo = NULL;
+    char        *pcrEventLog = NULL;
+    char        *pcrEventLog2 = NULL;
+    char        *certificate = NULL;
+    char        *export_data = NULL;
+    uint8_t     *pcr_digest = NULL;
+    char        *log = NULL;
+    char        *pathlist = NULL;
+    size_t       i;
     json_object *jso_log = NULL;
     json_object *jso_log2 = NULL;
-    bool sha1_bank_exists;
+    bool         sha1_bank_exists;
 
-    uint8_t data[EVENT_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    size_t signatureSize = 0;
+    uint8_t  data[EVENT_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    size_t   signatureSize = 0;
     uint32_t pcrList[13] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 16 };
 
-    #ifdef WORDS_BIGENDIAN
+#ifdef WORDS_BIGENDIAN
     return EXIT_SKIP;
-    #endif
+#endif
 
     r = pcr_bank_sha1_exists(context, &sha1_bank_exists);
     goto_if_error(r, "Test sha1 bank", skip_test);
@@ -1023,7 +952,7 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
 
     goto_if_error(r, "Error Fapi_Provision", error);
 
- #ifndef  FAPI_TEST_FIRMWARE_NULL
+#ifndef FAPI_TEST_FIRMWARE_NULL
     for (i = 0; i < sizeof(digest_list) / sizeof(test_digest); i++) {
         pcr_extend(context, digest_list[i].pcr, &digest_list[i].digest);
     }
@@ -1032,15 +961,15 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     r = Fapi_CreateKey(context, "HS/SRK/mySignKey", "sign,noDa", "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "  \
-        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey",
+                            "-----BEGIN "
+                            "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_SetCertificate", error);
 
     uint8_t qualifyingData[32] = {
-        0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-        0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
+        0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+        0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00,
     };
 
     r = Fapi_PcrExtend(context, 16, data, EVENT_SIZE, "{ \"test\": \"myfile\" }");
@@ -1052,12 +981,9 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
     r = Fapi_PcrExtend(context, 11, data, EVENT_SIZE, "{ \"test\": \"myfile\" }");
     goto_if_error(r, "Error Fapi_PcrExtend", error);
 
-    r = Fapi_Quote(context, pcrList, 12, "HS/SRK/mySignKey",
-                   "TPM-Quote",
-                   qualifyingData, sizeof(qualifyingData),
-                   &quoteInfo,
-                   &signature, &signatureSize,
-                   &pcrEventLog, &certificate);
+    r = Fapi_Quote(context, pcrList, 12, "HS/SRK/mySignKey", "TPM-Quote", qualifyingData,
+                   sizeof(qualifyingData), &quoteInfo, &signature, &signatureSize, &pcrEventLog,
+                   &certificate);
     goto_if_error(r, "Error Fapi_Quote", error);
     ASSERT(quoteInfo != NULL);
     ASSERT(signature != NULL);
@@ -1071,16 +997,15 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
 
     LOG_INFO("\npcrEventLog: %s\n", pcrEventLog);
 
-    r = Fapi_VerifyQuote(context, "HS/SRK/mySignKey",
-                         qualifyingData, sizeof(qualifyingData),  quoteInfo,
-                         signature, signatureSize, pcrEventLog);
+    r = Fapi_VerifyQuote(context, "HS/SRK/mySignKey", qualifyingData, sizeof(qualifyingData),
+                         quoteInfo, signature, signatureSize, pcrEventLog);
     goto_if_error(r, "Error Fapi_Verfiy_Quote", error);
 
     jso_log = json_tokener_parse(pcrEventLog);
     goto_if_null(jso_log, "Parsing eventlog failed", TSS2_FAPI_RC_MEMORY, error);
 
     json_object *jso_event, *jso_duplicate;
-    size_t n_events = json_object_array_length(jso_log);
+    size_t       n_events = json_object_array_length(jso_log);
 
     jso_log2 = json_object_new_array();
     goto_if_null(jso_log2, "Out of memory.", TSS2_FAPI_RC_MEMORY, error);
@@ -1101,9 +1026,8 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context)
 
     LOG_WARNING("*** TEST ERROR CASE WITH INVALID EVENT LIST ***");
 
-    r = Fapi_VerifyQuote(context, "HS/SRK/mySignKey",
-                         qualifyingData, sizeof(qualifyingData),  quoteInfo,
-                         signature, signatureSize, pcrEventLog2);
+    r = Fapi_VerifyQuote(context, "HS/SRK/mySignKey", qualifyingData, sizeof(qualifyingData),
+                         quoteInfo, signature, signatureSize, pcrEventLog2);
 
     if (r != TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED) {
         LOG_ERROR("Quote verification should fail.");
@@ -1159,7 +1083,6 @@ skip_test:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_quote_destructive(fapi_context);
 }

@@ -9,30 +9,29 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for size_t, NULL
-#include <string.h>           // for strlen
+#include <stdlib.h> // for size_t, NULL
+#include <string.h> // for strlen
 
-#include "fapi_crypto.h"      // for ifapi_get_signature_algorithm_from_pem
-//#include "fapi_policy.h"
-#include "ifapi_helpers.h"    // for ifapi_get_name, ifapi_free_node_list
-#include "ifapi_macros.h"     // for return_error2, return_try_again
+#include "fapi_crypto.h" // for ifapi_get_signature_algorithm_from_pem
+// #include "fapi_policy.h"
+#include "ifapi_helpers.h" // for ifapi_get_name, ifapi_free_node_list
+#include "ifapi_macros.h"  // for return_error2, return_try_again
 #include "ifapi_policy_instantiate.h"
-#include "tss2_tpm2_types.h"  // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
+#include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for return_if_error, SAFE_FREE, goto_if_error
+#include "util/log.h" // for return_if_error, SAFE_FREE, goto_if_error
 
-static TSS2_RC
-get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list);
+static TSS2_RC get_policy_elements(TPML_POLICYELEMENTS *policy,
+                                   NODE_OBJECT_T      **policy_element_list);
 
 /** Compute linked list with a list of policy elements which could be instantiated.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
-get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list)
-{
+get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list) {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    size_t i, j;
+    size_t  i, j;
 
     if (!policy) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Bad policy pointer");
@@ -43,8 +42,7 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
             /* Policy with sub policies */
             TPML_POLICYBRANCHES *branches = policy->elements[i].element.PolicyOr.branches;
             for (j = 0; j < branches->count; j++) {
-                r = get_policy_elements(branches->authorizations[j].policy,
-                                        policy_element_list);
+                r = get_policy_elements(branches->authorizations[j].policy, policy_element_list);
                 goto_if_error(r, "Get policy elements.", error_cleanup);
             }
         } else {
@@ -73,8 +71,7 @@ error_cleanup:
 TSS2_RC
 ifapi_policyeval_instantiate_async(
     IFAPI_POLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
-    TPMS_POLICY *policy /* in */)
-{
+    TPMS_POLICY                *policy /* in */) {
     TSS2_RC r;
 
     /* Compute list of all policy elements which have to be instantiated */
@@ -101,13 +98,11 @@ ifapi_policyeval_instantiate_async(
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
-set_pem_key_param(
-    const char *keyPEM,
-    TPMT_RSA_SCHEME *sigScheme,
-    TPMT_PUBLIC *keyPublic,
-    TPM2B_NAME *name,
-    TPMI_ALG_HASH hash_alg)
-{
+set_pem_key_param(const char      *keyPEM,
+                  TPMT_RSA_SCHEME *sigScheme,
+                  TPMT_PUBLIC     *keyPublic,
+                  TPM2B_NAME      *name,
+                  TPMI_ALG_HASH    hash_alg) {
     TSS2_RC r;
     TPM2B_PUBLIC public;
 
@@ -128,8 +123,7 @@ set_pem_key_param(
         if (sigScheme->scheme == TPM2_ALG_RSAPSS) {
             public.publicArea.parameters.rsaDetail.scheme.details.rsapss
                 = sigScheme->details.rsapss;
-        }
-        else if (sigScheme->scheme == TPM2_ALG_RSASSA) {
+        } else if (sigScheme->scheme == TPM2_ALG_RSASSA) {
             public.publicArea.parameters.rsaDetail.scheme.details.rsassa
                 = sigScheme->details.rsassa;
         } else {
@@ -147,14 +141,14 @@ set_pem_key_param(
     return TSS2_RC_SUCCESS;
 }
 
-#define CHECK_TEMPLATE_PATH(path, template) \
-     if (!(path)) { \
-         return_error2(TSS2_FAPI_RC_BAD_TEMPLATE, "No path for policy %s", template); \
-     }
+#define CHECK_TEMPLATE_PATH(path, template)                                                        \
+    if (!(path)) {                                                                                 \
+        return_error2(TSS2_FAPI_RC_BAD_TEMPLATE, "No path for policy %s", template);               \
+    }
 
-#define CHECK_CALLBACK(callback, name) \
-    if (!(callback)) { \
-        return_error2(TSS2_FAPI_RC_NULL_CALLBACK, "Callback %s was NULL", name) \
+#define CHECK_CALLBACK(callback, name)                                                             \
+    if (!(callback)) {                                                                             \
+        return_error2(TSS2_FAPI_RC_NULL_CALLBACK, "Callback %s was NULL", name)                    \
     }
 
 /** Finalize  instantiation a policy template.
@@ -186,12 +180,10 @@ set_pem_key_param(
  *         or contains illegal characters.
  */
 TSS2_RC
-ifapi_policyeval_instantiate_finish(
-    IFAPI_POLICY_EVAL_INST_CTX *context)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
+ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
+    TSS2_RC        r = TSS2_RC_SUCCESS;
     NODE_OBJECT_T *first_in_pol_list;
-    size_t i_last;
+    size_t         i_last;
 
     /* While not all policy elements are instantiated */
     while (context->policy_elements) {
@@ -205,8 +197,8 @@ ifapi_policyeval_instantiate_finish(
                 break;
             }
 
-            if (pol_element->element.PolicySigned.keyPEM &&
-                strlen(pol_element->element.PolicySigned.keyPEM) > 0) {
+            if (pol_element->element.PolicySigned.keyPEM
+                && strlen(pol_element->element.PolicySigned.keyPEM) > 0) {
                 /* Determine name and public info for PEM key. */
                 r = set_pem_key_param(pol_element->element.PolicySigned.keyPEM,
                                       &pol_element->element.PolicySigned.rsaScheme,
@@ -277,8 +269,7 @@ ifapi_policyeval_instantiate_finish(
             break;
 
         case POLICYPCR:
-            if (pol_element->element.PolicyPCR.pcrs &&
-                pol_element->element.PolicyPCR.pcrs->count) {
+            if (pol_element->element.PolicyPCR.pcrs && pol_element->element.PolicyPCR.pcrs->count) {
                 /* PCR values already defined */
                 break;
             }
@@ -287,19 +278,17 @@ ifapi_policyeval_instantiate_finish(
             ifapi_helper_init_policy_pcr_selections(&s, pol_element);
 
             TPML_PCR_SELECTION out_pcrselect = { 0 };
-            TPML_DIGEST out_digests = { 0 };
+            TPML_DIGEST        out_digests = { 0 };
 
             CHECK_CALLBACK(context->callbacks.cbpcr, "cbpcr");
             /* Current values of PCRs will be used for policy */
-            r = context->callbacks.cbpcr(&s,
-                                         &out_pcrselect,
-                                         &out_digests,
+            r = context->callbacks.cbpcr(&s, &out_pcrselect, &out_digests,
                                          context->callbacks.cbpcr_userdata);
             return_try_again(r);
             return_if_error(r, "read_finish failed");
 
             r = ifapi_pcr_selection_to_pcrvalues(&out_pcrselect, &out_digests,
-                    &pol_element->element.PolicyPCR.pcrs);
+                                                 &pol_element->element.PolicyPCR.pcrs);
             return_if_error(r, "ifapi_pcr_selection_to_pcrvalues failed");
 
             pol_element->element.PolicyPCR.currentPCRs.sizeofSelect = 0;
@@ -317,30 +306,27 @@ ifapi_policyeval_instantiate_finish(
 
             CHECK_CALLBACK(context->callbacks.cbnvpublic, "cbnvpublic");
             /* Object name will be added to policy. */
-            r = context->callbacks.cbnvpublic(pol_element->element.PolicyNV.nvPath,
-                                              pol_element->element.PolicyNV.nvIndex,
-                                              &pol_element->element.PolicyNV.nvPublic,
-                                              context->callbacks.cbnvpublic_userdata);
+            r = context->callbacks.cbnvpublic(
+                pol_element->element.PolicyNV.nvPath, pol_element->element.PolicyNV.nvIndex,
+                &pol_element->element.PolicyNV.nvPublic, context->callbacks.cbnvpublic_userdata);
             return_try_again(r);
             return_if_error(r, "read_finish failed");
 
-            pol_element->element.PolicyNV.nvIndex
-                = pol_element->element.PolicyNV.nvPublic.nvIndex;
+            pol_element->element.PolicyNV.nvIndex = pol_element->element.PolicyNV.nvPublic.nvIndex;
 
             /* Clear NV path, only public data will be needed */
             SAFE_FREE(pol_element->element.PolicyNV.nvPath);
             break;
 
         case POLICYDUPLICATIONSELECT:
-            if  (pol_element->element.PolicyDuplicationSelect.newParentName.size) {
+            if (pol_element->element.PolicyDuplicationSelect.newParentName.size) {
                 break;
             }
             if (pol_element->element.PolicyDuplicationSelect.newParentPublic.type) {
                 /* public data is already set in policy. Path will not be needed. */
                 SAFE_FREE(pol_element->element.PolicyDuplicationSelect.newParentPath);
-                r = ifapi_get_name(
-                     &pol_element->element.PolicyDuplicationSelect.newParentPublic,
-                     &pol_element->element.PolicyDuplicationSelect.newParentName);
+                r = ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
+                                   &pol_element->element.PolicyDuplicationSelect.newParentName);
                 return_if_error(r, "Compute object name");
 
                 pol_element->element.PolicyDuplicationSelect.newParentPublic.type = 0;
@@ -352,15 +338,14 @@ ifapi_policyeval_instantiate_finish(
             CHECK_CALLBACK(context->callbacks.cbpublic, "cbpublic");
             /* Public info will be added to policy. */
             r = context->callbacks.cbpublic(
-                     pol_element->element.PolicyDuplicationSelect.newParentPath,
-                     &pol_element->element.PolicyDuplicationSelect.newParentPublic,
-                     context->callbacks.cbpublic_userdata);
+                pol_element->element.PolicyDuplicationSelect.newParentPath,
+                &pol_element->element.PolicyDuplicationSelect.newParentPublic,
+                context->callbacks.cbpublic_userdata);
             return_try_again(r);
             return_if_error(r, "read_finish failed");
 
-            r = ifapi_get_name(
-                     &pol_element->element.PolicyDuplicationSelect.newParentPublic,
-                     &pol_element->element.PolicyDuplicationSelect.newParentName);
+            r = ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
+                               &pol_element->element.PolicyDuplicationSelect.newParentName);
             return_if_error(r, "Compute key name");
 
             /* Clear keypath, and newParentPublic only public data will be needed */
@@ -376,8 +361,7 @@ ifapi_policyeval_instantiate_finish(
                 break;
             }
 
-            CHECK_TEMPLATE_PATH(pol_element->element.PolicyAuthorizeNv.nvPath,
-                                "PolicyAuthorizeNv");
+            CHECK_TEMPLATE_PATH(pol_element->element.PolicyAuthorizeNv.nvPath, "PolicyAuthorizeNv");
             CHECK_CALLBACK(context->callbacks.cbnvpublic, "cbnvpublic");
             /* Object name will be added to policy. */
             r = context->callbacks.cbnvpublic(pol_element->element.PolicyAuthorizeNv.nvPath, 0,
@@ -400,8 +384,8 @@ ifapi_policyeval_instantiate_finish(
                 break;
             }
 
-            if (pol_element->element.PolicyAuthorize.keyPEM &&
-                strlen(pol_element->element.PolicyAuthorize.keyPEM) > 0) {
+            if (pol_element->element.PolicyAuthorize.keyPEM
+                && strlen(pol_element->element.PolicyAuthorize.keyPEM) > 0) {
                 /* Determine name and public info for PEM key. */
                 r = set_pem_key_param(pol_element->element.PolicyAuthorize.keyPEM,
                                       &pol_element->element.PolicyAuthorize.rsaScheme,
@@ -434,9 +418,9 @@ ifapi_policyeval_instantiate_finish(
             /* Clear key path, only public data will be needed */
             SAFE_FREE(pol_element->element.PolicyAuthorize.keyPath);
             break;
-            default:
-                /* Other policy elements do not need instatiation. */
-                break;
+        default:
+            /* Other policy elements do not need instatiation. */
+            break;
         }
         /* Cleanup head of list and use next policy element */
         context->policy_elements = first_in_pol_list->next;

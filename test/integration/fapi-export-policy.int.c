@@ -8,20 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>                // for json_object_object_get_ex, json_obje...
-#include <stdbool.h>             // for bool, false, true
-#include <stdio.h>               // for NULL, fopen, fprintf, fclose, fileno
-#include <stdlib.h>              // for malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>              // for strlen, strcmp
-#include <unistd.h>              // for read
+#include <json.h>    // for json_object_object_get_ex, json_obje...
+#include <stdbool.h> // for bool, false, true
+#include <stdio.h>   // for NULL, fopen, fprintf, fclose, fileno
+#include <stdlib.h>  // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>  // for strlen, strcmp
+#include <unistd.h>  // for read
 
-#include "test-fapi-policies.h"  // for policy_digests, _test_fapi_policy_po...
-#include "test-fapi.h"           // for pcr_reset, ASSERT, ASSERT_SIZE, test...
-#include "tss2_common.h"         // for TSS2_RC
-#include "tss2_fapi.h"           // for Fapi_Delete, FAPI_CONTEXT, Fapi_Expo...
+#include "test-fapi-policies.h" // for policy_digests, _test_fapi_policy_po...
+#include "test-fapi.h"          // for pcr_reset, ASSERT, ASSERT_SIZE, test...
+#include "tss2_common.h"        // for TSS2_RC
+#include "tss2_fapi.h"          // for Fapi_Delete, FAPI_CONTEXT, Fapi_Expo...
 
 #define LOGMODULE test
-#include "util/log.h"            // for LOG_ERROR, goto_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_ERROR, goto_if_error, SAFE_FREE
 
 /** Check the digest values from result table for sha256 and sha384. */
 static bool
@@ -30,10 +30,10 @@ check_policy(char *policy, policy_digests *digests) {
     json_object *jso_digest_struct = NULL;
     json_object *jso_digest_list = NULL;
     json_object *jso_digest = NULL;
-    const char *digest_str= NULL;
-    bool check_sha256 = false;
-    bool check_sha384 = false;
-    size_t i, n;
+    const char  *digest_str = NULL;
+    bool         check_sha256 = false;
+    bool         check_sha384 = false;
+    size_t       i, n;
 
     jso = json_tokener_parse(policy);
     if (!jso) {
@@ -74,7 +74,7 @@ check_policy(char *policy, policy_digests *digests) {
                 LOG_ERROR(" -> sha256 pass");
                 check_sha256 = true;
             }
-        } else if  (strlen(digest_str) == 96) {
+        } else if (strlen(digest_str) == 96) {
             LOG_ERROR("%zi - Digest SHA384:  %s", i, digests->sha384);
             LOG_INFO("Digest SHA384: %s", digests->sha384);
             if (strcmp(digest_str, digests->sha384) == 0) {
@@ -94,19 +94,18 @@ check_policy(char *policy, policy_digests *digests) {
         goto error;
     }
     return true;
- error:
+error:
     if (jso)
         json_object_put(jso);
     return false;
 }
 
 static char *
-read_policy(FAPI_CONTEXT *context, char *policy_name)
-{
+read_policy(FAPI_CONTEXT *context, char *policy_name) {
     FILE *stream = NULL;
-    long policy_size;
+    long  policy_size;
     char *json_policy = NULL;
-    char policy_file[1024];
+    char  policy_file[1024];
 
     if (snprintf(&policy_file[0], 1023, TOP_SOURCEDIR "/test/data/fapi/%s.json", policy_name) < 0)
         return NULL;
@@ -142,10 +141,9 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_export_policy(FAPI_CONTEXT *context)
-{
+test_fapi_export_policy(FAPI_CONTEXT *context) {
     TSS2_RC r;
-    size_t i;
+    size_t  i;
 
     char *json_policy = NULL;
     char *policy = NULL;
@@ -156,9 +154,10 @@ test_fapi_export_policy(FAPI_CONTEXT *context)
     r = pcr_reset(context, 16);
     goto_if_error(r, "Error pcr_reset", error);
 
-    //for (i = 0; i < sizeof(_test_fapi_policy_policies) / sizeof(_test_fapi_policy_policies[0]); i++) {
+    // for (i = 0; i < sizeof(_test_fapi_policy_policies) / sizeof(_test_fapi_policy_policies[0]);
+    // i++) {
     for (i = 25; i < 26; i++) {
-        fprintf(stderr, "\nTest policy: %s\n",  _test_fapi_policy_policies[i].path);
+        fprintf(stderr, "\nTest policy: %s\n", _test_fapi_policy_policies[i].path);
         json_policy = read_policy(context, _test_fapi_policy_policies[i].path);
         if (!json_policy)
             goto error;
@@ -168,7 +167,8 @@ test_fapi_export_policy(FAPI_CONTEXT *context)
 
         policy = NULL;
         r = Fapi_ExportPolicy(context, _test_fapi_policy_policies[i].path, &policy);
-        fprintf(stderr, "\nPolicy from policy file:\n%s\n%s\n", _test_fapi_policy_policies[i].path, policy);
+        fprintf(stderr, "\nPolicy from policy file:\n%s\n%s\n", _test_fapi_policy_policies[i].path,
+                policy);
 
         goto_if_error(r, "Error Fapi_ExportPolicy", error);
         ASSERT(policy != NULL);
@@ -194,7 +194,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *context)
-{
+test_invoke_fapi(FAPI_CONTEXT *context) {
     return test_fapi_export_policy(context);
 }

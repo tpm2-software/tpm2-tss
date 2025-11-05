@@ -6,11 +6,11 @@
 #ifndef TPM2B_H
 #define TPM2B_H
 
-#include "tss2_common.h"  // for BYTE, UINT16
+#include "tss2_common.h" // for BYTE, UINT16
 
 typedef struct {
     UINT16 size;
-    BYTE buffer[];
+    BYTE   buffer[];
 } TPM2B;
 
 #endif /* TPM2B_H */

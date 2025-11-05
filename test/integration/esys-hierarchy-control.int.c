@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-esys.h"        // for EXIT_SKIP, goto_error_if_not_failed
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_CreatePri...
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPM2B_CREATION_DATA, TPM2...
+#include "test-esys.h"       // for EXIT_SKIP, goto_error_if_not_failed
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_CreatePri...
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPM2B_CREATION_DATA, TPM2...
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_INFO, LOG...
+#include "util/log.h" // for goto_if_error, LOG_ERROR, LOG_INFO, LOG...
 
 /** Test the ESYS function Esys_HierarchyControl.
  *
@@ -37,28 +37,21 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_esys_hierarchy_control(ESYS_CONTEXT * esys_context, ESYS_TR enable)
-{
+test_esys_hierarchy_control(ESYS_CONTEXT *esys_context, ESYS_TR enable) {
     TSS2_RC r;
 
-    ESYS_TR authHandle_handle = ESYS_TR_RH_PLATFORM;
+    ESYS_TR     authHandle_handle = ESYS_TR_RH_PLATFORM;
     TPMI_YES_NO state = TPM2_NO;
-    ESYS_TR primaryHandle = ESYS_TR_NONE;
-    int failure_return = EXIT_FAILURE;
+    ESYS_TR     primaryHandle = ESYS_TR_NONE;
+    int         failure_return = EXIT_FAILURE;
 
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
+    TPMT_TK_CREATION    *creationTicket = NULL;
 
-    r = Esys_HierarchyControl(
-        esys_context,
-        authHandle_handle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        enable,
-        state);
+    r = Esys_HierarchyControl(esys_context, authHandle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                              ESYS_TR_NONE, enable, state);
 
     if (number_rc(r) == TPM2_RC_BAD_AUTH) {
         /* Platform authorization not possible test will be skipped */
@@ -82,7 +75,7 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context, ESYS_TR enable)
         },
     };
 
-      TPM2B_PUBLIC inPublic = {
+    TPM2B_PUBLIC inPublic = {
         .size = 0,
         .publicArea = {
             .type = TPM2_ALG_RSA,
@@ -126,30 +119,22 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context, ESYS_TR enable)
 
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle,
-                           &outPublic, &creationData, &creationHash,
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &primaryHandle, &outPublic, &creationData, &creationHash,
                            &creationTicket);
 
     goto_error_if_not_failed(r, "Error: Create Primary", error);
 
     state = TPM2_YES;
 
-    r = Esys_HierarchyControl(
-        esys_context,
-        authHandle_handle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        enable,
-        state);
+    r = Esys_HierarchyControl(esys_context, authHandle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                              ESYS_TR_NONE, enable, state);
     goto_if_error(r, "Error: HierarchyControl", error);
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle,
-                           &outPublic, &creationData, &creationHash,
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &primaryHandle, &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
@@ -162,7 +147,7 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context, ESYS_TR enable)
     Esys_Free(creationTicket);
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (primaryHandle != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
@@ -178,7 +163,7 @@ test_esys_hierarchy_control(ESYS_CONTEXT * esys_context, ESYS_TR enable)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     int rc = test_esys_hierarchy_control(esys_context, ESYS_TR_RH_OWNER);
     if (rc)
         return rc;

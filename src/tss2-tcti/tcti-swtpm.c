@@ -8,28 +8,28 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>                 // for errno
-#include <inttypes.h>              // for uint32_t, uint8_t, PRIx32, PRIu32
-#include <stdio.h>                 // for NULL, size_t, ssize_t, sscanf, EOF
-#include <stdlib.h>                // for free
-#include <string.h>                // for strcmp, memcpy, strerror, memset
+#include <errno.h>    // for errno
+#include <inttypes.h> // for uint32_t, uint8_t, PRIx32, PRIu32
+#include <stdio.h>    // for NULL, size_t, ssize_t, sscanf, EOF
+#include <stdlib.h>   // for free
+#include <string.h>   // for strcmp, memcpy, strerror, memset
 
 #ifndef _WIN32
-#include <unistd.h>                // for read
+#include <unistd.h> // for read
 #endif
 
-#include "tcti-common.h"           // for TSS2_TCTI_COMMON_CONTEXT, tpm_head...
+#include "tcti-common.h" // for TSS2_TCTI_COMMON_CONTEXT, tpm_head...
 #include "tcti-swtpm.h"
-#include "tss2_common.h"           // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TCT...
-#include "tss2_mu.h"               // for Tss2_MU_UINT32_Marshal, Tss2_MU_UI...
-#include "tss2_tcti.h"             // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
-#include "tss2_tcti_swtpm.h"       // for Tss2_Tcti_Swtpm_Init, Tss2_Tcti_Sw...
-#include "util/aux_util.h"         // for UNUSED
-#include "util/key-value-parse.h"  // for key_value_t, parse_key_value_string
-#include "util/tss2_endian.h"      // for BE_TO_HOST_32
+#include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TCT...
+#include "tss2_mu.h"              // for Tss2_MU_UINT32_Marshal, Tss2_MU_UI...
+#include "tss2_tcti.h"            // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
+#include "tss2_tcti_swtpm.h"      // for Tss2_Tcti_Swtpm_Init, Tss2_Tcti_Sw...
+#include "util/aux_util.h"        // for UNUSED
+#include "util/key-value-parse.h" // for key_value_t, parse_key_value_string
+#include "util/tss2_endian.h"     // for BE_TO_HOST_32
 
 #define LOGMODULE tcti
-#include "util/log.h"              // for LOG_ERROR, LOG_DEBUG, LOG_TRACE
+#include "util/log.h" // for LOG_ERROR, LOG_DEBUG, LOG_TRACE
 
 /*
  * swtpm control channel command codes
@@ -37,24 +37,24 @@
  */
 #define PTM_INIT_FLAG_DELETE_VOLATILE 1
 
-#define CMD_GET_CAPABILITY        0x01
-#define CMD_INIT                  0x02
-#define CMD_SHUTDOWN              0x03
-#define CMD_GET_TPMESTABLISHED    0x04
-#define CMD_SET_LOCALITY          0x05
-#define CMD_HASH_START            0x06
-#define CMD_HASH_DATA             0x07
-#define CMD_HASH_END              0x08
-#define CMD_CANCEL_TPM_CMD        0x09
-#define CMD_STORE_VOLATILE        0x0a
-#define CMD_RESET_TPMESTABLISHED  0x0b
-#define CMD_GET_STATEBLOB         0x0c
-#define CMD_SET_STATEBLOB         0x0d
-#define CMD_STOP                  0x0e
-#define CMD_GET_CONFIG            0x0f
-#define CMD_SET_DATAFD            0x10
-#define CMD_SET_BUFFERSIZE        0x11
-#define CMD_GET_INFO              0x12
+#define CMD_GET_CAPABILITY            0x01
+#define CMD_INIT                      0x02
+#define CMD_SHUTDOWN                  0x03
+#define CMD_GET_TPMESTABLISHED        0x04
+#define CMD_SET_LOCALITY              0x05
+#define CMD_HASH_START                0x06
+#define CMD_HASH_DATA                 0x07
+#define CMD_HASH_END                  0x08
+#define CMD_CANCEL_TPM_CMD            0x09
+#define CMD_STORE_VOLATILE            0x0a
+#define CMD_RESET_TPMESTABLISHED      0x0b
+#define CMD_GET_STATEBLOB             0x0c
+#define CMD_SET_STATEBLOB             0x0d
+#define CMD_STOP                      0x0e
+#define CMD_GET_CONFIG                0x0f
+#define CMD_SET_DATAFD                0x10
+#define CMD_SET_BUFFERSIZE            0x11
+#define CMD_GET_INFO                  0x12
 
 /*
  * This function wraps the "up-cast" of the opaque TCTI context type to the
@@ -62,21 +62,19 @@
  * returns a NULL ptr. The function doesn't check magic number anymore
  * It should checked by the appropriate tcti_common_checks.
  */
-TSS2_TCTI_SWTPM_CONTEXT*
-tcti_swtpm_context_cast (TSS2_TCTI_CONTEXT *tcti_ctx)
-{
+TSS2_TCTI_SWTPM_CONTEXT *
+tcti_swtpm_context_cast(TSS2_TCTI_CONTEXT *tcti_ctx) {
     if (tcti_ctx == NULL)
         return NULL;
 
-    return (TSS2_TCTI_SWTPM_CONTEXT*)tcti_ctx;
+    return (TSS2_TCTI_SWTPM_CONTEXT *)tcti_ctx;
 }
 /*
  * This function down-casts the swtpm TCTI context to the common context
  * defined in the tcti-common module.
  */
-TSS2_TCTI_COMMON_CONTEXT*
-tcti_swtpm_down_cast (TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm)
-{
+TSS2_TCTI_COMMON_CONTEXT *
+tcti_swtpm_down_cast(TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm) {
     if (tcti_swtpm == NULL) {
         return NULL;
     }
@@ -107,21 +105,24 @@ tcti_swtpm_down_cast (TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm)
  * @retval TSS2_RC_SUCCESS if the received response code is zero, a TCTI error
  *         code otherwise
  */
-TSS2_RC tcti_control_command (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    uint32_t cmd_code, const void *cmd_sdu, size_t cmd_sdu_len,
-    uint32_t *resp_code, void *resp_sdu, size_t *resp_sdu_len)
-{
+TSS2_RC
+tcti_control_command(TSS2_TCTI_CONTEXT *tctiContext,
+                     uint32_t           cmd_code,
+                     const void        *cmd_sdu,
+                     size_t             cmd_sdu_len,
+                     uint32_t          *resp_code,
+                     void              *resp_sdu,
+                     size_t            *resp_sdu_len) {
     TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast(tctiContext);
-    TSS2_RC rc = TSS2_RC_SUCCESS;
-    size_t ret;
-    uint32_t response_code;
+    TSS2_RC                  rc = TSS2_RC_SUCCESS;
+    size_t                   ret;
+    uint32_t                 response_code;
 
     if (tcti_swtpm == NULL) {
         return TSS2_TCTI_RC_BAD_REFERENCE;
     }
 
-    if (TSS2_TCTI_MAGIC (tcti_swtpm) != TCTI_SWTPM_MAGIC) {
+    if (TSS2_TCTI_MAGIC(tcti_swtpm) != TCTI_SWTPM_MAGIC) {
         return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
@@ -129,38 +130,33 @@ TSS2_RC tcti_control_command (
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
-    LOG_DEBUG ("Issue control command: 0x%" PRIx32, cmd_code);
+    LOG_DEBUG("Issue control command: 0x%" PRIx32, cmd_code);
 
     uint8_t req_buf[SWTPM_CTRL_REQ_MAX_LEN] = { 0 };
-    size_t req_buf_len = 0;
+    size_t  req_buf_len = 0;
     uint8_t resp_buf[SWTPM_CTRL_RESP_MAX_LEN] = { 0 };
 
 #ifdef _WIN32
-    int  resp_buf_len = sizeof(uint32_t);
+    int resp_buf_len = sizeof(uint32_t);
 #else
     ssize_t resp_buf_len = sizeof(uint32_t);
 #endif
     if (tcti_swtpm->swtpm_conf.path)
-        rc = socket_connect_unix (tcti_swtpm->swtpm_conf.path,
-                                  1,
-                                  &tcti_swtpm->ctrl_sock);
+        rc = socket_connect_unix(tcti_swtpm->swtpm_conf.path, 1, &tcti_swtpm->ctrl_sock);
     else
-        rc = socket_connect (tcti_swtpm->swtpm_conf.host,
-                             tcti_swtpm->swtpm_conf.port,
-                             1,
-                             &tcti_swtpm->ctrl_sock);
+        rc = socket_connect(tcti_swtpm->swtpm_conf.host, tcti_swtpm->swtpm_conf.port, 1,
+                            &tcti_swtpm->ctrl_sock);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR ("Failed to connect to control socket.");
+        LOG_ERROR("Failed to connect to control socket.");
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
     }
 
     /* marshal control command code (4 bytes) */
-    rc = Tss2_MU_UINT32_Marshal (cmd_code, req_buf, sizeof(req_buf),
-                                 &req_buf_len);
+    rc = Tss2_MU_UINT32_Marshal(cmd_code, req_buf, sizeof(req_buf), &req_buf_len);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to marshal control command code %" PRIu32 ", rc: 0x%"
-                  PRIx32, cmd_code, rc);
+        LOG_ERROR("Failed to marshal control command code %" PRIu32 ", rc: 0x%" PRIx32, cmd_code,
+                  rc);
         goto out;
     }
 
@@ -171,45 +167,40 @@ TSS2_RC tcti_control_command (
     }
 
     /* transmit */
-    LOGBLOB_DEBUG(req_buf, req_buf_len, "Sending %zu bytes to socket %" PRIu32
-                  ":", req_buf_len, tcti_swtpm->ctrl_sock);
-    ret = write_all (tcti_swtpm->ctrl_sock, req_buf, req_buf_len, -1);
+    LOGBLOB_DEBUG(req_buf, req_buf_len, "Sending %zu bytes to socket %" PRIu32 ":", req_buf_len,
+                  tcti_swtpm->ctrl_sock);
+    ret = write_all(tcti_swtpm->ctrl_sock, req_buf, req_buf_len, -1);
     if (ret < req_buf_len) {
-        LOG_ERROR("Failed to send control command %d with error: %zd",
-                  cmd_code, ret);
+        LOG_ERROR("Failed to send control command %d with error: %zd", cmd_code, ret);
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
     }
 
     /* receive */
 #ifdef _WIN32
-    resp_buf_len = recv(tcti_swtpm->ctrl_sock, (char *) resp_buf,
-                    sizeof(resp_buf), 0);
-    if (resp_buf_len < (ssize_t) sizeof(uint32_t)) {
-        LOG_ERROR("Failed to get response to control command, errno %d: %s",
-                  WSAGetLastError(), strerror (WSAGetLastError()));
+    resp_buf_len = recv(tcti_swtpm->ctrl_sock, (char *)resp_buf, sizeof(resp_buf), 0);
+    if (resp_buf_len < (ssize_t)sizeof(uint32_t)) {
+        LOG_ERROR("Failed to get response to control command, errno %d: %s", WSAGetLastError(),
+                  strerror(WSAGetLastError()));
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
     }
 #else
     resp_buf_len = read(tcti_swtpm->ctrl_sock, resp_buf, sizeof(resp_buf));
-    if (resp_buf_len == -1 || resp_buf_len < (ssize_t) sizeof(uint32_t)) {
-        LOG_ERROR ("Failed to get response to control command, errno %d: %s",
-                   errno, strerror (errno));
+    if (resp_buf_len == -1 || resp_buf_len < (ssize_t)sizeof(uint32_t)) {
+        LOG_ERROR("Failed to get response to control command, errno %d: %s", errno,
+                  strerror(errno));
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
     }
 #endif
-    LOGBLOB_DEBUG (resp_buf, resp_buf_len,
-                   "Received %zu bytes from socket 0x%" PRIx32 ":",
-                   resp_buf_len, tcti_swtpm->ctrl_sock);
+    LOGBLOB_DEBUG(resp_buf, resp_buf_len, "Received %zu bytes from socket 0x%" PRIx32 ":",
+                  resp_buf_len, tcti_swtpm->ctrl_sock);
 
     /* unmarshal response code */
-    rc = Tss2_MU_UINT32_Unmarshal(resp_buf, sizeof(resp_buf), NULL,
-                                  &response_code);
+    rc = Tss2_MU_UINT32_Unmarshal(resp_buf, sizeof(resp_buf), NULL, &response_code);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR ("Failed to unmarshal response code of control command. rc: 0x%"
-                   PRIx32, rc);
+        LOG_ERROR("Failed to unmarshal response code of control command. rc: 0x%" PRIx32, rc);
         goto out;
     }
 
@@ -220,8 +211,7 @@ TSS2_RC tcti_control_command (
 
     /* copy response payload */
     if (resp_sdu != NULL) {
-        memcpy(resp_sdu, resp_buf +  sizeof(uint32_t),
-               resp_buf_len - sizeof(uint32_t));
+        memcpy(resp_sdu, resp_buf + sizeof(uint32_t), resp_buf_len - sizeof(uint32_t));
     }
 
     /* copy response code */
@@ -230,7 +220,7 @@ TSS2_RC tcti_control_command (
     }
 
     if (response_code != 0) {
-        LOG_ERROR ("Control command failed with error: %" PRIu32, response_code);
+        LOG_ERROR("Control command failed with error: %" PRIu32, response_code);
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto out;
     }
@@ -242,14 +232,13 @@ out:
     return rc;
 }
 
-TSS2_RC Tss2_Tcti_Swtpm_Reset(TSS2_TCTI_CONTEXT *tctiContext)
-{
-    TSS2_RC rc;
+TSS2_RC
+Tss2_Tcti_Swtpm_Reset(TSS2_TCTI_CONTEXT *tctiContext) {
+    TSS2_RC  rc;
     uint32_t init_flags = BE_TO_HOST_32(PTM_INIT_FLAG_DELETE_VOLATILE);
 
-    rc = tcti_control_command(tctiContext, CMD_INIT,
-                              &init_flags, sizeof(init_flags),
-                              NULL, NULL, 0);
+    rc = tcti_control_command(tctiContext, CMD_INIT, &init_flags, sizeof(init_flags), NULL, NULL,
+                              0);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to reset TPM: 0x%" PRIx32, rc);
     }
@@ -258,47 +247,40 @@ TSS2_RC Tss2_Tcti_Swtpm_Reset(TSS2_TCTI_CONTEXT *tctiContext)
 }
 
 TSS2_RC
-tcti_swtpm_transmit (
-    TSS2_TCTI_CONTEXT *tcti_ctx,
-    size_t size,
-    const uint8_t *cmd_buf)
-{
-    TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast (tcti_ctx);
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast (tcti_swtpm);
-    tpm_header_t header;
-    TSS2_RC rc;
+tcti_swtpm_transmit(TSS2_TCTI_CONTEXT *tcti_ctx, size_t size, const uint8_t *cmd_buf) {
+    TSS2_TCTI_SWTPM_CONTEXT  *tcti_swtpm = tcti_swtpm_context_cast(tcti_ctx);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast(tcti_swtpm);
+    tpm_header_t              header;
+    TSS2_RC                   rc;
 
-    rc = tcti_common_transmit_checks (tcti_common, cmd_buf, TCTI_SWTPM_MAGIC);
+    rc = tcti_common_transmit_checks(tcti_common, cmd_buf, TCTI_SWTPM_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
-    rc = header_unmarshal (cmd_buf, &header);
+    rc = header_unmarshal(cmd_buf, &header);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
     if (header.size != size) {
-        LOG_ERROR ("Buffer size parameter: %zu, and TPM2 command header size "
-                   "field: %" PRIu32 " disagree.", size, header.size);
+        LOG_ERROR("Buffer size parameter: %zu, and TPM2 command header size "
+                  "field: %" PRIu32 " disagree.",
+                  size, header.size);
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
-    LOG_DEBUG ("Sending command with TPM_CC 0x%" PRIx32 " and size %" PRIu32,
-               header.code, header.size);
+    LOG_DEBUG("Sending command with TPM_CC 0x%" PRIx32 " and size %" PRIu32, header.code,
+              header.size);
 
     if (tcti_swtpm->swtpm_conf.path)
-        rc = socket_connect_unix (tcti_swtpm->swtpm_conf.path,
-                                  0,
-                                  &tcti_swtpm->tpm_sock);
+        rc = socket_connect_unix(tcti_swtpm->swtpm_conf.path, 0, &tcti_swtpm->tpm_sock);
     else
-        rc = socket_connect (tcti_swtpm->swtpm_conf.host,
-                             tcti_swtpm->swtpm_conf.port,
-                             0,
-                             &tcti_swtpm->tpm_sock);
+        rc = socket_connect(tcti_swtpm->swtpm_conf.host, tcti_swtpm->swtpm_conf.port, 0,
+                            &tcti_swtpm->tpm_sock);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
 
-    rc = socket_xmit_buf (tcti_swtpm->tpm_sock, cmd_buf, size, -1);
+    rc = socket_xmit_buf(tcti_swtpm->tpm_sock, cmd_buf, size, -1);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -319,30 +301,24 @@ tcti_swtpm_transmit (
  *  > flag
  */
 TSS2_RC
-tcti_swtpm_cancel (
-    TSS2_TCTI_CONTEXT *tctiContext)
-{
+tcti_swtpm_cancel(TSS2_TCTI_CONTEXT *tctiContext) {
     UNUSED(tctiContext);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
 TSS2_RC
-tcti_swtpm_set_locality (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    uint8_t locality)
-{
-    TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast (tctiContext);
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast (tcti_swtpm);
-    TSS2_RC rc;
+tcti_swtpm_set_locality(TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality) {
+    TSS2_TCTI_SWTPM_CONTEXT  *tcti_swtpm = tcti_swtpm_context_cast(tctiContext);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast(tcti_swtpm);
+    TSS2_RC                   rc;
 
-    rc = tcti_common_set_locality_checks (tcti_common, TCTI_SWTPM_MAGIC);
+    rc = tcti_common_set_locality_checks(tcti_common, TCTI_SWTPM_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
 
-    rc = tcti_control_command (tctiContext, CMD_SET_LOCALITY,
-                               &locality, sizeof(locality),
-                               NULL, NULL, 0);
+    rc = tcti_control_command(tctiContext, CMD_SET_LOCALITY, &locality, sizeof(locality), NULL,
+                              NULL, 0);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Failed to set locality: 0x%" PRIx32, rc);
         return rc;
@@ -353,11 +329,9 @@ tcti_swtpm_set_locality (
 }
 
 TSS2_RC
-tcti_swtpm_get_poll_handles (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    TSS2_TCTI_POLL_HANDLE *handles,
-    size_t *num_handles)
-{
+tcti_swtpm_get_poll_handles(TSS2_TCTI_CONTEXT     *tctiContext,
+                            TSS2_TCTI_POLL_HANDLE *handles,
+                            size_t                *num_handles) {
     UNUSED(tctiContext);
     UNUSED(handles);
     UNUSED(num_handles);
@@ -365,37 +339,33 @@ tcti_swtpm_get_poll_handles (
 }
 
 void
-tcti_swtpm_finalize(
-    TSS2_TCTI_CONTEXT *tctiContext)
-{
-    TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast (tctiContext);
+tcti_swtpm_finalize(TSS2_TCTI_CONTEXT *tctiContext) {
+    TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast(tctiContext);
 
     if (tcti_swtpm == NULL) {
         return;
     }
 
-    socket_close (&tcti_swtpm->tpm_sock);
-    free (tcti_swtpm->conf_copy);
+    socket_close(&tcti_swtpm->tpm_sock);
+    free(tcti_swtpm->conf_copy);
 }
 
 TSS2_RC
-tcti_swtpm_receive (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t *response_size,
-    unsigned char *response_buffer,
-    int32_t timeout)
-{
+tcti_swtpm_receive(TSS2_TCTI_CONTEXT *tctiContext,
+                   size_t            *response_size,
+                   unsigned char     *response_buffer,
+                   int32_t            timeout) {
 #ifdef TEST_FAPI_ASYNC
     /* Used for simulating a timeout. */
     static int wait = 0;
 #endif
 
-    TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = tcti_swtpm_context_cast (tctiContext);
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast (tcti_swtpm);
-    TSS2_RC rc;
-    size_t ret;
+    TSS2_TCTI_SWTPM_CONTEXT  *tcti_swtpm = tcti_swtpm_context_cast(tctiContext);
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast(tcti_swtpm);
+    TSS2_RC                   rc;
+    size_t                    ret;
 
-    rc = tcti_common_receive_checks (tcti_common, response_size, TCTI_SWTPM_MAGIC);
+    rc = tcti_common_receive_checks(tcti_common, response_size, TCTI_SWTPM_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -417,19 +387,19 @@ tcti_swtpm_receive (
     if (tcti_common->header.size == 0) {
         LOG_DEBUG("Receiving header to determine the size of the response.");
         uint8_t res_header[10];
-        ret = socket_recv_buf (tcti_swtpm->tpm_sock, &res_header[0], 10, timeout);
+        ret = socket_recv_buf(tcti_swtpm->tpm_sock, &res_header[0], 10, timeout);
         if (ret != 10) {
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto out;
         }
 
-        rc = header_unmarshal (&res_header[0], &tcti_common->header);
+        rc = header_unmarshal(&res_header[0], &tcti_common->header);
         if (rc != TSS2_RC_SUCCESS) {
-            LOG_ERROR ("Failed to unmarshal tpm2 header: 0x%" PRIx32, rc);
+            LOG_ERROR("Failed to unmarshal tpm2 header: 0x%" PRIx32, rc);
             goto out;
         }
 
-        LOG_DEBUG ("response size: %" PRIu32, tcti_common->header.size);
+        LOG_DEBUG("response size: %" PRIu32, tcti_common->header.size);
     }
 
     if (response_buffer == NULL) {
@@ -444,32 +414,29 @@ tcti_swtpm_receive (
     *response_size = tcti_common->header.size;
 
     if (tcti_common->header.size > 10) {
-        LOG_DEBUG ("Reading response of size %" PRIu32, tcti_common->header.size);
-        ret = socket_recv_buf (tcti_swtpm->tpm_sock,
-                               (unsigned char *)&response_buffer[10],
-                               tcti_common->header.size - 10,
-                               timeout);
+        LOG_DEBUG("Reading response of size %" PRIu32, tcti_common->header.size);
+        ret = socket_recv_buf(tcti_swtpm->tpm_sock, (unsigned char *)&response_buffer[10],
+                              tcti_common->header.size - 10, timeout);
         if (ret < tcti_common->header.size - 10) {
             rc = TSS2_TCTI_RC_IO_ERROR;
             goto out;
         }
     }
 
-    rc = header_marshal (&tcti_common->header, &response_buffer[0]);
+    rc = header_marshal(&tcti_common->header, &response_buffer[0]);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_WARNING ("Failed to remarshal tpm2 header: 0x%"PRIu32, rc);
+        LOG_WARNING("Failed to remarshal tpm2 header: 0x%" PRIu32, rc);
         goto out;
     }
 
-    LOGBLOB_DEBUG(response_buffer, tcti_common->header.size,
-                  "Response received:");
+    LOGBLOB_DEBUG(response_buffer, tcti_common->header.size, "Response received:");
     /*
      * Executing code beyond this point transitions the state machine to
      * TRANSMIT. Another call to this function will not be possible until
      * another command is sent to the TPM.
      */
 out:
-    socket_close (&tcti_swtpm->tpm_sock);
+    socket_close(&tcti_swtpm->tpm_sock);
 
     tcti_common->header.size = 0;
     tcti_common->state = TCTI_STATE_TRANSMIT;
@@ -483,11 +450,10 @@ out:
  * invalid port number then 0 is returned.
  */
 static uint16_t
-string_to_port (char port_str[6])
-{
+string_to_port(char port_str[6]) {
     uint32_t port = 0;
 
-    if (sscanf (port_str, "%" SCNu32, &port) == EOF || port > UINT16_MAX) {
+    if (sscanf(port_str, "%" SCNu32, &port) == EOF || port > UINT16_MAX) {
         return 0;
     }
     return port;
@@ -500,29 +466,27 @@ string_to_port (char port_str[6])
  * swtpm_conf_t structure which is passed through the 'user_data' parameter.
  */
 TSS2_RC
-swtpm_kv_callback (const key_value_t *key_value,
-                   void *user_data)
-{
-    swtpm_conf_t *swtpm_conf = (swtpm_conf_t*)user_data;
+swtpm_kv_callback(const key_value_t *key_value, void *user_data) {
+    swtpm_conf_t *swtpm_conf = (swtpm_conf_t *)user_data;
 
-    LOG_TRACE ("key_value: 0x%" PRIxPTR " and user_data: 0x%" PRIxPTR,
-               (uintptr_t)key_value, (uintptr_t)user_data);
+    LOG_TRACE("key_value: 0x%" PRIxPTR " and user_data: 0x%" PRIxPTR, (uintptr_t)key_value,
+              (uintptr_t)user_data);
     if (key_value == NULL || user_data == NULL) {
-        LOG_WARNING ("%s passed NULL parameter", __func__);
+        LOG_WARNING("%s passed NULL parameter", __func__);
         return TSS2_TCTI_RC_GENERAL_FAILURE;
     }
-    LOG_DEBUG ("key: %s / value: %s\n", key_value->key, key_value->value);
-    if (strcmp (key_value->key, "host") == 0) {
+    LOG_DEBUG("key: %s / value: %s\n", key_value->key, key_value->value);
+    if (strcmp(key_value->key, "host") == 0) {
         swtpm_conf->host = key_value->value;
         swtpm_conf->path = NULL;
         return TSS2_RC_SUCCESS;
-    } else if (strcmp (key_value->key, "port") == 0) {
-        swtpm_conf->port = string_to_port (key_value->value);
+    } else if (strcmp(key_value->key, "port") == 0) {
+        swtpm_conf->port = string_to_port(key_value->value);
         if (swtpm_conf->port == 0) {
             return TSS2_TCTI_RC_BAD_VALUE;
         }
         return TSS2_RC_SUCCESS;
-    } else if (strcmp (key_value->key, "path") == 0) {
+    } else if (strcmp(key_value->key, "path") == 0) {
         swtpm_conf->path = key_value->value;
         swtpm_conf->host = NULL;
         return TSS2_RC_SUCCESS;
@@ -531,47 +495,41 @@ swtpm_kv_callback (const key_value_t *key_value,
     }
 }
 void
-tcti_swtpm_init_context_data (
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common)
-{
-    TSS2_TCTI_MAGIC (tcti_common) = TCTI_SWTPM_MAGIC;
-    TSS2_TCTI_VERSION (tcti_common) = TCTI_VERSION;
-    TSS2_TCTI_TRANSMIT (tcti_common) = tcti_swtpm_transmit;
-    TSS2_TCTI_RECEIVE (tcti_common) = tcti_swtpm_receive;
-    TSS2_TCTI_FINALIZE (tcti_common) = tcti_swtpm_finalize;
-    TSS2_TCTI_CANCEL (tcti_common) = tcti_swtpm_cancel;
-    TSS2_TCTI_GET_POLL_HANDLES (tcti_common) = tcti_swtpm_get_poll_handles;
-    TSS2_TCTI_SET_LOCALITY (tcti_common) = tcti_swtpm_set_locality;
-    TSS2_TCTI_MAKE_STICKY (tcti_common) = tcti_make_sticky_not_implemented;
+tcti_swtpm_init_context_data(TSS2_TCTI_COMMON_CONTEXT *tcti_common) {
+    TSS2_TCTI_MAGIC(tcti_common) = TCTI_SWTPM_MAGIC;
+    TSS2_TCTI_VERSION(tcti_common) = TCTI_VERSION;
+    TSS2_TCTI_TRANSMIT(tcti_common) = tcti_swtpm_transmit;
+    TSS2_TCTI_RECEIVE(tcti_common) = tcti_swtpm_receive;
+    TSS2_TCTI_FINALIZE(tcti_common) = tcti_swtpm_finalize;
+    TSS2_TCTI_CANCEL(tcti_common) = tcti_swtpm_cancel;
+    TSS2_TCTI_GET_POLL_HANDLES(tcti_common) = tcti_swtpm_get_poll_handles;
+    TSS2_TCTI_SET_LOCALITY(tcti_common) = tcti_swtpm_set_locality;
+    TSS2_TCTI_MAKE_STICKY(tcti_common) = tcti_make_sticky_not_implemented;
     tcti_common->state = TCTI_STATE_TRANSMIT;
-    memset (&tcti_common->header, 0, sizeof (tcti_common->header));
+    memset(&tcti_common->header, 0, sizeof(tcti_common->header));
 }
 /*
  * This is an implementation of the standard TCTI initialization function for
  * this module.
  */
 TSS2_RC
-Tss2_Tcti_Swtpm_Init (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t *size,
-    const char *conf)
-{
-    TSS2_TCTI_SWTPM_CONTEXT *tcti_swtpm = (TSS2_TCTI_SWTPM_CONTEXT*)tctiContext;
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast (tcti_swtpm);
-    TSS2_RC rc;
+Tss2_Tcti_Swtpm_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *conf) {
+    TSS2_TCTI_SWTPM_CONTEXT  *tcti_swtpm = (TSS2_TCTI_SWTPM_CONTEXT *)tctiContext;
+    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_swtpm_down_cast(tcti_swtpm);
+    TSS2_RC                   rc;
     if (conf == NULL) {
-        LOG_TRACE ("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ""
-                   " default configuration will be used.",
-                   (uintptr_t)tctiContext, (uintptr_t)size);
+        LOG_TRACE("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ""
+                  " default configuration will be used.",
+                  (uintptr_t)tctiContext, (uintptr_t)size);
     } else {
-        LOG_TRACE ("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ", conf: %s",
-                   (uintptr_t)tctiContext, (uintptr_t)size, conf);
+        LOG_TRACE("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ", conf: %s",
+                  (uintptr_t)tctiContext, (uintptr_t)size, conf);
     }
     if (size == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
     }
     if (tctiContext == NULL) {
-        *size = sizeof (TSS2_TCTI_SWTPM_CONTEXT);
+        *size = sizeof(TSS2_TCTI_SWTPM_CONTEXT);
         return TSS2_RC_SUCCESS;
     }
 
@@ -579,62 +537,53 @@ Tss2_Tcti_Swtpm_Init (
     tcti_swtpm->swtpm_conf.port = TCTI_SWTPM_DEFAULT_PORT;
 
     if (conf != NULL) {
-        LOG_TRACE ("conf is not NULL");
-        if (strlen (conf) > TCTI_SWTPM_CONF_MAX) {
-            LOG_WARNING ("Provided conf string exceeds maximum of %u",
-                         TCTI_SWTPM_CONF_MAX);
+        LOG_TRACE("conf is not NULL");
+        if (strlen(conf) > TCTI_SWTPM_CONF_MAX) {
+            LOG_WARNING("Provided conf string exceeds maximum of %u", TCTI_SWTPM_CONF_MAX);
             return TSS2_TCTI_RC_BAD_VALUE;
         }
-        tcti_swtpm->conf_copy = strdup (conf);
+        tcti_swtpm->conf_copy = strdup(conf);
         if (tcti_swtpm->conf_copy == NULL) {
-            LOG_ERROR ("Failed to allocate buffer: %s", strerror (errno));
+            LOG_ERROR("Failed to allocate buffer: %s", strerror(errno));
             return TSS2_TCTI_RC_GENERAL_FAILURE;
         }
-        LOG_DEBUG ("Dup'd conf string to: 0x%" PRIxPTR,
-                   (uintptr_t)tcti_swtpm->conf_copy);
-        rc = parse_key_value_string (tcti_swtpm->conf_copy,
-                                     swtpm_kv_callback,
-                                     &tcti_swtpm->swtpm_conf);
+        LOG_DEBUG("Dup'd conf string to: 0x%" PRIxPTR, (uintptr_t)tcti_swtpm->conf_copy);
+        rc = parse_key_value_string(tcti_swtpm->conf_copy, swtpm_kv_callback,
+                                    &tcti_swtpm->swtpm_conf);
         if (rc != TSS2_RC_SUCCESS) {
             goto fail_out;
         }
     }
-    LOG_DEBUG ("Initializing swtpm TCTI with host: %s, port: %" PRIu16,
-               tcti_swtpm->swtpm_conf.host, tcti_swtpm->swtpm_conf.port);
+    LOG_DEBUG("Initializing swtpm TCTI with host: %s, port: %" PRIu16, tcti_swtpm->swtpm_conf.host,
+              tcti_swtpm->swtpm_conf.port);
 
     tcti_swtpm->tpm_sock = -1;
     tcti_swtpm->ctrl_sock = -1;
 
     /* sanity check */
     if (tcti_swtpm->swtpm_conf.path)
-        rc = socket_connect_unix (tcti_swtpm->swtpm_conf.path,
-                                  0,
-                                  &tcti_swtpm->tpm_sock);
+        rc = socket_connect_unix(tcti_swtpm->swtpm_conf.path, 0, &tcti_swtpm->tpm_sock);
     else
-        rc = socket_connect (tcti_swtpm->swtpm_conf.host,
-                             tcti_swtpm->swtpm_conf.port,
-                             0,
-                             &tcti_swtpm->tpm_sock);
-    socket_close (&tcti_swtpm->tpm_sock);
+        rc = socket_connect(tcti_swtpm->swtpm_conf.host, tcti_swtpm->swtpm_conf.port, 0,
+                            &tcti_swtpm->tpm_sock);
+    socket_close(&tcti_swtpm->tpm_sock);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR ("Cannot connect to swtpm TPM socket");
+        LOG_ERROR("Cannot connect to swtpm TPM socket");
         goto fail_out;
     }
 
-    tcti_swtpm_init_context_data (tcti_common);
+    tcti_swtpm_init_context_data(tcti_common);
 
     rc = tcti_swtpm_set_locality(tctiContext, 0);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_WARNING ("Could not set locality via control channel: 0x%" PRIx32,
-                     rc);
+        LOG_WARNING("Could not set locality via control channel: 0x%" PRIx32, rc);
         return rc;
     }
-
 
     return TSS2_RC_SUCCESS;
 
 fail_out:
-    free (tcti_swtpm->conf_copy);
+    free(tcti_swtpm->conf_copy);
 
     return rc;
 }
@@ -648,8 +597,7 @@ static const TSS2_TCTI_INFO tss2_tcti_swtpm_info = {
     .init = Tss2_Tcti_Swtpm_Init,
 };
 
-const TSS2_TCTI_INFO*
-Tss2_Tcti_Info (void)
-{
+const TSS2_TCTI_INFO *
+Tss2_Tcti_Info(void) {
     return &tss2_tcti_swtpm_info;
 }

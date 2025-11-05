@@ -8,33 +8,32 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for uint8_t
-#include <stdio.h>            // for NULL, fopen, snprintf, fclose, fileno
-#include <stdlib.h>           // for free, EXIT_FAILURE, malloc, EXIT_SUCCESS
-#include <string.h>           // for strcmp, strstr
-#include <unistd.h>           // for read
+#include <inttypes.h> // for uint8_t
+#include <stdio.h>    // for NULL, fopen, snprintf, fclose, fileno
+#include <stdlib.h>   // for free, EXIT_FAILURE, malloc, EXIT_SUCCESS
+#include <string.h>   // for strcmp, strstr
+#include <unistd.h>   // for read
 
-#include "test-fapi.h"        // for ASSERT, FAPI_PROFILE, pcr_reset, EXIT_SKIP
-#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_FAPI_RC_NOT_IMPLEME...
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_Finalize, Esys_GetCa...
-#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_Import
-#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPMS_CAPABILITY_DATA, TPM...
+#include "test-fapi.h"       // for ASSERT, FAPI_PROFILE, pcr_reset, EXIT_SKIP
+#include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_FAPI_RC_NOT_IMPLEME...
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_Finalize, Esys_GetCa...
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_CreateKey, Fapi_Import
+#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPMS_CAPABILITY_DATA, TPM...
 
-#define LOGMODULE test
+#define LOGMODULE  test
 #define LOGDEFAULT LOGLEVEL_INFO
-#include "util/log.h"         // for LOGLEVEL_INFO, goto_if_error, SAFE_FREE
+#include "util/log.h" // for LOGLEVEL_INFO, goto_if_error, SAFE_FREE
 
-#define NV_SIZE 34
-#define PASSWORD ""
-#define SIGN_TEMPLATE  "sign"
+#define NV_SIZE       34
+#define PASSWORD      ""
+#define SIGN_TEMPLATE "sign"
 
 static TSS2_RC
-check_tpm_cmd(FAPI_CONTEXT *context, TPM2_CC command_code)
-{
-    TSS2_RC r;
-    TSS2_TCTI_CONTEXT *tcti;
-    ESYS_CONTEXT *esys;
+check_tpm_cmd(FAPI_CONTEXT *context, TPM2_CC command_code) {
+    TSS2_RC               r;
+    TSS2_TCTI_CONTEXT    *tcti;
+    ESYS_CONTEXT         *esys;
     TPMS_CAPABILITY_DATA *cap_data;
 
     r = Fapi_GetTcti(context, &tcti);
@@ -43,14 +42,12 @@ check_tpm_cmd(FAPI_CONTEXT *context, TPM2_CC command_code)
     r = Esys_Initialize(&esys, tcti, NULL);
     goto_if_error(r, "Error Fapi_GetTcti", error);
 
-    r = Esys_GetCapability(esys,
-                           ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                           TPM2_CAP_COMMANDS, command_code, 1, NULL, &cap_data);
+    r = Esys_GetCapability(esys, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, TPM2_CAP_COMMANDS,
+                           command_code, 1, NULL, &cap_data);
     Esys_Finalize(&esys);
     return_if_error(r, "Error: GetCapabilities");
 
-    if ((cap_data->data.command.commandAttributes[0] & TPMA_CC_COMMANDINDEX_MASK) ==
-            command_code) {
+    if ((cap_data->data.command.commandAttributes[0] & TPMA_CC_COMMANDINDEX_MASK) == command_code) {
         free(cap_data);
         return TSS2_RC_SUCCESS;
     } else {
@@ -63,12 +60,11 @@ error:
 }
 
 static char *
-read_policy(FAPI_CONTEXT *context, char *policy_name)
-{
+read_policy(FAPI_CONTEXT *context, char *policy_name) {
     FILE *stream = NULL;
-    long policy_size;
+    long  policy_size;
     char *json_policy = NULL;
-    char policy_file[1024];
+    char  policy_file[1024];
 
     if (snprintf(&policy_file[0], 1023, TOP_SOURCEDIR "/test/data/fapi%s.json", policy_name) < 0)
         return NULL;
@@ -116,22 +112,21 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
 #define POLICY_AUTHORIZE_NV "/policy/pol_authorize_nv"
 #endif
 
-
 int
 test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
 
 {
     TSS2_RC r;
-    char *nvPathPolicy = "/nv/Owner/myNV";
-    char *policy_authorize_nv;
-    char extended_name[1024];
-    char *policy_pcr2 = "/policy/pol_pcr16_0";
-    char *json_policy = NULL;
+    char   *nvPathPolicy = "/nv/Owner/myNV";
+    char   *policy_authorize_nv;
+    char    extended_name[1024];
+    char   *policy_pcr2 = "/policy/pol_pcr16_0";
+    char   *json_policy = NULL;
 
     uint8_t *signature = NULL;
     char    *publicKey = NULL;
     char    *certificate = NULL;
-    size_t  policy_nv_auth_size;
+    size_t   policy_nv_auth_size;
 
     if (check_tpm_cmd(context, TPM2_CC_PolicyAuthorizeNV) != TPM2_RC_SUCCESS) {
         LOG_WARNING("Command PolicyAuthorizeNV not available.");
@@ -153,7 +148,7 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
-     if (strcmp(FAPI_PROFILE, "P_ECC") == 0) {
+    if (strcmp(FAPI_PROFILE, "P_ECC") == 0) {
         policy_nv_auth_size = 34;
     } else if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         policy_nv_auth_size = 50;
@@ -184,36 +179,30 @@ test_fapi_key_create_policy_authorize_nv(FAPI_CONTEXT *context)
     r = Fapi_Import(context, policy_pcr2, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    r = Fapi_WriteAuthorizeNv(context,nvPathPolicy, policy_pcr2);
+    r = Fapi_WriteAuthorizeNv(context, nvPathPolicy, policy_pcr2);
     goto_if_error(r, "Error Fapi_WriteAuthorizeNv", error);
 
-    r = Fapi_CreateKey(context, "/HS/SRK/myPolicySignKey", "sign",
-                       "", PASSWORD);
+    r = Fapi_CreateKey(context, "/HS/SRK/myPolicySignKey", "sign", "", PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_CreateKey(context, "/HS/SRK/mySignKey", SIGN_TEMPLATE,
-                       policy_authorize_nv, PASSWORD);
+    r = Fapi_CreateKey(context, "/HS/SRK/mySignKey", SIGN_TEMPLATE, policy_authorize_nv, PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
-        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey",
+                            "-----BEGIN "
+                            "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     size_t signatureSize = 0;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x41, 0x42, 0x00
-        }
-    };
+    TPM2B_DIGEST digest
+        = { .size = 32,
+            .buffer = { 0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+                        0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x31, 0xa0,
+                        0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x41, 0x42, 0x00 } };
 
-    r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, &certificate);
+    r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL, &digest.buffer[0], digest.size, &signature,
+                  &signatureSize, &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
     ASSERT(signature);
     ASSERT(publicKey);
@@ -247,7 +236,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *context)
-{
+test_invoke_fapi(FAPI_CONTEXT *context) {
     return test_fapi_key_create_policy_authorize_nv(context);
 }

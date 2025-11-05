@@ -8,12 +8,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <mbedtls/aes.h>
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/ecdh.h>
+#include <mbedtls/entropy.h>
 #include <mbedtls/md.h>
 #include <mbedtls/rsa.h>
-#include <mbedtls/ecdh.h>
-#include <mbedtls/aes.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ctr_drbg.h>
 
 #include "tss2_esys.h"
 #include "tss2_mu.h"
@@ -37,11 +37,11 @@ typedef struct ESYS_CRYPTO_CONTEXT_BLOB {
     union {
         struct {
             mbedtls_md_context_t mbed_context;
-            size_t hash_len;
+            size_t               hash_len;
         } hash; /**< the state variables for a hash context */
         struct {
             mbedtls_md_context_t mbed_context;
-            size_t hmac_len;
+            size_t               hmac_len;
         } hmac; /**< the state variables for an hmac context */
     };
 } IESYS_CRYPTMBED_CONTEXT;
@@ -57,63 +57,59 @@ typedef struct ESYS_CRYPTO_CONTEXT_BLOB {
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptmbed_hash_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
-                           TPM2_ALG_ID hashAlg,
-                           void *userdata)
-{
+iesys_cryptmbed_hash_start(ESYS_CRYPTO_CONTEXT_BLOB **context,
+                           TPM2_ALG_ID                hashAlg,
+                           void                      *userdata) {
     UNUSED(userdata);
 
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    const mbedtls_md_info_t* md_info = NULL;
+    TSS2_RC                  r = TSS2_RC_SUCCESS;
+    const mbedtls_md_info_t *md_info = NULL;
 
     if (context == NULL) {
-        return_error(TSS2_ESYS_RC_BAD_REFERENCE,
-                     "Null-Pointer passed in for context");
+        return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Null-Pointer passed in for context");
     }
     IESYS_CRYPTMBED_CONTEXT *mycontext = calloc(1, sizeof(IESYS_CRYPTMBED_CONTEXT));
     return_if_null(mycontext, "Out of Memory", TSS2_ESYS_RC_MEMORY);
 
     mbedtls_md_init(&mycontext->hash.mbed_context);
 
-    switch(hashAlg) {
-      case TPM2_ALG_SHA1:
-          md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA1);
-          break;
-      case TPM2_ALG_SHA256:
-          md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
-          break;
-      case TPM2_ALG_SHA384:
-          md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA384);
-          break;
+    switch (hashAlg) {
+    case TPM2_ALG_SHA1:
+        md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA1);
+        break;
+    case TPM2_ALG_SHA256:
+        md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
+        break;
+    case TPM2_ALG_SHA384:
+        md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA384);
+        break;
     case TPM2_ALG_SHA512:
-          md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA512);
-          break;
+        md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA512);
+        break;
     }
 
     if (md_info == NULL) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
-                   "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
+        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED, "Unsupported hash algorithm (%" PRIu16 ")",
+                   cleanup, hashAlg);
     }
 
     mycontext->hash.hash_len = mbedtls_md_get_size(md_info);
 
     if (mbedtls_md_setup(&mycontext->hash.mbed_context, md_info, true) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "MBED HASH setup", cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "MBED HASH setup", cleanup);
     }
 
     if (mbedtls_md_starts(&mycontext->hash.mbed_context) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "MBED HASH start", cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "MBED HASH start", cleanup);
     }
 
     mycontext->type = IESYS_CRYPTMBED_TYPE_HASH;
 
-    *context = (ESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
+    *context = (ESYS_CRYPTO_CONTEXT_BLOB *)mycontext;
 
     return TSS2_RC_SUCCESS;
 
- cleanup:
+cleanup:
     mbedtls_md_free(&mycontext->hash.mbed_context);
     SAFE_FREE(mycontext);
     return r;
@@ -130,16 +126,16 @@ iesys_cryptmbed_hash_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
  * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
  */
 TSS2_RC
-iesys_cryptmbed_hash_update(ESYS_CRYPTO_CONTEXT_BLOB * context,
-                            const uint8_t * buffer, size_t size,
-                            void *userdata)
-{
+iesys_cryptmbed_hash_update(ESYS_CRYPTO_CONTEXT_BLOB *context,
+                            const uint8_t            *buffer,
+                            size_t                    size,
+                            void                     *userdata) {
     UNUSED(userdata);
 
     if (context == NULL || buffer == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Null-Pointer passed");
     }
-    IESYS_CRYPTMBED_CONTEXT *mycontext = (IESYS_CRYPTMBED_CONTEXT *) context;
+    IESYS_CRYPTMBED_CONTEXT *mycontext = (IESYS_CRYPTMBED_CONTEXT *)context;
     if (mycontext->type != IESYS_CRYPTMBED_TYPE_HASH) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "bad context");
     }
@@ -163,10 +159,10 @@ iesys_cryptmbed_hash_update(ESYS_CRYPTO_CONTEXT_BLOB * context,
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptmbed_hash_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
-                            uint8_t * buffer, size_t * size,
-                            void *userdata)
-{
+iesys_cryptmbed_hash_finish(ESYS_CRYPTO_CONTEXT_BLOB **context,
+                            uint8_t                   *buffer,
+                            size_t                    *size,
+                            void                      *userdata) {
     UNUSED(userdata);
 
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -174,8 +170,7 @@ iesys_cryptmbed_hash_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
     if (context == NULL || *context == NULL || buffer == NULL || size == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Null-Pointer passed");
     }
-    IESYS_CRYPTMBED_CONTEXT *mycontext =
-        (IESYS_CRYPTMBED_CONTEXT *) * context;
+    IESYS_CRYPTMBED_CONTEXT *mycontext = (IESYS_CRYPTMBED_CONTEXT *)*context;
     if (mycontext->type != IESYS_CRYPTMBED_TYPE_HASH) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "bad context");
     }
@@ -190,7 +185,7 @@ iesys_cryptmbed_hash_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
 
     *size = mycontext->hash.hash_len;
 
- cleanup:
+cleanup:
     mbedtls_md_free(&mycontext->hash.mbed_context);
     SAFE_FREE(mycontext);
     *context = NULL;
@@ -204,16 +199,14 @@ iesys_cryptmbed_hash_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
  * @param[in,out] context The context of the digest object.
  */
 void
-iesys_cryptmbed_hash_abort(ESYS_CRYPTO_CONTEXT_BLOB ** context, void *userdata)
-{
+iesys_cryptmbed_hash_abort(ESYS_CRYPTO_CONTEXT_BLOB **context, void *userdata) {
     UNUSED(userdata);
 
     if (context == NULL || *context == NULL) {
         return;
     }
 
-    IESYS_CRYPTMBED_CONTEXT *mycontext =
-        (IESYS_CRYPTMBED_CONTEXT *) * context;
+    IESYS_CRYPTMBED_CONTEXT *mycontext = (IESYS_CRYPTMBED_CONTEXT *)*context;
     if (mycontext->type != IESYS_CRYPTMBED_TYPE_HASH) {
         return;
     }
@@ -239,64 +232,61 @@ iesys_cryptmbed_hash_abort(ESYS_CRYPTO_CONTEXT_BLOB ** context, void *userdata)
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptmbed_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
-                           TPM2_ALG_ID hashAlg,
-                           const uint8_t * key, size_t size,
-                           void *userdata)
-{
+iesys_cryptmbed_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB **context,
+                           TPM2_ALG_ID                hashAlg,
+                           const uint8_t             *key,
+                           size_t                     size,
+                           void                      *userdata) {
     UNUSED(userdata);
 
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    const mbedtls_md_info_t* md_info = NULL;
+    TSS2_RC                  r = TSS2_RC_SUCCESS;
+    const mbedtls_md_info_t *md_info = NULL;
 
     if (context == NULL || key == NULL) {
-        return_error(TSS2_ESYS_RC_BAD_REFERENCE,
-                     "Null-Pointer passed in for context");
+        return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Null-Pointer passed in for context");
     }
     IESYS_CRYPTMBED_CONTEXT *mycontext = calloc(1, sizeof(IESYS_CRYPTMBED_CONTEXT));
     return_if_null(mycontext, "Out of Memory", TSS2_ESYS_RC_MEMORY);
 
     mbedtls_md_init(&mycontext->hash.mbed_context);
 
-    switch(hashAlg) {
-      case TPM2_ALG_SHA1:
-          md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA1);
-          break;
-      case TPM2_ALG_SHA256:
-          md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
-          break;
-      case TPM2_ALG_SHA384:
-          md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA384);
-          break;
-      case TPM2_ALG_SHA512:
-          md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA512);
-          break;
+    switch (hashAlg) {
+    case TPM2_ALG_SHA1:
+        md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA1);
+        break;
+    case TPM2_ALG_SHA256:
+        md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
+        break;
+    case TPM2_ALG_SHA384:
+        md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA384);
+        break;
+    case TPM2_ALG_SHA512:
+        md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA512);
+        break;
     }
 
     if (md_info == NULL) {
-        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
-                   "Unsupported hash algorithm (%"PRIu16")", cleanup, hashAlg);
+        goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED, "Unsupported hash algorithm (%" PRIu16 ")",
+                   cleanup, hashAlg);
     }
 
     mycontext->hmac.hmac_len = mbedtls_md_get_size(md_info);
 
     if (mbedtls_md_setup(&mycontext->hash.mbed_context, md_info, true) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "MBED HMAC setup", cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "MBED HMAC setup", cleanup);
     }
 
     if (mbedtls_md_hmac_starts(&mycontext->hash.mbed_context, key, size) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "MBED HMAC start", cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "MBED HMAC start", cleanup);
     }
 
     mycontext->type = IESYS_CRYPTMBED_TYPE_HMAC;
 
-    *context = (ESYS_CRYPTO_CONTEXT_BLOB *) mycontext;
+    *context = (ESYS_CRYPTO_CONTEXT_BLOB *)mycontext;
 
     return TSS2_RC_SUCCESS;
 
- cleanup:
+cleanup:
     mbedtls_md_free(&mycontext->hmac.mbed_context);
     SAFE_FREE(mycontext);
     return r;
@@ -313,16 +303,16 @@ iesys_cryptmbed_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB ** context,
  * @retval TSS2_ESYS_RC_BAD_REFERENCE for invalid parameters.
  */
 TSS2_RC
-iesys_cryptmbed_hmac_update(ESYS_CRYPTO_CONTEXT_BLOB * context,
-                            const uint8_t * buffer, size_t size,
-                            void *userdata)
-{
+iesys_cryptmbed_hmac_update(ESYS_CRYPTO_CONTEXT_BLOB *context,
+                            const uint8_t            *buffer,
+                            size_t                    size,
+                            void                     *userdata) {
     UNUSED(userdata);
 
     if (context == NULL || buffer == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Null-Pointer passed");
     }
-    IESYS_CRYPTMBED_CONTEXT *mycontext = (IESYS_CRYPTMBED_CONTEXT *) context;
+    IESYS_CRYPTMBED_CONTEXT *mycontext = (IESYS_CRYPTMBED_CONTEXT *)context;
     if (mycontext->type != IESYS_CRYPTMBED_TYPE_HMAC) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "bad context");
     }
@@ -347,10 +337,10 @@ iesys_cryptmbed_hmac_update(ESYS_CRYPTO_CONTEXT_BLOB * context,
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptmbed_hmac_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
-                            uint8_t * buffer, size_t * size,
-                            void *userdata)
-{
+iesys_cryptmbed_hmac_finish(ESYS_CRYPTO_CONTEXT_BLOB **context,
+                            uint8_t                   *buffer,
+                            size_t                    *size,
+                            void                      *userdata) {
     UNUSED(userdata);
 
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -358,8 +348,7 @@ iesys_cryptmbed_hmac_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
     if (context == NULL || *context == NULL || buffer == NULL || size == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Null-Pointer passed");
     }
-    IESYS_CRYPTMBED_CONTEXT *mycontext =
-        (IESYS_CRYPTMBED_CONTEXT *) * context;
+    IESYS_CRYPTMBED_CONTEXT *mycontext = (IESYS_CRYPTMBED_CONTEXT *)*context;
     if (mycontext->type != IESYS_CRYPTMBED_TYPE_HMAC) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "bad context");
     }
@@ -374,7 +363,7 @@ iesys_cryptmbed_hmac_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
 
     *size = mycontext->hmac.hmac_len;
 
- cleanup:
+cleanup:
     mbedtls_md_free(&mycontext->hmac.mbed_context);
     SAFE_FREE(mycontext);
     *context = NULL;
@@ -387,16 +376,14 @@ iesys_cryptmbed_hmac_finish(ESYS_CRYPTO_CONTEXT_BLOB ** context,
  * @param[in,out] context The context of the HMAC object.
  */
 void
-iesys_cryptmbed_hmac_abort(ESYS_CRYPTO_CONTEXT_BLOB ** context, void *userdata)
-{
+iesys_cryptmbed_hmac_abort(ESYS_CRYPTO_CONTEXT_BLOB **context, void *userdata) {
     UNUSED(userdata);
 
     if (context == NULL || *context == NULL) {
         return;
     }
 
-    IESYS_CRYPTMBED_CONTEXT *mycontext =
-        (IESYS_CRYPTMBED_CONTEXT *) * context;
+    IESYS_CRYPTMBED_CONTEXT *mycontext = (IESYS_CRYPTMBED_CONTEXT *)*context;
     if (mycontext->type != IESYS_CRYPTMBED_TYPE_HMAC) {
         return;
     }
@@ -412,10 +399,11 @@ iesys_cryptmbed_hmac_abort(ESYS_CRYPTO_CONTEXT_BLOB ** context, void *userdata)
  * @param[out] buffer Buffer to write randomness to.
  * @param[om] buf_size Number of bytes to write to buffer.
  */
-static int get_random(void* context, unsigned char * buffer, size_t buf_size) {
+static int
+get_random(void *context, unsigned char *buffer, size_t buf_size) {
     UNUSED(context);
 
-    int r = 0; //success in terms of mbedtls
+    int r = 0; // success in terms of mbedtls
 
     mbedtls_entropy_context entropy_context;
     mbedtls_entropy_init(&entropy_context);
@@ -423,20 +411,15 @@ static int get_random(void* context, unsigned char * buffer, size_t buf_size) {
     mbedtls_ctr_drbg_context drbg_context;
     mbedtls_ctr_drbg_init(&drbg_context);
 
-    if (mbedtls_ctr_drbg_seed(&drbg_context,
-                              mbedtls_entropy_func,
-                              &entropy_context,
-                              NULL,
-                              0) != 0) {
+    if (mbedtls_ctr_drbg_seed(&drbg_context, mbedtls_entropy_func, &entropy_context, NULL, 0)
+        != 0) {
         goto_error(r, MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED,
                    "Could not seed random number generator.", cleanup);
     }
 
-    if (mbedtls_ctr_drbg_random(&drbg_context,
-                                &buffer[0],
-                                buf_size) != 0) {
-        goto_error(r, MBEDTLS_ERR_CTR_DRBG_REQUEST_TOO_BIG,
-                   "Failure in random number generator.", cleanup);
+    if (mbedtls_ctr_drbg_random(&drbg_context, &buffer[0], buf_size) != 0) {
+        goto_error(r, MBEDTLS_ERR_CTR_DRBG_REQUEST_TOO_BIG, "Failure in random number generator.",
+                   cleanup);
     }
 
 cleanup:
@@ -455,8 +438,7 @@ cleanup:
  * NOTE: the TPM should not be used to obtain the random data
  */
 TSS2_RC
-iesys_cryptmbed_random2b(TPM2B_NONCE * nonce, size_t num_bytes, void *userdata)
-{
+iesys_cryptmbed_random2b(TPM2B_NONCE *nonce, size_t num_bytes, void *userdata) {
     UNUSED(userdata);
 
     if (num_bytes == 0) {
@@ -466,8 +448,7 @@ iesys_cryptmbed_random2b(TPM2B_NONCE * nonce, size_t num_bytes, void *userdata)
     }
 
     if (get_random(NULL, &nonce->buffer[0], nonce->size) != 0) {
-        return_error(TSS2_ESYS_RC_GENERAL_FAILURE,
-                     "Hash algorithm not supported");
+        return_error(TSS2_ESYS_RC_GENERAL_FAILURE, "Hash algorithm not supported");
     }
 
     return TSS2_RC_SUCCESS;
@@ -489,37 +470,35 @@ iesys_cryptmbed_random2b(TPM2B_NONCE * nonce, size_t num_bytes, void *userdata)
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE The internal crypto engine failed.
  */
 TSS2_RC
-iesys_cryptmbed_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
-                           size_t in_size,
-                           BYTE * in_buffer,
-                           size_t max_out_size,
-                           BYTE * out_buffer,
-                           size_t * out_size,
-                           const char *label,
-                           void *userdata)
-{
+iesys_cryptmbed_pk_encrypt(TPM2B_PUBLIC *pub_tpm_key,
+                           size_t        in_size,
+                           BYTE         *in_buffer,
+                           size_t        max_out_size,
+                           BYTE         *out_buffer,
+                           size_t       *out_size,
+                           const char   *label,
+                           void         *userdata) {
     UNUSED(userdata);
 
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    int hash_id = 0;
+    TSS2_RC             r = TSS2_RC_SUCCESS;
+    int                 hash_id = 0;
     mbedtls_rsa_context rsa_context;
 
-    switch(pub_tpm_key->publicArea.nameAlg) {
-        case TPM2_ALG_SHA1:
-            hash_id = MBEDTLS_MD_SHA1;
-            break;
-        case TPM2_ALG_SHA256:
-            hash_id = MBEDTLS_MD_SHA256;
-            break;
-        case TPM2_ALG_SHA384:
-            hash_id = MBEDTLS_MD_SHA384;
-            break;
-        case TPM2_ALG_SHA512:
-            hash_id = MBEDTLS_MD_SHA512;
-            break;
-        default:
-            return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED,
-                         "Hash algorithm not supported");
+    switch (pub_tpm_key->publicArea.nameAlg) {
+    case TPM2_ALG_SHA1:
+        hash_id = MBEDTLS_MD_SHA1;
+        break;
+    case TPM2_ALG_SHA256:
+        hash_id = MBEDTLS_MD_SHA256;
+        break;
+    case TPM2_ALG_SHA384:
+        hash_id = MBEDTLS_MD_SHA384;
+        break;
+    case TPM2_ALG_SHA512:
+        hash_id = MBEDTLS_MD_SHA512;
+        break;
+    default:
+        return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED, "Hash algorithm not supported");
     }
 
 #if MBEDTLS_VERSION_MAJOR > 2
@@ -530,79 +509,58 @@ iesys_cryptmbed_pk_encrypt(TPM2B_PUBLIC * pub_tpm_key,
 #endif
 
     if (pub_tpm_key->publicArea.unique.rsa.size == 0) {
-        goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
-                   "Public key size may not be 0", cleanup);
+        goto_error(r, TSS2_ESYS_RC_BAD_VALUE, "Public key size may not be 0", cleanup);
     }
 
-    UINT8 exp[sizeof(UINT32)] = { 0x00, 0x01, 0x00, 0x01 }; //big-endian 65537
+    UINT8  exp[sizeof(UINT32)] = { 0x00, 0x01, 0x00, 0x01 }; // big-endian 65537
     UINT32 exp_as_int = pub_tpm_key->publicArea.parameters.rsaDetail.exponent;
     if (exp_as_int != 0) {
         exp[0] = (exp_as_int >> 24) & 0xff;
         exp[1] = (exp_as_int >> 16) & 0xff;
-        exp[2] = (exp_as_int >>  8) & 0xff;
-        exp[3] = (exp_as_int >>  0) & 0xff;
+        exp[2] = (exp_as_int >> 8) & 0xff;
+        exp[3] = (exp_as_int >> 0) & 0xff;
     }
 
-    if (mbedtls_rsa_import_raw(&rsa_context,
-                              pub_tpm_key->publicArea.unique.rsa.buffer,
-                              pub_tpm_key->publicArea.unique.rsa.size,
-                              NULL /* p */,
-                              0,
-                              NULL /* q */,
-                              0,
-                              NULL /* d */,
-                              0,
-                              &exp[0],
-                              sizeof(UINT32)) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not import public key", cleanup);
+    if (mbedtls_rsa_import_raw(&rsa_context, pub_tpm_key->publicArea.unique.rsa.buffer,
+                               pub_tpm_key->publicArea.unique.rsa.size, NULL /* p */, 0,
+                               NULL /* q */, 0, NULL /* d */, 0, &exp[0], sizeof(UINT32))
+        != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not import public key", cleanup);
     }
 
     if (mbedtls_rsa_complete(&rsa_context) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Could not complete key import", cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not complete key import", cleanup);
     }
 
     if (mbedtls_rsa_get_len(&rsa_context) > max_out_size) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Encrypted data too big", cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Encrypted data too big", cleanup);
     }
 
     switch (pub_tpm_key->publicArea.parameters.rsaDetail.scheme.scheme) {
-        case TPM2_ALG_RSAES:
-            if (mbedtls_rsa_pkcs1_encrypt(&rsa_context,
-                                          get_random,
-                                          NULL,
+    case TPM2_ALG_RSAES:
+        if (mbedtls_rsa_pkcs1_encrypt(&rsa_context, get_random, NULL,
 #if MBEDTLS_VERSION_MAJOR <= 2
-                                          MBEDTLS_RSA_PUBLIC,
+                                      MBEDTLS_RSA_PUBLIC,
 #endif
-                                          in_size,
-                                          in_buffer,
-                                          out_buffer) != 0) {
-                goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                           "Could not encrypt data.", cleanup);
-            }
-            break;
-        case TPM2_ALG_OAEP:
-            if (mbedtls_rsa_rsaes_oaep_encrypt(&rsa_context,
-                                               get_random,
-                                               NULL,
+                                      in_size, in_buffer, out_buffer)
+            != 0) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not encrypt data.", cleanup);
+        }
+        break;
+    case TPM2_ALG_OAEP:
+        if (mbedtls_rsa_rsaes_oaep_encrypt(&rsa_context, get_random, NULL,
 #if MBEDTLS_VERSION_MAJOR <= 2
-                                               MBEDTLS_RSA_PUBLIC,
+                                           MBEDTLS_RSA_PUBLIC,
 #endif
-                                               (const UINT8*)label,
-                                               strlen(label) + 1,
-                                               in_size,
-                                               in_buffer,
-                                               out_buffer) != 0) {
-                goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                           "Could not encrypt data.", cleanup);
-            }
-            break;
-        default:
-            goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
-                       "Illegal RSA scheme", cleanup);
-            break;
+                                           (const UINT8 *)label, strlen(label) + 1, in_size,
+                                           in_buffer, out_buffer)
+            != 0) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not encrypt data.", cleanup);
+        }
+        break;
+    default:
+        goto_error(r, TSS2_ESYS_RC_BAD_VALUE, "Illegal RSA scheme", cleanup);
+        break;
     }
     *out_size = mbedtls_rsa_get_len(&rsa_context);
 
@@ -631,22 +589,21 @@ cleanup:
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE The internal crypto engine failed.
  */
 TSS2_RC
-iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
-                               size_t max_out_size,
+iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC        *key,
+                               size_t               max_out_size,
                                TPM2B_ECC_PARAMETER *Z,
-                               TPMS_ECC_POINT *Q,
-                               BYTE * out_buffer,
-                               size_t * out_size,
-                               void *userdata)
-{
+                               TPMS_ECC_POINT      *Q,
+                               BYTE                *out_buffer,
+                               size_t              *out_size,
+                               void                *userdata) {
     UNUSED(userdata);
 
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC           r = TSS2_RC_SUCCESS;
     mbedtls_ecp_group ecp_group;
-    mbedtls_mpi ecp_d;
+    mbedtls_mpi       ecp_d;
     mbedtls_ecp_point ecp_Q;
     mbedtls_ecp_point ecp_Qp;
-    mbedtls_mpi ecp_z;
+    mbedtls_mpi       ecp_z;
 
     mbedtls_ecp_group_init(&ecp_group);
     mbedtls_mpi_init(&ecp_d);
@@ -657,48 +614,37 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
     /* Load named curve */
     switch (key->publicArea.parameters.eccDetail.curveID) {
     case TPM2_ECC_NIST_P192:
-        if(mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP192R1) != 0) {
-            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                       "ECP group load failed", cleanup);
+        if (mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP192R1) != 0) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "ECP group load failed", cleanup);
         }
         break;
     case TPM2_ECC_NIST_P224:
-        if(mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP224R1) != 0) {
-            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                       "ECP group load failed", cleanup);
+        if (mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP224R1) != 0) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "ECP group load failed", cleanup);
         }
         break;
     case TPM2_ECC_NIST_P256:
-        if(mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP256R1) != 0) {
-            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                       "ECP group load failed", cleanup);
+        if (mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP256R1) != 0) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "ECP group load failed", cleanup);
         }
         break;
     case TPM2_ECC_NIST_P384:
-        if(mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP384R1) != 0) {
-             goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                        "ECP group load failed", cleanup);
+        if (mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP384R1) != 0) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "ECP group load failed", cleanup);
         }
         break;
     case TPM2_ECC_NIST_P521:
-        if(mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP521R1) != 0) {
-            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                       "ECP group load failed", cleanup);
+        if (mbedtls_ecp_group_load(&ecp_group, MBEDTLS_ECP_DP_SECP521R1) != 0) {
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "ECP group load failed", cleanup);
         }
         break;
     default:
-        return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED,
-                     "ECC curve not implemented.");
+        return_error(TSS2_ESYS_RC_NOT_IMPLEMENTED, "ECC curve not implemented.");
     }
 
     /* Generate ephemeral key */
-    if (mbedtls_ecdh_gen_public(&ecp_group,
-                                &ecp_d,
-                                &ecp_Q,
-                                get_random,
-                                NULL) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "ECDH gen failed", cleanup);
+    if (mbedtls_ecdh_gen_public(&ecp_group, &ecp_d, &ecp_Q, get_random, NULL) != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "ECDH gen failed", cleanup);
     }
 
     /* Write affine coordinates of ephemeral pub key to TPM point Q
@@ -713,78 +659,59 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC *key,
 
     Q->x.size = mbedtls_mpi_size(&ecp_Q.MBEDTLS_ACCESS(X));
     if (Q->x.size > TPM2_MAX_ECC_KEY_BYTES) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Write Q.x does not fit into byte buffer", cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Write Q.x does not fit into byte buffer",
+                   cleanup);
     }
-    if (mbedtls_mpi_write_binary(&ecp_Q.MBEDTLS_ACCESS(X),
-                                 &Q->x.buffer[0],
-                                 Q->x.size) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Write Q.x to byte buffer failed", cleanup);
+    if (mbedtls_mpi_write_binary(&ecp_Q.MBEDTLS_ACCESS(X), &Q->x.buffer[0], Q->x.size) != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Write Q.x to byte buffer failed", cleanup);
     }
 
     Q->y.size = mbedtls_mpi_size(&ecp_Q.MBEDTLS_ACCESS(Y));
     if (Q->y.size > TPM2_MAX_ECC_KEY_BYTES) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Write Q.y does not fit into byte buffer", cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Write Q.y does not fit into byte buffer",
+                   cleanup);
     }
-    if (mbedtls_mpi_write_binary(&ecp_Q.MBEDTLS_ACCESS(Y),
-                                 &Q->y.buffer[0],
-                                 Q->y.size) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Write Q.y to byte buffer failed", cleanup);
+    if (mbedtls_mpi_write_binary(&ecp_Q.MBEDTLS_ACCESS(Y), &Q->y.buffer[0], Q->y.size) != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Write Q.y to byte buffer failed", cleanup);
     }
 
     /* Initialise Qp.Z (Qp would be zero, or "at infinity", if Z == 0) */
-    if (mbedtls_mpi_lset(&ecp_Qp.MBEDTLS_ACCESS(Z), 1) != 0)
-    {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Init of Qp.z to 1 failed", cleanup);
+    if (mbedtls_mpi_lset(&ecp_Qp.MBEDTLS_ACCESS(Z), 1) != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Init of Qp.z to 1 failed", cleanup);
     }
 
     /* Read ephemeral pub key from TPM to Qp */
-    if (mbedtls_mpi_read_binary(&ecp_Qp.MBEDTLS_ACCESS(X),
-                                &key->publicArea.unique.ecc.x.buffer[0],
-                                key->publicArea.unique.ecc.x.size) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Read of Qp.x from byte buffer failed", cleanup);
+    if (mbedtls_mpi_read_binary(&ecp_Qp.MBEDTLS_ACCESS(X), &key->publicArea.unique.ecc.x.buffer[0],
+                                key->publicArea.unique.ecc.x.size)
+        != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Read of Qp.x from byte buffer failed",
+                   cleanup);
     }
-    if (mbedtls_mpi_read_binary(&ecp_Qp.MBEDTLS_ACCESS(Y),
-                                &key->publicArea.unique.ecc.y.buffer[0],
-                                key->publicArea.unique.ecc.y.size) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Read of Qp.y from byte buffer failed", cleanup);
+    if (mbedtls_mpi_read_binary(&ecp_Qp.MBEDTLS_ACCESS(Y), &key->publicArea.unique.ecc.y.buffer[0],
+                                key->publicArea.unique.ecc.y.size)
+        != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Read of Qp.y from byte buffer failed",
+                   cleanup);
     }
 
     /* Validate TPM's pub key */
-    if (mbedtls_ecp_check_pubkey(&ecp_group,
-                                 &ecp_Qp) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Point Qp is invalid", cleanup);
+    if (mbedtls_ecp_check_pubkey(&ecp_group, &ecp_Qp) != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Point Qp is invalid", cleanup);
     }
 
     /* Calculate shared secret */
-    if (mbedtls_ecdh_compute_shared(&ecp_group,
-                                    &ecp_z,
-                                    &ecp_Qp,
-                                    &ecp_d,
-                                    get_random,
-                                    NULL) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "ECDH compute shared failed", cleanup);
+    if (mbedtls_ecdh_compute_shared(&ecp_group, &ecp_z, &ecp_Qp, &ecp_d, get_random, NULL) != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "ECDH compute shared failed", cleanup);
     }
 
     /* Write shared secret to TPM ECC param Z */
     Z->size = mbedtls_mpi_size(&ecp_z);
     if (Z->size > TPM2_MAX_ECC_KEY_BYTES) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Write Q.y does not fit into byte buffer", cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Write Q.y does not fit into byte buffer",
+                   cleanup);
     }
-    if (mbedtls_mpi_write_binary(&ecp_z,
-                                 &Z->buffer[0],
-                                 Z->size) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Write Z to byte buffer failed", cleanup);
+    if (mbedtls_mpi_write_binary(&ecp_z, &Z->buffer[0], Z->size) != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Write Z to byte buffer failed", cleanup);
     }
 
     /* Write the public ephemeral key in TPM format to out buffer */
@@ -818,18 +745,17 @@ cleanup:
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptmbed_sym_aes_encrypt(uint8_t * key,
-                                TPM2_ALG_ID tpm_sym_alg,
+iesys_cryptmbed_sym_aes_encrypt(uint8_t          *key,
+                                TPM2_ALG_ID       tpm_sym_alg,
                                 TPMI_AES_KEY_BITS key_bits,
-                                TPM2_ALG_ID tpm_mode,
-                                uint8_t * buffer,
-                                size_t buffer_size,
-                                uint8_t * iv,
-                                void *userdata)
-{
+                                TPM2_ALG_ID       tpm_mode,
+                                uint8_t          *buffer,
+                                size_t            buffer_size,
+                                uint8_t          *iv,
+                                void             *userdata) {
     UNUSED(userdata);
 
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC             r = TSS2_RC_SUCCESS;
     mbedtls_aes_context aes_ctx;
 
     if (key == NULL || buffer == NULL) {
@@ -839,20 +765,18 @@ iesys_cryptmbed_sym_aes_encrypt(uint8_t * key,
     mbedtls_aes_init(&aes_ctx);
 
     if (tpm_sym_alg != TPM2_ALG_AES || tpm_mode != TPM2_ALG_CFB) {
-        goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
-                   "AES encrypt called with wrong algorithm.", cleanup);
+        goto_error(r, TSS2_ESYS_RC_BAD_VALUE, "AES encrypt called with wrong algorithm.", cleanup);
     }
 
     if (mbedtls_aes_setkey_enc(&aes_ctx, key, key_bits) != 0) {
-        goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
-                   "Key size not not implemented.", cleanup);
+        goto_error(r, TSS2_ESYS_RC_BAD_VALUE, "Key size not not implemented.", cleanup);
     }
 
     size_t iv_off = 0;
-    if (mbedtls_aes_crypt_cfb128(&aes_ctx, MBEDTLS_AES_ENCRYPT, buffer_size,
-                                 &iv_off, iv, buffer, buffer) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Enncrypt", cleanup);
+    if (mbedtls_aes_crypt_cfb128(&aes_ctx, MBEDTLS_AES_ENCRYPT, buffer_size, &iv_off, iv, buffer,
+                                 buffer)
+        != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Enncrypt", cleanup);
     }
 
 cleanup:
@@ -876,18 +800,17 @@ cleanup:
  * @retval TSS2_ESYS_RC_GENERAL_FAILURE for errors of the crypto library.
  */
 TSS2_RC
-iesys_cryptmbed_sym_aes_decrypt(uint8_t * key,
-                                TPM2_ALG_ID tpm_sym_alg,
+iesys_cryptmbed_sym_aes_decrypt(uint8_t          *key,
+                                TPM2_ALG_ID       tpm_sym_alg,
                                 TPMI_AES_KEY_BITS key_bits,
-                                TPM2_ALG_ID tpm_mode,
-                                uint8_t * buffer,
-                                size_t buffer_size,
-                                uint8_t * iv,
-                                void *userdata)
-{
+                                TPM2_ALG_ID       tpm_mode,
+                                uint8_t          *buffer,
+                                size_t            buffer_size,
+                                uint8_t          *iv,
+                                void             *userdata) {
     UNUSED(userdata);
 
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC             r = TSS2_RC_SUCCESS;
     mbedtls_aes_context aes_ctx;
 
     if (key == NULL || buffer == NULL) {
@@ -897,8 +820,7 @@ iesys_cryptmbed_sym_aes_decrypt(uint8_t * key,
     mbedtls_aes_init(&aes_ctx);
 
     if (tpm_sym_alg != TPM2_ALG_AES || tpm_mode != TPM2_ALG_CFB) {
-        goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
-                   "AES encrypt called with wrong algorithm.", cleanup);
+        goto_error(r, TSS2_ESYS_RC_BAD_VALUE, "AES encrypt called with wrong algorithm.", cleanup);
     }
 
     /* Note in mbedTLS Documentation:
@@ -908,15 +830,14 @@ iesys_cryptmbed_sym_aes_decrypt(uint8_t * key,
      * CFB mode uses the same key schedule for encryption and decryption.
      */
     if (mbedtls_aes_setkey_enc(&aes_ctx, key, key_bits) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Key size not not implemented.", cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Key size not not implemented.", cleanup);
     }
 
     size_t iv_off = 0;
-    if (mbedtls_aes_crypt_cfb128(&aes_ctx, MBEDTLS_AES_DECRYPT, buffer_size,
-                                 &iv_off, iv, buffer, buffer) != 0) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "Dencrypt", cleanup);
+    if (mbedtls_aes_crypt_cfb128(&aes_ctx, MBEDTLS_AES_DECRYPT, buffer_size, &iv_off, iv, buffer,
+                                 buffer)
+        != 0) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Dencrypt", cleanup);
     }
 
 cleanup:

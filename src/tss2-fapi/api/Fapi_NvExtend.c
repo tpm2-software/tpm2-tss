@@ -8,30 +8,30 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>                  // for json_object_array_add, json_object...
-#include <stdint.h>                // for uint8_t
-#include <stdlib.h>                // for NULL, malloc, size_t
-#include <string.h>                // for memcpy, memset
+#include <json.h>   // for json_object_array_add, json_object...
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for NULL, malloc, size_t
+#include <string.h> // for memcpy, memset
 
-#include "fapi_crypto.h"           // for ifapi_crypto_hash_abort, ifapi_cry...
-#include "fapi_int.h"              // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_EX...
-#include "fapi_util.h"             // for ifapi_authorize_object, ifapi_clea...
-#include "ifapi_eventlog.h"        // for IFAPI_EVENT, IFAPI_EVENT_UNION
-#include "ifapi_helpers.h"         // for ifapi_init_hierarchy_object
-#include "ifapi_io.h"              // for ifapi_io_poll
-#include "ifapi_json_serialize.h"  // for ifapi_json_IFAPI_EVENT_serialize
-#include "ifapi_keystore.h"        // for IFAPI_OBJECT, IFAPI_OBJECT_UNION
-#include "ifapi_macros.h"          // for check_not_null, goto_if_error_rese...
-#include "ifapi_profiles.h"        // for IFAPI_PROFILES
-#include "tss2_common.h"           // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_esys.h"             // for Esys_SetTimeout, ESYS_TR, Esys_NV_...
-#include "tss2_fapi.h"             // for FAPI_CONTEXT, Fapi_NvExtend, Fapi_...
-#include "tss2_policy.h"           // for TSS2_OBJECT
-#include "tss2_tcti.h"             // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"       // for TPM2B_MAX_NV_BUFFER, TPM2B_NV_PUBLIC
+#include "fapi_crypto.h"          // for ifapi_crypto_hash_abort, ifapi_cry...
+#include "fapi_int.h"             // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_EX...
+#include "fapi_util.h"            // for ifapi_authorize_object, ifapi_clea...
+#include "ifapi_eventlog.h"       // for IFAPI_EVENT, IFAPI_EVENT_UNION
+#include "ifapi_helpers.h"        // for ifapi_init_hierarchy_object
+#include "ifapi_io.h"             // for ifapi_io_poll
+#include "ifapi_json_serialize.h" // for ifapi_json_IFAPI_EVENT_serialize
+#include "ifapi_keystore.h"       // for IFAPI_OBJECT, IFAPI_OBJECT_UNION
+#include "ifapi_macros.h"         // for check_not_null, goto_if_error_rese...
+#include "ifapi_profiles.h"       // for IFAPI_PROFILES
+#include "tss2_common.h"          // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_esys.h"            // for Esys_SetTimeout, ESYS_TR, Esys_NV_...
+#include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_NvExtend, Fapi_...
+#include "tss2_policy.h"          // for TSS2_OBJECT
+#include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"      // for TPM2B_MAX_NV_BUFFER, TPM2B_NV_PUBLIC
 
 #define LOGMODULE fapi
-#include "util/log.h"              // for LOG_TRACE, SAFE_FREE, goto_if_error
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
 
 /** One-Call function for Fapi_NvExtend
  *
@@ -73,13 +73,11 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvExtend(
-    FAPI_CONTEXT  *context,
-    char    const *nvPath,
-    uint8_t const *data,
-    size_t         dataSize,
-    char    const *logData)
-{
+Fapi_NvExtend(FAPI_CONTEXT  *context,
+              char const    *nvPath,
+              uint8_t const *data,
+              size_t         dataSize,
+              char const    *logData) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -161,13 +159,11 @@ Fapi_NvExtend(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvExtend_Async(
-    FAPI_CONTEXT  *context,
-    char    const *nvPath,
-    uint8_t const *data,
-    size_t         dataSize,
-    char    const *logData)
-{
+Fapi_NvExtend_Async(FAPI_CONTEXT  *context,
+                    char const    *nvPath,
+                    uint8_t const *data,
+                    size_t         dataSize,
+                    char const    *logData) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("nvPath: %s", nvPath);
     if (data) {
@@ -194,14 +190,13 @@ Fapi_NvExtend_Async(
     }
 
     /* Helpful alias pointers */
-    IFAPI_NV_Cmds * command = &context->nv_cmd;
+    IFAPI_NV_Cmds *command = &context->nv_cmd;
 
-    memset(command, 0 ,sizeof(IFAPI_NV_Cmds));
+    memset(command, 0, sizeof(IFAPI_NV_Cmds));
 
     /* Copy parameters to context for use during _Finish. */
     uint8_t *in_data = malloc(dataSize);
-    goto_if_null2(in_data, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-            error_cleanup);
+    goto_if_null2(in_data, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
     memcpy(in_data, data, dataSize);
     command->data = in_data;
     strdup_check(command->nvPath, nvPath, r, error_cleanup);
@@ -262,36 +257,35 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvExtend_Finish(
-    FAPI_CONTEXT  *context)
-{
+Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
-    ESYS_TR authIndex;
-    json_object *jso = NULL;
+    TSS2_RC                    r;
+    ESYS_TR                    authIndex;
+    json_object               *jso = NULL;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
-    TPMI_ALG_HASH hashAlg;
-    size_t hashSize;
-    ESYS_TR auth_session;
+    TPMI_ALG_HASH              hashAlg;
+    size_t                     hashSize;
+    ESYS_TR                    auth_session;
 
     /* Check for NULL parameters */
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_NV_Cmds * command = &context->nv_cmd;
+    IFAPI_NV_Cmds       *command = &context->nv_cmd;
     TPM2B_MAX_NV_BUFFER *auxData = (TPM2B_MAX_NV_BUFFER *)&context->aux_data;
-    ESYS_TR nvIndex = command->esys_handle;
-    const uint8_t *data = command->data;
-    IFAPI_OBJECT *object = &command->nv_object;
-    IFAPI_OBJECT *authObject = &command->auth_object;
-    IFAPI_EVENT *event = &command->pcr_event;
+    ESYS_TR              nvIndex = command->esys_handle;
+    const uint8_t       *data = command->data;
+    IFAPI_OBJECT        *object = &command->nv_object;
+    IFAPI_OBJECT        *authObject = &command->auth_object;
+    IFAPI_EVENT         *event = &command->pcr_event;
 
     switch (context->state) {
     statecase(context->state, NV_EXTEND_READ)
-        /* First check whether the file in object store can be updated. */
+    /* First check whether the file in object store can be updated. */
         r = ifapi_keystore_check_writeable(&context->keystore, command->nvPath);
-        goto_if_error_reset_state(r, "Check whether update object store is possible.", error_cleanup);
+        goto_if_error_reset_state(r, "Check whether update object store is possible.",
+                                  error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
         return_try_again(r);
@@ -327,8 +321,7 @@ Fapi_NvExtend_Finish(
         context->primary_state = PRIMARY_INIT;
 
         /* Start a session for authorization. */
-        r = ifapi_get_sessions_async(context,
-                                     IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
+        r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
                                      TPMA_SESSION_DECRYPT, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
@@ -341,8 +334,7 @@ Fapi_NvExtend_Finish(
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         if (command->numBytes > TPM2_MAX_NV_BUFFER_SIZE) {
-            goto_error_reset_state(r, TSS2_FAPI_RC_BAD_VALUE,
-                                   "Buffer for NvExtend is too large.",
+            goto_error_reset_state(r, TSS2_FAPI_RC_BAD_VALUE, "Buffer for NvExtend is too large.",
                                    error_cleanup);
         }
 
@@ -352,19 +344,14 @@ Fapi_NvExtend_Finish(
         fallthrough;
 
     statecase(context->state, NV_EXTEND_AUTHORIZE)
-        /* Prepare the authorization data for the NV index. */
+    /* Prepare the authorization data for the NV index. */
         r = ifapi_authorize_object(context, authObject, &auth_session);
         return_try_again(r);
         goto_if_error(r, "Authorize NV object.", error_cleanup);
 
         /* Extend the data into the NV index. */
-        r = Esys_NV_Extend_Async(context->esys,
-                                 command->auth_index,
-                                 nvIndex,
-                                 auth_session,
-                                 ENC_SESSION_IF_POLICY(auth_session),
-                                 ESYS_TR_NONE,
-                                 auxData);
+        r = Esys_NV_Extend_Async(context->esys, command->auth_index, nvIndex, auth_session,
+                                 ENC_SESSION_IF_POLICY(auth_session), ESYS_TR_NONE, auxData);
         goto_if_error_reset_state(r, " Fapi_NvExtend_Async", error_cleanup);
 
         command->bytesRequested = auxData->size;
@@ -385,13 +372,9 @@ Fapi_NvExtend_Finish(
         r = ifapi_crypto_hash_start(&cryptoContext, hashAlg);
         goto_if_error(r, "crypto hash start", error_cleanup);
 
-        HASH_UPDATE_BUFFER(cryptoContext,
-                           &auxData->buffer[0], auxData->size,
-                           r, error_cleanup);
+        HASH_UPDATE_BUFFER(cryptoContext, &auxData->buffer[0], auxData->size, r, error_cleanup);
 
-        r = ifapi_crypto_hash_finish(&cryptoContext,
-                                     (uint8_t *)
-                                     &event->digests.digests[0].digest,
+        r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&event->digests.digests[0].digest,
                                      &hashSize);
         goto_if_error(r, "crypto hash finish", error_cleanup);
 
@@ -399,22 +382,18 @@ Fapi_NvExtend_Finish(
         event->digests.count = 1;
         event->pcr = object->misc.nv.public.nvPublic.nvIndex;
         event->content_type = IFAPI_TSS_EVENT_TAG;
-        memcpy(&event->content.tss_event.data.buffer[0],
-               &auxData->buffer[0], auxData->size);
+        memcpy(&event->content.tss_event.data.buffer[0], &auxData->buffer[0], auxData->size);
         event->content.tss_event.data.size = auxData->size;
         if (command->logData) {
-            strdup_check(event->content.tss_event.event, command->logData,
-                    r, error_cleanup);
+            strdup_check(event->content.tss_event.event, command->logData, r, error_cleanup);
         } else {
             event->content.tss_event.event = NULL;
         }
 
         /* Event log of the NV object has to be extended */
         if (command->nv_object.misc.nv.event_log) {
-            command->jso_event_log
-                = json_tokener_parse(command->nv_object.misc.nv.event_log);
-            goto_if_null2(command->jso_event_log, "Out of memory", r,
-                          TSS2_FAPI_RC_MEMORY,
+            command->jso_event_log = json_tokener_parse(command->nv_object.misc.nv.event_log);
+            goto_if_null2(command->jso_event_log, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
                           error_cleanup);
             json_type jsoType = json_object_get_type(command->jso_event_log);
             /* libjson-c does not deliver an array if array has only one element */
@@ -429,8 +408,7 @@ Fapi_NvExtend_Finish(
             /* First event */
             command->jso_event_log = json_object_new_array();
         }
-        command->pcr_event.recnum =
-            json_object_array_length(command->jso_event_log);
+        command->pcr_event.recnum = json_object_array_length(command->jso_event_log);
 
         r = ifapi_json_IFAPI_EVENT_serialize(&command->pcr_event, &jso);
         goto_if_error(r, "Error serialize event", error_cleanup);
@@ -439,10 +417,10 @@ Fapi_NvExtend_Finish(
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
         }
         SAFE_FREE(object->misc.nv.event_log);
-        strdup_check(object->misc.nv.event_log,
-            json_object_to_json_string_ext(command->jso_event_log,
-                                                    JSON_C_TO_STRING_PRETTY),
-            r, error_cleanup);
+        strdup_check(
+            object->misc.nv.event_log,
+            json_object_to_json_string_ext(command->jso_event_log, JSON_C_TO_STRING_PRETTY), r,
+            error_cleanup);
 
         /* Set written bit in keystore */
         context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes |= TPMA_NV_WRITTEN;
@@ -452,24 +430,22 @@ Fapi_NvExtend_Finish(
         goto_if_error(r, "Prepare serialization", error_cleanup);
 
         /* Start writing the NV object to the key store */
-        r = ifapi_keystore_store_async(&context->keystore, &context->io,
-                                       command->nvPath,
+        r = ifapi_keystore_store_async(&context->keystore, &context->io, command->nvPath,
                                        &command->nv_object);
 
-        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
-                                  command->nvPath);
+        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, command->nvPath);
 
         fallthrough;
 
     statecase(context->state, NV_EXTEND_WRITE)
-        /* Finish writing the NV object to the key store */
+    /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
         return_try_again(r);
         goto_if_error(r, "write_finish failed", error_cleanup);
         fallthrough;
 
     statecase(context->state, NV_EXTEND_CLEANUP)
-        /* Cleanup the session. */
+    /* Cleanup the session. */
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 

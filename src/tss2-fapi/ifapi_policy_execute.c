@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>       // for PRIu16
-#include <stdlib.h>         // for size_t, NULL, malloc
-#include <string.h>         // for memcpy, memset
+#include <inttypes.h> // for PRIu16
+#include <stdlib.h>   // for size_t, NULL, malloc
+#include <string.h>   // for memcpy, memset
 
-#include "fapi_crypto.h"    // for ifapi_crypto_hash_finish, ifapi_crypto_ha...
-#include "ifapi_helpers.h"  // for ifapi_nv_get_name, append_object_to_list
-#include "ifapi_macros.h"   // for statecase, fallthrough, try_again_or_error
+#include "fapi_crypto.h"   // for ifapi_crypto_hash_finish, ifapi_crypto_ha...
+#include "ifapi_helpers.h" // for ifapi_nv_get_name, append_object_to_list
+#include "ifapi_macros.h"  // for statecase, fallthrough, try_again_or_error
 #include "ifapi_policy_execute.h"
-#include "tss2_mu.h"        // for Tss2_MU_TPMT_PUBLIC_Marshal
+#include "tss2_mu.h" // for Tss2_MU_TPMT_PUBLIC_Marshal
 
 #define LOGMODULE fapi
-#include "util/log.h"       // for return_if_error, LOG_TRACE, goto_if_error
+#include "util/log.h" // for return_if_error, LOG_TRACE, goto_if_error
 
 /** Copy the policy digests from a branch list to a digest list.
  *
@@ -31,19 +31,16 @@
  *         the branch list.
  */
 static TSS2_RC
-compute_or_digest_list(
-    TPML_POLICYBRANCHES *branches,
-    TPMI_ALG_HASH current_hash_alg,
-    TPML_DIGEST *digest_list)
-{
+compute_or_digest_list(TPML_POLICYBRANCHES *branches,
+                       TPMI_ALG_HASH        current_hash_alg,
+                       TPML_DIGEST         *digest_list) {
     size_t i;
     size_t digest_idx, hash_size;
-    bool digest_found = false;
+    bool   digest_found = false;
 
     if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
-        return_error2(TSS2_FAPI_RC_BAD_VALUE,
-                      "Unsupported hash algorithm (%" PRIu16 ")",
-                              current_hash_alg);
+        return_error2(TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
+                      current_hash_alg);
     }
     /* Determine digest values with appropriate hash alg */
     TPML_DIGEST_VALUES *branch_digests = &branches->authorizations[0].policyDigests;
@@ -55,7 +52,7 @@ compute_or_digest_list(
         }
     }
     if (!digest_found) {
-         return_error(TSS2_FAPI_RC_BAD_VALUE, "No digest found for hash alg");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "No digest found for hash alg");
     }
 
     digest_list->count = branches->count;
@@ -65,10 +62,9 @@ compute_or_digest_list(
         }
         digest_list->digests[i].size = hash_size;
         memcpy(&digest_list->digests[i].buffer[0],
-               &branches->authorizations[i].policyDigests.
-               digests[digest_idx].digest, hash_size);
-        LOGBLOB_DEBUG(&digest_list->digests[i].buffer[0],
-                      digest_list->digests[i].size, "Compute digest list");
+               &branches->authorizations[i].policyDigests.digests[digest_idx].digest, hash_size);
+        LOGBLOB_DEBUG(&digest_list->digests[i].buffer[0], digest_list->digests[i].size,
+                      "Compute digest list");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -87,36 +83,31 @@ compute_or_digest_list(
  *         allocated.
  */
 TSS2_RC
-ifapi_extend_authorization(
-    TPMS_POLICY *policy,
-    TPMS_POLICYAUTHORIZATION *authorization)
-{
+ifapi_extend_authorization(TPMS_POLICY *policy, TPMS_POLICYAUTHORIZATION *authorization) {
     TPML_POLICYAUTHORIZATIONS *save = NULL;
-    size_t n = 0;
-    size_t i;
+    size_t                     n = 0;
+    size_t                     i;
 
     if (policy->policyAuthorizations) {
         /* Extend old authorizations */
         n = policy->policyAuthorizations->count;
         save = policy->policyAuthorizations;
-        policy->policyAuthorizations =
-            malloc((n + 1) * sizeof(TPMS_POLICYAUTHORIZATION)
-                   + sizeof(TPML_POLICYAUTHORIZATIONS));
-        return_if_null(policy->policyAuthorizations->authorizations,
-                       "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        policy->policyAuthorizations = malloc((n + 1) * sizeof(TPMS_POLICYAUTHORIZATION)
+                                              + sizeof(TPML_POLICYAUTHORIZATIONS));
+        return_if_null(policy->policyAuthorizations->authorizations, "Out of memory.",
+                       TSS2_FAPI_RC_MEMORY);
 
         for (i = 0; i < n; i++)
-            policy->policyAuthorizations->authorizations[i] =
-                save->authorizations[i];
+            policy->policyAuthorizations->authorizations[i] = save->authorizations[i];
         policy->policyAuthorizations->authorizations[n] = *authorization;
         policy->policyAuthorizations->count = n + 1;
         SAFE_FREE(save);
     } else {
         /* No old authorizations exits */
-        policy->policyAuthorizations = malloc(sizeof(TPMS_POLICYAUTHORIZATION)
-                                               + sizeof(TPML_POLICYAUTHORIZATIONS));
-        return_if_null(policy->policyAuthorizations->authorizations,
-                       "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        policy->policyAuthorizations
+            = malloc(sizeof(TPMS_POLICYAUTHORIZATION) + sizeof(TPML_POLICYAUTHORIZATIONS));
+        return_if_null(policy->policyAuthorizations->authorizations, "Out of memory.",
+                       TSS2_FAPI_RC_MEMORY);
 
         policy->policyAuthorizations->count = 1;
         policy->policyAuthorizations->authorizations[0] = *authorization;
@@ -137,9 +128,7 @@ ifapi_extend_authorization(
  *         the digest list.
  */
 TSS2_RC
-get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg,
-                      size_t *idx)
-{
+get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg, size_t *idx) {
     size_t i;
     for (i = 0; i < digest_values->count; i++) {
         /* Check whether current hashAlg is appropriate. */
@@ -184,37 +173,33 @@ get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg,
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
-execute_policy_pcr(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYPCR *policy,
-    TPMI_ALG_HASH current_hash_alg,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
+execute_policy_pcr(ESYS_CONTEXT          *esys_ctx,
+                   TPMS_POLICYPCR        *policy,
+                   TPMI_ALG_HASH          current_hash_alg,
+                   IFAPI_POLICY_EXEC_CTX *current_policy) {
+    TSS2_RC            r = TSS2_RC_SUCCESS;
     TPML_PCR_SELECTION pcr_selection;
-    TPM2B_DIGEST pcr_digest;
+    TPM2B_DIGEST       pcr_digest;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Compute PCR selection and pcr digest */
-        r = ifapi_compute_policy_digest(policy->pcrs, &pcr_selection,
-                                        current_hash_alg, &pcr_digest);
+    /* Compute PCR selection and pcr digest */
+        r = ifapi_compute_policy_digest(policy->pcrs, &pcr_selection, current_hash_alg,
+                                        &pcr_digest);
         return_if_error(r, "Compute policy digest and selection.");
 
         LOGBLOB_DEBUG(&pcr_digest.buffer[0], pcr_digest.size, "PCR Digest");
 
         /* Prepare the policy execution. */
-        r = Esys_PolicyPCR_Async(esys_ctx,
-                                 current_policy->session,
-                                 ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                 &pcr_digest, &pcr_selection);
+        r = Esys_PolicyPCR_Async(esys_ctx, current_policy->session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                 ESYS_TR_NONE, &pcr_digest, &pcr_selection);
         return_if_error(r, "Execute PolicyPCR.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyPCR_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyPCR_Finish.");
 
@@ -245,11 +230,9 @@ execute_policy_pcr(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_duplicate(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYDUPLICATIONSELECT *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_duplicate(ESYS_CONTEXT                 *esys_ctx,
+                         TPMS_POLICYDUPLICATIONSELECT *policy,
+                         IFAPI_POLICY_EXEC_CTX        *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -257,24 +240,19 @@ execute_policy_duplicate(
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
-        return_if_null(cb->cbdup, "Policy Duplicate Callback Not Set",
-            TSS2_FAPI_RC_NULL_CALLBACK);
+        return_if_null(cb->cbdup, "Policy Duplicate Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
         r = cb->cbdup(&policy->objectName, cb->cbdup_userdata);
         return_if_error(r, "Get name for policy duplicate select.");
 
         /* Prepare the policy execution. */
-        r = Esys_PolicyDuplicationSelect_Async(esys_ctx,
-                                               current_policy->session,
-                                               ESYS_TR_NONE, ESYS_TR_NONE,
-                                               ESYS_TR_NONE,
-                                               &policy->objectName,
-                                               &policy->newParentName,
-                                               policy->includeObject);
+        r = Esys_PolicyDuplicationSelect_Async(esys_ctx, current_policy->session, ESYS_TR_NONE,
+                                               ESYS_TR_NONE, ESYS_TR_NONE, &policy->objectName,
+                                               &policy->newParentName, policy->includeObject);
         return_if_error(r, "Execute PolicyDuplicatonSelect_Async.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyDuplicationSelect_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyDuplicationselect_Finish.");
 
@@ -326,11 +304,9 @@ execute_policy_duplicate(
  *         was not successful.
  */
 static TSS2_RC
-execute_policy_nv(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYNV *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_nv(ESYS_CONTEXT          *esys_ctx,
+                  TPMS_POLICYNV         *policy,
+                  IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -345,28 +321,23 @@ execute_policy_nv(
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
 
         /* Authorize NV object. */
-        return_if_null(cb->cbauth, "Policy Auth Callback Not Set",
-            TSS2_FAPI_RC_NULL_CALLBACK);
-        r = cb->cbauth(&current_policy->name,
-                       &current_policy->object_handle,
-                       &current_policy->auth_handle,
-                       &current_policy->auth_session, cb->cbauth_userdata);
+        return_if_null(cb->cbauth, "Policy Auth Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
+        r = cb->cbauth(&current_policy->name, &current_policy->object_handle,
+                       &current_policy->auth_handle, &current_policy->auth_session,
+                       cb->cbauth_userdata);
         return_try_again(r);
         return_if_error(r, "Execute authorized policy.");
 
         /* Prepare the policy execution. */
-        r = Esys_PolicyNV_Async(esys_ctx,
-                                current_policy->object_handle,
-                                current_policy->auth_handle,
-                                current_policy->session,
+        r = Esys_PolicyNV_Async(esys_ctx, current_policy->object_handle,
+                                current_policy->auth_handle, current_policy->session,
                                 current_policy->auth_session, ESYS_TR_NONE, ESYS_TR_NONE,
-                                &policy->operandB, policy->offset,
-                                policy->operation);
+                                &policy->operandB, policy->offset, policy->operation);
         return_if_error(r, "Execute PolicyNV_Async.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyNV_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyNV_Finish.");
 
@@ -407,15 +378,13 @@ execute_policy_nv(
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
-execute_policy_signed(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYSIGNED *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    size_t offset = 0;
-    size_t signature_size;
-    const uint8_t *signature_ossl = NULL;
+execute_policy_signed(ESYS_CONTEXT          *esys_ctx,
+                      TPMS_POLICYSIGNED     *policy,
+                      IFAPI_POLICY_EXEC_CTX *current_policy) {
+    TSS2_RC                     r = TSS2_RC_SUCCESS;
+    size_t                      offset = 0;
+    size_t                      signature_size;
+    const uint8_t              *signature_ossl = NULL;
     TSS2_POLICY_EXEC_CALLBACKS *cb;
 
     LOG_TRACE("call");
@@ -425,13 +394,12 @@ execute_policy_signed(
         current_policy->flush_handle = false;
         current_policy->pem_key = NULL;
         current_policy->object_handle = ESYS_TR_NONE;
-        current_policy->buffer_size = sizeof(INT32) + sizeof(TPM2B_NONCE)
-            + policy->cpHashA.size + policy->policyRef.size;
+        current_policy->buffer_size
+            = sizeof(INT32) + sizeof(TPM2B_NONCE) + policy->cpHashA.size + policy->policyRef.size;
         current_policy->buffer = malloc(current_policy->buffer_size);
         return_if_null(current_policy->buffer, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-        r = Esys_TRSess_GetNonceTPM(esys_ctx, current_policy->session,
-                                    &current_policy->nonceTPM);
+        r = Esys_TRSess_GetNonceTPM(esys_ctx, current_policy->session, &current_policy->nonceTPM);
         return_if_error(r, "Get TPM nonce.");
 
         /* Concatenate objects needed for the authorization hash */
@@ -440,8 +408,7 @@ execute_policy_signed(
         offset += current_policy->nonceTPM->size;
         memset(&current_policy->buffer[offset], 0, sizeof(INT32));
         offset += sizeof(INT32);
-        memcpy(&current_policy->buffer[offset], &policy->cpHashA.buffer[0],
-               policy->cpHashA.size);
+        memcpy(&current_policy->buffer[offset], &policy->cpHashA.buffer[0], policy->cpHashA.size);
         offset += policy->cpHashA.size;
         memcpy(&current_policy->buffer[offset], &policy->policyRef.buffer[0],
                policy->policyRef.size);
@@ -452,40 +419,35 @@ execute_policy_signed(
 
     statecase(current_policy->state, POLICY_EXECUTE_CALLBACK);
         cb = &current_policy->callbacks;
-        int pem_key_size;
+        int          pem_key_size;
         TPM2B_PUBLIC tpm_public;
 
         if (policy->keyPublic.type == TPM2_ALG_KEYEDHASH) {
             LOG_TRACE("Keyedhash used for PoliySigned");
-            r = ifapi_base64encode(&policy->publicKey.name[0],
-                                   policy->publicKey.size,
+            r = ifapi_base64encode(&policy->publicKey.name[0], policy->publicKey.size,
                                    &current_policy->pem_key);
             return_if_error(r, "Encode key name do base64.");
-        } else if  (!current_policy->pem_key)  {
+        } else if (!current_policy->pem_key) {
             /* Recreate pem key from tpm public key */
             tpm_public.publicArea = policy->keyPublic;
             tpm_public.size = 0;
-            r = ifapi_pub_pem_key_from_tpm(&tpm_public, &current_policy->pem_key,
-                                           &pem_key_size);
+            r = ifapi_pub_pem_key_from_tpm(&tpm_public, &current_policy->pem_key, &pem_key_size);
             return_if_error(r, "Convert TPM public key into PEM key.");
         }
 
         /* Callback for signing the autorization hash. */
-        goto_if_null(cb->cbsign, "Policy Sign Callback Not Set",
-            TSS2_FAPI_RC_NOT_IMPLEMENTED, cleanup);
-        r = cb->cbsign(current_policy->pem_key, policy->publicKeyHint,
-                       policy->keyPEMhashAlg, current_policy->buffer,
-                       current_policy->buffer_size,
-                       &signature_ossl, &signature_size,
-                       cb->cbsign_userdata);
+        goto_if_null(cb->cbsign, "Policy Sign Callback Not Set", TSS2_FAPI_RC_NOT_IMPLEMENTED,
+                     cleanup);
+        r = cb->cbsign(current_policy->pem_key, policy->publicKeyHint, policy->keyPEMhashAlg,
+                       current_policy->buffer, current_policy->buffer_size, &signature_ossl,
+                       &signature_size, cb->cbsign_userdata);
         SAFE_FREE(current_policy->pem_key);
         SAFE_FREE(current_policy->buffer);
         try_again_or_error_goto(r, "Execute policy signature callback.", cleanup);
 
         /* Convert signature into TPM format */
-        r = ifapi_der_sig_to_tpm(&policy->keyPublic, signature_ossl,
-                                 signature_size, policy->keyPEMhashAlg,
-                                 &policy->signature_tpm);
+        r = ifapi_der_sig_to_tpm(&policy->keyPublic, signature_ossl, signature_size,
+                                 policy->keyPEMhashAlg, &policy->signature_tpm);
         goto_if_error2(r, "Convert der signature into TPM format", cleanup);
 
         if (policy->keyPublic.type == TPM2_ALG_KEYEDHASH) {
@@ -498,9 +460,8 @@ execute_policy_signed(
         inPublic.publicArea = policy->keyPublic;
 
         /* Prepare the loading of the external public key, user for verificaton. */
-        r = Esys_LoadExternal_Async(esys_ctx,
-                                    ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    NULL, &inPublic, ESYS_TR_RH_OWNER);
+        r = Esys_LoadExternal_Async(esys_ctx, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL,
+                                    &inPublic, ESYS_TR_RH_OWNER);
         goto_if_error(r, "LoadExternal_Async", cleanup);
         fallthrough;
 
@@ -511,12 +472,9 @@ execute_policy_signed(
         current_policy->flush_handle = true;
 
         /* Prepare the policy execution. */
-        r = Esys_PolicySigned_Async(esys_ctx,
-                                    current_policy->object_handle,
-                                    current_policy->session,
-                                    ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    current_policy->nonceTPM,
-                                    &policy->cpHashA,
+        r = Esys_PolicySigned_Async(esys_ctx, current_policy->object_handle,
+                                    current_policy->session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                    ESYS_TR_NONE, current_policy->nonceTPM, &policy->cpHashA,
                                     &policy->policyRef, 0, &policy->signature_tpm);
         SAFE_FREE(current_policy->nonceTPM);
         goto_if_error(r, "Execute PolicySigned.", cleanup);
@@ -541,21 +499,16 @@ execute_policy_signed(
 
     statecase(current_policy->state, POLICY_LOAD_KEYEDHASH);
         cb = &current_policy->callbacks;
-        r = cb->cbauth(&policy->publicKey,
-                       &current_policy->object_handle,
-                       &current_policy->auth_handle,
-                       &current_policy->auth_session,
+        r = cb->cbauth(&policy->publicKey, &current_policy->object_handle,
+                       &current_policy->auth_handle, &current_policy->auth_session,
                        cb->cbauth_userdata);
         return_try_again(r);
         goto_if_error(r, "Authorize object callback.", cleanup);
 
         /* Prepare the policy execution. */
-        r = Esys_PolicySigned_Async(esys_ctx,
-                                    current_policy->object_handle,
-                                    current_policy->session,
-                                    ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    current_policy->nonceTPM,
-                                    &policy->cpHashA,
+        r = Esys_PolicySigned_Async(esys_ctx, current_policy->object_handle,
+                                    current_policy->session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                    ESYS_TR_NONE, current_policy->nonceTPM, &policy->cpHashA,
                                     &policy->policyRef, 0, &policy->signature_tpm);
         SAFE_FREE(current_policy->nonceTPM);
         goto_if_error(r, "Execute PolicySigned.", cleanup);
@@ -571,7 +524,7 @@ cleanup:
     SAFE_FREE(current_policy->buffer);
     SAFE_FREE(current_policy->pem_key);
     /* In error cases object might not have been flushed. */
-    if (current_policy->object_handle != ESYS_TR_NONE)  {
+    if (current_policy->object_handle != ESYS_TR_NONE) {
         Esys_FlushContext(esys_ctx, current_policy->object_handle);
         current_policy->object_handle = ESYS_TR_NONE;
     }
@@ -624,28 +577,25 @@ cleanup:
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 static TSS2_RC
-execute_policy_authorize(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYAUTHORIZE *policy,
-    TPMI_ALG_HASH hash_alg,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    TPM2B_PUBLIC public2b;
-    TPM2B_DIGEST aHash;
+execute_policy_authorize(ESYS_CONTEXT          *esys_ctx,
+                         TPMS_POLICYAUTHORIZE  *policy,
+                         TPMI_ALG_HASH          hash_alg,
+                         IFAPI_POLICY_EXEC_CTX *current_policy) {
+    TSS2_RC                    r = TSS2_RC_SUCCESS;
+    TPM2B_PUBLIC               public2b;
+    TPM2B_DIGEST               aHash;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
-    size_t size;
-    TPMT_TK_VERIFIED *ticket;
-    TPM2B_NAME *tmp_name = NULL;
+    size_t                     size;
+    TPMT_TK_VERIFIED          *ticket;
+    TPM2B_NAME                *tmp_name = NULL;
 
     LOG_TRACE("call");
     public2b.size = 0;
 
     size_t hash_size;
     if (!(hash_size = ifapi_hash_get_digest_size(hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_NULL_CALLBACK,
-                   "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
-                   hash_alg);
+        goto_error(r, TSS2_FAPI_RC_NULL_CALLBACK, "Unsupported hash algorithm (%" PRIu16 ")",
+                   cleanup, hash_alg);
     }
 
     switch (current_policy->state) {
@@ -654,18 +604,16 @@ execute_policy_authorize(
         /* Execute authorized policy. */
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
         goto_if_null(cb->cbauthpol, "Authorize Policy Callback Not Set",
-            TSS2_FAPI_RC_NOT_IMPLEMENTED, cleanup);
-        r = cb->cbauthpol(&policy->keyPublic, hash_alg, &policy->approvedPolicy,
-                          &policy->policyRef,
+                     TSS2_FAPI_RC_NOT_IMPLEMENTED, cleanup);
+        r = cb->cbauthpol(&policy->keyPublic, hash_alg, &policy->approvedPolicy, &policy->policyRef,
                           &policy->signature, cb->cbauthpol_userdata);
         return_try_again(r);
         goto_if_error(r, "Execute authorized policy.", cleanup);
 
         public2b.size = 0;
         public2b.publicArea = policy->keyPublic;
-        r = Esys_LoadExternal_Async(esys_ctx,
-                                    ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    NULL,  &public2b, ESYS_TR_RH_OWNER);
+        r = Esys_LoadExternal_Async(esys_ctx, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL,
+                                    &public2b, ESYS_TR_RH_OWNER);
         goto_if_error(r, "LoadExternal_Async", cleanup);
         fallthrough;
 
@@ -680,17 +628,13 @@ execute_policy_authorize(
         SAFE_FREE(tmp_name);
 
         /* Use policyRef and policy to compute authorization hash */
-        r = ifapi_crypto_hash_start(&cryptoContext,
-                hash_alg);
+        r = ifapi_crypto_hash_start(&cryptoContext, hash_alg);
         return_if_error(r, "crypto hash start");
 
-        HASH_UPDATE_BUFFER(cryptoContext, &policy->approvedPolicy.buffer[0],
-                           hash_size, r, cleanup);
-        HASH_UPDATE_BUFFER(cryptoContext, &policy->policyRef.buffer[0],
-                           policy->policyRef.size, r, cleanup);
-        r = ifapi_crypto_hash_finish(&cryptoContext,
-                                     (uint8_t *) &aHash.buffer[0],
-                                     &size);
+        HASH_UPDATE_BUFFER(cryptoContext, &policy->approvedPolicy.buffer[0], hash_size, r, cleanup);
+        HASH_UPDATE_BUFFER(cryptoContext, &policy->policyRef.buffer[0], policy->policyRef.size, r,
+                           cleanup);
+        r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &size);
         return_if_error(r, "crypto hash finish");
 
         aHash.size = size;
@@ -699,10 +643,8 @@ execute_policy_authorize(
 
         /* Verify the signature retrieved from the authorized policy against
            the computed ahash. */
-        r = Esys_VerifySignature_Async(esys_ctx, current_policy->object_handle,
-                                       ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                       &aHash,
-                                       &policy->signature);
+        r = Esys_VerifySignature_Async(esys_ctx, current_policy->object_handle, ESYS_TR_NONE,
+                                       ESYS_TR_NONE, ESYS_TR_NONE, &aHash, &policy->signature);
         goto_if_error(r, "Verify signature", cleanup);
         fallthrough;
 
@@ -713,13 +655,9 @@ execute_policy_authorize(
         /* Execute policy authorize */
         policy->checkTicket = *ticket;
         SAFE_FREE(ticket);
-        r = Esys_PolicyAuthorize_Async(esys_ctx,
-                                       current_policy->session,
-                                       ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                       &policy->approvedPolicy,
-                                       &policy->policyRef,
-                                       &policy->keyName,
-                                       &policy->checkTicket);
+        r = Esys_PolicyAuthorize_Async(esys_ctx, current_policy->session, ESYS_TR_NONE,
+                                       ESYS_TR_NONE, ESYS_TR_NONE, &policy->approvedPolicy,
+                                       &policy->policyRef, &policy->keyName, &policy->checkTicket);
         goto_if_error(r, "Policy Authorize", cleanup);
         fallthrough;
 
@@ -794,13 +732,11 @@ cleanup:
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 static TSS2_RC
-execute_policy_authorize_nv(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYAUTHORIZENV *policy,
-    TPMI_ALG_HASH hash_alg,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
+execute_policy_authorize_nv(ESYS_CONTEXT           *esys_ctx,
+                            TPMS_POLICYAUTHORIZENV *policy,
+                            TPMI_ALG_HASH           hash_alg,
+                            IFAPI_POLICY_EXEC_CTX  *current_policy) {
+    TSS2_RC                     r = TSS2_RC_SUCCESS;
     TSS2_POLICY_EXEC_CALLBACKS *cb;
 
     LOG_DEBUG("call");
@@ -808,9 +744,8 @@ execute_policy_authorize_nv(
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Execute the policy stored in the NV object. */
-        return_if_null(cb->cbauthnv, "Authorize NV Callback Not Set",
-                TSS2_FAPI_RC_NULL_CALLBACK);
+    /* Execute the policy stored in the NV object. */
+        return_if_null(cb->cbauthnv, "Authorize NV Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
         r = cb->cbauthnv(&policy->nvPublic, hash_alg, cb->cbauthnv_userdata);
         try_again_or_error(r, "Execute policy authorize nv callback.");
 
@@ -819,13 +754,11 @@ execute_policy_authorize_nv(
         fallthrough;
 
     statecase(current_policy->state, POLICY_AUTH_CALLBACK)
-        /* Authorize the NV object for policy execution. */
-        return_if_null(cb->cbauth, "Policy Auth Callback Not Set",
-                TSS2_FAPI_RC_NULL_CALLBACK);
-        r = cb->cbauth(&current_policy->name,
-                       &current_policy->object_handle,
-                       &current_policy->auth_handle,
-                       &current_policy->auth_session, cb->cbauth_userdata);
+    /* Authorize the NV object for policy execution. */
+        return_if_null(cb->cbauth, "Policy Auth Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
+        r = cb->cbauth(&current_policy->name, &current_policy->object_handle,
+                       &current_policy->auth_handle, &current_policy->auth_session,
+                       cb->cbauth_userdata);
         return_try_again(r);
         goto_if_error(r, "Execute authorized policy.", cleanup);
         fallthrough;
@@ -833,17 +766,14 @@ execute_policy_authorize_nv(
     statecase(current_policy->state, POLICY_EXEC_ESYS)
         LOG_DEBUG("**STATE** POLICY_EXEC_ESYS");
         /* Prepare the policy execution. */
-        r = Esys_PolicyAuthorizeNV_Async(esys_ctx,
-                                         current_policy->auth_handle,
-                                         current_policy->object_handle,
-                                         current_policy->session,
-                                         current_policy->auth_session, ESYS_TR_NONE,
-                                         ESYS_TR_NONE);
+        r = Esys_PolicyAuthorizeNV_Async(esys_ctx, current_policy->auth_handle,
+                                         current_policy->object_handle, current_policy->session,
+                                         current_policy->auth_session, ESYS_TR_NONE, ESYS_TR_NONE);
         goto_if_error(r, "PolicyAuthorizeNV_Async", cleanup);
         fallthrough;
 
     statecase(current_policy->state, POLICY_AUTH_SENT)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyAuthorizeNV_Finish(esys_ctx);
         return_try_again(r);
         goto_if_error(r, "FAPI PolicyAuthorizeNV_Finish", cleanup);
@@ -895,11 +825,9 @@ cleanup:
  *         was not successful.
  */
 static TSS2_RC
-execute_policy_secret(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYSECRET *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_secret(ESYS_CONTEXT          *esys_ctx,
+                      TPMS_POLICYSECRET     *policy,
+                      IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_DEBUG("call");
@@ -908,40 +836,32 @@ execute_policy_secret(
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
         /* Callback for the object authorization. */
-        return_if_null(cb->cbauth, "Policy Auth Callback Not Set",
-            TSS2_FAPI_RC_NULL_CALLBACK);
+        return_if_null(cb->cbauth, "Policy Auth Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
         current_policy->flush_handle = false;
-        r = cb->cbauth(&policy->objectName,
-                       &current_policy->object_handle,
-                       &current_policy->auth_handle,
-                       &current_policy->auth_session, cb->cbauth_userdata);
+        r = cb->cbauth(&policy->objectName, &current_policy->object_handle,
+                       &current_policy->auth_handle, &current_policy->auth_session,
+                       cb->cbauth_userdata);
         return_try_again(r);
         goto_if_error(r, "Authorize object callback.", cleanup);
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXEC_ESYS)
-        r = Esys_TRSess_GetNonceTPM(esys_ctx, current_policy->session,
-                                    &current_policy->nonceTPM);
+        r = Esys_TRSess_GetNonceTPM(esys_ctx, current_policy->session, &current_policy->nonceTPM);
         goto_if_error(r, "Get TPM nonce.", cleanup);
 
         policy->nonceTPM = *(current_policy->nonceTPM);
         SAFE_FREE(current_policy->nonceTPM);
 
         /* Prepare the policy execution. */
-        r = Esys_PolicySecret_Async(esys_ctx,
-                                    current_policy->auth_handle,
-                                    current_policy->session,
-                                    current_policy->auth_session, ESYS_TR_NONE,
-                                    ESYS_TR_NONE, &policy->nonceTPM,
-                                    &policy->cpHashA, &policy->policyRef,
-                                    0);
+        r = Esys_PolicySecret_Async(esys_ctx, current_policy->auth_handle, current_policy->session,
+                                    current_policy->auth_session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                    &policy->nonceTPM, &policy->cpHashA, &policy->policyRef, 0);
         goto_if_error(r, "PolicySecret_Async", cleanup);
         fallthrough;
 
     statecase(current_policy->state, POLICY_AUTH_SENT)
-        /* Finalize the policy execution if possible. */
-        r = Esys_PolicySecret_Finish(esys_ctx, NULL,
-                                     NULL);
+    /* Finalize the policy execution if possible. */
+        r = Esys_PolicySecret_Finish(esys_ctx, NULL, NULL);
         return_try_again(r);
         goto_if_error(r, "FAPI PolicySecret_Finish", cleanup);
         if (!current_policy->flush_handle) {
@@ -964,10 +884,10 @@ execute_policy_secret(
 
     return r;
 
- cleanup:
+cleanup:
     if (current_policy->flush_handle && current_policy->auth_handle != ESYS_TR_NONE) {
-         Esys_FlushContext(esys_ctx, current_policy->auth_handle);
-         current_policy->auth_handle = ESYS_TR_NONE;
+        Esys_FlushContext(esys_ctx, current_policy->auth_handle);
+        current_policy->auth_handle = ESYS_TR_NONE;
     }
     SAFE_FREE(current_policy->nonceTPM);
     return r;
@@ -992,30 +912,24 @@ execute_policy_secret(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_counter_timer(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYCOUNTERTIMER *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_counter_timer(ESYS_CONTEXT            *esys_ctx,
+                             TPMS_POLICYCOUNTERTIMER *policy,
+                             IFAPI_POLICY_EXEC_CTX   *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Prepare the policy execution. */
-        r = Esys_PolicyCounterTimer_Async(esys_ctx,
-                                          current_policy->session,
-                                          ESYS_TR_NONE, ESYS_TR_NONE,
-                                          ESYS_TR_NONE,
-                                          &policy->operandB,
-                                          policy->offset,
-                                          policy->operation);
+    /* Prepare the policy execution. */
+        r = Esys_PolicyCounterTimer_Async(esys_ctx, current_policy->session, ESYS_TR_NONE,
+                                          ESYS_TR_NONE, ESYS_TR_NONE, &policy->operandB,
+                                          policy->offset, policy->operation);
         return_if_error(r, "Execute PolicyCounter.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyCounterTimer_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyCounterTImer_Finish.");
 
@@ -1041,26 +955,21 @@ execute_policy_counter_timer(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_physical_presence(
-    ESYS_CONTEXT *esys_ctx,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_physical_presence(ESYS_CONTEXT *esys_ctx, IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Prepare the policy execution. */
-        r = Esys_PolicyPhysicalPresence_Async(esys_ctx,
-                                              current_policy->session,
-                                              ESYS_TR_NONE, ESYS_TR_NONE,
-                                              ESYS_TR_NONE);
+    /* Prepare the policy execution. */
+        r = Esys_PolicyPhysicalPresence_Async(esys_ctx, current_policy->session, ESYS_TR_NONE,
+                                              ESYS_TR_NONE, ESYS_TR_NONE);
         return_if_error(r, "Execute PolicyPhysicalpresence.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyPhysicalPresence_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyPhysicalPresence_Finish.");
 
@@ -1088,26 +997,21 @@ execute_policy_physical_presence(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_auth_value(
-    ESYS_CONTEXT *esys_ctx,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_auth_value(ESYS_CONTEXT *esys_ctx, IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Prepare the policy execution. */
-        r = Esys_PolicyAuthValue_Async(esys_ctx,
-                                       current_policy->session,
-                                       ESYS_TR_NONE, ESYS_TR_NONE,
-                                       ESYS_TR_NONE);
+    /* Prepare the policy execution. */
+        r = Esys_PolicyAuthValue_Async(esys_ctx, current_policy->session, ESYS_TR_NONE,
+                                       ESYS_TR_NONE, ESYS_TR_NONE);
         return_if_error(r, "Execute PolicyAuthValue.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyAuthValue_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyAuthValue_Finish.");
 
@@ -1136,26 +1040,21 @@ execute_policy_auth_value(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_password(
-    ESYS_CONTEXT *esys_ctx,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_password(ESYS_CONTEXT *esys_ctx, IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Prepare the policy execution. */
-        r = Esys_PolicyPassword_Async(esys_ctx,
-                                      current_policy->session,
-                                      ESYS_TR_NONE, ESYS_TR_NONE,
+    /* Prepare the policy execution. */
+        r = Esys_PolicyPassword_Async(esys_ctx, current_policy->session, ESYS_TR_NONE, ESYS_TR_NONE,
                                       ESYS_TR_NONE);
         return_if_error(r, "Execute PolicyPassword.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyPassword_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyPassword_Finish.");
 
@@ -1182,27 +1081,23 @@ execute_policy_password(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_command_code(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYCOMMANDCODE *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_command_code(ESYS_CONTEXT           *esys_ctx,
+                            TPMS_POLICYCOMMANDCODE *policy,
+                            IFAPI_POLICY_EXEC_CTX  *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Prepare the policy execution. */
-        r = Esys_PolicyCommandCode_Async(esys_ctx,
-                                         current_policy->session,
-                                         ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                         policy->code);
+    /* Prepare the policy execution. */
+        r = Esys_PolicyCommandCode_Async(esys_ctx, current_policy->session, ESYS_TR_NONE,
+                                         ESYS_TR_NONE, ESYS_TR_NONE, policy->code);
         return_if_error(r, "Execute PolicyCommandCode.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyCommandCode_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyCommandCode_Finish.");
 
@@ -1231,27 +1126,23 @@ execute_policy_command_code(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_name_hash(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYNAMEHASH *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_name_hash(ESYS_CONTEXT          *esys_ctx,
+                         TPMS_POLICYNAMEHASH   *policy,
+                         IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Prepare the policy execution. */
-        r = Esys_PolicyNameHash_Async(esys_ctx,
-                                      current_policy->session,
-                                      ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                      &policy->nameHash);
+    /* Prepare the policy execution. */
+        r = Esys_PolicyNameHash_Async(esys_ctx, current_policy->session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                      ESYS_TR_NONE, &policy->nameHash);
         return_if_error(r, "Execute PolicyNameH.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyNameHash_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyNameHash_Finish.");
 
@@ -1278,28 +1169,24 @@ execute_policy_name_hash(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_cp_hash(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYCPHASH *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_cp_hash(ESYS_CONTEXT          *esys_ctx,
+                       TPMS_POLICYCPHASH     *policy,
+                       IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Prepare the policy execution. */
-        r = Esys_PolicyCpHash_Async(esys_ctx,
-                                    current_policy->session,
-                                    ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    &policy->cpHash);
+    /* Prepare the policy execution. */
+        r = Esys_PolicyCpHash_Async(esys_ctx, current_policy->session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                    ESYS_TR_NONE, &policy->cpHash);
         return_if_error(r, "Execute PolicyNameH.");
 
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyCpHash_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyCpHash_Finish.");
 
@@ -1332,27 +1219,23 @@ execute_policy_cp_hash(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_locality(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYLOCALITY *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_locality(ESYS_CONTEXT          *esys_ctx,
+                        TPMS_POLICYLOCALITY   *policy,
+                        IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Prepare the policy execution. */
-        r = Esys_PolicyLocality_Async(esys_ctx,
-                                      current_policy->session,
-                                      ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                      policy->locality);
+    /* Prepare the policy execution. */
+        r = Esys_PolicyLocality_Async(esys_ctx, current_policy->session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                      ESYS_TR_NONE, policy->locality);
         return_if_error(r, "Execute PolicyLocality.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyLocality_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyNV_Finish.");
 
@@ -1381,27 +1264,23 @@ execute_policy_locality(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_nv_written(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYNVWRITTEN *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_nv_written(ESYS_CONTEXT          *esys_ctx,
+                          TPMS_POLICYNVWRITTEN  *policy,
+                          IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Prepare the policy execution. */
-        r = Esys_PolicyNvWritten_Async(esys_ctx,
-                                       current_policy->session,
-                                       ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                       policy->writtenSet);
+    /* Prepare the policy execution. */
+        r = Esys_PolicyNvWritten_Async(esys_ctx, current_policy->session, ESYS_TR_NONE,
+                                       ESYS_TR_NONE, ESYS_TR_NONE, policy->writtenSet);
         return_if_error(r, "Execute PolicyNvWritten.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyNvWritten_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyNV_Finish.");
 
@@ -1432,31 +1311,27 @@ execute_policy_nv_written(
  *         the function.
  */
 static TSS2_RC
-execute_policy_or(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYOR *policy,
-    TPMI_ALG_HASH current_hash_alg,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_or(ESYS_CONTEXT          *esys_ctx,
+                  TPMS_POLICYOR         *policy,
+                  TPMI_ALG_HASH          current_hash_alg,
+                  IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        /* Prepare the policy execution. */
+    /* Prepare the policy execution. */
         r = compute_or_digest_list(policy->branches, current_hash_alg,
-                                      &current_policy->digest_list);
+                                   &current_policy->digest_list);
         return_if_error(r, "Compute policy or digest list.");
 
-        r = Esys_PolicyOR_Async(esys_ctx,
-                                current_policy->session,
-                                ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                &current_policy->digest_list);
+        r = Esys_PolicyOR_Async(esys_ctx, current_policy->session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                ESYS_TR_NONE, &current_policy->digest_list);
         return_if_error(r, "Execute PolicyPCR.");
         fallthrough;
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyOR_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyPCR_Finish.");
 
@@ -1488,11 +1363,9 @@ execute_policy_or(
  *         is not set.
  */
 static TSS2_RC
-execute_policy_action(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYACTION *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_action(ESYS_CONTEXT          *esys_ctx,
+                      TPMS_POLICYACTION     *policy,
+                      IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
     UNUSED(esys_ctx);
     LOG_TRACE("call");
@@ -1501,8 +1374,7 @@ execute_policy_action(
     statecase(current_policy->state, POLICY_EXECUTE_INIT);
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
 
-        return_if_null(cb->cbaction, "Policy Action Callback Not Set",
-            TSS2_FAPI_RC_NULL_CALLBACK);
+        return_if_null(cb->cbaction, "Policy Action Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
         /* Execute the callback and try it again if the callback is not finished. */
         r = cb->cbaction(policy->action, cb->cbaction_userdata);
         try_again_or_error(r, "Execute policy action callback.");
@@ -1529,39 +1401,33 @@ execute_policy_action(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_template(
-    ESYS_CONTEXT *esys_ctx,
-    TPMS_POLICYTEMPLATE *policy,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_template(ESYS_CONTEXT          *esys_ctx,
+                        TPMS_POLICYTEMPLATE   *policy,
+                        IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
-    TPM2B_DIGEST computed_template_hash;
-    TPM2B_DIGEST *used_template_hash;
+    TPM2B_DIGEST               computed_template_hash;
+    TPM2B_DIGEST              *used_template_hash;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
-    uint8_t buffer[sizeof(TPM2B_PUBLIC)];
-    size_t offset = 0;
-    size_t digest_size;
-
+    uint8_t                    buffer[sizeof(TPM2B_PUBLIC)];
+    size_t                     offset = 0;
+    size_t                     digest_size;
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         if (policy->templateHash.size == 0) {
             used_template_hash = &computed_template_hash;
-            r = Tss2_MU_TPMT_PUBLIC_Marshal(&policy->templatePublic.publicArea,
-                                            &buffer[0], sizeof(TPMT_PUBLIC), &offset);
+            r = Tss2_MU_TPMT_PUBLIC_Marshal(&policy->templatePublic.publicArea, &buffer[0],
+                                            sizeof(TPMT_PUBLIC), &offset);
             return_if_error(r, "Marshaling TPMT_PUBLIC");
 
             r = ifapi_crypto_hash_start(&cryptoContext, current_policy->hash_alg);
             return_if_error(r, "crypto hash start");
 
-            HASH_UPDATE_BUFFER(cryptoContext,
-                               &buffer[0], offset,
-                               r, cleanup);
-            r = ifapi_crypto_hash_finish(&cryptoContext,
-                                         &used_template_hash->buffer[0],
+            HASH_UPDATE_BUFFER(cryptoContext, &buffer[0], offset, r, cleanup);
+            r = ifapi_crypto_hash_finish(&cryptoContext, &used_template_hash->buffer[0],
                                          &digest_size);
             goto_if_error(r, "crypto hash finish", cleanup);
             used_template_hash->size = digest_size;
@@ -1571,15 +1437,13 @@ execute_policy_template(
         }
 
         /* Prepare the policy execution. */
-        r = Esys_PolicyTemplate_Async(esys_ctx,
-                                      current_policy->session,
-                                      ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                      used_template_hash);
+        r = Esys_PolicyTemplate_Async(esys_ctx, current_policy->session, ESYS_TR_NONE, ESYS_TR_NONE,
+                                      ESYS_TR_NONE, used_template_hash);
         return_if_error(r, "Execute PolicyTemplate.");
         fallthrough;
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
-        /* Finalize the policy execution if possible. */
+    /* Finalize the policy execution if possible. */
         r = Esys_PolicyTemplate_Finish(esys_ctx);
         try_again_or_error(r, "Execute PolicyTemplate_Finish.");
 
@@ -1590,7 +1454,7 @@ execute_policy_template(
     }
     return r;
 
- cleanup:
+cleanup:
     if (cryptoContext)
         ifapi_crypto_hash_abort(&cryptoContext);
     return r;
@@ -1629,136 +1493,101 @@ execute_policy_template(
  *         was not successful.
  */
 static TSS2_RC
-execute_policy_element(
-    ESYS_CONTEXT *esys_ctx,
-    TPMT_POLICYELEMENT *policy,
-    TPMI_ALG_HASH hash_alg,
-    IFAPI_POLICY_EXEC_CTX *current_policy)
-{
+execute_policy_element(ESYS_CONTEXT          *esys_ctx,
+                       TPMT_POLICYELEMENT    *policy,
+                       TPMI_ALG_HASH          hash_alg,
+                       IFAPI_POLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
 
     switch (policy->type) {
     case POLICYSECRET:
-        r = execute_policy_secret(esys_ctx,
-                                  &policy->element.PolicySecret,
-                                  current_policy);
+        r = execute_policy_secret(esys_ctx, &policy->element.PolicySecret, current_policy);
         try_again_or_error_goto(r, "Execute policy authorize", error);
         break;
     case POLICYPCR:
-        r = execute_policy_pcr(esys_ctx,
-                               &policy->element.PolicyPCR,
-                               hash_alg, current_policy);
+        r = execute_policy_pcr(esys_ctx, &policy->element.PolicyPCR, hash_alg, current_policy);
         try_again_or_error_goto(r, "Execute policy pcr", error);
         break;
     case POLICYAUTHVALUE:
-        r = execute_policy_auth_value(esys_ctx,
-                                      current_policy);
+        r = execute_policy_auth_value(esys_ctx, current_policy);
         try_again_or_error_goto(r, "Execute policy auth value", error);
         break;
     case POLICYOR:
-        r = execute_policy_or(esys_ctx,
-                              &policy->element.PolicyOr,
-                              hash_alg, current_policy);
+        r = execute_policy_or(esys_ctx, &policy->element.PolicyOr, hash_alg, current_policy);
         try_again_or_error_goto(r, "Execute policy or", error);
         break;
     case POLICYSIGNED:
-        r = execute_policy_signed(esys_ctx,
-                                  &policy->element.PolicySigned,
-                                  current_policy);
+        r = execute_policy_signed(esys_ctx, &policy->element.PolicySigned, current_policy);
         try_again_or_error_goto(r, "Execute policy signed", error);
         break;
     case POLICYAUTHORIZE:
-        r = execute_policy_authorize(esys_ctx,
-                                     &policy->element.PolicyAuthorize,
-                                     hash_alg,
+        r = execute_policy_authorize(esys_ctx, &policy->element.PolicyAuthorize, hash_alg,
                                      current_policy);
         try_again_or_error_goto(r, "Execute policy authorize", error);
         break;
     case POLICYAUTHORIZENV:
-        r = execute_policy_authorize_nv(esys_ctx,
-                                        &policy->element.PolicyAuthorizeNv,
-                                        hash_alg,
+        r = execute_policy_authorize_nv(esys_ctx, &policy->element.PolicyAuthorizeNv, hash_alg,
                                         current_policy);
         try_again_or_error_goto(r, "Execute policy authorize", error);
         break;
     case POLICYNV:
-        r = execute_policy_nv(esys_ctx,
-                              &policy->element.PolicyNV,
-                              current_policy);
+        r = execute_policy_nv(esys_ctx, &policy->element.PolicyNV, current_policy);
         try_again_or_error_goto(r, "Execute policy nv", error);
         break;
     case POLICYDUPLICATIONSELECT:
-        r = execute_policy_duplicate(esys_ctx,
-                                     &policy->element.PolicyDuplicationSelect,
+        r = execute_policy_duplicate(esys_ctx, &policy->element.PolicyDuplicationSelect,
                                      current_policy);
         try_again_or_error_goto(r, "Execute policy duplicate", error);
         break;
     case POLICYNVWRITTEN:
-        r = execute_policy_nv_written(esys_ctx,
-                                      &policy->element.PolicyNvWritten,
-                                      current_policy);
+        r = execute_policy_nv_written(esys_ctx, &policy->element.PolicyNvWritten, current_policy);
         try_again_or_error_goto(r, "Execute policy nv written", error);
         break;
     case POLICYLOCALITY:
-        r = execute_policy_locality(esys_ctx,
-                                    &policy->element.PolicyLocality,
-                                    current_policy);
+        r = execute_policy_locality(esys_ctx, &policy->element.PolicyLocality, current_policy);
         try_again_or_error_goto(r, "Execute policy locality", error);
         break;
     case POLICYCOMMANDCODE:
-        r = execute_policy_command_code(esys_ctx,
-                                        &policy->element.PolicyCommandCode,
+        r = execute_policy_command_code(esys_ctx, &policy->element.PolicyCommandCode,
                                         current_policy);
         try_again_or_error_goto(r, "Execute policy command code", error);
         break;
     case POLICYNAMEHASH:
-        r = execute_policy_name_hash(esys_ctx,
-                                     &policy->element.PolicyNameHash,
-                                     current_policy);
-            try_again_or_error_goto(r, "Execute policy name hash", error);
-            break;
+        r = execute_policy_name_hash(esys_ctx, &policy->element.PolicyNameHash, current_policy);
+        try_again_or_error_goto(r, "Execute policy name hash", error);
+        break;
     case POLICYCPHASH:
-        r = execute_policy_cp_hash(esys_ctx,
-                                   &policy->element.PolicyCpHash,
-                                   current_policy);
+        r = execute_policy_cp_hash(esys_ctx, &policy->element.PolicyCpHash, current_policy);
         try_again_or_error_goto(r, "Execute policy cp hash", error);
         break;
     case POLICYPHYSICALPRESENCE:
-        r = execute_policy_physical_presence(esys_ctx,
-                                             current_policy);
+        r = execute_policy_physical_presence(esys_ctx, current_policy);
         try_again_or_error_goto(r, "Execute policy physical presence", error);
-            break;
+        break;
     case POLICYPASSWORD:
-        r = execute_policy_password(esys_ctx,
-                                    current_policy);
+        r = execute_policy_password(esys_ctx, current_policy);
         try_again_or_error_goto(r, "Execute policy password", error);
         break;
     case POLICYCOUNTERTIMER:
-        r = execute_policy_counter_timer(esys_ctx,
-                                         &policy->element.PolicyCounterTimer,
+        r = execute_policy_counter_timer(esys_ctx, &policy->element.PolicyCounterTimer,
                                          current_policy);
         try_again_or_error_goto(r, "Execute policy counter timer", error);
         break;
     case POLICYACTION:
-        r = execute_policy_action(esys_ctx,
-                                  &policy->element.PolicyAction,
-                                  current_policy);
+        r = execute_policy_action(esys_ctx, &policy->element.PolicyAction, current_policy);
         try_again_or_error_goto(r, "Execute policy action", error);
         break;
 
     case POLICYTEMPLATE:
-        r = execute_policy_template(esys_ctx,
-                                    &policy->element.PolicyTemplate,
-                                     current_policy);
+        r = execute_policy_template(esys_ctx, &policy->element.PolicyTemplate, current_policy);
         try_again_or_error_goto(r, "Execute policy template", error);
         break;
 
     default:
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE,
-                     "Policy not implemented");
-        }
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Policy not implemented");
+    }
 
     /* All policies executed successfully */
 error:
@@ -1777,14 +1606,11 @@ error:
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 static TSS2_RC
-compute_policy_list(
-    IFAPI_POLICY_EXEC_CTX *pol_ctx,
-    TPML_POLICYELEMENTS *elements)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
+compute_policy_list(IFAPI_POLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *elements) {
+    TSS2_RC              r = TSS2_RC_SUCCESS;
     TPML_POLICYBRANCHES *branches;
     TPML_POLICYELEMENTS *or_elements;
-    size_t branch_idx, i, j;
+    size_t               branch_idx, i, j;
 
     IFAPI_OBJECT *auth_object = pol_ctx->auth_object;
 
@@ -1799,13 +1625,9 @@ compute_policy_list(
                 branch_names[j] = branches->authorizations[j].name;
 
             return_if_null(pol_ctx->callbacks.cbpolsel, "Policy Select Callback Not Set",
-                TSS2_FAPI_RC_NULL_CALLBACK);
-            r = pol_ctx->callbacks.cbpolsel(
-                    &auth_object->public,
-                    branch_names,
-                    branches->count,
-                    &branch_idx,
-                    pol_ctx->callbacks.cbpolsel_userdata);
+                           TSS2_FAPI_RC_NULL_CALLBACK);
+            r = pol_ctx->callbacks.cbpolsel(&auth_object->public, branch_names, branches->count,
+                                            &branch_idx, pol_ctx->callbacks.cbpolsel_userdata);
             return_if_error(r, "Select policy branch.");
 
             if (branch_idx >= branches->count) {
@@ -1840,11 +1662,9 @@ compute_policy_list(
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 TSS2_RC
-ifapi_policyeval_execute_prepare(
-    IFAPI_POLICY_EXEC_CTX *pol_ctx,
-    TPMI_ALG_HASH hash_alg,
-    TPMS_POLICY *policy)
-{
+ifapi_policyeval_execute_prepare(IFAPI_POLICY_EXEC_CTX *pol_ctx,
+                                 TPMI_ALG_HASH          hash_alg,
+                                 TPMS_POLICY           *policy) {
     TSS2_RC r;
 
     pol_ctx->policy = policy;
@@ -1887,32 +1707,27 @@ ifapi_policyeval_execute_prepare(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-ifapi_policyeval_execute(
-    ESYS_CONTEXT *esys_ctx,
-    IFAPI_POLICY_EXEC_CTX *current_policy,
-    bool do_flush)
+ifapi_policyeval_execute(ESYS_CONTEXT          *esys_ctx,
+                         IFAPI_POLICY_EXEC_CTX *current_policy,
+                         bool                   do_flush)
 
 {
-    TSS2_RC r = TSS2_RC_SUCCESS;
+    TSS2_RC        r = TSS2_RC_SUCCESS;
     NODE_OBJECT_T *current_policy_element;
 
     LOG_DEBUG("call");
 
     while (current_policy->policy_elements) {
         r = execute_policy_element(esys_ctx,
-                                   (TPMT_POLICYELEMENT *)
-                                   current_policy->policy_elements->object,
-                                   current_policy->hash_alg,
-                                   current_policy);
+                                   (TPMT_POLICYELEMENT *)current_policy->policy_elements->object,
+                                   current_policy->hash_alg, current_policy);
         return_try_again(r);
 
         if (r != TSS2_RC_SUCCESS) {
-            if (do_flush && current_policy->session &&
-                current_policy->session != ESYS_TR_NONE) {
+            if (do_flush && current_policy->session && current_policy->session != ESYS_TR_NONE) {
                 Esys_FlushContext(esys_ctx, current_policy->session);
             }
             ifapi_free_node_list(current_policy->policy_elements);
-
         }
         return_if_error(r, "Execute policy.");
 
@@ -1921,5 +1736,4 @@ ifapi_policyeval_execute(
         SAFE_FREE(current_policy_element);
     }
     return r;
-
 }

@@ -8,17 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <poll.h>             // for poll
-#include <stdint.h>           // for uint8_t
-#include <stdlib.h>           // for NULL, size_t, EXIT_FAILURE
+#include <poll.h>   // for poll
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for NULL, size_t, EXIT_FAILURE
 
-#include "test-fapi.h"        // for ASSERT, test_invoke_fapi
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_FAPI_RC_NO_HANDLE
-#include "tss2_fapi.h"        // for Fapi_Free, Fapi_Delete, Fapi_GetPollHan...
-#include "tss2_tpm2_types.h"  // for TPMU_HA
+#include "test-fapi.h"       // for ASSERT, test_invoke_fapi
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_FAPI_RC_NO_HANDLE
+#include "tss2_fapi.h"       // for Fapi_Free, Fapi_Delete, Fapi_GetPollHan...
+#include "tss2_tpm2_types.h" // for TPMU_HA
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR
+#include "util/log.h" // for goto_if_error, LOG_ERROR
 
 /** Test the FAPI function FAPI_GetRandom and async invocations.
  *
@@ -35,16 +35,14 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_get_random(FAPI_CONTEXT *context)
-{
+test_fapi_get_random(FAPI_CONTEXT *context) {
 
-    TSS2_RC r;
+    TSS2_RC           r;
     FAPI_POLL_HANDLE *handles;
     size_t            num_handles;
     /* Ensure that more than one call of Esys_GetRandom is necessary */
-    size_t  bytesRequested = sizeof(TPMU_HA) + 10;
+    size_t   bytesRequested = sizeof(TPMU_HA) + 10;
     uint8_t *randomBytes = NULL;
-
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -88,7 +86,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_get_random(fapi_context);
 }

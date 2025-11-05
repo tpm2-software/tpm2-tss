@@ -8,26 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>                  // for json_object_put, json_object_to_js...
-#include <stdlib.h>                // for NULL
-#include <string.h>                // for memset, strdup
+#include <json.h>   // for json_object_put, json_object_to_js...
+#include <stdlib.h> // for NULL
+#include <string.h> // for memset, strdup
 
-#include "fapi_crypto.h"           // for ifapi_pub_pem_key_from_tpm
-#include "fapi_int.h"              // for IFAPI_ExportKey, FAPI_CONTEXT, EXP...
-#include "fapi_util.h"             // for ifapi_flush_object, ifapi_authoriz...
-#include "ifapi_io.h"              // for ifapi_io_poll
-#include "ifapi_json_serialize.h"  // for ifapi_json_IFAPI_OBJECT_serialize
-#include "ifapi_keystore.h"        // for ifapi_cleanup_ifapi_object, IFAPI_...
-#include "ifapi_macros.h"          // for statecase, check_not_null, fallthr...
-#include "tss2_common.h"           // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BAS...
-#include "tss2_esys.h"             // for ESYS_TR_NONE, Esys_SetTimeout, Esy...
-#include "tss2_fapi.h"             // for FAPI_CONTEXT, Fapi_ExportKey, Fapi...
-#include "tss2_policy.h"           // for TSS2_OBJECT
-#include "tss2_tcti.h"             // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"       // for TPM2B_DATA, TPMT_SYM_DEF_OBJECT
+#include "fapi_crypto.h"          // for ifapi_pub_pem_key_from_tpm
+#include "fapi_int.h"             // for IFAPI_ExportKey, FAPI_CONTEXT, EXP...
+#include "fapi_util.h"            // for ifapi_flush_object, ifapi_authoriz...
+#include "ifapi_io.h"             // for ifapi_io_poll
+#include "ifapi_json_serialize.h" // for ifapi_json_IFAPI_OBJECT_serialize
+#include "ifapi_keystore.h"       // for ifapi_cleanup_ifapi_object, IFAPI_...
+#include "ifapi_macros.h"         // for statecase, check_not_null, fallthr...
+#include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BAS...
+#include "tss2_esys.h"            // for ESYS_TR_NONE, Esys_SetTimeout, Esy...
+#include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_ExportKey, Fapi...
+#include "tss2_policy.h"          // for TSS2_OBJECT
+#include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"      // for TPM2B_DATA, TPMT_SYM_DEF_OBJECT
 
 #define LOGMODULE fapi
-#include "util/log.h"              // for SAFE_FREE, LOG_TRACE, goto_if_error
+#include "util/log.h" // for SAFE_FREE, LOG_TRACE, goto_if_error
 
 /** One-Call function for Fapi_ExportKey
  *
@@ -76,12 +76,10 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_ExportKey(
-    FAPI_CONTEXT *context,
-    char   const *pathOfKeyToDuplicate,
-    char   const *pathToPublicKeyOfNewParent,
-    char        **exportedData)
-{
+Fapi_ExportKey(FAPI_CONTEXT *context,
+               char const   *pathOfKeyToDuplicate,
+               char const   *pathToPublicKeyOfNewParent,
+               char        **exportedData) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -105,8 +103,7 @@ Fapi_ExportKey(
     return_if_error_reset_state(r, "Set Timeout to blocking");
 #endif /* TEST_FAPI_ASYNC */
 
-    r = Fapi_ExportKey_Async(context, pathOfKeyToDuplicate,
-                             pathToPublicKeyOfNewParent);
+    r = Fapi_ExportKey_Async(context, pathOfKeyToDuplicate, pathToPublicKeyOfNewParent);
     return_if_error_reset_state(r, "ExportKey");
 
     do {
@@ -169,11 +166,9 @@ Fapi_ExportKey(
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_ExportKey_Async(
-    FAPI_CONTEXT *context,
-    char   const *pathOfKeyToDuplicate,
-    char   const *pathToPublicKeyOfNewParent)
-{
+Fapi_ExportKey_Async(FAPI_CONTEXT *context,
+                     char const   *pathOfKeyToDuplicate,
+                     char const   *pathToPublicKeyOfNewParent) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("pathOfKeyToDuplicate: %s", pathOfKeyToDuplicate);
     LOG_TRACE("pathToPublicKeyOfNewParent: %s", pathToPublicKeyOfNewParent);
@@ -188,7 +183,7 @@ Fapi_ExportKey_Async(
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
     /* Helpful alias pointers */
-    IFAPI_ExportKey * command = &context->cmd.ExportKey;
+    IFAPI_ExportKey *command = &context->cmd.ExportKey;
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -197,24 +192,20 @@ Fapi_ExportKey_Async(
     /* Copy parameters to context for use during _Finish. */
     command->pathOfKeyToDuplicate = NULL;
     command->pathToPublicKeyOfNewParent = NULL;
-    strdup_check(command->pathOfKeyToDuplicate, pathOfKeyToDuplicate,
-                 r, error_cleanup);
-    strdup_check(command->pathToPublicKeyOfNewParent,
-                 pathToPublicKeyOfNewParent, r, error_cleanup);
+    strdup_check(command->pathOfKeyToDuplicate, pathOfKeyToDuplicate, r, error_cleanup);
+    strdup_check(command->pathToPublicKeyOfNewParent, pathToPublicKeyOfNewParent, r, error_cleanup);
     command->exportedData = NULL;
 
     if (!pathToPublicKeyOfNewParent) {
         /* Only public key of KeyToDuplocate will be exported */
-        r = ifapi_keystore_load_async(&context->keystore, &context->io,
-                                      pathOfKeyToDuplicate);
+        r = ifapi_keystore_load_async(&context->keystore, &context->io, pathOfKeyToDuplicate);
         return_if_error2(r, "Could not open: %s", pathOfKeyToDuplicate);
 
         /* Initialize the context state for this operation. */
         context->state = EXPORT_KEY_READ_PUB_KEY;
     } else {
         /* The public key of the new parent is needed for duplication */
-        r = ifapi_keystore_load_async(&context->keystore, &context->io,
-                                      pathToPublicKeyOfNewParent);
+        r = ifapi_keystore_load_async(&context->keystore, &context->io, pathToPublicKeyOfNewParent);
         return_if_error2(r, "Could not open: %s", pathToPublicKeyOfNewParent);
 
         /* Initialize the context state for this operation. */
@@ -266,195 +257,180 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_ExportKey_Finish(
-    FAPI_CONTEXT *context,
-    char        **exportedData)
-{
+Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
-    json_object *jsoOut = NULL;
-    int sizePem;
+    TSS2_RC                 r;
+    json_object            *jsoOut = NULL;
+    int                     sizePem;
     TPM2B_ENCRYPTED_SECRET *encryptedSeed = NULL;
-    TPM2B_PRIVATE *duplicate = NULL;
-    IFAPI_OBJECT commandObject = {0};
-    IFAPI_OBJECT parentKeyObject = {0};
-    ESYS_TR auth_session;
+    TPM2B_PRIVATE          *duplicate = NULL;
+    IFAPI_OBJECT            commandObject = { 0 };
+    IFAPI_OBJECT            parentKeyObject = { 0 };
+    ESYS_TR                 auth_session;
 
     /* Check for NULL parameters */
     check_not_null(context);
     check_not_null(exportedData);
 
     /* Helpful alias pointers */
-    IFAPI_ExportKey * command = &context->cmd.ExportKey;
-    IFAPI_OBJECT *pubKey = &command->pub_key;
-    IFAPI_OBJECT *exportTree = &command->export_tree;
-    IFAPI_DUPLICATE * keyTree = &exportTree->misc.key_tree;
+    IFAPI_ExportKey *command = &context->cmd.ExportKey;
+    IFAPI_OBJECT    *pubKey = &command->pub_key;
+    IFAPI_OBJECT    *exportTree = &command->export_tree;
+    IFAPI_DUPLICATE *keyTree = &exportTree->misc.key_tree;
     pubKey->misc.ext_pub_key.certificate = NULL;
 
     switch (context->state) {
-        statecase(context->state, EXPORT_KEY_READ_PUB_KEY);
-            /* This is the entry point if only the public key shall be exported
-               because no new parent key for encrypting the private portion was
-               provided by the caller. */
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io,
-                                           &commandObject);
-            return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+    statecase(context->state, EXPORT_KEY_READ_PUB_KEY);
+        /* This is the entry point if only the public key shall be exported
+           because no new parent key for encrypting the private portion was
+           provided by the caller. */
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, &commandObject);
+        return_try_again(r);
+        return_if_error_reset_state(r, "read_finish failed");
 
-            if (commandObject.objectType != IFAPI_KEY_OBJ) {
-                /* No key object was loaded */
-                ifapi_cleanup_ifapi_object(&commandObject);
-                goto_error(r, TSS2_FAPI_RC_BAD_PATH, "%s is not a key object.",
-                           cleanup, command->pathOfKeyToDuplicate);
-            }
+        if (commandObject.objectType != IFAPI_KEY_OBJ) {
+            /* No key object was loaded */
+            ifapi_cleanup_ifapi_object(&commandObject);
+            goto_error(r, TSS2_FAPI_RC_BAD_PATH, "%s is not a key object.", cleanup,
+                       command->pathOfKeyToDuplicate);
+        }
 
-            pubKey->objectType = IFAPI_EXT_PUB_KEY_OBJ;
-            pubKey->misc.ext_pub_key.public = commandObject.misc.key.public;
+        pubKey->objectType = IFAPI_EXT_PUB_KEY_OBJ;
+        pubKey->misc.ext_pub_key.public = commandObject.misc.key.public;
 
-            /* Convert the TPM key format to PEM. */
-            r = ifapi_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
-                                           &pubKey->misc.ext_pub_key.pem_ext_public,
-                                           &sizePem);
-            goto_if_error(r, "Convert public TPM key to pem.", cleanup);
+        /* Convert the TPM key format to PEM. */
+        r = ifapi_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
+                                       &pubKey->misc.ext_pub_key.pem_ext_public, &sizePem);
+        goto_if_error(r, "Convert public TPM key to pem.", cleanup);
 
-            r = ifapi_json_IFAPI_OBJECT_serialize(pubKey, &jsoOut);
-            goto_if_error(r, "Error serialize FAPI KEY object", cleanup);
+        r = ifapi_json_IFAPI_OBJECT_serialize(pubKey, &jsoOut);
+        goto_if_error(r, "Error serialize FAPI KEY object", cleanup);
 
-            command->exportedData
-                = strdup(json_object_to_json_string_ext(jsoOut,
-                                                        JSON_C_TO_STRING_PRETTY));
-            goto_if_null2(command->exportedData, "Converting json to string", r,
-                          TSS2_FAPI_RC_MEMORY, cleanup);
+        command->exportedData
+            = strdup(json_object_to_json_string_ext(jsoOut, JSON_C_TO_STRING_PRETTY));
+        goto_if_null2(command->exportedData, "Converting json to string", r, TSS2_FAPI_RC_MEMORY,
+                      cleanup);
 
-            *exportedData = command->exportedData;
-            break;
+        *exportedData = command->exportedData;
+        break;
 
-        statecase(context->state, EXPORT_KEY_READ_PUB_KEY_PARENT);
-            /* This is the entry point if a new parent key was provided and
-               the private portion shall be re-encrypted. */
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io,
-                    &parentKeyObject);
-            if (r != TSS2_RC_SUCCESS) {
-                ifapi_cleanup_ifapi_object(&parentKeyObject);
-            }
-            return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
-
-            if (parentKeyObject.objectType != IFAPI_EXT_PUB_KEY_OBJ) {
-                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "No public key in %s",
-                           cleanup, command->pathToPublicKeyOfNewParent);
-            }
-
-            /* Store the public information of the new parent in the context
-               and cleanup all other metadata for this key. */
-            command->public_parent = parentKeyObject.misc.ext_pub_key.public;
+    statecase(context->state, EXPORT_KEY_READ_PUB_KEY_PARENT);
+        /* This is the entry point if a new parent key was provided and
+           the private portion shall be re-encrypted. */
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, &parentKeyObject);
+        if (r != TSS2_RC_SUCCESS) {
             ifapi_cleanup_ifapi_object(&parentKeyObject);
+        }
+        return_try_again(r);
+        return_if_error_reset_state(r, "read_finish failed");
 
-            fallthrough;
+        if (parentKeyObject.objectType != IFAPI_EXT_PUB_KEY_OBJ) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "No public key in %s", cleanup,
+                       command->pathToPublicKeyOfNewParent);
+        }
 
-        statecase(context->state, EXPORT_KEY_WAIT_FOR_KEY);
-            /* Load the key to be duplicated. */
-            r = ifapi_load_key(context, command->pathOfKeyToDuplicate,
-                               &command->key_object);
-            return_try_again(r);
-            goto_if_error(r, "Fapi load key.", cleanup);
+        /* Store the public information of the new parent in the context
+           and cleanup all other metadata for this key. */
+        command->public_parent = parentKeyObject.misc.ext_pub_key.public;
+        ifapi_cleanup_ifapi_object(&parentKeyObject);
 
-            context->duplicate_key = command->key_object;
+        fallthrough;
 
-            /* Load the new parent key. */
-            r = Esys_LoadExternal_Async(context->esys,
-                                        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                        NULL,   &command->public_parent,
-                                        ESYS_TR_RH_OWNER);
-            goto_if_error(r, "LoadExternal_Async", cleanup);
+    statecase(context->state, EXPORT_KEY_WAIT_FOR_KEY);
+        /* Load the key to be duplicated. */
+        r = ifapi_load_key(context, command->pathOfKeyToDuplicate, &command->key_object);
+        return_try_again(r);
+        goto_if_error(r, "Fapi load key.", cleanup);
 
-            fallthrough;
+        context->duplicate_key = command->key_object;
 
-        statecase(context->state, EXPORT_KEY_WAIT_FOR_EXT_KEY);
-            r = Esys_LoadExternal_Finish(context->esys,
-                                         &command->handle_ext_key);
-            try_again_or_error_goto(r, "Load external key.", cleanup);
+        /* Load the new parent key. */
+        r = Esys_LoadExternal_Async(context->esys, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL,
+                                    &command->public_parent, ESYS_TR_RH_OWNER);
+        goto_if_error(r, "LoadExternal_Async", cleanup);
 
-            fallthrough;
+        fallthrough;
 
-        statecase(context->state, EXPORT_KEY_WAIT_FOR_AUTHORIZATON);
-            /* Authorize against the key to be exported. */
-            r = ifapi_authorize_object(context, command->key_object, &auth_session);
-            return_try_again(r);
-            goto_if_error(r, "Authorize key.", cleanup);
+    statecase(context->state, EXPORT_KEY_WAIT_FOR_EXT_KEY);
+        r = Esys_LoadExternal_Finish(context->esys, &command->handle_ext_key);
+        try_again_or_error_goto(r, "Load external key.", cleanup);
 
-            TPM2B_DATA encryptionKey;
-            TPMT_SYM_DEF_OBJECT symmetric;
+        fallthrough;
 
-            symmetric.algorithm = TPM2_ALG_NULL;
-            encryptionKey.size = 0;
+    statecase(context->state, EXPORT_KEY_WAIT_FOR_AUTHORIZATON);
+        /* Authorize against the key to be exported. */
+        r = ifapi_authorize_object(context, command->key_object, &auth_session);
+        return_try_again(r);
+        goto_if_error(r, "Authorize key.", cleanup);
 
-            /* Duplicate the key; i.e. re-encrypt the private key with
-               the public key of the new parent. */
-            r = Esys_Duplicate_Async(context->esys,
-                                     command->key_object->public.handle,
-                                     command->handle_ext_key,
-                                     auth_session,
-                                     ENC_SESSION_IF_POLICY(auth_session),
-                                     ESYS_TR_NONE,
-                                     &encryptionKey, &symmetric);
-            goto_if_error(r, "Duplicate", cleanup);
+        TPM2B_DATA          encryptionKey;
+        TPMT_SYM_DEF_OBJECT symmetric;
 
-            fallthrough;
+        symmetric.algorithm = TPM2_ALG_NULL;
+        encryptionKey.size = 0;
 
-        statecase(context->state, EXPORT_KEY_WAIT_FOR_DUPLICATE);
-            exportTree->objectType = IFAPI_DUPLICATE_OBJ;
-            r = Esys_Duplicate_Finish(context->esys, NULL, &duplicate, &encryptedSeed);
-            try_again_or_error_goto(r, "Duplicate", cleanup);
+        /* Duplicate the key; i.e. re-encrypt the private key with
+           the public key of the new parent. */
+        r = Esys_Duplicate_Async(context->esys, command->key_object->public.handle,
+                                 command->handle_ext_key, auth_session,
+                                 ENC_SESSION_IF_POLICY(auth_session), ESYS_TR_NONE, &encryptionKey,
+                                 &symmetric);
+        goto_if_error(r, "Duplicate", cleanup);
 
-            /* Store and JSON encode the data to be returned. */
-            /* Note: keyTree = &exportTree->misc.key_tree */
-            keyTree->encrypted_seed = *encryptedSeed;
-            SAFE_FREE(encryptedSeed);
-            keyTree->duplicate = *duplicate;
-            SAFE_FREE(duplicate);
-            keyTree->public =
-                command->key_object->misc.key.public;
-            keyTree->public_parent = command->public_parent;
+        fallthrough;
 
-            /* For the policy added no cleanup is needed. The cleanup will
-               be done with the object cleanup. */
-            keyTree->policy = command->key_object->policy;
-            r = ifapi_get_json(context, exportTree, &command->exportedData);
-            goto_if_error2(r, "get JSON for exported data.", cleanup);
+    statecase(context->state, EXPORT_KEY_WAIT_FOR_DUPLICATE);
+        exportTree->objectType = IFAPI_DUPLICATE_OBJ;
+        r = Esys_Duplicate_Finish(context->esys, NULL, &duplicate, &encryptedSeed);
+        try_again_or_error_goto(r, "Duplicate", cleanup);
 
-            fallthrough;
+        /* Store and JSON encode the data to be returned. */
+        /* Note: keyTree = &exportTree->misc.key_tree */
+        keyTree->encrypted_seed = *encryptedSeed;
+        SAFE_FREE(encryptedSeed);
+        keyTree->duplicate = *duplicate;
+        SAFE_FREE(duplicate);
+        keyTree->public = command->key_object->misc.key.public;
+        keyTree->public_parent = command->public_parent;
 
-        statecase(context->state, EXPORT_KEY_WAIT_FOR_FLUSH1);
-            /* Flush the key to be exported from the TPM. */
-            r = ifapi_flush_object(context, command->key_object->public.handle);
-            return_try_again(r);
-            goto_if_error(r, "Flush key", cleanup);
+        /* For the policy added no cleanup is needed. The cleanup will
+           be done with the object cleanup. */
+        keyTree->policy = command->key_object->policy;
+        r = ifapi_get_json(context, exportTree, &command->exportedData);
+        goto_if_error2(r, "get JSON for exported data.", cleanup);
 
-            command->key_object->public.handle = ESYS_TR_NONE;
+        fallthrough;
 
-            fallthrough;
+    statecase(context->state, EXPORT_KEY_WAIT_FOR_FLUSH1);
+        /* Flush the key to be exported from the TPM. */
+        r = ifapi_flush_object(context, command->key_object->public.handle);
+        return_try_again(r);
+        goto_if_error(r, "Flush key", cleanup);
 
-        statecase(context->state, EXPORT_KEY_WAIT_FOR_FLUSH2);
-            /* Flush the new parent key from the TPM. */
-            r = ifapi_flush_object(context, command->handle_ext_key);
-            return_try_again(r);
-            goto_if_error(r, "Flush key", cleanup);
+        command->key_object->public.handle = ESYS_TR_NONE;
 
-            command->handle_ext_key = ESYS_TR_NONE;
+        fallthrough;
 
-            fallthrough;
+    statecase(context->state, EXPORT_KEY_WAIT_FOR_FLUSH2);
+        /* Flush the new parent key from the TPM. */
+        r = ifapi_flush_object(context, command->handle_ext_key);
+        return_try_again(r);
+        goto_if_error(r, "Flush key", cleanup);
 
-        statecase(context->state, EXPORT_KEY_CLEANUP)
-            /* Cleanup the sessions used for authorization. */
-            r = ifapi_cleanup_session(context);
-            try_again_or_error_goto(r, "Cleanup", cleanup);
+        command->handle_ext_key = ESYS_TR_NONE;
 
-            *exportedData = command->exportedData;
-            break;
+        fallthrough;
 
-        statecasedefault(context->state);
+    statecase(context->state, EXPORT_KEY_CLEANUP)
+    /* Cleanup the sessions used for authorization. */
+        r = ifapi_cleanup_session(context);
+        try_again_or_error_goto(r, "Cleanup", cleanup);
+
+        *exportedData = command->exportedData;
+        break;
+
+    statecasedefault(context->state);
     }
 
 cleanup:

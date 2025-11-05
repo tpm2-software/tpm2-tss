@@ -8,21 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>              // for uint8_t
-#include <json.h>                  // for json_object, json_object_object_del
-#include <stdio.h>                 // for NULL, fopen, fclose, fileno, fseek
-#include <stdlib.h>                // for calloc, malloc
-#include <string.h>                // for strdup
-#include <unistd.h>                // for read
+#include <inttypes.h> // for uint8_t
+#include <json.h>     // for json_object, json_object_object_del
+#include <stdio.h>    // for NULL, fopen, fclose, fileno, fseek
+#include <stdlib.h>   // for calloc, malloc
+#include <string.h>   // for strdup
+#include <unistd.h>   // for read
 
-#include "../helper/cmocka_all.h"  // for assert_ptr_not_equal, cmocka_unit_...
-#include "ifapi_io.h"              // for IFAPI_IO
-#include "ifapi_profiles.h"        // for IFAPI_PROFILES, IFAPI_PROFILE_ENTRY
-#include "tss2_common.h"           // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC
-#include "util/aux_util.h"         // for SAFE_FREE
+#include "../helper/cmocka_all.h" // for assert_ptr_not_equal, cmocka_unit_...
+#include "ifapi_io.h"             // for IFAPI_IO
+#include "ifapi_profiles.h"       // for IFAPI_PROFILES, IFAPI_PROFILE_ENTRY
+#include "tss2_common.h"          // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC
+#include "util/aux_util.h"        // for SAFE_FREE
 
 #define LOGMODULE tests
-#include "util/log.h"              // for LOG_ERROR
+#include "util/log.h" // for LOG_ERROR
 
 /*
  * The unit tests will test deserialization of FAPI profiles. It will be
@@ -36,13 +36,12 @@ char *wrap_profile_file;
 char *wrap_remove_field;
 
 json_object *
-read_json(char *file_name)
-{
-    FILE *stream = NULL;
-    long file_size;
-    char *json_string = NULL;
+read_json(char *file_name) {
+    FILE        *stream = NULL;
+    long         file_size;
+    char        *json_string = NULL;
     json_object *jso = NULL;
-    char file[1024];
+    char         file[1024];
 
     if (snprintf(&file[0], 1023, TOP_SOURCEDIR "/%s", file_name) < 0)
         return NULL;
@@ -59,7 +58,7 @@ read_json(char *file_name)
     stream = fopen(file, "r");
     ssize_t ret = read(fileno(stream), json_string, file_size);
     if (ret != file_size) {
-        LOG_ERROR("IO error %s.",file);
+        LOG_ERROR("IO error %s.", file);
         return NULL;
     }
     json_string[file_size] = '\0';
@@ -72,19 +71,12 @@ read_json(char *file_name)
  * Wrappers for reading the JSON profile.
  */
 TSS2_RC
-__wrap_ifapi_io_read_finish(
-    struct IFAPI_IO *io,
-    uint8_t **buffer,
-    size_t *length, ...);
+__wrap_ifapi_io_read_finish(struct IFAPI_IO *io, uint8_t **buffer, size_t *length, ...);
 
 TSS2_RC
-__wrap_ifapi_io_read_finish(
-    struct IFAPI_IO *io,
-    uint8_t **buffer,
-    size_t *length, ...)
-{
+__wrap_ifapi_io_read_finish(struct IFAPI_IO *io, uint8_t **buffer, size_t *length, ...) {
     json_object *jso = NULL;
-    const char *jso_string = NULL;
+    const char  *jso_string = NULL;
 
     jso = read_json(wrap_profile_file);
     assert_ptr_not_equal(jso, NULL);
@@ -98,28 +90,28 @@ __wrap_ifapi_io_read_finish(
 }
 
 /* Function to remove the field and check the profile initialization. */
-void check_remove_field(char *file, char* fname, TSS2_RC rc)
-    {
-        IFAPI_IO io;
-        IFAPI_PROFILES profiles;
-        TSS2_RC r;
+void
+check_remove_field(char *file, char *fname, TSS2_RC rc) {
+    IFAPI_IO       io;
+    IFAPI_PROFILES profiles;
+    TSS2_RC        r;
 
-        profiles.num_profiles = 1;
-        profiles.profiles_idx = 0;
-        profiles.default_name = strdup("dmy_name");
-        profiles.filenames = (char**) calloc(1 ,sizeof(profiles.filenames[0]));
-        assert_ptr_not_equal(profiles.filenames, NULL);
-        profiles.profiles = calloc(profiles.num_profiles, sizeof(profiles.profiles[0]));
-        profiles.profiles[0].name = strdup("dmy_name");
-        assert_ptr_not_equal(profiles.profiles[0].name, NULL);
-        profiles.filenames[0] = strdup("dmy_name");
-        assert_ptr_not_equal( profiles.filenames[0], NULL);
-        wrap_profile_file = file;
-        wrap_remove_field = fname;
-        r = ifapi_profiles_initialize_finish(&profiles, &io);
-        assert_int_equal(r, rc);
-        ifapi_profiles_finalize(&profiles);
-    }
+    profiles.num_profiles = 1;
+    profiles.profiles_idx = 0;
+    profiles.default_name = strdup("dmy_name");
+    profiles.filenames = (char **)calloc(1, sizeof(profiles.filenames[0]));
+    assert_ptr_not_equal(profiles.filenames, NULL);
+    profiles.profiles = calloc(profiles.num_profiles, sizeof(profiles.profiles[0]));
+    profiles.profiles[0].name = strdup("dmy_name");
+    assert_ptr_not_equal(profiles.profiles[0].name, NULL);
+    profiles.filenames[0] = strdup("dmy_name");
+    assert_ptr_not_equal(profiles.filenames[0], NULL);
+    wrap_profile_file = file;
+    wrap_remove_field = fname;
+    r = ifapi_profiles_initialize_finish(&profiles, &io);
+    assert_int_equal(r, rc);
+    ifapi_profiles_finalize(&profiles);
+}
 
 /* Check removing the optional fields. */
 static void
@@ -145,10 +137,8 @@ check_profile_json_remove_field_not_allowed(void **state) {
     check_remove_field("test/data/fapi/P_RSA.json", "srk_template", TSS2_FAPI_RC_BAD_VALUE);
 }
 
-
 int
-main(int argc, char *argv[])
-{
+main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(check_profile_json_remove_field_allowed),
         cmocka_unit_test(check_profile_json_remove_field_not_allowed),

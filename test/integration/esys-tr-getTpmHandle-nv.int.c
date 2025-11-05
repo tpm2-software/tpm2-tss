@@ -7,14 +7,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_NV_DefineSpace, Esys...
-#include "tss2_tpm2_types.h"  // for TPM2B_AUTH, TPM2B_NV_PUBLIC, TPM2_ALG_S...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_NV_DefineSpace, Esys...
+#include "tss2_tpm2_types.h" // for TPM2B_AUTH, TPM2B_NV_PUBLIC, TPM2_ALG_S...
 
 #define LOGMODULE test
-#include "util/log.h"         // for LOG_ERROR, goto_if_error
+#include "util/log.h" // for LOG_ERROR, goto_if_error
 
 /** This tests the Esys_TR_ToTPMPublic function by
  *  creating an NV index object and then attempting to retrieve
@@ -32,16 +32,14 @@
  */
 
 int
-test_esys_tr_toTpmPublic_nv(ESYS_CONTEXT * ectx)
-{
+test_esys_tr_toTpmPublic_nv(ESYS_CONTEXT *ectx) {
     int rc = EXIT_FAILURE;
 
     TSS2_RC r;
     ESYS_TR nvHandle = ESYS_TR_NONE;
 
-    TPM2B_AUTH auth = {.size = 20,
-                       .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                                20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
+    TPM2B_AUTH auth = { .size = 20, .buffer = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                                20, 21, 22, 23, 24, 25, 26, 27, 28, 29 } };
 
     TPM2B_NV_PUBLIC publicInfo = {
         .size = 0,
@@ -57,8 +55,7 @@ test_esys_tr_toTpmPublic_nv(ESYS_CONTEXT * ectx)
         }
     };
 
-    r = Esys_NV_DefineSpace(ectx, ESYS_TR_RH_OWNER,
-                            ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+    r = Esys_NV_DefineSpace(ectx, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                             &auth, &publicInfo, &nvHandle);
     goto_if_error(r, "NV define space", out);
 
@@ -75,8 +72,8 @@ test_esys_tr_toTpmPublic_nv(ESYS_CONTEXT * ectx)
     rc = EXIT_SUCCESS;
 
 error:
-    r = Esys_NV_UndefineSpace(ectx, ESYS_TR_RH_OWNER, nvHandle,
-                              ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE);
+    r = Esys_NV_UndefineSpace(ectx, ESYS_TR_RH_OWNER, nvHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                              ESYS_TR_NONE);
     if (r != TSS2_RC_SUCCESS) {
         LOG_ERROR("NV UndefineSpace");
         rc = EXIT_FAILURE;
@@ -86,6 +83,6 @@ out:
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_tr_toTpmPublic_nv(esys_context);
 }

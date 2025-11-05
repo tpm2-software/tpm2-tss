@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "fapi_int.h"      // for FAPI_CONTEXT
-#include "ifapi_macros.h"  // for check_not_null
-#include "tss2_common.h"   // for TSS2_RC, TSS2_FAPI_RC_NO_TPM
-#include "tss2_esys.h"     // for Esys_GetTcti
-#include "tss2_fapi.h"     // for FAPI_CONTEXT, Fapi_GetTcti
-#include "tss2_tcti.h"     // for TSS2_TCTI_CONTEXT
+#include "fapi_int.h"     // for FAPI_CONTEXT
+#include "ifapi_macros.h" // for check_not_null
+#include "tss2_common.h"  // for TSS2_RC, TSS2_FAPI_RC_NO_TPM
+#include "tss2_esys.h"    // for Esys_GetTcti
+#include "tss2_fapi.h"    // for FAPI_CONTEXT, Fapi_GetTcti
+#include "tss2_tcti.h"    // for TSS2_TCTI_CONTEXT
 
 #define LOGMODULE fapi
-#include "util/log.h"      // for LOG_DEBUG, LOG_TRACE, return_error, return...
+#include "util/log.h" // for LOG_DEBUG, LOG_TRACE, return_error, return...
 
 /** One-Call function for Fapi_GetTcti
  *
@@ -36,10 +36,7 @@
  * @retval TSS2_FAPI_RC_NO_TPM: if FAPI was started in non-TPM mode.
  */
 TSS2_RC
-Fapi_GetTcti(
-    FAPI_CONTEXT       *context,
-    TSS2_TCTI_CONTEXT **tcti)
-{
+Fapi_GetTcti(FAPI_CONTEXT *context, TSS2_TCTI_CONTEXT **tcti) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;

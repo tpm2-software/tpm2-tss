@@ -8,23 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_mu.h"          // for Tss2_MU_UINT16_Marshal, Tss2_MU_TPM2B_D...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPM2B_PRIVATE, TPM2B_DATA, TPM2B_ENCRYP...
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_UINT16_Marshal, Tss2_MU_TPM2B_D...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPM2B_PRIVATE, TPM2B_DATA, TPM2B_ENCRYP...
 
-TSS2_RC Tss2_Sys_Import_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT parentHandle,
-    const TPM2B_DATA *encryptionKey,
-    const TPM2B_PUBLIC *objectPublic,
-    const TPM2B_PRIVATE *duplicate,
-    const TPM2B_ENCRYPTED_SECRET *inSymSeed,
-    const TPMT_SYM_DEF_OBJECT *symmetricAlg)
-{
+TSS2_RC
+Tss2_Sys_Import_Prepare(TSS2_SYS_CONTEXT             *sysContext,
+                        TPMI_DH_OBJECT                parentHandle,
+                        const TPM2B_DATA             *encryptionKey,
+                        const TPM2B_PUBLIC           *objectPublic,
+                        const TPM2B_PRIVATE          *duplicate,
+                        const TPM2B_ENCRYPTED_SECRET *inSymSeed,
+                        const TPMT_SYM_DEF_OBJECT    *symmetricAlg) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx || !symmetricAlg)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -33,22 +32,17 @@ TSS2_RC Tss2_Sys_Import_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(parentHandle, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(parentHandle, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
     if (!encryptionKey) {
         ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_DATA_Marshal(encryptionKey, ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_DATA_Marshal(encryptionKey, ctx->cmdBuffer, ctx->maxCmdSize,
                                           &ctx->nextData);
     }
 
@@ -56,17 +50,14 @@ TSS2_RC Tss2_Sys_Import_Prepare(
         return rval;
 
     if (!objectPublic) {
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
 
     } else {
         rval = ValidatePublicTemplate(objectPublic);
 
         if (rval)
             return rval;
-        rval = Tss2_MU_TPM2B_PUBLIC_Marshal(objectPublic, ctx->cmdBuffer,
-                                            ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_PUBLIC_Marshal(objectPublic, ctx->cmdBuffer, ctx->maxCmdSize,
                                             &ctx->nextData);
     }
 
@@ -74,14 +65,11 @@ TSS2_RC Tss2_Sys_Import_Prepare(
         return rval;
 
     if (!duplicate) {
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
 
     } else {
 
-        rval = Tss2_MU_TPM2B_PRIVATE_Marshal(duplicate, ctx->cmdBuffer,
-                                             ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_PRIVATE_Marshal(duplicate, ctx->cmdBuffer, ctx->maxCmdSize,
                                              &ctx->nextData);
     }
 
@@ -89,24 +77,18 @@ TSS2_RC Tss2_Sys_Import_Prepare(
         return rval;
 
     if (!inSymSeed) {
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
 
     } else {
 
-        rval = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(inSymSeed,
-                                                      ctx->cmdBuffer,
-                                                      ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_ENCRYPTED_SECRET_Marshal(inSymSeed, ctx->cmdBuffer, ctx->maxCmdSize,
                                                       &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal(symmetricAlg,
-                                               ctx->cmdBuffer,
-                                               ctx->maxCmdSize,
+    rval = Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal(symmetricAlg, ctx->cmdBuffer, ctx->maxCmdSize,
                                                &ctx->nextData);
     if (rval)
         return rval;
@@ -118,12 +100,10 @@ TSS2_RC Tss2_Sys_Import_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_Import_Complete(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_PRIVATE *outPrivate)
-{
+TSS2_RC
+Tss2_Sys_Import_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_PRIVATE *outPrivate) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -132,33 +112,29 @@ TSS2_RC Tss2_Sys_Import_Complete(
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer,
-                                           ctx->maxCmdSize,
-                                           &ctx->nextData,
+    return Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
                                            outPrivate);
 }
 
-TSS2_RC Tss2_Sys_Import(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT parentHandle,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    const TPM2B_DATA *encryptionKey,
-    const TPM2B_PUBLIC *objectPublic,
-    const TPM2B_PRIVATE *duplicate,
-    const TPM2B_ENCRYPTED_SECRET *inSymSeed,
-    const TPMT_SYM_DEF_OBJECT *symmetricAlg,
-    TPM2B_PRIVATE *outPrivate,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_Import(TSS2_SYS_CONTEXT             *sysContext,
+                TPMI_DH_OBJECT                parentHandle,
+                TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                const TPM2B_DATA             *encryptionKey,
+                const TPM2B_PUBLIC           *objectPublic,
+                const TPM2B_PRIVATE          *duplicate,
+                const TPM2B_ENCRYPTED_SECRET *inSymSeed,
+                const TPMT_SYM_DEF_OBJECT    *symmetricAlg,
+                TPM2B_PRIVATE                *outPrivate,
+                TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!symmetricAlg)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_Sys_Import_Prepare(sysContext, parentHandle, encryptionKey,
-                                   objectPublic, duplicate, inSymSeed,
-                                   symmetricAlg);
+    rval = Tss2_Sys_Import_Prepare(sysContext, parentHandle, encryptionKey, objectPublic, duplicate,
+                                   inSymSeed, symmetricAlg);
     if (rval)
         return rval;
 

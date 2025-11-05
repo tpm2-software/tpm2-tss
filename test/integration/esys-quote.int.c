@@ -8,17 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "esys_int.h"         // for RSRC_NODE_T
-#include "esys_iutil.h"       // for esys_GetResourceObject
-#include "esys_types.h"       // for IESYS_RESOURCE
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
-#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256, TPM2B_AUTH, TPM2B_DATA
+#include "esys_int.h"        // for RSRC_NODE_T
+#include "esys_iutil.h"      // for esys_GetResourceObject
+#include "esys_types.h"      // for IESYS_RESOURCE
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h" // for TPM2_ALG_SHA256, TPM2B_AUTH, TPM2B_DATA
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_INFO, LOG_ERROR
+#include "util/log.h" // for goto_if_error, LOG_INFO, LOG_ERROR
 
 /** This test is intended to test the quote command with password
  *  authentication.
@@ -37,23 +37,19 @@
  */
 
 int
-test_esys_quote(ESYS_CONTEXT * esys_context)
-{
+test_esys_quote(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
 
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
+    TPMT_TK_CREATION    *creationTicket = NULL;
 
-    TPM2B_ATTEST *attest = NULL;
+    TPM2B_ATTEST   *attest = NULL;
     TPMT_SIGNATURE *signature = NULL;
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -108,17 +104,12 @@ test_esys_quote(ESYS_CONTEXT * esys_context)
             },
         };
 
-    TPM2B_AUTH authValue = {
-                .size = 0,
-                .buffer = {}
-    };
-
+    TPM2B_AUTH authValue = { .size = 0, .buffer = {} };
 
     TPM2B_DATA outsideInfo = {
-            .size = 0,
-            .buffer = {},
+        .size = 0,
+        .buffer = {},
     };
-
 
     TPML_PCR_SELECTION creationPCR = {
         .count = 0,
@@ -131,44 +122,32 @@ test_esys_quote(ESYS_CONTEXT * esys_context)
 
     RSRC_NODE_T *primaryHandle_node;
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
-                           &inPublic, &outsideInfo, &creationPCR,
-                           &primaryHandle, &outPublic, &creationData,
-                           &creationHash, &creationTicket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &primaryHandle, &outPublic, &creationData, &creationHash,
+                           &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    r = esys_GetResourceObject(esys_context, primaryHandle,
-                               &primaryHandle_node);
+    r = esys_GetResourceObject(esys_context, primaryHandle, &primaryHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
 
-    LOG_INFO("Created Primary with handle 0x%08x...",
-             primaryHandle_node->rsrc.handle);
+    LOG_INFO("Created Primary with handle 0x%08x...", primaryHandle_node->rsrc.handle);
 
-    r = Esys_TR_SetAuth(esys_context, primaryHandle,
-                        &authValuePrimary);
+    r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    TPM2B_DATA qualifyingData  = { .size = 0, .buffer = {}};
+    TPM2B_DATA      qualifyingData = { .size = 0, .buffer = {} };
     TPMT_SIG_SCHEME sig_scheme = { .scheme = TPM2_ALG_NULL };
 
-    TPML_PCR_SELECTION pcr_selection = {
-        .count = 2,
-        .pcrSelections = {
-            {
-                .hash = TPM2_ALG_SHA256,
-                .sizeofSelect = 3,
-                .pcrSelect = { 0,4,0 } },
-            {
-                .hash = TPM2_ALG_SHA256,
-                .sizeofSelect = 3,
-                .pcrSelect = { 0,4,0 } },
-        }};
+    TPML_PCR_SELECTION pcr_selection
+        = { .count = 2,
+            .pcrSelections = {
+                { .hash = TPM2_ALG_SHA256, .sizeofSelect = 3, .pcrSelect = { 0, 4, 0 } },
+                { .hash = TPM2_ALG_SHA256, .sizeofSelect = 3, .pcrSelect = { 0, 4, 0 } },
+            } };
 
-    r = Esys_Quote(esys_context, primaryHandle,
-                   ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                   &qualifyingData, &sig_scheme, &pcr_selection,
-                   &attest, &signature);
+    r = Esys_Quote(esys_context, primaryHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                   &qualifyingData, &sig_scheme, &pcr_selection, &attest, &signature);
     goto_if_error(r, "Error Esys Quote", error);
 
     r = Esys_FlushContext(esys_context, primaryHandle);
@@ -183,7 +162,7 @@ test_esys_quote(ESYS_CONTEXT * esys_context)
     Esys_Free(signature);
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (primaryHandle != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
@@ -195,6 +174,6 @@ test_esys_quote(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_quote(esys_context);
 }

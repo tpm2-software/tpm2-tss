@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <openssl/evp.h>           // for EVP_MD_CTX
-#include <stdio.h>                 // for size_t, NULL
-#include <stdlib.h>                // for calloc
-#include <string.h>                // for strdup, strlen
+#include <openssl/evp.h> // for EVP_MD_CTX
+#include <stdio.h>       // for size_t, NULL
+#include <stdlib.h>      // for calloc
+#include <string.h>      // for strdup, strlen
 
-#include "../helper/cmocka_all.h"  // for assert_int_equal, cmocka_unit_test...
-#include "fapi_int.h"              // for VENDOR_INTC, VENDOR_AMD, FAPI_CONTEXT
-#include "ifapi_get_web_cert.h"    // for ifapi_get_web_ek_certificate
-#include "tss2_common.h"           // for TSS2_FAPI_RC_NO_CERT, TSS2_RC, TSS...
-#include "tss2_fapi.h"             // for FAPI_CONTEXT
-#include "tss2_tpm2_types.h"       // for TPM2_ALG_NULL, TPM2B_PUBLIC, TPM2_...
-#include "util/aux_util.h"         // for SAFE_FREE, UNUSED
+#include "../helper/cmocka_all.h" // for assert_int_equal, cmocka_unit_test...
+#include "fapi_int.h"             // for VENDOR_INTC, VENDOR_AMD, FAPI_CONTEXT
+#include "ifapi_get_web_cert.h"   // for ifapi_get_web_ek_certificate
+#include "tss2_common.h"          // for TSS2_FAPI_RC_NO_CERT, TSS2_RC, TSS...
+#include "tss2_fapi.h"            // for FAPI_CONTEXT
+#include "tss2_tpm2_types.h"      // for TPM2_ALG_NULL, TPM2B_PUBLIC, TPM2_...
+#include "util/aux_util.h"        // for SAFE_FREE, UNUSED
 
 #define LOGMODULE tests
 #include "util/log.h"
@@ -31,10 +31,10 @@
 
 /* Mock data for the certificate buffer. and the public data of the EK  */
 
-char* valid_json_cert = "{ \"certificate\": \"ZG15Cg==\" }"; /**< dmy base64 encoded */
-char* invalid_json_cert1 = "{ \"certificate\": 1 }";
-char* invalid_json_cert2 = "{ }";
-char* mock_json_cert;
+char *valid_json_cert = "{ \"certificate\": \"ZG15Cg==\" }"; /**< dmy base64 encoded */
+char *invalid_json_cert1 = "{ \"certificate\": 1 }";
+char *invalid_json_cert2 = "{ }";
+char *mock_json_cert;
 
 TPM2B_PUBLIC eccPublic = {
     .size = 0,
@@ -110,14 +110,10 @@ TPM2B_PUBLIC rsaPublic = {
 /*
  * Wrapper function for reading the certificate buffer.
  */
-int
-__real_ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
-                             size_t *buffer_size);
+int __real_ifapi_get_curl_buffer(unsigned char *url, unsigned char **buffer, size_t *buffer_size);
 
 int
-__wrap_ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
-                          size_t *buffer_size)
-{
+__wrap_ifapi_get_curl_buffer(unsigned char *url, unsigned char **buffer, size_t *buffer_size) {
     UNUSED(url);
     *buffer = (unsigned char *)strdup(mock_json_cert);
     *buffer_size = strlen(mock_json_cert) + 1;
@@ -129,12 +125,10 @@ __wrap_ifapi_get_curl_buffer(unsigned char * url, unsigned char ** buffer,
  */
 size_t wrap_EVP_DigestUpdate_test = 0;
 
-int
-__real_EVP_DigestUpdate(EVP_MD_CTX *c, const void *data, size_t len);
+int __real_EVP_DigestUpdate(EVP_MD_CTX *c, const void *data, size_t len);
 
 int
-__wrap_EVP_DigestUpdate(EVP_MD_CTX *c, const void *data, size_t len)
-{
+__wrap_EVP_DigestUpdate(EVP_MD_CTX *c, const void *data, size_t len) {
     if (!wrap_EVP_DigestUpdate_test) {
         return __real_EVP_DigestUpdate(c, data, len);
     } else if (wrap_EVP_DigestUpdate_test == 1) {
@@ -147,18 +141,15 @@ __wrap_EVP_DigestUpdate(EVP_MD_CTX *c, const void *data, size_t len)
 }
 
 static int
-setup (void **state)
-{
-    *state = calloc(1, sizeof(FAPI_CONTEXT));  //Fapi_Initialize
+setup(void **state) {
+    *state = calloc(1, sizeof(FAPI_CONTEXT)); // Fapi_Initialize
     return 0;
 }
 
 static int
-teardown (void **state)
-{
+teardown(void **state) {
     SAFE_FREE(*state);
     return 0;
-
 }
 
 /*
@@ -166,17 +157,17 @@ teardown (void **state)
  */
 static void
 check_get_intl_cert_ok(void **state) {
-    FAPI_CONTEXT *ctx = *state;
+    FAPI_CONTEXT  *ctx = *state;
     unsigned char *cert_buf = NULL;
-    size_t cert_size;
-    TSS2_RC r;
+    size_t         cert_size;
+    TSS2_RC        r;
 
     mock_json_cert = valid_json_cert;
     r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_INTC, &cert_buf, &cert_size);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     SAFE_FREE(cert_buf);
 
-    r = ifapi_get_web_ek_certificate(ctx, &rsaPublic,  VENDOR_INTC, &cert_buf, &cert_size);
+    r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_INTC, &cert_buf, &cert_size);
     SAFE_FREE(cert_buf);
     assert_int_equal(r, TSS2_RC_SUCCESS);
 }
@@ -186,10 +177,10 @@ check_get_intl_cert_ok(void **state) {
  */
 static void
 check_get_amd_cert_ok(void **state) {
-    FAPI_CONTEXT *ctx = *state;
+    FAPI_CONTEXT  *ctx = *state;
     unsigned char *cert_buf = NULL;
-    size_t cert_size;
-    TSS2_RC r;
+    size_t         cert_size;
+    TSS2_RC        r;
 
     mock_json_cert = valid_json_cert;
     r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_AMD, &cert_buf, &cert_size);
@@ -201,16 +192,15 @@ check_get_amd_cert_ok(void **state) {
     assert_int_equal(r, TSS2_RC_SUCCESS);
 }
 
-
 /*
  * Check receiving of invalid JSON data for the certificate.
  */
 static void
 check_get_intl_cert_invalid_json(void **state) {
-    FAPI_CONTEXT *ctx = *state;
+    FAPI_CONTEXT  *ctx = *state;
     unsigned char *cert_buf = NULL;
-    size_t cert_size;
-    TSS2_RC r;
+    size_t         cert_size;
+    TSS2_RC        r;
     mock_json_cert = invalid_json_cert1;
     r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_INTC, &cert_buf, &cert_size);
     assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
@@ -225,27 +215,27 @@ check_get_intl_cert_invalid_json(void **state) {
  */
 static void
 check_get_intl_cert_sha_error(void **state) {
-    FAPI_CONTEXT *ctx = *state;
+    FAPI_CONTEXT  *ctx = *state;
     unsigned char *cert_buf = NULL;
-    size_t cert_size;
-    TSS2_RC r;
+    size_t         cert_size;
+    TSS2_RC        r;
     will_return_always(__wrap_EVP_DigestUpdate, 0);
     mock_json_cert = valid_json_cert;
     wrap_EVP_DigestUpdate_test = 1;
     r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_INTC, &cert_buf, &cert_size);
-    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+    assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
 
     wrap_EVP_DigestUpdate_test = 1;
     r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_INTC, &cert_buf, &cert_size);
-    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+    assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
 
     wrap_EVP_DigestUpdate_test = 2;
     r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_INTC, &cert_buf, &cert_size);
-    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+    assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
 
     wrap_EVP_DigestUpdate_test = 2;
     r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_INTC, &cert_buf, &cert_size);
-    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+    assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
 }
 
 /*
@@ -253,32 +243,31 @@ check_get_intl_cert_sha_error(void **state) {
  */
 static void
 check_get_amd_cert_sha_error(void **state) {
-    FAPI_CONTEXT *ctx = *state;
+    FAPI_CONTEXT  *ctx = *state;
     unsigned char *cert_buf = NULL;
-    size_t cert_size;
-    TSS2_RC r;
+    size_t         cert_size;
+    TSS2_RC        r;
     will_return_always(__wrap_EVP_DigestUpdate, 0);
     mock_json_cert = valid_json_cert;
     wrap_EVP_DigestUpdate_test = 1;
     r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_AMD, &cert_buf, &cert_size);
-    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+    assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
 
     wrap_EVP_DigestUpdate_test = 1;
     r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_AMD, &cert_buf, &cert_size);
-    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+    assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
 
     wrap_EVP_DigestUpdate_test = 2;
     r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_AMD, &cert_buf, &cert_size);
-    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+    assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
 
     wrap_EVP_DigestUpdate_test = 2;
     r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_AMD, &cert_buf, &cert_size);
-    assert_int_equal(r,TSS2_FAPI_RC_NO_CERT);
+    assert_int_equal(r, TSS2_FAPI_RC_NO_CERT);
 }
 
 int
-main(int argc, char *argv[])
-{
+main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test_setup_teardown(check_get_intl_cert_ok, setup, teardown),
         cmocka_unit_test_setup_teardown(check_get_amd_cert_ok, setup, teardown),

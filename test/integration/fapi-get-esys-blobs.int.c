@@ -8,30 +8,28 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>             // for json_object_put, json_object, json_obje...
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, size_t, sprintf
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for memcpy, strncmp
+#include <json.h>   // for json_object_put, json_object, json_obje...
+#include <stdint.h> // for uint8_t
+#include <stdio.h>  // for NULL, size_t, sprintf
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for memcpy, strncmp
 
-#include "fapi_int.h"         // for FAPI_CONTEXT
-#include "test-fapi.h"        // for ASSERT, FAPI_PROFILE, EXIT_SKIP, test_i...
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_FA...
-#include "tss2_esys.h"        // for Esys_FlushContext, Esys_TR_Deserialize
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_Delete, Fapi_GetEsys...
-#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256, TPM2B_AUTH, TPM2B_PUBLIC
+#include "fapi_int.h"        // for FAPI_CONTEXT
+#include "test-fapi.h"       // for ASSERT, FAPI_PROFILE, EXIT_SKIP, test_i...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_FA...
+#include "tss2_esys.h"       // for Esys_FlushContext, Esys_TR_Deserialize
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Delete, Fapi_GetEsys...
+#include "tss2_tpm2_types.h" // for TPM2_ALG_SHA256, TPM2B_AUTH, TPM2B_PUBLIC
 
 #define LOGMODULE test
-#include "tss2_mu.h"          // for Tss2_MU_TPMS_CONTEXT_Unmarshal
-#include "util/log.h"         // for goto_if_error, SAFE_FREE, LOG_ERROR
+#include "tss2_mu.h"  // for Tss2_MU_TPMS_CONTEXT_Unmarshal
+#include "util/log.h" // for goto_if_error, SAFE_FREE, LOG_ERROR
 
-#define PASSWORD "abc"
-#define SIGN_TEMPLATE  "sign,noDa"
-
+#define PASSWORD      "abc"
+#define SIGN_TEMPLATE "sign,noDa"
 
 json_object *
-get_json_hex_string(const uint8_t *buffer, size_t size)
-{
+get_json_hex_string(const uint8_t *buffer, size_t size) {
 
     char hex_string[size * 2 + 1];
 
@@ -44,12 +42,7 @@ get_json_hex_string(const uint8_t *buffer, size_t size)
 }
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -77,23 +70,22 @@ auth_callback(
  * @retval EXIT_SKIP
  */
 int
-test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
-{
-    TSS2_RC r;
-    char          *publicKey = NULL;
-    uint8_t       *publicblob = NULL;
-    uint8_t       *privateblob = NULL;
-    char          *path_list = NULL;
-    json_object   *jso = NULL;
-    char          *nvPath = "/nv/Owner/myNV";
-    uint8_t       *data = NULL;
-    size_t         data_size;
-    TPMS_CONTEXT   key_context;
-    size_t         offset = 0;
-    ESYS_TR        esys_handle;
-    uint8_t        type;
+test_fapi_get_esys_blobs(FAPI_CONTEXT *context) {
+    TSS2_RC      r;
+    char        *publicKey = NULL;
+    uint8_t     *publicblob = NULL;
+    uint8_t     *privateblob = NULL;
+    char        *path_list = NULL;
+    json_object *jso = NULL;
+    char        *nvPath = "/nv/Owner/myNV";
+    uint8_t     *data = NULL;
+    size_t       data_size;
+    TPMS_CONTEXT key_context;
+    size_t       offset = 0;
+    ESYS_TR      esys_handle;
+    uint8_t      type;
 
-    if (strncmp(FAPI_PROFILE,"P_ECC", 5) != 0) {
+    if (strncmp(FAPI_PROFILE, "P_ECC", 5) != 0) {
         LOG_WARNING("Profile %s is no ECC profile.", FAPI_PROFILE);
         return EXIT_SKIP;
     }
@@ -110,8 +102,7 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_CreateNv", error);
 
     /* Create ESAPI NV object from path */
-    r = Fapi_GetEsysBlob(context,nvPath, &type,
-                         &data, &data_size);
+    r = Fapi_GetEsysBlob(context, nvPath, &type, &data, &data_size);
     goto_if_error(r, "Error Fapi_GetEsysBlob", error);
     ASSERT(data != NULL);
 
@@ -126,14 +117,12 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, nvPath);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE, "",
-                       PASSWORD);
+    r = Fapi_CreateKey(context, "HS/SRK/mySignKey", SIGN_TEMPLATE, "", PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey_Async", error);
 
     /* Create ESAPI key object from path */
     data = NULL;
-    r = Fapi_GetEsysBlob(context, "HS/SRK/mySignKey", &type,
-                         &data, &data_size);
+    r = Fapi_GetEsysBlob(context, "HS/SRK/mySignKey", &type, &data, &data_size);
     goto_if_error(r, "Error Fapi_GetEsysBlob", error);
     ASSERT(data != NULL);
 
@@ -149,24 +138,14 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
     goto_if_error(r, "Context load", error);
 
     /* Variables for signing test */
-    TPM2B_DIGEST pcr_digest_zero = {
-        .size = 32,
-        .buffer = { 0 }
-    };
+    TPM2B_DIGEST pcr_digest_zero = { .size = 32, .buffer = { 0 } };
 
-    TPMT_SIG_SCHEME inScheme = { .scheme = TPM2_ALG_ECDSA,
-                                 .details.ecdsa = TPM2_ALG_SHA256 };
+    TPMT_SIG_SCHEME inScheme = { .scheme = TPM2_ALG_ECDSA, .details.ecdsa = TPM2_ALG_SHA256 };
 
-    TPMT_TK_HASHCHECK hash_validation = {
-        .tag = TPM2_ST_HASHCHECK,
-        .hierarchy = TPM2_RH_OWNER,
-        .digest = {0}
-    };
+    TPMT_TK_HASHCHECK hash_validation
+        = { .tag = TPM2_ST_HASHCHECK, .hierarchy = TPM2_RH_OWNER, .digest = { 0 } };
 
-    TPM2B_AUTH authValue = {
-        .size = sizeof(PASSWORD),
-        .buffer = { 0 }
-    };
+    TPM2B_AUTH authValue = { .size = sizeof(PASSWORD), .buffer = { 0 } };
 
     memcpy(&authValue.buffer[0], PASSWORD, sizeof(PASSWORD));
 
@@ -176,16 +155,8 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     /* Check whether ESYS key can be used for signing. */
-    r = Esys_Sign(
-        context->esys,
-        esys_handle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        &pcr_digest_zero,
-        &inScheme,
-        &hash_validation,
-        &signature);
+    r = Esys_Sign(context->esys, esys_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                  &pcr_digest_zero, &inScheme, &hash_validation, &signature);
 
     if (r != TSS2_RC_SUCCESS) {
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, "Error: Sign", TPM2_ERROR_TEXT(r));
@@ -202,8 +173,7 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
 
     /* Create ESAPI persistent key object from path */
     data = NULL;
-    r = Fapi_GetEsysBlob(context, "HS/SRK", &type,
-                         &data, &data_size);
+    r = Fapi_GetEsysBlob(context, "HS/SRK", &type, &data, &data_size);
     goto_if_error(r, "Error Fapi_GetEsysBlob", error);
     ASSERT(data != NULL);
 
@@ -252,43 +222,26 @@ test_fapi_get_esys_blobs(FAPI_CONTEXT *context)
         },
     };
 
-    TPM2B_SENSITIVE_CREATE inSensitive = {
-        .size = 0,
-        .sensitive = {
-            .userAuth = {
-                .size = 0,
-                .buffer = {0}
-            },
-            .data = {
-                .size = 0,
-                .buffer = {}
-            }
-        }
-    };
+    TPM2B_SENSITIVE_CREATE inSensitive
+        = { .size = 0,
+            .sensitive
+            = { .userAuth = { .size = 0, .buffer = { 0 } }, .data = { .size = 0, .buffer = {} } } };
 
     TPM2B_DATA outsideInfo = {
         .size = 0,
-        .buffer = {}
-        ,
+        .buffer = {},
     };
 
     TPML_PCR_SELECTION creationPCR = {
         .count = 0,
     };
 
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC  *outPublic = NULL;
     TPM2B_PRIVATE *outPrivate = NULL;
 
-    r = Esys_Create(context->esys,
-                    esys_handle,
-                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                    &inSensitive,
-                    &inPublic,
-                    &outsideInfo,
-                    &creationPCR,
-                    &outPrivate,
-                    &outPublic,
-                    NULL,NULL, NULL);
+    r = Esys_Create(context->esys, esys_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                    &inSensitive, &inPublic, &outsideInfo, &creationPCR, &outPrivate, &outPublic,
+                    NULL, NULL, NULL);
     goto_if_error(r, "Error esys create ", error);
 
     SAFE_FREE(outPublic);
@@ -318,7 +271,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_get_esys_blobs(fapi_context);
 }

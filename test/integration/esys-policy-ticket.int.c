@@ -8,16 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS, size_t
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS, size_t
 
-#include "test-esys.h"        // for test_invoke_esys
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, BYTE, INT32, TSS2_RC
-#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
-#include "tss2_mu.h"          // for Tss2_MU_INT32_Marshal
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2_ALG_SHA256, TPM2B_NONCE
+#include "test-esys.h"       // for test_invoke_esys
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, BYTE, INT32, TSS2_RC
+#include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_mu.h"         // for Tss2_MU_INT32_Marshal
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPM2_ALG_SHA256, TPM2B_NONCE
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_INFO, LOG...
+#include "util/log.h" // for goto_if_error, LOG_ERROR, LOG_INFO, LOG...
 
 /** This test is intended to test the ESYS policy commands related to
  *  signed authorization actions.
@@ -43,36 +43,32 @@
  */
 
 int
-test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
-{
+test_esys_policy_ticket(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     ESYS_TR session = ESYS_TR_NONE;
     ESYS_TR sessionTrial = ESYS_TR_NONE;
-    int failure_return = EXIT_FAILURE;
+    int     failure_return = EXIT_FAILURE;
 
-    TPM2B_NONCE *nonceTPM = NULL;
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_NONCE         *nonceTPM = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
-    TPM2B_NAME *nameKeySign = NULL;
-    TPM2B_NAME *keyQualifiedName = NULL;
-    TPM2B_DIGEST *signed_digest = NULL;
-    TPM2B_TIMEOUT *timeout = NULL;
-    TPMT_TK_AUTH *policySignedTicket = NULL;
-    TPMT_TK_HASHCHECK *validation = NULL;
-    TPMT_TK_AUTH *policySecretTicket = NULL;
-    TPMT_SIGNATURE *signature = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
+    TPMT_TK_CREATION    *creationTicket = NULL;
+    TPM2B_NAME          *nameKeySign = NULL;
+    TPM2B_NAME          *keyQualifiedName = NULL;
+    TPM2B_DIGEST        *signed_digest = NULL;
+    TPM2B_TIMEOUT       *timeout = NULL;
+    TPMT_TK_AUTH        *policySignedTicket = NULL;
+    TPMT_TK_HASHCHECK   *validation = NULL;
+    TPMT_TK_AUTH        *policySecretTicket = NULL;
+    TPMT_SIGNATURE      *signature = NULL;
 
     /*
      * 1. Create Primary. This primary will be used as signing key.
      */
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -129,19 +125,14 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_AUTH authValue = {
-        .size = 0,
-        .buffer = {}
-    };
+    TPM2B_AUTH authValue = { .size = 0, .buffer = {} };
 
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle,
-                           &outPublic, &creationData, &creationHash,
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &primaryHandle, &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
     Esys_Free(outPublic);
@@ -149,14 +140,8 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     Esys_Free(creationHash);
     Esys_Free(creationTicket);
 
-    r = Esys_ReadPublic(esys_context,
-                        primaryHandle,
-                        ESYS_TR_NONE,
-                        ESYS_TR_NONE,
-                        ESYS_TR_NONE,
-                        &outPublic,
-                        &nameKeySign,
-                        &keyQualifiedName);
+    r = Esys_ReadPublic(esys_context, primaryHandle, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                        &outPublic, &nameKeySign, &keyQualifiedName);
     goto_if_error(r, "Error: ReadPublic", error);
 
     /*
@@ -164,35 +149,27 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
      *    ticket policySignedTicket will be created.
      *    With this ticket the function Esys_PolicyTicket will be tested.
      */
-    INT32 expiration = -(10*365*24*60*60); /* Expiration ten years */
+    INT32 expiration = -(10 * 365 * 24 * 60 * 60); /* Expiration ten years */
 
     TPM2B_DIGEST expiration2b;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
-                              .keyBits = {.aes = 128},
-                              .mode = {.aes = TPM2_ALG_CFB}
-    };
-    TPM2B_NONCE nonceCaller = {
-        .size = 20,
-        .buffer = {11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
-                   21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
-    };
+    TPMT_SYM_DEF symmetric
+        = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
+    TPM2B_NONCE nonceCaller = { .size = 20, .buffer = { 11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
+                                                        21, 22, 23, 24, 25, 26, 27, 28, 29, 30 } };
 
     size_t offset = 0;
 
-    r = Tss2_MU_INT32_Marshal(expiration, &expiration2b.buffer[0],
-                              4, &offset);
+    r = Tss2_MU_INT32_Marshal(expiration, &expiration2b.buffer[0], 4, &offset);
     goto_if_error(r, "Marshaling name", error);
     expiration2b.size = offset;
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCaller,
-                              TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256,
-                              &session);
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, &nonceCaller, TPM2_SE_POLICY, &symmetric,
+                              TPM2_ALG_SHA256, &session);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 
-    TPM2B_NONCE policyRef = {0};
-    TPM2B_DIGEST cpHashA = {0};
+    TPM2B_NONCE  policyRef = { 0 };
+    TPM2B_DIGEST cpHashA = { 0 };
 
     r = Esys_TRSess_GetNonceTPM(esys_context, session, &nonceTPM);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
@@ -200,78 +177,38 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     /* Compute hash from nonceTPM||expiration */
 
     TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA256;
-    ESYS_TR sequenceHandle_handle;
-    TPM2B_AUTH auth = {0};
+    ESYS_TR       sequenceHandle_handle;
+    TPM2B_AUTH    auth = { 0 };
 
-    r = Esys_HashSequenceStart(esys_context,
-                               ESYS_TR_NONE,
-                               ESYS_TR_NONE,
-                               ESYS_TR_NONE,
-                               &auth,
-                               hashAlg,
-                               &sequenceHandle_handle
-                               );
+    r = Esys_HashSequenceStart(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, &auth,
+                               hashAlg, &sequenceHandle_handle);
     goto_if_error(r, "Error: HashSequenceStart", error);
 
     r = Esys_TR_SetAuth(esys_context, sequenceHandle_handle, &auth);
     goto_if_error(r, "Error esys TR_SetAuth ", error);
 
-    r = Esys_SequenceUpdate(esys_context,
-                            sequenceHandle_handle,
-                            ESYS_TR_PASSWORD,
-                            ESYS_TR_NONE,
-                            ESYS_TR_NONE,
-                            (const TPM2B_MAX_BUFFER *)nonceTPM
-                            );
+    r = Esys_SequenceUpdate(esys_context, sequenceHandle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                            ESYS_TR_NONE, (const TPM2B_MAX_BUFFER *)nonceTPM);
     goto_if_error(r, "Error: SequenceUpdate", error);
 
-    r = Esys_SequenceComplete(esys_context,
-                              sequenceHandle_handle,
-                              ESYS_TR_PASSWORD,
-                              ESYS_TR_NONE,
-                              ESYS_TR_NONE,
-                              (const TPM2B_MAX_BUFFER *)&expiration2b,
-                              ESYS_TR_RH_OWNER,
-                              &signed_digest,
-                              &validation
-                              );
+    r = Esys_SequenceComplete(esys_context, sequenceHandle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                              ESYS_TR_NONE, (const TPM2B_MAX_BUFFER *)&expiration2b,
+                              ESYS_TR_RH_OWNER, &signed_digest, &validation);
     goto_if_error(r, "Error: SequenceComplete", error);
 
-    TPMT_SIG_SCHEME inScheme = { .scheme = TPM2_ALG_NULL };
-    TPMT_TK_HASHCHECK hash_validation = {
-        .tag = TPM2_ST_HASHCHECK,
-        .hierarchy = TPM2_RH_OWNER,
-        .digest = {0}
-    };
+    TPMT_SIG_SCHEME   inScheme = { .scheme = TPM2_ALG_NULL };
+    TPMT_TK_HASHCHECK hash_validation
+        = { .tag = TPM2_ST_HASHCHECK, .hierarchy = TPM2_RH_OWNER, .digest = { 0 } };
 
     /* Policy expiration of ten years will be signed */
 
-    r = Esys_Sign(
-        esys_context,
-        primaryHandle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        signed_digest,
-        &inScheme,
-        &hash_validation,
-        &signature);
+    r = Esys_Sign(esys_context, primaryHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                  signed_digest, &inScheme, &hash_validation, &signature);
     goto_if_error(r, "Error: Sign", error);
 
-    r = Esys_PolicySigned(
-        esys_context,
-        primaryHandle,
-        session,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        nonceTPM,
-        &cpHashA,
-        &policyRef,
-        expiration,
-        signature,
-        &timeout,
-        &policySignedTicket);
+    r = Esys_PolicySigned(esys_context, primaryHandle, session, ESYS_TR_NONE, ESYS_TR_NONE,
+                          ESYS_TR_NONE, nonceTPM, &cpHashA, &policyRef, expiration, signature,
+                          &timeout, &policySignedTicket);
     goto_if_error(r, "Error: PolicySigned", error);
 
     r = Esys_FlushContext(esys_context, session);
@@ -279,28 +216,16 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
 
     session = ESYS_TR_NONE;
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCaller,
-                              TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256,
-                              &session);
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, &nonceCaller, TPM2_SE_POLICY, &symmetric,
+                              TPM2_ALG_SHA256, &session);
     goto_if_error(r, "Error: During initialization of policy session", error);
 
-    r = Esys_PolicyTicket(
-        esys_context,
-        session,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        timeout,
-        &cpHashA,
-        &policyRef,
-        nameKeySign,
-        policySignedTicket);
+    r = Esys_PolicyTicket(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, timeout,
+                          &cpHashA, &policyRef, nameKeySign, policySignedTicket);
 
-    if ((r == TPM2_RC_COMMAND_CODE) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
+    if ((r == TPM2_RC_COMMAND_CODE) || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER))
+        || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_PolicyTicket not supported by TPM all other tests PASSED.");
         r = Esys_FlushContext(esys_context, session);
         goto_if_error(r, "Error: FlushContext", error);
@@ -319,36 +244,20 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
      *    function Esys_PolicySecret will be tested.
      */
 
-    TPMT_SYM_DEF symmetricTrial = {.algorithm = TPM2_ALG_AES,
-                                   .keyBits = {.aes = 128},
-                                   .mode = {.aes = TPM2_ALG_CFB}
-    };
-    TPM2B_NONCE nonceCallerTrial = {
-        .size = 20,
-        .buffer = {11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
-                   21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
-    };
+    TPMT_SYM_DEF symmetricTrial
+        = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
+    TPM2B_NONCE nonceCallerTrial
+        = { .size = 20, .buffer = { 11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
+                                    21, 22, 23, 24, 25, 26, 27, 28, 29, 30 } };
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial, TPM2_ALG_SHA256,
-                              &sessionTrial);
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, &nonceCallerTrial, TPM2_SE_TRIAL, &symmetricTrial,
+                              TPM2_ALG_SHA256, &sessionTrial);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 
-    r = Esys_PolicySecret(
-        esys_context,
-        primaryHandle,
-        sessionTrial,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        nonceTPM,
-        &cpHashA,
-        &policyRef,
-        expiration,
-        &timeout,
-        &policySecretTicket);
+    r = Esys_PolicySecret(esys_context, primaryHandle, sessionTrial, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                          ESYS_TR_NONE, nonceTPM, &cpHashA, &policyRef, expiration, &timeout,
+                          &policySecretTicket);
     goto_if_error(r, "Error: PolicySecret", error);
 
     r = Esys_FlushContext(esys_context, sessionTrial);
@@ -371,7 +280,7 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
     Esys_Free(signature);
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (session != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
@@ -409,6 +318,6 @@ test_esys_policy_ticket(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_policy_ticket(esys_context);
 }

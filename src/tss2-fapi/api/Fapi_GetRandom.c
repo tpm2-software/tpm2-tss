@@ -8,24 +8,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t
-#include <stdlib.h>           // for NULL, size_t
-#include <string.h>           // for memset
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for NULL, size_t
+#include <string.h> // for memset
 
-#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_GetRandom, GET_RAND...
-#include "fapi_util.h"        // for ifapi_session_clean, ifapi_cleanup_session
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"     // for check_not_null, return_if_error_reset_s...
-#include "ifapi_profiles.h"   // for IFAPI_PROFILES, IFAPI_PROFILE
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for Esys_SetTimeout
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_GetRandom, Fapi_GetR...
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT
+#include "fapi_int.h"        // for FAPI_CONTEXT, IFAPI_GetRandom, GET_RAND...
+#include "fapi_util.h"       // for ifapi_session_clean, ifapi_cleanup_session
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_s...
+#include "ifapi_profiles.h"  // for IFAPI_PROFILES, IFAPI_PROFILE
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for Esys_SetTimeout
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_GetRandom, Fapi_GetR...
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for LOG_TRACE, return_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE, return_if_error, SAFE_FREE
 
 /** One-Call function for Fapi_GetRandom
  *
@@ -64,11 +64,7 @@
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_GetRandom(
-    FAPI_CONTEXT *context,
-    size_t        numBytes,
-    uint8_t     **data)
-{
+Fapi_GetRandom(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -144,10 +140,7 @@ Fapi_GetRandom(
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_GetRandom_Async(
-    FAPI_CONTEXT *context,
-    size_t        numBytes)
-{
+Fapi_GetRandom_Async(FAPI_CONTEXT *context, size_t numBytes) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("numBytes: %zu", numBytes);
 
@@ -160,7 +153,7 @@ Fapi_GetRandom_Async(
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
     /* Helpful alias pointers */
-    IFAPI_GetRandom * command = &context->get_random;
+    IFAPI_GetRandom *command = &context->get_random;
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -172,8 +165,7 @@ Fapi_GetRandom_Async(
     command->data = NULL;
 
     /* Start a session for integrity protection and encryption of random data. */
-    r = ifapi_get_sessions_async(context,
-                                 IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
+    r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
                                  TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
     return_if_error_reset_state(r, "Create FAPI session");
 
@@ -217,10 +209,7 @@ Fapi_GetRandom_Async(
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_GetRandom_Finish(
-    FAPI_CONTEXT *context,
-    uint8_t     **data)
-{
+Fapi_GetRandom_Finish(FAPI_CONTEXT *context, uint8_t **data) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -230,36 +219,36 @@ Fapi_GetRandom_Finish(
     check_not_null(data);
 
     /* Helpful alias pointers */
-    IFAPI_GetRandom * command = &context->get_random;
+    IFAPI_GetRandom *command = &context->get_random;
 
     switch (context->state) {
-        statecase(context->state, GET_RANDOM_WAIT_FOR_SESSION);
+    statecase(context->state, GET_RANDOM_WAIT_FOR_SESSION);
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-            return_try_again(r);
-            goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+        return_try_again(r);
+        goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-            context->get_random_state = GET_RANDOM_INIT;
+        context->get_random_state = GET_RANDOM_INIT;
 
-            fallthrough;
+        fallthrough;
 
-        statecase(context->state, GET_RANDOM_WAIT_FOR_RANDOM);
-            /* Retrieve the random data from the TPM.
-               This may involve several Esys_GetRandom calls. */
-            r = ifapi_get_random(context, command->numBytes, &command->ret_data);
-            return_try_again(r);
-            goto_if_error_reset_state(r, "FAPI GetRandom", error_cleanup);
-            fallthrough;
+    statecase(context->state, GET_RANDOM_WAIT_FOR_RANDOM);
+        /* Retrieve the random data from the TPM.
+           This may involve several Esys_GetRandom calls. */
+        r = ifapi_get_random(context, command->numBytes, &command->ret_data);
+        return_try_again(r);
+        goto_if_error_reset_state(r, "FAPI GetRandom", error_cleanup);
+        fallthrough;
 
-        statecase(context->state, GET_RANDOM_CLEANUP)
-            /* Cleanup the session. */
-            r = ifapi_cleanup_session(context);
-            try_again_or_error_goto(r, "Cleanup", error_cleanup);
+    statecase(context->state, GET_RANDOM_CLEANUP)
+    /* Cleanup the session. */
+        r = ifapi_cleanup_session(context);
+        try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-            *data = command->ret_data;
-            break;
+        *data = command->ret_data;
+        break;
 
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
     /* Cleanup any intermediate results and state stored in the context. */

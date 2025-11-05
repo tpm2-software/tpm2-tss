@@ -8,17 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>        // for errno, EAGAIN
-#include <inttypes.h>     // for uint8_t
-#include <stdbool.h>      // for false, true, bool
-#include <stdio.h>        // for FILE, NULL, size_t, ssize_t
-#include <string.h>       // for memset, strcmp
-#include <sys/stat.h>     // for stat
-#include <unistd.h>       // for R_OK
+#include <errno.h>    // for errno, EAGAIN
+#include <inttypes.h> // for uint8_t
+#include <stdbool.h>  // for false, true, bool
+#include <stdio.h>    // for FILE, NULL, size_t, ssize_t
+#include <string.h>   // for memset, strcmp
+#include <sys/stat.h> // for stat
+#include <unistd.h>   // for R_OK
 
-#include "../helper/cmocka_all.h"       // for will_return, assert_int_equal, mock_type
-#include "ifapi_io.h"     // for IFAPI_IO, ifapi_io_read_async, ifapi_io_rea...
-#include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_FAPI_R...
+#include "../helper/cmocka_all.h" // for will_return, assert_int_equal, mock_type
+#include "ifapi_io.h"             // for IFAPI_IO, ifapi_io_read_async, ifapi_io_rea...
+#include "tss2_common.h"          // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_FAPI_R...
 
 #define LOGMODULE tests
 #include "util/log.h"
@@ -44,12 +44,10 @@ char _mock_stream; /**< stream will be used to activate wrapper.*/
  * Wrapper functions for file system io.
  */
 
-int
- __real_stat(const char *pathname, struct stat *statbuf, ...);
+int __real_stat(const char *pathname, struct stat *statbuf, ...);
 
 int
- __wrap_stat(const char *pathname, struct stat *statbuf, ...)
-{
+__wrap_stat(const char *pathname, struct stat *statbuf, ...) {
     if (strcmp(pathname, "tss_unit_dummyf") != 0) {
         return __real_stat(pathname, statbuf);
     }
@@ -57,92 +55,77 @@ int
     return 0;
 }
 
+FILE *__real_fopen(const char *pathname, const char *mode, ...);
 FILE *
-__real_fopen(const char *pathname, const char* mode, ...);
-FILE *
-__wrap_fopen(const char *pathname, const char* mode, ...)
-{
+__wrap_fopen(const char *pathname, const char *mode, ...) {
     if (strcmp(pathname, "tss_unit_dummyf") != 0) {
         return __real_fopen(pathname, mode);
     }
-    return mock_ptr_type(FILE*);
+    return mock_ptr_type(FILE *);
 }
 
-int
-__real_fclose(FILE *stream, ...);
+int __real_fclose(FILE *stream, ...);
 
 int
-__wrap_fclose(FILE *stream, ...)
-{
+__wrap_fclose(FILE *stream, ...) {
     if (stream != MOCK_STREAM) {
         return __real_fclose(stream);
     }
     return mock_type(int);
 }
 
-int
-__real_fseek(FILE *stream, long offset, int whence, ...);
+int __real_fseek(FILE *stream, long offset, int whence, ...);
 
 int
-__wrap_fseek(FILE *stream, long offset, int whence, ...)
-{
+__wrap_fseek(FILE *stream, long offset, int whence, ...) {
     if (stream != MOCK_STREAM) {
         return __real_fseek(stream, offset, whence);
     }
     return mock_type(int);
 }
 
-long
-__real_ftell(FILE *stream, ...);
+long __real_ftell(FILE *stream, ...);
 
 long
-__wrap_ftell(FILE *stream, ...)
-{
+__wrap_ftell(FILE *stream, ...) {
     if (stream != MOCK_STREAM) {
         return __real_ftell(stream);
     }
     return mock_type(int);
 }
 
-int
-__real_fcntl(int fd, int cmd, ...);
+int __real_fcntl(int fd, int cmd, ...);
 
 int
-__wrap_fcntl(int fd, int cmd, ...)
-{
+__wrap_fcntl(int fd, int cmd, ...) {
     if (wrap_fcntl_test)
         return mock_type(int);
     else
         return __real_fcntl(fd, cmd);
 }
 
-void *
-__real_malloc(size_t size, ...);
+void *__real_malloc(size_t size, ...);
 
 void *
-__wrap_malloc(size_t size, ...)
-{
+__wrap_malloc(size_t size, ...) {
     if (wrap_malloc_test) {
-        return mock_ptr_type (void*);
+        return mock_ptr_type(void *);
     } else {
         return __real_malloc(size);
     }
 }
 
-int
-__real_fileno(FILE *stream, ...);
+int __real_fileno(FILE *stream, ...);
 
 int
-__wrap_fileno(FILE *stream, ...)
-{
+__wrap_fileno(FILE *stream, ...) {
     if (stream != MOCK_STREAM) {
         return __real_fileno(stream);
     }
     return 1;
 }
 
-ssize_t
-__real_read(int fd, void *buf, size_t count);
+ssize_t __real_read(int fd, void *buf, size_t count);
 
 ssize_t
 __wrap_read(int fd, void *buf, size_t count, ...) {
@@ -160,8 +143,8 @@ __wrap_read(int fd, void *buf, size_t count, ...) {
 static void
 check_io_read_async(void **state) {
     IFAPI_IO io;
-    TSS2_RC r;
-    char *dmy_buf = "dummy";
+    TSS2_RC  r;
+    char    *dmy_buf = "dummy";
 
     memset(&io, 0, sizeof(IFAPI_IO));
     io.char_rbuffer = &dmy_buf[0];
@@ -224,10 +207,10 @@ check_io_read_async(void **state) {
 static void
 check_io_read_finish(void **state) {
     IFAPI_IO io;
-    TSS2_RC r;
+    TSS2_RC  r;
     uint8_t *buffer[10];
-    char io_char_buffer[10];
-    size_t count = 10;
+    char     io_char_buffer[10];
+    size_t   count = 10;
 
     memset(&io, 0, sizeof(IFAPI_IO));
     wrap_read_test = true;
@@ -271,9 +254,9 @@ check_io_read_finish(void **state) {
 static void
 check_io_write_async(void **state) {
     IFAPI_IO io;
-    TSS2_RC r;
-    uint8_t buffer[5]  = { 1, 2, 3, 4, 5 };
-    char *char_buffer = "dummy";
+    TSS2_RC  r;
+    uint8_t  buffer[5] = { 1, 2, 3, 4, 5 };
+    char    *char_buffer = "dummy";
 
     will_return_always(__wrap_fclose, 0);
     // will_return_always(__wrap_fileno, 1);
@@ -318,8 +301,7 @@ check_io_write_async(void **state) {
 
 bool wrap_write_test = false;
 
-ssize_t
-__real_write(int fd, void *buf, size_t count);
+ssize_t __real_write(int fd, void *buf, size_t count);
 
 ssize_t
 __wrap_write(int fd, void *buf, size_t count, ...) {
@@ -337,8 +319,8 @@ __wrap_write(int fd, void *buf, size_t count, ...) {
 static void
 check_io_write_finish(void **state) {
     IFAPI_IO io;
-    TSS2_RC r;
-    //uint8_t buffer[5]  = { 1, 2, 3, 4, 5 };
+    TSS2_RC  r;
+    // uint8_t buffer[5]  = { 1, 2, 3, 4, 5 };
 
     memset(&io, 0, sizeof(IFAPI_IO));
     // will_return_always(__wrap_fileno, 1);
@@ -360,8 +342,7 @@ check_io_write_finish(void **state) {
 }
 
 int
-main(int argc, char *argv[])
-{
+main(int argc, char *argv[]) {
 #if _FILE_OFFSET_BITS == 64
     // Would produce cmocka error
     LOG_WARNING("_FILE_OFFSET == 64 would produce cmocka errors.");

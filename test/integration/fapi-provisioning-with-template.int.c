@@ -4,23 +4,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>          // for bool, false, true
-#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
-#include <stdlib.h>           // for getenv, malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strcmp, strstr
-#include <unistd.h>           // for read
+#include <stdbool.h> // for bool, false, true
+#include <stdio.h>   // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>  // for getenv, malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>  // for strcmp, strstr
+#include <unistd.h>  // for read
 
-#include "test-fapi.h"        // for EXIT_SKIP, test_invoke_fapi
-#include "tss2_common.h"      // for BYTE, TSS2_RC_SUCCESS, TSS2_FAPI_RC_NO_...
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_NV_UndefineSpace
-#include "tss2_fapi.h"        // for Fapi_Provision, Fapi_Delete, Fapi_GetTcti
-#include "tss2_mu.h"          // for Tss2_MU_TPMT_PUBLIC_Marshal
-#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
-#include "tss2_tpm2_types.h"  // for TPM2_HANDLE, TPM2B_MAX_NV_BUFFER, TPM2B...
+#include "test-fapi.h"       // for EXIT_SKIP, test_invoke_fapi
+#include "tss2_common.h"     // for BYTE, TSS2_RC_SUCCESS, TSS2_FAPI_RC_NO_...
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_NV_UndefineSpace
+#include "tss2_fapi.h"       // for Fapi_Provision, Fapi_Delete, Fapi_GetTcti
+#include "tss2_mu.h"         // for Tss2_MU_TPMT_PUBLIC_Marshal
+#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h" // for TPM2_HANDLE, TPM2B_MAX_NV_BUFFER, TPM2B...
 
-#define LOGMODULE test
+#define LOGMODULE  test
 #define LOGDEFAULT LOGLEVEL_INFO
-#include "util/log.h"         // for LOGLEVEL_INFO, goto_if_error, LOG_ERROR
+#include "util/log.h" // for LOGLEVEL_INFO, goto_if_error, LOG_ERROR
 
 /** This test is intended to test Fapi_Provision with a template and a nonce
  *  stored in NV ram.
@@ -38,10 +38,9 @@
  *
  */
 static bool
-fapi_ek_certless()
-{
+fapi_ek_certless() {
     FILE *stream = NULL;
-    long config_size;
+    long  config_size;
     char *config = NULL;
     char *fapi_config_file = getenv("TSS2_FAPICONF");
 
@@ -71,23 +70,22 @@ fapi_ek_certless()
 }
 
 int
-test_fapi_provision_template(FAPI_CONTEXT *context)
-{
+test_fapi_provision_template(FAPI_CONTEXT *context) {
 #ifndef SELF_GENERATED_CERTIFICATE
     return EXIT_SKIP;
 #endif
-    size_t offset = 0;
-    UINT16 offset_nv = 0;
-     TSS2_TCTI_CONTEXT *tcti;
-    ESYS_CONTEXT *esys_ctx;
-    ESYS_TR nv_handle_template = ESYS_TR_NONE;
-    ESYS_TR nv_handle_nonce = ESYS_TR_NONE;
-    TPM2_HANDLE nv_template_idx;
-    TPM2_RC r;
-    TPM2_HANDLE nv_nonce_idx;
-    TPM2_HANDLE ecc_nv_nonce_idx = 0x01c0000b;
-    TPM2_HANDLE ecc_nv_template_idx = 0x01c0000c;
-    TPMT_PUBLIC in_public;
+    size_t             offset = 0;
+    UINT16             offset_nv = 0;
+    TSS2_TCTI_CONTEXT *tcti;
+    ESYS_CONTEXT      *esys_ctx;
+    ESYS_TR            nv_handle_template = ESYS_TR_NONE;
+    ESYS_TR            nv_handle_nonce = ESYS_TR_NONE;
+    TPM2_HANDLE        nv_template_idx;
+    TPM2_RC            r;
+    TPM2_HANDLE        nv_nonce_idx;
+    TPM2_HANDLE        ecc_nv_nonce_idx = 0x01c0000b;
+    TPM2_HANDLE        ecc_nv_template_idx = 0x01c0000c;
+    TPMT_PUBLIC        in_public;
     TPMT_PUBLIC ecc_in_public =
         {
          .type = TPM2_ALG_ECC,
@@ -187,7 +185,7 @@ test_fapi_provision_template(FAPI_CONTEXT *context)
         }
     };
 
-    TPM2B_AUTH auth = { .size = 0, .buffer = {} };
+    TPM2B_AUTH          auth = { .size = 0, .buffer = {} };
     TPM2B_MAX_NV_BUFFER nv_data;
 
     if (fapi_ek_certless())
@@ -201,7 +199,7 @@ test_fapi_provision_template(FAPI_CONTEXT *context)
         nv_template_idx = rsa_nv_template_idx;
         nv_nonce_idx = rsa_nv_nonce_idx;
         in_public = rsa_in_public;
-     } else {
+    } else {
         return EXIT_SKIP;
     }
 
@@ -214,32 +212,19 @@ test_fapi_provision_template(FAPI_CONTEXT *context)
     /*
      * Store template (marshaled TPMT_PUBLIC) in NV ram.
      */
-    r = Tss2_MU_TPMT_PUBLIC_Marshal(&in_public, &nv_data.buffer[0],
-                                    sizeof(in_public), &offset);
+    r = Tss2_MU_TPMT_PUBLIC_Marshal(&in_public, &nv_data.buffer[0], sizeof(in_public), &offset);
     goto_if_error(r, "Tss2_MU_TPMT_PUBLIC_Marshal", error);
 
     nv_public_info.nvPublic.nvIndex = nv_template_idx;
     nv_public_info.nvPublic.dataSize = offset;
     nv_data.size = offset;
 
-    r = Esys_NV_DefineSpace(esys_ctx,
-                            ESYS_TR_RH_OWNER,
-                            ESYS_TR_PASSWORD,
-                            ESYS_TR_NONE,
-                            ESYS_TR_NONE,
-                            &auth,
-                            &nv_public_info,
-                            &nv_handle_template);
+    r = Esys_NV_DefineSpace(esys_ctx, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                            ESYS_TR_NONE, &auth, &nv_public_info, &nv_handle_template);
     goto_if_error(r, "Error esys define nv space", error);
 
-    r = Esys_NV_Write(esys_ctx,
-                      nv_handle_template,
-                      nv_handle_template,
-                      ESYS_TR_PASSWORD,
-                      ESYS_TR_NONE,
-                      ESYS_TR_NONE,
-                      &nv_data,
-                      offset_nv);
+    r = Esys_NV_Write(esys_ctx, nv_handle_template, nv_handle_template, ESYS_TR_PASSWORD,
+                      ESYS_TR_NONE, ESYS_TR_NONE, &nv_data, offset_nv);
     goto_if_error(r, "Error esys nv write successful", error);
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
@@ -257,24 +242,12 @@ test_fapi_provision_template(FAPI_CONTEXT *context)
     nv_data.size = 1;
     nv_data.buffer[0] = 1;
 
-    r = Esys_NV_DefineSpace(esys_ctx,
-                            ESYS_TR_RH_OWNER,
-                            ESYS_TR_PASSWORD,
-                            ESYS_TR_NONE,
-                            ESYS_TR_NONE,
-                            &auth,
-                            &nv_public_info,
-                            &nv_handle_nonce);
+    r = Esys_NV_DefineSpace(esys_ctx, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                            ESYS_TR_NONE, &auth, &nv_public_info, &nv_handle_nonce);
     goto_if_error(r, "Error esys define nv space", error);
 
-    r = Esys_NV_Write(esys_ctx,
-                      nv_handle_nonce,
-                      nv_handle_nonce,
-                      ESYS_TR_PASSWORD,
-                      ESYS_TR_NONE,
-                      ESYS_TR_NONE,
-                      &nv_data,
-                      offset_nv);
+    r = Esys_NV_Write(esys_ctx, nv_handle_nonce, nv_handle_nonce, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                      ESYS_TR_NONE, &nv_data, offset_nv);
     goto_if_error(r, "Error esys nv write successful", error);
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
@@ -283,10 +256,7 @@ test_fapi_provision_template(FAPI_CONTEXT *context)
         goto error;
     }
 
-    r = Esys_NV_UndefineSpace(esys_ctx,
-                              ESYS_TR_RH_OWNER,
-                              nv_handle_nonce,
-                              ESYS_TR_PASSWORD,
+    r = Esys_NV_UndefineSpace(esys_ctx, ESYS_TR_RH_OWNER, nv_handle_nonce, ESYS_TR_PASSWORD,
                               ESYS_TR_NONE, ESYS_TR_NONE);
     goto_if_error(r, "Error Esys_NV_UndefineSpace", error);
     nv_handle_nonce = ESYS_TR_NONE;
@@ -294,32 +264,25 @@ test_fapi_provision_template(FAPI_CONTEXT *context)
 
     return EXIT_SUCCESS;
 
- error:
+error:
     if (nv_handle_template != ESYS_TR_NONE) {
-        if (Esys_NV_UndefineSpace(esys_ctx,
-                                  ESYS_TR_RH_OWNER,
-                                  nv_handle_template,
-                                  ESYS_TR_PASSWORD,
-                                  ESYS_TR_NONE,
-                                  ESYS_TR_NONE) != TSS2_RC_SUCCESS) {
+        if (Esys_NV_UndefineSpace(esys_ctx, ESYS_TR_RH_OWNER, nv_handle_template, ESYS_TR_PASSWORD,
+                                  ESYS_TR_NONE, ESYS_TR_NONE)
+            != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup nv_handle_template failed.");
         }
     }
-     if (nv_handle_nonce != ESYS_TR_NONE) {
-        if (Esys_NV_UndefineSpace(esys_ctx,
-                                  ESYS_TR_RH_OWNER,
-                                  nv_handle_nonce,
-                                  ESYS_TR_PASSWORD,
-                                  ESYS_TR_NONE,
-                                  ESYS_TR_NONE) != TSS2_RC_SUCCESS) {
+    if (nv_handle_nonce != ESYS_TR_NONE) {
+        if (Esys_NV_UndefineSpace(esys_ctx, ESYS_TR_RH_OWNER, nv_handle_nonce, ESYS_TR_PASSWORD,
+                                  ESYS_TR_NONE, ESYS_TR_NONE)
+            != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup nv_handle_nonce failed.");
         }
     }
-     Esys_Finalize(&esys_ctx);
+    Esys_Finalize(&esys_ctx);
     return EXIT_FAILURE;
 }
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_provision_template(fapi_context);
 }

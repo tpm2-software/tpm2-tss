@@ -8,39 +8,39 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <dlfcn.h>                   // for RTLD_LAZY, RTLD_LOCAL
-#include <errno.h>                   // for errno, ENOENT
-#include <fcntl.h>                   // for O_CREAT, O_RDWR, SEEK_END, mode_t
-#include <inttypes.h>                // for uint32_t
-#include <libtpms/tpm_error.h>       // for TPM_SUCCESS
-#include <libtpms/tpm_library.h>     // for libtpms_callbacks, TPMLIB_STATE_...
-#include <libtpms/tpm_tis.h>         // for TPM_IO_TpmEstablished_Reset
-#include <libtpms/tpm_types.h>       // for TPM_RESULT
-#include <stdio.h>                   // for NULL, fprintf, size_t, stderr
-#include <stdlib.h>                  // for free, calloc, malloc
-#include <string.h>                  // for memcpy, strerror, strlen, strncmp
-#include <sys/mman.h>                // for MAP_FAILED, MREMAP_MAYMOVE, MAP_...
-#include <unistd.h>                  // for unlink
+#include <dlfcn.h>               // for RTLD_LAZY, RTLD_LOCAL
+#include <errno.h>               // for errno, ENOENT
+#include <fcntl.h>               // for O_CREAT, O_RDWR, SEEK_END, mode_t
+#include <inttypes.h>            // for uint32_t
+#include <libtpms/tpm_error.h>   // for TPM_SUCCESS
+#include <libtpms/tpm_library.h> // for libtpms_callbacks, TPMLIB_STATE_...
+#include <libtpms/tpm_tis.h>     // for TPM_IO_TpmEstablished_Reset
+#include <libtpms/tpm_types.h>   // for TPM_RESULT
+#include <stdio.h>               // for NULL, fprintf, size_t, stderr
+#include <stdlib.h>              // for free, calloc, malloc
+#include <string.h>              // for memcpy, strerror, strlen, strncmp
+#include <sys/mman.h>            // for MAP_FAILED, MREMAP_MAYMOVE, MAP_...
+#include <unistd.h>              // for unlink
 
-#include "../helper/cmocka_all.h"    // for will_return, expect_value, asser...
-#include "tss2-tcti/tcti-common.h"   // for TSS2_TCTI_COMMON_CONTEXT, tcti_c...
-#include "tss2-tcti/tcti-libtpms.h"  // for TSS2_TCTI_LIBTPMS_CONTEXT, STATE...
-#include "tss2_common.h"             // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_T...
-#include "tss2_tcti.h"               // for TSS2_TCTI_CONTEXT, Tss2_Tcti_Tra...
-#include "tss2_tcti_libtpms.h"       // for Tss2_Tcti_Libtpms_Init
-#include "tss2_tpm2_types.h"         // for TPM2_RC_SUCCESS
-#include "util/aux_util.h"           // for ARRAY_LEN
+#include "../helper/cmocka_all.h"   // for will_return, expect_value, asser...
+#include "tss2-tcti/tcti-common.h"  // for TSS2_TCTI_COMMON_CONTEXT, tcti_c...
+#include "tss2-tcti/tcti-libtpms.h" // for TSS2_TCTI_LIBTPMS_CONTEXT, STATE...
+#include "tss2_common.h"            // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_T...
+#include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, Tss2_Tcti_Tra...
+#include "tss2_tcti_libtpms.h"      // for Tss2_Tcti_Libtpms_Init
+#include "tss2_tpm2_types.h"        // for TPM2_RC_SUCCESS
+#include "util/aux_util.h"          // for ARRAY_LEN
 
 #define LOGMODULE test
-#include "util/log.h"                // for LOG_TRACE, LOG_ERROR, LOG_WARNING
+#include "util/log.h" // for LOG_TRACE, LOG_ERROR, LOG_WARNING
 
-#define EXIT_SKIP 77
+#define EXIT_SKIP            77
 
-#define LIBTPMS_DL_HANDLE  0x12345678
-#define STATEFILE_PATH     "statefile.bin"
-#define STATEFILE_FD       0xAABB
-#define STATEFILE_MMAP     mmap_buf
-#define STATEFILE_MMAP_NEW mmap_buf_new
+#define LIBTPMS_DL_HANDLE    0x12345678
+#define STATEFILE_PATH       "statefile.bin"
+#define STATEFILE_FD         0xAABB
+#define STATEFILE_MMAP       mmap_buf
+#define STATEFILE_MMAP_NEW   mmap_buf_new
 
 #define STATEFILE_PATH_REAL0 "statefile0.bin"
 #define STATEFILE_PATH_REAL1 "statefile1.bin"
@@ -51,7 +51,8 @@
 #define S1_VOLATILE_BUF_LITERAL  "bbbbb"
 #define S1_VOLATILE_BUF_LEN      5
 #define S1_STATE                 "\0\0\0\x08" S1_PERMANENT_BUF_LITERAL "\0\0\0\x05" S1_VOLATILE_BUF_LITERAL
-#define S1_STATE_LEN             (sizeof(uint32_t) + S1_PERMANENT_BUF_LEN + sizeof(uint32_t) + S1_VOLATILE_BUF_LEN)
+#define S1_STATE_LEN                                                                               \
+    (sizeof(uint32_t) + S1_PERMANENT_BUF_LEN + sizeof(uint32_t) + S1_VOLATILE_BUF_LEN)
 
 /* next state */
 #define S2_PERMANENT_BUF_LITERAL "xxxxxxxxxxxxx"
@@ -59,50 +60,77 @@
 #define S2_VOLATILE_BUF_LITERAL  "yyyyyyy"
 #define S2_VOLATILE_BUF_LEN      7
 #define S2_STATE                 "\0\0\0\x0D" S2_PERMANENT_BUF_LITERAL "\0\0\0\x07" S2_VOLATILE_BUF_LITERAL
-#define S2_STATE_LEN             (sizeof(uint32_t) + S2_PERMANENT_BUF_LEN + sizeof(uint32_t) + S2_VOLATILE_BUF_LEN)
+#define S2_STATE_LEN                                                                               \
+    (sizeof(uint32_t) + S2_PERMANENT_BUF_LEN + sizeof(uint32_t) + S2_VOLATILE_BUF_LEN)
 
 /* big state */
-#define S3_PERMANENT_BUF_LITERAL "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
-                                 "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
-#define S3_PERMANENT_BUF_LEN     1200
-#define S3_VOLATILE_BUF_LITERAL  "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
-                                 "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
-                                 "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
-                                 "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
-                                 "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
-                                 "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
-                                 "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
-                                 "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
-                                 "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
-                                 "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
-                                 "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"
-#define S3_VOLATILE_BUF_LEN      1100
-#define S3_STATE                 "\0\0\x04\xB0" S3_PERMANENT_BUF_LITERAL "\0\0\04\x4C" S3_VOLATILE_BUF_LITERAL
-#define S3_STATE_LEN             (sizeof(uint32_t) + S3_PERMANENT_BUF_LEN + sizeof(uint32_t) + S3_VOLATILE_BUF_LEN)
+#define S3_PERMANENT_BUF_LITERAL                                                                   \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"                                                                                     \
+    "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" \
+    "ssssssss"
+#define S3_PERMANENT_BUF_LEN 1200
+#define S3_VOLATILE_BUF_LITERAL                                                                    \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"                                                                                     \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"                                                                                     \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"                                                                                     \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"                                                                                     \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"                                                                                     \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"                                                                                     \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"                                                                                     \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"                                                                                     \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"                                                                                     \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"                                                                                     \
+    "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt" \
+    "tttttttt"
+#define S3_VOLATILE_BUF_LEN 1100
+#define S3_STATE            "\0\0\x04\xB0" S3_PERMANENT_BUF_LITERAL "\0\0\04\x4C" S3_VOLATILE_BUF_LITERAL
+#define S3_STATE_LEN                                                                               \
+    (sizeof(uint32_t) + S3_PERMANENT_BUF_LEN + sizeof(uint32_t) + S3_VOLATILE_BUF_LEN)
 
-char mmap_buf[STATE_MMAP_CHUNK_LEN] = {0};
-char mmap_buf_new[2400] = {0};
+char mmap_buf[STATE_MMAP_CHUNK_LEN] = { 0 };
+char mmap_buf_new[2400] = { 0 };
 
 struct libtpms_callbacks global_callbacks;
 
 /* mock libtpms API */
-TPM_RESULT TPMLIB_ChooseTPMVersion(TPMLIB_TPMVersion ver)
-{
+TPM_RESULT
+TPMLIB_ChooseTPMVersion(TPMLIB_TPMVersion ver) {
     check_expected(ver);
     return mock_type(int);
 }
-TPM_RESULT TPMLIB_RegisterCallbacks(struct libtpms_callbacks *callbacks)
-{
+TPM_RESULT
+TPMLIB_RegisterCallbacks(struct libtpms_callbacks *callbacks) {
     global_callbacks.sizeOfStruct = callbacks->sizeOfStruct;
     global_callbacks.tpm_nvram_init = callbacks->tpm_nvram_init;
     global_callbacks.tpm_nvram_loaddata = callbacks->tpm_nvram_loaddata;
@@ -113,8 +141,8 @@ TPM_RESULT TPMLIB_RegisterCallbacks(struct libtpms_callbacks *callbacks)
     global_callbacks.tpm_io_getphysicalpresence = callbacks->tpm_io_getphysicalpresence;
     return mock_type(int);
 }
-TPM_RESULT TPMLIB_GetState(enum TPMLIB_StateType st, unsigned char **buf, uint32_t *buf_len)
-{
+TPM_RESULT
+TPMLIB_GetState(enum TPMLIB_StateType st, unsigned char **buf, uint32_t *buf_len) {
     check_expected(st);
     unsigned char *buf_out = mock_type(unsigned char *);
     *buf_len = mock_type(uint32_t);
@@ -123,8 +151,8 @@ TPM_RESULT TPMLIB_GetState(enum TPMLIB_StateType st, unsigned char **buf, uint32
     memcpy(*buf, buf_out, *buf_len);
     return mock_type(int);
 }
-TPM_RESULT TPMLIB_MainInit(void)
-{
+TPM_RESULT
+TPMLIB_MainInit(void) {
     uint32_t ret;
     ret = global_callbacks.tpm_nvram_init();
     assert_int_equal(ret, 0);
@@ -132,8 +160,12 @@ TPM_RESULT TPMLIB_MainInit(void)
     assert_int_equal(ret, 0);
     return mock_type(int);
 }
-TPM_RESULT TPMLIB_Process(unsigned char **resp_buf, uint32_t *resp_len, uint32_t *resp_buf_len, unsigned char *cmd, uint32_t cmd_len)
-{
+TPM_RESULT
+TPMLIB_Process(unsigned char **resp_buf,
+               uint32_t       *resp_len,
+               uint32_t       *resp_buf_len,
+               unsigned char  *cmd,
+               uint32_t        cmd_len) {
     uint32_t locality;
     uint32_t ret;
     check_expected_ptr(cmd);
@@ -149,44 +181,41 @@ TPM_RESULT TPMLIB_Process(unsigned char **resp_buf, uint32_t *resp_len, uint32_t
     memcpy(*resp_buf, buf_out, *resp_len);
     return mock_type(int);
 }
-TPM_RESULT TPMLIB_SetState(enum TPMLIB_StateType st, const unsigned char *buf, uint32_t buf_len)
-{
+TPM_RESULT
+TPMLIB_SetState(enum TPMLIB_StateType st, const unsigned char *buf, uint32_t buf_len) {
     check_expected_ptr(st);
     check_expected_ptr(buf);
     check_expected_ptr(buf_len);
     return mock_type(int);
 }
-void TPMLIB_Terminate(void)
-{
-}
-TPM_RESULT TPM_IO_TpmEstablished_Reset(void)
-{
-    return TPM_SUCCESS;
-}
+void
+TPMLIB_Terminate(void) {}
+TPM_RESULT
+TPM_IO_TpmEstablished_Reset(void) { return TPM_SUCCESS; }
 
-void *__wrap_dlopen(const char *filename, int flags)
-{
+void *
+__wrap_dlopen(const char *filename, int flags) {
     LOG_TRACE("Called with filename %s and flags %x", filename, flags);
     check_expected_ptr(filename);
     check_expected(flags);
     return mock_type(void *);
 }
-int __wrap_dlclose(void *handle)
-{
+int
+__wrap_dlclose(void *handle) {
     LOG_TRACE("Called with handle %p", handle);
     check_expected_ptr(handle);
     return mock_type(int);
 }
-void *__wrap_dlsym(void *handle, const char *symbol)
-{
+void *
+__wrap_dlsym(void *handle, const char *symbol) {
     LOG_TRACE("Called with handle %p and symbol %s", handle, symbol);
     check_expected_ptr(handle);
     check_expected_ptr(symbol);
     return mock_type(void *);
 }
-void *__real_mmap (void *addr, size_t len, int prot, int flags, int fd, off_t offset);
-void *__wrap_mmap (void *addr, size_t len, int prot, int flags, int fd, off_t offset)
-{
+void *__real_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
+void *
+__wrap_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset) {
     int wrap = mock_type(int);
     if (wrap) {
         check_expected_ptr(addr);
@@ -200,8 +229,8 @@ void *__wrap_mmap (void *addr, size_t len, int prot, int flags, int fd, off_t of
         return __real_mmap(addr, len, prot, flags, fd, offset);
     }
 }
-void *__wrap_mremap(void *old_address, size_t old_size, size_t new_size, int flags)
-{
+void *
+__wrap_mremap(void *old_address, size_t old_size, size_t new_size, int flags) {
     void *new_address;
     check_expected_ptr(old_address);
     check_expected(old_size);
@@ -214,8 +243,8 @@ void *__wrap_mremap(void *old_address, size_t old_size, size_t new_size, int fla
     return new_address;
 }
 int __real_munmap(void *addr, size_t len);
-int __wrap_munmap(void *addr, size_t len)
-{
+int
+__wrap_munmap(void *addr, size_t len) {
     int wrap = mock_type(int);
     if (wrap) {
         check_expected_ptr(addr);
@@ -226,15 +255,15 @@ int __wrap_munmap(void *addr, size_t len)
     }
 }
 int __real_open(const char *pathname, int flags, ...);
-int __wrap_open(const char *pathname, int flags, mode_t mode)
-{
+int
+__wrap_open(const char *pathname, int flags, mode_t mode) {
     if (strncmp(pathname, STATEFILE_PATH, strlen(STATEFILE_PATH)) == 0) {
         check_expected_ptr(pathname);
         check_expected(flags);
         check_expected(mode);
         return mock_type(int);
-    } else if (strncmp(pathname, STATEFILE_PATH_REAL0, strlen(STATEFILE_PATH_REAL0)) == 0 \
-            || strncmp(pathname, STATEFILE_PATH_REAL1, strlen(STATEFILE_PATH_REAL1)) == 0) {
+    } else if (strncmp(pathname, STATEFILE_PATH_REAL0, strlen(STATEFILE_PATH_REAL0)) == 0
+               || strncmp(pathname, STATEFILE_PATH_REAL1, strlen(STATEFILE_PATH_REAL1)) == 0) {
         check_expected_ptr(pathname);
         check_expected(flags);
         check_expected(mode);
@@ -246,8 +275,8 @@ int __wrap_open(const char *pathname, int flags, mode_t mode)
     }
 }
 off_t __real_lseek(int fd, off_t offset, int whence);
-off_t __wrap_lseek(int fd, off_t offset, int whence)
-{
+off_t
+__wrap_lseek(int fd, off_t offset, int whence) {
     int wrap = mock_type(int);
     if (wrap) {
         check_expected(fd);
@@ -259,8 +288,8 @@ off_t __wrap_lseek(int fd, off_t offset, int whence)
     }
 }
 int __real_posix_fallocate(int fd, off_t offset, off_t len);
-int __wrap_posix_fallocate(int fd, off_t offset, off_t len)
-{
+int
+__wrap_posix_fallocate(int fd, off_t offset, off_t len) {
     int wrap = mock_type(int);
     if (wrap) {
         check_expected(fd);
@@ -272,8 +301,8 @@ int __wrap_posix_fallocate(int fd, off_t offset, off_t len)
     }
 }
 int __real_truncate(const char *path, off_t length);
-int __wrap_truncate(const char *path, off_t length)
-{
+int
+__wrap_truncate(const char *path, off_t length) {
     int wrap = mock_type(int);
     if (wrap) {
         check_expected_ptr(path);
@@ -284,8 +313,8 @@ int __wrap_truncate(const char *path, off_t length)
     }
 }
 int __real_close(int fd);
-int __wrap_close(int fd)
-{
+int
+__wrap_close(int fd) {
     int wrap = mock_type(int);
     if (wrap) {
         check_expected(fd);
@@ -297,8 +326,7 @@ int __wrap_close(int fd)
 
 /* When passed all NULL values, we expect TSS2_TCTI_RC_BAD_VALUE. */
 static void
-tcti_libtpms_init_all_null_test(void **state)
-{
+tcti_libtpms_init_all_null_test(void **state) {
     TSS2_RC rc;
 
     rc = Tss2_Tcti_Libtpms_Init(NULL, NULL, NULL);
@@ -307,10 +335,9 @@ tcti_libtpms_init_all_null_test(void **state)
 
 /* When dlopen fails for library names we expect TSS2_TCTI_RC_GENERAL_FAILURE. */
 static void
-tcti_libtpms_init_dlopen_fail_test(void **state)
-{
-    size_t tcti_size = 0;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
+tcti_libtpms_init_dlopen_fail_test(void **state) {
+    size_t             tcti_size = 0;
+    TSS2_RC            ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
     ret = Tss2_Tcti_Libtpms_Init(NULL, &tcti_size, NULL);
@@ -331,23 +358,18 @@ tcti_libtpms_init_dlopen_fail_test(void **state)
     free(ctx);
 }
 
-static int dummy;
+static int   dummy;
 static void *dummy_ptr = &dummy;
 /* When dlsym fails for any libtpms symbol, we expect TSS2_TCTI_RC_GENERAL_FAILURE. */
 static void
-tcti_libtpms_init_dlsym_fail_test(void **state)
-{
-    size_t tcti_size = 0;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
+tcti_libtpms_init_dlsym_fail_test(void **state) {
+    size_t             tcti_size = 0;
+    TSS2_RC            ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
     const char *syms[] = {
-        "TPMLIB_ChooseTPMVersion",
-        "TPMLIB_RegisterCallbacks",
-        "TPMLIB_GetState",
-        "TPMLIB_MainInit",
-        "TPMLIB_Process",
-        "TPMLIB_SetState",
+        "TPMLIB_ChooseTPMVersion", "TPMLIB_RegisterCallbacks", "TPMLIB_GetState",
+        "TPMLIB_MainInit",         "TPMLIB_Process",           "TPMLIB_SetState",
         "TPMLIB_Terminate",
     };
 
@@ -387,10 +409,9 @@ tcti_libtpms_init_dlsym_fail_test(void **state)
 
 /* When open fails to open the state file, we expect TSS2_TCTI_RC_IO_ERROR. */
 static void
-tcti_libtpms_init_state_open_fail_test(void **state)
-{
-    size_t tcti_size = 0;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
+tcti_libtpms_init_state_open_fail_test(void **state) {
+    size_t             tcti_size = 0;
+    TSS2_RC            ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
 #ifdef __FreeBSD__
@@ -457,10 +478,9 @@ tcti_libtpms_init_state_open_fail_test(void **state)
 
 /* When lseek fails on the state file, we expect TSS2_TCTI_RC_IO_ERROR. */
 static void
-tcti_libtpms_init_state_lseek_fail_test(void **state)
-{
-    size_t tcti_size = 0;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
+tcti_libtpms_init_state_lseek_fail_test(void **state) {
+    size_t             tcti_size = 0;
+    TSS2_RC            ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
 #ifdef __FreeBSD__
@@ -537,10 +557,9 @@ tcti_libtpms_init_state_lseek_fail_test(void **state)
 
 /* When posix_fallocate fails on the state file, we expect TSS2_TCTI_RC_IO_ERROR. */
 static void
-tcti_libtpms_init_state_posix_fallocate_fail_test(void **state)
-{
-    size_t tcti_size = 0;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
+tcti_libtpms_init_state_posix_fallocate_fail_test(void **state) {
+    size_t             tcti_size = 0;
+    TSS2_RC            ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
 #ifdef __FreeBSD__
@@ -623,10 +642,9 @@ tcti_libtpms_init_state_posix_fallocate_fail_test(void **state)
 
 /* When mmap fails on the state file, we expect TSS2_TCTI_RC_IO_ERROR. */
 static void
-tcti_libtpms_init_state_mmap_fail_test(void **state)
-{
-    size_t tcti_size = 0;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
+tcti_libtpms_init_state_mmap_fail_test(void **state) {
+    size_t             tcti_size = 0;
+    TSS2_RC            ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
 #ifdef __FreeBSD__
@@ -718,10 +736,9 @@ tcti_libtpms_init_state_mmap_fail_test(void **state)
 
 /* Currently, state files are not supported on FreeBSD. */
 static void
-tcti_libtpms_init_state_freebsd_fail_test(void **state)
-{
-    size_t tcti_size = 0;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
+tcti_libtpms_init_state_freebsd_fail_test(void **state) {
+    size_t             tcti_size = 0;
+    TSS2_RC            ret = TSS2_RC_SUCCESS;
     TSS2_TCTI_CONTEXT *ctx = NULL;
 
     // FreeBSD-only test
@@ -783,12 +800,11 @@ tcti_libtpms_init_state_freebsd_fail_test(void **state)
  * mock functions necessary for a the successful call to
  * 'Tss2_Tcti_Libtpms_Init'.
  */
-static TSS2_TCTI_CONTEXT*
-tcti_libtpms_init_from_conf(const char *conf)
-{
-    size_t tcti_size = 0;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
-    TSS2_TCTI_CONTEXT *ctx = NULL;
+static TSS2_TCTI_CONTEXT *
+tcti_libtpms_init_from_conf(const char *conf) {
+    size_t                     tcti_size = 0;
+    TSS2_RC                    ret = TSS2_RC_SUCCESS;
+    TSS2_TCTI_CONTEXT         *ctx = NULL;
     TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms;
 
     memcpy(mmap_buf, S1_STATE, S1_STATE_LEN);
@@ -873,7 +889,8 @@ tcti_libtpms_init_from_conf(const char *conf)
         will_return(TPMLIB_SetState, 0);
 
         expect_value(TPMLIB_SetState, st, TPMLIB_STATE_VOLATILE);
-        expect_value(TPMLIB_SetState, buf, STATEFILE_MMAP + sizeof(uint32_t) + S1_PERMANENT_BUF_LEN + sizeof(uint32_t));
+        expect_value(TPMLIB_SetState, buf,
+                     STATEFILE_MMAP + sizeof(uint32_t) + S1_PERMANENT_BUF_LEN + sizeof(uint32_t));
         expect_value(TPMLIB_SetState, buf_len, S1_VOLATILE_BUF_LEN);
         will_return(TPMLIB_SetState, 0);
     }
@@ -887,7 +904,7 @@ tcti_libtpms_init_from_conf(const char *conf)
     fprintf(stderr, "%s: after second init\n", __func__);
     assert_int_equal(ret, TSS2_RC_SUCCESS);
 
-    tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*) ctx;
+    tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT *)ctx;
     if (conf != NULL) {
         assert_string_equal(tcti_libtpms->state_path, STATEFILE_PATH);
         assert_ptr_equal(tcti_libtpms->state_mmap, STATEFILE_MMAP);
@@ -909,12 +926,11 @@ tcti_libtpms_init_from_conf(const char *conf)
  * the mock functions necessary for a the successful call to
  * 'Tss2_Tcti_Libtpms_Init'.
  */
-static TSS2_TCTI_CONTEXT*
-tcti_libtpms_init_from_conf_real(const char *conf)
-{
-    size_t tcti_size = 0;
-    TSS2_RC ret = TSS2_RC_SUCCESS;
-    TSS2_TCTI_CONTEXT *ctx = NULL;
+static TSS2_TCTI_CONTEXT *
+tcti_libtpms_init_from_conf_real(const char *conf) {
+    size_t                     tcti_size = 0;
+    TSS2_RC                    ret = TSS2_RC_SUCCESS;
+    TSS2_TCTI_CONTEXT         *ctx = NULL;
     TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms;
 
     memcpy(mmap_buf, S2_STATE, S2_STATE_LEN);
@@ -924,7 +940,7 @@ tcti_libtpms_init_from_conf_real(const char *conf)
     assert_true(ret == TSS2_RC_SUCCESS);
     ctx = calloc(1, tcti_size);
     assert_non_null(ctx);
-    tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*) ctx;
+    tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT *)ctx;
 
     fprintf(stderr, "%s: before second_init\n", __func__);
     expect_string(__wrap_dlopen, filename, "libtpms.so");
@@ -970,8 +986,9 @@ tcti_libtpms_init_from_conf_real(const char *conf)
         /* __wrap_open delegates to __real_open based on filename */
 
         will_return(__wrap_lseek, 0); /* wrap = false, delegate to __real_lseek */
-        will_return(__wrap_posix_fallocate, 0); /* wrap = false, delegate to __real_posix_fallocate */
-        will_return(__wrap_mmap, 0); /* wrap = false, delegate to __real_mmap */
+        will_return(__wrap_posix_fallocate,
+                    0);               /* wrap = false, delegate to __real_posix_fallocate */
+        will_return(__wrap_mmap, 0);  /* wrap = false, delegate to __real_mmap */
         will_return(__wrap_close, 0); /* wrap = false, delegate to __real_close */
 
         /* statefile does not exist already, do not load any state */
@@ -1000,12 +1017,12 @@ tcti_libtpms_init_from_conf_real(const char *conf)
 }
 
 static void
-tcti_libtpms_locality_success_test(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_RC rc;
-    unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
-    unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
+tcti_libtpms_locality_success_test(void **state) {
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT *)*state;
+    TSS2_RC            rc;
+    unsigned char      cmd[]
+        = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00 };
+    unsigned char rsp[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00 };
 
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
@@ -1027,13 +1044,13 @@ tcti_libtpms_locality_success_test(void **state)
 }
 
 static void
-tcti_libtpms_transmit_success_test(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*) ctx;
-    TSS2_RC rc;
-    unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
-    unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
+tcti_libtpms_transmit_success_test(void **state) {
+    TSS2_TCTI_CONTEXT         *ctx = (TSS2_TCTI_CONTEXT *)*state;
+    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT *)ctx;
+    TSS2_RC                    rc;
+    unsigned char              cmd[]
+        = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00 };
+    unsigned char rsp[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00 };
 
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
@@ -1071,15 +1088,14 @@ tcti_libtpms_transmit_success_test(void **state)
 }
 
 static void
-tcti_libtpms_receive_success_test(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*) ctx;
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast(ctx);
-    TSS2_RC rc;
-    unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
+tcti_libtpms_receive_success_test(void **state) {
+    TSS2_TCTI_CONTEXT         *ctx = (TSS2_TCTI_CONTEXT *)*state;
+    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT *)ctx;
+    TSS2_TCTI_COMMON_CONTEXT  *tcti_common = tcti_common_context_cast(ctx);
+    TSS2_RC                    rc;
+    unsigned char rsp[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00 };
     unsigned char rsp_out[sizeof(rsp)];
-    size_t rsp_len_out = 0;
+    size_t        rsp_len_out = 0;
 
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
@@ -1112,13 +1128,13 @@ tcti_libtpms_receive_success_test(void **state)
 }
 
 static void
-tcti_libtpms_remap_state_success_test(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*) ctx;
-    TSS2_RC rc;
-    unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
-    unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
+tcti_libtpms_remap_state_success_test(void **state) {
+    TSS2_TCTI_CONTEXT         *ctx = (TSS2_TCTI_CONTEXT *)*state;
+    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT *)ctx;
+    TSS2_RC                    rc;
+    unsigned char              cmd[]
+        = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00 };
+    unsigned char rsp[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00 };
 
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
@@ -1174,13 +1190,13 @@ tcti_libtpms_remap_state_success_test(void **state)
 
 /* Have mremap fail during state remap (transmit), expect TSS2_TCTI_RC_IO_ERROR */
 static void
-tcti_libtpms_remap_state_mremap_fail_test(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*) ctx;
-    TSS2_RC rc;
-    unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
-    unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
+tcti_libtpms_remap_state_mremap_fail_test(void **state) {
+    TSS2_TCTI_CONTEXT         *ctx = (TSS2_TCTI_CONTEXT *)*state;
+    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT *)ctx;
+    TSS2_RC                    rc;
+    unsigned char              cmd[]
+        = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00 };
+    unsigned char rsp[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00 };
 
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
@@ -1222,13 +1238,13 @@ tcti_libtpms_remap_state_mremap_fail_test(void **state)
 
 /* Have open fail during state remap (transmit), expect TSS2_TCTI_RC_IO_ERROR */
 static void
-tcti_libtpms_remap_state_posix_fallocate_fail_test(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*) ctx;
-    TSS2_RC rc;
-    unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
-    unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
+tcti_libtpms_remap_state_posix_fallocate_fail_test(void **state) {
+    TSS2_TCTI_CONTEXT         *ctx = (TSS2_TCTI_CONTEXT *)*state;
+    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT *)ctx;
+    TSS2_RC                    rc;
+    unsigned char              cmd[]
+        = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00 };
+    unsigned char rsp[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00 };
 
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
@@ -1286,16 +1302,16 @@ tcti_libtpms_remap_state_posix_fallocate_fail_test(void **state)
 
 /* Have open fail during state remap (transmit), expect TSS2_TCTI_RC_IO_ERROR */
 static void
-tcti_libtpms_no_statefile_success_test(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*)*state;
-    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*) ctx;
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_common_context_cast(ctx);
-    TSS2_RC rc;
-    unsigned char cmd[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00};
-    unsigned char rsp[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00};
+tcti_libtpms_no_statefile_success_test(void **state) {
+    TSS2_TCTI_CONTEXT         *ctx = (TSS2_TCTI_CONTEXT *)*state;
+    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT *)ctx;
+    TSS2_TCTI_COMMON_CONTEXT  *tcti_common = tcti_common_context_cast(ctx);
+    TSS2_RC                    rc;
+    unsigned char              cmd[]
+        = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00 };
+    unsigned char rsp[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00 };
     unsigned char rsp_out[sizeof(rsp)];
-    size_t rsp_len_out = sizeof(rsp);
+    size_t        rsp_len_out = sizeof(rsp);
 
     expect_memory(TPMLIB_Process, cmd, cmd, sizeof(cmd));
     expect_value(TPMLIB_Process, cmd_len, sizeof(cmd));
@@ -1332,20 +1348,21 @@ tcti_libtpms_no_statefile_success_test(void **state)
 }
 
 static void
-tcti_libtpms_two_states_no_statefiles_success_test(void **state)
-{
-    TSS2_TCTI_CONTEXT **ctxs = (TSS2_TCTI_CONTEXT **) *state;
-    TSS2_TCTI_LIBTPMS_CONTEXT **tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT**) ctxs;
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common[2];
-    TSS2_RC rc;
-    unsigned char cmd_aa[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0xaa, 0xaa};
-    unsigned char rsp_aa[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0xaa, 0xaa, 0xaa, 0xaa};
+tcti_libtpms_two_states_no_statefiles_success_test(void **state) {
+    TSS2_TCTI_CONTEXT         **ctxs = (TSS2_TCTI_CONTEXT **)*state;
+    TSS2_TCTI_LIBTPMS_CONTEXT **tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT **)ctxs;
+    TSS2_TCTI_COMMON_CONTEXT   *tcti_common[2];
+    TSS2_RC                     rc;
+    unsigned char cmd_aa[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0xaa, 0xaa };
+    unsigned char rsp_aa[]
+        = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0xaa, 0xaa, 0xaa, 0xaa };
     unsigned char rsp_aa_out[sizeof(rsp_aa)];
-    size_t rsp_aa_len_out = sizeof(rsp_aa);
-    unsigned char cmd_bb[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0xbb, 0xbb};
-    unsigned char rsp_bb[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0xbb, 0xbb, 0xbb, 0xbb};
+    size_t        rsp_aa_len_out = sizeof(rsp_aa);
+    unsigned char cmd_bb[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0xbb, 0xbb };
+    unsigned char rsp_bb[]
+        = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0xbb, 0xbb, 0xbb, 0xbb };
     unsigned char rsp_bb_out[sizeof(rsp_bb)];
-    size_t rsp_bb_len_out = sizeof(rsp_bb);
+    size_t        rsp_bb_len_out = sizeof(rsp_bb);
 
     tcti_common[0] = tcti_common_context_cast(ctxs[0]);
     tcti_common[1] = tcti_common_context_cast(ctxs[1]);
@@ -1430,20 +1447,21 @@ tcti_libtpms_two_states_no_statefiles_success_test(void **state)
 }
 
 static void
-tcti_libtpms_two_states_success_test(void **state)
-{
-    TSS2_TCTI_CONTEXT **ctxs = (TSS2_TCTI_CONTEXT **) *state;
-    TSS2_TCTI_LIBTPMS_CONTEXT **tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT**) ctxs;
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common[2];
-    TSS2_RC rc;
-    unsigned char cmd_aa[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0xaa, 0xaa};
-    unsigned char rsp_aa[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0xaa, 0xaa, 0xaa, 0xaa};
+tcti_libtpms_two_states_success_test(void **state) {
+    TSS2_TCTI_CONTEXT         **ctxs = (TSS2_TCTI_CONTEXT **)*state;
+    TSS2_TCTI_LIBTPMS_CONTEXT **tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT **)ctxs;
+    TSS2_TCTI_COMMON_CONTEXT   *tcti_common[2];
+    TSS2_RC                     rc;
+    unsigned char cmd_aa[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0xaa, 0xaa };
+    unsigned char rsp_aa[]
+        = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0xaa, 0xaa, 0xaa, 0xaa };
     unsigned char rsp_aa_out[sizeof(rsp_aa)];
-    size_t rsp_aa_len_out = sizeof(rsp_aa);
-    unsigned char cmd_bb[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0xbb, 0xbb};
-    unsigned char rsp_bb[] = {0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0xbb, 0xbb, 0xbb, 0xbb};
+    size_t        rsp_aa_len_out = sizeof(rsp_aa);
+    unsigned char cmd_bb[] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0xbb, 0xbb };
+    unsigned char rsp_bb[]
+        = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0xbb, 0xbb, 0xbb, 0xbb };
     unsigned char rsp_bb_out[sizeof(rsp_bb)];
-    size_t rsp_bb_len_out = sizeof(rsp_bb);
+    size_t        rsp_bb_len_out = sizeof(rsp_bb);
 
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
@@ -1547,8 +1565,7 @@ tcti_libtpms_two_states_success_test(void **state)
  * This is a utility function to setup the "default" TCTI context.
  */
 static int
-tcti_libtpms_setup(void **state)
-{
+tcti_libtpms_setup(void **state) {
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
     return 0;
@@ -1563,8 +1580,7 @@ tcti_libtpms_setup(void **state)
  * This is a utility function to setup the "default" TCTI context.
  */
 static int
-tcti_libtpms_setup_no_statefile(void **state)
-{
+tcti_libtpms_setup_no_statefile(void **state) {
     fprintf(stderr, "%s: before tcti_libtpms_init_from_conf\n", __func__);
     *state = tcti_libtpms_init_from_conf(NULL);
     fprintf(stderr, "%s: done\n", __func__);
@@ -1574,9 +1590,8 @@ tcti_libtpms_setup_no_statefile(void **state)
  * This is a utility function to setup two "default" TCTI contexts.
  */
 static int
-tcti_libtpms_setup_two_states_no_statefiles(void **state)
-{
-    TSS2_TCTI_CONTEXT **ctxs = (TSS2_TCTI_CONTEXT **) malloc(sizeof(void *) * 2);
+tcti_libtpms_setup_two_states_no_statefiles(void **state) {
+    TSS2_TCTI_CONTEXT **ctxs = (TSS2_TCTI_CONTEXT **)malloc(sizeof(void *) * 2);
     fprintf(stderr, "%s: before tcti_libtpms_init_from_conf\n", __func__);
     ctxs[0] = tcti_libtpms_init_from_conf_real(NULL);
     ctxs[1] = tcti_libtpms_init_from_conf_real(NULL);
@@ -1589,9 +1604,8 @@ tcti_libtpms_setup_two_states_no_statefiles(void **state)
  * This is a utility function to setup two "default" TCTI contexts.
  */
 static int
-tcti_libtpms_setup_two_states(void **state)
-{
-    int ret;
+tcti_libtpms_setup_two_states(void **state) {
+    int                 ret;
     TSS2_TCTI_CONTEXT **ctxs;
 
 #ifdef __FreeBSD__
@@ -1599,20 +1613,18 @@ tcti_libtpms_setup_two_states(void **state)
     return 0;
 #endif
 
-    ctxs = (TSS2_TCTI_CONTEXT **) malloc(sizeof(void *) * 2);
+    ctxs = (TSS2_TCTI_CONTEXT **)malloc(sizeof(void *) * 2);
     assert_non_null(ctxs);
 
     /* delete state files if they exist already */
     ret = unlink(STATEFILE_PATH_REAL0);
     if (ret < 0 && errno != ENOENT) {
-        LOG_ERROR("Failed to delete statefile " STATEFILE_PATH_REAL0 ": %s",
-                  strerror(errno));
+        LOG_ERROR("Failed to delete statefile " STATEFILE_PATH_REAL0 ": %s", strerror(errno));
         assert_int_equal(ret, 0);
     }
     ret = unlink(STATEFILE_PATH_REAL1);
     if (ret < 0 && errno != ENOENT) {
-        LOG_ERROR("Failed to delete statefile " STATEFILE_PATH_REAL1 ": %s",
-                  strerror(errno));
+        LOG_ERROR("Failed to delete statefile " STATEFILE_PATH_REAL1 ": %s", strerror(errno));
         assert_int_equal(ret, 0);
     }
 
@@ -1629,9 +1641,8 @@ tcti_libtpms_setup_two_states(void **state)
  * tcti_libtpms_setup function. Will expect no state file.
  */
 static int
-tcti_libtpms_teardown_no_statefile(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*) *state;
+tcti_libtpms_teardown_no_statefile(void **state) {
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT *)*state;
 
     expect_value(__wrap_dlclose, handle, LIBTPMS_DL_HANDLE);
     will_return(__wrap_dlclose, 0);
@@ -1645,10 +1656,9 @@ tcti_libtpms_teardown_no_statefile(void **state)
  * tcti_libtpms_setup function. Will expect libtpms state 1.
  */
 static int
-tcti_libtpms_teardown_s1(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*) *state;
-    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*) ctx;
+tcti_libtpms_teardown_s1(void **state) {
+    TSS2_TCTI_CONTEXT         *ctx = (TSS2_TCTI_CONTEXT *)*state;
+    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT *)ctx;
 
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
@@ -1679,9 +1689,8 @@ tcti_libtpms_teardown_s1(void **state)
  * tcti_libtpms_setup function. Will expect libtpms state 2.
  */
 static int
-tcti_libtpms_teardown_s2(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*) *state;
+tcti_libtpms_teardown_s2(void **state) {
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT *)*state;
 
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
@@ -1710,9 +1719,8 @@ tcti_libtpms_teardown_s2(void **state)
  * tcti_libtpms_setup function. Will expect libtpms state 3.
  */
 static int
-tcti_libtpms_teardown_s3(void **state)
-{
-    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT*) *state;
+tcti_libtpms_teardown_s3(void **state) {
+    TSS2_TCTI_CONTEXT *ctx = (TSS2_TCTI_CONTEXT *)*state;
 
 #ifdef __FreeBSD__
     // Currently, state files are not supported on FreeBSD
@@ -1741,10 +1749,9 @@ tcti_libtpms_teardown_s3(void **state)
  * tcti_libtpms_setup function.
  */
 static int
-tcti_libtpms_teardown_two_states(void **state)
-{
-    int ret;
-    TSS2_TCTI_CONTEXT **ctxs;
+tcti_libtpms_teardown_two_states(void **state) {
+    int                         ret;
+    TSS2_TCTI_CONTEXT         **ctxs;
     TSS2_TCTI_LIBTPMS_CONTEXT **tcti_libtpms;
 
 #ifdef __FreeBSD__
@@ -1754,8 +1761,8 @@ tcti_libtpms_teardown_two_states(void **state)
     }
 #endif
 
-    ctxs = (TSS2_TCTI_CONTEXT**) *state;
-    tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT**) ctxs;
+    ctxs = (TSS2_TCTI_CONTEXT **)*state;
+    tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT **)ctxs;
     *state = *ctxs;
 
     /* for both tcti instances */
@@ -1780,22 +1787,18 @@ tcti_libtpms_teardown_two_states(void **state)
     /* try to delete state files */
     ret = unlink(STATEFILE_PATH_REAL0);
     if (ret < 0) {
-        LOG_WARNING("Failed to delete statefile " STATEFILE_PATH_REAL0 ": %s",
-                    strerror(errno));
+        LOG_WARNING("Failed to delete statefile " STATEFILE_PATH_REAL0 ": %s", strerror(errno));
     }
     ret = unlink(STATEFILE_PATH_REAL1);
     if (ret < 0) {
-        LOG_WARNING("Failed to delete statefile " STATEFILE_PATH_REAL1 ": %s",
-                    strerror(errno));
+        LOG_WARNING("Failed to delete statefile " STATEFILE_PATH_REAL1 ": %s", strerror(errno));
     }
 
     return 0;
 }
 
 int
-main(int   argc,
-     char *argv[])
-{
+main(int argc, char *argv[]) {
 #if _FILE_OFFSET_BITS == 64
     // Would produce cmocka error
     LOG_WARNING("_FILE_OFFSET == 64 would produce cmocka errors.");
@@ -1814,24 +1817,18 @@ main(int   argc,
         cmocka_unit_test_setup_teardown(tcti_libtpms_no_statefile_success_test,
                                         tcti_libtpms_setup_no_statefile,
                                         tcti_libtpms_teardown_no_statefile),
-        cmocka_unit_test_setup_teardown(tcti_libtpms_receive_success_test,
-                                        tcti_libtpms_setup,
+        cmocka_unit_test_setup_teardown(tcti_libtpms_receive_success_test, tcti_libtpms_setup,
                                         tcti_libtpms_teardown_s1),
-        cmocka_unit_test_setup_teardown(tcti_libtpms_locality_success_test,
-                                        tcti_libtpms_setup,
+        cmocka_unit_test_setup_teardown(tcti_libtpms_locality_success_test, tcti_libtpms_setup,
                                         tcti_libtpms_teardown_s1),
-        cmocka_unit_test_setup_teardown(tcti_libtpms_transmit_success_test,
-                                        tcti_libtpms_setup,
+        cmocka_unit_test_setup_teardown(tcti_libtpms_transmit_success_test, tcti_libtpms_setup,
                                         tcti_libtpms_teardown_s2),
-        cmocka_unit_test_setup_teardown(tcti_libtpms_remap_state_success_test,
-                                        tcti_libtpms_setup,
+        cmocka_unit_test_setup_teardown(tcti_libtpms_remap_state_success_test, tcti_libtpms_setup,
                                         tcti_libtpms_teardown_s3),
         cmocka_unit_test_setup_teardown(tcti_libtpms_remap_state_mremap_fail_test,
-                                        tcti_libtpms_setup,
-                                        tcti_libtpms_teardown_s1),
+                                        tcti_libtpms_setup, tcti_libtpms_teardown_s1),
         cmocka_unit_test_setup_teardown(tcti_libtpms_remap_state_posix_fallocate_fail_test,
-                                        tcti_libtpms_setup,
-                                        tcti_libtpms_teardown_s1),
+                                        tcti_libtpms_setup, tcti_libtpms_teardown_s1),
         cmocka_unit_test_setup_teardown(tcti_libtpms_two_states_no_statefiles_success_test,
                                         tcti_libtpms_setup_two_states_no_statefiles,
                                         tcti_libtpms_teardown_two_states),

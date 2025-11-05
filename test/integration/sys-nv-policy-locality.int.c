@@ -7,24 +7,24 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <assert.h>           // for assert
-#include <inttypes.h>         // for uint8_t, PRIu32, PRIu8
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for memcpy
+#include <assert.h>   // for assert
+#include <inttypes.h> // for uint8_t, PRIu32, PRIu8
+#include <stdlib.h>   // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>   // for memcpy
 
-#include "sys-util.h"         // for GetDigestSize, TSS2_RETRY_EXP
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_RC_...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tcti.h"        // for Tss2_Tcti_SetLocality, TSS2_TCTI_CONTEXT
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2B_MAX_NV_BUFFER, TPM2...
+#include "sys-util.h"        // for GetDigestSize, TSS2_RETRY_EXP
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_RC_...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tcti.h"       // for Tss2_Tcti_SetLocality, TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPM2B_MAX_NV_BUFFER, TPM2...
 
 #define LOGMODULE test
-#include "util/log.h"         // for return_if_error, LOG_INFO, goto_if_error
+#include "util/log.h" // for return_if_error, LOG_INFO, goto_if_error
 
-#define NV_INDEX 0x01800003
-#define NV_SIZE 96
+#define NV_INDEX             0x01800003
+#define NV_SIZE              96
 
-#define TPM2B_SIZE_MAX(type) (sizeof (type) - 2)
+#define TPM2B_SIZE_MAX(type) (sizeof(type) - 2)
 
 /*
  * This test creates an NV index governed by a policy and then performs
@@ -43,37 +43,29 @@
  * fail.
  */
 static TSS2_RC
-create_policy_session (TSS2_SYS_CONTEXT *sys_ctx,
-                       TPMI_SH_AUTH_SESSION *handle)
-{
-    TPMA_LOCALITY locality = TPMA_LOCALITY_TPM2_LOC_THREE |
-        TPMA_LOCALITY_TPM2_LOC_FOUR;
-    TPM2B_NONCE nonce = { .size = GetDigestSize (TPM2_ALG_SHA256), };
-    TPM2B_NONCE nonce_tpm = { 0, };
-    TSS2_RC rc;
-    TPM2B_ENCRYPTED_SECRET salt = { 0, };
-    TPMT_SYM_DEF symmetric = { .algorithm = TPM2_ALG_NULL, };
+create_policy_session(TSS2_SYS_CONTEXT *sys_ctx, TPMI_SH_AUTH_SESSION *handle) {
+    TPMA_LOCALITY locality = TPMA_LOCALITY_TPM2_LOC_THREE | TPMA_LOCALITY_TPM2_LOC_FOUR;
+    TPM2B_NONCE   nonce = {
+          .size = GetDigestSize(TPM2_ALG_SHA256),
+    };
+    TPM2B_NONCE nonce_tpm = {
+        0,
+    };
+    TSS2_RC                rc;
+    TPM2B_ENCRYPTED_SECRET salt = {
+        0,
+    };
+    TPMT_SYM_DEF symmetric = {
+        .algorithm = TPM2_ALG_NULL,
+    };
 
-    rc = Tss2_Sys_StartAuthSession (sys_ctx,
-                                    TPM2_RH_NULL,
-                                    TPM2_RH_NULL,
-                                    0,
-                                    &nonce,
-                                    &salt,
-                                    TPM2_SE_POLICY,
-                                    &symmetric,
-                                    TPM2_ALG_SHA256,
-                                    handle,
-                                    &nonce_tpm,
-                                    0);
-    return_if_error (rc, "Tss2_Sys_StartAuthSession");
+    rc = Tss2_Sys_StartAuthSession(sys_ctx, TPM2_RH_NULL, TPM2_RH_NULL, 0, &nonce, &salt,
+                                   TPM2_SE_POLICY, &symmetric, TPM2_ALG_SHA256, handle, &nonce_tpm,
+                                   0);
+    return_if_error(rc, "Tss2_Sys_StartAuthSession");
 
-    rc = Tss2_Sys_PolicyLocality (sys_ctx,
-                                  *handle,
-                                  0,
-                                  locality,
-                                  0);
-    return_if_error (rc, "Tss2_Sys_PolicyLocality");
+    rc = Tss2_Sys_PolicyLocality(sys_ctx, *handle, 0, locality, 0);
+    return_if_error(rc, "Tss2_Sys_PolicyLocality");
     return rc;
 }
 /*
@@ -82,13 +74,18 @@ create_policy_session (TSS2_SYS_CONTEXT *sys_ctx,
  * structure.
  */
 static TSS2_RC
-setup_nv (TSS2_SYS_CONTEXT *sys_ctx)
-{
-    TSS2_RC rc;
+setup_nv(TSS2_SYS_CONTEXT *sys_ctx) {
+    TSS2_RC              rc;
     TPMI_SH_AUTH_SESSION auth_handle = 0;
-    TPM2B_DIGEST policy_hash = { 0, };
-    TPM2B_AUTH nv_auth = { 0, };
-    TSS2L_SYS_AUTH_RESPONSE auth_rsp = { 0, };
+    TPM2B_DIGEST         policy_hash = {
+        0,
+    };
+    TPM2B_AUTH nv_auth = {
+        0,
+    };
+    TSS2L_SYS_AUTH_RESPONSE auth_rsp = {
+        0,
+    };
     TPM2B_NV_PUBLIC public_info = {
         .nvPublic = {
             .attributes = TPMA_NV_AUTHREAD | TPMA_NV_POLICYWRITE |
@@ -99,45 +96,30 @@ setup_nv (TSS2_SYS_CONTEXT *sys_ctx)
             .nvIndex = NV_INDEX,
         },
     };
-    const TSS2L_SYS_AUTH_COMMAND auth_cmd = {
-        .count = 1,
-        .auths= {
-            {
-                .sessionHandle = TPM2_RH_PW,
-            }
-        }
-    };
+    const TSS2L_SYS_AUTH_COMMAND auth_cmd = { .count = 1,
+                                              .auths = { {
+                                                  .sessionHandle = TPM2_RH_PW,
+                                              } } };
 
-    rc = create_policy_session (sys_ctx, &auth_handle);
-    return_if_error (rc, "create_policy_session");
+    rc = create_policy_session(sys_ctx, &auth_handle);
+    return_if_error(rc, "create_policy_session");
 
-    rc = Tss2_Sys_PolicyGetDigest (sys_ctx,
-                                   auth_handle,
-                                   0,
-                                   &policy_hash,
-                                   0);
-    return_if_error (rc, "Tss2_Sys_PolicyGetDigest");
+    rc = Tss2_Sys_PolicyGetDigest(sys_ctx, auth_handle, 0, &policy_hash, 0);
+    return_if_error(rc, "Tss2_Sys_PolicyGetDigest");
 
-    LOGBLOB_DEBUG (policy_hash.buffer, policy_hash.size, "policy_hash");
-    memcpy (public_info.nvPublic.authPolicy.buffer,
-            policy_hash.buffer,
-            policy_hash.size);
+    LOGBLOB_DEBUG(policy_hash.buffer, policy_hash.size, "policy_hash");
+    memcpy(public_info.nvPublic.authPolicy.buffer, policy_hash.buffer, policy_hash.size);
 
-    rc = Tss2_Sys_NV_DefineSpace (sys_ctx,
-                                  TPM2_RH_PLATFORM,
-                                  &auth_cmd,
-                                  &nv_auth,
-                                  &public_info,
-                                  &auth_rsp);
-    Tss2_Sys_FlushContext (sys_ctx, auth_handle);
-    return_if_error (rc, "Tss2_Sys_NV_DefineSpace");
+    rc = Tss2_Sys_NV_DefineSpace(sys_ctx, TPM2_RH_PLATFORM, &auth_cmd, &nv_auth, &public_info,
+                                 &auth_rsp);
+    Tss2_Sys_FlushContext(sys_ctx, auth_handle);
+    return_if_error(rc, "Tss2_Sys_NV_DefineSpace");
 
     return rc;
 }
 
 static TSS2_RC
-teardown_nv (TSS2_SYS_CONTEXT *sys_ctx)
-{
+teardown_nv(TSS2_SYS_CONTEXT *sys_ctx) {
     TSS2_RC rc;
     const TSS2L_SYS_AUTH_COMMAND auth_cmd = {
         .count = 1,
@@ -147,14 +129,12 @@ teardown_nv (TSS2_SYS_CONTEXT *sys_ctx)
             },
         },
     };
-    TSS2L_SYS_AUTH_RESPONSE auth_rsp = { 0, };
+    TSS2L_SYS_AUTH_RESPONSE auth_rsp = {
+        0,
+    };
 
-    rc = Tss2_Sys_NV_UndefineSpace (sys_ctx,
-                                    TPM2_RH_PLATFORM,
-                                    NV_INDEX,
-                                    &auth_cmd,
-                                    &auth_rsp);
-    return_if_error (rc, "Tss2_Sys_NV_UndefineSpace");
+    rc = Tss2_Sys_NV_UndefineSpace(sys_ctx, TPM2_RH_PLATFORM, NV_INDEX, &auth_cmd, &auth_rsp);
+    return_if_error(rc, "Tss2_Sys_NV_UndefineSpace");
 
     return rc;
 }
@@ -167,31 +147,25 @@ teardown_nv (TSS2_SYS_CONTEXT *sys_ctx)
  * flushed after successful command execution.
  */
 static TSS2_RC
-nv_write (TSS2_SYS_CONTEXT *sys_ctx)
-{
-    TSS2_RC rc;
+nv_write(TSS2_SYS_CONTEXT *sys_ctx) {
+    TSS2_RC                rc;
     TSS2L_SYS_AUTH_COMMAND auth_cmd = {
         .count = 1,
     };
-    TSS2L_SYS_AUTH_RESPONSE auth_rsp = { 0, };
+    TSS2L_SYS_AUTH_RESPONSE auth_rsp = {
+        0,
+    };
     TPM2B_MAX_NV_BUFFER write_data = {
         .size = 4,
         .buffer = { 0xff, 0xfe, 0xfd, 0xfc, },
     };
 
-    rc = create_policy_session (sys_ctx,
-                                &auth_cmd.auths[0].sessionHandle);
-    return_if_error (rc, "create_policy_session");
+    rc = create_policy_session(sys_ctx, &auth_cmd.auths[0].sessionHandle);
+    return_if_error(rc, "create_policy_session");
 
-    rc = Tss2_Sys_NV_Write (sys_ctx,
-                            NV_INDEX,
-                            NV_INDEX,
-                            &auth_cmd,
-                            &write_data,
-                            0,
-                            &auth_rsp);
-    Tss2_Sys_FlushContext (sys_ctx, auth_cmd.auths [0].sessionHandle);
-    return_if_error (rc, "Tss2_Sys_NV_Write");
+    rc = Tss2_Sys_NV_Write(sys_ctx, NV_INDEX, NV_INDEX, &auth_cmd, &write_data, 0, &auth_rsp);
+    Tss2_Sys_FlushContext(sys_ctx, auth_cmd.auths[0].sessionHandle);
+    return_if_error(rc, "Tss2_Sys_NV_Write");
 
     return rc;
 }
@@ -201,44 +175,43 @@ nv_write (TSS2_SYS_CONTEXT *sys_ctx)
  * write command will fail for all localities except 3 and 4.
  */
 static TSS2_RC
-nv_write_test (TSS2_SYS_CONTEXT *sys_ctx)
-{
-    TSS2_RC rc;
-    uint8_t locality;
+nv_write_test(TSS2_SYS_CONTEXT *sys_ctx) {
+    TSS2_RC            rc;
+    uint8_t            locality;
     TSS2_TCTI_CONTEXT *tcti_ctx;
 
-    LOG_INFO ("TPM NV write with locality policy test");
+    LOG_INFO("TPM NV write with locality policy test");
 
-    rc = Tss2_Sys_GetTctiContext (sys_ctx, &tcti_ctx);
-    return_if_error (rc, "Tss2_Sys_GetTctiContext");
+    rc = Tss2_Sys_GetTctiContext(sys_ctx, &tcti_ctx);
+    return_if_error(rc, "Tss2_Sys_GetTctiContext");
 
-    for (locality = 0; locality < 5; ++locality)
-    {
-        LOG_INFO ("%s: writing NV from locality %" PRIu8, __func__, locality);
-        rc = Tss2_Tcti_SetLocality (tcti_ctx, locality);
+    for (locality = 0; locality < 5; ++locality) {
+        LOG_INFO("%s: writing NV from locality %" PRIu8, __func__, locality);
+        rc = Tss2_Tcti_SetLocality(tcti_ctx, locality);
         if (rc == TSS2_TCTI_RC_NOT_IMPLEMENTED) {
             return 77;
         }
-        return_if_error (rc, "Tss2_Tcti_SetLocality");
+        return_if_error(rc, "Tss2_Tcti_SetLocality");
 
-        rc = nv_write (sys_ctx);
+        rc = nv_write(sys_ctx);
         switch (locality) {
-            case 0:
-            case 1:
-            case 2:
-                if (rc != TPM2_RC_LOCALITY) {
-                    LOG_ERROR ("nv_write: Expecting TPM2_RC_LOCALITY, got "
-                               "0x%08" PRIu32, rc);
-                    return 1;
-                }
-                break;
-            case 3:
-            case 4:
-                return_if_error (rc, "nv_write");
-                break;
-            default: /* locality can only be 0-4 */
-                assert (false);
-                break;
+        case 0:
+        case 1:
+        case 2:
+            if (rc != TPM2_RC_LOCALITY) {
+                LOG_ERROR("nv_write: Expecting TPM2_RC_LOCALITY, got "
+                          "0x%08" PRIu32,
+                          rc);
+                return 1;
+            }
+            break;
+        case 3:
+        case 4:
+            return_if_error(rc, "nv_write");
+            break;
+        default: /* locality can only be 0-4 */
+            assert(false);
+            break;
         }
     }
     return TSS2_RC_SUCCESS;
@@ -249,13 +222,14 @@ nv_write_test (TSS2_SYS_CONTEXT *sys_ctx)
  * defined a provisioning all should succeed.
  */
 static TSS2_RC
-nv_read_test (TSS2_SYS_CONTEXT *sys_ctx)
-{
-    TSS2_RC rc;
-    uint8_t locality;
-    TPM2B_MAX_NV_BUFFER nv_buf;
-    TSS2_TCTI_CONTEXT *tcti_ctx;
-    TSS2L_SYS_AUTH_RESPONSE auth_rsp = { 0, };
+nv_read_test(TSS2_SYS_CONTEXT *sys_ctx) {
+    TSS2_RC                 rc;
+    uint8_t                 locality;
+    TPM2B_MAX_NV_BUFFER     nv_buf;
+    TSS2_TCTI_CONTEXT      *tcti_ctx;
+    TSS2L_SYS_AUTH_RESPONSE auth_rsp = {
+        0,
+    };
     const TSS2L_SYS_AUTH_COMMAND auth_cmd = {
         .count = 1,
         .auths = {
@@ -265,48 +239,40 @@ nv_read_test (TSS2_SYS_CONTEXT *sys_ctx)
         },
     };
 
-    rc = Tss2_Sys_GetTctiContext (sys_ctx, &tcti_ctx);
-    return_if_error (rc, "Tss2_Sys_GetTctiContext");
+    rc = Tss2_Sys_GetTctiContext(sys_ctx, &tcti_ctx);
+    return_if_error(rc, "Tss2_Sys_GetTctiContext");
 
-    LOG_INFO ("TPM NV read with auth test");
-    for (locality = 0; locality < 5; ++locality)
-    {
-        rc = Tss2_Tcti_SetLocality (tcti_ctx, locality);
-        return_if_error (rc, "Tss2_Tcti_SetLocality");
+    LOG_INFO("TPM NV read with auth test");
+    for (locality = 0; locality < 5; ++locality) {
+        rc = Tss2_Tcti_SetLocality(tcti_ctx, locality);
+        return_if_error(rc, "Tss2_Tcti_SetLocality");
 
-        nv_buf.size = TPM2B_SIZE_MAX (nv_buf);
-        rc = TSS2_RETRY_EXP (Tss2_Sys_NV_Read (sys_ctx,
-                                               NV_INDEX,
-                                               NV_INDEX,
-                                               &auth_cmd,
-                                               4,
-                                               0,
-                                               &nv_buf,
-                                               &auth_rsp));
-        return_if_error (rc, "Tss2_Sys_NV_Read");
+        nv_buf.size = TPM2B_SIZE_MAX(nv_buf);
+        rc = TSS2_RETRY_EXP(
+            Tss2_Sys_NV_Read(sys_ctx, NV_INDEX, NV_INDEX, &auth_cmd, 4, 0, &nv_buf, &auth_rsp));
+        return_if_error(rc, "Tss2_Sys_NV_Read");
     }
 
-    rc = Tss2_Tcti_SetLocality (tcti_ctx, 3);
-    return_if_error (rc, "Tss2_Tcti_SetLocality");
+    rc = Tss2_Tcti_SetLocality(tcti_ctx, 3);
+    return_if_error(rc, "Tss2_Tcti_SetLocality");
 
     return rc;
 }
 
 int
-test_invoke (TSS2_SYS_CONTEXT *sys_ctx)
-{
+test_invoke(TSS2_SYS_CONTEXT *sys_ctx) {
     TSS2_RC rc, rc_teardown;
 
-    rc = setup_nv (sys_ctx);
-    return_if_error (rc, "setup_nv");
-    rc = nv_write_test (sys_ctx);
-    goto_if_error (rc, "nv_write_test", teardown);
-    rc = nv_read_test (sys_ctx);
-    goto_if_error (rc, "nv_read_test", teardown);
+    rc = setup_nv(sys_ctx);
+    return_if_error(rc, "setup_nv");
+    rc = nv_write_test(sys_ctx);
+    goto_if_error(rc, "nv_write_test", teardown);
+    rc = nv_read_test(sys_ctx);
+    goto_if_error(rc, "nv_read_test", teardown);
 teardown:
-    rc_teardown = teardown_nv (sys_ctx);
-    return_if_error (rc, "NV policy locality test failed");
-    return_if_error (rc_teardown, "teardown_nv");
+    rc_teardown = teardown_nv(sys_ctx);
+    return_if_error(rc, "NV policy locality test failed");
+    return_if_error(rc_teardown, "teardown_nv");
 
     return (rc) ? EXIT_FAILURE : EXIT_SUCCESS;
 }

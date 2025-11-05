@@ -8,31 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>     // for uint8_t
-#include <stdio.h>        // for NULL, fprintf, stderr, size_t
-#include <stdlib.h>       // for EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>       // for strcmp, strlen
+#include <inttypes.h> // for uint8_t
+#include <stdio.h>    // for NULL, fprintf, stderr, size_t
+#include <stdlib.h>   // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>   // for strcmp, strlen
 
-#include "tss2_common.h"  // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SU...
-#include "tss2_fapi.h"    // for Fapi_Delete, Fapi_NvExtend, Fapi_CreateNv
+#include "tss2_common.h" // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SU...
+#include "tss2_fapi.h"   // for Fapi_Delete, Fapi_NvExtend, Fapi_CreateNv
 
 #define LOGMODULE test
-#include "test-fapi.h"    // for ASSERT, CHECK_JSON_FIELDS, FAPI_PROFILE
-#include "util/log.h"     // for goto_if_error, SAFE_FREE, LOG_INFO, UNUSED
+#include "test-fapi.h" // for ASSERT, CHECK_JSON_FIELDS, FAPI_PROFILE
+#include "util/log.h"  // for goto_if_error, SAFE_FREE, LOG_INFO, UNUSED
 
-#define NV_SIZE 32
+#define NV_SIZE  32
 
 #define PASSWORD "abc"
 
 static char *password;
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -43,7 +38,6 @@ auth_callback(
     *auth = password;
     return TSS2_RC_SUCCESS;
 }
-
 
 /** Test the FAPI function FAPI_NvExtend.
  *
@@ -59,13 +53,12 @@ auth_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_nv_extend(FAPI_CONTEXT *context)
-{
-    TSS2_RC r;
-    char *nvPathExtend = "/nv/Owner/myNVextend";
+test_fapi_nv_extend(FAPI_CONTEXT *context) {
+    TSS2_RC  r;
+    char    *nvPathExtend = "/nv/Owner/myNVextend";
     uint8_t *data_dest = NULL;
-    char *log = NULL;
-    size_t dest_size;
+    char    *log = NULL;
+    size_t   dest_size;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -74,12 +67,8 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     r = Fapi_CreateNv(context, nvPathExtend, "pcr, noda", 0, "", "");
     goto_if_error(r, "Error Fapi_CreateNv", error);
 
-    uint8_t data_src[NV_SIZE] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-                                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-                                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-                                 0, 1
-                                };
-
+    uint8_t data_src[NV_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
+                                  6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1 };
 
     r = Fapi_NvExtend(context, nvPathExtend, &data_src[0], NV_SIZE, "{ \"test\": \"myfile\" }");
     goto_if_error(r, "Error Fapi_NV_EXTEND", error);
@@ -89,11 +78,12 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     ASSERT(data_dest != NULL);
     ASSERT(log != NULL);
     LOG_INFO("\nTEST_JSON\nLog:\n%s\nEND_JSON", log);
-    char *fields_log1[] =  { "0", "digests", "0", "digest" };
+    char *fields_log1[] = { "0", "digests", "0", "digest" };
 
     if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         CHECK_JSON_FIELDS(log, fields_log1,
-                          "c8ffec7d7d70c61b16adaab88925a1759b94cf6b50669b04aef1a8427fabb131eafbf9a21e3b8bddd9c5d5e7",
+                          "c8ffec7d7d70c61b16adaab88925a1759b94cf6b50669b04aef1a8427fabb131eafbf9a2"
+                          "1e3b8bddd9c5d5e7",
                           error);
     } else {
         CHECK_JSON_FIELDS(log, fields_log1,
@@ -118,11 +108,12 @@ test_fapi_nv_extend(FAPI_CONTEXT *context)
     ASSERT(log != NULL);
     ASSERT(strlen(log) > ASSERT_SIZE);
     LOG_INFO("\nTEST_JSON\nLog:\n%s\nEND_JSON", log);
-    char *fields_log2[] =  { "1", "digests", "0", "digest" };
+    char *fields_log2[] = { "1", "digests", "0", "digest" };
 
     if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
         CHECK_JSON_FIELDS(log, fields_log2,
-                          "c8ffec7d7d70c61b16adaab88925a1759b94cf6b50669b04aef1a8427fabb131eafbf9a21e3b8bddd9c5d5e7",
+                          "c8ffec7d7d70c61b16adaab88925a1759b94cf6b50669b04aef1a8427fabb131eafbf9a2"
+                          "1e3b8bddd9c5d5e7",
                           error);
     } else {
         CHECK_JSON_FIELDS(log, fields_log2,
@@ -192,7 +183,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *context)
-{
+test_invoke_fapi(FAPI_CONTEXT *context) {
     return test_fapi_nv_extend(context);
 }
