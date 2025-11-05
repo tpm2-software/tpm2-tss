@@ -23,6 +23,7 @@
 #include "ifapi_policyutil_execute.h"  // for ifapi_policyutil_execute, ifap...
 #include "ifapi_keystore.h"            // for ifapi_check_provisioned
 #include "tss2_policy.h"               // for TSS2_OBJECT
+#include "util/aux_util.h"             // for goto_error
 
 #define LOGMODULE fapi
 #include "util/log.h"                  // for SAFE_FREE, goto_if_error, retu...
@@ -3595,6 +3596,10 @@ ifapi_key_create(
             SAFE_FREE(random_data);
         }
         path_length = ifapi_path_length(path_list);
+        if (path_length == 0) {
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                       "Invalid path list", error_cleanup);
+        }
         r = ifapi_load_key_async(context, path_length - 1);
         goto_if_error(r, "LoadKey async", error_cleanup);
         fallthrough;
