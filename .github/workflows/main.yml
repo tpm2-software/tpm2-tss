@@ -31,7 +31,9 @@ jobs:
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
-        run: cat $(find ../ -name test-suite.log) || true
+        run: |
+          cat $(find ../ -name config.log) || true
+          cat $(find ../ -name test-suite.log) || true
   scanbuild:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
@@ -52,7 +54,9 @@ jobs:
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
-        run: cat $(find ../ -name test-suite.log) || true
+        run: |
+          cat $(find ../ -name config.log) || true
+          cat $(find ../ -name test-suite.log) || true
   test-tcti-config:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
@@ -73,7 +77,9 @@ jobs:
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
-        run: cat $(find ../ -name test-suite.log) || true
+        run: |
+          cat $(find ../ -name config.log) || true
+          cat $(find ../ -name test-suite.log) || true
   test-mbedtls:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
@@ -97,7 +103,9 @@ jobs:
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
-        run: cat $(find ../ -name test-suite.log) || true
+        run: |
+          cat $(find ../ -name config.log) || true
+          cat $(find ../ -name test-suite.log) || true
   test-no-crypto-build:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
@@ -118,7 +126,9 @@ jobs:
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
-        run: cat $(find ../ -name test-suite.log) || true
+        run: |
+          cat $(find ../ -name config.log) || true
+          cat $(find ../ -name test-suite.log) || true
   test-coverage:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
@@ -146,7 +156,9 @@ jobs:
           verbose: true
       - name: failure
         if: ${{ failure() }}
-        run: cat $(find ../ -name test-suite.log) || true
+        run: |
+          cat $(find ../ -name config.log) || true
+          cat $(find ../ -name test-suite.log) || true
   test-fuzz:
     runs-on: ubuntu-latest
     if: "!contains(github.ref, 'coverity_scan')"
@@ -166,7 +178,9 @@ jobs:
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
-        run: cat $(find ../ -name test-suite.log) || true
+        run: |
+          cat $(find ../ -name config.log) || true
+          cat $(find ../ -name test-suite.log) || true
   coverity-test:
     runs-on: ubuntu-latest
     if: contains(github.ref, 'coverity_scan')
@@ -191,4 +205,6 @@ jobs:
           COVERITY_SUBMISSION_EMAIL: tadeusz.struk@intel.com
       - name: failure
         if: ${{ failure() }}
-        run: cat $(find ../ -name test-suite.log) || true
+        run: |
+          cat $(find ../ -name config.log) || true
+          cat $(find ../ -name test-suite.log) || true
