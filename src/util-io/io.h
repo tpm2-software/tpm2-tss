@@ -40,14 +40,14 @@ typedef SSIZE_T ssize_t;
     dest = __ret; }
 #elif defined (__FreeBSD__)
 #define TEMP_RETRY(dest, exp) \
-{   int __ret; \
+{   ssize_t __ret; \
     do { \
         __ret = exp; \
     } while ((__ret == SOCKET_ERROR) && (errno == EINTR || errno == EAGAIN)); \
     dest =__ret; }
 #else
 #define TEMP_RETRY(dest, exp) \
-{   int __ret; \
+{   ssize_t __ret; \
     do { \
         __ret = exp; \
     } while (__ret == SOCKET_ERROR && errno == EINTR); \
