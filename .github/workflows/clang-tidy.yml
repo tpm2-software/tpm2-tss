@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 name: clang-tidy-check
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   clang-tidy-check:
