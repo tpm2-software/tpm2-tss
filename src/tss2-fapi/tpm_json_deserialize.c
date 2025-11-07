@@ -837,6 +837,10 @@ ifapi_json_TPM2_ECC_CURVE_deserialize(json_object *jso, TPM2_ECC_CURVE *out)
         { TPM2_ECC_BN_P256, "BN_P256" },
         { TPM2_ECC_BN_P638, "BN_P638" },
         { TPM2_ECC_SM2_P256, "SM2_P256" },
+        { TPM_ECC_BP_P256_R1, "BP_P256_R1" },
+        { TPM_ECC_BP_P384_R1, "BP_P384_R1" },
+        { TPM_ECC_BP_P512_R1, "BP_P512_R1" },
+        { TPM_ECC_CURVE_25519, "CURVE_25519"},
     };
 
     const char *s = json_object_get_string(jso);
@@ -3721,7 +3725,8 @@ ifapi_json_TPMI_ECC_CURVE_deserialize(json_object *jso, TPMI_ECC_CURVE *out)
     SUBTYPE_FILTER(TPMI_ECC_CURVE, TPM2_ECC_CURVE,
         TPM2_ECC_NONE, TPM2_ECC_NIST_P192, TPM2_ECC_NIST_P224, TPM2_ECC_NIST_P256,
         TPM2_ECC_NIST_P384, TPM2_ECC_NIST_P521, TPM2_ECC_BN_P256, TPM2_ECC_BN_P638,
-        TPM2_ECC_SM2_P256);
+        TPM2_ECC_SM2_P256, TPM_ECC_BP_P256_R1, TPM_ECC_BP_P384_R1, TPM_ECC_BP_P512_R1,
+        TPM_ECC_CURVE_25519);
 }
 
 static char *field_TPMT_ECC_SCHEME_tab[] = {

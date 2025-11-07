@@ -461,6 +461,10 @@ ifapi_json_TPM2_ECC_CURVE_serialize(const TPM2_ECC_CURVE in, json_object **jso)
         { TPM2_ECC_BN_P256, "BN_P256" },
         { TPM2_ECC_BN_P638, "BN_P638" },
         { TPM2_ECC_SM2_P256, "SM2_P256" },
+        { TPM_ECC_BP_P256_R1, "BP_P256_R1" },
+        { TPM_ECC_BP_P384_R1, "BP_P384_R1" },
+        { TPM_ECC_BP_P512_R1, "BP_P512_R1" },
+        { TPM_ECC_CURVE_25519, "CURVE_25519"},
     };
 
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
