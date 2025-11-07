@@ -427,8 +427,8 @@ Tss2_Tcti_Device_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *
     }
     /* probe if the device support partial response read */
     LOG_DEBUG("Probe device for partial response read support");
-    uint8_t       cmd[12] = { "\x80\x01\x00\x00\x00\x0c\x00\x00\x01\x7b\x00\x08" };
-    uint8_t       rsp[20] = { 0 };
+    uint8_t cmd[12] = { 0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x7b, 0x00, 0x08 };
+    uint8_t rsp[20] = { 0 };
     struct pollfd fds;
     int           rc_poll, nfds = 1;
 
