@@ -8,19 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_mu.h"          // for Tss2_MU_TPM2B_DIGEST_Marshal, Tss2_MU_U...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPMI_SH_POLICY, TPM2_CC_P...
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_TPM2B_DIGEST_Marshal, Tss2_MU_U...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPMI_SH_POLICY, TPM2_CC_P...
 
-TSS2_RC Tss2_Sys_PolicyCpHash_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_SH_POLICY policySession,
-    const TPM2B_DIGEST *cpHashA)
-{
+TSS2_RC
+Tss2_Sys_PolicyCpHash_Prepare(TSS2_SYS_CONTEXT   *sysContext,
+                              TPMI_SH_POLICY      policySession,
+                              const TPM2B_DIGEST *cpHashA) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -29,21 +28,16 @@ TSS2_RC Tss2_Sys_PolicyCpHash_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(policySession, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(policySession, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
     if (!cpHashA) {
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
 
     } else {
 
-        rval = Tss2_MU_TPM2B_DIGEST_Marshal(cpHashA, ctx->cmdBuffer,
-                                            ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_DIGEST_Marshal(cpHashA, ctx->cmdBuffer, ctx->maxCmdSize,
                                             &ctx->nextData);
     }
 
@@ -57,9 +51,8 @@ TSS2_RC Tss2_Sys_PolicyCpHash_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_PolicyCpHash_Complete (
-    TSS2_SYS_CONTEXT *sysContext)
-{
+TSS2_RC
+Tss2_Sys_PolicyCpHash_Complete(TSS2_SYS_CONTEXT *sysContext) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
@@ -68,15 +61,14 @@ TSS2_RC Tss2_Sys_PolicyCpHash_Complete (
     return CommonComplete(ctx);
 }
 
-TSS2_RC Tss2_Sys_PolicyCpHash(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_SH_POLICY policySession,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    const TPM2B_DIGEST *cpHashA,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_PolicyCpHash(TSS2_SYS_CONTEXT             *sysContext,
+                      TPMI_SH_POLICY                policySession,
+                      TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                      const TPM2B_DIGEST           *cpHashA,
+                      TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     rval = Tss2_Sys_PolicyCpHash_Prepare(sysContext, policySession, cpHashA);
     if (rval)

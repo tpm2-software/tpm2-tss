@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS, size_t
-#include <string.h>           // for memcmp
-#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
-#include "esys_int.h"         // for RSRC_NODE_T
-#include "esys_iutil.h"       // for esys_GetResourceObject
-#include "esys_types.h"       // for IESYS_RESOURCE
-#include "tss2_common.h"      // for BYTE, TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPM2B_MAX_BUFFER, TPM...
+#include "esys_int.h"        // for RSRC_NODE_T
+#include "esys_iutil.h"      // for esys_GetResourceObject
+#include "esys_types.h"      // for IESYS_RESOURCE
+#include "test-esys.h"       // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"     // for BYTE, TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPM2B_MAX_BUFFER, TPM...
+#include <stdlib.h>          // for NULL, EXIT_FAILURE, EXIT_SUCCESS, size_t
+#include <string.h>          // for memcmp
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_INFO
+#include "util/log.h" // for goto_if_error, LOG_ERROR, LOG_INFO
 
 /** This test is intended to test ECC encryption / decryption.
  *  with password authentication.
@@ -39,24 +39,20 @@
  */
 
 int
-test_esys_ecc_encrypt_decrypt(ESYS_CONTEXT * esys_context)
-{
+test_esys_ecc_encrypt_decrypt(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
 
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
-    TPM2B_ECC_POINT *c1 = NULL;
-    TPM2B_MAX_BUFFER *c2 = NULL;
-    TPM2B_DIGEST *c3 = NULL;
-    TPM2B_MAX_BUFFER *plain2 = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
+    TPMT_TK_CREATION    *creationTicket = NULL;
+    TPM2B_ECC_POINT     *c1 = NULL;
+    TPM2B_MAX_BUFFER    *c2 = NULL;
+    TPM2B_DIGEST        *c3 = NULL;
+    TPM2B_MAX_BUFFER    *plain2 = NULL;
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -113,10 +109,7 @@ test_esys_ecc_encrypt_decrypt(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_AUTH authValue = {
-        .size = 0,
-        .buffer = {}
-    };
+    TPM2B_AUTH authValue = { .size = 0, .buffer = {} };
 
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
@@ -125,11 +118,10 @@ test_esys_ecc_encrypt_decrypt(ESYS_CONTEXT * esys_context)
     scheme.scheme = TPM2_ALG_KDF2;
     scheme.details.kdf2.hashAlg = TPM2_ALG_SHA256;
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                        ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
-                        &inPublic, &outsideInfo, &creationPCR,
-                        &primaryHandle, &outPublic, &creationData,
-                        &creationHash, &creationTicket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &primaryHandle, &outPublic, &creationData, &creationHash,
+                           &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
     Esys_Free(outPublic);
     outPublic = NULL;
@@ -140,24 +132,20 @@ test_esys_ecc_encrypt_decrypt(ESYS_CONTEXT * esys_context)
     Esys_Free(creationTicket);
     creationTicket = NULL;
 
-    r = Esys_TR_SetAuth(esys_context, primaryHandle,
-                        &authValuePrimary);
+    r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    size_t plain_size = 16;
-    TPM2B_MAX_BUFFER plain = {
-        .size = plain_size,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
-    };
+    size_t           plain_size = 16;
+    TPM2B_MAX_BUFFER plain
+        = { .size = plain_size,
+            .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 } };
 
-    r = Esys_ECC_Encrypt(esys_context, primaryHandle, ESYS_TR_NONE,
-                        ESYS_TR_NONE, ESYS_TR_NONE, &plain, &scheme,
-                        &c1, &c2, &c3);
+    r = Esys_ECC_Encrypt(esys_context, primaryHandle, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                         &plain, &scheme, &c1, &c2, &c3);
     goto_if_error(r, "Error esys ecc encrypt", error);
 
-    r = Esys_ECC_Decrypt(esys_context, primaryHandle,
-                        ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                        c1, c2, c3, &scheme, &plain2);
+    r = Esys_ECC_Decrypt(esys_context, primaryHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                         c1, c2, c3, &scheme, &plain2);
     goto_if_error(r, "Error esys ecc decrypt", error);
 
     if (memcmp(&plain.buffer[0], &plain2->buffer[0], plain_size) != 0) {
@@ -181,7 +169,7 @@ test_esys_ecc_encrypt_decrypt(ESYS_CONTEXT * esys_context)
 
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (primaryHandle != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
@@ -221,15 +209,14 @@ test_esys_ecc_encrypt_decrypt(ESYS_CONTEXT * esys_context)
         plain2 = NULL;
     }
     /* If the TPM doesn't support it return skip */
-    if ((r == TPM2_RC_COMMAND_CODE) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER)))
+    if ((r == TPM2_RC_COMMAND_CODE) || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER))
+        || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER)))
         return EXIT_SKIP;
     else
         return EXIT_FAILURE;
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_ecc_encrypt_decrypt(esys_context);
 }

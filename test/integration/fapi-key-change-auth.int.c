@@ -8,31 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, asprintf, size_t
-#include <stdlib.h>           // for exit, free, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strlen, strstr
+#include <stdint.h> // for uint8_t
+#include <stdio.h>  // for NULL, asprintf, size_t
+#include <stdlib.h> // for exit, free, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for strlen, strstr
 
-#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_ChangeAuth, Fapi_Crea...
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_ChangeAuth, Fapi_Crea...
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "test-fapi.h"        // for ASSERT, fapi_profile, test_invoke_fapi
-#include "util/log.h"         // for goto_if_error, SAFE_FREE, UNUSED, retur...
+#include "test-fapi.h" // for ASSERT, fapi_profile, test_invoke_fapi
+#include "util/log.h"  // for goto_if_error, SAFE_FREE, UNUSED, retur...
 
-#define PASSWORD "abc"
-#define USER_DATA "my user data"
+#define PASSWORD    "abc"
+#define USER_DATA   "my user data"
 #define DESCRIPTION "my description"
 #define OBJECT_PATH "HS/SRK/mySignKey"
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -45,22 +40,21 @@ auth_callback(
         return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
     }
 
-    int size = asprintf (&profile_path, "%s/%s", fapi_profile, OBJECT_PATH);
+    int size = asprintf(&profile_path, "%s/%s", fapi_profile, OBJECT_PATH);
     if (size == -1)
         return TSS2_FAPI_RC_MEMORY;
 
     ASSERT(strlen(objectPath) == strlen(profile_path));
     free(profile_path);
-    ASSERT(strlen(userData) == strlen((char*)USER_DATA));
+    ASSERT(strlen(userData) == strlen((char *)USER_DATA));
     ASSERT(strlen(description) == strlen(DESCRIPTION));
 
     *auth = PASSWORD;
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     exit(EXIT_FAILURE);
 }
-
 
 /** Test the FAPI function for changing key authorizations.
  *
@@ -80,10 +74,9 @@ auth_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_key_change_auth(FAPI_CONTEXT *context)
-{
+test_fapi_key_change_auth(FAPI_CONTEXT *context) {
 
-    TSS2_RC r;
+    TSS2_RC  r;
     uint8_t *signature = NULL;
     char    *publicKey = NULL;
     char    *certificate = NULL;
@@ -98,21 +91,19 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
     r = Fapi_SetDescription(context, OBJECT_PATH, DESCRIPTION);
     goto_if_error(r, "Error Fapi_SetDescription", error);
 
-    r = Fapi_SetCertificate(context, OBJECT_PATH, "-----BEGIN "\
-        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    r = Fapi_SetCertificate(context, OBJECT_PATH,
+                            "-----BEGIN "
+                            "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     size_t signatureSize = 0;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00,
-        }
-    };
+    TPM2B_DIGEST digest = { .size = 32,
+                            .buffer = {
+                                0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+                                0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            } };
 
     r = Fapi_ChangeAuth(context, OBJECT_PATH, PASSWORD);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -120,9 +111,8 @@ test_fapi_key_change_auth(FAPI_CONTEXT *context)
     r = Fapi_SetAuthCB(context, auth_callback, USER_DATA);
     goto_if_error(r, "Error SetPolicyAuthCallback", error);
 
-    r = Fapi_Sign(context, OBJECT_PATH, NULL,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, &certificate);
+    r = Fapi_Sign(context, OBJECT_PATH, NULL, &digest.buffer[0], digest.size, &signature,
+                  &signatureSize, &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Provision", error);
     ASSERT(signature != NULL);
     ASSERT(publicKey != NULL);
@@ -147,7 +137,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_key_change_auth(fapi_context);
 }

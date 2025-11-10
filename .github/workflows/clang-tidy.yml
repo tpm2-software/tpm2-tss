@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 name: clang-tidy-check
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   clang-tidy-check:
@@ -19,7 +19,7 @@ jobs:
         git config --global --add safe.directory /__w/tpm2-tss/tpm2-tss
         ./bootstrap
         ./configure CC=clang --enable-unit --enable-integration
-        make -j1 compile_commands.json
+        make -j compile_commands.json
     - uses: ZehMatt/clang-tidy-annotations@v1.1.2
       with:
         only_affected_lines: true

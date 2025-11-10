@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>          // for NULL
-#include <string.h>          // for memset, strlen
+#include <stdlib.h> // for NULL
+#include <string.h> // for memset, strlen
 
-#include "fapi_int.h"        // for IFAPI_Path_SetDescription, FAPI_CONTEXT
-#include "fapi_util.h"       // for ifapi_initialize_object, ifapi_set_descr...
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, ifapi_keysto...
-#include "ifapi_macros.h"    // for check_not_null, goto_if_error_reset_state
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_SetDescription, Fapi_...
+#include "fapi_int.h"       // for IFAPI_Path_SetDescription, FAPI_CONTEXT
+#include "fapi_util.h"      // for ifapi_initialize_object, ifapi_set_descr...
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_macros.h"   // for check_not_null, goto_if_error_reset_state
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetDescription, Fapi_...
 
 #define LOGMODULE fapi
-#include "util/log.h"        // for LOG_TRACE, SAFE_FREE, return_error, base_rc
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_error, base_rc
 
 /** One-Call function for Fapi_SetDescription
  *
@@ -51,11 +51,7 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_SetDescription(
-    FAPI_CONTEXT *context,
-    char   const *path,
-    char   const *description)
-{
+Fapi_SetDescription(FAPI_CONTEXT *context, char const *path, char const *description) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -112,11 +108,7 @@ Fapi_SetDescription(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_SetDescription_Async(
-    FAPI_CONTEXT *context,
-    char   const *path,
-    char   const *description)
-{
+Fapi_SetDescription_Async(FAPI_CONTEXT *context, char const *path, char const *description) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
     LOG_TRACE("description: %s", description);
@@ -136,12 +128,11 @@ Fapi_SetDescription_Async(
 
     /* Check for invalid parameters */
     if (description && strlen(description) + 1 > 1024) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Length of description > 1024");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Length of description > 1024");
     }
 
     /* Helpful alias pointers */
-    IFAPI_Path_SetDescription * command = &context->cmd.path_set_info;
+    IFAPI_Path_SetDescription *command = &context->cmd.path_set_info;
 
     /* Copy parameters to context for use during _Finish. */
     strdup_check(command->object_path, path, r, error_cleanup);
@@ -155,7 +146,6 @@ Fapi_SetDescription_Async(
     } else {
         strdup_check(command->description, description, r, error_cleanup);
     }
-
 
     /* Initialize the context state for this operation. */
     context->state = PATH_SET_DESCRIPTION_READ;
@@ -193,9 +183,7 @@ error_cleanup:
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_SetDescription_Finish(
-    FAPI_CONTEXT *context)
-{
+Fapi_SetDescription_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -204,38 +192,37 @@ Fapi_SetDescription_Finish(
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_Path_SetDescription * command = &context->cmd.path_set_info;
-    IFAPI_OBJECT *object = &command->object;
+    IFAPI_Path_SetDescription *command = &context->cmd.path_set_info;
+    IFAPI_OBJECT              *object = &command->object;
 
     switch (context->state) {
-        statecase(context->state, PATH_SET_DESCRIPTION_READ);
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-            return_try_again(r);
-            goto_if_error_reset_state(r, "read_finish failed", error_cleanup);
+    statecase(context->state, PATH_SET_DESCRIPTION_READ);
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
+        return_try_again(r);
+        goto_if_error_reset_state(r, "read_finish failed", error_cleanup);
 
-            r = ifapi_initialize_object(context->esys, object);
-            goto_if_error_reset_state(r, "Initialize key object", error_cleanup);
+        r = ifapi_initialize_object(context->esys, object);
+        goto_if_error_reset_state(r, "Initialize key object", error_cleanup);
 
-            /* Add new description to object and save object */
-            ifapi_set_description(object, command->description);
+        /* Add new description to object and save object */
+        ifapi_set_description(object, command->description);
 
-            /* Store the updated metadata back to the keystore. */
-            r = ifapi_keystore_store_async(&context->keystore, &context->io,
-                                           command->object_path, object);
-            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
-                                      command->object_path);
+        /* Store the updated metadata back to the keystore. */
+        r = ifapi_keystore_store_async(&context->keystore, &context->io, command->object_path,
+                                       object);
+        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, command->object_path);
 
-            fallthrough;
+        fallthrough;
 
-        statecase(context->state, PATH_SET_DESCRIPTION_WRITE);
-            r = ifapi_keystore_store_finish(&context->io);
-            return_try_again(r);
-            return_if_error_reset_state(r, "write_finish failed");
+    statecase(context->state, PATH_SET_DESCRIPTION_WRITE);
+        r = ifapi_keystore_store_finish(&context->io);
+        return_try_again(r);
+        return_if_error_reset_state(r, "write_finish failed");
 
-            r = TSS2_RC_SUCCESS;
-            break;
+        r = TSS2_RC_SUCCESS;
+        break;
 
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
 error_cleanup:

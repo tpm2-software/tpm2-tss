@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>                 // for true
-#include <stdlib.h>                  // for calloc, NULL
+#include <stdbool.h> // for true
+#include <stdlib.h>  // for calloc, NULL
 
-#include "ifapi_macros.h"            // for statecase, fallthrough, statecas...
-#include "ifapi_policy_callbacks.h"  // for IFAPI_POLICY_EXEC_CB_CTX, ifapi_...
-//#include "fapi_policy.h"
-#include "ifapi_policy_execute.h"    // for IFAPI_POLICY_EXEC_CTX, ifapi_pol...
+#include "ifapi_macros.h"           // for statecase, fallthrough, statecas...
+#include "ifapi_policy_callbacks.h" // for IFAPI_POLICY_EXEC_CB_CTX, ifapi_...
+// #include "fapi_policy.h"
+#include "ifapi_policy_execute.h" // for IFAPI_POLICY_EXEC_CTX, ifapi_pol...
 #include "ifapi_policyutil_execute.h"
-#include "ifapi_profiles.h"          // for IFAPI_PROFILE, IFAPI_PROFILES
-#include "tss2_policy.h"             // for TSS2_POLICY_EXEC_CALLBACKS
+#include "ifapi_profiles.h" // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_policy.h"    // for TSS2_POLICY_EXEC_CALLBACKS
 
 #define LOGMODULE fapi
-#include "util/log.h"                // for SAFE_FREE, return_error, goto_if...
+#include "util/log.h" // for SAFE_FREE, return_error, goto_if...
 
 /** Create a new policy on policy stack.
  *
@@ -29,13 +29,9 @@
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
-new_policy(
-    FAPI_CONTEXT *context,
-    TPMS_POLICY *policy,
-    IFAPI_POLICYUTIL_STACK **current_policy)
-{
+new_policy(FAPI_CONTEXT *context, TPMS_POLICY *policy, IFAPI_POLICYUTIL_STACK **current_policy) {
     LOG_DEBUG("ADD POLICY");
-    IFAPI_POLICY_EXEC_CTX *pol_exec_ctx;
+    IFAPI_POLICY_EXEC_CTX    *pol_exec_ctx;
     IFAPI_POLICY_EXEC_CB_CTX *pol_exec_cb_ctx;
 
     *current_policy = calloc(1, sizeof(IFAPI_POLICYUTIL_STACK));
@@ -93,23 +89,15 @@ new_policy(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-create_session(
-    FAPI_CONTEXT *context,
-    ESYS_TR *session,
-    TPMI_ALG_HASH hash_alg)
-{
+create_session(FAPI_CONTEXT *context, ESYS_TR *session, TPMI_ALG_HASH hash_alg) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     switch (context->policy.create_session_state) {
     case CREATE_SESSION_INIT:
-        r = Esys_StartAuthSession_Async(context->esys,
-                                        context->srk_handle ? context->srk_handle : ESYS_TR_NONE,
-                                        ESYS_TR_NONE,
-                                        ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                        NULL,
-                                        TPM2_SE_POLICY,
-                                        &context->profiles.default_profile.session_symmetric,
-                                        hash_alg);
+        r = Esys_StartAuthSession_Async(
+            context->esys, context->srk_handle ? context->srk_handle : ESYS_TR_NONE, ESYS_TR_NONE,
+            ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, TPM2_SE_POLICY,
+            &context->profiles.default_profile.session_symmetric, hash_alg);
 
         return_if_error(r, "Creating session.");
 
@@ -131,8 +119,7 @@ create_session(
 
     default:
         context->state = FAPI_STATE_INTERNALERROR;
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid state for create session.",
-                   cleanup);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid state for create session.", cleanup);
     }
 
 cleanup:
@@ -143,8 +130,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
-clear_current_policy(FAPI_CONTEXT *context)
-{
+clear_current_policy(FAPI_CONTEXT *context) {
     LOG_DEBUG("CLEAR POLICY");
     IFAPI_POLICYUTIL_STACK *prev_pol;
     if (!context->policy.util_current_policy) {
@@ -188,12 +174,10 @@ clear_current_policy(FAPI_CONTEXT *context)
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-ifapi_policyutil_execute_prepare(
-    FAPI_CONTEXT *context,
-    TPMI_ALG_HASH hash_alg,
-    TPMS_POLICY *policy)
-{
-    TSS2_RC r;
+ifapi_policyutil_execute_prepare(FAPI_CONTEXT *context,
+                                 TPMI_ALG_HASH hash_alg,
+                                 TPMS_POLICY  *policy) {
+    TSS2_RC                 r;
     IFAPI_POLICYUTIL_STACK *current_policy, *prev_policy;
 
     return_if_null(context, "Bad context.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -252,11 +236,10 @@ error:
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
-{
-    TSS2_RC r;
+ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session) {
+    TSS2_RC                 r;
     IFAPI_POLICYUTIL_STACK *pol_util_ctx;
-    TPMI_ALG_HASH hash_alg;
+    TPMI_ALG_HASH           hash_alg;
 
     if (context->policy.util_current_policy) {
         pol_util_ctx = context->policy.util_current_policy->next;
@@ -271,50 +254,47 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session)
     }
 
     switch (pol_util_ctx->state) {
-        statecase(pol_util_ctx->state, POLICY_UTIL_INIT);
-            LOG_DEBUG("Util session: %x", pol_util_ctx->policy_session);
-            if (*session == ESYS_TR_NONE  || *session == 0) {
-                /* Create a new  policy session for the current policy execution */
-                hash_alg = pol_util_ctx->pol_exec_ctx->hash_alg;
-                r = create_session(context, &pol_util_ctx->policy_session,
-                                  hash_alg);
-                if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
-                    context->policy.util_current_policy = pol_util_ctx->prev;
-                    return TSS2_FAPI_RC_TRY_AGAIN;
-                }
-                goto_if_error(r, "Create policy session", error);
-
-                pol_util_ctx->pol_exec_ctx->session = pol_util_ctx->policy_session;
-            } else {
-                pol_util_ctx->pol_exec_ctx->session = *session;
-            }
-            fallthrough;
-
-        statecase(pol_util_ctx->state, POLICY_UTIL_EXEC_POLICY);
-            r = ifapi_policyeval_execute(context->esys,
-                                         pol_util_ctx->pol_exec_ctx,
-                                         true);
+    statecase(pol_util_ctx->state, POLICY_UTIL_INIT);
+        LOG_DEBUG("Util session: %x", pol_util_ctx->policy_session);
+        if (*session == ESYS_TR_NONE || *session == 0) {
+            /* Create a new  policy session for the current policy execution */
+            hash_alg = pol_util_ctx->pol_exec_ctx->hash_alg;
+            r = create_session(context, &pol_util_ctx->policy_session, hash_alg);
             if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
                 context->policy.util_current_policy = pol_util_ctx->prev;
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
+            goto_if_error(r, "Create policy session", error);
 
-            if (r) {
-                /* Cleanup stack */
-                IFAPI_POLICYUTIL_STACK  *utl_ctx = pol_util_ctx->prev;
-                while (utl_ctx) {
-                    if (utl_ctx->pol_exec_ctx->session ==  pol_util_ctx->pol_exec_ctx->session) {
-                        utl_ctx->pol_exec_ctx->session = ESYS_TR_NONE;
-                    }
-                    utl_ctx = utl_ctx->prev;
+            pol_util_ctx->pol_exec_ctx->session = pol_util_ctx->policy_session;
+        } else {
+            pol_util_ctx->pol_exec_ctx->session = *session;
+        }
+        fallthrough;
+
+    statecase(pol_util_ctx->state, POLICY_UTIL_EXEC_POLICY);
+        r = ifapi_policyeval_execute(context->esys, pol_util_ctx->pol_exec_ctx, true);
+        if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
+            context->policy.util_current_policy = pol_util_ctx->prev;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
+        if (r) {
+            /* Cleanup stack */
+            IFAPI_POLICYUTIL_STACK *utl_ctx = pol_util_ctx->prev;
+            while (utl_ctx) {
+                if (utl_ctx->pol_exec_ctx->session == pol_util_ctx->pol_exec_ctx->session) {
+                    utl_ctx->pol_exec_ctx->session = ESYS_TR_NONE;
                 }
-                pol_util_ctx->pol_exec_ctx->session = ESYS_TR_NONE;
+                utl_ctx = utl_ctx->prev;
             }
-            goto_if_error(r, "Execute policy.", error);
+            pol_util_ctx->pol_exec_ctx->session = ESYS_TR_NONE;
+        }
+        goto_if_error(r, "Execute policy.", error);
 
-            break;
+        break;
 
-        statecasedefault(pol_util_ctx->state);
+    statecasedefault(pol_util_ctx->state);
     }
     *session = pol_util_ctx->policy_session;
     pol_util_ctx->state = POLICY_UTIL_INIT;

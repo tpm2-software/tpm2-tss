@@ -9,31 +9,28 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>            // for memcpy, size_t
+#include <string.h> // for memcpy, size_t
 
-#include "sysapi_util.h"       // for _TSS2_SYS_CONTEXT_BLOB, TPM20_Header_Out
-#include "tss2_common.h"       // for UINT16, TSS2_SYS_RC_MALFORMED_RESPONSE
-#include "tss2_mu.h"           // for Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal
-#include "tss2_sys.h"          // for TSS2L_SYS_AUTH_RESPONSE, TSS2_SYS_CONTEXT
-#include "tss2_tpm2_types.h"   // for TPM2_HANDLE, TPM2_ST_SESSIONS, TPMS_AU...
-#include "util/tss2_endian.h"  // for BE_TO_HOST_16, BE_TO_HOST_32
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, TPM20_Header_Out
+#include "tss2_common.h"      // for UINT16, TSS2_SYS_RC_MALFORMED_RESPONSE
+#include "tss2_mu.h"          // for Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal
+#include "tss2_sys.h"         // for TSS2L_SYS_AUTH_RESPONSE, TSS2_SYS_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2_HANDLE, TPM2_ST_SESSIONS, TPMS_AU...
+#include "util/tss2_endian.h" // for BE_TO_HOST_16, BE_TO_HOST_32
 
-TSS2_RC Tss2_Sys_GetRspAuths(
-    TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_GetRspAuths(TSS2_SYS_CONTEXT *sysContext, TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-    size_t offset = 0, offset_tmp;
-    unsigned i = 0;
-    UINT32 rspParamsSize;
+    TSS2_RC                rval = TSS2_RC_SUCCESS;
+    size_t                 offset = 0, offset_tmp;
+    unsigned               i = 0;
+    UINT32                 rspParamsSize;
 
     if (!ctx || !rspAuthsArray)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE ||
-        ctx->rsp_header.responseCode != TSS2_RC_SUCCESS ||
-        ctx->authAllowed == 0)
+    if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE
+        || ctx->rsp_header.responseCode != TSS2_RC_SUCCESS || ctx->authAllowed == 0)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
     if (TPM2_ST_SESSIONS != ctx->rsp_header.tag)
@@ -78,9 +75,8 @@ TSS2_RC Tss2_Sys_GetRspAuths(
 
     /* Unmarshal the auth area */
     for (i = 0; i < ctx->authsCount; i++) {
-        rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(ctx->cmdBuffer,
-                                            ctx->maxCmdSize,
-                                            &offset, &rspAuthsArray->auths[i]);
+        rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &offset,
+                                                    &rspAuthsArray->auths[i]);
         if (rval)
             break;
     }

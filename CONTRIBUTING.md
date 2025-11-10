@@ -44,6 +44,13 @@ full text of the DCO is here: https://developercertificate.org/. Contributors
 must add a 'Signed-off-by' line to their commits. This indicates the
 submitters acceptance of the DCO.
 
+Please note that we now require REUSE and clang-format to also pass on PRs.
+You may run
+```sh
+docker run -u $UID -v $PWD:$PWD ghcr.io/tpm2-software/ubuntu-24.04 clang-format -i $(find -name '*.h' -or -name '*.c' | xargs realpath)
+```
+before submitting in order to align with our format requirements.
+
 ## Guideline for merging changes
 
 Pull Requests MUST be assigned to an upcoming release tag. If a release milestone does

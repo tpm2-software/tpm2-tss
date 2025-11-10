@@ -8,16 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_FlushContext, Esys_H...
-#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256, TPM2_SE_HMAC, TPM2B_AUTH
+#include "test-esys.h"       // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_FlushContext, Esys_H...
+#include "tss2_tpm2_types.h" // for TPM2_ALG_SHA256, TPM2_SE_HMAC, TPM2B_AUTH
 
 #define LOGDEFAULT LOGLEVEL_INFO
-#define LOGMODULE test
-#include "util/log.h"         // for LOGLEVEL_INFO, LOG_DEBUG, goto_if_error
+#define LOGMODULE  test
+#include "util/log.h" // for LOGLEVEL_INFO, LOG_DEBUG, goto_if_error
 
 /** Test auth verification in clear command
  *
@@ -32,42 +32,37 @@
  * @retval EXIT_FAILURE
  */
 int
-test_esys_clear_auth(ESYS_CONTEXT * esys_context)
-{
+test_esys_clear_auth(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR session = ESYS_TR_NONE;
-    int failure_return = EXIT_FAILURE;
+    int     failure_return = EXIT_FAILURE;
 
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_XOR,
-                              .keyBits = { .exclusiveOr = TPM2_ALG_SHA256 },
-                              .mode = {.aes = TPM2_ALG_CFB}};
+    TPMT_SYM_DEF symmetric = { .algorithm = TPM2_ALG_XOR,
+                               .keyBits = { .exclusiveOr = TPM2_ALG_SHA256 },
+                               .mode = { .aes = TPM2_ALG_CFB } };
 
     /* Test lockout authorization */
     LOG_DEBUG("Test LOCKOUT authorization");
     LOG_DEBUG("Start Auth Session");
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of session", error);
 
     TPM2B_AUTH auth = {
-            .size = 16,
-            .buffer = "deadbeefdeadbeef",
+        .size = 16,
+        .buffer = "deadbeefdeadbeef",
     };
 
     LOG_DEBUG("Set Auth");
-    r = Esys_HierarchyChangeAuth(esys_context, ESYS_TR_RH_LOCKOUT,
-                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                                 &auth);
+    r = Esys_HierarchyChangeAuth(esys_context, ESYS_TR_RH_LOCKOUT, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                                 ESYS_TR_NONE, &auth);
 
     goto_if_error(r, "Error: During Esys_ObjectChangeAuth", error);
     Esys_TR_SetAuth(esys_context, ESYS_TR_RH_LOCKOUT, &auth);
 
     LOG_DEBUG("Clear");
-    r = Esys_Clear(esys_context, ESYS_TR_RH_LOCKOUT, session,
-                   ESYS_TR_NONE, ESYS_TR_NONE);
+    r = Esys_Clear(esys_context, ESYS_TR_RH_LOCKOUT, session, ESYS_TR_NONE, ESYS_TR_NONE);
     goto_if_error(r, "Error: During Esys_Clear", error);
 
     r = Esys_FlushContext(esys_context, session);
@@ -76,20 +71,16 @@ test_esys_clear_auth(ESYS_CONTEXT * esys_context)
     /* Test platform authorization */
     LOG_DEBUG("Test PLATFORM authorization");
     LOG_DEBUG("Start Auth Session");
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of session", error);
 
     LOG_DEBUG("Set Auth");
-    r = Esys_HierarchyChangeAuth(esys_context, ESYS_TR_RH_PLATFORM,
-                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                                 &auth);
+    r = Esys_HierarchyChangeAuth(esys_context, ESYS_TR_RH_PLATFORM, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                                 ESYS_TR_NONE, &auth);
 
-    if (number_rc(r) == TPM2_RC_BAD_AUTH ||
-        number_rc(r) == TPM2_RC_HIERARCHY) {
+    if (number_rc(r) == TPM2_RC_BAD_AUTH || number_rc(r) == TPM2_RC_HIERARCHY) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
         failure_return = EXIT_SKIP;
@@ -100,8 +91,7 @@ test_esys_clear_auth(ESYS_CONTEXT * esys_context)
     Esys_TR_SetAuth(esys_context, ESYS_TR_RH_PLATFORM, &auth);
 
     LOG_DEBUG("Clear");
-    r = Esys_Clear(esys_context, ESYS_TR_RH_PLATFORM, session,
-                   ESYS_TR_NONE, ESYS_TR_NONE);
+    r = Esys_Clear(esys_context, ESYS_TR_RH_PLATFORM, session, ESYS_TR_NONE, ESYS_TR_NONE);
     goto_if_error(r, "Error: During Esys_Clear", error);
 
     r = Esys_FlushContext(esys_context, session);
@@ -110,15 +100,14 @@ test_esys_clear_auth(ESYS_CONTEXT * esys_context)
     Esys_TR_SetAuth(esys_context, ESYS_TR_RH_PLATFORM, &auth);
 
     LOG_DEBUG("Set Auth");
-    r = Esys_HierarchyChangeAuth(esys_context, ESYS_TR_RH_PLATFORM,
-                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                                 NULL);
+    r = Esys_HierarchyChangeAuth(esys_context, ESYS_TR_RH_PLATFORM, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                                 ESYS_TR_NONE, NULL);
 
     goto_if_error(r, "Error: During Esys_ObjectChangeAuth", error);
 
     return EXIT_SUCCESS;
 
- error:
+error:
     LOG_ERROR("\nError Code: %x\n", r);
 
     if (session != ESYS_TR_NONE) {
@@ -130,6 +119,6 @@ test_esys_clear_auth(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_clear_auth(esys_context);
 }

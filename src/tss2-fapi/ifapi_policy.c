@@ -8,27 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>                  // for PRIu16
-#include <stdbool.h>                   // for bool, false, true
-#include <string.h>                    // for memset
+#include <inttypes.h> // for PRIu16
+#include <stdbool.h>  // for bool, false, true
+#include <string.h>   // for memset
 
-#include "fapi_crypto.h"               // for ifapi_hash_get_digest_size
-#include "fapi_int.h"                  // for IFAPI_POLICY_CTX, POLICY_INIT
-#include "ifapi_helpers.h"             // for ifapi_free_node_list
-#include "ifapi_io.h"                  // for IFAPI_IO
-#include "ifapi_macros.h"              // for statecase, fallthrough, return...
-#include "ifapi_policy.h"              // for ifapi_calculate_tree_ex, ifapi...
-#include "ifapi_policy_calculate.h"    // for ifapi_calculate_policy
-#include "ifapi_policy_execute.h"      // for ifapi_policyeval_execute, ifap...
-#include "ifapi_policy_instantiate.h"  // for IFAPI_POLICY_EVAL_INST_CTX
-#include "ifapi_policy_store.h"        // for ifapi_policy_store_load_async
-#include "ifapi_policy_types.h"        // for TPMS_POLICY
-#include "tss2_common.h"               // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_esys.h"                 // for ESYS_CONTEXT
-#include "tss2_tpm2_types.h"           // for TPMT_HA, TPML_DIGEST_VALUES
+#include "fapi_crypto.h"              // for ifapi_hash_get_digest_size
+#include "fapi_int.h"                 // for IFAPI_POLICY_CTX, POLICY_INIT
+#include "ifapi_helpers.h"            // for ifapi_free_node_list
+#include "ifapi_io.h"                 // for IFAPI_IO
+#include "ifapi_macros.h"             // for statecase, fallthrough, return...
+#include "ifapi_policy.h"             // for ifapi_calculate_tree_ex, ifapi...
+#include "ifapi_policy_calculate.h"   // for ifapi_calculate_policy
+#include "ifapi_policy_execute.h"     // for ifapi_policyeval_execute, ifap...
+#include "ifapi_policy_instantiate.h" // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
+#include "ifapi_policy_types.h"       // for TPMS_POLICY
+#include "tss2_common.h"              // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_esys.h"                // for ESYS_CONTEXT
+#include "tss2_tpm2_types.h"          // for TPMT_HA, TPML_DIGEST_VALUES
 
 #define LOGMODULE fapi
-#include "util/log.h"                  // for goto_if_error, goto_error
+#include "util/log.h" // for goto_if_error, goto_error
 
 /** Compute policy digest for a policy tree.
  *
@@ -67,19 +67,17 @@
  *         or contains illegal characters.
  */
 TSS2_RC
-ifapi_calculate_tree_ex(
-    IFAPI_POLICY_CTX *context,
-    IFAPI_POLICY_STORE *pstore,
-    IFAPI_IO *io,
-    const char *policyPath,
-    TPMS_POLICY *policy,
-    TPMI_ALG_HASH hash_alg,
-    size_t *digest_idx,
-    size_t *hash_size)
-{
-    size_t i;
+ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
+                        IFAPI_POLICY_STORE *pstore,
+                        IFAPI_IO           *io,
+                        const char         *policyPath,
+                        TPMS_POLICY        *policy,
+                        TPMI_ALG_HASH       hash_alg,
+                        size_t             *digest_idx,
+                        size_t             *hash_size) {
+    size_t  i;
     TSS2_RC r = TSS2_RC_SUCCESS;
-    bool already_computed = false;
+    bool    already_computed = false;
 
     if (context->state == POLICY_INIT && !policyPath)
         /* Skip policy reading */
@@ -112,9 +110,8 @@ ifapi_calculate_tree_ex(
         context->eval_ctx.policy_elements = NULL;
 
         if (!(*hash_size = ifapi_hash_get_digest_size(hash_alg))) {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
-                       hash_alg);
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
+                       cleanup, hash_alg);
         }
 
         for (i = 0; i < policy->policyDigests.count; i++) {
@@ -134,12 +131,10 @@ ifapi_calculate_tree_ex(
         policy->policyDigests.count += 1;
         policy->policyDigests.digests[i].hashAlg = hash_alg;
 
-        memset(&policy->policyDigests.digests[*digest_idx].digest, 0,
-               sizeof(TPMU_HA));
+        memset(&policy->policyDigests.digests[*digest_idx].digest, 0, sizeof(TPMU_HA));
 
-        r = ifapi_calculate_policy(policy->policy,
-                                   &policy->policyDigests, hash_alg,
-                                   *hash_size, *digest_idx);
+        r = ifapi_calculate_policy(policy->policy, &policy->policyDigests, hash_alg, *hash_size,
+                                   *digest_idx);
         goto_if_error(r, "Compute policy.", cleanup);
 
         break;
@@ -183,18 +178,16 @@ cleanup:
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-ifapi_execute_tree_ex(
-    enum IFAPI_STATE_POLICY *state,
-    IFAPI_POLICY_EXEC_CTX *context,
-    IFAPI_POLICY_EVAL_INST_CTX *eval_ctx,
-    IFAPI_POLICY_STORE *pstore,
-    IFAPI_IO *io,
-    const char *policyPath,
-    TPMS_POLICY *policy,
-    ESYS_CONTEXT *esys_ctx,
-    TPMI_ALG_HASH hash_alg,
-    bool do_flush)
-{
+ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
+                      IFAPI_POLICY_EXEC_CTX      *context,
+                      IFAPI_POLICY_EVAL_INST_CTX *eval_ctx,
+                      IFAPI_POLICY_STORE         *pstore,
+                      IFAPI_IO                   *io,
+                      const char                 *policyPath,
+                      TPMS_POLICY                *policy,
+                      ESYS_CONTEXT               *esys_ctx,
+                      TPMI_ALG_HASH               hash_alg,
+                      bool                        do_flush) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     if (*state == POLICY_INIT && !policyPath) {
@@ -217,19 +210,13 @@ ifapi_execute_tree_ex(
         goto_if_error(r, "read_finish failed", cleanup);
         fallthrough;
 
-     statecase(*state, POLICY_EXECUTE_PREPARE);
+    statecase(*state, POLICY_EXECUTE_PREPARE);
         /* No mention of return try again in doc string */
-        r = ifapi_policyeval_execute_prepare(
-            context,
-            hash_alg,
-            policy);
+        r = ifapi_policyeval_execute_prepare(context, hash_alg, policy);
         goto_if_error(r, "execute policy prepare.", cleanup);
         fallthrough;
     statecase(*state, POLICY_EXECUTE);
-        r = ifapi_policyeval_execute(
-            esys_ctx,
-            context,
-            do_flush);
+        r = ifapi_policyeval_execute(esys_ctx, context, do_flush);
         return_try_again(r);
         goto_if_error(r, "execute policy.", cleanup);
 

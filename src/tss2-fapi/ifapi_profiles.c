@@ -5,35 +5,31 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"                         // for HAVE_REALLOCARRAY
+#include "config.h" // for HAVE_REALLOCARRAY
 #endif
 
-#include <json.h>                           // for json_object_get_string
-#include <stdint.h>                         // for uint8_t
-#include <stdlib.h>                         // for calloc, free, reallocarray
-#include <string.h>                         // for memset, strdup, strlen
+#include <json.h>   // for json_object_get_string
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for calloc, free, reallocarray
+#include <string.h> // for memset, strdup, strlen
 
-#include "fapi_int.h"                       // for IFAPI_FILE_DELIM_CHAR
-#include "ifapi_helpers.h"                  // for ifapi_cleanup_policy, ifa...
-#include "ifapi_macros.h"                   // for check_not_null, goto_if_n...
-#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
+#include "fapi_int.h"                      // for IFAPI_FILE_DELIM_CHAR
+#include "ifapi_helpers.h"                 // for ifapi_cleanup_policy, ifa...
+#include "ifapi_macros.h"                  // for check_not_null, goto_if_n...
+#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
 #include "ifapi_profiles.h"
-#include "tpm_json_deserialize.h"           // for ifapi_get_sub_object, ifa...
-#include "tss2_common.h"                    // for TSS2_FAPI_RC_BAD_VALUE
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifa...
+#include "tss2_common.h"          // for TSS2_FAPI_RC_BAD_VALUE
 
 #define LOGMODULE fapi
-#include "util/log.h"                       // for return_if_error, LOG_ERROR
+#include "util/log.h" // for return_if_error, LOG_ERROR
 
 #define PROFILES_EXTENSION ".json"
-#define PROFILES_PREFIX "P_"
+#define PROFILES_PREFIX    "P_"
 
-static TSS2_RC
-ifapi_profile_json_deserialize(
-    json_object *jso,
-    IFAPI_PROFILE *profile);
+static TSS2_RC ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *profile);
 
-static TSS2_RC
-ifapi_profile_checkpcrs(const TPML_PCR_SELECTION *pcr_profile);
+static TSS2_RC ifapi_profile_checkpcrs(const TPML_PCR_SELECTION *pcr_profile);
 
 /** Initialize the profiles information in the context in an asynchronous way
  *
@@ -53,15 +49,13 @@ ifapi_profile_checkpcrs(const TPML_PCR_SELECTION *pcr_profile);
  * @retval TSS2_FAPI_RC_MEMORY if memory allocation failed.
  */
 TSS2_RC
-ifapi_profiles_initialize_async(
-    IFAPI_PROFILES *profiles,
-    IFAPI_IO *io,
-    const char *profilesdir,
-    const char *defaultprofile)
-{
+ifapi_profiles_initialize_async(IFAPI_PROFILES *profiles,
+                                IFAPI_IO       *io,
+                                const char     *profilesdir,
+                                const char     *defaultprofile) {
     TSS2_RC r;
-    char *tmp;
-    size_t i, j;
+    char   *tmp;
+    size_t  i, j;
     check_not_null(profiles);
     check_not_null(profilesdir);
 
@@ -79,16 +73,15 @@ ifapi_profiles_initialize_async(
     /* Clean up list of files to only include those that match our filename pattern
        Expand the filenames with the directory
        Set the names in the dictionary */
-    for (i = 0; i < profiles->num_profiles; ) {
+    for (i = 0; i < profiles->num_profiles;) {
         char *ext = strstr(profiles->filenames[i], PROFILES_EXTENSION);
         /* Path the filename with the expected pattern */
-        if (ext != NULL && strlen(ext) == strlen(PROFILES_EXTENSION) &&
-                strncmp(profiles->filenames[i], PROFILES_PREFIX, strlen(PROFILES_PREFIX)) == 0)
-        {
+        if (ext != NULL && strlen(ext) == strlen(PROFILES_EXTENSION)
+            && strncmp(profiles->filenames[i], PROFILES_PREFIX, strlen(PROFILES_PREFIX)) == 0) {
             LOG_TRACE("Using file %s in profiles directory", profiles->filenames[i]);
             /* Add the profile name */
-            profiles->profiles[i].name = strndup(profiles->filenames[i],
-                                                 ext - profiles->filenames[i]);
+            profiles->profiles[i].name
+                = strndup(profiles->filenames[i], ext - profiles->filenames[i]);
             check_oom(profiles->profiles[i].name);
             /* Expand the filename with the directory */
             tmp = profiles->filenames[i];
@@ -112,20 +105,20 @@ ifapi_profiles_initialize_async(
     }
 
     if (profiles->num_profiles == 0) {
-        LOG_ERROR("No files found in profile dir %s that match the pattern %s*%s",
-                  profilesdir, PROFILES_PREFIX, PROFILES_EXTENSION);
+        LOG_ERROR("No files found in profile dir %s that match the pattern %s*%s", profilesdir,
+                  PROFILES_PREFIX, PROFILES_EXTENSION);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 #ifdef HAVE_REALLOCARRAY
-    profiles->profiles = reallocarray(profiles->profiles, profiles->num_profiles,
-                                      sizeof(profiles->profiles[0]));
+    profiles->profiles
+        = reallocarray(profiles->profiles, profiles->num_profiles, sizeof(profiles->profiles[0]));
     profiles->filenames = (char **)reallocarray((void *)profiles->filenames, profiles->num_profiles,
-                                      sizeof(profiles->filenames[0]));
-#else /* HAVE_REALLOCARRAY */
-    profiles->profiles = realloc(profiles->profiles, profiles->num_profiles *
-                                      sizeof(profiles->profiles[0]));
-    profiles->filenames = (char **)realloc((void *)profiles->filenames, profiles->num_profiles *
-                                      sizeof(profiles->filenames[0]));
+                                                sizeof(profiles->filenames[0]));
+#else  /* HAVE_REALLOCARRAY */
+    profiles->profiles
+        = realloc(profiles->profiles, profiles->num_profiles * sizeof(profiles->profiles[0]));
+    profiles->filenames = (char **)realloc((void *)profiles->filenames,
+                                           profiles->num_profiles * sizeof(profiles->filenames[0]));
 #endif /* HAVE_REALLOCARRAY */
     /* No need for OOM checks, since num_profiles may only have become smaller */
 
@@ -150,13 +143,10 @@ ifapi_profiles_initialize_async(
  *         to be called again.
  */
 TSS2_RC
-ifapi_profiles_initialize_finish(
-    IFAPI_PROFILES *profiles,
-    IFAPI_IO *io)
-{
-    TSS2_RC r;
-    uint8_t *buffer;
-    size_t i;
+ifapi_profiles_initialize_finish(IFAPI_PROFILES *profiles, IFAPI_IO *io) {
+    TSS2_RC      r;
+    uint8_t     *buffer;
+    size_t       i;
     json_object *jso;
     check_not_null(profiles);
     check_not_null(io);
@@ -164,7 +154,7 @@ ifapi_profiles_initialize_finish(
     r = ifapi_io_read_finish(io, &buffer, NULL);
     return_if_error(r, "Reading profile failed");
 
-    jso = ifapi_parse_json((char *) buffer);
+    jso = ifapi_parse_json((char *)buffer);
     free(buffer);
     if (jso == NULL) {
         LOG_ERROR("Failed to parse profile %s", profiles->filenames[profiles->profiles_idx]);
@@ -172,8 +162,7 @@ ifapi_profiles_initialize_finish(
         goto error;
     }
 
-    r = ifapi_profile_json_deserialize(jso,
-            &profiles->profiles[profiles->profiles_idx].profile);
+    r = ifapi_profile_json_deserialize(jso, &profiles->profiles[profiles->profiles_idx].profile);
     json_object_put(jso);
     goto_if_error2(r, "Parsing profile %s failed", error,
                    profiles->filenames[profiles->profiles_idx]);
@@ -186,8 +175,7 @@ ifapi_profiles_initialize_finish(
 
     if (profiles->profiles_idx < profiles->num_profiles) {
         r = ifapi_io_read_async(io, profiles->filenames[profiles->profiles_idx]);
-        goto_if_error2(r, "Reading profile %s", error,
-                       profiles->filenames[profiles->profiles_idx]);
+        goto_if_error2(r, "Reading profile %s", error, profiles->filenames[profiles->profiles_idx]);
 
         return TSS2_FAPI_RC_TRY_AGAIN;
     }
@@ -200,8 +188,7 @@ ifapi_profiles_initialize_finish(
         }
     }
     if (i == profiles->num_profiles) {
-        LOG_ERROR("Default profile %s not in the list of loaded profiles",
-                  profiles->default_name);
+        LOG_ERROR("Default profile %s not in the list of loaded profiles", profiles->default_name);
         r = TSS2_FAPI_RC_BAD_VALUE;
         goto error;
     }
@@ -213,7 +200,7 @@ ifapi_profiles_initialize_finish(
 
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     for (i = 0; i < profiles->num_profiles; i++) {
         SAFE_FREE(profiles->filenames[i]);
     }
@@ -237,15 +224,13 @@ ifapi_profiles_initialize_finish(
  * @retval TSS2_FAPI_RC_BAD_VALUE if a profile is not found.
  */
 TSS2_RC
-ifapi_profiles_get(
-    const IFAPI_PROFILES *profiles,
-    const char *name,
-    const IFAPI_PROFILE **profile)
-{
+ifapi_profiles_get(const IFAPI_PROFILES *profiles,
+                   const char           *name,
+                   const IFAPI_PROFILE **profile) {
     check_not_null(profiles);
     check_not_null(name);
     check_not_null(profile);
-    char *split;
+    char  *split;
     size_t len;
 
     /* if no name or nor profile prefix is given, use the default profile */
@@ -268,8 +253,8 @@ ifapi_profiles_get(
         len = split - name;
 
     for (size_t i = 0; i < profiles->num_profiles; i++) {
-        if (len == strlen(profiles->profiles[i].name) &&
-                strncmp(name, profiles->profiles[i].name, len) == 0) {
+        if (len == strlen(profiles->profiles[i].name)
+            && strncmp(name, profiles->profiles[i].name, len) == 0) {
             *profile = &profiles->profiles[i].profile;
             return TSS2_RC_SUCCESS;
         }
@@ -283,9 +268,7 @@ ifapi_profiles_get(
  * @param[in,out] profiles The context for the profiles information.
  */
 void
-ifapi_profiles_finalize(
-    IFAPI_PROFILES *profiles)
-{
+ifapi_profiles_finalize(IFAPI_PROFILES *profiles) {
     size_t i;
     if (!profiles) {
         LOG_ERROR("Called with bad reference");
@@ -295,10 +278,10 @@ ifapi_profiles_finalize(
     SAFE_FREE(profiles->default_name);
 
     for (i = 0; i < profiles->num_profiles; i++) {
-        IFAPI_PROFILE_ENTRY * entry = &profiles->profiles[i];
+        IFAPI_PROFILE_ENTRY *entry = &profiles->profiles[i];
         SAFE_FREE(profiles->profiles[i].name);
 
-        IFAPI_PROFILE * profile = &entry->profile;
+        IFAPI_PROFILE *profile = &entry->profile;
 
         SAFE_FREE(profile->srk_template);
         SAFE_FREE(profile->ek_template);
@@ -332,18 +315,12 @@ ifapi_profiles_finalize(
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
-ifapi_profile_json_deserialize(
-    json_object *jso,
-    IFAPI_PROFILE *out)
-{
+ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
 
-    const TPMT_SYM_DEF session_symmetric_default = {
-        .algorithm = TPM2_ALG_AES,
-        .keyBits = {.aes = 128},
-        .mode = {.aes = TPM2_ALG_CFB}
-    };
+    const TPMT_SYM_DEF session_symmetric_default
+        = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
 
     LOG_TRACE("call");
     memset(out, 0, sizeof(IFAPI_PROFILE));
@@ -450,7 +427,6 @@ ifapi_profile_json_deserialize(
         if (!ifapi_get_sub_object(jso, "keyBits", &jso2)) {
             LOG_ERROR("Field \"keyBits\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
-
         }
         r = ifapi_json_TPMI_RSA_KEY_BITS_deserialize(jso2, &out->keyBits);
         return_if_error(r, "Bad value for field \"keyBits\".");
@@ -473,8 +449,7 @@ ifapi_profile_json_deserialize(
 
     if (ifapi_get_sub_object(jso, "eh_policy", &jso2)) {
         out->eh_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->eh_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                      cleanup);
+        goto_if_null2(out->eh_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
         r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->eh_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
@@ -482,8 +457,7 @@ ifapi_profile_json_deserialize(
 
     if (ifapi_get_sub_object(jso, "sh_policy", &jso2)) {
         out->sh_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->sh_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                      cleanup);
+        goto_if_null2(out->sh_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
         r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->sh_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
@@ -491,8 +465,7 @@ ifapi_profile_json_deserialize(
 
     if (ifapi_get_sub_object(jso, "ek_policy", &jso2)) {
         out->ek_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->ek_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                      cleanup);
+        goto_if_null2(out->ek_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
         r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->ek_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
@@ -500,8 +473,7 @@ ifapi_profile_json_deserialize(
 
     if (ifapi_get_sub_object(jso, "srk_policy", &jso2)) {
         out->srk_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->srk_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                      cleanup);
+        goto_if_null2(out->srk_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
         r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->srk_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
@@ -509,8 +481,7 @@ ifapi_profile_json_deserialize(
 
     if (ifapi_get_sub_object(jso, "lockout_policy", &jso2)) {
         out->lockout_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->lockout_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                      cleanup);
+        goto_if_null2(out->lockout_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
         r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->lockout_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
@@ -554,21 +525,20 @@ cleanup:
 }
 
 /**
-  * Check whether PCRs with muliple banks are defined in profile.
-  *
-  * This case is not allowed by FAPI.
-  */
+ * Check whether PCRs with muliple banks are defined in profile.
+ *
+ * This case is not allowed by FAPI.
+ */
 static TSS2_RC
-ifapi_profile_checkpcrs(const TPML_PCR_SELECTION *pcr_profile)
-{
+ifapi_profile_checkpcrs(const TPML_PCR_SELECTION *pcr_profile) {
     size_t i, j, byte_idx;
 
     for (i = 0; i < pcr_profile->count - 1; i++) {
-        for (j = i + 1; j <  pcr_profile->count; j++) {
+        for (j = i + 1; j < pcr_profile->count; j++) {
             for (byte_idx = 0; byte_idx < 3; byte_idx++) {
                 /* Check whether a PCR register flag does occur in two different banks. */
-                if (pcr_profile->pcrSelections[i].pcrSelect[byte_idx] &
-                        pcr_profile->pcrSelections[j].pcrSelect[byte_idx]) {
+                if (pcr_profile->pcrSelections[i].pcrSelect[byte_idx]
+                    & pcr_profile->pcrSelections[j].pcrSelect[byte_idx]) {
                     return_error2(TSS2_FAPI_RC_BAD_VALUE,
                                   "More than one bank selected for a PCR register.");
                 }

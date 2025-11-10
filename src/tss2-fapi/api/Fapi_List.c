@@ -8,20 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>         // for bool
-#include <stdlib.h>          // for size_t, malloc, NULL
-#include <string.h>          // for strcat, strcmp, strlen
+#include <stdbool.h> // for bool
+#include <stdlib.h>  // for size_t, malloc, NULL
+#include <string.h>  // for strcat, strcmp, strlen
 
-#include "fapi_int.h"        // for IFAPI_Entities_List, FAPI_CONTEXT, IFAPI...
-#include "fapi_util.h"       // for ifapi_non_tpm_mode_init
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_check_provisioned, ifapi_keystore_...
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_N...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_List, Fapi_List_Async
+#include "fapi_int.h"       // for IFAPI_Entities_List, FAPI_CONTEXT, IFAPI...
+#include "fapi_util.h"      // for ifapi_non_tpm_mode_init
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_check_provisioned, ifapi_keystore_...
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_N...
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_List, Fapi_List_Async
 
 #define LOGMODULE fapi
-#include "util/log.h"        // for LOG_TRACE, SAFE_FREE, LOG_WARNING, goto_...
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, LOG_WARNING, goto_...
 
 /** One-Call function for Fapi_List
  *
@@ -50,11 +50,7 @@
  *         the function.
  */
 TSS2_RC
-Fapi_List(
-    FAPI_CONTEXT *context,
-    char   const *searchPath,
-    char        **pathList)
-{
+Fapi_List(FAPI_CONTEXT *context, char const *searchPath, char **pathList) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -107,10 +103,7 @@ Fapi_List(
  *         internal operations or return parameters.
  */
 TSS2_RC
-Fapi_List_Async(
-    FAPI_CONTEXT *context,
-    char   const *searchPath)
-{
+Fapi_List_Async(FAPI_CONTEXT *context, char const *searchPath) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("searchPath: %s", searchPath);
 
@@ -121,7 +114,7 @@ Fapi_List_Async(
     check_not_null(searchPath);
 
     /* Helpful alias pointers */
-    IFAPI_Entities_List * command = &context->cmd.Entities_List;
+    IFAPI_Entities_List *command = &context->cmd.Entities_List;
 
     r = ifapi_non_tpm_mode_init(context);
     return_if_error(r, "Initialize List");
@@ -164,30 +157,26 @@ error_cleanup:
  *         the function.
  */
 TSS2_RC
-Fapi_List_Finish(
-    FAPI_CONTEXT *context,
-    char        **pathList)
-{
+Fapi_List_Finish(FAPI_CONTEXT *context, char **pathList) {
     LOG_TRACE("called for context:%p", context);
     bool provision_check_ok;
 
     TSS2_RC r = TSS2_RC_SUCCESS;
-    size_t sizePathList = 0;
-    size_t numPaths = 0;
-    char **pathArray = NULL;
+    size_t  sizePathList = 0;
+    size_t  numPaths = 0;
+    char  **pathArray = NULL;
 
     /* Check for NULL parameters */
     check_not_null(context);
     check_not_null(pathList);
 
     /* Helpful alias pointers */
-    IFAPI_Entities_List * command = &context->cmd.Entities_List;
+    IFAPI_Entities_List *command = &context->cmd.Entities_List;
 
     check_not_null(command->searchPath);
 
     /* Retrieve the objects along the search path. */
-    r = ifapi_keystore_list_all(&context->keystore, command->searchPath,
-                                &pathArray, &numPaths);
+    r = ifapi_keystore_list_all(&context->keystore, command->searchPath, &pathArray, &numPaths);
     goto_if_error(r, "get entities.", cleanup);
 
     if (numPaths == 0)
@@ -199,7 +188,7 @@ Fapi_List_Finish(
 
     /* Allocate path list plus colon separators plus \0-terminator */
     *pathList = malloc(sizePathList + (numPaths - 1) + 1);
-    goto_if_null2(*pathList, "Out of memory", r, TSS2_FAPI_RC_MEMORY,  cleanup);
+    goto_if_null2(*pathList, "Out of memory", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
     (*pathList)[0] = '\0';
     (*pathList)[sizePathList + numPaths - 1] = '\0';
@@ -211,14 +200,15 @@ Fapi_List_Finish(
             strcat(*pathList, IFAPI_LIST_DELIM);
     }
 
- check_provisioning:
+check_provisioning:
     if (numPaths == 0 && (r == TSS2_RC_SUCCESS)) {
-        if (command->searchPath && (strcmp(command->searchPath,"/") == 0
-                                    || strcmp(command->searchPath,"") == 0)) {
+        if (command->searchPath
+            && (strcmp(command->searchPath, "/") == 0 || strcmp(command->searchPath, "") == 0)) {
             LOG_WARNING("Path not found: %s", command->searchPath);
             r = TSS2_FAPI_RC_NOT_PROVISIONED;
         } else {
-            r = ifapi_check_provisioned(&context->keystore, command->searchPath, &provision_check_ok);
+            r = ifapi_check_provisioned(&context->keystore, command->searchPath,
+                                        &provision_check_ok);
             goto_if_error(r, "Provisioning check.", cleanup);
 
             if (provision_check_ok) {
@@ -235,7 +225,7 @@ Fapi_List_Finish(
 cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
     if (numPaths > 0) {
-        for (size_t i = 0; i < numPaths; i++){
+        for (size_t i = 0; i < numPaths; i++) {
             SAFE_FREE(pathArray[i]);
         }
     }

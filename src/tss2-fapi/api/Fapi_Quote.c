@@ -8,27 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t, uint32_t
-#include <stdio.h>            // for size_t, NULL
-#include <stdlib.h>           // for malloc
-#include <string.h>           // for memcpy, memset, strcmp
+#include <stdint.h> // for uint8_t, uint32_t
+#include <stdio.h>  // for size_t, NULL
+#include <stdlib.h> // for malloc
+#include <string.h> // for memcpy, memset, strcmp
 
-#include "fapi_int.h"         // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
-#include "fapi_util.h"        // for ifapi_authorize_object, ifapi_cleanup_s...
-#include "ifapi_eventlog.h"   // for ifapi_eventlog_get_async, ifapi_eventlo...
-#include "ifapi_helpers.h"    // for ifapi_compute_quote_info, ifapi_filter_...
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"     // for check_not_null, statecase, fallthrough
-#include "ifapi_profiles.h"   // for IFAPI_PROFILE, ifapi_profiles_get, IFAP...
-#include "tss2_common.h"      // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_R...
-#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_Quote, Fapi_Quote_Async
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPM2B_DATA, TPM2_HANDLE, TPMA_SESSION_D...
+#include "fapi_int.h"        // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_cleanup_s...
+#include "ifapi_eventlog.h"  // for ifapi_eventlog_get_async, ifapi_eventlo...
+#include "ifapi_helpers.h"   // for ifapi_compute_quote_info, ifapi_filter_...
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"    // for check_not_null, statecase, fallthrough
+#include "ifapi_profiles.h"  // for IFAPI_PROFILE, ifapi_profiles_get, IFAP...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_R...
+#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Quote, Fapi_Quote_Async
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_DATA, TPM2_HANDLE, TPMA_SESSION_D...
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for SAFE_FREE, LOG_TRACE, goto_if_error
+#include "util/log.h" // for SAFE_FREE, LOG_TRACE, goto_if_error
 
 /** One-Call function for Fapi_Quote
  *
@@ -83,20 +83,18 @@
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_Quote(
-    FAPI_CONTEXT   *context,
-    uint32_t       *pcrList,
-    size_t          pcrListSize,
-    char     const *keyPath,
-    char     const *quoteType,
-    uint8_t  const *qualifyingData,
-    size_t          qualifyingDataSize,
-    char          **quoteInfo,
-    uint8_t       **signature,
-    size_t         *signatureSize,
-    char          **pcrLog,
-    char          **certificate)
-{
+Fapi_Quote(FAPI_CONTEXT  *context,
+           uint32_t      *pcrList,
+           size_t         pcrListSize,
+           char const    *keyPath,
+           char const    *quoteType,
+           uint8_t const *qualifyingData,
+           size_t         qualifyingDataSize,
+           char         **quoteInfo,
+           uint8_t      **signature,
+           size_t        *signatureSize,
+           char         **pcrLog,
+           char         **certificate) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -122,8 +120,8 @@ Fapi_Quote(
     return_if_error_reset_state(r, "Set Timeout to blocking");
 #endif /* TEST_FAPI_ASYNC */
 
-    r = Fapi_Quote_Async(context, pcrList, pcrListSize, keyPath, quoteType,
-                         qualifyingData, qualifyingDataSize);
+    r = Fapi_Quote_Async(context, pcrList, pcrListSize, keyPath, quoteType, qualifyingData,
+                         qualifyingDataSize);
     return_if_error_reset_state(r, "PCR_Quote");
 
     do {
@@ -134,8 +132,7 @@ Fapi_Quote(
 
         /* Repeatedly call the finish function, until FAPI has transitioned
            through all execution stages / states of this invocation. */
-        r = Fapi_Quote_Finish(context, quoteInfo, signature, signatureSize,
-                               pcrLog, certificate);
+        r = Fapi_Quote_Finish(context, quoteInfo, signature, signatureSize, pcrLog, certificate);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Reset the ESYS timeout to non-blocking, immediate response. */
@@ -182,15 +179,13 @@ Fapi_Quote(
  *         config file.
  */
 TSS2_RC
-Fapi_Quote_Async(
-    FAPI_CONTEXT   *context,
-    uint32_t       *pcrList,
-    size_t          pcrListSize,
-    char     const *keyPath,
-    char     const *quoteType,
-    uint8_t  const *qualifyingData,
-    size_t          qualifyingDataSize)
-{
+Fapi_Quote_Async(FAPI_CONTEXT  *context,
+                 uint32_t      *pcrList,
+                 size_t         pcrListSize,
+                 char const    *keyPath,
+                 char const    *quoteType,
+                 uint8_t const *qualifyingData,
+                 size_t         qualifyingDataSize) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("pcrListSize: %zi", pcrListSize);
     for (size_t i = 0; i < pcrListSize; i++) {
@@ -222,7 +217,7 @@ Fapi_Quote_Async(
     }
 
     /* Helpful alias pointers */
-    IFAPI_PCR * command = &context->cmd.pcr;
+    IFAPI_PCR *command = &context->cmd.pcr;
 
     if (qualifyingDataSize > sizeof(command->qualifyingData.buffer)) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "qualifyingDataSize too large.");
@@ -234,23 +229,21 @@ Fapi_Quote_Async(
     memset(&context->cmd.pcr, 0, sizeof(IFAPI_PCR));
 
     if (quoteType && strcmp(quoteType, "TPM-Quote") != 0) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Only quote type TPM-Quote is allowed");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Only quote type TPM-Quote is allowed");
     }
 
     /* Store parameters in context */
     strdup_check(command->keyPath, keyPath, r, error_cleanup);
 
     command->pcrList = malloc(pcrListSize * sizeof(TPM2_HANDLE));
-    goto_if_null2(command->pcrList, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-            error_cleanup);
+    goto_if_null2(command->pcrList, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
     memcpy(command->pcrList, pcrList, pcrListSize * sizeof(TPM2_HANDLE));
 
     command->pcrListSize = pcrListSize;
     command->tpm_quoted = NULL;
     if (qualifyingData != NULL) {
-        FAPI_COPY_DIGEST(&command->qualifyingData.buffer[0],
-                command->qualifyingData.size, qualifyingData, qualifyingDataSize);
+        FAPI_COPY_DIGEST(&command->qualifyingData.buffer[0], command->qualifyingData.size,
+                         qualifyingData, qualifyingDataSize);
     } else {
         command->qualifyingData.size = 0;
     }
@@ -309,20 +302,18 @@ error_cleanup:
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_Quote_Finish(
-    FAPI_CONTEXT  *context,
-    char         **quoteInfo,
-    uint8_t      **signature,
-    size_t        *signatureSize,
-    char          **pcrLog,
-    char          **certificate)
-{
+Fapi_Quote_Finish(FAPI_CONTEXT *context,
+                  char        **quoteInfo,
+                  uint8_t     **signature,
+                  size_t       *signatureSize,
+                  char        **pcrLog,
+                  char        **certificate) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
-    IFAPI_OBJECT *sig_key_object;
+    TSS2_RC              r;
+    IFAPI_OBJECT        *sig_key_object;
     const IFAPI_PROFILE *profile;
-    ESYS_TR auth_session;
+    ESYS_TR              auth_session;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -330,154 +321,144 @@ Fapi_Quote_Finish(
     check_not_null(signature);
 
     /* Helpful alias pointers */
-    IFAPI_PCR * command = &context->cmd.pcr;
+    IFAPI_PCR *command = &context->cmd.pcr;
 
     switch (context->state) {
-        statecase(context->state, PCR_QUOTE_WAIT_FOR_GET_CAP);
-            command->pcr_selection = context->profiles.default_profile.pcr_selection;
+    statecase(context->state, PCR_QUOTE_WAIT_FOR_GET_CAP);
+        command->pcr_selection = context->profiles.default_profile.pcr_selection;
 
-            r = ifapi_filter_pcr_selection_by_index(&command->pcr_selection,
-                                                    command->pcrList,
-                                                    command->pcrListSize);
-            goto_if_error_reset_state(r, "A selected PCR has no bank associated in the"
-                                      "current cryptographic profile.", error_cleanup);
+        r = ifapi_filter_pcr_selection_by_index(&command->pcr_selection, command->pcrList,
+                                                command->pcrListSize);
+        goto_if_error_reset_state(r,
+                                  "A selected PCR has no bank associated in the"
+                                  "current cryptographic profile.",
+                                  error_cleanup);
 
-            /* Get a session for authorization of the quote operation. */
-            r = ifapi_get_sessions_async(context,
-                                         IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
-                                         TPMA_SESSION_DECRYPT, 0);
-            goto_if_error_reset_state(r, "Create sessions", error_cleanup);
+        /* Get a session for authorization of the quote operation. */
+        r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
+                                     TPMA_SESSION_DECRYPT, 0);
+        goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
-            fallthrough;
+        fallthrough;
 
-        statecase(context->state, PCR_QUOTE_WAIT_FOR_SESSION);
-            /* Retrieve the profile information. */
-            r = ifapi_profiles_get(&context->profiles, command->keyPath, &profile);
-            goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+    statecase(context->state, PCR_QUOTE_WAIT_FOR_SESSION);
+        /* Retrieve the profile information. */
+        r = ifapi_profiles_get(&context->profiles, command->keyPath, &profile);
+        goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
-            r = ifapi_get_sessions_finish(context, profile, profile->nameAlg);
+        r = ifapi_get_sessions_finish(context, profile, profile->nameAlg);
+        return_try_again(r);
+        goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+
+        /* Load the key into the TPM. */
+        r = ifapi_load_keys_async(context, command->keyPath);
+        goto_if_error(r, "Load keys.", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->state, PCR_QUOTE_WAIT_FOR_KEY);
+        r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT, &command->handle,
+                                   &command->key_object);
+        return_try_again(r);
+        goto_if_error_reset_state(r, " Load key.", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->state, PCR_QUOTE_AUTHORIZE);
+        /* Authorize the session for use with the key. */
+        r = ifapi_authorize_object(context, command->key_object, &auth_session);
+        return_try_again(r);
+        goto_if_error(r, "Authorize key.", error_cleanup);
+
+        /* Perform the Quote operation. */
+        r = Esys_Quote_Async(
+            context->esys, command->handle, auth_session, ENC_SESSION_IF_POLICY(auth_session),
+            ESYS_TR_NONE, &command->qualifyingData, &command->key_object->misc.key.signing_scheme,
+            &command->pcr_selection);
+        goto_if_error(r, "Error: PCR_Quote", error_cleanup);
+
+        fallthrough;
+
+    statecase(context->state, PCR_QUOTE_AUTH_SENT);
+        command->tpm_signature = NULL;
+        SAFE_FREE(command->tpm_signature);
+        r = Esys_Quote_Finish(context->esys, &command->tpm_quoted, &command->tpm_signature);
+        return_try_again(r);
+        if (r == 0x1D5) {
+            LOG_ERROR("qualifyingData is of wrong size; probably larger than"
+                      "the TPM's max hash size (32 for SHA256, 64 for SHA512).");
+        }
+        goto_if_error(r, "Error: PCR_Quote", error_cleanup);
+
+        /* Flush the key used for the quote. */
+        if (!command->key_object->misc.key.persistent_handle) {
+            r = Esys_FlushContext_Async(context->esys, command->handle);
+            goto_if_error(r, "Error: FlushContext", error_cleanup);
+        }
+        command->handle = ESYS_TR_NONE;
+
+        fallthrough;
+
+    statecase(context->state, PCR_QUOTE_WAIT_FOR_FLUSH);
+        if (!command->key_object->misc.key.persistent_handle) {
+            r = Esys_FlushContext_Finish(context->esys);
             return_try_again(r);
-            goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
+            goto_if_error(r, "Error: Sign", error_cleanup);
+        }
 
-            /* Load the key into the TPM. */
-            r = ifapi_load_keys_async(context, command->keyPath);
-            goto_if_error(r, "Load keys.", error_cleanup);
+        sig_key_object = command->key_object;
+        /* Convert the TPM-encoded signature into something useful for the caller. */
+        r = ifapi_tpm_to_fapi_signature(sig_key_object, command->tpm_signature, &command->signature,
+                                        &command->signatureSize);
+        SAFE_FREE(command->tpm_signature);
+        goto_if_error(r, "Create FAPI signature.", error_cleanup);
 
-            fallthrough;
+        /* Compute the quote info; i.e. the data that was actually
+           signed by the TPM. */
+        r = ifapi_compute_quote_info(sig_key_object, command->tpm_quoted, &command->fapi_quote_info,
+                                     quoteInfo);
+        goto_if_error(r, "Create compute quote info.", error_cleanup);
 
-        statecase(context->state, PCR_QUOTE_WAIT_FOR_KEY);
-            r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT,
-                                       &command->handle,
-                                       &command->key_object);
-            return_try_again(r);
-            goto_if_error_reset_state(r, " Load key.", error_cleanup);
+        /* Return the key's certificate if requested. */
+        if (certificate) {
+            strdup_check(command->certificate, sig_key_object->misc.key.certificate, r,
+                         error_cleanup);
+        }
 
-            fallthrough;
+        /* If the pcrLog was not requested, the operation is done. */
+        if (!pcrLog) {
+            context->state = PCR_QUOTE_CLEANUP;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
 
-        statecase(context->state, PCR_QUOTE_AUTHORIZE);
-            /* Authorize the session for use with the key. */
-            r = ifapi_authorize_object(context, command->key_object, &auth_session);
-            return_try_again(r);
-            goto_if_error(r, "Authorize key.", error_cleanup);
+        /* Retrieve the eventlog for the PCRs for the quote. */
+        r = ifapi_eventlog_get_async(&context->eventlog, &context->io, command->pcrList,
+                                     command->pcrListSize);
+        goto_if_error(r, "Error getting event log", error_cleanup);
 
-            /* Perform the Quote operation. */
-            r = Esys_Quote_Async(context->esys, command->handle,
-                                 auth_session,
-                                 ENC_SESSION_IF_POLICY(auth_session),
-                                 ESYS_TR_NONE,
-                                 &command->qualifyingData,
-                                 &command->key_object->misc.key.signing_scheme,
-                                 &command->pcr_selection);
-            goto_if_error(r, "Error: PCR_Quote", error_cleanup);
+        fallthrough;
 
-            fallthrough;
+    statecase(context->state, PCR_QUOTE_READ_EVENT_LIST);
+        r = ifapi_eventlog_get_finish(&context->eventlog, &command->fapi_quote_info, &context->io,
+                                      &command->pcrLog);
+        return_try_again(r);
+        goto_if_error(r, "Error getting event log", error_cleanup);
+        fallthrough;
 
-        statecase(context->state, PCR_QUOTE_AUTH_SENT);
-            command->tpm_signature = NULL;
-            SAFE_FREE(command->tpm_signature);
-            r = Esys_Quote_Finish(context->esys, &command->tpm_quoted,
-                                  &command->tpm_signature);
-            return_try_again(r);
-            if (r == 0x1D5) {
-                LOG_ERROR("qualifyingData is of wrong size; probably larger than"
-                          "the TPM's max hash size (32 for SHA256, 64 for SHA512).");
-            }
-            goto_if_error(r, "Error: PCR_Quote", error_cleanup);
+    statecase(context->state, PCR_QUOTE_CLEANUP)
+    /* Cleanup the session used for authorization. */
+        r = ifapi_cleanup_session(context);
+        try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
-            /* Flush the key used for the quote. */
-            if (!command->key_object->misc.key.persistent_handle) {
-                r = Esys_FlushContext_Async(context->esys, command->handle);
-                goto_if_error(r, "Error: FlushContext", error_cleanup);
-            }
-            command->handle = ESYS_TR_NONE;
+        if (pcrLog)
+            *pcrLog = command->pcrLog;
+        if (certificate)
+            *certificate = command->certificate;
+        *signature = command->signature;
+        *signatureSize = command->signatureSize;
+        break;
 
-            fallthrough;
-
-        statecase(context->state, PCR_QUOTE_WAIT_FOR_FLUSH);
-           if (!command->key_object->misc.key.persistent_handle) {
-               r = Esys_FlushContext_Finish(context->esys);
-               return_try_again(r);
-               goto_if_error(r, "Error: Sign", error_cleanup);
-           }
-
-            sig_key_object = command->key_object;
-            /* Convert the TPM-encoded signature into something useful for the caller. */
-            r = ifapi_tpm_to_fapi_signature(sig_key_object,
-                                            command->tpm_signature,
-                                            &command->signature, &command->signatureSize);
-            SAFE_FREE(command->tpm_signature);
-            goto_if_error(r, "Create FAPI signature.", error_cleanup);
-
-            /* Compute the quote info; i.e. the data that was actually
-               signed by the TPM. */
-            r = ifapi_compute_quote_info(sig_key_object,
-                                         command->tpm_quoted,
-                                         &command->fapi_quote_info,
-                                         quoteInfo);
-            goto_if_error(r, "Create compute quote info.", error_cleanup);
-
-            /* Return the key's certificate if requested. */
-            if (certificate) {
-                strdup_check(command->certificate, sig_key_object->misc.key.certificate, r, error_cleanup);
-            }
-
-            /* If the pcrLog was not requested, the operation is done. */
-            if (!pcrLog) {
-                context->state = PCR_QUOTE_CLEANUP;
-                return TSS2_FAPI_RC_TRY_AGAIN;
-            }
-
-            /* Retrieve the eventlog for the PCRs for the quote. */
-            r = ifapi_eventlog_get_async(&context->eventlog, &context->io,
-                                         command->pcrList,
-                                         command->pcrListSize);
-            goto_if_error(r, "Error getting event log", error_cleanup);
-
-            fallthrough;
-
-        statecase(context->state, PCR_QUOTE_READ_EVENT_LIST);
-            r = ifapi_eventlog_get_finish(&context->eventlog,
-                                          &command->fapi_quote_info,
-                                          &context->io,
-                                          &command->pcrLog);
-            return_try_again(r);
-            goto_if_error(r, "Error getting event log", error_cleanup);
-            fallthrough;
-
-        statecase(context->state, PCR_QUOTE_CLEANUP)
-            /* Cleanup the session used for authorization. */
-            r = ifapi_cleanup_session(context);
-            try_again_or_error_goto(r, "Cleanup", error_cleanup);
-
-            if (pcrLog)
-                *pcrLog = command->pcrLog;
-            if (certificate)
-                *certificate = command->certificate;
-            *signature = command->signature;
-            *signatureSize = command->signatureSize;
-            break;
-
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
 error_cleanup:

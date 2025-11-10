@@ -8,33 +8,31 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>          // for bool, false, true
-#include <stdint.h>           // for uint8_t
-#include <stdlib.h>           // for NULL, size_t, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strcmp, strlen, strncmp
+#include <stdbool.h> // for bool, false, true
+#include <stdint.h>  // for uint8_t
+#include <stdlib.h>  // for NULL, size_t, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>  // for strcmp, strlen, strncmp
 
-#include "test-fapi.h"        // for ASSERT, ASSERT_SIZE, fapi_profile, test...
-#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_FAPI_RC_GENERAL_FAI...
-#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_Provi...
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "test-fapi.h"       // for ASSERT, ASSERT_SIZE, fapi_profile, test...
+#include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_FAPI_RC_GENERAL_FAI...
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_CreateKey, Fapi_Provi...
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, SAFE_FREE, UNUSED, LOG_E...
+#include "util/log.h" // for goto_if_error, SAFE_FREE, UNUSED, LOG_E...
 
-#define PASSWORD "abc"
-#define SIGN_TEMPLATE  "sign,noDa"
+#define PASSWORD      "abc"
+#define SIGN_TEMPLATE "sign,noDa"
 
 static bool cb_called = false;
 
 static TSS2_RC
-branch_callback(
-    char   const *objectPath,
-    char   const *description,
-    char  const **branchNames,
-    size_t        numBranches,
-    size_t       *selectedBranch,
-    void         *userData)
-{
+branch_callback(char const  *objectPath,
+                char const  *description,
+                char const **branchNames,
+                size_t       numBranches,
+                size_t      *selectedBranch,
+                void        *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -50,8 +48,7 @@ branch_callback(
     else if (!strcmp(branchNames[1], "B"))
         *selectedBranch = 1;
     else {
-        LOG_ERROR("BranchName not found. Got \"%s\" and \"%s\"",
-                  branchNames[0], branchNames[1]);
+        LOG_ERROR("BranchName not found. Got \"%s\" and \"%s\"", branchNames[0], branchNames[1]);
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
@@ -60,12 +57,7 @@ branch_callback(
 }
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -93,14 +85,13 @@ auth_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_key_create_he_sign(FAPI_CONTEXT *context)
-{
+test_fapi_key_create_he_sign(FAPI_CONTEXT *context) {
     TSS2_RC r;
-    char *sigscheme = NULL;
+    char   *sigscheme = NULL;
 
-    uint8_t       *signature = NULL;
-    char          *publicKey = NULL;
-    char          *path_list = NULL;
+    uint8_t *signature = NULL;
+    char    *publicKey = NULL;
+    char    *path_list = NULL;
 
     if (strncmp("P_ECC", fapi_profile, 5) != 0)
         sigscheme = "RSA_PSS";
@@ -115,36 +106,29 @@ test_fapi_key_create_he_sign(FAPI_CONTEXT *context)
     r = Fapi_SetAuthCB(context, auth_callback, NULL);
     goto_if_error(r, "Error SetPolicyAuthCallback", error);
 
-    r = Fapi_CreateKey(context, "HE/EK/mySignKey", SIGN_TEMPLATE , "",
-                       PASSWORD);
+    r = Fapi_CreateKey(context, "HE/EK/mySignKey", SIGN_TEMPLATE, "", PASSWORD);
 
     goto_if_error(r, "Error Fapi_CreateKey", error);
     size_t signatureSize = 0;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x67, 0x68
-        }
-    };
+    TPM2B_DIGEST digest
+        = { .size = 32,
+            .buffer = { 0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+                        0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x31, 0xa0,
+                        0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x67, 0x68 } };
 
-
-    r = Fapi_Sign(context, "HE/EK/mySignKey", sigscheme,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+    r = Fapi_Sign(context, "HE/EK/mySignKey", sigscheme, &digest.buffer[0], digest.size, &signature,
+                  &signatureSize, &publicKey, NULL);
     goto_if_error(r, "Error Fapi_Sign", error);
     ASSERT(signature != NULL);
     ASSERT(publicKey != NULL);
     ASSERT(strlen(publicKey) > ASSERT_SIZE);
 
-    r = Fapi_VerifySignature(context, "HE/EK/mySignKey",
-                  &digest.buffer[0], digest.size, signature, signatureSize);
+    r = Fapi_VerifySignature(context, "HE/EK/mySignKey", &digest.buffer[0], digest.size, signature,
+                             signatureSize);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
-     r = Fapi_Delete(context, "/");
+    r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     SAFE_FREE(path_list);
@@ -161,7 +145,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_key_create_he_sign(fapi_context);
 }

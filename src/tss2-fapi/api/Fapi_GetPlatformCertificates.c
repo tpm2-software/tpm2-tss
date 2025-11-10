@@ -8,23 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>         // for uint8_t
-#include <stdlib.h>         // for NULL, malloc, size_t
-#include <string.h>         // for memcpy
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for NULL, malloc, size_t
+#include <string.h> // for memcpy
 
-#include "fapi_int.h"       // for FAPI_CONTEXT, GET_PLATFORM_CERTIFICATE
-#include "fapi_types.h"     // for NODE_OBJECT_T
-#include "fapi_util.h"      // for ifapi_get_certificates, ifapi_session_init
-#include "ifapi_helpers.h"  // for ifapi_free_node_list
-#include "ifapi_io.h"       // for ifapi_io_poll
-#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TR...
-#include "tss2_esys.h"      // for Esys_SetTimeout
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetPlatformCertificates
-#include "tss2_tcti.h"      // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "fapi_int.h"      // for FAPI_CONTEXT, GET_PLATFORM_CERTIFICATE
+#include "fapi_types.h"    // for NODE_OBJECT_T
+#include "fapi_util.h"     // for ifapi_get_certificates, ifapi_session_init
+#include "ifapi_helpers.h" // for ifapi_free_node_list
+#include "ifapi_io.h"      // for ifapi_io_poll
+#include "ifapi_macros.h"  // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"   // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TR...
+#include "tss2_esys.h"     // for Esys_SetTimeout
+#include "tss2_fapi.h"     // for FAPI_CONTEXT, Fapi_GetPlatformCertificates
+#include "tss2_tcti.h"     // for TSS2_TCTI_TIMEOUT_BLOCK
 
 #define LOGMODULE fapi
-#include "util/log.h"       // for LOG_TRACE, SAFE_FREE, return_if_error
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_if_error
 
 /** One-Call function for Fapi_GetPlatformCertificates
  *
@@ -68,11 +68,9 @@
  *         during authorization.
  */
 TSS2_RC
-Fapi_GetPlatformCertificates(
-    FAPI_CONTEXT *context,
-    uint8_t **certificates,
-    size_t *certificatesSize)
-{
+Fapi_GetPlatformCertificates(FAPI_CONTEXT *context,
+                             uint8_t     **certificates,
+                             size_t       *certificatesSize) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -106,8 +104,7 @@ Fapi_GetPlatformCertificates(
 
         /* Repeatedly call the finish function, until FAPI has transitioned
            through all execution stages / states of this invocation. */
-        r = Fapi_GetPlatformCertificates_Finish(context, certificates,
-                certificatesSize);
+        r = Fapi_GetPlatformCertificates_Finish(context, certificates, certificatesSize);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Reset the ESYS timeout to non-blocking, immediate response. */
@@ -144,9 +141,7 @@ Fapi_GetPlatformCertificates(
  *         config file.
  */
 TSS2_RC
-Fapi_GetPlatformCertificates_Async(
-    FAPI_CONTEXT *context)
-{
+Fapi_GetPlatformCertificates_Async(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -204,11 +199,9 @@ Fapi_GetPlatformCertificates_Async(
  *         during authorization.
  */
 TSS2_RC
-Fapi_GetPlatformCertificates_Finish(
-    FAPI_CONTEXT *context,
-    uint8_t **certificates,
-    size_t *certificatesSize)
-{
+Fapi_GetPlatformCertificates_Finish(FAPI_CONTEXT *context,
+                                    uint8_t     **certificates,
+                                    size_t       *certificatesSize) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -219,30 +212,27 @@ Fapi_GetPlatformCertificates_Finish(
     *certificates = NULL;
 
     switch (context->state) {
-        statecase(context->state, GET_PLATFORM_CERTIFICATE);
-            /* Retrieve the certificates from the TPM's NV space. */
-            r = ifapi_get_certificates(context, MIN_PLATFORM_CERT_HANDLE,
-                                       MAX_PLATFORM_CERT_HANDLE,
-                                       certificates,
-                                       certificatesSize);
-            return_try_again(r);
-            goto_if_error(r, "Get certificates.", error);
+    statecase(context->state, GET_PLATFORM_CERTIFICATE);
+        /* Retrieve the certificates from the TPM's NV space. */
+        r = ifapi_get_certificates(context, MIN_PLATFORM_CERT_HANDLE, MAX_PLATFORM_CERT_HANDLE,
+                                   certificates, certificatesSize);
+        return_try_again(r);
+        goto_if_error(r, "Get certificates.", error);
 
-            if (*certificatesSize == 0) {
-                goto_error(r, TSS2_FAPI_RC_NO_CERT,
-                           "No platform certificates available.", error);
-            }
-            break;
-        statecasedefault(context->state);
+        if (*certificatesSize == 0) {
+            goto_error(r, TSS2_FAPI_RC_NO_CERT, "No platform certificates available.", error);
+        }
+        break;
+    statecasedefault(context->state);
     }
 
     /* Cleanup any intermediate results and state stored in the context. */
-    context->state =  FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
 error:
     /* Cleanup any intermediate results and state stored in the context. */
-    context->state =  FAPI_STATE_INIT;
+    context->state = FAPI_STATE_INIT;
     return r;
 }

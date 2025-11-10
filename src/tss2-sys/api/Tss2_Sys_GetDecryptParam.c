@@ -8,22 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stddef.h>            // for size_t
-#include <stdint.h>            // for uint8_t
+#include <stddef.h> // for size_t
+#include <stdint.h> // for uint8_t
 
-#include "sysapi_util.h"       // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"       // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_SYS_RC_...
-#include "tss2_sys.h"          // for TSS2_SYS_CONTEXT, Tss2_Sys_GetDecryptP...
-#include "util/tpm2b.h"        // for TPM2B
-#include "util/tss2_endian.h"  // for BE_TO_HOST_16
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_SYS_RC_...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, Tss2_Sys_GetDecryptP...
+#include "util/tpm2b.h"       // for TPM2B
+#include "util/tss2_endian.h" // for BE_TO_HOST_16
 
-TSS2_RC Tss2_Sys_GetDecryptParam(
-    TSS2_SYS_CONTEXT *sysContext,
-    size_t *decryptParamSize,
-    const uint8_t **decryptParamBuffer)
-{
+TSS2_RC
+Tss2_Sys_GetDecryptParam(TSS2_SYS_CONTEXT *sysContext,
+                         size_t           *decryptParamSize,
+                         const uint8_t   **decryptParamBuffer) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TPM2B *decryptParam;
+    TPM2B                 *decryptParam;
 
     if (!decryptParamSize || !decryptParamBuffer || !ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;

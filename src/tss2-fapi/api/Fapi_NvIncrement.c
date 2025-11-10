@@ -8,26 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>             // for json_object
-#include <stdlib.h>           // for NULL
-#include <string.h>           // for memset
+#include <json.h>   // for json_object
+#include <stdlib.h> // for NULL
+#include <string.h> // for memset
 
-#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_NV_Cmds, NV_INCREME...
-#include "fapi_util.h"        // for ifapi_authorize_object, ifapi_cleanup_s...
-#include "ifapi_helpers.h"    // for ifapi_init_hierarchy_object
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"     // for goto_if_error_reset_state, statecase
-#include "ifapi_profiles.h"   // for IFAPI_PROFILES
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR, Esys_NV_Incre...
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_NvIncrement, Fapi_Nv...
-#include "tss2_policy.h"      // for TSS2_OBJECT
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
+#include "fapi_int.h"        // for FAPI_CONTEXT, IFAPI_NV_Cmds, NV_INCREME...
+#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_cleanup_s...
+#include "ifapi_helpers.h"   // for ifapi_init_hierarchy_object
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"    // for goto_if_error_reset_state, statecase
+#include "ifapi_profiles.h"  // for IFAPI_PROFILES
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR, Esys_NV_Incre...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_NvIncrement, Fapi_Nv...
+#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for LOG_TRACE, SAFE_FREE, return_if_error
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_if_error
 
 /** One-Call function for Fapi_NvIncrement
  *
@@ -66,10 +66,7 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvIncrement(
-    FAPI_CONTEXT *context,
-    char   const *nvPath)
-{
+Fapi_NvIncrement(FAPI_CONTEXT *context, char const *nvPath) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -148,10 +145,7 @@ Fapi_NvIncrement(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvIncrement_Async(
-    FAPI_CONTEXT *context,
-    char   const *nvPath)
-{
+Fapi_NvIncrement_Async(FAPI_CONTEXT *context, char const *nvPath) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("nvPath: %s", nvPath);
 
@@ -162,7 +156,7 @@ Fapi_NvIncrement_Async(
     check_not_null(nvPath);
 
     /* Helpful alias pointers */
-    IFAPI_NV_Cmds * command = &context->nv_cmd;
+    IFAPI_NV_Cmds *command = &context->nv_cmd;
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -222,30 +216,29 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_NvIncrement_Finish(
-    FAPI_CONTEXT *context)
-{
+Fapi_NvIncrement_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso = NULL;
-    ESYS_TR authIndex;
-    ESYS_TR auth_session;
+    ESYS_TR      authIndex;
+    ESYS_TR      auth_session;
 
     /* Check for NULL parameters */
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_NV_Cmds * command = &context->nv_cmd;
-    IFAPI_OBJECT *object = &command->nv_object;
-    ESYS_TR nvIndex = command->esys_handle;
-    IFAPI_OBJECT *authObject = &command->auth_object;
+    IFAPI_NV_Cmds *command = &context->nv_cmd;
+    IFAPI_OBJECT  *object = &command->nv_object;
+    ESYS_TR        nvIndex = command->esys_handle;
+    IFAPI_OBJECT  *authObject = &command->auth_object;
 
     switch (context->state) {
     statecase(context->state, NV_INCREMENT_READ)
-        /* First check whether the file in object store can be updated. */
+    /* First check whether the file in object store can be updated. */
         r = ifapi_keystore_check_writeable(&context->keystore, command->nvPath);
-        goto_if_error_reset_state(r, "Check whether update object store is possible.", error_cleanup);
+        goto_if_error_reset_state(r, "Check whether update object store is possible.",
+                                  error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
         return_try_again(r);
@@ -280,9 +273,7 @@ Fapi_NvIncrement_Finish(
         context->primary_state = PRIMARY_INIT;
 
         /* Prepare the session for authorization */
-        r = ifapi_get_sessions_async(context,
-            IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
-            0, 0);
+        r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1, 0, 0);
         goto_if_error_reset_state(r, "Create sessions", error_cleanup);
 
         fallthrough;
@@ -296,17 +287,14 @@ Fapi_NvIncrement_Finish(
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_AUTHORIZE)
-        /* Authorize the session for accessing the NV-index. */
+    /* Authorize the session for accessing the NV-index. */
         r = ifapi_authorize_object(context, authObject, &auth_session);
         return_try_again(r);
         goto_if_error(r, "Authorize NV object.", error_cleanup);
 
         /* Prepare increment */
-        r = Esys_NV_Increment_Async(context->esys,  command->auth_index,
-                                    nvIndex,
-                                    auth_session,
-                                    ESYS_TR_NONE,
-                                    ESYS_TR_NONE);
+        r = Esys_NV_Increment_Async(context->esys, command->auth_index, nvIndex, auth_session,
+                                    ESYS_TR_NONE, ESYS_TR_NONE);
         goto_if_error_reset_state(r, " Fapi_NvIncrement_Async", error_cleanup);
 
         fallthrough;
@@ -316,9 +304,8 @@ Fapi_NvIncrement_Finish(
         return_try_again(r);
         goto_if_error_reset_state(r, "FAPI NV_Increment_Finish", error_cleanup);
 
-        if (context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes &
-            TPMA_NV_WRITTEN &&
-            !authObject->auth_changed) {
+        if (context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes & TPMA_NV_WRITTEN
+            && !authObject->auth_changed) {
             LOG_DEBUG("success");
             context->state = NV_INCREMENT_CLEANUP;
             return TSS2_FAPI_RC_TRY_AGAIN;
@@ -332,23 +319,21 @@ Fapi_NvIncrement_Finish(
         goto_if_error(r, "Prepare serialization", error_cleanup);
 
         /* Start writing the NV object to the key store */
-        r = ifapi_keystore_store_async(&context->keystore, &context->io,
-                                       command->nvPath,
+        r = ifapi_keystore_store_async(&context->keystore, &context->io, command->nvPath,
                                        &command->nv_object);
-        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
-                                  command->nvPath);
+        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, command->nvPath);
 
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_WRITE)
-        /* Finish writing the NV object to the key store */
+    /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
         return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_CLEANUP)
-        /* Cleanup the authorization session. */
+    /* Cleanup the authorization session. */
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", error_cleanup);
 

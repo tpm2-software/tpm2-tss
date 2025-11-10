@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-esys.h"        // for test_invoke_esys
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPM2_ALG_AES, TPM2_ALG_CFB
+#include "test-esys.h"       // for test_invoke_esys
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPM2_ALG_AES, TPM2_ALG_CFB
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR
+#include "util/log.h" // for goto_if_error, LOG_ERROR
 
 /** This test is intended to test the ESYS command PolicyPassword.
  *
@@ -41,65 +41,45 @@
  */
 
 int
-test_esys_policy_password(ESYS_CONTEXT * esys_context)
-{
+test_esys_policy_password(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     ESYS_TR policySession = ESYS_TR_NONE;
 
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
+    TPMT_TK_CREATION    *creationTicket = NULL;
 
     TPM2B_DIGEST *policyDigestTrial = NULL;
 
-    TPM2B_PUBLIC *outPublic2 = NULL;
-    TPM2B_PRIVATE *outPrivate2 = NULL;
+    TPM2B_PUBLIC        *outPublic2 = NULL;
+    TPM2B_PRIVATE       *outPrivate2 = NULL;
     TPM2B_CREATION_DATA *creationData2 = NULL;
-    TPM2B_DIGEST *creationHash2 = NULL;
-    TPMT_TK_CREATION *creationTicket2 = NULL;
+    TPM2B_DIGEST        *creationHash2 = NULL;
+    TPMT_TK_CREATION    *creationTicket2 = NULL;
 
     /*
      * Firth the policy value for changing the auth value of an NV index has to be
      * determined with a policy trial session.
      */
-    ESYS_TR sessionTrial = ESYS_TR_NONE;
-    TPMT_SYM_DEF symmetricTrial = {.algorithm = TPM2_ALG_AES,
-                                   .keyBits = {.aes = 128},
-                                   .mode = {.aes = TPM2_ALG_CFB}
-    };
-    TPM2B_NONCE nonceCallerTrial = {
-        .size = 20,
-        .buffer = {11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
-                   21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
-    };
+    ESYS_TR      sessionTrial = ESYS_TR_NONE;
+    TPMT_SYM_DEF symmetricTrial
+        = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
+    TPM2B_NONCE nonceCallerTrial
+        = { .size = 20, .buffer = { 11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
+                                    21, 22, 23, 24, 25, 26, 27, 28, 29, 30 } };
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCallerTrial,
-                              TPM2_SE_TRIAL, &symmetricTrial,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, &nonceCallerTrial, TPM2_SE_TRIAL, &symmetricTrial,
                               TPM2_ALG_SHA256, &sessionTrial);
-    goto_if_error(r, "Error: During initialization of policy trial session",
-                  error);
+    goto_if_error(r, "Error: During initialization of policy trial session", error);
 
-    r = Esys_PolicyPassword(
-        esys_context,
-        sessionTrial,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE
-        );
+    r = Esys_PolicyPassword(esys_context, sessionTrial, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     goto_if_error(r, "Error: PolicyPassword", error);
 
-    r = Esys_PolicyGetDigest(
-        esys_context,
-        sessionTrial,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        &policyDigestTrial
-        );
+    r = Esys_PolicyGetDigest(esys_context, sessionTrial, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                             &policyDigestTrial);
     goto_if_error(r, "Error: PolicyGetDigest", error);
 
     TPM2B_PUBLIC inPublic = {
@@ -132,10 +112,7 @@ test_esys_policy_password(ESYS_CONTEXT * esys_context)
         },
     };
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -162,64 +139,37 @@ test_esys_policy_password(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    TPM2B_AUTH authValue = {
-        .size = 0,
-        .buffer = {}
-    };
+    TPM2B_AUTH authValue = { .size = 0, .buffer = {} };
 
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle,
-                           &outPublic, &creationData, &creationHash,
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &primaryHandle, &outPublic, &creationData, &creationHash,
                            &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    TPMT_SYM_DEF policySymmetric = {.algorithm = TPM2_ALG_AES,
-                                    .keyBits = {.aes = 128},
-                                    .mode = {.aes = TPM2_ALG_CFB}
-    };
-    TPM2B_NONCE policyNonceCaller = {
-        .size = 20,
-        .buffer = {11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
-                   21, 22, 23, 24, 25, 26, 27, 28, 29, 30}
-    };
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &policyNonceCaller,
-                              TPM2_SE_POLICY, &policySymmetric, TPM2_ALG_SHA256,
-                              &policySession);
+    TPMT_SYM_DEF policySymmetric
+        = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
+    TPM2B_NONCE policyNonceCaller
+        = { .size = 20, .buffer = { 11, 12, 13, 14, 15, 16, 17, 18, 19, 11,
+                                    21, 22, 23, 24, 25, 26, 27, 28, 29, 30 } };
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, &policyNonceCaller, TPM2_SE_POLICY, &policySymmetric,
+                              TPM2_ALG_SHA256, &policySession);
     goto_if_error(r, "Error: During initialization of policy trial session", error);
 
-    r = Esys_PolicyPassword(
-        esys_context,
-        policySession,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE
-        );
+    r = Esys_PolicyPassword(esys_context, policySession, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
     goto_if_error(r, "Error: PolicyAuthValue", error);
 
     r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    TPM2B_AUTH authKey2 = {
-        .size = 6,
-        .buffer = {6, 7, 8, 9, 10, 11}
-    };
+    TPM2B_AUTH authKey2 = { .size = 6, .buffer = { 6, 7, 8, 9, 10, 11 } };
 
-    TPM2B_SENSITIVE_CREATE inSensitive2 = {
-        .size = 0,
-        .sensitive = {
-            .userAuth = authKey2,
-            .data = {
-                 .size = 0,
-                 .buffer = {}
-             }
-        }
-    };
+    TPM2B_SENSITIVE_CREATE inSensitive2
+        = { .size = 0, .sensitive = { .userAuth = authKey2, .data = { .size = 0, .buffer = {} } } };
 
     TPM2B_PUBLIC inPublic2 = {
         .size = 0,
@@ -259,24 +209,16 @@ test_esys_policy_password(ESYS_CONTEXT * esys_context)
 
     TPM2B_DATA outsideInfo2 = {
         .size = 0,
-        .buffer = {}
-        ,
+        .buffer = {},
     };
 
     TPML_PCR_SELECTION creationPCR2 = {
         .count = 0,
     };
 
-    r = Esys_Create(esys_context,
-                    primaryHandle,
-                    policySession, ESYS_TR_NONE, ESYS_TR_NONE,
-                    &inSensitive2,
-                    &inPublic2,
-                    &outsideInfo2,
-                    &creationPCR2,
-                    &outPrivate2,
-                    &outPublic2,
-                    &creationData2, &creationHash2, &creationTicket2);
+    r = Esys_Create(esys_context, primaryHandle, policySession, ESYS_TR_NONE, ESYS_TR_NONE,
+                    &inSensitive2, &inPublic2, &outsideInfo2, &creationPCR2, &outPrivate2,
+                    &outPublic2, &creationData2, &creationHash2, &creationTicket2);
     goto_if_error(r, "Error esys create ", error);
 
     r = Esys_FlushContext(esys_context, primaryHandle);
@@ -302,7 +244,7 @@ test_esys_policy_password(ESYS_CONTEXT * esys_context)
     Esys_Free(creationTicket2);
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (policySession != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, policySession) != TSS2_RC_SUCCESS) {
@@ -332,6 +274,6 @@ test_esys_policy_password(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_policy_password(esys_context);
 }

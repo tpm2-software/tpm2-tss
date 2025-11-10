@@ -8,23 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>          // for uint8_t
-#include <stdlib.h>          // for malloc, size_t, NULL
-#include <string.h>          // for memcpy, memset
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for malloc, size_t, NULL
+#include <string.h> // for memcpy, memset
 
-#include "fapi_int.h"        // for IFAPI_Path_SetDescription, FAPI_CONTEXT
-#include "fapi_types.h"      // for UINT8_ARY
-#include "fapi_util.h"       // for ifapi_initialize_object
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_B...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_SetAppData, Fapi_SetA...
+#include "fapi_int.h"       // for IFAPI_Path_SetDescription, FAPI_CONTEXT
+#include "fapi_types.h"     // for UINT8_ARY
+#include "fapi_util.h"      // for ifapi_initialize_object
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_B...
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetAppData, Fapi_SetA...
 
 #define LOGMODULE fapi
-#include "util/log.h"        // for LOG_TRACE, SAFE_FREE, return_error, LOGB...
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_error, LOGB...
 
-#define FAPI_MAX_APP_DATA_SIZE (10*1024*1024)
+#define FAPI_MAX_APP_DATA_SIZE (10 * 1024 * 1024)
 
 /** One-Call function for Fapi_SetAppData
  *
@@ -57,12 +57,10 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_SetAppData(
-    FAPI_CONTEXT  *context,
-    char    const *path,
-    uint8_t const *appData,
-    size_t         appDataSize)
-{
+Fapi_SetAppData(FAPI_CONTEXT  *context,
+                char const    *path,
+                uint8_t const *appData,
+                size_t         appDataSize) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -121,12 +119,10 @@ Fapi_SetAppData(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_SetAppData_Async(
-    FAPI_CONTEXT  *context,
-    char    const *path,
-    uint8_t const *appData,
-    size_t         appDataSize)
-{
+Fapi_SetAppData_Async(FAPI_CONTEXT  *context,
+                      char const    *path,
+                      uint8_t const *appData,
+                      size_t         appDataSize) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
     if (appData) {
@@ -161,15 +157,15 @@ Fapi_SetAppData_Async(
     }
 
     /* Helpful alias pointers */
-    IFAPI_Path_SetDescription * command = &context->cmd.path_set_info;
+    IFAPI_Path_SetDescription *command = &context->cmd.path_set_info;
 
     /* Copy parameters to context for use during _Finish. */
     strdup_check(command->object_path, path, r, error_cleanup);
 
     if (appDataSize > 0) {
         command->appData.buffer = malloc(appDataSize);
-        goto_if_null2(command->appData.buffer, "Out of memory.",
-                      r, TSS2_FAPI_RC_MEMORY, error_cleanup);
+        goto_if_null2(command->appData.buffer, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
+                      error_cleanup);
 
         memcpy(&command->appData.buffer[0], appData, appDataSize);
     } else {
@@ -218,9 +214,7 @@ error_cleanup:
  *         during authorization.
  */
 TSS2_RC
-Fapi_SetAppData_Finish(
-    FAPI_CONTEXT *context)
-{
+Fapi_SetAppData_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -229,57 +223,56 @@ Fapi_SetAppData_Finish(
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_Path_SetDescription * command = &context->cmd.path_set_info;
-    IFAPI_OBJECT *object = &command->object;
-    UINT8_ARY *objAppData;
+    IFAPI_Path_SetDescription *command = &context->cmd.path_set_info;
+    IFAPI_OBJECT              *object = &command->object;
+    UINT8_ARY                 *objAppData;
 
     switch (context->state) {
-        statecase(context->state, APP_DATA_SET_READ);
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-            return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+    statecase(context->state, APP_DATA_SET_READ);
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
+        return_try_again(r);
+        return_if_error_reset_state(r, "read_finish failed");
 
-            r = ifapi_initialize_object(context->esys, object);
-            goto_if_error_reset_state(r, "Initialize key object", error_cleanup);
+        r = ifapi_initialize_object(context->esys, object);
+        goto_if_error_reset_state(r, "Initialize key object", error_cleanup);
 
-            /* Depending on the object type get the correct appData pointer. */
-            switch (object->objectType) {
-            case IFAPI_KEY_OBJ:
-                objAppData = &object->misc.key.appData;
-                break;
-            case IFAPI_NV_OBJ:
-                objAppData = &object->misc.nv.appData;
-                break;
-            default:
-                goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Object has no app data.", error_cleanup);
-            }
-
-            /* If exists delete old appData */
-            SAFE_FREE(objAppData->buffer);
-
-            /* Set new appData for object */
-            objAppData->size = command->appData.size;
-            objAppData->buffer = command->appData.buffer;
-
-            /* Prepare (over-)writing of object */
-            r = ifapi_keystore_store_async(&context->keystore, &context->io,
-                                           command->object_path, object);
-            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
-                                      command->object_path);
-
-            fallthrough;
-
-        statecase(context->state, APP_DATA_SET_WRITE);
-            /* Finish writing of object */
-            r = ifapi_keystore_store_finish(&context->io);
-            return_try_again(r);
-            goto_if_error(r, "write_finish failed", error_cleanup);
-            ifapi_cleanup_ifapi_object(object);
-
-            r = TSS2_RC_SUCCESS;
+        /* Depending on the object type get the correct appData pointer. */
+        switch (object->objectType) {
+        case IFAPI_KEY_OBJ:
+            objAppData = &object->misc.key.appData;
             break;
+        case IFAPI_NV_OBJ:
+            objAppData = &object->misc.nv.appData;
+            break;
+        default:
+            goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Object has no app data.", error_cleanup);
+        }
 
-        statecasedefault(context->state);
+        /* If exists delete old appData */
+        SAFE_FREE(objAppData->buffer);
+
+        /* Set new appData for object */
+        objAppData->size = command->appData.size;
+        objAppData->buffer = command->appData.buffer;
+
+        /* Prepare (over-)writing of object */
+        r = ifapi_keystore_store_async(&context->keystore, &context->io, command->object_path,
+                                       object);
+        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, command->object_path);
+
+        fallthrough;
+
+    statecase(context->state, APP_DATA_SET_WRITE);
+        /* Finish writing of object */
+        r = ifapi_keystore_store_finish(&context->io);
+        return_try_again(r);
+        goto_if_error(r, "write_finish failed", error_cleanup);
+        ifapi_cleanup_ifapi_object(object);
+
+        r = TSS2_RC_SUCCESS;
+        break;
+
+    statecasedefault(context->state);
     }
 
 error_cleanup:

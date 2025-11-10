@@ -8,20 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE, TSS...
-#include "tss2_mu.h"          // for Tss2_MU_UINT16_Marshal, Tss2_MU_TPM2B_D...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2B_MAX_BUFFER, TPMI_AL...
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE, TSS...
+#include "tss2_mu.h"         // for Tss2_MU_UINT16_Marshal, Tss2_MU_TPM2B_D...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPM2B_MAX_BUFFER, TPMI_AL...
 
-TSS2_RC Tss2_Sys_MAC_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT handle,
-    const TPM2B_MAX_BUFFER *buffer,
-    TPMI_ALG_MAC_SCHEME inScheme)
-{
+TSS2_RC
+Tss2_Sys_MAC_Prepare(TSS2_SYS_CONTEXT       *sysContext,
+                     TPMI_DH_OBJECT          handle,
+                     const TPM2B_MAX_BUFFER *buffer,
+                     TPMI_ALG_MAC_SCHEME     inScheme) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -33,31 +32,24 @@ TSS2_RC Tss2_Sys_MAC_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(handle, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(handle, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
     if (!buffer) {
         ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(buffer, ctx->cmdBuffer,
-                                                ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(buffer, ctx->cmdBuffer, ctx->maxCmdSize,
                                                 &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT16_Marshal(inScheme, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT16_Marshal(inScheme, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
@@ -68,12 +60,10 @@ TSS2_RC Tss2_Sys_MAC_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_MAC_Complete(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_DIGEST *outMAC)
-{
+TSS2_RC
+Tss2_Sys_MAC_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_DIGEST *outMAC) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -82,23 +72,19 @@ TSS2_RC Tss2_Sys_MAC_Complete(
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
-                                          &ctx->nextData,
-                                          outMAC);
+    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, outMAC);
 }
 
-TSS2_RC Tss2_Sys_MAC(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT handle,
-    const TSS2L_SYS_AUTH_COMMAND *cmdAuths,
-    const TPM2B_MAX_BUFFER *buffer,
-    TPMI_ALG_MAC_SCHEME inScheme,
-    TPM2B_DIGEST *outMAC,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuths)
-{
+TSS2_RC
+Tss2_Sys_MAC(TSS2_SYS_CONTEXT             *sysContext,
+             TPMI_DH_OBJECT                handle,
+             const TSS2L_SYS_AUTH_COMMAND *cmdAuths,
+             const TPM2B_MAX_BUFFER       *buffer,
+             TPMI_ALG_MAC_SCHEME           inScheme,
+             TPM2B_DIGEST                 *outMAC,
+             TSS2L_SYS_AUTH_RESPONSE      *rspAuths) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     rval = Tss2_Sys_MAC_Prepare(sysContext, handle, buffer, inScheme);
     if (rval)

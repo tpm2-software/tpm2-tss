@@ -14,30 +14,34 @@
  *
  * For new versions of this file, please check:
  * http://github.com/tpm2-software/tpm2-tss/tss2-dlopen
-*/
+ */
 
-#include <dlfcn.h>              // for dlsym, dlerror, dlopen, RTLD_LOCAL
-#include <stdio.h>              // for fprintf, stderr, NULL
-#include <tss2/tss2_tctildr.h>  // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_F...
+#include <dlfcn.h>             // for dlsym, dlerror, dlopen, RTLD_LOCAL
+#include <stdio.h>             // for fprintf, stderr, NULL
+#include <tss2/tss2_tctildr.h> // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_F...
 
-#include "tss2_common.h"        // for TSS2_RC, TSS2_TCTI_RC_NOT_IMPLEMENTED
-#include "tss2_tcti.h"          // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
+#include "tss2_common.h" // for TSS2_RC, TSS2_TCTI_RC_NOT_IMPLEMENTED
+#include "tss2_tcti.h"   // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
 
-#define str(s) xstr(s)
+#define str(s)  xstr(s)
 #define xstr(s) #s
 
 #ifdef ENABLE_WARN
-#define WARN(str, ...) do { fprintf(stderr, "WARNING: " str "\n", ## __VA_ARGS__); } while (0)
+#define WARN(str, ...)                                                                             \
+    do {                                                                                           \
+        fprintf(stderr, "WARNING: " str "\n", ##__VA_ARGS__);                                      \
+    } while (0)
 #else /* ENABLE_WARN */
-#define WARN(...) do { } while (0)
+#define WARN(...)                                                                                  \
+    do {                                                                                           \
+    } while (0)
 #endif /* ENABLE_WARN */
 
 #define LIB "libtss2-tctildr.so.0"
 static void *dlhandle = NULL;
 
 static TSS2_RC
-init_dlhandle(void)
-{
+init_dlhandle(void) {
     if (dlhandle)
         return TSS2_RC_SUCCESS;
     dlhandle = dlopen(LIB, RTLD_NOW | RTLD_LOCAL);
@@ -49,14 +53,11 @@ init_dlhandle(void)
 }
 
 TSS2_RC
-Tss2_TctiLdr_Initialize_Ex (const char *name,
-                            const char *conf,
-                            TSS2_TCTI_CONTEXT **context)
-{
+Tss2_TctiLdr_Initialize_Ex(const char *name, const char *conf, TSS2_TCTI_CONTEXT **context) {
     if (init_dlhandle() != TSS2_RC_SUCCESS)
         return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 
-    static TSS2_RC (*sym) (const char *name, const char *conf, TSS2_TCTI_CONTEXT **context) = NULL;
+    static TSS2_RC (*sym)(const char *name, const char *conf, TSS2_TCTI_CONTEXT **context) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Tss2_TctiLdr_Initialize_Ex");
     if (!sym) {
@@ -68,13 +69,11 @@ Tss2_TctiLdr_Initialize_Ex (const char *name,
 }
 
 TSS2_RC
-Tss2_TctiLdr_Initialize (const char *nameConf,
-                         TSS2_TCTI_CONTEXT **context)
-{
+Tss2_TctiLdr_Initialize(const char *nameConf, TSS2_TCTI_CONTEXT **context) {
     if (init_dlhandle() != TSS2_RC_SUCCESS)
         return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 
-    static TSS2_RC (*sym) (const char *nameConf, TSS2_TCTI_CONTEXT **context) = NULL;
+    static TSS2_RC (*sym)(const char *nameConf, TSS2_TCTI_CONTEXT **context) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Tss2_TctiLdr_Initialize");
     if (!sym) {
@@ -86,13 +85,11 @@ Tss2_TctiLdr_Initialize (const char *nameConf,
 }
 
 TSS2_RC
-Tss2_TctiLdr_GetInfo (const char *name,
-                      TSS2_TCTI_INFO **info)
-{
+Tss2_TctiLdr_GetInfo(const char *name, TSS2_TCTI_INFO **info) {
     if (init_dlhandle() != TSS2_RC_SUCCESS)
         return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 
-    static TSS2_RC (*sym) (const char *name, TSS2_TCTI_INFO **info) = NULL;
+    static TSS2_RC (*sym)(const char *name, TSS2_TCTI_INFO **info) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Tss2_TctiLdr_GetInfo");
     if (!sym) {
@@ -103,13 +100,11 @@ Tss2_TctiLdr_GetInfo (const char *name,
     return sym(name, info);
 }
 
-
 void
-Tss2_TctiLdr_Finalize (TSS2_TCTI_CONTEXT **context)
-{
+Tss2_TctiLdr_Finalize(TSS2_TCTI_CONTEXT **context) {
     if (!context || !*context)
         return;
-    static void (*sym) (TSS2_TCTI_CONTEXT **context) = NULL;
+    static void (*sym)(TSS2_TCTI_CONTEXT **context) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Tss2_TctiLdr_Finalize");
     if (!sym) {
@@ -121,11 +116,10 @@ Tss2_TctiLdr_Finalize (TSS2_TCTI_CONTEXT **context)
 }
 
 void
-Tss2_TctiLdr_FreeInfo (TSS2_TCTI_INFO **info)
-{
+Tss2_TctiLdr_FreeInfo(TSS2_TCTI_INFO **info) {
     if (!info || !*info)
         return;
-    static void (*sym) (TSS2_TCTI_INFO **info) = NULL;
+    static void (*sym)(TSS2_TCTI_INFO **info) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Tss2_TctiLdr_FreeInfo");
     if (!sym) {

@@ -12,10 +12,7 @@
 extern "C" {
 #endif
 
-TSS2_RC Tss2_Tcti_Fuzzing_Init (
-    TSS2_TCTI_CONTEXT *tcti_ctx,
-    size_t *size,
-    const char *conf);
+TSS2_RC Tss2_Tcti_Fuzzing_Init(TSS2_TCTI_CONTEXT *tcti_ctx, size_t *size, const char *conf);
 
 #ifdef __cplusplus
 }

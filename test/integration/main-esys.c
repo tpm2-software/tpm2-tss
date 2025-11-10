@@ -8,17 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>      // for EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-esys.h"    // for test_invoke_esys, EXIT_SKIP
-#include "tss2_common.h"  // for TSS2_RC
+#include "test-esys.h"   // for test_invoke_esys, EXIT_SKIP
+#include "tss2_common.h" // for TSS2_RC
 
 #define LOGMODULE test
-#include "test-common.h"  // for test_esys_checks_post, test_esys_checks_pre
-#include "util/log.h"     // for LOG_ERROR
-
-
-
+#include "test-common.h" // for test_esys_checks_post, test_esys_checks_pre
+#include "util/log.h"    // for LOG_ERROR
 
 /**
  * This program is a template for integration tests (ones that use the TCTI
@@ -27,14 +24,13 @@
  * which TCTI to use for the test.
  */
 int
-main(int argc, char *argv[])
-{
+main(int argc, char *argv[]) {
     TSS2_TEST_ESYS_CONTEXT *test_esys_ctx;
-    TSS2_RC rc;
-    int ret;
+    TSS2_RC                 rc;
+    int                     ret;
 
-    (void) argc;
-    (void) argv;
+    (void)argc;
+    (void)argv;
 
     ret = test_esys_setup(&test_esys_ctx);
     if (ret != 0) {

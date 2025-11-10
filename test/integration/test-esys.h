@@ -7,17 +7,18 @@
  ***********************************************************************/
 #include "tss2_esys.h"
 
-#define TSSWG_INTEROP 1
-#define TSS_SAPI_FIRST_FAMILY 2
-#define TSS_SAPI_FIRST_LEVEL 1
+#define TSSWG_INTEROP          1
+#define TSS_SAPI_FIRST_FAMILY  2
+#define TSS_SAPI_FIRST_LEVEL   1
 #define TSS_SAPI_FIRST_VERSION 108
-#define EXIT_SKIP 77
-#define EXIT_XFAIL 99
+#define EXIT_SKIP              77
+#define EXIT_XFAIL             99
 
-#define goto_error_if_not_failed(rc,msg,label)                          \
-    if (rc == TSS2_RC_SUCCESS) {                                        \
-        LOG_ERROR("Error %s (%x) in Line %i: \n", msg, __LINE__, rc);   \
-        goto label; }
+#define goto_error_if_not_failed(rc, msg, label)                                                   \
+    if (rc == TSS2_RC_SUCCESS) {                                                                   \
+        LOG_ERROR("Error %s (%x) in Line %i: \n", msg, __LINE__, rc);                              \
+        goto label;                                                                                \
+    }
 
 /*
  * This is the prototype for all integration tests in the tpm2-tss
@@ -29,4 +30,4 @@
  * A successful test will return 0, any other value indicates failure.
  */
 
-int test_invoke_esys(ESYS_CONTEXT * sys_context);
+int test_invoke_esys(ESYS_CONTEXT *sys_context);

@@ -8,16 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for exit
-#include <string.h>           // for memcmp
+#include <stdlib.h> // for exit
+#include <string.h> // for memcmp
 
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_sys.h"         // for Tss2_Sys_GetRandom, TSS2_SYS_CONTEXT
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_sys.h"        // for Tss2_Sys_GetRandom, TSS2_SYS_CONTEXT
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "test.h"             // for test_invoke
-#include "util/log.h"         // for LOG_ERROR, LOG_INFO
+#include "test.h"     // for test_invoke
+#include "util/log.h" // for LOG_ERROR, LOG_INFO
 
 /**
  * This program contains integration test for SYS Tss2_Sys_GetRandom.
@@ -29,11 +29,14 @@
  * at least this test shows the return randomBytes are different.
  */
 int
-test_invoke (TSS2_SYS_CONTEXT *sys_context)
-{
-    TSS2_RC rc;
-    TPM2B_DIGEST randomBytes1 = {sizeof (TPM2B_DIGEST) - 2,};
-    TPM2B_DIGEST randomBytes2 = {sizeof (TPM2B_DIGEST) - 2,};
+test_invoke(TSS2_SYS_CONTEXT *sys_context) {
+    TSS2_RC      rc;
+    TPM2B_DIGEST randomBytes1 = {
+        sizeof(TPM2B_DIGEST) - 2,
+    };
+    TPM2B_DIGEST randomBytes2 = {
+        sizeof(TPM2B_DIGEST) - 2,
+    };
     int bytes = 20;
 
     LOG_INFO("GetRandom tests started.");
@@ -47,8 +50,9 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
         LOG_ERROR("GetRandom FAILED! Response Code : %x", rc);
         exit(1);
     }
-    if(memcmp(&randomBytes1, &randomBytes2, bytes) == 0) {
-        LOG_ERROR("Comparison FAILED! randomBytes 0x%p & 0x%p are the same.", &randomBytes1, &randomBytes2);
+    if (memcmp(&randomBytes1, &randomBytes2, bytes) == 0) {
+        LOG_ERROR("Comparison FAILED! randomBytes 0x%p & 0x%p are the same.", &randomBytes1,
+                  &randomBytes2);
         exit(1);
     }
     LOG_INFO("GetRandom Test Passed!");

@@ -22,10 +22,10 @@
  */
 #ifndef TCTI_SPI_FTDI_H
 #define TCTI_SPI_FTDI_H
-#include <sys/time.h>  // for timeval
+#include <sys/time.h> // for timeval
 
 typedef struct {
-    struct timeval timeout;
+    struct timeval        timeout;
     struct mpsse_context *mpsse;
 } PLATFORM_USERDATA;
 

@@ -8,49 +8,47 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <netinet/in.h>       // for htonl, htons
-#include <stdio.h>            // for NULL
-#include <stdlib.h>           // for calloc, free
+#include <netinet/in.h> // for htonl, htons
+#include <stdio.h>      // for NULL
+#include <stdlib.h>     // for calloc, free
 
-#include "../helper/cmocka_all.h"           // for assert_int_equal, cmocka_unit_test_setu...
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, CopyCommandHeader
-#include "tss2_common.h"      // for UINT32, UINT8
-#include "tss2_sys.h"         // for Tss2_Sys_GetContextSize, TSS2_SYS_CONTEXT
-#include "tss2_tpm2_types.h"  // for TPM2_CC, TPM2_CC_GetCapability, TPM2_ST...
+#include "../helper/cmocka_all.h" // for assert_int_equal, cmocka_unit_test_setu...
+#include "sysapi_util.h"          // for _TSS2_SYS_CONTEXT_BLOB, CopyCommandHeader
+#include "tss2_common.h"          // for UINT32, UINT8
+#include "tss2_sys.h"             // for Tss2_Sys_GetContextSize, TSS2_SYS_CONTEXT
+#include "tss2_tpm2_types.h"      // for TPM2_CC, TPM2_CC_GetCapability, TPM2_ST...
 
 #define MAX_SIZE_CTX 4096
 /**
  *
  */
 static int
-CopyCommandHeader_sys_setup (void **state)
-{
+CopyCommandHeader_sys_setup(void **state) {
     TSS2_SYS_CONTEXT_BLOB *sys_ctx;
-    UINT32 size_ctx;
+    UINT32                 size_ctx;
 
-    size_ctx = Tss2_Sys_GetContextSize (MAX_SIZE_CTX);
-    sys_ctx = calloc (1, size_ctx);
-    assert_non_null (sys_ctx);
+    size_ctx = Tss2_Sys_GetContextSize(MAX_SIZE_CTX);
+    sys_ctx = calloc(1, size_ctx);
+    assert_non_null(sys_ctx);
     /**
      *  This is the important part: the CopyCommandHeader function builds up
      *  the command buffer in the memory pointed to by tpmInitBuffPtr. This
      *  must point to the data after the context structure.
      */
-    sys_ctx->cmdBuffer = (UINT8*) (sys_ctx + sizeof (TSS2_SYS_CONTEXT_BLOB));
-    InitSysContextFields (sys_ctx);
-    InitSysContextPtrs (sys_ctx, size_ctx);
+    sys_ctx->cmdBuffer = (UINT8 *)(sys_ctx + sizeof(TSS2_SYS_CONTEXT_BLOB));
+    InitSysContextFields(sys_ctx);
+    InitSysContextPtrs(sys_ctx, size_ctx);
 
     *state = sys_ctx;
     return 0;
 }
 
 static int
-CopyCommandHeader_sys_teardown (void **state)
-{
-    TSS2_SYS_CONTEXT *sys_ctx = (TSS2_SYS_CONTEXT*)*state;
+CopyCommandHeader_sys_teardown(void **state) {
+    TSS2_SYS_CONTEXT *sys_ctx = (TSS2_SYS_CONTEXT *)*state;
 
     if (sys_ctx)
-        free (sys_ctx);
+        free(sys_ctx);
 
     return 0;
 }
@@ -62,13 +60,12 @@ CopyCommandHeader_sys_teardown (void **state)
  *  test will fail if the nextData pointer isn't set as expected
  */
 static void
-CopyCommandHeader_nextData_unit (void **state)
-{
+CopyCommandHeader_nextData_unit(void **state) {
     TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB *)*state;
-    TPM2_CC cc = TPM2_CC_GetCapability;
+    TPM2_CC                cc = TPM2_CC_GetCapability;
 
-    CopyCommandHeader (sys_ctx, cc);
-    assert_int_equal (sys_ctx->nextData, sizeof (TPM20_Header_In));
+    CopyCommandHeader(sys_ctx, cc);
+    assert_int_equal(sys_ctx->nextData, sizeof(TPM20_Header_In));
 }
 
 /**
@@ -77,19 +74,18 @@ CopyCommandHeader_nextData_unit (void **state)
  * transformed into network byte order.
  */
 static void
-CopyCommandHeader_tag_unit (void **state)
-{
-    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
-    TPM2_CC cc = TPM2_CC_GetCapability;
-    TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->cmdBuffer;
+CopyCommandHeader_tag_unit(void **state) {
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB *)*state;
+    TPM2_CC                cc = TPM2_CC_GetCapability;
+    TPM20_Header_In       *header = (TPM20_Header_In *)sys_ctx->cmdBuffer;
     /* The TSS code uses a custom function to convert stuff to network byte
      * order but we can just use htons. Not sure why we don't use htons/l
      * everywhere.
      */
-    TPMI_ST_COMMAND_TAG tag_net = htons (TPM2_ST_NO_SESSIONS);
+    TPMI_ST_COMMAND_TAG tag_net = htons(TPM2_ST_NO_SESSIONS);
 
-    CopyCommandHeader (sys_ctx, cc);
-    assert_int_equal (tag_net, header->tag);
+    CopyCommandHeader(sys_ctx, cc);
+    assert_int_equal(tag_net, header->tag);
 }
 /**
  * After a call to CopyCommandHeader the commandCode in the TPM20_Header_In
@@ -97,30 +93,27 @@ CopyCommandHeader_tag_unit (void **state)
  * code parameter in network byte order.
  */
 static void
-CopyCommandHeader_commandcode_unit (void **state)
-{
-    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
-    TPM2_CC cc = TPM2_CC_GetCapability;
-    TPM2_CC cc_net = htonl (cc);
-    TPM20_Header_In *header = (TPM20_Header_In*)sys_ctx->cmdBuffer;
+CopyCommandHeader_commandcode_unit(void **state) {
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB *)*state;
+    TPM2_CC                cc = TPM2_CC_GetCapability;
+    TPM2_CC                cc_net = htonl(cc);
+    TPM20_Header_In       *header = (TPM20_Header_In *)sys_ctx->cmdBuffer;
 
-    CopyCommandHeader (sys_ctx, cc);
-    assert_int_equal (cc_net, header->commandCode);
+    CopyCommandHeader(sys_ctx, cc);
+    assert_int_equal(cc_net, header->commandCode);
 }
 
 int
-main (int argc, char* argv[])
-{
+main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test_setup_teardown (CopyCommandHeader_nextData_unit,
-                                  CopyCommandHeader_sys_setup,
-                                  CopyCommandHeader_sys_teardown),
-        cmocka_unit_test_setup_teardown (CopyCommandHeader_tag_unit,
-                                  CopyCommandHeader_sys_setup,
-                                  CopyCommandHeader_sys_teardown),
-        cmocka_unit_test_setup_teardown (CopyCommandHeader_commandcode_unit,
-                                  CopyCommandHeader_sys_setup,
-                                  CopyCommandHeader_sys_teardown),
+        cmocka_unit_test_setup_teardown(CopyCommandHeader_nextData_unit,
+                                        CopyCommandHeader_sys_setup,
+                                        CopyCommandHeader_sys_teardown),
+        cmocka_unit_test_setup_teardown(CopyCommandHeader_tag_unit, CopyCommandHeader_sys_setup,
+                                        CopyCommandHeader_sys_teardown),
+        cmocka_unit_test_setup_teardown(CopyCommandHeader_commandcode_unit,
+                                        CopyCommandHeader_sys_setup,
+                                        CopyCommandHeader_sys_teardown),
     };
-    return cmocka_run_group_tests (tests, NULL, NULL);
+    return cmocka_run_group_tests(tests, NULL, NULL);
 }

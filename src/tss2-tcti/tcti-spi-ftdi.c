@@ -20,49 +20,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE
  */
-#include <errno.h>                  // for errno
-#include <stdbool.h>                // for true, bool, false
-#include <stdint.h>                 // for int32_t
-#include <stdio.h>                  // for NULL, size_t
-#include <stdlib.h>                 // for free, malloc
-#include <string.h>                 // for memset, memcpy
-#include <sys/select.h>             // for select
+#include <errno.h>      // for errno
+#include <stdbool.h>    // for true, bool, false
+#include <stdint.h>     // for int32_t
+#include <stdio.h>      // for NULL, size_t
+#include <stdlib.h>     // for free, malloc
+#include <string.h>     // for memset, memcpy
+#include <sys/select.h> // for select
 
 #include "tcti-spi-ftdi.h"
-#include "tss2-tcti/mpsse/mpsse.h"  // for Stop, Close, MPSSE, Start, Transfer
-#include "tss2-tcti/tcti-common.h"  // for TCTI_VERSION
-#include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...
-#include "tss2_tcti.h"              // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
-#include "tss2_tcti_spi_ftdi.h"     // for Tss2_Tcti_Spi_Ftdi_Init
-#include "tss2_tcti_spi_helper.h"   // for TSS2_TCTI_SPI_HELPER_PLATFORM
+#include "tss2-tcti/mpsse/mpsse.h" // for Stop, Close, MPSSE, Start, Transfer
+#include "tss2-tcti/tcti-common.h" // for TCTI_VERSION
+#include "tss2_common.h"           // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...
+#include "tss2_tcti.h"             // for TSS2_TCTI_INFO, TSS2_TCTI_CONTEXT
+#include "tss2_tcti_spi_ftdi.h"    // for Tss2_Tcti_Spi_Ftdi_Init
+#include "tss2_tcti_spi_helper.h"  // for TSS2_TCTI_SPI_HELPER_PLATFORM
 
 #define LOGMODULE tcti
-#include "util/log.h"               // for LOG_ERROR
+#include "util/log.h" // for LOG_ERROR
 
 TSS2_RC
-platform_sleep_ms (void *user_data, int32_t milliseconds)
-{
-    (void) user_data;
-    struct timeval tv = {milliseconds/1000, (milliseconds%1000)*1000};
-    select (0, NULL, NULL, NULL, &tv);
+platform_sleep_ms(void *user_data, int32_t milliseconds) {
+    (void)user_data;
+    struct timeval tv = { milliseconds / 1000, (milliseconds % 1000) * 1000 };
+    select(0, NULL, NULL, NULL, &tv);
 
     return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC
-platform_start_timeout (void *user_data, int32_t milliseconds)
-{
-    PLATFORM_USERDATA *platform_data = (PLATFORM_USERDATA *) user_data;
+platform_start_timeout(void *user_data, int32_t milliseconds) {
+    PLATFORM_USERDATA *platform_data = (PLATFORM_USERDATA *)user_data;
 
-    memset (&platform_data->timeout, 0, sizeof (struct timeval));
+    memset(&platform_data->timeout, 0, sizeof(struct timeval));
 
-    if (gettimeofday (&platform_data->timeout, NULL)) {
-        LOG_ERROR ("getimeofday failed with errno: %d.", errno);
+    if (gettimeofday(&platform_data->timeout, NULL)) {
+        LOG_ERROR("getimeofday failed with errno: %d.", errno);
         return TSS2_TCTI_RC_GENERAL_FAILURE;
     }
 
-    platform_data->timeout.tv_sec += (milliseconds/1000);
-    platform_data->timeout.tv_usec += (milliseconds%1000)*1000;
+    platform_data->timeout.tv_sec += (milliseconds / 1000);
+    platform_data->timeout.tv_usec += (milliseconds % 1000) * 1000;
     if (platform_data->timeout.tv_usec > 999999) {
         platform_data->timeout.tv_sec++;
         platform_data->timeout.tv_usec -= 1000000;
@@ -72,13 +70,12 @@ platform_start_timeout (void *user_data, int32_t milliseconds)
 }
 
 TSS2_RC
-platform_timeout_expired (void *user_data, bool *is_timeout_expired)
-{
-    PLATFORM_USERDATA *platform_data = (PLATFORM_USERDATA *) user_data;
+platform_timeout_expired(void *user_data, bool *is_timeout_expired) {
+    PLATFORM_USERDATA *platform_data = (PLATFORM_USERDATA *)user_data;
 
     struct timeval now;
-    if (gettimeofday (&now, NULL)) {
-        LOG_ERROR ("getimeofday failed with errno: %d.", errno);
+    if (gettimeofday(&now, NULL)) {
+        LOG_ERROR("getimeofday failed with errno: %d.", errno);
         return TSS2_TCTI_RC_GENERAL_FAILURE;
     }
 
@@ -95,29 +92,28 @@ platform_timeout_expired (void *user_data, bool *is_timeout_expired)
 }
 
 TSS2_RC
-platform_spi_transfer (void *user_data, const void *data_out, void *data_in, size_t cnt)
-{
-    size_t length = cnt;
-    PLATFORM_USERDATA *platform_data = (PLATFORM_USERDATA *) user_data;
+platform_spi_transfer(void *user_data, const void *data_out, void *data_in, size_t cnt) {
+    size_t                length = cnt;
+    PLATFORM_USERDATA    *platform_data = (PLATFORM_USERDATA *)user_data;
     struct mpsse_context *mpsse = platform_data->mpsse;
-    char *data = NULL;
+    char                 *data = NULL;
 
-    if (Start (mpsse) != MPSSE_OK) {
+    if (Start(mpsse) != MPSSE_OK) {
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
-    if ((data = Transfer (mpsse, (char *)data_out, (int) length)) == NULL) {
-        Stop (mpsse);
+    if ((data = Transfer(mpsse, (char *)data_out, (int)length)) == NULL) {
+        Stop(mpsse);
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
     if (data_in != NULL) {
-        memcpy (data_in, (unsigned char *)data, length);
+        memcpy(data_in, (unsigned char *)data, length);
     }
 
-    free (data);
+    free(data);
 
-    if (Stop (mpsse) != MPSSE_OK) {
+    if (Stop(mpsse) != MPSSE_OK) {
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
@@ -125,32 +121,30 @@ platform_spi_transfer (void *user_data, const void *data_out, void *data_in, siz
 }
 
 void
-platform_finalize (void *user_data)
-{
-    PLATFORM_USERDATA *platform_data = (PLATFORM_USERDATA *) user_data;
+platform_finalize(void *user_data) {
+    PLATFORM_USERDATA    *platform_data = (PLATFORM_USERDATA *)user_data;
     struct mpsse_context *mpsse = platform_data->mpsse;
 
     if (mpsse != NULL) {
-        Close (mpsse);
+        Close(mpsse);
     }
 
-    free (platform_data);
+    free(platform_data);
 }
 
 TSS2_RC
-create_tcti_spi_ftdi_platform (TSS2_TCTI_SPI_HELPER_PLATFORM *platform, const enum interface interface)
-{
-    PLATFORM_USERDATA *platform_data = malloc (sizeof (PLATFORM_USERDATA));
+create_tcti_spi_ftdi_platform(TSS2_TCTI_SPI_HELPER_PLATFORM *platform,
+                              const enum interface           interface) {
+    PLATFORM_USERDATA     *platform_data = malloc(sizeof(PLATFORM_USERDATA));
     struct mpsse_context **mpsse = &platform_data->mpsse;
 
     if (platform_data == NULL) {
         return TSS2_BASE_RC_MEMORY;
     }
 
-    memset (platform_data, 0, sizeof (PLATFORM_USERDATA));
+    memset(platform_data, 0, sizeof(PLATFORM_USERDATA));
 
-    if ((*mpsse = MPSSE (SPI0, FIFTEEN_MHZ, MSB, interface)) == NULL )
-    {
+    if ((*mpsse = MPSSE(SPI0, FIFTEEN_MHZ, MSB, interface)) == NULL) {
         goto error;
     }
 
@@ -166,58 +160,55 @@ create_tcti_spi_ftdi_platform (TSS2_TCTI_SPI_HELPER_PLATFORM *platform, const en
     return TSS2_RC_SUCCESS;
 
 error:
-    platform_finalize ((void *) platform_data);
+    platform_finalize((void *)platform_data);
     return TSS2_BASE_RC_IO_ERROR;
 }
 
 TSS2_RC
-Tss2_Tcti_Spi_Ftdi_Init (TSS2_TCTI_CONTEXT* tcti_context, size_t* size, const char* config)
-{
+Tss2_Tcti_Spi_Ftdi_Init(TSS2_TCTI_CONTEXT *tcti_context, size_t *size, const char *config) {
     enum interface interface = IFACE_A;
     if (config != NULL) {
         switch (*config) {
-            case 'A':
-                interface = IFACE_A;
-                break;
-            case 'B':
-                interface = IFACE_B;
-                break;
-            case 'C':
-                interface = IFACE_C;
-                break;
-            case 'D':
-                interface = IFACE_D;
-                break;
-            default:
-                LOG_ERROR("Invalid configuration: %s", config);
-                return TSS2_BASE_RC_GENERAL_FAILURE;
+        case 'A':
+            interface = IFACE_A;
+            break;
+        case 'B':
+            interface = IFACE_B;
+            break;
+        case 'C':
+            interface = IFACE_C;
+            break;
+        case 'D':
+            interface = IFACE_D;
+            break;
+        default:
+            LOG_ERROR("Invalid configuration: %s", config);
+            return TSS2_BASE_RC_GENERAL_FAILURE;
         }
     }
 
-    TSS2_RC ret = 0;
-    TSS2_TCTI_SPI_HELPER_PLATFORM tcti_platform = {0};
+    TSS2_RC                       ret = 0;
+    TSS2_TCTI_SPI_HELPER_PLATFORM tcti_platform = { 0 };
 
     if (tcti_context == NULL) {
-        return Tss2_Tcti_Spi_Helper_Init (NULL, size, NULL);
+        return Tss2_Tcti_Spi_Helper_Init(NULL, size, NULL);
     }
 
-    if ((ret = create_tcti_spi_ftdi_platform (&tcti_platform, interface))) {
+    if ((ret = create_tcti_spi_ftdi_platform(&tcti_platform, interface))) {
         return ret;
     }
 
-    return Tss2_Tcti_Spi_Helper_Init (tcti_context, size, &tcti_platform);
+    return Tss2_Tcti_Spi_Helper_Init(tcti_context, size, &tcti_platform);
 }
 
-static const TSS2_TCTI_INFO tss2_tcti_spi_ftdi_info = {
-    .version = TCTI_VERSION,
-    .name = "tcti-spi-ftdi",
-    .description = "TCTI for communicating with TPM through the USB-FTDI-SPI converter.",
-    .config_help = "FTDI interface to be used, defaults to A.",
-    .init = Tss2_Tcti_Spi_Ftdi_Init
-};
+static const TSS2_TCTI_INFO tss2_tcti_spi_ftdi_info
+    = { .version = TCTI_VERSION,
+        .name = "tcti-spi-ftdi",
+        .description = "TCTI for communicating with TPM through the USB-FTDI-SPI converter.",
+        .config_help = "FTDI interface to be used, defaults to A.",
+        .init = Tss2_Tcti_Spi_Ftdi_Init };
 
 const TSS2_TCTI_INFO *
-Tss2_Tcti_Info (void)
-{
+Tss2_Tcti_Info(void) {
     return &tss2_tcti_spi_ftdi_info;
 }

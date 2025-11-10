@@ -30,36 +30,36 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"            // for TCTI_DEVICE, TCTI_MSSIM, TCTI_SWTPM
+#include "config.h" // for TCTI_DEVICE, TCTI_MSSIM, TCTI_SWTPM
 #endif
 
-#include <stdlib.h>            // for NULL, size_t
-#include <string.h>            // for strcmp
+#include <stdlib.h> // for NULL, size_t
+#include <string.h> // for strcmp
 
-#include "tctildr.h"           // for tcti_from_init
-#include "tss2_common.h"       // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_RC...
-#include "tss2_tcti.h"         // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO, TSS...
-#include "tss2_tcti_mssim.h"   // for Tss2_Tcti_Mssim_Init
-#include "tss2_tcti_swtpm.h"   // for Tss2_Tcti_Swtpm_Init
-#include "util/aux_util.h"     // for UNUSED
+#include "tctildr.h"         // for tcti_from_init
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_RC...
+#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO, TSS...
+#include "tss2_tcti_mssim.h" // for Tss2_Tcti_Mssim_Init
+#include "tss2_tcti_swtpm.h" // for Tss2_Tcti_Swtpm_Init
+#include "util/aux_util.h"   // for UNUSED
 #ifdef _WIN32
 #include "tss2_tcti_tbs.h"
-#else /* _WIN32 */
-#include "tss2_tcti_device.h"  // for Tss2_Tcti_Device_Init
+#else                         /* _WIN32 */
+#include "tss2_tcti_device.h" // for Tss2_Tcti_Device_Init
 #endif
 #define LOGMODULE tcti
-#include "util/log.h"          // for LOG_ERROR, LOG_DEBUG
+#include "util/log.h" // for LOG_ERROR, LOG_DEBUG
 
 #ifndef ARRAY_SIZE
-#define ARRAY_SIZE(X) (sizeof(X)/sizeof((X)[0]))
+#define ARRAY_SIZE(X) (sizeof(X) / sizeof((X)[0]))
 #endif
 #define NAME_ARRAY_SIZE 3
 
 struct {
-    const char *names [NAME_ARRAY_SIZE];
+    const char         *names[NAME_ARRAY_SIZE];
     TSS2_TCTI_INIT_FUNC init;
-    char *conf;
-    char *description;
+    char               *conf;
+    char               *description;
 } tctis [] = {
 #ifdef _WIN32
     {
@@ -71,7 +71,7 @@ struct {
         .init = Tss2_Tcti_Tbs_Init,
         .description = "Access to TBS",
     },
-#elif defined (__VXWORKS__)
+#elif defined(__VXWORKS__)
     {
         .names = {
             "libtss2-tcti-device.so.0",
@@ -140,8 +140,7 @@ struct {
 #endif /* TCTI_MSSIM */
 };
 TSS2_RC
-tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
-{
+tctildr_get_default(TSS2_TCTI_CONTEXT **tcticontext, void **dlhandle) {
     TSS2_RC rc;
 
     UNUSED(dlhandle);
@@ -159,11 +158,8 @@ tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
 #pragma GCC diagnostic ignored "-Wtype-limits"
     for (size_t i = 0; i < ARRAY_SIZE(tctis); i++) {
 #pragma GCC diagnostic pop
-        LOG_DEBUG("Attempting to connect using standard TCTI: %s",
-                  tctis[i].description);
-        rc = tcti_from_init (tctis[i].init,
-                             tctis[i].conf,
-                             tcticontext);
+        LOG_DEBUG("Attempting to connect using standard TCTI: %s", tctis[i].description);
+        rc = tcti_from_init(tctis[i].init, tctis[i].conf, tcticontext);
         if (rc == TSS2_RC_SUCCESS)
             return TSS2_RC_SUCCESS;
         LOG_DEBUG("Failed to load standard TCTI number %zu", i);
@@ -173,11 +169,7 @@ tctildr_get_default(TSS2_TCTI_CONTEXT ** tcticontext, void **dlhandle)
     return TSS2_TCTI_RC_IO_ERROR;
 }
 TSS2_RC
-tctildr_get_tcti (const char *name,
-                  const char* conf,
-                  TSS2_TCTI_CONTEXT **tcti,
-                  void **data)
-{
+tctildr_get_tcti(const char *name, const char *conf, TSS2_TCTI_CONTEXT **tcti, void **data) {
     TSS2_RC rc;
 
     if (tcti == NULL) {
@@ -186,7 +178,7 @@ tctildr_get_tcti (const char *name,
     }
     *tcti = NULL;
     if (name == NULL) {
-        return tctildr_get_default (tcti, data);
+        return tctildr_get_default(tcti, data);
     }
 
     if (ARRAY_SIZE(tctis) == 0) {
@@ -198,11 +190,10 @@ tctildr_get_tcti (const char *name,
     for (size_t i = 0; i < ARRAY_SIZE(tctis); ++i) {
 #pragma GCC diagnostic pop
         for (size_t j = 0; j < NAME_ARRAY_SIZE; ++j) {
-            if (strcmp (name, tctis[i].names[j]) != 0)
+            if (strcmp(name, tctis[i].names[j]) != 0)
                 continue;
-            LOG_DEBUG("initializing TCTI with name \"%s\"",
-                      tctis[i].names[j]);
-            rc = tcti_from_init (tctis[i].init, conf, tcti);
+            LOG_DEBUG("initializing TCTI with name \"%s\"", tctis[i].names[j]);
+            rc = tcti_from_init(tctis[i].init, conf, tcti);
             if (rc == TSS2_RC_SUCCESS)
                 return TSS2_RC_SUCCESS;
         }
@@ -212,17 +203,13 @@ tctildr_get_tcti (const char *name,
 }
 
 void
-tctildr_finalize_data(void **data)
-{
+tctildr_finalize_data(void **data) {
     UNUSED(data);
     return;
 }
 
 TSS2_RC
-tctildr_get_info (const char *name,
-                  const TSS2_TCTI_INFO **info,
-                  void **data)
-{
+tctildr_get_info(const char *name, const TSS2_TCTI_INFO **info, void **data) {
     UNUSED(name);
     UNUSED(info);
     UNUSED(data);

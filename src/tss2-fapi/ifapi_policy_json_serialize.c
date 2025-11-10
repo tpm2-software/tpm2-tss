@@ -7,18 +7,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>              // for PRIx32
-#include <stdio.h>                 // for NULL, size_t
-#include <string.h>                // for strcmp, strlen
+#include <inttypes.h> // for PRIx32
+#include <stdio.h>    // for NULL, size_t
+#include <string.h>   // for strcmp, strlen
 
-#include "ifapi_json_serialize.h"  // for ifapi_json_UINT8_ARY_serialize
+#include "ifapi_json_serialize.h" // for ifapi_json_UINT8_ARY_serialize
 #include "ifapi_policy_json_serialize.h"
-#include "tpm_json_serialize.h"    // for ifapi_json_TPM2B_DIGEST_serialize
-#include "tss2_tpm2_types.h"       // for TPM2B_NAME, TPMT_PUBLIC, TPM2B_DIGEST
+#include "tpm_json_serialize.h" // for ifapi_json_TPM2B_DIGEST_serialize
+#include "tss2_tpm2_types.h"    // for TPM2B_NAME, TPMT_PUBLIC, TPM2B_DIGEST
 
 #define LOGMODULE fapijson
-#include "util/log.h"              // for return_error, return_if_error, ret...
-
+#include "util/log.h" // for return_error, return_if_error, ret...
 
 /** Serialize a character string to json.
  *
@@ -28,10 +27,7 @@
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  */
 static TSS2_RC
-ifapi_json_char_serialize(
-    const char *in,
-    json_object **jso)
-{
+ifapi_json_char_serialize(const char *in, json_object **jso) {
     if (in == NULL) {
         *jso = json_object_new_string("");
     } else {
@@ -43,7 +39,7 @@ ifapi_json_char_serialize(
 
 typedef struct {
     TPMI_POLICYTYPE in;
-    char *name;
+    char           *name;
 } TPMI_POLICYTYPE_ASSIGN;
 
 static TPMI_POLICYTYPE_ASSIGN serialize_TPMI_POLICYTYPE_tab[] = {
@@ -77,12 +73,8 @@ static TPMI_POLICYTYPE_ASSIGN serialize_TPMI_POLICYTYPE_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMI_POLICYTYPE.
  */
 TSS2_RC
-ifapi_json_TPMI_POLICYTYPE_serialize_txt(
-    const TPMI_POLICYTYPE in,
-    json_object **str_jso)
-{
-    size_t n = sizeof(serialize_TPMI_POLICYTYPE_tab) / sizeof(
-                   serialize_TPMI_POLICYTYPE_tab[0]);
+ifapi_json_TPMI_POLICYTYPE_serialize_txt(const TPMI_POLICYTYPE in, json_object **str_jso) {
+    size_t n = sizeof(serialize_TPMI_POLICYTYPE_tab) / sizeof(serialize_TPMI_POLICYTYPE_tab[0]);
     size_t i;
     for (i = 0; i < n; i++) {
         if (serialize_TPMI_POLICYTYPE_tab[i].in == in) {
@@ -104,9 +96,7 @@ ifapi_json_TPMI_POLICYTYPE_serialize_txt(
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMI_POLICYTYPE.
  */
 TSS2_RC
-ifapi_json_TPMI_POLICYTYPE_serialize(const TPMI_POLICYTYPE in,
-                                     json_object **jso)
-{
+ifapi_json_TPMI_POLICYTYPE_serialize(const TPMI_POLICYTYPE in, json_object **jso) {
     return ifapi_json_TPMI_POLICYTYPE_serialize_txt(in, jso);
 }
 
@@ -120,14 +110,12 @@ ifapi_json_TPMI_POLICYTYPE_serialize(const TPMI_POLICYTYPE in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in,
-                                       json_object **jso)
-{
+ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -233,14 +221,12 @@ ifapi_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in,
-                                       json_object **jso)
-{
+ifapi_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -295,8 +281,7 @@ ifapi_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in,
         }
     }
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Exactly one conditional needed for policy secret .");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional needed for policy secret .");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -311,12 +296,10 @@ ifapi_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYLOCALITY_serialize(const TPMS_POLICYLOCALITY *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICYLOCALITY_serialize(const TPMS_POLICYLOCALITY *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -341,13 +324,12 @@ ifapi_json_TPMS_POLICYLOCALITY_serialize(const TPMS_POLICYLOCALITY *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
-{
+ifapi_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -411,8 +393,7 @@ ifapi_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Exactly one conditional is allowed for policy NV.");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for policy NV.");
     }
 
     return TSS2_RC_SUCCESS;
@@ -428,12 +409,10 @@ ifapi_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -474,12 +453,10 @@ ifapi_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYCOMMANDCODE_serialize(const TPMS_POLICYCOMMANDCODE *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICYCOMMANDCODE_serialize(const TPMS_POLICYCOMMANDCODE *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -504,9 +481,8 @@ ifapi_json_TPMS_POLICYCOMMANDCODE_serialize(const TPMS_POLICYCOMMANDCODE *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYPHYSICALPRESENCE_serialize(const
-        TPMS_POLICYPHYSICALPRESENCE *in, json_object **jso)
-{
+ifapi_json_TPMS_POLICYPHYSICALPRESENCE_serialize(const TPMS_POLICYPHYSICALPRESENCE *in,
+                                                 json_object                      **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (*jso == NULL)
@@ -524,12 +500,10 @@ ifapi_json_TPMS_POLICYPHYSICALPRESENCE_serialize(const
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYCPHASH_serialize(const TPMS_POLICYCPHASH *in,
-                                       json_object **jso)
-{
+ifapi_json_TPMS_POLICYCPHASH_serialize(const TPMS_POLICYCPHASH *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -554,15 +528,13 @@ ifapi_json_TPMS_POLICYCPHASH_serialize(const TPMS_POLICYCPHASH *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2, *jso_ary;
-    size_t i;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    size_t       i;
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     if (*jso == NULL) {
         *jso = json_object_new_object();
@@ -635,14 +607,13 @@ ifapi_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const
-        TPMS_POLICYDUPLICATIONSELECT *in, json_object **jso)
-{
+ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATIONSELECT *in,
+                                                  json_object                       **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -696,9 +667,8 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const
 
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Exactly one conditional is allowed for policy "
-                     "duplication select.");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for policy "
+                                             "duplication select.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -713,14 +683,12 @@ ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -797,9 +765,8 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
 
     /* Check whether only one condition field found in policy. */
     if (cond_cnt > 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Exactly one conditional is allowed for policy "
-                     "duplication select.");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for policy "
+                                             "duplication select.");
     }
 
     return TSS2_RC_SUCCESS;
@@ -815,9 +782,7 @@ ifapi_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHVALUE_serialize(const TPMS_POLICYAUTHVALUE *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICYAUTHVALUE_serialize(const TPMS_POLICYAUTHVALUE *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (*jso == NULL)
@@ -835,9 +800,7 @@ ifapi_json_TPMS_POLICYAUTHVALUE_serialize(const TPMS_POLICYAUTHVALUE *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYPASSWORD_serialize(const TPMS_POLICYPASSWORD *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICYPASSWORD_serialize(const TPMS_POLICYPASSWORD *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (*jso == NULL)
@@ -855,12 +818,10 @@ ifapi_json_TPMS_POLICYPASSWORD_serialize(const TPMS_POLICYPASSWORD *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYNVWRITTEN_serialize(const TPMS_POLICYNVWRITTEN *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICYNVWRITTEN_serialize(const TPMS_POLICYNVWRITTEN *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -885,14 +846,12 @@ ifapi_json_TPMS_POLICYNVWRITTEN_serialize(const TPMS_POLICYNVWRITTEN *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -935,14 +894,12 @@ ifapi_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -984,12 +941,10 @@ ifapi_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYACTION_serialize(const TPMS_POLICYACTION *in,
-                                       json_object **jso)
-{
+ifapi_json_TPMS_POLICYACTION_serialize(const TPMS_POLICYACTION *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1014,11 +969,10 @@ ifapi_json_TPMS_POLICYACTION_serialize(const TPMS_POLICYACTION *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_PCRVALUE_serialize(const TPMS_PCRVALUE *in, json_object **jso)
-{
+ifapi_json_TPMS_PCRVALUE_serialize(const TPMS_PCRVALUE *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1057,9 +1011,8 @@ ifapi_json_TPMS_PCRVALUE_serialize(const TPMS_PCRVALUE *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_PCRVALUES_serialize(const TPML_PCRVALUES *in, json_object **jso)
-{
-    TSS2_RC r;
+ifapi_json_TPML_PCRVALUES_serialize(const TPML_PCRVALUES *in, json_object **jso) {
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1089,13 +1042,12 @@ ifapi_json_TPML_PCRVALUES_serialize(const TPML_PCRVALUES *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **jso)
-{
+ifapi_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
-    size_t cond_cnt = 0; /**< counter for conditional fields */
+    size_t       cond_cnt = 0; /**< counter for conditional fields */
 
     if (in->pcrs) {
         if (*jso == NULL)
@@ -1133,8 +1085,7 @@ ifapi_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **jso)
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
-                     "Exactly one conditional is allowed for policy pcr.");
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for policy pcr.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -1149,13 +1100,11 @@ ifapi_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(
-    const TPMS_POLICYAUTHORIZATION *in,
-    json_object **jso)
-{
+ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *in,
+                                              json_object                   **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1243,12 +1192,11 @@ ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_POLICYAUTHORIZATIONS_serialize(const TPML_POLICYAUTHORIZATIONS
-        *in, json_object **jso)
-{
+ifapi_json_TPML_POLICYAUTHORIZATIONS_serialize(const TPML_POLICYAUTHORIZATIONS *in,
+                                               json_object                    **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1258,8 +1206,7 @@ ifapi_json_TPML_POLICYAUTHORIZATIONS_serialize(const TPML_POLICYAUTHORIZATIONS
     jso2 = NULL;
     for (size_t i = 0; i < in->count; i++) {
         jso2 = NULL;
-        r = ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(&in->authorizations[i],
-                &jso2);
+        r = ifapi_json_TPMS_POLICYAUTHORIZATION_serialize(&in->authorizations[i], &jso2);
         return_if_error(r, "Serialize TPMS_POLICYAUTHORIZATION");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -1279,12 +1226,10 @@ ifapi_json_TPML_POLICYAUTHORIZATIONS_serialize(const TPML_POLICYAUTHORIZATIONS
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in,
-                                       json_object **jso)
-{
+ifapi_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1332,12 +1277,10 @@ ifapi_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_POLICYBRANCHES_serialize(const TPML_POLICYBRANCHES *in,
-        json_object **jso)
-{
+ifapi_json_TPML_POLICYBRANCHES_serialize(const TPML_POLICYBRANCHES *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1367,11 +1310,10 @@ ifapi_json_TPML_POLICYBRANCHES_serialize(const TPML_POLICYBRANCHES *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICYOR_serialize(const TPMS_POLICYOR *in, json_object **jso)
-{
+ifapi_json_TPMS_POLICYOR_serialize(const TPMS_POLICYOR *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1399,8 +1341,8 @@ ifapi_json_TPMS_POLICYOR_serialize(const TPMS_POLICYOR *in, json_object **jso)
  */
 TSS2_RC
 ifapi_json_TPMU_POLICYELEMENT_serialize(const TPMU_POLICYELEMENT *in,
-                                        UINT32 selector, json_object **jso)
-{
+                                        UINT32                    selector,
+                                        json_object             **jso) {
     if (*jso == NULL)
         *jso = json_object_new_object();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
@@ -1419,20 +1361,17 @@ ifapi_json_TPMU_POLICYELEMENT_serialize(const TPMU_POLICYELEMENT *in,
     case POLICYNV:
         return ifapi_json_TPMS_POLICYNV_serialize(&in->PolicyNV, jso);
     case POLICYCOUNTERTIMER:
-        return ifapi_json_TPMS_POLICYCOUNTERTIMER_serialize(&in->PolicyCounterTimer,
-                jso);
+        return ifapi_json_TPMS_POLICYCOUNTERTIMER_serialize(&in->PolicyCounterTimer, jso);
     case POLICYCOMMANDCODE:
         return ifapi_json_TPMS_POLICYCOMMANDCODE_serialize(&in->PolicyCommandCode, jso);
     case POLICYPHYSICALPRESENCE:
-        return ifapi_json_TPMS_POLICYPHYSICALPRESENCE_serialize(
-                   &in->PolicyPhysicalPresence, jso);
+        return ifapi_json_TPMS_POLICYPHYSICALPRESENCE_serialize(&in->PolicyPhysicalPresence, jso);
     case POLICYCPHASH:
         return ifapi_json_TPMS_POLICYCPHASH_serialize(&in->PolicyCpHash, jso);
     case POLICYNAMEHASH:
         return ifapi_json_TPMS_POLICYNAMEHASH_serialize(&in->PolicyNameHash, jso);
     case POLICYDUPLICATIONSELECT:
-        return ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(
-                   &in->PolicyDuplicationSelect, jso);
+        return ifapi_json_TPMS_POLICYDUPLICATIONSELECT_serialize(&in->PolicyDuplicationSelect, jso);
     case POLICYAUTHORIZE:
         return ifapi_json_TPMS_POLICYAUTHORIZE_serialize(&in->PolicyAuthorize, jso);
     case POLICYAUTHVALUE:
@@ -1448,7 +1387,7 @@ ifapi_json_TPMU_POLICYELEMENT_serialize(const TPMU_POLICYELEMENT *in,
     case POLICYACTION:
         return ifapi_json_TPMS_POLICYACTION_serialize(&in->PolicyAction, jso);
     default:
-        LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
         return TSS2_SYS_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
@@ -1464,12 +1403,10 @@ ifapi_json_TPMU_POLICYELEMENT_serialize(const TPMU_POLICYELEMENT *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_POLICYELEMENT_serialize(const TPMT_POLICYELEMENT *in,
-                                        json_object **jso)
-{
+ifapi_json_TPMT_POLICYELEMENT_serialize(const TPMT_POLICYELEMENT *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1507,12 +1444,10 @@ ifapi_json_TPMT_POLICYELEMENT_serialize(const TPMT_POLICYELEMENT *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in,
-        json_object **jso)
-{
+ifapi_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1542,12 +1477,10 @@ ifapi_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
 
     if (*jso == NULL)
@@ -1568,8 +1501,7 @@ ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *in,
     }
     if (in->policyAuthorizations) {
         jso2 = NULL;
-        r = ifapi_json_TPML_POLICYAUTHORIZATIONS_serialize(in->policyAuthorizations,
-                &jso2);
+        r = ifapi_json_TPML_POLICYAUTHORIZATIONS_serialize(in->policyAuthorizations, &jso2);
         return_if_error(r, "Serialize TPML_POLICYAUTHORIZATIONS");
 
         if (json_object_object_add(*jso, "policyAuthorizations", jso2)) {

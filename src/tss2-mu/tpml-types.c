@@ -9,147 +9,128 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIxPTR, uintptr_t, uint8_t
-#include <string.h>           // for NULL, size_t, memset
+#include <inttypes.h> // for PRIxPTR, uintptr_t, uint8_t
+#include <string.h>   // for NULL, size_t, memset
 
-#include "tss2_common.h"      // for UINT32, TSS2_RC_SUCCESS, TSS2_RC, TSS2_...
-#include "tss2_mu.h"          // for Tss2_MU_UINT32_Marshal, Tss2_MU_UINT32_...
-#include "tss2_tpm2_types.h"  // for TPML_ACT_DATA, TPML_AC_CAPABILITIES
+#include "tss2_common.h"     // for UINT32, TSS2_RC_SUCCESS, TSS2_RC, TSS2_...
+#include "tss2_mu.h"         // for Tss2_MU_UINT32_Marshal, Tss2_MU_UINT32_...
+#include "tss2_tpm2_types.h" // for TPML_ACT_DATA, TPML_AC_CAPABILITIES
 
 #define LOGMODULE marshal
-#include "util/log.h"         // for LOG_DEBUG, LOG_ERROR, LOG_TRACE, LOG_WA...
+#include "util/log.h" // for LOG_DEBUG, LOG_ERROR, LOG_TRACE, LOG_WA...
 
-#define ADDR &  // NOLINT(bugprone-macro-parentheses)
+#define ADDR & // NOLINT(bugprone-macro-parentheses)
 #define VAL
 #define TAB_SIZE(tab) (sizeof(tab) / sizeof((tab)[0]))
 
-#define TPML_MARSHAL(type, marshal_func, buf_name, op) \
-TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], \
-                                 size_t buffer_size, size_t *offset) \
-{ \
-    size_t  local_offset = 0; \
-    UINT32 i, count = 0; \
-    TSS2_RC ret = TSS2_RC_SUCCESS; \
-\
-    if (offset != NULL) { \
-        LOG_TRACE("offset non-NULL, initial value: %zu", *offset); \
-        local_offset = *offset; \
-    } \
-\
-    if (src == NULL) { \
-        LOG_ERROR("src is NULL"); \
-        return TSS2_MU_RC_BAD_REFERENCE; \
-    } \
-\
-    if (buffer == NULL && offset == NULL) { \
-        LOG_ERROR("buffer and offset parameter are NULL"); \
-        return TSS2_MU_RC_BAD_REFERENCE; \
-    } else if (buffer_size < local_offset || \
-               buffer_size - local_offset < sizeof(count)) { \
-        LOG_DEBUG( \
-             "buffer_size: %zu with offset: %zu are insufficient for object " \
-             "of size %zu", \
-             buffer_size, \
-             local_offset, \
-             sizeof(count)); \
-        return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
-    } \
-\
-    if (src->count > TAB_SIZE(src->buf_name)) { \
-        LOG_WARNING("count too big"); \
-        return TSS2_SYS_RC_BAD_VALUE; \
-    } \
-\
-    LOG_DEBUG(\
-         "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", \
-         (uintptr_t)&src, \
-         (uintptr_t)buffer, \
-         local_offset); \
-\
-    ret = Tss2_MU_UINT32_Marshal(src->count, buffer, buffer_size, &local_offset); \
-    if (ret) \
-        return ret; \
-\
-    for (i = 0; i < src->count; i++) \
-    { \
-        ret = marshal_func(op src->buf_name[i], buffer, buffer_size, &local_offset); \
-        if (ret) \
-            return ret; \
-    } \
-    if (offset != NULL) { \
-        *offset = local_offset; \
-        LOG_DEBUG("offset parameter non-NULL updated to %zu", *offset); \
-    } \
-\
-    return TSS2_RC_SUCCESS; \
-}
+#define TPML_MARSHAL(type, marshal_func, buf_name, op)                                             \
+    TSS2_RC Tss2_MU_##type##_Marshal(type const *src, uint8_t buffer[], size_t buffer_size,        \
+                                     size_t *offset) {                                             \
+        size_t  local_offset = 0;                                                                  \
+        UINT32  i, count = 0;                                                                      \
+        TSS2_RC ret = TSS2_RC_SUCCESS;                                                             \
+                                                                                                   \
+        if (offset != NULL) {                                                                      \
+            LOG_TRACE("offset non-NULL, initial value: %zu", *offset);                             \
+            local_offset = *offset;                                                                \
+        }                                                                                          \
+                                                                                                   \
+        if (src == NULL) {                                                                         \
+            LOG_ERROR("src is NULL");                                                              \
+            return TSS2_MU_RC_BAD_REFERENCE;                                                       \
+        }                                                                                          \
+                                                                                                   \
+        if (buffer == NULL && offset == NULL) {                                                    \
+            LOG_ERROR("buffer and offset parameter are NULL");                                     \
+            return TSS2_MU_RC_BAD_REFERENCE;                                                       \
+        } else if (buffer_size < local_offset || buffer_size - local_offset < sizeof(count)) {     \
+            LOG_DEBUG("buffer_size: %zu with offset: %zu are insufficient for object "             \
+                      "of size %zu",                                                               \
+                      buffer_size, local_offset, sizeof(count));                                   \
+            return TSS2_MU_RC_INSUFFICIENT_BUFFER;                                                 \
+        }                                                                                          \
+                                                                                                   \
+        if (src->count > TAB_SIZE(src->buf_name)) {                                                \
+            LOG_WARNING("count too big");                                                          \
+            return TSS2_SYS_RC_BAD_VALUE;                                                          \
+        }                                                                                          \
+                                                                                                   \
+        LOG_DEBUG("Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR                \
+                  " at index 0x%zx",                                                               \
+                  (uintptr_t) & src, (uintptr_t)buffer, local_offset);                             \
+                                                                                                   \
+        ret = Tss2_MU_UINT32_Marshal(src->count, buffer, buffer_size, &local_offset);              \
+        if (ret)                                                                                   \
+            return ret;                                                                            \
+                                                                                                   \
+        for (i = 0; i < src->count; i++) {                                                         \
+            ret = marshal_func(op src->buf_name[i], buffer, buffer_size, &local_offset);           \
+            if (ret)                                                                               \
+                return ret;                                                                        \
+        }                                                                                          \
+        if (offset != NULL) {                                                                      \
+            *offset = local_offset;                                                                \
+            LOG_DEBUG("offset parameter non-NULL updated to %zu", *offset);                        \
+        }                                                                                          \
+                                                                                                   \
+        return TSS2_RC_SUCCESS;                                                                    \
+    }
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define TPML_UNMARSHAL(type, unmarshal_func, buf_name) \
-TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
-                                   size_t *offset, type *dest) \
-{ \
-    size_t  local_offset = 0; \
-    UINT32 i, count = 0; \
-    TSS2_RC ret = TSS2_RC_SUCCESS; \
-\
-    if (offset != NULL) { \
-        LOG_TRACE("offset non-NULL, initial value: %zu", *offset); \
-        local_offset = *offset; \
-    } \
-\
-    if (buffer == NULL || (dest == NULL && offset == NULL)) { \
-        LOG_ERROR("buffer or dest and offset parameter are NULL"); \
-        return TSS2_MU_RC_BAD_REFERENCE; \
-    } else if (buffer_size < local_offset || \
-               sizeof(count) > buffer_size - local_offset) \
-    { \
-        LOG_DEBUG( \
-             "buffer_size: %zu with offset: %zu are insufficient for object " \
-             "of size %zu", \
-             buffer_size, \
-             local_offset, \
-             sizeof(count)); \
-        return TSS2_MU_RC_INSUFFICIENT_BUFFER; \
-    } \
-\
-    LOG_DEBUG(\
-         "Unmarshaling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", \
-         (uintptr_t)buffer, \
-         (uintptr_t)dest, \
-         local_offset); \
-\
-    ret = Tss2_MU_UINT32_Unmarshal(buffer, buffer_size, &local_offset, &count); \
-    if (ret) \
-        return ret; \
-\
-    if (count > TAB_SIZE(dest->buf_name)) { \
-        LOG_WARNING("count too big"); \
-        return TSS2_SYS_RC_MALFORMED_RESPONSE; \
-    } \
-\
-    if (dest != NULL) { \
-        memset(dest, 0, sizeof(*dest)); \
-        dest->count = count; \
-    } \
-\
-    for (i = 0; i < count; i++) \
-    { \
-        ret = unmarshal_func(buffer, buffer_size, &local_offset, \
-                             (dest == NULL)? NULL: &dest->buf_name[i]); \
-        if (ret) \
-            return ret; \
-    } \
-\
-    if (offset != NULL) { \
-        *offset = local_offset; \
-        LOG_DEBUG("offset parameter non-NULL, updated to %zu", *offset); \
-    } \
-\
-    return TSS2_RC_SUCCESS; \
-}
+#define TPML_UNMARSHAL(type, unmarshal_func, buf_name)                                             \
+    TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *offset, \
+                                       type *dest) {                                               \
+        size_t  local_offset = 0;                                                                  \
+        UINT32  i, count = 0;                                                                      \
+        TSS2_RC ret = TSS2_RC_SUCCESS;                                                             \
+                                                                                                   \
+        if (offset != NULL) {                                                                      \
+            LOG_TRACE("offset non-NULL, initial value: %zu", *offset);                             \
+            local_offset = *offset;                                                                \
+        }                                                                                          \
+                                                                                                   \
+        if (buffer == NULL || (dest == NULL && offset == NULL)) {                                  \
+            LOG_ERROR("buffer or dest and offset parameter are NULL");                             \
+            return TSS2_MU_RC_BAD_REFERENCE;                                                       \
+        } else if (buffer_size < local_offset || sizeof(count) > buffer_size - local_offset) {     \
+            LOG_DEBUG("buffer_size: %zu with offset: %zu are insufficient for object "             \
+                      "of size %zu",                                                               \
+                      buffer_size, local_offset, sizeof(count));                                   \
+            return TSS2_MU_RC_INSUFFICIENT_BUFFER;                                                 \
+        }                                                                                          \
+                                                                                                   \
+        LOG_DEBUG("Unmarshaling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR               \
+                  " at index 0x%zx",                                                               \
+                  (uintptr_t)buffer, (uintptr_t)dest, local_offset);                               \
+                                                                                                   \
+        ret = Tss2_MU_UINT32_Unmarshal(buffer, buffer_size, &local_offset, &count);                \
+        if (ret)                                                                                   \
+            return ret;                                                                            \
+                                                                                                   \
+        if (count > TAB_SIZE(dest->buf_name)) {                                                    \
+            LOG_WARNING("count too big");                                                          \
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;                                                 \
+        }                                                                                          \
+                                                                                                   \
+        if (dest != NULL) {                                                                        \
+            memset(dest, 0, sizeof(*dest));                                                        \
+            dest->count = count;                                                                   \
+        }                                                                                          \
+                                                                                                   \
+        for (i = 0; i < count; i++) {                                                              \
+            ret = unmarshal_func(buffer, buffer_size, &local_offset,                               \
+                                 (dest == NULL) ? NULL : &dest->buf_name[i]);                      \
+            if (ret)                                                                               \
+                return ret;                                                                        \
+        }                                                                                          \
+                                                                                                   \
+        if (offset != NULL) {                                                                      \
+            *offset = local_offset;                                                                \
+            LOG_DEBUG("offset parameter non-NULL, updated to %zu", *offset);                       \
+        }                                                                                          \
+                                                                                                   \
+        return TSS2_RC_SUCCESS;                                                                    \
+    }
 // NOLINTEND(bugprone-macro-parentheses)
 
 /*

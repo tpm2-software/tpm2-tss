@@ -8,14 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS, NULL
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS, NULL
 
-#include "tss2_common.h"      // for TSS2_RC
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_Free, ESYS_TR_PASSWORD
-#include "tss2_tpm2_types.h"  // for TPM2B_AUTH, TPM2B_MAX_BUFFER, TPM2_ALG_...
+#include "tss2_common.h"     // for TSS2_RC
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_Free, ESYS_TR_PASSWORD
+#include "tss2_tpm2_types.h" // for TPM2B_AUTH, TPM2B_MAX_BUFFER, TPM2_ALG_...
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error
+#include "util/log.h" // for goto_if_error
 
 /** Test the ESYS commands HashSequenceStart, SequenceUpdate,
  *  and EventSequenceComplete.
@@ -31,74 +31,50 @@
  */
 
 int
-test_esys_event_sequence_complete(ESYS_CONTEXT * esys_context)
-{
+test_esys_event_sequence_complete(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
 
-    TPM2B_AUTH auth = {.size = 20,
-                       .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                                20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
+    TPM2B_AUTH auth = { .size = 20, .buffer = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                                20, 21, 22, 23, 24, 25, 26, 27, 28, 29 } };
 
-    TPMI_ALG_HASH hashAlg = TPM2_ALG_NULL;   /**< enforce event Sequence */
-    ESYS_TR sequenceHandle_handle;
+    TPMI_ALG_HASH       hashAlg = TPM2_ALG_NULL; /**< enforce event Sequence */
+    ESYS_TR             sequenceHandle_handle;
     TPML_DIGEST_VALUES *results = NULL;
 
-    r = Esys_HashSequenceStart(esys_context,
-                               ESYS_TR_NONE,
-                               ESYS_TR_NONE,
-                               ESYS_TR_NONE,
-                               &auth,
-                               hashAlg,
-                               &sequenceHandle_handle
-                               );
+    r = Esys_HashSequenceStart(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, &auth,
+                               hashAlg, &sequenceHandle_handle);
     goto_if_error(r, "Error: HashSequenceStart", error);
 
-    TPM2B_MAX_BUFFER buffer = {.size = 20,
-                              .buffer={10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                                       20, 21, 22, 23, 24, 25, 26, 27, 28, 29}};
+    TPM2B_MAX_BUFFER buffer = { .size = 20, .buffer = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29 } };
 
     r = Esys_TR_SetAuth(esys_context, sequenceHandle_handle, &auth);
     goto_if_error(r, "Error esys TR_SetAuth ", error);
 
-    r = Esys_SequenceUpdate(esys_context,
-                            sequenceHandle_handle,
-                            ESYS_TR_PASSWORD,
-                            ESYS_TR_NONE,
-                            ESYS_TR_NONE,
-                            &buffer
-                            );
+    r = Esys_SequenceUpdate(esys_context, sequenceHandle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                            ESYS_TR_NONE, &buffer);
     goto_if_error(r, "Error: SequenceUpdate", error);
 
     ESYS_TR pcrHandle_handle = 16;
 
-    r = Esys_EventSequenceComplete (
-        esys_context,
-        pcrHandle_handle,
-        sequenceHandle_handle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        &buffer,
-        &results);
+    r = Esys_EventSequenceComplete(esys_context, pcrHandle_handle, sequenceHandle_handle,
+                                   ESYS_TR_PASSWORD, ESYS_TR_PASSWORD, ESYS_TR_NONE, &buffer,
+                                   &results);
     goto_if_error(r, "Error: EventSequenceComplete", error);
 
-    r = Esys_PCR_Reset(
-        esys_context,
-        pcrHandle_handle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE);
+    r = Esys_PCR_Reset(esys_context, pcrHandle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                       ESYS_TR_NONE);
     goto_if_error(r, "Error: PCR_Reset", error);
 
     Esys_Free(results);
     return EXIT_SUCCESS;
 
- error:
+error:
     Esys_Free(results);
     return EXIT_FAILURE;
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_event_sequence_complete(esys_context);
 }

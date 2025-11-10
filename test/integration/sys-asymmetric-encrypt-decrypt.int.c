@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32
-#include <stdlib.h>           // for exit
-#include <string.h>           // for memcpy, strlen
+#include <inttypes.h> // for PRIx32
+#include <stdlib.h>   // for exit
+#include <string.h>   // for memcpy, strlen
 
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, UINT32, TSS2_RC
-#include "tss2_sys.h"         // for Tss2_Sys_FlushContext, Tss2_Sys_Create
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPMT_PUBLIC, TPM2B_PUBLIC...
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, UINT32, TSS2_RC
+#include "tss2_sys.h"        // for Tss2_Sys_FlushContext, Tss2_Sys_Create
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPMT_PUBLIC, TPM2B_PUBLIC...
 
 #define LOGMODULE test
-#include "sys-util.h"         // for TSS2_RETRY_EXP
-#include "test.h"             // for test_invoke
-#include "util/log.h"         // for LOG_ERROR, LOG_INFO
+#include "sys-util.h" // for TSS2_RETRY_EXP
+#include "test.h"     // for test_invoke
+#include "util/log.h" // for LOG_ERROR, LOG_INFO
 
 /**
  * This program contains integration test for asymmetric encrypt and
@@ -33,33 +33,51 @@
  * the value before encryption.
  */
 int
-test_invoke (TSS2_SYS_CONTEXT *sys_context)
-{
-    TSS2_RC rc;
-    TPM2B_SENSITIVE_CREATE  in_sensitive;
-    TPM2B_PUBLIC            in_public = {0};
-    TPM2B_DATA              outside_info = {0,};
-    TPML_PCR_SELECTION      creation_pcr;
-    TPM2B_NAME name = {sizeof(TPM2B_NAME)-2,};
-    TPM2B_PRIVATE out_private = {sizeof(TPM2B_PRIVATE)-2,};
-    TPM2B_PUBLIC out_public = {0,};
-    TPM2B_CREATION_DATA creation_data = {0,};
-    TPM2B_DIGEST creation_hash = {sizeof(TPM2B_DIGEST)-2,};
-    TPMT_TK_CREATION creation_ticket = {0,};
-    TPM2_HANDLE loaded_sym_handle;
-    TPM2_HANDLE sym_handle;
-    const char message[] = "my message";
-    TPMT_RSA_DECRYPT in_scheme;
-    TPM2B_PUBLIC_KEY_RSA input_message = {sizeof(TPM2B_PUBLIC_KEY_RSA)-2,};
-    TPM2B_PUBLIC_KEY_RSA output_message = {sizeof(TPM2B_PUBLIC_KEY_RSA)-2,};
-    TPM2B_PUBLIC_KEY_RSA output_data = {sizeof(TPM2B_PUBLIC_KEY_RSA)-2,};
+test_invoke(TSS2_SYS_CONTEXT *sys_context) {
+    TSS2_RC                rc;
+    TPM2B_SENSITIVE_CREATE in_sensitive;
+    TPM2B_PUBLIC           in_public = { 0 };
+    TPM2B_DATA             outside_info = {
+        0,
+    };
+    TPML_PCR_SELECTION creation_pcr;
+    TPM2B_NAME         name = {
+        sizeof(TPM2B_NAME) - 2,
+    };
+    TPM2B_PRIVATE out_private = {
+        sizeof(TPM2B_PRIVATE) - 2,
+    };
+    TPM2B_PUBLIC out_public = {
+        0,
+    };
+    TPM2B_CREATION_DATA creation_data = {
+        0,
+    };
+    TPM2B_DIGEST creation_hash = {
+        sizeof(TPM2B_DIGEST) - 2,
+    };
+    TPMT_TK_CREATION creation_ticket = {
+        0,
+    };
+    TPM2_HANDLE          loaded_sym_handle;
+    TPM2_HANDLE          sym_handle;
+    const char           message[] = "my message";
+    TPMT_RSA_DECRYPT     in_scheme;
+    TPM2B_PUBLIC_KEY_RSA input_message = {
+        sizeof(TPM2B_PUBLIC_KEY_RSA) - 2,
+    };
+    TPM2B_PUBLIC_KEY_RSA output_message = {
+        sizeof(TPM2B_PUBLIC_KEY_RSA) - 2,
+    };
+    TPM2B_PUBLIC_KEY_RSA output_data = {
+        sizeof(TPM2B_PUBLIC_KEY_RSA) - 2,
+    };
 
     TSS2L_SYS_AUTH_RESPONSE sessions_data_out;
-    TSS2L_SYS_AUTH_COMMAND sessions_data = {
-        .count = 1,
-        .auths = {{.sessionHandle = TPM2_RH_PW,
-            .nonce={.size=0},
-            .hmac={.size=0}}}};
+    TSS2L_SYS_AUTH_COMMAND  sessions_data
+        = { .count = 1,
+            .auths
+            = { { .sessionHandle = TPM2_RH_PW, .nonce = { .size = 0 }, .hmac = { .size = 0 } } } };
 
     in_sensitive.size = 0;
     in_sensitive.sensitive.userAuth.size = 0;
@@ -92,7 +110,10 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     creation_data.size = 0;
 
     LOG_INFO("Asymmetric Encryption and Decryption Tests started.");
-    rc = Tss2_Sys_CreatePrimary(sys_context, TPM2_RH_OWNER, &sessions_data, &in_sensitive, &in_public, &outside_info, &creation_pcr, &sym_handle, &out_public, &creation_data, &creation_hash, &creation_ticket, &name, &sessions_data_out);
+    rc = Tss2_Sys_CreatePrimary(sys_context, TPM2_RH_OWNER, &sessions_data, &in_sensitive,
+                                &in_public, &outside_info, &creation_pcr, &sym_handle, &out_public,
+                                &creation_data, &creation_hash, &creation_ticket, &name,
+                                &sessions_data_out);
     if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("CreatePrimary FAILED! Response Code : 0x%x", rc);
         exit(1);
@@ -121,31 +142,37 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     creation_data.size = 0;
     sessions_data.auths[0].hmac.size = 0;
 
-    rc = TSS2_RETRY_EXP (Tss2_Sys_Create(sys_context, sym_handle, &sessions_data, &in_sensitive, &in_public, &outside_info, &creation_pcr, &out_private, &out_public, &creation_data, &creation_hash, &creation_ticket, &sessions_data_out));
+    rc = TSS2_RETRY_EXP(Tss2_Sys_Create(sys_context, sym_handle, &sessions_data, &in_sensitive,
+                                        &in_public, &outside_info, &creation_pcr, &out_private,
+                                        &out_public, &creation_data, &creation_hash,
+                                        &creation_ticket, &sessions_data_out));
     if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("Create FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
-    rc = Tss2_Sys_Load(sys_context, sym_handle, &sessions_data, &out_private, &out_public, &loaded_sym_handle, &name, &sessions_data_out);
+    rc = Tss2_Sys_Load(sys_context, sym_handle, &sessions_data, &out_private, &out_public,
+                       &loaded_sym_handle, &name, &sessions_data_out);
     if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("Load FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
-    LOG_INFO( "Loaded key handle:  %8.8x", loaded_sym_handle );
+    LOG_INFO("Loaded key handle:  %8.8x", loaded_sym_handle);
 
     input_message.size = strlen(message);
     memcpy(input_message.buffer, message, input_message.size);
     in_scheme.scheme = TPM2_ALG_RSAES;
     outside_info.size = 0;
-    rc = Tss2_Sys_RSA_Encrypt(sys_context, loaded_sym_handle, 0, &input_message, &in_scheme, &outside_info, &output_data, 0);
-    if(rc != TPM2_RC_SUCCESS) {
+    rc = Tss2_Sys_RSA_Encrypt(sys_context, loaded_sym_handle, 0, &input_message, &in_scheme,
+                              &outside_info, &output_data, 0);
+    if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("RSA_Encrypt FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
     LOG_INFO("Encrypt successful.");
 
-    rc = Tss2_Sys_RSA_Decrypt(sys_context, loaded_sym_handle, &sessions_data, &output_data, &in_scheme, &outside_info, &output_message, &sessions_data_out);
-    if(rc != TPM2_RC_SUCCESS) {
+    rc = Tss2_Sys_RSA_Decrypt(sys_context, loaded_sym_handle, &sessions_data, &output_data,
+                              &in_scheme, &outside_info, &output_message, &sessions_data_out);
+    if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("RSA_Decrypt FAILED! Response Code : 0x%x", rc);
         exit(1);
     }
@@ -155,12 +182,12 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
 
     rc = Tss2_Sys_FlushContext(sys_context, sym_handle);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
+        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%" PRIx32, rc);
         return 99; /* fatal error */
     }
     rc = Tss2_Sys_FlushContext(sys_context, loaded_sym_handle);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
+        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%" PRIx32, rc);
         return 99; /* fatal error */
     }
     return 0;

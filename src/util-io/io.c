@@ -7,38 +7,38 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>       // for errno
-#include <fcntl.h>       // for fcntl, F_GETFL, F_SETFL, O_NONBLOCK
-#include <inttypes.h>    // for uint8_t, PRIxPTR, uintptr_t, uint16_t
-#include <stdio.h>       // for NULL, snprintf
-#include <string.h>      // for strerror
+#include <errno.h>    // for errno
+#include <fcntl.h>    // for fcntl, F_GETFL, F_SETFL, O_NONBLOCK
+#include <inttypes.h> // for uint8_t, PRIxPTR, uintptr_t, uint16_t
+#include <stdio.h>    // for NULL, snprintf
+#include <string.h>   // for strerror
 
 #ifndef _WIN32
-#include <arpa/inet.h>   // for inet_ntop
+#include <arpa/inet.h> // for inet_ntop
 #ifdef __ZEPHYR__
-#include <zephyr/posix/netdb.h>   // for addrinfo, freeaddrinfo, gai_strerror, getadd...
+#include <zephyr/posix/netdb.h> // for addrinfo, freeaddrinfo, gai_strerror, getadd...
 #else
-#include <netdb.h>       // for addrinfo, freeaddrinfo, gai_strerror, getadd...
+#include <netdb.h> // for addrinfo, freeaddrinfo, gai_strerror, getadd...
 #endif
-#include <netinet/in.h>  // for IPPROTO_TCP, sockaddr_in, sockaddr_in6
-#include <poll.h>        // for pollfd, poll, POLLIN
+#include <netinet/in.h> // for IPPROTO_TCP, sockaddr_in, sockaddr_in6
+#include <poll.h>       // for pollfd, poll, POLLIN
 #ifndef __ZEPHYR__
-#include <sys/un.h>      // for sockaddr_un
+#include <sys/un.h> // for sockaddr_un
 #endif
-#include <unistd.h>      // for close, read, write
+#include <unistd.h> // for close, read, write
 #endif
 
 #include "io.h"
 
 #define LOGMODULE tcti
-#include "util/log.h"    // for LOG_WARNING, LOG_DEBUG, LOG_ERROR, LOGBLOB_D...
+#include "util/log.h" // for LOG_WARNING, LOG_DEBUG, LOG_ERROR, LOGBLOB_D...
 
-#define MAX_PORT_STR_LEN    sizeof("65535")
+#define MAX_PORT_STR_LEN sizeof("65535")
 
 /* sockaddr_un::sun_path is documented as char[108], but it seems safer to let
  * the compiler (or rather, the headers) derive this for us. (Cast to int to
  * avoid signed/unsigned comparison warnings.) */
-#define MAX_SADDR_UN_PATH  (int)sizeof(((struct sockaddr_un *)0)->sun_path)
+#define MAX_SADDR_UN_PATH (int)sizeof(((struct sockaddr_un *)0)->sun_path)
 
 /*
  * The 'read_all' function attempts to read all of the 'size' bytes requested
@@ -48,44 +48,38 @@
  * On error or EOF, the number of bytes read (if any) will be returned.
  */
 size_t
-read_all (
-    SOCKET fd,
-    uint8_t *data,
-    size_t size,
-    int timeout)
-{
+read_all(SOCKET fd, uint8_t *data, size_t size, int timeout) {
     ssize_t recvd;
-    size_t recvd_total = 0;
+    size_t  recvd_total = 0;
 
-    LOG_DEBUG ("reading %zu bytes from fd %d to buffer at 0x%" PRIxPTR,
-               size, fd, (uintptr_t)data);
+    LOG_DEBUG("reading %zu bytes from fd %d to buffer at 0x%" PRIxPTR, size, fd, (uintptr_t)data);
     do {
 #ifdef _WIN32
-        TEMP_RETRY (recvd, recv (fd, (char *) &data [recvd_total], size, 0));
+        TEMP_RETRY(recvd, recv(fd, (char *)&data[recvd_total], size, 0));
         if (recvd < 0) {
-            LOG_WARNING ("read on fd %d failed with errno %d: %s",
-                         fd, WSAGetLastError(), strerror (WSAGetLastError()));
+            LOG_WARNING("read on fd %d failed with errno %d: %s", fd, WSAGetLastError(),
+                        strerror(WSAGetLastError()));
             return recvd_total;
         }
 #else
-        TEMP_RETRY (recvd, read (fd, &data [recvd_total], size));
+        TEMP_RETRY(recvd, read(fd, &data[recvd_total], size));
         if (recvd < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 if (socket_poll(fd, SOCKET_POLL_RD, timeout) == TSS2_RC_SUCCESS) {
                     continue;
                 }
             }
-            LOG_WARNING ("read on fd %d failed with errno %d: %s",
-                         fd, errno, strerror (errno));
+            LOG_WARNING("read on fd %d failed with errno %d: %s", fd, errno, strerror(errno));
             return recvd_total;
         }
 #endif
         if (recvd == 0) {
-            LOG_WARNING ("Attempted read %zu bytes from fd %d, but EOF "
-                         "returned", size, fd);
+            LOG_WARNING("Attempted read %zu bytes from fd %d, but EOF "
+                        "returned",
+                        size, fd);
             return recvd_total;
         }
-        LOGBLOB_DEBUG (&data [recvd_total], recvd, "read %zd bytes from fd %d:", recvd, fd);
+        LOGBLOB_DEBUG(&data[recvd_total], recvd, "read %zd bytes from fd %d:", recvd, fd);
         recvd_total += recvd;
         size -= recvd;
     } while (size > 0);
@@ -94,42 +88,31 @@ read_all (
 }
 
 size_t
-write_all (
-    SOCKET fd,
-    const uint8_t *buf,
-    size_t size,
-    int timeout)
-{
+write_all(SOCKET fd, const uint8_t *buf, size_t size, int timeout) {
     ssize_t written = 0;
-    size_t written_total = 0;
+    size_t  written_total = 0;
 
     do {
-        LOG_DEBUG("writing %zu bytes starting at 0x%" PRIxPTR " to fd %d",
-                  size - written_total,
-                  (uintptr_t)(buf + written_total),
-                  fd);
+        LOG_DEBUG("writing %zu bytes starting at 0x%" PRIxPTR " to fd %d", size - written_total,
+                  (uintptr_t)(buf + written_total), fd);
 #ifdef _WIN32
-        TEMP_RETRY (written, send (fd,
-                                   (const char*)&buf [written_total],
-                                   size - written_total, 0));
+        TEMP_RETRY(written, send(fd, (const char *)&buf[written_total], size - written_total, 0));
 #else
-         TEMP_RETRY (written, write (fd,
-                                     (const char*)&buf [written_total],
-                                     size - written_total));
+        TEMP_RETRY(written, write(fd, (const char *)&buf[written_total], size - written_total));
 #endif
         if (written >= 0) {
-            LOG_DEBUG ("wrote %zd bytes to fd %d", written, fd);
+            LOG_DEBUG("wrote %zd bytes to fd %d", written, fd);
             written_total += (size_t)written;
         } else {
 #ifdef _WIN32
-            LOG_ERROR ("failed to write to fd %d: %s", fd, strerror (WSAGetLastError()));
+            LOG_ERROR("failed to write to fd %d: %s", fd, strerror(WSAGetLastError()));
 #else
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 if (socket_poll(fd, SOCKET_POLL_WR, timeout) == TSS2_RC_SUCCESS) {
                     continue;
                 }
             }
-            LOG_ERROR ("failed to write to fd %d: %s", fd, strerror (errno));
+            LOG_ERROR("failed to write to fd %d: %s", fd, strerror(errno));
 #endif
             return written_total;
         }
@@ -139,31 +122,22 @@ write_all (
 }
 
 size_t
-socket_recv_buf (
-    SOCKET sock,
-    uint8_t *data,
-    size_t size,
-    int timeout)
-{
-    return read_all (sock, data, size, timeout);
+socket_recv_buf(SOCKET sock, uint8_t *data, size_t size, int timeout) {
+    return read_all(sock, data, size, timeout);
 }
 
 TSS2_RC
-socket_xmit_buf (
-    SOCKET sock,
-    const void *buf,
-    size_t size,
-    int timeout)
-{
+socket_xmit_buf(SOCKET sock, const void *buf, size_t size, int timeout) {
     size_t ret;
 
-    LOGBLOB_DEBUG (buf, size, "Writing %zu bytes to socket %d:", size, sock);
-    ret = write_all (sock, buf, size, timeout);
+    LOGBLOB_DEBUG(buf, size, "Writing %zu bytes to socket %d:", size, sock);
+    ret = write_all(sock, buf, size, timeout);
     if (ret < size) {
 #ifdef _WIN32
-        LOG_ERROR ("write to fd %d failed, errno %d: %s", sock, WSAGetLastError(), strerror (WSAGetLastError()));
+        LOG_ERROR("write to fd %d failed, errno %d: %s", sock, WSAGetLastError(),
+                  strerror(WSAGetLastError()));
 #else
-        LOG_ERROR ("write to fd %d failed, errno %d: %s", sock, errno, strerror (errno));
+        LOG_ERROR("write to fd %d failed, errno %d: %s", sock, errno, strerror(errno));
 #endif
         return TSS2_TCTI_RC_IO_ERROR;
     }
@@ -171,9 +145,7 @@ socket_xmit_buf (
 }
 
 TSS2_RC
-socket_close (
-    SOCKET *socket)
-{
+socket_close(SOCKET *socket) {
     int ret;
 
     if (socket == NULL) {
@@ -183,18 +155,17 @@ socket_close (
         return TSS2_RC_SUCCESS;
     }
 #ifdef _WIN32
-    ret = closesocket (*socket);
+    ret = closesocket(*socket);
     WSACleanup();
     if (ret == SOCKET_ERROR) {
-        LOG_WARNING ("Failed to close SOCKET %d. errno %d: %s",
-                     *socket, WSAGetLastError(), strerror (WSAGetLastError()));
+        LOG_WARNING("Failed to close SOCKET %d. errno %d: %s", *socket, WSAGetLastError(),
+                    strerror(WSAGetLastError()));
         return TSS2_TCTI_RC_IO_ERROR;
     }
 #else
-    ret = close (*socket);
+    ret = close(*socket);
     if (ret == SOCKET_ERROR) {
-        LOG_WARNING ("Failed to close SOCKET %d. errno %d: %s",
-                     *socket, errno, strerror (errno));
+        LOG_WARNING("Failed to close SOCKET %d. errno %d: %s", *socket, errno, strerror(errno));
         return TSS2_TCTI_RC_IO_ERROR;
     }
 #endif
@@ -204,30 +175,25 @@ socket_close (
 }
 
 TSS2_RC
-socket_connect (
-    const char *hostname,
-    uint16_t port,
-    int control,
-    SOCKET *sock)
-{
-    static const struct addrinfo hints = { .ai_socktype = SOCK_STREAM,
-        .ai_family = AF_UNSPEC, .ai_protocol = IPPROTO_TCP};
+socket_connect(const char *hostname, uint16_t port, int control, SOCKET *sock) {
+    static const struct addrinfo hints
+        = { .ai_socktype = SOCK_STREAM, .ai_family = AF_UNSPEC, .ai_protocol = IPPROTO_TCP };
     struct addrinfo *retp = NULL;
     struct addrinfo *p;
-    char port_str[MAX_PORT_STR_LEN];
-    int ret = 0;
+    char             port_str[MAX_PORT_STR_LEN];
+    int              ret = 0;
 #ifdef _WIN32
-    char host_buff[POSIX_HOST_NAME_MAX];
+    char        host_buff[POSIX_HOST_NAME_MAX];
     const char *h = hostname;
-    WSADATA wsaData;
-    int iResult;
+    WSADATA     wsaData;
+    int         iResult;
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
         LOG_WARNING("WSAStartup failed: %d", iResult);
         return TSS2_TCTI_RC_IO_ERROR;
     }
 #else
-    char host_buff[POSIX_HOST_NAME_MAX] __attribute__((unused));
+    char        host_buff[POSIX_HOST_NAME_MAX] __attribute__((unused));
     const char *h __attribute__((unused)) = hostname;
 #endif
 
@@ -242,45 +208,44 @@ socket_connect (
     if (ret < 0)
         return TSS2_TCTI_RC_BAD_VALUE;
 
-
-    LOG_DEBUG ("Resolving host %s", hostname);
-    ret = getaddrinfo (hostname, port_str, &hints, &retp);
+    LOG_DEBUG("Resolving host %s", hostname);
+    ret = getaddrinfo(hostname, port_str, &hints, &retp);
     if (ret != 0) {
-        LOG_WARNING ("Host %s does not resolve to a valid address: %d: %s",
-            hostname, ret, gai_strerror(ret));
+        LOG_WARNING("Host %s does not resolve to a valid address: %d: %s", hostname, ret,
+                    gai_strerror(ret));
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
     for (p = retp; p != NULL; p = p->ai_next) {
-        *sock = socket (p->ai_family, SOCK_STREAM, 0);
+        *sock = socket(p->ai_family, SOCK_STREAM, 0);
         void *sockaddr;
 
         if (*sock == INVALID_SOCKET)
             continue;
 
         if (p->ai_family == AF_INET)
-            sockaddr = &((struct sockaddr_in*)p->ai_addr)->sin_addr;
+            sockaddr = &((struct sockaddr_in *)p->ai_addr)->sin_addr;
         else
-            sockaddr = &((struct sockaddr_in6*)p->ai_addr)->sin6_addr;
+            sockaddr = &((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
 
         h = inet_ntop(p->ai_family, sockaddr, host_buff, sizeof(host_buff));
 
         if (h == NULL)
             h = hostname;
 
-        LOG_DEBUG ("Attempting TCP connection to host %s, port %s", h, port_str);
-        if (connect (*sock, p->ai_addr, p->ai_addrlen) != SOCKET_ERROR)
+        LOG_DEBUG("Attempting TCP connection to host %s, port %s", h, port_str);
+        if (connect(*sock, p->ai_addr, p->ai_addrlen) != SOCKET_ERROR)
             break; /* socket connected OK */
-        socket_close (sock);
+        socket_close(sock);
     }
-    freeaddrinfo (retp);
+    freeaddrinfo(retp);
     if (p == NULL) {
 #ifdef _WIN32
-        LOG_WARNING ("Failed to connect to host %s, port %s: errno %d: %s",
-                      h, port_str, WSAGetLastError(), strerror (WSAGetLastError()));
+        LOG_WARNING("Failed to connect to host %s, port %s: errno %d: %s", h, port_str,
+                    WSAGetLastError(), strerror(WSAGetLastError()));
 #else
-        LOG_WARNING ("Failed to connect to host %s, port %s: errno %d: %s",
-                     h, port_str, errno, strerror (errno));
+        LOG_WARNING("Failed to connect to host %s, port %s: errno %d: %s", h, port_str, errno,
+                    strerror(errno));
 #endif
 
         return TSS2_TCTI_RC_IO_ERROR;
@@ -290,11 +255,7 @@ socket_connect (
 }
 
 TSS2_RC
-socket_connect_unix (
-    const char *path,
-    int control,
-    SOCKET *sock)
-{
+socket_connect_unix(const char *path, int control, SOCKET *sock) {
 #ifdef _WIN32
     return TSS2_TCTI_RC_BAD_REFERENCE;
 #else
@@ -305,23 +266,22 @@ socket_connect_unix (
 
     saddr.sun_family = AF_UNIX;
 
-    if (snprintf(saddr.sun_path, MAX_SADDR_UN_PATH,
-                 control ? "%s.ctrl" : "%s", path) >= MAX_SADDR_UN_PATH) {
-        LOG_ERROR ("Socket %s%s is too long for AF_UNIX",
-                   path, control ? ".ctrl" : "");
+    if (snprintf(saddr.sun_path, MAX_SADDR_UN_PATH, control ? "%s.ctrl" : "%s", path)
+        >= MAX_SADDR_UN_PATH) {
+        LOG_ERROR("Socket %s%s is too long for AF_UNIX", path, control ? ".ctrl" : "");
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
-    *sock = socket (AF_UNIX, SOCK_STREAM, 0);
+    *sock = socket(AF_UNIX, SOCK_STREAM, 0);
 
     if (*sock == INVALID_SOCKET) {
-        LOG_WARNING ("Failed to create AF_UNIX socket");
+        LOG_WARNING("Failed to create AF_UNIX socket");
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
-    LOG_DEBUG ("Attempting UNIX connection to %s", saddr.sun_path);
-    if (connect (*sock, (struct sockaddr *)&saddr, sizeof(saddr)) == SOCKET_ERROR) {
-        LOG_WARNING ("Failed to connect to %s", saddr.sun_path);
+    LOG_DEBUG("Attempting UNIX connection to %s", saddr.sun_path);
+    if (connect(*sock, (struct sockaddr *)&saddr, sizeof(saddr)) == SOCKET_ERROR) {
+        LOG_WARNING("Failed to connect to %s", saddr.sun_path);
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
@@ -330,8 +290,7 @@ socket_connect_unix (
 }
 
 TSS2_RC
-socket_set_nonblock (SOCKET sock)
-{
+socket_set_nonblock(SOCKET sock) {
 #ifndef _WIN32
     int flgs;
 
@@ -347,11 +306,10 @@ socket_set_nonblock (SOCKET sock)
 }
 
 TSS2_RC
-socket_poll (SOCKET sock, int wait_flags, int timeout)
-{
+socket_poll(SOCKET sock, int wait_flags, int timeout) {
 #ifndef _WIN32
     struct pollfd fds;
-    int rc_poll, nfds = 1;
+    int           rc_poll, nfds = 1;
 
     fds.fd = sock;
     fds.revents = fds.events = 0;
@@ -374,11 +332,11 @@ socket_poll (SOCKET sock, int wait_flags, int timeout)
 
     rc_poll = poll(&fds, nfds, timeout);
     if (rc_poll < 0) {
-        LOG_ERROR ("Failed to poll for response from fd %d, got errno %d: %s",
-                   sock, errno, strerror(errno));
+        LOG_ERROR("Failed to poll for response from fd %d, got errno %d: %s", sock, errno,
+                  strerror(errno));
         return TSS2_TCTI_RC_IO_ERROR;
     } else if (rc_poll == 0) {
-        LOG_INFO ("Poll timed out on fd %d.", sock);
+        LOG_INFO("Poll timed out on fd %d.", sock);
         return TSS2_TCTI_RC_TRY_AGAIN;
     } else if (fds.revents == POLLIN) {
         return TSS2_RC_SUCCESS;

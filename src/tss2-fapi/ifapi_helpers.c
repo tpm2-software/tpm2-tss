@@ -8,33 +8,34 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <errno.h>                   // for EEXIST, errno
-#include <inttypes.h>                // for PRIu16, SCNx32, PRIi32, PRIu32
-#include <stdarg.h>                  // for va_list, va_end, va_copy, va_start
-#include <stdio.h>                   // for sscanf, vsnprintf, vsprintf, vas...
-#include <stdlib.h>                  // for malloc, calloc, free
-#include <string.h>                  // for strcmp, strncmp, strlen, strcat
-#include <strings.h>                 // for strcasecmp, strncasecmp
-#include <sys/stat.h>                // for mkdir, mode_t
+#include <errno.h>    // for EEXIST, errno
+#include <inttypes.h> // for PRIu16, SCNx32, PRIi32, PRIu32
+#include <stdarg.h>   // for va_list, va_end, va_copy, va_start
+#include <stdio.h>    // for sscanf, vsnprintf, vsprintf, vas...
+#include <stdlib.h>   // for malloc, calloc, free
+#include <string.h>   // for strcmp, strncmp, strlen, strcat
+#include <strings.h>  // for strcasecmp, strncasecmp
+#include <sys/stat.h> // for mkdir, mode_t
 
-#include "efi_event.h"               // for EV_NO_ACTION_STRUCT, EV_EFI_HCRT...
-#include "fapi_crypto.h"             // for ifapi_crypto_hash_abort, ifapi_c...
-#include "ifapi_eventlog.h"          // for IFAPI_EVENT, FAPI_QUOTE_INFO
-#include "ifapi_eventlog_system.h"   // for IFAPI_FIRMWARE_EVENT
+#include "efi_event.h"             // for EV_NO_ACTION_STRUCT, EV_EFI_HCRT...
+#include "fapi_crypto.h"           // for ifapi_crypto_hash_abort, ifapi_c...
+#include "ifapi_eventlog.h"        // for IFAPI_EVENT, FAPI_QUOTE_INFO
+#include "ifapi_eventlog_system.h" // for IFAPI_FIRMWARE_EVENT
 #include "ifapi_helpers.h"
-#include "ifapi_json_deserialize.h"  // for ifapi_json_FAPI_QUOTE_INFO_deser...
-#include "ifapi_json_serialize.h"    // for ifapi_json_FAPI_QUOTE_INFO_seria...
-#include "ifapi_macros.h"            // for strdup_check, goto_if_error2
-#include "ifapi_policy.h"            // for ifapi_compute_policy_digest
-#include "linkhash.h"                // for lh_entry
-#include "tpm_json_deserialize.h"    // for ifapi_parse_json
-#include "tss2_mu.h"                 // for Tss2_MU_TPMI_ALG_HASH_Marshal
+#include "ifapi_json_deserialize.h" // for ifapi_json_FAPI_QUOTE_INFO_deser...
+#include "ifapi_json_serialize.h"   // for ifapi_json_FAPI_QUOTE_INFO_seria...
+#include "ifapi_macros.h"           // for strdup_check, goto_if_error2
+#include "ifapi_policy.h"           // for ifapi_compute_policy_digest
+#include "linkhash.h"               // for lh_entry
+#include "tpm_json_deserialize.h"   // for ifapi_parse_json
+#include "tss2_mu.h"                // for Tss2_MU_TPMI_ALG_HASH_Marshal
 
 #define LOGMODULE fapi
-#include "util/log.h"                // for SAFE_FREE, goto_error, LOG_ERROR
+#include "util/log.h" // for SAFE_FREE, goto_error, LOG_ERROR
 
 /* Returns pointer to a char array if input starts with key=, else NULL */
-static const char *extract_value(const char *input, const char *key) {
+static const char *
+extract_value(const char *input, const char *key) {
     size_t key_len = strlen(key);
 
     if (strncmp(input, key, key_len) == 0 && input[key_len] == '=') {
@@ -58,14 +59,13 @@ static const char *extract_value(const char *input, const char *key) {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    char *type_dup = NULL;
+ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template) {
+    TSS2_RC     r = TSS2_RC_SUCCESS;
+    char       *type_dup = NULL;
     TPMA_OBJECT attributes = 0;
-    UINT32 handle;
-    int pos;
-    bool exportable = false;
+    UINT32      handle;
+    int         pos;
+    bool        exportable = false;
     const char *unique_value;
 
     memset(template, 0, sizeof(IFAPI_KEY_TEMPLATE));
@@ -88,7 +88,7 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
         } else if (strcasecmp(flag, "sign") == 0) {
             attributes |= TPMA_OBJECT_SIGN_ENCRYPT;
         } else if (strcasecmp(flag, "user") == 0) {
-	    attributes |= TPMA_OBJECT_USERWITHAUTH;
+            attributes |= TPMA_OBJECT_USERWITHAUTH;
         } else if (strcasecmp(flag, "decrypt") == 0) {
             attributes |= TPMA_OBJECT_DECRYPT;
         } else if (strcasecmp(flag, "restricted") == 0) {
@@ -100,58 +100,53 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
         } else if (strcasecmp(flag, "noda") == 0) {
             attributes |= TPMA_OBJECT_NODA;
         } else if (strncmp(flag, "0x", 2) == 0) {
-            if (sscanf(&flag[2], "%"SCNx32 "%n", &handle, &pos) < 1 ||
-                (size_t)pos != strlen(flag) - 2) {
-                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
-                           error, flag);
+            if (sscanf(&flag[2], "%" SCNx32 "%n", &handle, &pos) < 1
+                || (size_t)pos != strlen(flag) - 2) {
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s", error, flag);
             }
             template->persistent_handle = handle;
             template->persistent = TPM2_YES;
         } else if ((unique_value = extract_value(flag, "unique_zero"))) {
             char *endptr;
-            long num = strtol(unique_value, &endptr, 10);
+            long  num = strtol(unique_value, &endptr, 10);
 
             if (endptr && *endptr == '\0') {
                 template->unique_zero = num;
             } else {
-                 goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid unique_zero",
-                            error);
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid unique_zero", error);
             }
         } else if ((unique_value = extract_value(flag, "unique"))) {
             r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_RSA_KEY_BYTES,
                                       &template->public.publicArea.unique.rsa.buffer[0]);
             goto_if_error(r, "Invalid unique field", error);
 
-            template->public.publicArea.unique.rsa.size = strlen(unique_value)/2;
+            template->public.publicArea.unique.rsa.size = strlen(unique_value) / 2;
             template->unique_rsa_set = true;
         } else if ((unique_value = extract_value(flag, "unique_x"))) {
             r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_ECC_KEY_BYTES,
                                       &template->public.publicArea.unique.ecc.x.buffer[0]);
             goto_if_error(r, "Invalid unique_x field", error);
-            template->public.publicArea.unique.ecc.x.size = strlen(unique_value)/2;
+            template->public.publicArea.unique.ecc.x.size = strlen(unique_value) / 2;
             template->unique_ecc_set = true;
         } else if ((unique_value = extract_value(flag, "unique_y"))) {
             r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_ECC_KEY_BYTES,
                                       &template->public.publicArea.unique.ecc.y.buffer[0]);
             goto_if_error(r, "Invalid unique_y field", error);
 
-            template->public.publicArea.unique.ecc.y.size = strlen(unique_value)/2;
+            template->public.publicArea.unique.ecc.y.size = strlen(unique_value) / 2;
             template->unique_ecc_set = true;
         } else {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
-                       error, flag);
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s", error, flag);
         }
         flag = strtok_r(NULL, " ,", &saveptr);
     }
     if (template->unique_rsa_set && template->unique_ecc_set) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Only ECC or RSA unique can be set",
-                       error);
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Only ECC or RSA unique can be set", error);
     }
 
-    if ((template->unique_rsa_set || template->unique_ecc_set) &
-        template->unique_zero) {
+    if ((template->unique_rsa_set || template->unique_ecc_set) & template->unique_zero) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "unique can't be set if unique_zero is defined",
-                       error);
+                   error);
     }
     if (exportable) {
         /* Clear flags preventing duplication */
@@ -169,14 +164,10 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
         attributes |= TPMA_OBJECT_ADMINWITHPOLICY;
 
     /* Check whether flags are appropriate for restricted keys */
-    if (attributes & TPMA_OBJECT_RESTRICTED &&
-        ((attributes & TPMA_OBJECT_SIGN_ENCRYPT &&
-          attributes & TPMA_OBJECT_DECRYPT)
-         || (!(attributes & TPMA_OBJECT_SIGN_ENCRYPT) &&
-             !(attributes & TPMA_OBJECT_DECRYPT)))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                   "Exactly either sign or decrypt must be set.",
-                   error);
+    if (attributes & TPMA_OBJECT_RESTRICTED
+        && ((attributes & TPMA_OBJECT_SIGN_ENCRYPT && attributes & TPMA_OBJECT_DECRYPT)
+            || (!(attributes & TPMA_OBJECT_SIGN_ENCRYPT) && !(attributes & TPMA_OBJECT_DECRYPT)))) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Exactly either sign or decrypt must be set.", error);
     }
 
     template->public.publicArea.objectAttributes = attributes;
@@ -201,16 +192,14 @@ error:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
-                   const char *policy)
-{
+ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template, const char *policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    char *type_dup = NULL;
+    char   *type_dup = NULL;
     TPMA_NV attributes = 0;
-    UINT32 handle;
-    int pos;
-    UINT32 size = 0;
-    size_t type_count = 0;
+    UINT32  handle;
+    int     pos;
+    UINT32  size = 0;
+    size_t  type_count = 0;
 
     memset(template, 0, sizeof(IFAPI_NV_TEMPLATE));
     type_dup = strdup(type);
@@ -237,21 +226,18 @@ ifapi_set_nv_flags(const char *type, IFAPI_NV_TEMPLATE *template,
         } else if (strcasecmp(flag, "noda") == 0) {
             attributes |= TPMA_NV_NO_DA;
         } else if (strncmp(flag, "0x", 2) == 0) {
-            if (sscanf(&flag[2], "%"SCNx32 "%n", &handle, &pos) < 1 ||
-                (size_t)pos != strlen(flag) - 2) {
-                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
-                           error, flag);
+            if (sscanf(&flag[2], "%" SCNx32 "%n", &handle, &pos) < 1
+                || (size_t)pos != strlen(flag) - 2) {
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s", error, flag);
             }
             template->public.nvIndex = handle;
         } else {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s",
-                       error, flag);
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s", error, flag);
         }
         flag = strtok_r(NULL, " ,", &saveptr);
     }
     if (type_count > 1) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                   "Only one type of NV object can be set.", error);
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Only one type of NV object can be set.", error);
     }
     if (type_count == 0) {
         /* Normal NV space will be defined */
@@ -294,11 +280,10 @@ error:
  * @retval false if not.
  */
 bool
-ifapi_path_type_p(const char *path, const char *type)
-{
+ifapi_path_type_p(const char *path, const char *type) {
     size_t pos = 0;
-    char *end;
-    int end_pos;
+    char  *end;
+    int    end_pos;
 
     if (strncmp("/", path, 1) == 0)
         pos = 1;
@@ -312,9 +297,8 @@ ifapi_path_type_p(const char *path, const char *type)
     end_pos = (int)(end - path);
 
     /* Check sub-string and following delimiter. */
-    if (strlen(path) - pos >= 3 &&
-            strncasecmp(type, &path[pos], strlen(type)) == 0 && end &&
-            strncmp(IFAPI_FILE_DELIM, &path[end_pos], 1) == 0)
+    if (strlen(path) - pos >= 3 && strncasecmp(type, &path[pos], strlen(type)) == 0 && end
+        && strncmp(IFAPI_FILE_DELIM, &path[end_pos], 1) == 0)
         return true;
     return false;
 }
@@ -327,8 +311,7 @@ ifapi_path_type_p(const char *path, const char *type)
  * @retval 0 if not handle can be assigned.
  */
 ESYS_TR
-ifapi_get_hierary_handle(const char *path)
-{
+ifapi_get_hierary_handle(const char *path) {
     int pos = 0;
 
     if (strncmp("/", path, 1) == 0)
@@ -340,7 +323,7 @@ ifapi_get_hierary_handle(const char *path)
         return ESYS_TR_RH_OWNER;
     }
     if (strcmp(&path[pos], "HN") == 0) {
-        return  ESYS_TR_RH_NULL ;
+        return ESYS_TR_RH_NULL;
     }
     if (strcmp(&path[pos], "LOCKOUT") == 0) {
         return ESYS_TR_RH_LOCKOUT;
@@ -356,11 +339,10 @@ ifapi_get_hierary_handle(const char *path)
  * @retval false if not.
  */
 bool
-ifapi_null_primary_p(const char *path)
-{
+ifapi_null_primary_p(const char *path) {
     size_t pos1 = 0;
     size_t pos2 = 0;
-    char *start;
+    char  *start;
 
     if (strncmp("/", path, 1) == 0)
         pos1 = 1;
@@ -376,8 +358,8 @@ ifapi_null_primary_p(const char *path)
         }
     }
     /* Check whether there is only one name after the hiearchy. */
-    if (strncasecmp(&path[pos1 + pos2], "HN/", 3) == 0 &&
-        !strchr(&path[pos1 + pos2 + 3], IFAPI_FILE_DELIM_CHAR)) {
+    if (strncasecmp(&path[pos1 + pos2], "HN/", 3) == 0
+        && !strchr(&path[pos1 + pos2 + 3], IFAPI_FILE_DELIM_CHAR)) {
         return true;
     } else {
         return false;
@@ -395,11 +377,10 @@ ifapi_null_primary_p(const char *path)
  * @retval false if not.
  */
 bool
-ifapi_hierarchy_path_p(const char *path)
-{
+ifapi_hierarchy_path_p(const char *path) {
     size_t pos1 = 0;
     size_t pos2 = 0;
-    char *start;
+    char  *start;
 
     if (strncmp("/", path, 1) == 0)
         pos1 = 1;
@@ -415,17 +396,17 @@ ifapi_hierarchy_path_p(const char *path)
         }
     }
     /* Check whether only hierarchy is specified in path */
-    if ((strncasecmp(&path[pos1 + pos2], "HS", 2) == 0 ||
-         strncasecmp(&path[pos1 + pos2], "HE", 2) == 0 ||
-         strncasecmp(&path[pos1 + pos2], "HN", 2) == 0)
-        && (strlen(path) == pos1 + pos2 + 2 ||
-            (strlen(path) == pos1 + pos2 + 3 &&
-             path[pos1 + pos2 + 2] == IFAPI_FILE_DELIM_CHAR))){
+    if ((strncasecmp(&path[pos1 + pos2], "HS", 2) == 0
+         || strncasecmp(&path[pos1 + pos2], "HE", 2) == 0
+         || strncasecmp(&path[pos1 + pos2], "HN", 2) == 0)
+        && (strlen(path) == pos1 + pos2 + 2
+            || (strlen(path) == pos1 + pos2 + 3
+                && path[pos1 + pos2 + 2] == IFAPI_FILE_DELIM_CHAR))) {
         return true;
     } else if (strncasecmp(&path[pos1 + pos2], "LOCKOUT", 7) == 0
-               && (strlen(path) == pos1 + pos2 + 7 ||
-                   (strlen(path) == pos1 + pos2 + 8 &&
-                    path[pos1 + pos2 + 7] == IFAPI_FILE_DELIM_CHAR))) {
+               && (strlen(path) == pos1 + pos2 + 7
+                   || (strlen(path) == pos1 + pos2 + 8
+                       && path[pos1 + pos2 + 7] == IFAPI_FILE_DELIM_CHAR))) {
         return true;
     }
     return false;
@@ -440,9 +421,7 @@ ifapi_hierarchy_path_p(const char *path)
  * @retval false if not.
  */
 bool
-ifapi_TPM2B_ECC_PARAMETER_cmp(TPM2B_ECC_PARAMETER *in1,
-                              TPM2B_ECC_PARAMETER *in2)
-{
+ifapi_TPM2B_ECC_PARAMETER_cmp(TPM2B_ECC_PARAMETER *in1, TPM2B_ECC_PARAMETER *in2) {
 
     if (in1->size != in2->size)
         return false;
@@ -459,8 +438,7 @@ ifapi_TPM2B_ECC_PARAMETER_cmp(TPM2B_ECC_PARAMETER *in1,
  * @retval false if not.
  */
 bool
-ifapi_TPMS_ECC_POINT_cmp(TPMS_ECC_POINT *in1, TPMS_ECC_POINT *in2)
-{
+ifapi_TPMS_ECC_POINT_cmp(TPMS_ECC_POINT *in1, TPMS_ECC_POINT *in2) {
     LOG_TRACE("call");
 
     if (!ifapi_TPM2B_ECC_PARAMETER_cmp(&in1->x, &in2->x))
@@ -481,8 +459,7 @@ ifapi_TPMS_ECC_POINT_cmp(TPMS_ECC_POINT *in1, TPMS_ECC_POINT *in2)
  * @retval false if not.
  */
 bool
-ifapi_TPM2B_DIGEST_cmp(TPM2B_DIGEST *in1, TPM2B_DIGEST *in2)
-{
+ifapi_TPM2B_DIGEST_cmp(TPM2B_DIGEST *in1, TPM2B_DIGEST *in2) {
 
     if (in1->size != in2->size)
         return false;
@@ -499,9 +476,7 @@ ifapi_TPM2B_DIGEST_cmp(TPM2B_DIGEST *in1, TPM2B_DIGEST *in2)
  * @retval false if not.
  */
 bool
-ifapi_TPM2B_PUBLIC_KEY_RSA_cmp(TPM2B_PUBLIC_KEY_RSA *in1,
-                               TPM2B_PUBLIC_KEY_RSA *in2)
-{
+ifapi_TPM2B_PUBLIC_KEY_RSA_cmp(TPM2B_PUBLIC_KEY_RSA *in1, TPM2B_PUBLIC_KEY_RSA *in2) {
 
     if (in1->size != in2->size)
         return false;
@@ -520,9 +495,10 @@ ifapi_TPM2B_PUBLIC_KEY_RSA_cmp(TPM2B_PUBLIC_KEY_RSA *in1,
  * @result false if not.
  */
 bool
-ifapi_TPMU_PUBLIC_ID_cmp(TPMU_PUBLIC_ID *in1, UINT32 selector1,
-                         TPMU_PUBLIC_ID *in2, UINT32 selector2)
-{
+ifapi_TPMU_PUBLIC_ID_cmp(TPMU_PUBLIC_ID *in1,
+                         UINT32          selector1,
+                         TPMU_PUBLIC_ID *in2,
+                         UINT32          selector2) {
 
     if (selector1 != selector2)
         return false;
@@ -559,8 +535,7 @@ ifapi_TPMU_PUBLIC_ID_cmp(TPMU_PUBLIC_ID *in1, UINT32 selector1,
  * @retval false if not.
  */
 bool
-ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2)
-{
+ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2) {
 
     if (!ifapi_TPMU_PUBLIC_ID_cmp(&in1->unique, in1->type, &in2->unique, in2->type))
         return false;
@@ -581,18 +556,17 @@ ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2)
  * @retval -1 if not enough memory can be allocated.
  */
 int
-vasprintf(char **str, const char *fmt, va_list args)
-{
-    int size = 0;
+vasprintf(char **str, const char *fmt, va_list args) {
+    int     size = 0;
     va_list tmpa;
-    char *dmy = NULL;
+    char   *dmy = NULL;
     va_copy(tmpa, args);
     size = vsnprintf(dmy, size, fmt, tmpa);
     va_end(tmpa);
     if (size < 0) {
         return -1;
     }
-    *str = (char *) malloc(size + 1);
+    *str = (char *)malloc(size + 1);
     if (NULL == *str) {
         return -1;
     }
@@ -613,9 +587,8 @@ vasprintf(char **str, const char *fmt, va_list args)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_asprintf(char **str, const char *fmt, ...)
-{
-    int size = 0;
+ifapi_asprintf(char **str, const char *fmt, ...) {
+    int     size = 0;
     va_list args;
     va_start(args, fmt);
     size = vasprintf(str, fmt, args);
@@ -634,13 +607,12 @@ ifapi_asprintf(char **str, const char *fmt, ...)
  * @retval NULL if the list cannot be created.
  */
 NODE_STR_T *
-split_string(const char *string, char *delimiter)
-{
+split_string(const char *string, char *delimiter) {
     NODE_STR_T *node = NULL;
     NODE_STR_T *start_node = NULL;
-    char *strtok_save = NULL;
-    char *stringdup = NULL;
-    char *substr = NULL;
+    char       *strtok_save = NULL;
+    char       *stringdup = NULL;
+    char       *substr = NULL;
     if (string == NULL)
         return NULL;
 
@@ -704,8 +676,7 @@ error_cleanup:
  * @param[in] node the first node of the linked list.
  */
 void
-free_string_list(NODE_STR_T *node)
-{
+free_string_list(NODE_STR_T *node) {
     NODE_STR_T *next;
     if (node == NULL)
         return;
@@ -723,8 +694,7 @@ free_string_list(NODE_STR_T *node)
  * @param[in] node the first node of the linked list.
  */
 void
-ifapi_free_object_list(NODE_OBJECT_T *node)
-{
+ifapi_free_object_list(NODE_OBJECT_T *node) {
     NODE_OBJECT_T *next;
     if (node == NULL)
         return;
@@ -742,8 +712,7 @@ ifapi_free_object_list(NODE_OBJECT_T *node)
  * @param[in] node the first node of the linked list.
  */
 void
-ifapi_free_node_list(NODE_OBJECT_T *node)
-{
+ifapi_free_node_list(NODE_OBJECT_T *node) {
     NODE_OBJECT_T *next;
     if (node == NULL)
         return;
@@ -761,8 +730,7 @@ ifapi_free_node_list(NODE_OBJECT_T *node)
  * @retval the number on nodes.
  */
 size_t
-ifapi_path_length(NODE_STR_T *node)
-{
+ifapi_path_length(NODE_STR_T *node) {
     size_t length = 0;
     if (node == NULL)
         return 0;
@@ -781,8 +749,7 @@ ifapi_path_length(NODE_STR_T *node)
  * @retval the size of the string.
  */
 static size_t
-path_str_length(NODE_STR_T *node, int delim_length)
-{
+path_str_length(NODE_STR_T *node, int delim_length) {
     size_t size = 0;
     if (node == NULL)
         return 0;
@@ -806,10 +773,8 @@ path_str_length(NODE_STR_T *node, int delim_length)
  * @retval TSS2_FAPI_RC_MEMORY if the memory for the pathname can't be allocated.
  */
 TSS2_RC
-ifapi_path_string(char **dest, const char *supdir, NODE_STR_T *node, char *name)
-{
-    size_t length = 1 + path_str_length(node,
-                                        1) + ((supdir == NULL) ? 0 : strlen(supdir) + 1)
+ifapi_path_string(char **dest, const char *supdir, NODE_STR_T *node, char *name) {
+    size_t length = 1 + path_str_length(node, 1) + ((supdir == NULL) ? 0 : strlen(supdir) + 1)
                     + ((name == NULL) ? 0 : strlen(name) + 1);
     *dest = malloc(length);
     if (*dest == NULL) {
@@ -834,7 +799,6 @@ ifapi_path_string(char **dest, const char *supdir, NODE_STR_T *node, char *name)
     return TSS2_RC_SUCCESS;
 }
 
-
 /** Compute a pathname based on the first n elements of a linked list of strings.
  *
  * @param[out] dest the pointer to the pathname (callee allocated).
@@ -847,11 +811,8 @@ ifapi_path_string(char **dest, const char *supdir, NODE_STR_T *node, char *name)
  * @retval TSS2_FAPI_RC_MEMORY if the memory for the pathname can't be allocated.
  */
 TSS2_RC
-ifapi_path_string_n(char **dest, const char *supdir, NODE_STR_T *node, char *name,
-                    size_t n)
-{
-    size_t length = 1 + path_str_length(node,
-                                        1) + ((supdir == NULL) ? 0 : strlen(supdir) + 1)
+ifapi_path_string_n(char **dest, const char *supdir, NODE_STR_T *node, char *name, size_t n) {
+    size_t length = 1 + path_str_length(node, 1) + ((supdir == NULL) ? 0 : strlen(supdir) + 1)
                     + ((name == NULL) ? 0 : strlen(name) + 1);
     *dest = malloc(length);
     size_t i;
@@ -889,8 +850,7 @@ ifapi_path_string_n(char **dest, const char *supdir, NODE_STR_T *node, char *nam
  * @retval NULL if the list cannot be created.
  */
 NODE_STR_T *
-init_string_list(const char *string)
-{
+init_string_list(const char *string) {
     NODE_STR_T *result = malloc(sizeof(NODE_STR_T));
     if (result == NULL)
         return NULL;
@@ -916,8 +876,7 @@ init_string_list(const char *string)
  * @retval false if the list could not be extended.
  */
 bool
-add_string_to_list(NODE_STR_T *str_list, char *string)
-{
+add_string_to_list(NODE_STR_T *str_list, char *string) {
     if (str_list == NULL)
         return NULL;
     NODE_STR_T *last = malloc(sizeof(NODE_STR_T));
@@ -943,8 +902,7 @@ add_string_to_list(NODE_STR_T *str_list, char *string)
  *         be allocated.
  */
 TSS2_RC
-push_object_to_list(void *object, NODE_OBJECT_T **object_list)
-{
+push_object_to_list(void *object, NODE_OBJECT_T **object_list) {
     NODE_OBJECT_T *first = calloc(1, sizeof(NODE_OBJECT_T));
     return_if_null(first, "Out of space.", TSS2_FAPI_RC_MEMORY);
     first->object = object;
@@ -964,8 +922,7 @@ push_object_to_list(void *object, NODE_OBJECT_T **object_list)
  *         be allocated.
  */
 TSS2_RC
-append_object_to_list(void *object, NODE_OBJECT_T **object_list)
-{
+append_object_to_list(void *object, NODE_OBJECT_T **object_list) {
     NODE_OBJECT_T *list;
     NODE_OBJECT_T *last = calloc(1, sizeof(NODE_OBJECT_T));
     return_if_null(last, "Out of space.", TSS2_FAPI_RC_MEMORY);
@@ -989,10 +946,9 @@ append_object_to_list(void *object, NODE_OBJECT_T **object_list)
  * @param[in,out] hierarchy The hierarchy object.
  */
 static void
-set_name_hierarchy_object(IFAPI_OBJECT *object)
-{
+set_name_hierarchy_object(IFAPI_OBJECT *object) {
     TPM2_HANDLE handle = 0;
-    size_t offset = 0;
+    size_t      offset = 0;
     switch (object->public.handle) {
     case ESYS_TR_RH_NULL:
         handle = TPM2_RH_NULL;
@@ -1018,8 +974,7 @@ set_name_hierarchy_object(IFAPI_OBJECT *object)
         handle = 0xFFFFFFFF;
         break;
     }
-    Tss2_MU_TPM2_HANDLE_Marshal(handle,
-                                &object->misc.hierarchy.name.name[0], sizeof(TPM2_HANDLE),
+    Tss2_MU_TPM2_HANDLE_Marshal(handle, &object->misc.hierarchy.name.name[0], sizeof(TPM2_HANDLE),
                                 &offset);
     object->misc.hierarchy.name.size = offset;
 }
@@ -1035,10 +990,7 @@ set_name_hierarchy_object(IFAPI_OBJECT *object)
  *            to the object.
  */
 void
-ifapi_init_hierarchy_object(
-    IFAPI_OBJECT *hierarchy,
-    ESYS_TR esys_handle)
-{
+ifapi_init_hierarchy_object(IFAPI_OBJECT *hierarchy, ESYS_TR esys_handle) {
     memset(hierarchy, 0, sizeof(IFAPI_OBJECT));
     hierarchy->system = TPM2_YES;
     hierarchy->objectType = IFAPI_HIERARCHY_OBJ;
@@ -1057,17 +1009,16 @@ ifapi_init_hierarchy_object(
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE For an invalid hierarchy path.
  */
 TSS2_RC
-ifapi_set_name_hierarchy_object(IFAPI_OBJECT *object)
-{
+ifapi_set_name_hierarchy_object(IFAPI_OBJECT *object) {
     const char *path = object->rel_path;
-    size_t pos = 0, pos2;
+    size_t      pos = 0, pos2;
     if (path) {
         /* Determine esys handle from pathname. */
         if (strncmp("/", &path[0], 1) == 0)
             pos += 1;
         /* Skip profile if it does exist in path */
         if (strncmp("P_", &path[pos], 2) == 0) {
-            char *  start = strchr(&path[pos], IFAPI_FILE_DELIM_CHAR);
+            char *start = strchr(&path[pos], IFAPI_FILE_DELIM_CHAR);
             if (start) {
                 pos2 = (int)(start - &path[pos]);
                 pos = pos2 + 2;
@@ -1084,7 +1035,7 @@ ifapi_set_name_hierarchy_object(IFAPI_OBJECT *object)
         } else if (strcmp(&path[pos], "LOCKOUT") == 0) {
             object->public.handle = ESYS_TR_RH_LOCKOUT;
             object->misc.hierarchy.esysHandle = ESYS_TR_RH_LOCKOUT;
-        } else  if (strcmp(&path[pos], "HN") == 0) {
+        } else if (strcmp(&path[pos], "HN") == 0) {
             object->public.handle = ESYS_TR_RH_NULL;
             object->misc.hierarchy.esysHandle = ESYS_TR_RH_NULL;
         }
@@ -1105,8 +1056,7 @@ ifapi_set_name_hierarchy_object(IFAPI_OBJECT *object)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
-create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode)
-{
+create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode) {
     char *new_dir;
     for (size_t i = 1; i <= ifapi_path_length(dir_list); i++) {
         TSS2_RC r = ifapi_path_string_n(&new_dir, supdir, dir_list, NULL, i);
@@ -1134,9 +1084,8 @@ create_dirs(const char *supdir, NODE_STR_T *dir_list, mode_t mode)
  * @retval TSS2_FAPI_RC_BAD_VALUE: If a directory cannot be created.
  */
 TSS2_RC
-ifapi_create_dirs(const char *supdir, const char *path)
-{
-    TSS2_RC r;
+ifapi_create_dirs(const char *supdir, const char *path) {
+    TSS2_RC     r;
     NODE_STR_T *path_list = split_string(path, IFAPI_FILE_DELIM);
     return_if_null(path_list, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
@@ -1162,8 +1111,7 @@ error_cleanup:
  * @retval false: If not.
  */
 bool
-object_with_auth(IFAPI_OBJECT *object)
-{
+object_with_auth(IFAPI_OBJECT *object) {
     switch (object->objectType) {
     case IFAPI_KEY_OBJ:
         return (object->misc.key.with_auth == TPM2_YES);
@@ -1183,46 +1131,45 @@ object_with_auth(IFAPI_OBJECT *object)
  * @param[in] policy The policy element.
  */
 static void
-cleanup_policy_element(TPMT_POLICYELEMENT *policy)
-{
-        switch (policy->type) {
-        case POLICYSECRET:
-            SAFE_FREE(policy->element.PolicySecret.objectPath);
-            break;
-        case POLICYAUTHORIZE:
-            SAFE_FREE(policy->element.PolicyAuthorize.keyPath);
-            SAFE_FREE(policy->element.PolicyAuthorize.keyPEM);
-            break;
-        case POLICYAUTHORIZENV:
-            SAFE_FREE( policy->element.PolicyAuthorizeNv.nvPath);
-            SAFE_FREE( policy->element.PolicyAuthorizeNv.policy_buffer);
-            break;
-        case POLICYSIGNED:
-            SAFE_FREE(policy->element.PolicySigned.keyPath);
-            SAFE_FREE(policy->element.PolicySigned.keyPEM);
-            SAFE_FREE(policy->element.PolicySigned.publicKeyHint);
-            break;
-        case POLICYPCR:
-            SAFE_FREE(policy->element.PolicyPCR.pcrs);
-            break;
-        case POLICYNV:
-            SAFE_FREE(policy->element.PolicyNV.nvPath);
-            break;
-        case POLICYDUPLICATIONSELECT:
-            SAFE_FREE(policy->element.PolicyDuplicationSelect.newParentPath);
-            break;
-        case POLICYNAMEHASH:
-            for (size_t i = 0; i < 3; i++) {
-                SAFE_FREE(policy->element.PolicyNameHash.namePaths[i]);
-            }
-            break;
-        case POLICYACTION:
-            SAFE_FREE(policy->element.PolicyAction.action);
-            break;
-        default:
-            /* Other policies do not need additional cleanup */
-            break;
+cleanup_policy_element(TPMT_POLICYELEMENT *policy) {
+    switch (policy->type) {
+    case POLICYSECRET:
+        SAFE_FREE(policy->element.PolicySecret.objectPath);
+        break;
+    case POLICYAUTHORIZE:
+        SAFE_FREE(policy->element.PolicyAuthorize.keyPath);
+        SAFE_FREE(policy->element.PolicyAuthorize.keyPEM);
+        break;
+    case POLICYAUTHORIZENV:
+        SAFE_FREE(policy->element.PolicyAuthorizeNv.nvPath);
+        SAFE_FREE(policy->element.PolicyAuthorizeNv.policy_buffer);
+        break;
+    case POLICYSIGNED:
+        SAFE_FREE(policy->element.PolicySigned.keyPath);
+        SAFE_FREE(policy->element.PolicySigned.keyPEM);
+        SAFE_FREE(policy->element.PolicySigned.publicKeyHint);
+        break;
+    case POLICYPCR:
+        SAFE_FREE(policy->element.PolicyPCR.pcrs);
+        break;
+    case POLICYNV:
+        SAFE_FREE(policy->element.PolicyNV.nvPath);
+        break;
+    case POLICYDUPLICATIONSELECT:
+        SAFE_FREE(policy->element.PolicyDuplicationSelect.newParentPath);
+        break;
+    case POLICYNAMEHASH:
+        for (size_t i = 0; i < 3; i++) {
+            SAFE_FREE(policy->element.PolicyNameHash.namePaths[i]);
         }
+        break;
+    case POLICYACTION:
+        SAFE_FREE(policy->element.PolicyAction.action);
+        break;
+    default:
+        /* Other policies do not need additional cleanup */
+        break;
+    }
 }
 
 /** Free memory allocated during deserialization of a a policy element list.
@@ -1232,8 +1179,7 @@ cleanup_policy_element(TPMT_POLICYELEMENT *policy)
  * @param[in] policy The policy element list.
  */
 static void
-cleanup_policy_elements(TPML_POLICYELEMENTS *policy)
-{
+cleanup_policy_elements(TPML_POLICYELEMENTS *policy) {
     size_t i, j;
     if (policy != NULL) {
         for (i = 0; i < policy->count; i++) {
@@ -1262,8 +1208,7 @@ cleanup_policy_elements(TPML_POLICYELEMENTS *policy)
  *
  */
 void
-ifapi_cleanup_policy(TPMS_POLICY *policy)
-{
+ifapi_cleanup_policy(TPMS_POLICY *policy) {
     if (policy) {
         SAFE_FREE(policy->description);
         if (policy->policyAuthorizations) {
@@ -1280,8 +1225,7 @@ ifapi_cleanup_policy(TPMS_POLICY *policy)
     }
 }
 
-static TPML_POLICYELEMENTS *
-copy_policy_elements(const TPML_POLICYELEMENTS *from_policy);
+static TPML_POLICYELEMENTS *copy_policy_elements(const TPML_POLICYELEMENTS *from_policy);
 
 /** Copy policy structure.
  *
@@ -1292,8 +1236,7 @@ copy_policy_elements(const TPML_POLICYELEMENTS *from_policy);
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TSS2_RC
-copy_policy(TPMS_POLICY * dest,
-        const TPMS_POLICY * src) {
+copy_policy(TPMS_POLICY *dest, const TPMS_POLICY *src) {
     /* Check for NULL references */
     if (dest == NULL || src == NULL) {
         return TSS2_FAPI_RC_MEMORY;
@@ -1303,8 +1246,7 @@ copy_policy(TPMS_POLICY * dest,
     dest->description = NULL;
     strdup_check(dest->description, src->description, r, error_cleanup);
     dest->policy = copy_policy_elements(src->policy);
-    goto_if_null2(dest->policy, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-            error_cleanup);
+    goto_if_null2(dest->policy, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
 
     return r;
 error_cleanup:
@@ -1321,13 +1263,12 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TPML_POLICYBRANCHES *
-copy_policy_branches(const TPML_POLICYBRANCHES *from_branches)
-{
+copy_policy_branches(const TPML_POLICYBRANCHES *from_branches) {
     TPML_POLICYBRANCHES *to_branches;
-    size_t j;
+    size_t               j;
 
-    to_branches = calloc(1, sizeof(TPML_POLICYBRANCHES) +
-                         from_branches->count * sizeof(TPMS_POLICYBRANCH));
+    to_branches
+        = calloc(1, sizeof(TPML_POLICYBRANCHES) + from_branches->count * sizeof(TPMS_POLICYBRANCH));
     if (!to_branches)
         return NULL;
     to_branches->count = from_branches->count;
@@ -1335,19 +1276,19 @@ copy_policy_branches(const TPML_POLICYBRANCHES *from_branches)
         to_branches->authorizations[j].name = strdup(from_branches->authorizations[j].name);
         if (!to_branches->authorizations[j].name)
             goto error;
-        to_branches->authorizations[j].description =
-            strdup(from_branches->authorizations[j].description);
+        to_branches->authorizations[j].description
+            = strdup(from_branches->authorizations[j].description);
         if (!to_branches->authorizations[j].description)
             goto error;
-        to_branches->authorizations[j].policy =
-            copy_policy_elements(from_branches->authorizations[j].policy);
+        to_branches->authorizations[j].policy
+            = copy_policy_elements(from_branches->authorizations[j].policy);
         if (to_branches->authorizations[j].policy == NULL
             && from_branches->authorizations[j].policy != NULL) {
             LOG_ERROR("Out of memory.");
             goto error;
         }
-        to_branches->authorizations[j].policyDigests =
-            from_branches->authorizations[j].policyDigests;
+        to_branches->authorizations[j].policyDigests
+            = from_branches->authorizations[j].policyDigests;
     }
     return to_branches;
 
@@ -1374,8 +1315,7 @@ error:
  * @retval TSS2_FAPI_RC_MEMORY: If not enough memory can be allocated.
  */
 static TSS2_RC
-copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *to_policy)
-{
+copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *to_policy) {
     if (from_policy == NULL || to_policy == NULL) {
         return TSS2_FAPI_RC_BAD_REFERENCE;
     }
@@ -1408,25 +1348,23 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
                      from_policy->element.PolicySigned.publicKeyHint, r, error);
         break;
     case POLICYPCR:
-        to_policy->element.PolicyPCR.pcrs =
-            calloc(1, sizeof(TPML_PCRVALUES) +
-                   from_policy->element.PolicyPCR.pcrs->count * sizeof(TPMS_PCRVALUE));
-        goto_if_null2(to_policy->element.PolicyPCR.pcrs, "Out of memory.",
-                      r, TSS2_FAPI_RC_MEMORY, error);
-        to_policy->element.PolicyPCR.pcrs->count
-            = from_policy->element.PolicyPCR.pcrs->count;
+        to_policy->element.PolicyPCR.pcrs
+            = calloc(1, sizeof(TPML_PCRVALUES)
+                            + from_policy->element.PolicyPCR.pcrs->count * sizeof(TPMS_PCRVALUE));
+        goto_if_null2(to_policy->element.PolicyPCR.pcrs, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
+                      error);
+        to_policy->element.PolicyPCR.pcrs->count = from_policy->element.PolicyPCR.pcrs->count;
         for (i = 0; i < to_policy->element.PolicyPCR.pcrs->count; i++)
             to_policy->element.PolicyPCR.pcrs->pcrs[i]
                 = from_policy->element.PolicyPCR.pcrs->pcrs[i];
         break;
     case POLICYNV:
-        strdup_check(to_policy->element.PolicyNV.nvPath,
-                     from_policy->element.PolicyNV.nvPath, r, error);
+        strdup_check(to_policy->element.PolicyNV.nvPath, from_policy->element.PolicyNV.nvPath, r,
+                     error);
         break;
     case POLICYDUPLICATIONSELECT:
         strdup_check(to_policy->element.PolicyDuplicationSelect.newParentPath,
-                     from_policy->element.PolicyDuplicationSelect.newParentPath,
-                     r, error);
+                     from_policy->element.PolicyDuplicationSelect.newParentPath, r, error);
         break;
     case POLICYACTION:
         strdup_check(to_policy->element.PolicyAction.action,
@@ -1435,8 +1373,7 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
     case POLICYNAMEHASH:
         for (i = 0; i < from_policy->element.PolicyNameHash.count; i++) {
             strdup_check(to_policy->element.PolicyNameHash.namePaths[i],
-                    from_policy->element.PolicyNameHash.namePaths[i],
-                    r, error);
+                         from_policy->element.PolicyNameHash.namePaths[i], r, error);
         }
         break;
     default:
@@ -1458,17 +1395,16 @@ error:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 static TPML_POLICYELEMENTS *
-copy_policy_elements(const TPML_POLICYELEMENTS *from_policy)
-{
+copy_policy_elements(const TPML_POLICYELEMENTS *from_policy) {
     if (from_policy == NULL) {
         return NULL;
     }
-    TSS2_RC r;
-    size_t i;
+    TSS2_RC              r;
+    size_t               i;
     TPML_POLICYELEMENTS *to_policy = NULL;
 
-    to_policy = calloc(1, sizeof(TPML_POLICYELEMENTS) +
-                       from_policy->count * sizeof(TPMT_POLICYELEMENT));
+    to_policy
+        = calloc(1, sizeof(TPML_POLICYELEMENTS) + from_policy->count * sizeof(TPMT_POLICYELEMENT));
     to_policy->count = from_policy->count;
     for (i = 0; i < from_policy->count; i++) {
         if (from_policy->elements[i].type == POLICYOR) {
@@ -1500,9 +1436,7 @@ copy_policy_elements(const TPML_POLICYELEMENTS *from_policy)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TPMS_POLICY *
-ifapi_copy_policy(
-    const TPMS_POLICY *from_policy)
-{
+ifapi_copy_policy(const TPMS_POLICY *from_policy) {
     if (from_policy == NULL) {
         return NULL;
     }
@@ -1534,12 +1468,11 @@ ifapi_copy_policy(
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
-ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
-{
-    BYTE buffer[sizeof(TPMT_PUBLIC)];
-    size_t offset = 0;
-    size_t len_alg_id = sizeof(TPMI_ALG_HASH);
-    size_t size = sizeof(TPMU_NAME) - sizeof(TPMI_ALG_HASH);
+ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name) {
+    BYTE                       buffer[sizeof(TPMT_PUBLIC)];
+    size_t                     offset = 0;
+    size_t                     len_alg_id = sizeof(TPMI_ALG_HASH);
+    size_t                     size = sizeof(TPMU_NAME) - sizeof(TPMI_ALG_HASH);
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
 
     if (publicInfo->nameAlg == TPM2_ALG_NULL) {
@@ -1550,8 +1483,7 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
     r = ifapi_crypto_hash_start(&cryptoContext, publicInfo->nameAlg);
     return_if_error(r, "crypto hash start");
 
-    r = Tss2_MU_TPMT_PUBLIC_Marshal(publicInfo,
-                                    &buffer[0], sizeof(TPMT_PUBLIC), &offset);
+    r = Tss2_MU_TPMT_PUBLIC_Marshal(publicInfo, &buffer[0], sizeof(TPMT_PUBLIC), &offset);
     if (r) {
         LOG_ERROR("Marshaling TPMT_PUBLIC");
         ifapi_crypto_hash_abort(&cryptoContext);
@@ -1565,8 +1497,7 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
         return r;
     }
 
-    r = ifapi_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id],
-                                 &size);
+    r = ifapi_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id], &size);
     if (r) {
         LOG_ERROR("crypto hash finish");
         ifapi_crypto_hash_abort(&cryptoContext);
@@ -1574,8 +1505,7 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
     }
 
     offset = 0;
-    r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->nameAlg,
-                                      &name->name[0], sizeof(TPMI_ALG_HASH),
+    r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->nameAlg, &name->name[0], sizeof(TPMI_ALG_HASH),
                                       &offset);
     return_if_error(r, "Marshaling TPMI_ALG_HASH");
 
@@ -1597,12 +1527,11 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name)
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
-ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
-{
-    BYTE buffer[sizeof(TPMS_NV_PUBLIC)];
-    size_t offset = 0;
-    size_t size = sizeof(TPMU_NAME) - sizeof(TPMI_ALG_HASH);
-    size_t len_alg_id = sizeof(TPMI_ALG_HASH);
+ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name) {
+    BYTE                       buffer[sizeof(TPMS_NV_PUBLIC)];
+    size_t                     offset = 0;
+    size_t                     size = sizeof(TPMU_NAME) - sizeof(TPMI_ALG_HASH);
+    size_t                     len_alg_id = sizeof(TPMI_ALG_HASH);
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
 
     if (publicInfo->nameAlg == TPM2_ALG_NULL) {
@@ -1616,9 +1545,7 @@ ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
     return_if_error(r, "Crypto hash start");
 
     /* Get the marshaled data of the public area. */
-    r = Tss2_MU_TPMS_NV_PUBLIC_Marshal(publicInfo,
-                                       &buffer[0], sizeof(TPMS_NV_PUBLIC),
-                                       &offset);
+    r = Tss2_MU_TPMS_NV_PUBLIC_Marshal(publicInfo, &buffer[0], sizeof(TPMS_NV_PUBLIC), &offset);
     if (r) {
         LOG_ERROR("Marshaling TPMS_NV_PUBLIC");
         ifapi_crypto_hash_abort(&cryptoContext);
@@ -1633,8 +1560,7 @@ ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
     }
 
     /* The hash will be stored after the nameAlg.*/
-    r = ifapi_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id],
-                                 &size);
+    r = ifapi_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id], &size);
     if (r) {
         LOG_ERROR("crypto hash finish");
         ifapi_crypto_hash_abort(&cryptoContext);
@@ -1643,8 +1569,7 @@ ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
 
     offset = 0;
     /* Store the nameAlg in the result. */
-    r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->nameAlg,
-                                      &name->name[0], sizeof(TPMI_ALG_HASH),
+    r = Tss2_MU_TPMI_ALG_HASH_Marshal(publicInfo->nameAlg, &name->name[0], sizeof(TPMI_ALG_HASH),
                                       &offset);
     return_if_error(r, "Marshaling TPMI_ALG_HASH");
 
@@ -1665,12 +1590,11 @@ ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name)
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
-ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal)
-{
+ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal) {
     TSS2_RC r;
     *equal = false;
     TPM2B_NAME *obj_name;
-    TPM2B_NAME nv_name;
+    TPM2B_NAME  nv_name;
 
     switch (object->objectType) {
     case IFAPI_HIERARCHY_OBJ:
@@ -1706,8 +1630,7 @@ ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal)
  * @retval TSS2_RC_SUCCESSS if name of object can be deserialized.
  */
 TSS2_RC
-ifapi_object_cmp_nv_public(IFAPI_OBJECT *object, void *nv_public, bool *equal)
-{
+ifapi_object_cmp_nv_public(IFAPI_OBJECT *object, void *nv_public, bool *equal) {
     *equal = false;
 
     switch (object->objectType) {
@@ -1743,12 +1666,10 @@ ifapi_object_cmp_nv_public(IFAPI_OBJECT *object, void *nv_public, bool *equal)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_tpm_to_fapi_signature(
-    IFAPI_OBJECT *sig_key_object,
-    TPMT_SIGNATURE *tpm_signature,
-    uint8_t **signature,
-    size_t *signatureSize)
-{
+ifapi_tpm_to_fapi_signature(IFAPI_OBJECT   *sig_key_object,
+                            TPMT_SIGNATURE *tpm_signature,
+                            uint8_t       **signature,
+                            size_t         *signatureSize) {
     TSS2_RC r;
 
     *signature = NULL;
@@ -1762,23 +1683,18 @@ ifapi_tpm_to_fapi_signature(
             *signature = malloc(*signatureSize);
             goto_if_null(*signature, "Out of memory.", TSS2_FAPI_RC_MEMORY, error_cleanup);
 
-            memcpy(*signature,
-                   &tpm_signature->signature.rsapss.sig.buffer[0],
-                   *signatureSize);
+            memcpy(*signature, &tpm_signature->signature.rsapss.sig.buffer[0], *signatureSize);
         } else if (sig_scheme->scheme == TPM2_ALG_RSASSA) {
             *signatureSize = tpm_signature->signature.rsassa.sig.size;
             *signature = malloc(*signatureSize);
             goto_if_null(*signature, "Out of memory.", TSS2_FAPI_RC_MEMORY, error_cleanup);
 
-            memcpy(*signature,
-                   &tpm_signature->signature.rsassa.sig.buffer[0],
-                   *signatureSize);
+            memcpy(*signature, &tpm_signature->signature.rsassa.sig.buffer[0], *signatureSize);
         }
-    } else if (sig_key_object->misc.key.public.publicArea.type == TPM2_ALG_ECC &&
-               sig_scheme->scheme == TPM2_ALG_ECDSA) {
+    } else if (sig_key_object->misc.key.public.publicArea.type == TPM2_ALG_ECC
+               && sig_scheme->scheme == TPM2_ALG_ECDSA) {
         /* For ECC signatures the TPM signaute has to be converted to DER. */
-        r = ifapi_tpm_ecc_sig_to_der(tpm_signature,
-                                     signature, signatureSize);
+        r = ifapi_tpm_ecc_sig_to_der(tpm_signature, signature, signatureSize);
         goto_if_error(r, "Conversion to DER failed", error_cleanup);
     } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unknown signature scheme", error_cleanup);
@@ -1812,20 +1728,17 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_compute_quote_info(
-    IFAPI_OBJECT *sig_key_object,
-    TPM2B_ATTEST *tpm_quoted,
-    FAPI_QUOTE_INFO *fapi_quote_info,
-    char **quoteInfo)
-{
+ifapi_compute_quote_info(IFAPI_OBJECT    *sig_key_object,
+                         TPM2B_ATTEST    *tpm_quoted,
+                         FAPI_QUOTE_INFO *fapi_quote_info,
+                         char           **quoteInfo) {
     json_object *jso = NULL;
-    TSS2_RC r;
-    size_t offset = 0;
-    TPMS_ATTEST attest_struct;
+    TSS2_RC      r;
+    size_t       offset = 0;
+    TPMS_ATTEST  attest_struct;
 
     /* The TPM2B_ATTEST contains the marshaled TPMS_ATTEST structure. */
-    r = Tss2_MU_TPMS_ATTEST_Unmarshal((const uint8_t *)
-                                      &tpm_quoted->attestationData[0],
+    r = Tss2_MU_TPMS_ATTEST_Unmarshal((const uint8_t *)&tpm_quoted->attestationData[0],
                                       tpm_quoted->size, &offset, &attest_struct);
     return_if_error(r, "Unmarshal TPMS_ATTEST.");
 
@@ -1836,10 +1749,8 @@ ifapi_compute_quote_info(
     return_if_error(r, "Conversion to TPM2B_ATTEST to JSON.");
 
     /* The intermediate structure of type FAPI_QOTE_INFO will be serialized. */
-    const char *quote_json = json_object_to_json_string_ext(jso,
-                             JSON_C_TO_STRING_PRETTY);
-    goto_if_null(quote_json, "Conversion attest to json.",
-                 TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+    const char *quote_json = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
+    goto_if_null(quote_json, "Conversion attest to json.", TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
 
     *quoteInfo = strdup(quote_json);
     goto_if_null(*quoteInfo, "Out of memory.", TSS2_FAPI_RC_MEMORY, cleanup);
@@ -1868,32 +1779,27 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_get_quote_info(
-    char const *quoteInfo,
-    TPM2B_ATTEST *tpm_quoted,
-    FAPI_QUOTE_INFO *fapi_quote_info)
-{
+ifapi_get_quote_info(char const      *quoteInfo,
+                     TPM2B_ATTEST    *tpm_quoted,
+                     FAPI_QUOTE_INFO *fapi_quote_info) {
     json_object *jso = NULL;
-    TSS2_RC r;
-    size_t offset = 0;
+    TSS2_RC      r;
+    size_t       offset = 0;
 
     jso = ifapi_parse_json(quoteInfo);
     return_if_null(jso, "Json error.", TSS2_FAPI_RC_BAD_VALUE);
 
-    memset(&fapi_quote_info->attest.attested.quote.pcrSelect, 0,
-           sizeof(TPML_PCR_SELECTION));
+    memset(&fapi_quote_info->attest.attested.quote.pcrSelect, 0, sizeof(TPML_PCR_SELECTION));
 
     r = ifapi_json_FAPI_QUOTE_INFO_deserialize(jso, fapi_quote_info);
     goto_if_error(r, "Conversion to JSON of TPM2S_ATTEST.", cleanup);
 
     offset = 0;
     r = Tss2_MU_TPMS_ATTEST_Marshal(&fapi_quote_info->attest,
-                                    (uint8_t *)&tpm_quoted->attestationData[0],
-                                    sizeof(TPMS_ATTEST), &offset);
-    LOGBLOB_TRACE(&tpm_quoted->attestationData[0],
-                  offset,
-                  "Attest");
-    tpm_quoted-> size = offset;
+                                    (uint8_t *)&tpm_quoted->attestationData[0], sizeof(TPMS_ATTEST),
+                                    &offset);
+    LOGBLOB_TRACE(&tpm_quoted->attestationData[0], offset, "Attest");
+    tpm_quoted->size = offset;
     goto_if_error(r, "Marshal attest.", cleanup);
 
 cleanup:
@@ -1914,8 +1820,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index)
-{
+ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index) {
     NODE_STR_T *dir_list = split_string(path, IFAPI_FILE_DELIM);
 
     *start_nv_index = 0;
@@ -1969,9 +1874,8 @@ ifapi_get_nv_start_index(const char *path, TPM2_HANDLE *start_nv_index)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_check_nv_index(const char *path, TPM2_HANDLE nv_index)
-{
-    TSS2_RC r;
+ifapi_check_nv_index(const char *path, TPM2_HANDLE nv_index) {
+    TSS2_RC     r;
     NODE_STR_T *dir_list = split_string(path, IFAPI_FILE_DELIM);
 
     return_if_null(dir_list, "Out of memory.", TSS2_FAPI_RC_MEMORY);
@@ -1979,8 +1883,7 @@ ifapi_check_nv_index(const char *path, TPM2_HANDLE nv_index)
         if (strcmp(dir_list->next->str, "TPM") == 0) {
             if (nv_index < 0x01000000 || nv_index > 0x013fffff)
                 goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                           "NV TPM handle not in the range 0x01000000:0x013fffff",
-                           error_cleanup);
+                           "NV TPM handle not in the range 0x01000000:0x013fffff", error_cleanup);
         } else if (strcmp(dir_list->next->str, "Platform") == 0) {
             if (nv_index < 0x01400000 || nv_index > 0x017fffff)
                 goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
@@ -1988,69 +1891,68 @@ ifapi_check_nv_index(const char *path, TPM2_HANDLE nv_index)
                            error_cleanup);
         } else if (strcmp(dir_list->next->str, "Owner") == 0) {
             if (nv_index < 0x01800000 || nv_index > 0x01bfffff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV Owner handle not in the range 0x01800000:0x01bfffff",
-                       error_cleanup);
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV Owner handle not in the range 0x01800000:0x01bfffff", error_cleanup);
         } else if (strcmp(dir_list->next->str, "Endorsement_Certificate") == 0) {
-            if (nv_index <  0x01c00000 || nv_index > 0x01c07fff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV Endorsement Certificate handle not in the range "
-                       "0x01c00000:0x01c07fff",
-                       error_cleanup);
+            if (nv_index < 0x01c00000 || nv_index > 0x01c07fff)
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV Endorsement Certificate handle not in the range "
+                           "0x01c00000:0x01c07fff",
+                           error_cleanup);
         } else if (strcmp(dir_list->next->str, "Platform_Certificate") == 0) {
-            if (nv_index <  0x01c08000 || nv_index > 0x01c0ffff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV  Platform Certificate handle not in the range "
-                       "0x01c08000:0x01c0ffff",
-                       error_cleanup);
+            if (nv_index < 0x01c08000 || nv_index > 0x01c0ffff)
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV  Platform Certificate handle not in the range "
+                           "0x01c08000:0x01c0ffff",
+                           error_cleanup);
         } else if (strcmp(dir_list->next->str, "Component_OEM") == 0) {
-            if (nv_index <  0x01c10000 || nv_index > 0x01c1ffff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV Component OEM handle not in the range "
-                       "0x01c10000:0x01c1ffff",
-                       error_cleanup);
+            if (nv_index < 0x01c10000 || nv_index > 0x01c1ffff)
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV Component OEM handle not in the range "
+                           "0x01c10000:0x01c1ffff",
+                           error_cleanup);
         } else if (strcmp(dir_list->next->str, "TPM_OEM") == 0) {
             if (nv_index < 0x01c20000 || nv_index > 0x01c2ffff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV TPM OEM handle not in the range "
-                       "0x01c20000:0x01c2ffff",
-                       error_cleanup);
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV TPM OEM handle not in the range "
+                           "0x01c20000:0x01c2ffff",
+                           error_cleanup);
         } else if (strcmp(dir_list->next->str, "Platform_OEM") == 0) {
             if (nv_index < 0x01c30000 || nv_index > 0x01c3ffff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV Platform OEM handle not in the range "
-                       "0x01c30000:0x01c3ffff",
-                       error_cleanup);
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV Platform OEM handle not in the range "
+                           "0x01c30000:0x01c3ffff",
+                           error_cleanup);
         } else if (strcmp(dir_list->next->str, "PC-Client") == 0) {
             if (nv_index < 0x01c40000 || nv_index > 0x01c4ffff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV PC-Client handle not in the range "
-                       "0x01c40000:0x01c4ffff",
-                       error_cleanup);
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV PC-Client handle not in the range "
+                           "0x01c40000:0x01c4ffff",
+                           error_cleanup);
         } else if (strcmp(dir_list->next->str, "Server") == 0) {
             if (nv_index < 0x01c50000 || nv_index > 0x01c5ffff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV PC-Client handle not in the range "
-                       "0x01c50000:0x01c5ffff",
-                       error_cleanup);
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV PC-Client handle not in the range "
+                           "0x01c50000:0x01c5ffff",
+                           error_cleanup);
         } else if (strcmp(dir_list->next->str, "Virtualized_Platform") == 0) {
             if (nv_index < 0x01c60000 || nv_index > 0x01c6ffff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV PC-Client handle not in the range "
-                       "0x01c60000:0x016cffff",
-                       error_cleanup);
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV PC-Client handle not in the range "
+                           "0x01c60000:0x016cffff",
+                           error_cleanup);
         } else if (strcmp(dir_list->next->str, "MPWG") == 0) {
             if (nv_index < 0x01c70000 || nv_index > 0x01c7ffff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV PC-Client handle not in the range "
-                       "0x01c70000:0x017cffff",
-                       error_cleanup);
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV PC-Client handle not in the range "
+                           "0x01c70000:0x017cffff",
+                           error_cleanup);
         } else if (strcmp(dir_list->next->str, "Embedded") == 0) {
-            if (nv_index < 0x01c80000 || nv_index >  0x01c8ffff)
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "NV PC-Client handle not in the range "
-                       "0x01c80000:0x018cffff",
-                       error_cleanup);
+            if (nv_index < 0x01c80000 || nv_index > 0x01c8ffff)
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                           "NV PC-Client handle not in the range "
+                           "0x01c80000:0x018cffff",
+                           error_cleanup);
         } else {
             goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Invalid nv path: %s", error_cleanup, path);
         }
@@ -2058,9 +1960,10 @@ ifapi_check_nv_index(const char *path, TPM2_HANDLE nv_index)
         goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Invalid nv path: %s", error_cleanup, path);
     }
     free_string_list(dir_list);
-    return TSS2_RC_SUCCESS;;
+    return TSS2_RC_SUCCESS;
+    ;
 
- error_cleanup:
+error_cleanup:
     free_string_list(dir_list);
     return r;
 }
@@ -2078,16 +1981,12 @@ ifapi_check_nv_index(const char *path, TPM2_HANDLE nv_index)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_extend_vpcr(
-    TPM2B_DIGEST *vpcr,
-    TPMI_ALG_HASH bank,
-    const IFAPI_EVENT *event)
-{
-    TSS2_RC r;
-    size_t i, j;
-    size_t event_size, size;
+ifapi_extend_vpcr(TPM2B_DIGEST *vpcr, TPMI_ALG_HASH bank, const IFAPI_EVENT *event) {
+    TSS2_RC                    r;
+    size_t                     i, j;
+    size_t                     event_size, size;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
-    bool zero_digest = false;
+    bool                       zero_digest = false;
 
     LOGBLOB_TRACE(&vpcr->buffer[0], vpcr->size, "Old vpcr value");
     for (i = 0; i < event->digests.count; i++) {
@@ -2119,20 +2018,21 @@ ifapi_extend_vpcr(
         }
     }
     if (event->digests.count > 0 && i == event->digests.count && !zero_digest) {
-        LOG_ERROR("No digest for bank %"PRIu16" found in event."
-                  "\n\nThe bank for each pcr register can be set in the FAPI profile. If, for example,"
-                  "\nno  digest for the default bank sha256 (11) exists in the eventlog of a"
-                  "\ncertain PCR register the PCR selection has to be adapted. E.g.:"
-                  "\n\n\"pcr_selection\": ["
-                  "\n      { \"hash\": \"TPM2_ALG_SHA1\","
-                  "\n         \"pcrSelect\": [ 0, 10 ],"
-                  "\n      },"
-                  "\n      { \"hash\": \"TPM2_ALG_SHA256\","
-                  "\n        \"pcrSelect\": [ 1, 2, ,3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15,"
-                  "16, 17, 18, 19, 20, 21, 22, 23 ]"
-                  "\n      }"
-                  "\n],"
-                  , bank);
+        LOG_ERROR(
+            "No digest for bank %" PRIu16 " found in event."
+            "\n\nThe bank for each pcr register can be set in the FAPI profile. If, for example,"
+            "\nno  digest for the default bank sha256 (11) exists in the eventlog of a"
+            "\ncertain PCR register the PCR selection has to be adapted. E.g.:"
+            "\n\n\"pcr_selection\": ["
+            "\n      { \"hash\": \"TPM2_ALG_SHA1\","
+            "\n         \"pcrSelect\": [ 0, 10 ],"
+            "\n      },"
+            "\n      { \"hash\": \"TPM2_ALG_SHA256\","
+            "\n        \"pcrSelect\": [ 1, 2, ,3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15,"
+            "16, 17, 18, 19, 20, 21, 22, 23 ]"
+            "\n      }"
+            "\n],",
+            bank);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     LOGBLOB_TRACE(&vpcr->buffer[0], vpcr->size, "New vpcr value");
@@ -2155,13 +2055,8 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_extend_pcr(
-    TPMI_ALG_HASH alg,
-    uint8_t *pcr,
-    const uint8_t *digest,
-    size_t alg_size)
-{
-    TSS2_RC r;
+ifapi_extend_pcr(TPMI_ALG_HASH alg, uint8_t *pcr, const uint8_t *digest, size_t alg_size) {
+    TSS2_RC                    r;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext;
 
     LOGBLOB_TRACE(pcr, alg_size, "Old pcr value");
@@ -2203,22 +2098,20 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_calculate_pcrs(
-    json_object *jso_event_list,
-    const TPML_PCR_SELECTION *pcr_selection,
-    TPMI_ALG_HASH pcr_digest_hash_alg,
-    const TPM2B_DIGEST *quote_digest,
-    IFAPI_PCR_REG *pcrs)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
+ifapi_calculate_pcrs(json_object              *jso_event_list,
+                     const TPML_PCR_SELECTION *pcr_selection,
+                     TPMI_ALG_HASH             pcr_digest_hash_alg,
+                     const TPM2B_DIGEST       *quote_digest,
+                     IFAPI_PCR_REG            *pcrs) {
+    TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
-    size_t i, pcr, i_evt, hash_size, n_events = 0;
-    size_t n_pcrs = 0;
-    TPM2B_DIGEST pcr_digest;
-    json_object *jso;
-    IFAPI_EVENT event;
-    bool found_hcrtm = false;
-    UINT8 locality = 0;
+    size_t                     i, pcr, i_evt, hash_size, n_events = 0;
+    size_t                     n_pcrs = 0;
+    TPM2B_DIGEST               pcr_digest;
+    json_object               *jso;
+    IFAPI_EVENT                event;
+    bool                       found_hcrtm = false;
+    UINT8                      locality = 0;
 
     /* Initialize used pcrs */
     for (i = 0; i < pcr_selection->count; i++) {
@@ -2245,21 +2138,23 @@ ifapi_calculate_pcrs(
             goto_if_error(r, "Error serialize policy", error_cleanup);
             LOG_TRACE("Deserialized Event for PCR %u", event.pcr);
 
-            if (event.content_type  == IFAPI_PC_CLIENT &&
-                event.content.firmware_event.event_type == EV_EFI_HCRTM_EVENT && event.pcr == 0) {
+            if (event.content_type == IFAPI_PC_CLIENT
+                && event.content.firmware_event.event_type == EV_EFI_HCRTM_EVENT
+                && event.pcr == 0) {
                 found_hcrtm = true;
             }
 
-             /* Handle StartupLocality in replay for PCR0 */
-            if (event.content_type  == IFAPI_PC_CLIENT &&
-                !found_hcrtm &&
-                event.content.firmware_event.event_type == EV_NO_ACTION && event.pcr == 0) {
+            /* Handle StartupLocality in replay for PCR0 */
+            if (event.content_type == IFAPI_PC_CLIENT && !found_hcrtm
+                && event.content.firmware_event.event_type == EV_NO_ACTION && event.pcr == 0) {
                 if (event.content.firmware_event.data.size < sizeof(EV_NO_ACTION_STRUCT)) {
                     goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "EventSize is too small.", error_cleanup);
                 }
-                EV_NO_ACTION_STRUCT *locality_event = (EV_NO_ACTION_STRUCT*)&event.content.firmware_event.data.buffer[0];
+                EV_NO_ACTION_STRUCT *locality_event
+                    = (EV_NO_ACTION_STRUCT *)&event.content.firmware_event.data.buffer[0];
                 if (memcmp(locality_event->Signature, STARTUP_LOCALITY_SIGNATURE,
-                           sizeof(STARTUP_LOCALITY_SIGNATURE)) == 0) {
+                           sizeof(STARTUP_LOCALITY_SIGNATURE))
+                    == 0) {
                     locality = locality_event->Cases.StartupLocality;
                 }
             }
@@ -2270,14 +2165,14 @@ ifapi_calculate_pcrs(
                         if (event.content.firmware_event.event_type == EV_EFI_HCRTM_EVENT) {
                             /* Trusted Platform Module Library Part 1 section 34.3 */
                             pcrs[i].value.buffer[pcrs[i].value.size - 1] = 0x04;
-                        } else if (event.content.firmware_event.event_type == EV_NO_ACTION &&
-                                   locality > 0) {
+                        } else if (event.content.firmware_event.event_type == EV_NO_ACTION
+                                   && locality > 0) {
                             pcrs[i].value.buffer[pcrs[i].value.size - 1] = locality;
                         }
                     }
                     LOG_DEBUG("Extend PCR %uz", pcrs[i].pcr);
                     r = ifapi_extend_vpcr(&pcrs[i].value, pcrs[i].bank, &event);
-                    goto_if_error2(r, "Extending vpcr %"PRIu32, error_cleanup, pcrs[i].pcr);
+                    goto_if_error2(r, "Extending vpcr %" PRIu32, error_cleanup, pcrs[i].pcr);
                 }
             }
             ifapi_cleanup_event(&event);
@@ -2288,18 +2183,16 @@ ifapi_calculate_pcrs(
                 return_if_error(r, "crypto hash start");
 
                 for (i = 0; i < n_pcrs; i++) {
-                    HASH_UPDATE_BUFFER(cryptoContext, &pcrs[i].value.buffer, pcrs[i].value.size,
-                                       r, error_cleanup);
+                    HASH_UPDATE_BUFFER(cryptoContext, &pcrs[i].value.buffer, pcrs[i].value.size, r,
+                                       error_cleanup);
                 }
-                r = ifapi_crypto_hash_finish(&cryptoContext,
-                                             (uint8_t *) &pcr_digest.buffer[0],
+                r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest.buffer[0],
                                              &hash_size);
                 return_if_error(r, "crypto hash finish");
                 pcr_digest.size = hash_size;
 
                 /* Compare the digest from the event list with the digest from the attest */
-                if (memcmp(&pcr_digest.buffer[0], &quote_digest->buffer[0],
-                           pcr_digest.size) == 0) {
+                if (memcmp(&pcr_digest.buffer[0], &quote_digest->buffer[0], pcr_digest.size) == 0) {
                     if (i_evt < (n_events - 1)) {
                         /* delete the events added after the quote */
                         if (json_object_array_del_idx(jso_event_list, i_evt + 1,
@@ -2350,15 +2243,12 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_calculate_pcr_digest(
-    json_object *jso_event_list,
-    const FAPI_QUOTE_INFO *quote_info)
-{
-    TSS2_RC r;
+ifapi_calculate_pcr_digest(json_object *jso_event_list, const FAPI_QUOTE_INFO *quote_info) {
+    TSS2_RC       r;
     IFAPI_PCR_REG pcrs[TPM2_MAX_PCRS];
 
     const TPML_PCR_SELECTION *pcr_selection;
-    TPMI_ALG_HASH pcr_digest_hash_alg;
+    TPMI_ALG_HASH             pcr_digest_hash_alg;
 
     /* Get some data from the quote info for easier access */
     pcr_selection = &quote_info->attest.attested.quote.pcrSelect;
@@ -2382,8 +2272,7 @@ ifapi_calculate_pcr_digest(
     }
 
     r = ifapi_calculate_pcrs(jso_event_list, pcr_selection, pcr_digest_hash_alg,
-                             &quote_info->attest.attested.quote.pcrDigest,
-                             &pcrs[0]);
+                             &quote_info->attest.attested.quote.pcrDigest, &pcrs[0]);
     return_if_error(r, "Compute PCRs");
 
     return r;
@@ -2399,40 +2288,33 @@ ifapi_calculate_pcr_digest(
  * @retval TSS2_FAPI_RC_BAD_VALUE if profile is not subset of capabilities.
  */
 TSS2_RC
-ifapi_check_profile_pcr_selection(
-    const TPML_PCR_SELECTION *pcr_profile,
-    const TPML_PCR_SELECTION *pcr_capablity)
-{
+ifapi_check_profile_pcr_selection(const TPML_PCR_SELECTION *pcr_profile,
+                                  const TPML_PCR_SELECTION *pcr_capablity) {
     size_t i, j, k;
 
     for (i = 0; i < pcr_profile->count; i++) {
         bool hash_found = false;
         for (j = 0; j < pcr_capablity->count; j++) {
-            if (pcr_capablity->pcrSelections[j].hash ==
-                    pcr_profile->pcrSelections[i].hash) {
+            if (pcr_capablity->pcrSelections[j].hash == pcr_profile->pcrSelections[i].hash) {
                 /* Hash algorithm found, check PCRs */
                 hash_found = true;
-                if (pcr_profile->pcrSelections[i].sizeofSelect >
-                        pcr_capablity->pcrSelections[j].sizeofSelect) {
+                if (pcr_profile->pcrSelections[i].sizeofSelect
+                    > pcr_capablity->pcrSelections[j].sizeofSelect) {
                     return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid size of PCR select.");
                 }
 
-                for (k = 0;
-                        k < pcr_profile->pcrSelections[i].sizeofSelect;
-                        k++) {
+                for (k = 0; k < pcr_profile->pcrSelections[i].sizeofSelect; k++) {
                     /* Check whether all selected PCRs are available */
-                    if ((pcr_profile->pcrSelections[i].pcrSelect[k] &
-                            pcr_capablity->pcrSelections[j].pcrSelect[k])
-                            != pcr_profile->pcrSelections[i].pcrSelect[k]) {
+                    if ((pcr_profile->pcrSelections[i].pcrSelect[k]
+                         & pcr_capablity->pcrSelections[j].pcrSelect[k])
+                        != pcr_profile->pcrSelections[i].pcrSelect[k]) {
                         return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid PCR selection.");
-
                     }
                 }
             }
         }
         if (!hash_found) {
-            return_error(TSS2_FAPI_RC_BAD_VALUE,
-                         "Hash alg for PCR selection not available.");
+            return_error(TSS2_FAPI_RC_BAD_VALUE, "Hash alg for PCR selection not available.");
         }
     }
     return TSS2_RC_SUCCESS;
@@ -2450,15 +2332,13 @@ ifapi_check_profile_pcr_selection(
  * @retval TSS2_FAPI_RC_BAD_VALUE if no pcr remain selected or the pcr selection is malformed.
  */
 TSS2_RC
-ifapi_filter_pcr_selection_by_index(
-    TPML_PCR_SELECTION *pcr_selection,
-    const TPM2_HANDLE *pcr_index,
-    size_t pcr_count)
-{
+ifapi_filter_pcr_selection_by_index(TPML_PCR_SELECTION *pcr_selection,
+                                    const TPM2_HANDLE  *pcr_index,
+                                    size_t              pcr_count) {
     UINT32 bank, j;
     UINT16 select;
     size_t i;
-    UINT8 selection[] = { 0, 0, 0, 0 };
+    UINT8  selection[] = { 0, 0, 0, 0 };
 
     for (i = 0; i < pcr_count; i++) {
         selection[0] |= (((UINT32)1) << pcr_index[i]) % 256;
@@ -2470,7 +2350,7 @@ ifapi_filter_pcr_selection_by_index(
     /* Remove unselected PCRs */
     for (bank = 0; bank < pcr_selection->count; bank++) {
         if (pcr_selection->pcrSelections[bank].sizeofSelect > 4) {
-            LOG_ERROR("pcrSelection's sizeofSelect exceeds allowed value of 4, is %"PRIu16,
+            LOG_ERROR("pcrSelection's sizeofSelect exceeds allowed value of 4, is %" PRIu16,
                       pcr_selection->pcrSelections[bank].sizeofSelect);
             return TSS2_FAPI_RC_BAD_VALUE;
         }
@@ -2480,27 +2360,27 @@ ifapi_filter_pcr_selection_by_index(
     }
 
     /* Remove empty banks */
-    for (bank = 0; bank < pcr_selection->count; ) {
+    for (bank = 0; bank < pcr_selection->count;) {
         for (select = 0; select < pcr_selection->pcrSelections[bank].sizeofSelect; select++) {
             if (pcr_selection->pcrSelections[bank].pcrSelect[select])
                 break;
         }
         if (select < pcr_selection->pcrSelections[bank].sizeofSelect) {
             /* Bank contains selections */
-            bank ++;
+            bank++;
             continue;
         }
 
         /* Bank contains no selections, move all other banks one up */
         pcr_selection->count -= 1;
         for (j = bank; j < pcr_selection->count; j++) {
-            pcr_selection->pcrSelections[j] = pcr_selection->pcrSelections[j+1];
+            pcr_selection->pcrSelections[j] = pcr_selection->pcrSelections[j + 1];
         }
     }
 
     if (pcr_selection->count == 0) {
-        LOGBLOB_WARNING((void*)pcr_index, pcr_count * sizeof(*pcr_index),
-                        "pcr index %"PRIi32" is not part of the pcr selection", *pcr_index);
+        LOGBLOB_WARNING((void *)pcr_index, pcr_count * sizeof(*pcr_index),
+                        "pcr index %" PRIi32 " is not part of the pcr selection", *pcr_index);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;
@@ -2523,18 +2403,16 @@ ifapi_filter_pcr_selection_by_index(
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
-ifapi_compute_policy_digest(
-    TPML_PCRVALUES *pcrs,
-    TPML_PCR_SELECTION *pcr_selection,
-    TPMI_ALG_HASH hash_alg,
-    TPM2B_DIGEST *pcr_digest)
-{
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    size_t i, j;
+ifapi_compute_policy_digest(TPML_PCRVALUES     *pcrs,
+                            TPML_PCR_SELECTION *pcr_selection,
+                            TPMI_ALG_HASH       hash_alg,
+                            TPM2B_DIGEST       *pcr_digest) {
+    TSS2_RC                    r = TSS2_RC_SUCCESS;
+    size_t                     i, j;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
-    size_t hash_size;
-    UINT32 pcr;
-    UINT32 max_pcr = 0;
+    size_t                     hash_size;
+    UINT32                     pcr;
+    UINT32                     max_pcr = 0;
 
     memset(pcr_selection, 0, sizeof(TPML_PCR_SELECTION));
 
@@ -2542,8 +2420,7 @@ ifapi_compute_policy_digest(
     pcr_selection->count = 0;
     for (i = 0; i < pcrs->count; i++) {
         for (j = 0; j < pcr_selection->count; j++) {
-            if (pcrs->pcrs[i].hashAlg ==
-                pcr_selection->pcrSelections[j].hash) {
+            if (pcrs->pcrs[i].hashAlg == pcr_selection->pcrSelections[j].hash) {
                 break;
             }
         }
@@ -2551,18 +2428,15 @@ ifapi_compute_policy_digest(
             /* New hash alg */
             pcr_selection->count += 1;
             if (pcr_selection->count > TPM2_NUM_PCR_BANKS) {
-                return_error(TSS2_FAPI_RC_BAD_VALUE,
-                             "More hash algs than banks.");
+                return_error(TSS2_FAPI_RC_BAD_VALUE, "More hash algs than banks.");
             }
-            pcr_selection->pcrSelections[j].hash =
-                pcrs->pcrs[i].hashAlg;
+            pcr_selection->pcrSelections[j].hash = pcrs->pcrs[i].hashAlg;
             pcr_selection->pcrSelections[j].sizeofSelect = 3;
         }
         UINT32 pcrIndex = pcrs->pcrs[i].pcr;
         if (pcrIndex + 1 > max_pcr)
             max_pcr = pcrIndex + 1;
-        pcr_selection->pcrSelections[j].pcrSelect[pcrIndex / 8] |=
-            ((BYTE)1) << pcrIndex % 8;
+        pcr_selection->pcrSelections[j].pcrSelect[pcrIndex / 8] |= ((BYTE)1) << pcrIndex % 8;
         if ((pcrIndex / 8) + 1 > pcr_selection->pcrSelections[j].sizeofSelect)
             pcr_selection->pcrSelections[j].sizeofSelect = (pcrIndex / 8) + 1;
     }
@@ -2571,37 +2445,31 @@ ifapi_compute_policy_digest(
     return_if_error(r, "crypto hash start");
 
     if (!(pcr_digest->size = ifapi_hash_get_digest_size(hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                   "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hash_alg);
     }
 
     for (i = 0; i < pcr_selection->count; i++) {
         TPMS_PCR_SELECTION selection = pcr_selection->pcrSelections[i];
-        TPMI_ALG_HASH hashAlg = selection.hash;
+        TPMI_ALG_HASH      hashAlg = selection.hash;
         if (!(hash_size = ifapi_hash_get_digest_size(hashAlg))) {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                       "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
-                       hashAlg);
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
+                       cleanup, hashAlg);
         }
         for (pcr = 0; pcr < max_pcr; pcr++) {
             if ((selection.pcrSelect[pcr / 8]) & (((BYTE)1) << (pcr % 8))) {
                 /* pcr selected */
                 for (j = 0; j < pcrs->count; j++) {
                     if (pcrs->pcrs[j].pcr == pcr) {
-                        r = ifapi_crypto_hash_update(cryptoContext,
-                                                     (const uint8_t *)&pcrs->
-                                                     pcrs[j].digest,
-                                                     hash_size);
+                        r = ifapi_crypto_hash_update(
+                            cryptoContext, (const uint8_t *)&pcrs->pcrs[j].digest, hash_size);
                         goto_if_error(r, "crypto hash update", cleanup);
                     }
                 }
             }
         }
     }
-    r = ifapi_crypto_hash_finish(&cryptoContext,
-                                 (uint8_t *) & pcr_digest->buffer[0],
-                                 &hash_size);
+    r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest->buffer[0], &hash_size);
 cleanup:
     if (cryptoContext)
         ifapi_crypto_hash_abort(&cryptoContext);
@@ -2615,10 +2483,7 @@ cleanup:
  * @retval true if equal false if not.
  */
 bool
-ifapi_cmp_public_key(
-    TPM2B_PUBLIC *key1,
-    TPM2B_PUBLIC *key2)
-{
+ifapi_cmp_public_key(TPM2B_PUBLIC *key1, TPM2B_PUBLIC *key2) {
     if (key1->publicArea.type != key2->publicArea.type)
         return false;
     switch (key1->publicArea.type) {
@@ -2626,13 +2491,13 @@ ifapi_cmp_public_key(
         if (key1->publicArea.unique.rsa.size != key2->publicArea.unique.rsa.size) {
             return false;
         }
-        LOGBLOB_TRACE(&key1->publicArea.unique.rsa.buffer[0],
-                      key1->publicArea.unique.rsa.size, "Key 1");
-        LOGBLOB_TRACE(&key2->publicArea.unique.rsa.buffer[0],
-                      key2->publicArea.unique.rsa.size, "Key 2");
-        if (memcmp(&key1->publicArea.unique.rsa.buffer[0],
-                   &key2->publicArea.unique.rsa.buffer[0],
-                   key1->publicArea.unique.rsa.size) == 0)
+        LOGBLOB_TRACE(&key1->publicArea.unique.rsa.buffer[0], key1->publicArea.unique.rsa.size,
+                      "Key 1");
+        LOGBLOB_TRACE(&key2->publicArea.unique.rsa.buffer[0], key2->publicArea.unique.rsa.size,
+                      "Key 2");
+        if (memcmp(&key1->publicArea.unique.rsa.buffer[0], &key2->publicArea.unique.rsa.buffer[0],
+                   key1->publicArea.unique.rsa.size)
+            == 0)
             return true;
         else
             return false;
@@ -2641,24 +2506,24 @@ ifapi_cmp_public_key(
         if (key1->publicArea.unique.ecc.x.size != key2->publicArea.unique.ecc.x.size) {
             return false;
         }
-        LOGBLOB_TRACE(&key1->publicArea.unique.ecc.x.buffer[0],
-                      key1->publicArea.unique.ecc.x.size, "Key 1 x");
-        LOGBLOB_TRACE(&key2->publicArea.unique.ecc.x.buffer[0],
-                      key2->publicArea.unique.ecc.x.size, "Key 2 x");
+        LOGBLOB_TRACE(&key1->publicArea.unique.ecc.x.buffer[0], key1->publicArea.unique.ecc.x.size,
+                      "Key 1 x");
+        LOGBLOB_TRACE(&key2->publicArea.unique.ecc.x.buffer[0], key2->publicArea.unique.ecc.x.size,
+                      "Key 2 x");
         if (memcmp(&key1->publicArea.unique.ecc.x.buffer[0],
-                   &key2->publicArea.unique.ecc.x.buffer[0],
-                   key1->publicArea.unique.ecc.x.size) != 0)
+                   &key2->publicArea.unique.ecc.x.buffer[0], key1->publicArea.unique.ecc.x.size)
+            != 0)
             return false;
         if (key1->publicArea.unique.ecc.y.size != key2->publicArea.unique.ecc.y.size) {
             return false;
         }
-        LOGBLOB_TRACE(&key1->publicArea.unique.ecc.y.buffer[0],
-                      key1->publicArea.unique.ecc.y.size, "Key 1 x");
-        LOGBLOB_TRACE(&key2->publicArea.unique.ecc.y.buffer[0],
-                      key2->publicArea.unique.ecc.y.size, "Key 2 x");
+        LOGBLOB_TRACE(&key1->publicArea.unique.ecc.y.buffer[0], key1->publicArea.unique.ecc.y.size,
+                      "Key 1 x");
+        LOGBLOB_TRACE(&key2->publicArea.unique.ecc.y.buffer[0], key2->publicArea.unique.ecc.y.size,
+                      "Key 2 x");
         if (memcmp(&key1->publicArea.unique.ecc.y.buffer[0],
-                   &key2->publicArea.unique.ecc.y.buffer[0],
-                   key1->publicArea.unique.ecc.y.size) != 0)
+                   &key2->publicArea.unique.ecc.y.buffer[0], key1->publicArea.unique.ecc.y.size)
+            != 0)
             return false;
         else
             return true;
@@ -2678,14 +2543,10 @@ ifapi_cmp_public_key(
  * If a unexpected field occurs a warning will be displayed.
  */
 void
-ifapi_check_json_object_fields(
-    json_object *jso,
-    char** field_tab,
-    size_t size_of_tab)
-{
+ifapi_check_json_object_fields(json_object *jso, char **field_tab, size_t size_of_tab) {
     enum json_type type;
-    bool found;
-    size_t i;
+    bool           found;
+    size_t         i;
 
     type = json_object_get_type(jso);
     if (type == json_type_object) {
@@ -2706,10 +2567,10 @@ ifapi_check_json_object_fields(
     }
 }
 
-TSS2_RC ifapi_pcr_selection_to_pcrvalues(
-        TPML_PCR_SELECTION *pcr_selection,
-        TPML_DIGEST *pcr_digests,
-        TPML_PCRVALUES **out) {
+TSS2_RC
+ifapi_pcr_selection_to_pcrvalues(TPML_PCR_SELECTION *pcr_selection,
+                                 TPML_DIGEST        *pcr_digests,
+                                 TPML_PCRVALUES    **out) {
 
     /* Count pcrs */
     UINT32 i = 0, pcr = 0, n_pcrs = 0, i_pcr = 0;
@@ -2723,8 +2584,7 @@ TSS2_RC ifapi_pcr_selection_to_pcrvalues(
         }
     }
 
-
-    TPML_PCRVALUES *pcr_values = calloc(1, sizeof(TPML_PCRVALUES) + n_pcrs* sizeof(TPMS_PCRVALUE));
+    TPML_PCRVALUES *pcr_values = calloc(1, sizeof(TPML_PCRVALUES) + n_pcrs * sizeof(TPMS_PCRVALUE));
     return_if_null(pcr_values, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     /* Initialize digest list with pcr values from TPM */
     i_pcr = 0;
@@ -2737,8 +2597,7 @@ TSS2_RC ifapi_pcr_selection_to_pcrvalues(
             if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
                 pcr_values->pcrs[i_pcr].pcr = pcr;
                 pcr_values->pcrs[i_pcr].hashAlg = pcr_selection->pcrSelections[i].hash;
-                memcpy(&pcr_values->pcrs[i_pcr].digest,
-                       &pcr_digests->digests[i_pcr].buffer[0],
+                memcpy(&pcr_values->pcrs[i_pcr].digest, &pcr_digests->digests[i_pcr].buffer[0],
                        pcr_digests->digests[i_pcr].size);
                 i_pcr += 1;
             }
@@ -2750,15 +2609,14 @@ TSS2_RC ifapi_pcr_selection_to_pcrvalues(
     return TSS2_RC_SUCCESS;
 }
 
-void ifapi_helper_init_policy_pcr_selections (TSS2_POLICY_PCR_SELECTION *s,
-        TPMT_POLICYELEMENT *pol_element)
-{
+void
+ifapi_helper_init_policy_pcr_selections(TSS2_POLICY_PCR_SELECTION *s,
+                                        TPMT_POLICYELEMENT        *pol_element) {
     if (pol_element->element.PolicyPCR.currentPCRs.sizeofSelect > 0) {
         s->type = TSS2_POLICY_PCR_SELECTOR_PCR_SELECT;
         s->selections.pcr_select = pol_element->element.PolicyPCR.currentPCRs;
     } else {
         s->type = TSS2_POLICY_PCR_SELECTOR_PCR_SELECTION;
-        s->selections.pcr_selection =
-                pol_element->element.PolicyPCR.currentPCRandBanks;
+        s->selections.pcr_selection = pol_element->element.PolicyPCR.currentPCRandBanks;
     }
 }

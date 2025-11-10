@@ -5,6 +5,14 @@ notably is the indentation (more on this later). Above all else we ask
 that when modifying the code that you follow the most important rule:
 check the surrounding code and imitate its style [1].
 
+## Clang-Format Style
+For simplicity, we use clang-format for all files (also as part of the CI).
+Thus before commiting any code, we recommend you run
+```sh
+docker run -u $UID -v $PWD:$PWD ghcr.io/tpm2-software/ubuntu-24.04 clang-format -i $(find -name '*.h' -or -name '*.c' | xargs realpath)
+```
+This ensures that the code will not break during your pull request.
+
 ## C Standard and Compiler Stuff
 Code should hold as close to the C99 standard as possible with the exception
 that GCC specific extensions are generally accepted. The code must compile

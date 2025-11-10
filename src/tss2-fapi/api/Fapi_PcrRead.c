@@ -8,26 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for uint32_t, uint8_t, PRIu32
-#include <stdio.h>            // for NULL, size_t
-#include <stdlib.h>           // for malloc
-#include <string.h>           // for memcpy, memset
+#include <inttypes.h> // for uint32_t, uint8_t, PRIu32
+#include <stdio.h>    // for NULL, size_t
+#include <stdlib.h>   // for malloc
+#include <string.h>   // for memcpy, memset
 
-#include "fapi_int.h"         // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
-#include "fapi_util.h"        // for ifapi_session_init
-#include "ifapi_eventlog.h"   // for ifapi_eventlog_get_async, ifapi_eventlo...
-#include "ifapi_helpers.h"    // for ifapi_filter_pcr_selection_by_index
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_macros.h"     // for check_not_null, return_if_error_reset_s...
-#include "ifapi_profiles.h"   // for IFAPI_PROFILE, IFAPI_PROFILES
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_BA...
-#include "tss2_esys.h"        // for Esys_SetTimeout, ESYS_TR_NONE, Esys_PCR...
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_PcrRead, Fapi_PcrRea...
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPML_DIGEST, TPML_PCR_SEL...
+#include "fapi_int.h"        // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"       // for ifapi_session_init
+#include "ifapi_eventlog.h"  // for ifapi_eventlog_get_async, ifapi_eventlo...
+#include "ifapi_helpers.h"   // for ifapi_filter_pcr_selection_by_index
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_s...
+#include "ifapi_profiles.h"  // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_BA...
+#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_PCR...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_PcrRead, Fapi_PcrRea...
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPML_DIGEST, TPML_PCR_SEL...
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for LOG_TRACE, return_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE, return_if_error, SAFE_FREE
 
 /** One-Call function for Fapi_PcrRead
  *
@@ -66,13 +66,11 @@
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-Fapi_PcrRead(
-    FAPI_CONTEXT *context,
-    uint32_t      pcrIndex,
-    uint8_t     **pcrValue,
-    size_t       *pcrValueSize,
-    char        **pcrLog)
-{
+Fapi_PcrRead(FAPI_CONTEXT *context,
+             uint32_t      pcrIndex,
+             uint8_t     **pcrValue,
+             size_t       *pcrValueSize,
+             char        **pcrLog) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -141,14 +139,11 @@ Fapi_PcrRead(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-Fapi_PcrRead_Async(
-    FAPI_CONTEXT *context,
-    uint32_t      pcrIndex)
-{
+Fapi_PcrRead_Async(FAPI_CONTEXT *context, uint32_t pcrIndex) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("pcrIndex: %" PRIu32, pcrIndex);
 
-    TSS2_RC r;
+    TSS2_RC            r;
     TPML_PCR_SELECTION pcr_selection;
 
     /* Check for NULL parameters */
@@ -158,7 +153,7 @@ Fapi_PcrRead_Async(
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
     /* Helpful alias pointers */
-    IFAPI_PCR * command = &context->cmd.pcr;
+    IFAPI_PCR *command = &context->cmd.pcr;
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -172,8 +167,7 @@ Fapi_PcrRead_Async(
     return_if_error(r, "PCR selection");
 
     /* Perform the PCR read operation. */
-    r = Esys_PCR_Read_Async(context->esys,
-                            ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+    r = Esys_PCR_Read_Async(context->esys, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                             &pcr_selection);
     return_if_error(r, "PCR Read");
 
@@ -212,12 +206,10 @@ Fapi_PcrRead_Async(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-Fapi_PcrRead_Finish(
-    FAPI_CONTEXT *context,
-    uint8_t     **pcrValue,
-    size_t       *pcrValueSize,
-    char        **pcrLog)
-{
+Fapi_PcrRead_Finish(FAPI_CONTEXT *context,
+                    uint8_t     **pcrValue,
+                    size_t       *pcrValueSize,
+                    char        **pcrLog) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -226,62 +218,57 @@ Fapi_PcrRead_Finish(
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_PCR * command = &context->cmd.pcr;
+    IFAPI_PCR *command = &context->cmd.pcr;
 
     command->pcrValues = NULL;
 
     switch (context->state) {
-        statecase(context->state, PCR_READ_READ_PCR);
-            SAFE_FREE(command->pcrValues);
-            r = Esys_PCR_Read_Finish(context->esys,
-                                     &command->update_count,
-                                     NULL,
-                                     &command->pcrValues);
-            return_try_again(r);
-            goto_if_error_reset_state(r, "PCR_ReadWithLog_Finish", cleanup);
+    statecase(context->state, PCR_READ_READ_PCR);
+        SAFE_FREE(command->pcrValues);
+        r = Esys_PCR_Read_Finish(context->esys, &command->update_count, NULL, &command->pcrValues);
+        return_try_again(r);
+        goto_if_error_reset_state(r, "PCR_ReadWithLog_Finish", cleanup);
 
-            /* Copy the return values to the output parameters. */
-            if (pcrValueSize)
-                command->pcrValueSize = command->pcrValues->digests[0].size;
-            if (pcrValue) {
-                command->pcrValue = malloc(command->pcrValues->digests[0].size);
-                goto_if_null2(command->pcrValue, "Out of memory.",
-                        r, TSS2_FAPI_RC_MEMORY, cleanup);
+        /* Copy the return values to the output parameters. */
+        if (pcrValueSize)
+            command->pcrValueSize = command->pcrValues->digests[0].size;
+        if (pcrValue) {
+            command->pcrValue = malloc(command->pcrValues->digests[0].size);
+            goto_if_null2(command->pcrValue, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
-                memcpy(command->pcrValue, &command->pcrValues->digests[0].buffer[0],
-                       command->pcrValues->digests[0].size);
-            }
-            SAFE_FREE(command->pcrValues);
+            memcpy(command->pcrValue, &command->pcrValues->digests[0].buffer[0],
+                   command->pcrValues->digests[0].size);
+        }
+        SAFE_FREE(command->pcrValues);
 
-            /* If no event log was requested the operation is now complete. */
-            if (!pcrLog) {
-                if (pcrValue)
-                    *pcrValue = command->pcrValue;
-                if (pcrValueSize)
-                    *pcrValueSize = command->pcrValueSize;
-                context->state = FAPI_STATE_INIT;
-                break;
-            }
-
-            /* Retrieve the eventlog for the requestion PCR. */
-            r = ifapi_eventlog_get_async(&context->eventlog, &context->io,
-                                         &command->pcrIndex, 1);
-            goto_if_error(r, "Error getting event log", cleanup);
-
-            fallthrough;
-
-        statecase(context->state, PCR_READ_READ_EVENT_LIST);
-        r = ifapi_eventlog_get_finish(&context->eventlog, NULL, &context->io, pcrLog);
-            return_try_again(r);
-            goto_if_error(r, "Error getting event log", cleanup);
-
+        /* If no event log was requested the operation is now complete. */
+        if (!pcrLog) {
             if (pcrValue)
                 *pcrValue = command->pcrValue;
             if (pcrValueSize)
                 *pcrValueSize = command->pcrValueSize;
+            context->state = FAPI_STATE_INIT;
             break;
+        }
 
-        statecasedefault(context->state);
+        /* Retrieve the eventlog for the requestion PCR. */
+        r = ifapi_eventlog_get_async(&context->eventlog, &context->io, &command->pcrIndex, 1);
+        goto_if_error(r, "Error getting event log", cleanup);
+
+        fallthrough;
+
+    statecase(context->state, PCR_READ_READ_EVENT_LIST);
+        r = ifapi_eventlog_get_finish(&context->eventlog, NULL, &context->io, pcrLog);
+        return_try_again(r);
+        goto_if_error(r, "Error getting event log", cleanup);
+
+        if (pcrValue)
+            *pcrValue = command->pcrValue;
+        if (pcrValueSize)
+            *pcrValueSize = command->pcrValueSize;
+        break;
+
+    statecasedefault(context->state);
     }
 
 cleanup:

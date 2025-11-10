@@ -8,37 +8,32 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <assert.h>       // for assert
-#include <stdbool.h>      // for bool, false, true
-#include <stdint.h>       // for uint8_t
-#include <stdio.h>        // for NULL, fopen, fclose, fileno, fseek, ftell
-#include <stdlib.h>       // for EXIT_FAILURE, malloc, EXIT_SUCCESS
-#include <string.h>       // for strcmp, memcmp
-#include <unistd.h>       // for read
+#include <assert.h>  // for assert
+#include <stdbool.h> // for bool, false, true
+#include <stdint.h>  // for uint8_t
+#include <stdio.h>   // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>  // for EXIT_FAILURE, malloc, EXIT_SUCCESS
+#include <string.h>  // for strcmp, memcmp
+#include <unistd.h>  // for read
 
-#include "test-fapi.h"    // for pcr_reset, test_invoke_fapi
-#include "tss2_common.h"  // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SU...
-#include "tss2_fapi.h"    // for Fapi_CreateNv, Fapi_Delete, Fapi_Import
+#include "test-fapi.h"   // for pcr_reset, test_invoke_fapi
+#include "tss2_common.h" // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SU...
+#include "tss2_fapi.h"   // for Fapi_CreateNv, Fapi_Delete, Fapi_Import
 
 #define LOGMODULE test
-#include "util/log.h"     // for goto_if_error, LOG_ERROR, UNUSED, SAFE_FREE
+#include "util/log.h" // for goto_if_error, LOG_ERROR, UNUSED, SAFE_FREE
 
-#define PASSWORD1 "abc"
-#define PASSWORD2 "def"
-#define SIGN_TEMPLATE  "sign,noDa"
-#define NV_SIZE 10
+#define PASSWORD1     "abc"
+#define PASSWORD2     "def"
+#define SIGN_TEMPLATE "sign,noDa"
+#define NV_SIZE       10
 
 static bool cb_branch_called = false;
 static bool cb_auth_called = false;
 static bool written = false;
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -55,14 +50,12 @@ auth_callback(
 }
 
 static TSS2_RC
-branch_callback(
-    char   const *objectPath,
-    char   const *description,
-    char  const **branchNames,
-    size_t        numBranches,
-    size_t       *selectedBranch,
-    void         *userData)
-{
+branch_callback(char const  *objectPath,
+                char const  *description,
+                char const **branchNames,
+                size_t       numBranches,
+                size_t      *selectedBranch,
+                void        *userData) {
     UNUSED(description);
     UNUSED(userData);
     UNUSED(branchNames);
@@ -85,7 +78,6 @@ branch_callback(
     cb_branch_called = true;
     return TSS2_RC_SUCCESS;
 }
-
 
 /** Test the FAPI for PolicyOr with a different policy for read and write.
  *
@@ -111,16 +103,15 @@ branch_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_policy_or_nv_read_write(FAPI_CONTEXT *context)
-{
-    TSS2_RC r;
-    char *policy_name = "/policy/pol_or_read_write_secret";
-    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_or_read_write_secret.json";
-    FILE *stream = NULL;
-    char *json_policy = NULL;
-    long policy_size;
-    uint8_t data_src[NV_SIZE];
-    size_t dest_size = NV_SIZE;
+test_fapi_policy_or_nv_read_write(FAPI_CONTEXT *context) {
+    TSS2_RC  r;
+    char    *policy_name = "/policy/pol_or_read_write_secret";
+    char    *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_or_read_write_secret.json";
+    FILE    *stream = NULL;
+    char    *json_policy = NULL;
+    long     policy_size;
+    uint8_t  data_src[NV_SIZE];
+    size_t   dest_size = NV_SIZE;
     uint8_t *data_dest = NULL;
 
     for (int i = 0; i < NV_SIZE; i++) {
@@ -142,9 +133,8 @@ test_fapi_policy_or_nv_read_write(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -178,8 +168,7 @@ test_fapi_policy_or_nv_read_write(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_NvRead", error);
     assert(data_dest != NULL);
 
-    if (dest_size != NV_SIZE ||
-        memcmp(data_src, data_dest, dest_size) != 0) {
+    if (dest_size != NV_SIZE || memcmp(data_src, data_dest, dest_size) != 0) {
         LOG_ERROR("Error: result of nv read is wrong.");
         goto error;
     }
@@ -209,7 +198,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_policy_or_nv_read_write(fapi_context);
 }

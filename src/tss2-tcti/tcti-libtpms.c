@@ -8,30 +8,30 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <dlfcn.h>              // for dlerror, dlsym, dlclose, dlopen, RTLD...
-#include <errno.h>              // for errno
-#include <fcntl.h>              // for open, posix_fallocate, O_CREAT, O_RDWR
-#include <inttypes.h>           // for uint32_t, PRIx32, PRIu32, PRIxPTR
-#include <libtpms/tpm_error.h>  // for TPM_SUCCESS, TPM_FAIL, TPM_RETRY
-#include <netinet/in.h>         // for htonl, ntohl
-#include <stdio.h>              // for NULL, ssize_t
-#include <stdlib.h>             // for free
-#include <string.h>             // for memcpy, strerror, memset, strdup, strlen
-#include <unistd.h>             // for close, lseek, truncate
+#include <dlfcn.h>             // for dlerror, dlsym, dlclose, dlopen, RTLD...
+#include <errno.h>             // for errno
+#include <fcntl.h>             // for open, posix_fallocate, O_CREAT, O_RDWR
+#include <inttypes.h>          // for uint32_t, PRIx32, PRIu32, PRIxPTR
+#include <libtpms/tpm_error.h> // for TPM_SUCCESS, TPM_FAIL, TPM_RETRY
+#include <netinet/in.h>        // for htonl, ntohl
+#include <stdio.h>             // for NULL, ssize_t
+#include <stdlib.h>            // for free
+#include <string.h>            // for memcpy, strerror, memset, strdup, strlen
+#include <unistd.h>            // for close, lseek, truncate
 
-#include "tcti-common.h"        // for TSS2_TCTI_COMMON_CONTEXT, tpm_header_t
+#include "tcti-common.h" // for TSS2_TCTI_COMMON_CONTEXT, tpm_header_t
 #include "tcti-libtpms.h"
-#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_R...
-#include "tss2_tcti.h"          // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
-#include "tss2_tcti_libtpms.h"  // for Tss2_Tcti_Libtpms_Init, Tss2_Tcti_Lib...
-#include "tss2_tpm2_types.h"    // for TPM2_RC_SUCCESS
-#include "util/aux_util.h"      // for MAYBE_UNUSED, ARRAY_LEN
+#include "tss2_common.h"       // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_R...
+#include "tss2_tcti.h"         // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
+#include "tss2_tcti_libtpms.h" // for Tss2_Tcti_Libtpms_Init, Tss2_Tcti_Lib...
+#include "tss2_tpm2_types.h"   // for TPM2_RC_SUCCESS
+#include "util/aux_util.h"     // for MAYBE_UNUSED, ARRAY_LEN
 
 #define LOGMODULE tcti
-#include "util/log.h"           // for LOG_ERROR, LOG_TRACE, LOG_DEBUG, LOGB...
+#include "util/log.h" // for LOG_ERROR, LOG_TRACE, LOG_DEBUG, LOGB...
 
 #if defined(__FreeBSD__)
-#define mremap(a,b,c,d) ((void*)(-1))
+#define mremap(a, b, c, d) ((void *)(-1))
 #endif
 
 /*
@@ -42,14 +42,14 @@
  * This macro assumes that int ret is declared. Jumps to fail_label on error. In
  * this case, rc contains the respective error code.
  */
-#define LIBTPMS_API_CALL(fail_label, tcti_libtpms, function, ...) \
-    current_tcti_libtpms = tcti_libtpms; \
-    ret = tcti_libtpms->function(__VA_ARGS__); \
-    if (ret != TPM_SUCCESS) { \
-        LOG_ERROR("libtpms function " #function "() failed with return code 0x%" PRIx32, ret); \
-        rc = TSS2_TCTI_RC_GENERAL_FAILURE; \
-        goto fail_label; \
-    } \
+#define LIBTPMS_API_CALL(fail_label, tcti_libtpms, function, ...)                                  \
+    current_tcti_libtpms = tcti_libtpms;                                                           \
+    ret = tcti_libtpms->function(__VA_ARGS__);                                                     \
+    if (ret != TPM_SUCCESS) {                                                                      \
+        LOG_ERROR("libtpms function " #function "() failed with return code 0x%" PRIx32, ret);     \
+        rc = TSS2_TCTI_RC_GENERAL_FAILURE;                                                         \
+        goto fail_label;                                                                           \
+    }                                                                                              \
     current_tcti_libtpms = NULL;
 
 static __thread TSS2_TCTI_LIBTPMS_CONTEXT *current_tcti_libtpms = NULL;
@@ -61,11 +61,10 @@ static __thread TSS2_TCTI_LIBTPMS_CONTEXT *current_tcti_libtpms = NULL;
  * real size (rather than the allocated size).
  */
 static TSS2_RC
-tcti_libtpms_map_state_file(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
-{
+tcti_libtpms_map_state_file(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
     TSS2_RC rc;
-    int ret;
-    int state_fd = -1;
+    int     ret;
+    int     state_fd = -1;
     ssize_t file_len = 0;
 
     /* if no/empty state path, skip */
@@ -79,45 +78,34 @@ tcti_libtpms_map_state_file(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
 
     /* open file */
     state_fd = open(tcti_libtpms->state_path, O_RDWR | O_CREAT, 0644);
-    if(state_fd == -1){
-        LOG_ERROR("open failed on file %s: %s",
-                    tcti_libtpms->state_path,
-                    strerror(errno));
+    if (state_fd == -1) {
+        LOG_ERROR("open failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
         return TSS2_TCTI_RC_IO_ERROR;
     }
 
     /* get file size (to detect if state does already exist). */
     file_len = lseek(state_fd, 0L, SEEK_END);
-    if(file_len < 0){
-        LOG_ERROR("lseek failed on file %s: %s",
-                    tcti_libtpms->state_path,
-                    strerror(errno));
+    if (file_len < 0) {
+        LOG_ERROR("lseek failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto cleanup_fd;
     }
     tcti_libtpms->state_mmap_len = (file_len / STATE_MMAP_CHUNK_LEN + 1) * STATE_MMAP_CHUNK_LEN;
 
     /* allocate disk space */
-    ret = posix_fallocate(state_fd, 0, (off_t) tcti_libtpms->state_mmap_len);
+    ret = posix_fallocate(state_fd, 0, (off_t)tcti_libtpms->state_mmap_len);
     if (ret != 0) {
-        LOG_ERROR("fallocate failed on file %s: %d",tcti_libtpms->state_path, ret);
+        LOG_ERROR("fallocate failed on file %s: %d", tcti_libtpms->state_path, ret);
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto cleanup_fd;
     }
 
-
     /* map memory (either backed by file or not) */
-    tcti_libtpms->state_mmap = mmap(NULL,
-                                    tcti_libtpms->state_mmap_len,
-                                    PROT_READ | PROT_WRITE,
-                                    MAP_SHARED,
-                                    state_fd,
-                                    0);
-    if (tcti_libtpms->state_mmap == MAP_FAILED){
+    tcti_libtpms->state_mmap
+        = mmap(NULL, tcti_libtpms->state_mmap_len, PROT_READ | PROT_WRITE, MAP_SHARED, state_fd, 0);
+    if (tcti_libtpms->state_mmap == MAP_FAILED) {
         tcti_libtpms->state_mmap_len = 0;
-        LOG_ERROR("mmap failed on file %s: %s",
-                  tcti_libtpms->state_path,
-                  strerror(errno));
+        LOG_ERROR("mmap failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
         rc = TSS2_TCTI_RC_IO_ERROR;
         goto cleanup_fd;
     }
@@ -139,51 +127,38 @@ cleanup_fd:
  * If the mapped memory for the state file does not suffice, reallocate.
  */
 static TSS2_RC
-tcti_libtpms_ensure_state_len(
-    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms,
-    size_t state_len)
-{
-    int ret;
-    char *new_state_mmap;
+tcti_libtpms_ensure_state_len(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms, size_t state_len) {
+    int    ret;
+    char  *new_state_mmap;
     size_t new_state_mmap_len;
-    int state_fd;
+    int    state_fd;
 
-    if (state_len > tcti_libtpms->state_mmap_len)
-    {
+    if (state_len > tcti_libtpms->state_mmap_len) {
         new_state_mmap_len = (state_len / STATE_MMAP_CHUNK_LEN + 1) * STATE_MMAP_CHUNK_LEN;
-        LOG_DEBUG("Mapped memory region is too small: %zu > %zu. Reallocating to %zu...",
-                  state_len,
-                  tcti_libtpms->state_mmap_len,
-                  new_state_mmap_len);
-        new_state_mmap = mremap(tcti_libtpms->state_mmap,
-                                tcti_libtpms->state_mmap_len,
-                                new_state_mmap_len,
-                                MREMAP_MAYMOVE);
+        LOG_DEBUG("Mapped memory region is too small: %zu > %zu. Reallocating to %zu...", state_len,
+                  tcti_libtpms->state_mmap_len, new_state_mmap_len);
+        new_state_mmap = mremap(tcti_libtpms->state_mmap, tcti_libtpms->state_mmap_len,
+                                new_state_mmap_len, MREMAP_MAYMOVE);
         if (new_state_mmap == MAP_FAILED) {
-            LOG_ERROR("mremap failed on file %s: %s",
-                      tcti_libtpms->state_path,
-                      strerror(errno));
+            LOG_ERROR("mremap failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
             return TSS2_TCTI_RC_IO_ERROR;
         }
         tcti_libtpms->state_mmap = new_state_mmap;
         tcti_libtpms->state_mmap_len = new_state_mmap_len;
 
-        LOG_DEBUG("Successfully mapped state file to %zu bytes.",
-                  tcti_libtpms->state_mmap_len);
+        LOG_DEBUG("Successfully mapped state file to %zu bytes.", tcti_libtpms->state_mmap_len);
 
         /* allocate more disk space */
         if (tcti_libtpms->state_path) {
             state_fd = open(tcti_libtpms->state_path, O_RDWR | O_CREAT, 0644);
-            if(state_fd == -1){
-                LOG_ERROR("open failed on file %s: %s",
-                        tcti_libtpms->state_path,
-                        strerror(errno));
+            if (state_fd == -1) {
+                LOG_ERROR("open failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
                 return TSS2_TCTI_RC_IO_ERROR;
             }
 
-            ret = posix_fallocate(state_fd, 0, (off_t) tcti_libtpms->state_mmap_len);
+            ret = posix_fallocate(state_fd, 0, (off_t)tcti_libtpms->state_mmap_len);
             if (ret != 0) {
-                LOG_ERROR("fallocate failed on file %s: %d",tcti_libtpms->state_path, ret);
+                LOG_ERROR("fallocate failed on file %s: %d", tcti_libtpms->state_path, ret);
                 close(state_fd);
                 return TSS2_TCTI_RC_IO_ERROR;
             }
@@ -199,15 +174,14 @@ tcti_libtpms_ensure_state_len(
  * Retrieve libtpms state and save it to the state file.
  */
 static TSS2_RC
-tcti_libtpms_store_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
-{
-    TSS2_RC rc;
-    int ret;
+tcti_libtpms_store_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
+    TSS2_RC        rc;
+    int            ret;
     unsigned char *permanent_buf, *volatile_buf;
-    uint32_t permanent_buf_len, volatile_buf_len;
-    uint32_t permanent_buf_len_be, volatile_buf_len_be;
-    size_t offset = 0;
-    size_t size;
+    uint32_t       permanent_buf_len, volatile_buf_len;
+    uint32_t       permanent_buf_len_be, volatile_buf_len_be;
+    size_t         offset = 0;
+    size_t         size;
 
     /* if no state file, skip loading */
     if (tcti_libtpms->state_path == NULL) {
@@ -217,18 +191,10 @@ tcti_libtpms_store_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     LOG_DEBUG("Storing state to file: %s", tcti_libtpms->state_path);
 
     /* get states */
-    LIBTPMS_API_CALL(fail,
-                     tcti_libtpms,
-                     TPMLIB_GetState,
-                     TPMLIB_STATE_PERMANENT,
-                     &permanent_buf,
+    LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_GetState, TPMLIB_STATE_PERMANENT, &permanent_buf,
                      &permanent_buf_len);
-    LIBTPMS_API_CALL(cleanup_permanent,
-                     tcti_libtpms,
-                     TPMLIB_GetState,
-                     TPMLIB_STATE_VOLATILE,
-                     &volatile_buf,
-                     &volatile_buf_len);
+    LIBTPMS_API_CALL(cleanup_permanent, tcti_libtpms, TPMLIB_GetState, TPMLIB_STATE_VOLATILE,
+                     &volatile_buf, &volatile_buf_len);
 
     /* check if enough memory is allocated first */
     size = sizeof(uint32_t) + permanent_buf_len + sizeof(uint32_t) + volatile_buf_len;
@@ -240,31 +206,23 @@ tcti_libtpms_store_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     /* write permanent buffer length (big endian) */
     size = sizeof(permanent_buf_len_be);
     permanent_buf_len_be = htonl(permanent_buf_len);
-    memcpy(tcti_libtpms->state_mmap + offset,
-           &permanent_buf_len_be,
-           size);
+    memcpy(tcti_libtpms->state_mmap + offset, &permanent_buf_len_be, size);
     offset += size;
 
     /* write permanent buffer */
     size = permanent_buf_len;
-    memcpy(tcti_libtpms->state_mmap + offset,
-           permanent_buf,
-           size);
+    memcpy(tcti_libtpms->state_mmap + offset, permanent_buf, size);
     offset += size;
 
     /* write volatile buffer length (big endian) */
     size = sizeof(volatile_buf_len_be);
     volatile_buf_len_be = htonl(volatile_buf_len);
-    memcpy(tcti_libtpms->state_mmap + offset,
-           &volatile_buf_len_be,
-           size);
+    memcpy(tcti_libtpms->state_mmap + offset, &volatile_buf_len_be, size);
     offset += size;
 
     /* write volatile buffer */
     size = volatile_buf_len;
-    memcpy(tcti_libtpms->state_mmap + offset,
-           volatile_buf,
-           size);
+    memcpy(tcti_libtpms->state_mmap + offset, volatile_buf, size);
     offset += size;
 
     tcti_libtpms->state_len = offset;
@@ -286,13 +244,12 @@ fail:
  * called after TPMLIB_ChooseTPMVersion and before TPMLIB_MainInit.
  */
 static TSS2_RC
-tcti_libtpms_load_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
-{
-    TSS2_RC rc;
-    int ret;
+tcti_libtpms_load_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
+    TSS2_RC        rc;
+    int            ret;
     unsigned char *permanent_buf, *volatile_buf;
-    uint32_t permanent_buf_len, volatile_buf_len;
-    size_t offset = 0;
+    uint32_t       permanent_buf_len, volatile_buf_len;
+    size_t         offset = 0;
 
     /* if no/empty state file, skip loading */
     if (tcti_libtpms->state_path == NULL || tcti_libtpms->state_len == 0) {
@@ -309,7 +266,7 @@ tcti_libtpms_load_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     offset += sizeof(permanent_buf_len);
 
     /* permanent buffer */
-    permanent_buf = (unsigned char *) tcti_libtpms->state_mmap + offset;
+    permanent_buf = (unsigned char *)tcti_libtpms->state_mmap + offset;
     offset += permanent_buf_len;
 
     /* volatile buffer length (big endian) */
@@ -318,15 +275,13 @@ tcti_libtpms_load_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
     offset += sizeof(volatile_buf_len);
 
     /* volatile buffer */
-    volatile_buf = (unsigned char *) tcti_libtpms->state_mmap + offset;
+    volatile_buf = (unsigned char *)tcti_libtpms->state_mmap + offset;
     offset += volatile_buf_len;
 
-    LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_SetState, TPMLIB_STATE_PERMANENT,
-                                                          permanent_buf,
-                                                          permanent_buf_len);
-    LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_SetState, TPMLIB_STATE_VOLATILE,
-                                                          volatile_buf,
-                                                          volatile_buf_len);
+    LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_SetState, TPMLIB_STATE_PERMANENT, permanent_buf,
+                     permanent_buf_len);
+    LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_SetState, TPMLIB_STATE_VOLATILE, volatile_buf,
+                     volatile_buf_len);
 
     tcti_libtpms->state_len = offset;
 
@@ -342,22 +297,20 @@ fail:
  * returns a NULL ptr. The function doesn't check magic number anymore
  * It should checked by the appropriate tcti_common_checks.
  */
-static TSS2_TCTI_LIBTPMS_CONTEXT*
-tcti_libtpms_context_cast(TSS2_TCTI_CONTEXT *tcti_ctx)
-{
+static TSS2_TCTI_LIBTPMS_CONTEXT *
+tcti_libtpms_context_cast(TSS2_TCTI_CONTEXT *tcti_ctx) {
     if (tcti_ctx == NULL)
         return NULL;
 
-    return (TSS2_TCTI_LIBTPMS_CONTEXT*) tcti_ctx;
+    return (TSS2_TCTI_LIBTPMS_CONTEXT *)tcti_ctx;
 }
 
 /*
  * This function down-casts the libtpms TCTI context to the common context
  * defined in the tcti-common module.
  */
-static TSS2_TCTI_COMMON_CONTEXT*
-tcti_libtpms_down_cast(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
-{
+static TSS2_TCTI_COMMON_CONTEXT *
+tcti_libtpms_down_cast(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
     if (tcti_libtpms == NULL) {
         return NULL;
     }
@@ -365,10 +318,9 @@ tcti_libtpms_down_cast(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
 }
 
 TSS2_RC
-Tss2_Tcti_Libtpms_Reset(TSS2_TCTI_CONTEXT *tcti_ctx)
-{
-    TSS2_RC rc;
-    int ret;
+Tss2_Tcti_Libtpms_Reset(TSS2_TCTI_CONTEXT *tcti_ctx) {
+    TSS2_RC                    rc;
+    int                        ret;
     TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = tcti_libtpms_context_cast(tcti_ctx);
 
     if (TSS2_TCTI_MAGIC(tcti_libtpms) != TCTI_LIBTPMS_MAGIC) {
@@ -377,24 +329,16 @@ Tss2_Tcti_Libtpms_Reset(TSS2_TCTI_CONTEXT *tcti_ctx)
 
     /* Get NV (i.e. permanent state) */
     unsigned char *permanent_state;
-    uint32_t permanent_state_len;
-    LIBTPMS_API_CALL(fail,
-                     tcti_libtpms,
-                     TPMLIB_GetState,
-                     TPMLIB_STATE_PERMANENT,
-                     &permanent_state,
+    uint32_t       permanent_state_len;
+    LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_GetState, TPMLIB_STATE_PERMANENT, &permanent_state,
                      &permanent_state_len);
 
     /* TPM power off */
     tcti_libtpms->TPMLIB_Terminate();
 
     /* Set NV to the same value, will be picked up by MainInit() */
-    LIBTPMS_API_CALL(cleanup,
-                     tcti_libtpms,
-                     TPMLIB_SetState,
-                     TPMLIB_STATE_PERMANENT,
-                     permanent_state,
-                     permanent_state_len);
+    LIBTPMS_API_CALL(cleanup, tcti_libtpms, TPMLIB_SetState, TPMLIB_STATE_PERMANENT,
+                     permanent_state, permanent_state_len);
 
     /* Load state and power on */
     LIBTPMS_API_CALL(cleanup, tcti_libtpms, TPMLIB_MainInit);
@@ -413,18 +357,14 @@ fail:
  * it is not needed anymore (i.e. at the end of tcti_libtpms_receive()).
  */
 TSS2_RC
-tcti_libtpms_transmit(
-    TSS2_TCTI_CONTEXT *tcti_ctx,
-    size_t size,
-    const uint8_t *cmd_buf)
-{
+tcti_libtpms_transmit(TSS2_TCTI_CONTEXT *tcti_ctx, size_t size, const uint8_t *cmd_buf) {
     TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = tcti_libtpms_context_cast(tcti_ctx);
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_libtpms_down_cast(tcti_libtpms);
-    tpm_header_t header;
-    TSS2_RC rc;
-    TPM_RESULT ret;
-    uint32_t resp_size;
-    uint32_t respbufsize;
+    TSS2_TCTI_COMMON_CONTEXT  *tcti_common = tcti_libtpms_down_cast(tcti_libtpms);
+    tpm_header_t               header;
+    TSS2_RC                    rc;
+    TPM_RESULT                 ret;
+    uint32_t                   resp_size;
+    uint32_t                   respbufsize;
 
     rc = tcti_common_transmit_checks(tcti_common, cmd_buf, TCTI_LIBTPMS_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
@@ -436,18 +376,16 @@ tcti_libtpms_transmit(
     }
     if (header.size != size) {
         LOG_ERROR("Buffer size parameter: %zu, and TPM2 command header size "
-                  "field: %" PRIu32 " disagree.", size, header.size);
+                  "field: %" PRIu32 " disagree.",
+                  size, header.size);
         return TSS2_TCTI_RC_BAD_VALUE;
     }
 
     LOGBLOB_DEBUG(cmd_buf, size, "Sending command with TPM_CC 0x%" PRIx32, header.code);
-    resp_size = (uint32_t) tcti_libtpms->response_len;
-    respbufsize = (uint32_t) tcti_libtpms->response_buffer_len;
+    resp_size = (uint32_t)tcti_libtpms->response_len;
+    respbufsize = (uint32_t)tcti_libtpms->response_buffer_len;
     LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_Process, &tcti_libtpms->response_buffer,
-                                                         (uint32_t *) &resp_size,
-                                                         (uint32_t *) &respbufsize,
-                                                         (uint8_t *) cmd_buf,
-                                                         size);
+                     (uint32_t *)&resp_size, (uint32_t *)&respbufsize, (uint8_t *)cmd_buf, size);
     tcti_libtpms->response_len = resp_size;
     tcti_libtpms->response_buffer_len = respbufsize;
 
@@ -466,21 +404,16 @@ fail:
 }
 
 TSS2_RC
-tcti_libtpms_cancel(
-    TSS2_TCTI_CONTEXT *tctiContext)
-{
-    (void) (tctiContext);
+tcti_libtpms_cancel(TSS2_TCTI_CONTEXT *tctiContext) {
+    (void)(tctiContext);
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
 TSS2_RC
-tcti_libtpms_set_locality(
-    TSS2_TCTI_CONTEXT *tctiContext,
-    uint8_t locality)
-{
+tcti_libtpms_set_locality(TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality) {
     TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = tcti_libtpms_context_cast(tctiContext);
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_libtpms_down_cast(tcti_libtpms);
-    TSS2_RC rc;
+    TSS2_TCTI_COMMON_CONTEXT  *tcti_common = tcti_libtpms_down_cast(tcti_libtpms);
+    TSS2_RC                    rc;
 
     rc = tcti_common_set_locality_checks(tcti_common, TCTI_LIBTPMS_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
@@ -492,11 +425,9 @@ tcti_libtpms_set_locality(
 }
 
 TSS2_RC
-tcti_libtpms_get_poll_handles(
-    TSS2_TCTI_CONTEXT *tctiContext,
-    TSS2_TCTI_POLL_HANDLE *handles,
-    size_t *num_handles)
-{
+tcti_libtpms_get_poll_handles(TSS2_TCTI_CONTEXT     *tctiContext,
+                              TSS2_TCTI_POLL_HANDLE *handles,
+                              size_t                *num_handles) {
     (void)(tctiContext);
     (void)(handles);
     (void)(num_handles);
@@ -504,10 +435,8 @@ tcti_libtpms_get_poll_handles(
 }
 
 void
-tcti_libtpms_finalize(
-    TSS2_TCTI_CONTEXT *tctiContext)
-{
-    int ret;
+tcti_libtpms_finalize(TSS2_TCTI_CONTEXT *tctiContext) {
+    int                        ret;
     TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = tcti_libtpms_context_cast(tctiContext);
 
     if (tcti_libtpms == NULL) {
@@ -526,10 +455,9 @@ tcti_libtpms_finalize(
 
     if (tcti_libtpms->state_path != NULL) {
         /* truncate state file to its real size */
-        ret = truncate(tcti_libtpms->state_path, (off_t) tcti_libtpms->state_len);
+        ret = truncate(tcti_libtpms->state_path, (off_t)tcti_libtpms->state_len);
         if (ret != 0) {
-            LOG_WARNING("truncate failed on file %s: %s",
-                        tcti_libtpms->state_path,
+            LOG_WARNING("truncate failed on file %s: %s", tcti_libtpms->state_path,
                         strerror(errno));
         }
     }
@@ -539,20 +467,18 @@ tcti_libtpms_finalize(
 }
 
 TSS2_RC
-tcti_libtpms_receive(
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t *response_size,
-    unsigned char *response_buffer,
-    int32_t timeout)
-{
+tcti_libtpms_receive(TSS2_TCTI_CONTEXT *tctiContext,
+                     size_t            *response_size,
+                     unsigned char     *response_buffer,
+                     int32_t            timeout) {
 #ifdef TEST_FAPI_ASYNC
     /* Used for simulating a timeout. */
     static int wait = 0;
 #endif
 
     TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = tcti_libtpms_context_cast(tctiContext);
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_libtpms_down_cast(tcti_libtpms);
-    TSS2_RC rc;
+    TSS2_TCTI_COMMON_CONTEXT  *tcti_common = tcti_libtpms_down_cast(tcti_libtpms);
+    TSS2_RC                    rc;
 
     rc = tcti_common_receive_checks(tcti_common, response_size, TCTI_LIBTPMS_MAGIC);
     if (rc != TSS2_RC_SUCCESS) {
@@ -599,25 +525,23 @@ tcti_libtpms_receive(
 }
 
 static void
-tcti_libtpms_init_context_data(TSS2_TCTI_COMMON_CONTEXT *tcti_common)
-{
-    TSS2_TCTI_MAGIC (tcti_common) = TCTI_LIBTPMS_MAGIC;
-    TSS2_TCTI_VERSION (tcti_common) = TCTI_VERSION;
-    TSS2_TCTI_TRANSMIT (tcti_common) = tcti_libtpms_transmit;
-    TSS2_TCTI_RECEIVE (tcti_common) = tcti_libtpms_receive;
-    TSS2_TCTI_FINALIZE (tcti_common) = tcti_libtpms_finalize;
-    TSS2_TCTI_CANCEL (tcti_common) = tcti_libtpms_cancel;
-    TSS2_TCTI_GET_POLL_HANDLES (tcti_common) = tcti_libtpms_get_poll_handles;
-    TSS2_TCTI_SET_LOCALITY (tcti_common) = tcti_libtpms_set_locality;
-    TSS2_TCTI_MAKE_STICKY (tcti_common) = tcti_make_sticky_not_implemented;
+tcti_libtpms_init_context_data(TSS2_TCTI_COMMON_CONTEXT *tcti_common) {
+    TSS2_TCTI_MAGIC(tcti_common) = TCTI_LIBTPMS_MAGIC;
+    TSS2_TCTI_VERSION(tcti_common) = TCTI_VERSION;
+    TSS2_TCTI_TRANSMIT(tcti_common) = tcti_libtpms_transmit;
+    TSS2_TCTI_RECEIVE(tcti_common) = tcti_libtpms_receive;
+    TSS2_TCTI_FINALIZE(tcti_common) = tcti_libtpms_finalize;
+    TSS2_TCTI_CANCEL(tcti_common) = tcti_libtpms_cancel;
+    TSS2_TCTI_GET_POLL_HANDLES(tcti_common) = tcti_libtpms_get_poll_handles;
+    TSS2_TCTI_SET_LOCALITY(tcti_common) = tcti_libtpms_set_locality;
+    TSS2_TCTI_MAKE_STICKY(tcti_common) = tcti_make_sticky_not_implemented;
     tcti_common->state = TCTI_STATE_TRANSMIT;
     memset(&tcti_common->header, 0, sizeof(tcti_common->header));
 }
 
 TSS2_RC
-tcti_libtpms_dl(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
-{
-    const char *names[] = {"libtpms.so", "libtpms.so.0"};
+tcti_libtpms_dl(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
+    const char *names[] = { "libtpms.so", "libtpms.so.0" };
 
     for (size_t i = 0; i < ARRAY_LEN(names); i++) {
         tcti_libtpms->libtpms = dlopen(names[i], RTLD_LAZY | RTLD_LOCAL);
@@ -636,7 +560,8 @@ tcti_libtpms_dl(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
         goto cleanup_dl;
     }
 
-    tcti_libtpms->TPMLIB_RegisterCallbacks = dlsym(tcti_libtpms->libtpms, "TPMLIB_RegisterCallbacks");
+    tcti_libtpms->TPMLIB_RegisterCallbacks
+        = dlsym(tcti_libtpms->libtpms, "TPMLIB_RegisterCallbacks");
     if (tcti_libtpms->TPMLIB_RegisterCallbacks == NULL) {
         LOG_ERROR("Could not resolve libtpms symbol TPMLIB_RegisterCallbacks(): %s", dlerror());
         goto cleanup_dl;
@@ -672,7 +597,8 @@ tcti_libtpms_dl(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms)
         goto cleanup_dl;
     }
 
-    tcti_libtpms->TPM_IO_TpmEstablished_Reset = dlsym(tcti_libtpms->libtpms, "TPM_IO_TpmEstablished_Reset");
+    tcti_libtpms->TPM_IO_TpmEstablished_Reset
+        = dlsym(tcti_libtpms->libtpms, "TPM_IO_TpmEstablished_Reset");
     if (tcti_libtpms->TPM_IO_TpmEstablished_Reset == NULL) {
         LOG_ERROR("Could not resolve libtpms symbol TPM_IO_TpmEstablished_Reset(): %s", dlerror());
         goto cleanup_dl;
@@ -696,58 +622,51 @@ cleanup_dl:
  */
 
 TPM_RESULT
-tcti_libtpms_cb_nvram_init(void)
-{
+tcti_libtpms_cb_nvram_init(void) {
     LOG_TRACE("tcti-libtpms callback nvram_init() called.");
 
     return TPM_SUCCESS;
 }
 
 TPM_RESULT
-tcti_libtpms_cb_nvram_loaddata(
-    unsigned char **data MAYBE_UNUSED,
-    uint32_t *length MAYBE_UNUSED,
-    uint32_t tpm_number MAYBE_UNUSED,
-    const char *name MAYBE_UNUSED)
-{
+tcti_libtpms_cb_nvram_loaddata(unsigned char **data MAYBE_UNUSED,
+                               uint32_t *length     MAYBE_UNUSED,
+                               uint32_t tpm_number  MAYBE_UNUSED,
+                               const char *name     MAYBE_UNUSED) {
     LOG_TRACE("tcti-libtpms callback nvram_loaddata() called: "
               "data=0x%" PRIxPTR ", "
               "length=0x%" PRIxPTR ", "
               "tpm_number=%" PRIu32 ", "
               "name=%s",
-               (uintptr_t) data, (uintptr_t) length, tpm_number, name);
+              (uintptr_t)data, (uintptr_t)length, tpm_number, name);
 
     return TPM_RETRY;
 }
 
 TPM_RESULT
-tcti_libtpms_cb_nvram_storedata(
-    const unsigned char *data MAYBE_UNUSED,
-    uint32_t length MAYBE_UNUSED,
-    uint32_t tpm_number MAYBE_UNUSED,
-    const char *name MAYBE_UNUSED)
-{
+tcti_libtpms_cb_nvram_storedata(const unsigned char *data MAYBE_UNUSED,
+                                uint32_t length           MAYBE_UNUSED,
+                                uint32_t tpm_number       MAYBE_UNUSED,
+                                const char *name          MAYBE_UNUSED) {
     LOG_TRACE("tcti-libtpms callback nvram_storedata() called: "
               "data=0x%" PRIxPTR ", "
               "length=%" PRIu32 ", "
               "tpm_number=%" PRIu32 ", "
               "name=%s",
-               (uintptr_t) data, length, tpm_number, name);
+              (uintptr_t)data, length, tpm_number, name);
 
     return TPM_SUCCESS;
 }
 
 TPM_RESULT
-tcti_libtpms_cb_nvram_deletename(
-    uint32_t tpm_number MAYBE_UNUSED,
-    const char *name MAYBE_UNUSED,
-    TPM_BOOL must_exist MAYBE_UNUSED)
-{
+tcti_libtpms_cb_nvram_deletename(uint32_t tpm_number MAYBE_UNUSED,
+                                 const char *name    MAYBE_UNUSED,
+                                 TPM_BOOL must_exist MAYBE_UNUSED) {
     LOG_TRACE("tcti-libtpms callback nvram_deletename() called: "
               "tpm_number=%" PRIu32 ", "
               "name=%s, "
               "must_exist=%d",
-               tpm_number, name, must_exist);
+              tpm_number, name, must_exist);
 
     LOG_ERROR("Not implemented");
 
@@ -755,24 +674,21 @@ tcti_libtpms_cb_nvram_deletename(
 }
 
 TPM_RESULT
-tcti_libtpms_cb_io_init(void)
-{
+tcti_libtpms_cb_io_init(void) {
     LOG_TRACE("tcti-libtpms callback io_init() called.");
 
     return TPM_SUCCESS;
 }
 
 TPM_RESULT
-tcti_libtpms_cb_io_getlocality(
-    TPM_MODIFIER_INDICATOR *locality_modifer,
-    uint32_t tpm_number MAYBE_UNUSED)
-{
+tcti_libtpms_cb_io_getlocality(TPM_MODIFIER_INDICATOR *locality_modifer,
+                               uint32_t tpm_number     MAYBE_UNUSED) {
     TSS2_TCTI_COMMON_CONTEXT *tcti_common;
 
     LOG_TRACE("tcti-libtpms callback io_getlocality() called: "
               "locality_modifer=0x%" PRIxPTR ", "
               "tpm_number=%" PRIu32,
-               (uintptr_t) locality_modifer, tpm_number);
+              (uintptr_t)locality_modifer, tpm_number);
 
     if (locality_modifer == NULL) {
         return TPM_FAIL;
@@ -789,14 +705,12 @@ tcti_libtpms_cb_io_getlocality(
 }
 
 TPM_RESULT
-tcti_libtpms_cb_io_getphysicalpresence(
-    TPM_BOOL *physical_presence MAYBE_UNUSED,
-    uint32_t tpm_number MAYBE_UNUSED)
-{
+tcti_libtpms_cb_io_getphysicalpresence(TPM_BOOL *physical_presence MAYBE_UNUSED,
+                                       uint32_t tpm_number         MAYBE_UNUSED) {
     LOG_TRACE("tcti-libtpms callback io_getphysicalpresence() called: "
               "physical_presence=0x%" PRIxPTR ", "
               "tpm_number=%" PRIu32,
-               (uintptr_t) physical_presence, tpm_number);
+              (uintptr_t)physical_presence, tpm_number);
 
     LOG_ERROR("Not implemented");
 
@@ -805,19 +719,15 @@ tcti_libtpms_cb_io_getphysicalpresence(
 /*************** end: libtpms callbacks ****************/
 
 TSS2_RC
-Tss2_Tcti_Libtpms_Init(
-    TSS2_TCTI_CONTEXT *tctiContext,
-    size_t *size,
-    const char *conf)
-{
-    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT*)tctiContext;
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_libtpms_down_cast(tcti_libtpms);
-    TSS2_RC rc;
-    TPM_RESULT ret;
+Tss2_Tcti_Libtpms_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *conf) {
+    TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms = (TSS2_TCTI_LIBTPMS_CONTEXT *)tctiContext;
+    TSS2_TCTI_COMMON_CONTEXT  *tcti_common = tcti_libtpms_down_cast(tcti_libtpms);
+    TSS2_RC                    rc;
+    TPM_RESULT                 ret;
     (void)(conf);
 
-    LOG_TRACE("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ", conf: %s",
-               (uintptr_t)tctiContext, (uintptr_t)size, conf);
+    LOG_TRACE("tctiContext: 0x%" PRIxPTR ", size: 0x%" PRIxPTR ", conf: %s", (uintptr_t)tctiContext,
+              (uintptr_t)size, conf);
     if (size == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
     }
@@ -830,7 +740,7 @@ Tss2_Tcti_Libtpms_Init(
 
     rc = tcti_libtpms_set_locality(tctiContext, 0);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_WARNING ("Could not set locality: 0x%" PRIx32, rc);
+        LOG_WARNING("Could not set locality: 0x%" PRIx32, rc);
         return rc;
     }
 
@@ -864,20 +774,19 @@ Tss2_Tcti_Libtpms_Init(
         LOG_ERROR("Could not create and map state file.");
         goto cleanup_state_path;
     }
-    LOG_TRACE("Successfully opened memory-mapped libtpms state file: %s",
-                tcti_libtpms->state_path);
+    LOG_TRACE("Successfully opened memory-mapped libtpms state file: %s", tcti_libtpms->state_path);
 
-    struct libtpms_callbacks callbacks = {
-        .sizeOfStruct               = sizeof(struct libtpms_callbacks),
-        .tpm_nvram_init             = tcti_libtpms_cb_nvram_init,
-        .tpm_nvram_loaddata         = NULL,
-        .tpm_nvram_storedata        = NULL,
-        .tpm_nvram_deletename       = tcti_libtpms_cb_nvram_deletename,
-        .tpm_io_init                = tcti_libtpms_cb_io_init,
-        .tpm_io_getlocality         = tcti_libtpms_cb_io_getlocality,
-        .tpm_io_getphysicalpresence = tcti_libtpms_cb_io_getphysicalpresence
-    };
-    LIBTPMS_API_CALL(cleanup_state_mmap, tcti_libtpms, TPMLIB_ChooseTPMVersion, TPMLIB_TPM_VERSION_2);
+    struct libtpms_callbacks callbacks
+        = { .sizeOfStruct = sizeof(struct libtpms_callbacks),
+            .tpm_nvram_init = tcti_libtpms_cb_nvram_init,
+            .tpm_nvram_loaddata = NULL,
+            .tpm_nvram_storedata = NULL,
+            .tpm_nvram_deletename = tcti_libtpms_cb_nvram_deletename,
+            .tpm_io_init = tcti_libtpms_cb_io_init,
+            .tpm_io_getlocality = tcti_libtpms_cb_io_getlocality,
+            .tpm_io_getphysicalpresence = tcti_libtpms_cb_io_getphysicalpresence };
+    LIBTPMS_API_CALL(cleanup_state_mmap, tcti_libtpms, TPMLIB_ChooseTPMVersion,
+                     TPMLIB_TPM_VERSION_2);
     LIBTPMS_API_CALL(cleanup_state_mmap, tcti_libtpms, TPMLIB_RegisterCallbacks, &callbacks);
     rc = tcti_libtpms_load_state(tcti_libtpms);
     if (rc != TPM2_RC_SUCCESS) {
@@ -915,7 +824,6 @@ static const TSS2_TCTI_INFO tss2_tcti_libtpms_info = {
 };
 
 const TSS2_TCTI_INFO *
-Tss2_Tcti_Info(void)
-{
+Tss2_Tcti_Info(void) {
     return &tss2_tcti_libtpms_info;
 }

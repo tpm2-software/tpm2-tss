@@ -6,22 +6,22 @@
 #ifndef TCTI_COMMON_H
 #define TCTI_COMMON_H
 
-#include <stdbool.h>          // for bool
-#include <stddef.h>           // for size_t
-#include <stdint.h>           // for uint8_t, uint64_t
+#include <stdbool.h> // for bool
+#include <stddef.h>  // for size_t
+#include <stdint.h>  // for uint8_t, uint64_t
 
-#include "tss2_common.h"      // for UINT32, TSS2_RC
-#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CONTEXT_CO...
-#include "tss2_tpm2_types.h"  // for TPM2_ST, TPM2_HANDLE
+#include "tss2_common.h"     // for UINT32, TSS2_RC
+#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CONTEXT_CO...
+#include "tss2_tpm2_types.h" // for TPM2_ST, TPM2_HANDLE
 
-#define TCTI_VERSION 0x2
+#define TCTI_VERSION    0x2
 
-#define TPM_HEADER_SIZE (sizeof (TPM2_ST) + sizeof (UINT32) + sizeof (UINT32))
+#define TPM_HEADER_SIZE (sizeof(TPM2_ST) + sizeof(UINT32) + sizeof(UINT32))
 
 typedef struct {
     TPM2_ST tag;
-    UINT32 size;
-    UINT32 code;
+    UINT32  size;
+    UINT32  code;
 } tpm_header_t;
 /*
  * The elements in this enumeration represent the possible states that the
@@ -57,80 +57,67 @@ typedef enum {
 
 typedef struct {
     TSS2_TCTI_CONTEXT_COMMON_V2 v2;
-    tcti_state_t state;
-    tpm_header_t header;
-    uint8_t locality;
-    bool partial_read_supported;
-    bool partial;
+    tcti_state_t                state;
+    tpm_header_t                header;
+    uint8_t                     locality;
+    bool                        partial_read_supported;
+    bool                        partial;
 } TSS2_TCTI_COMMON_CONTEXT;
 
 /*
  */
-TSS2_TCTI_COMMON_CONTEXT*
-tcti_common_context_cast (TSS2_TCTI_CONTEXT *ctx);
+TSS2_TCTI_COMMON_CONTEXT *tcti_common_context_cast(TSS2_TCTI_CONTEXT *ctx);
 /*
  * This function is used to "down cast" the Intel TCTI context to the opaque
  * context type.
  */
-TSS2_TCTI_CONTEXT*
-tcti_common_down_cast (TSS2_TCTI_COMMON_CONTEXT *ctx);
+TSS2_TCTI_CONTEXT *tcti_common_down_cast(TSS2_TCTI_COMMON_CONTEXT *ctx);
 /*
  * This function performs checks on the common context structure passed to a
  * TCTI 'cancel' function.
  */
 TSS2_RC
-tcti_common_cancel_checks (
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common,
-    uint64_t magic);
+tcti_common_cancel_checks(TSS2_TCTI_COMMON_CONTEXT *tcti_common, uint64_t magic);
 /*
  * This function performs common checks on the context structure and the
  * buffer passed into TCTI 'transmit' functions.
  */
 TSS2_RC
-tcti_common_transmit_checks (
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common,
-    const uint8_t *command_buffer,
-    uint64_t magic);
+tcti_common_transmit_checks(TSS2_TCTI_COMMON_CONTEXT *tcti_common,
+                            const uint8_t            *command_buffer,
+                            uint64_t                  magic);
 /*
  * This function performs common checks on the context structure, buffer and
  * size parameter passed to the TCTI 'receive' functions.
  */
 TSS2_RC
-tcti_common_receive_checks (
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common,
-    size_t *response_size,
-    uint64_t magic);
+tcti_common_receive_checks(TSS2_TCTI_COMMON_CONTEXT *tcti_common,
+                           size_t                   *response_size,
+                           uint64_t                  magic);
 /*
  * This function performs checks on the common context structure passed to a
  * TCTI 'set_locality' function.
  */
 TSS2_RC
-tcti_common_set_locality_checks (
-    TSS2_TCTI_COMMON_CONTEXT *tcti_common,
-    uint64_t magic);
+tcti_common_set_locality_checks(TSS2_TCTI_COMMON_CONTEXT *tcti_common, uint64_t magic);
 /*
  * Just a function with the right prototype that returns the not implemented
  * RC for the TCTI layer.
  */
 TSS2_RC
-tcti_make_sticky_not_implemented (
-    TSS2_TCTI_CONTEXT *tctiContext,
-    TPM2_HANDLE *handle,
-    uint8_t sticky);
+tcti_make_sticky_not_implemented(TSS2_TCTI_CONTEXT *tctiContext,
+                                 TPM2_HANDLE       *handle,
+                                 uint8_t            sticky);
 /*
  * Utility to function to parse the first 10 bytes of a buffer and populate
  * the 'header' structure with the results. The provided buffer is assumed to
  * be at least 10 bytes long.
  */
 TSS2_RC
-header_unmarshal (
-    const uint8_t *buf,
-    tpm_header_t *header);
+header_unmarshal(const uint8_t *buf, tpm_header_t *header);
 /*
  */
 TSS2_RC
-header_marshal (
-    const tpm_header_t *header,
-    uint8_t *buf);
+header_marshal(const tpm_header_t *header, uint8_t *buf);
 
 #endif

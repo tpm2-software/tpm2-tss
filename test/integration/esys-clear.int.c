@@ -8,16 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for memset
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for memset
 
-#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
-#include "tss2_common.h"      // for TSS2_RC
-#include "tss2_esys.h"        // for Esys_Clear, ESYS_CONTEXT, ESYS_TR_NONE
-#include "tss2_tpm2_types.h"  // for TPM2_RC_BAD_AUTH
+#include "test-esys.h"       // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"     // for TSS2_RC
+#include "tss2_esys.h"       // for Esys_Clear, ESYS_CONTEXT, ESYS_TR_NONE
+#include "tss2_tpm2_types.h" // for TPM2_RC_BAD_AUTH
 
 #define LOGMODULE test
-#include "util/log.h"         // for LOG_WARNING, goto_if_error, number_rc
+#include "util/log.h" // for LOG_WARNING, goto_if_error, number_rc
 
 /** Test of the ESYS function Esys_Clear.
  *
@@ -34,30 +34,23 @@
  */
 
 int
-test_esys_clear(ESYS_CONTEXT * esys_context)
-{
+test_esys_clear(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
-    int failure_return = EXIT_FAILURE;
+    int     failure_return = EXIT_FAILURE;
 
 #ifdef TEST_SESSION
-    ESYS_TR session = ESYS_TR_NONE;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
-                              .keyBits = {.aes = 128},
-                              .mode = {.aes = TPM2_ALG_CFB}
-    };
+    ESYS_TR      session = ESYS_TR_NONE;
+    TPMT_SYM_DEF symmetric
+        = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
     TPMA_SESSION sessionAttributes;
-    TPM2B_NONCE nonceCaller = {
-        .size = 20,
-        .buffer = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11, 12, 13, 14, 15, 16, 17,
-                    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32}
-    };
+    TPM2B_NONCE  nonceCaller = { .size = 20, .buffer = { 1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
+                                                         12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+                                                         23, 24, 25, 26, 27, 28, 29, 30, 31, 32 } };
 
     memset(&sessionAttributes, 0, sizeof sessionAttributes);
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, &nonceCaller, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
 
     goto_if_error(r, "Error: During initialization of session", error);
@@ -65,16 +58,13 @@ test_esys_clear(ESYS_CONTEXT * esys_context)
 
     ESYS_TR authHandle_handle = ESYS_TR_RH_PLATFORM;
 
-    r = Esys_Clear(esys_context,
-                   authHandle_handle,
+    r = Esys_Clear(esys_context, authHandle_handle,
 #ifdef TEST_SESSION
                    session,
 #else
                    ESYS_TR_PASSWORD,
 #endif
-                   ESYS_TR_NONE,
-                   ESYS_TR_NONE
-                   );
+                   ESYS_TR_NONE, ESYS_TR_NONE);
     if (number_rc(r) == TPM2_RC_BAD_AUTH) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
@@ -91,7 +81,7 @@ test_esys_clear(ESYS_CONTEXT * esys_context)
 
     return EXIT_SUCCESS;
 
- error:
+error:
 
 #ifdef TEST_SESSION
     if (session != ESYS_TR_NONE) {
@@ -105,6 +95,6 @@ test_esys_clear(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_clear(esys_context);
 }

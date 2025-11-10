@@ -8,13 +8,13 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>        // for NULL
-#include <stdlib.h>       // for calloc, free
+#include <stdio.h>  // for NULL
+#include <stdlib.h> // for calloc, free
 
-#include "../helper/cmocka_all.h"       // for assert_int_equal, cmocka_unit_test_setup_te...
-#include "sysapi_util.h"  // for CommonPreparePrologue, _TSS2_SYS_CONTEXT_BLOB
-#include "tss2_common.h"  // for TSS2_RC, TSS2_SYS_RC_BAD_SEQUENCE, TSS2_SYS...
-#include "tss2_sys.h"     // for Tss2_Sys_GetContextSize
+#include "../helper/cmocka_all.h" // for assert_int_equal, cmocka_unit_test_setup_te...
+#include "sysapi_util.h"          // for CommonPreparePrologue, _TSS2_SYS_CONTEXT_BLOB
+#include "tss2_common.h"          // for TSS2_RC, TSS2_SYS_RC_BAD_SEQUENCE, TSS2_SYS...
+#include "tss2_sys.h"             // for Tss2_Sys_GetContextSize
 
 #define MAX_SIZE_CTX 4096
 
@@ -22,12 +22,11 @@
  * Pass CommonPreparePrologue a NULL TSS2_SYS_CONTEXT.
  */
 static void
-CommonPreparePrologue_null_sys_context_unit (void **state)
-{
+CommonPreparePrologue_null_sys_context_unit(void **state) {
     TSS2_RC rc;
 
-    rc = CommonPreparePrologue (NULL, 0);
-    assert_int_equal (rc, TSS2_SYS_RC_BAD_REFERENCE);
+    rc = CommonPreparePrologue(NULL, 0);
+    assert_int_equal(rc, TSS2_SYS_RC_BAD_REFERENCE);
 }
 
 /**
@@ -36,26 +35,24 @@ CommonPreparePrologue_null_sys_context_unit (void **state)
  * applications. In the test cases we do this to induce error conditions.
  */
 static int
-CommonPreparePrologue_sys_setup (void **state)
-{
-    TSS2_SYS_CONTEXT_BLOB  *sys_ctx;
-    UINT32 size_ctx;
+CommonPreparePrologue_sys_setup(void **state) {
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx;
+    UINT32                 size_ctx;
 
-    size_ctx = Tss2_Sys_GetContextSize (MAX_SIZE_CTX);
-    sys_ctx = calloc (1, size_ctx);
-    assert_non_null (sys_ctx);
+    size_ctx = Tss2_Sys_GetContextSize(MAX_SIZE_CTX);
+    sys_ctx = calloc(1, size_ctx);
+    assert_non_null(sys_ctx);
 
     *state = sys_ctx;
     return 0;
 }
 
 static int
-CommonPreparePrologue_sys_teardown (void **state)
-{
-    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
+CommonPreparePrologue_sys_teardown(void **state) {
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB *)*state;
 
     if (sys_ctx)
-        free (sys_ctx);
+        free(sys_ctx);
 
     return 0;
 }
@@ -66,49 +63,45 @@ CommonPreparePrologue_sys_teardown (void **state)
  * CMD_STAGE_PREPARE.
  */
 static void
-CommonPreparePrologue_previous_stage_initialize (void **state)
-{
-    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
-    TSS2_RC rc;
+CommonPreparePrologue_previous_stage_initialize(void **state) {
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB *)*state;
+    TSS2_RC                rc;
 
     sys_ctx->previousStage |= ~CMD_STAGE_INITIALIZE;
-    rc = CommonPreparePrologue (sys_ctx, 0);
-    assert_int_equal (rc, TSS2_SYS_RC_BAD_SEQUENCE);
+    rc = CommonPreparePrologue(sys_ctx, 0);
+    assert_int_equal(rc, TSS2_SYS_RC_BAD_SEQUENCE);
 }
 static void
-CommonPreparePrologue_previous_stage_prepare (void **state)
-{
-    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
-    TSS2_RC rc;
+CommonPreparePrologue_previous_stage_prepare(void **state) {
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB *)*state;
+    TSS2_RC                rc;
 
     sys_ctx->previousStage |= ~CMD_STAGE_RECEIVE_RESPONSE;
-    rc = CommonPreparePrologue (sys_ctx, 0);
-    assert_int_equal (rc, TSS2_SYS_RC_BAD_SEQUENCE);
+    rc = CommonPreparePrologue(sys_ctx, 0);
+    assert_int_equal(rc, TSS2_SYS_RC_BAD_SEQUENCE);
 }
 static void
-CommonPreparePrologue_previous_stage_response (void **state)
-{
-    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB*)*state;
-    TSS2_RC rc;
+CommonPreparePrologue_previous_stage_response(void **state) {
+    TSS2_SYS_CONTEXT_BLOB *sys_ctx = (TSS2_SYS_CONTEXT_BLOB *)*state;
+    TSS2_RC                rc;
 
     sys_ctx->previousStage |= ~CMD_STAGE_PREPARE;
-    rc = CommonPreparePrologue (sys_ctx, 0);
-    assert_int_equal (rc, TSS2_SYS_RC_BAD_SEQUENCE);
+    rc = CommonPreparePrologue(sys_ctx, 0);
+    assert_int_equal(rc, TSS2_SYS_RC_BAD_SEQUENCE);
 }
 int
-main (int argc, char* arvg[])
-{
+main(int argc, char *arvg[]) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(CommonPreparePrologue_null_sys_context_unit),
-        cmocka_unit_test_setup_teardown (CommonPreparePrologue_previous_stage_initialize,
-                                  CommonPreparePrologue_sys_setup,
-                                  CommonPreparePrologue_sys_teardown),
-        cmocka_unit_test_setup_teardown (CommonPreparePrologue_previous_stage_prepare,
-                                  CommonPreparePrologue_sys_setup,
-                                  CommonPreparePrologue_sys_teardown),
-        cmocka_unit_test_setup_teardown (CommonPreparePrologue_previous_stage_response,
-                                  CommonPreparePrologue_sys_setup,
-                                  CommonPreparePrologue_sys_teardown),
+        cmocka_unit_test_setup_teardown(CommonPreparePrologue_previous_stage_initialize,
+                                        CommonPreparePrologue_sys_setup,
+                                        CommonPreparePrologue_sys_teardown),
+        cmocka_unit_test_setup_teardown(CommonPreparePrologue_previous_stage_prepare,
+                                        CommonPreparePrologue_sys_setup,
+                                        CommonPreparePrologue_sys_teardown),
+        cmocka_unit_test_setup_teardown(CommonPreparePrologue_previous_stage_response,
+                                        CommonPreparePrologue_sys_setup,
+                                        CommonPreparePrologue_sys_teardown),
     };
-    return cmocka_run_group_tests (tests, NULL, NULL);
+    return cmocka_run_group_tests(tests, NULL, NULL);
 }

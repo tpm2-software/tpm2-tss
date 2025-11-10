@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>          // for memset
+#include <string.h> // for memset
 
-#include "fapi_int.h"        // for FAPI_CONTEXT, KEY_GET_CERTIFICATE_READ
-#include "fapi_util.h"       // for ifapi_non_tpm_mode_init
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_GetCertificate, Fapi_...
+#include "fapi_int.h"       // for FAPI_CONTEXT, KEY_GET_CERTIFICATE_READ
+#include "fapi_util.h"      // for ifapi_non_tpm_mode_init
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetCertificate, Fapi_...
 
 #define LOGMODULE fapi
-#include "util/log.h"        // for LOG_TRACE, return_if_error, base_rc, ret...
+#include "util/log.h" // for LOG_TRACE, return_if_error, base_rc, ret...
 
 /** One-Call function for Fapi_GetCertificate
  *
@@ -54,11 +54,7 @@
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_GetCertificate(
-    FAPI_CONTEXT *context,
-    char const   *path,
-    char        **x509certData)
-{
+Fapi_GetCertificate(FAPI_CONTEXT *context, char const *path, char **x509certData) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -118,9 +114,7 @@ Fapi_GetCertificate(
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_GetCertificate_Async(
-    FAPI_CONTEXT   *context,
-    char    const  *path)
+Fapi_GetCertificate_Async(FAPI_CONTEXT *context, char const *path)
 
 {
     LOG_TRACE("called for context:%p", context);
@@ -172,10 +166,7 @@ Fapi_GetCertificate_Async(
  *         the function.
  */
 TSS2_RC
-Fapi_GetCertificate_Finish(
-    FAPI_CONTEXT  *context,
-    char         **x509certData)
-{
+Fapi_GetCertificate_Finish(FAPI_CONTEXT *context, char **x509certData) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -189,32 +180,29 @@ Fapi_GetCertificate_Finish(
 
     /* Helpful alias pointers */
     IFAPI_Key_SetCertificate *command = &context->cmd.Key_SetCertificate;
-    IFAPI_OBJECT *keyObject = &command->key_object;
+    IFAPI_OBJECT             *keyObject = &command->key_object;
 
     switch (context->state) {
-        statecase(context->state, KEY_GET_CERTIFICATE_READ)
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io, keyObject);
-            return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+    statecase(context->state, KEY_GET_CERTIFICATE_READ)
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, keyObject);
+        return_try_again(r);
+        return_if_error_reset_state(r, "read_finish failed");
 
-            /* Retrieve the appropriate field from the objects and duplicate its
-               content to be returned to the user. */
-            if (keyObject->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
-                strdup_check(*x509certData, keyObject->misc.ext_pub_key.certificate,
-                        r, error_cleanup);
-            } else if (keyObject->objectType == IFAPI_KEY_OBJ)  {
-                strdup_check(*x509certData, keyObject->misc.key.certificate,
-                        r, error_cleanup);
-            } else {
-                strdup_check(*x509certData, "",
-                             r, error_cleanup);
-            }
+        /* Retrieve the appropriate field from the objects and duplicate its
+           content to be returned to the user. */
+        if (keyObject->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
+            strdup_check(*x509certData, keyObject->misc.ext_pub_key.certificate, r, error_cleanup);
+        } else if (keyObject->objectType == IFAPI_KEY_OBJ) {
+            strdup_check(*x509certData, keyObject->misc.key.certificate, r, error_cleanup);
+        } else {
+            strdup_check(*x509certData, "", r, error_cleanup);
+        }
 
-            context->state = FAPI_STATE_INIT;
-            r = TSS2_RC_SUCCESS;
-            break;
+        context->state = FAPI_STATE_INIT;
+        r = TSS2_RC_SUCCESS;
+        break;
 
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
 error_cleanup:

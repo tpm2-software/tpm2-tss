@@ -8,17 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>        // for NULL, fopen, fclose, fileno, fprintf, fseek
-#include <stdlib.h>       // for malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>       // for strlen
-#include <unistd.h>       // for read
+#include <stdio.h>  // for NULL, fopen, fclose, fileno, fprintf, fseek
+#include <stdlib.h> // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for strlen
+#include <unistd.h> // for read
 
-#include "test-fapi.h"    // for ASSERT, pcr_reset, ASSERT_SIZE, CHECK_JSON_...
-#include "tss2_common.h"  // for TSS2_FAPI_RC_MEMORY, TSS2_RC
-#include "tss2_fapi.h"    // for Fapi_Import, Fapi_CreateKey, Fapi_Delete
+#include "test-fapi.h"   // for ASSERT, pcr_reset, ASSERT_SIZE, CHECK_JSON_...
+#include "tss2_common.h" // for TSS2_FAPI_RC_MEMORY, TSS2_RC
+#include "tss2_fapi.h"   // for Fapi_Import, Fapi_CreateKey, Fapi_Delete
 
 #define LOGMODULE test
-#include "util/log.h"     // for goto_if_error, SAFE_FREE, LOG_ERROR, LOG_INFO
+#include "util/log.h" // for goto_if_error, SAFE_FREE, LOG_ERROR, LOG_INFO
 
 #define SIZE 2000
 
@@ -39,16 +39,15 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_duplicate(FAPI_CONTEXT *context)
-{
+test_fapi_duplicate(FAPI_CONTEXT *context) {
     TSS2_RC r;
-    char *policy_name = "/policy/pol_duplicate";
-    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_duplicate.json";
-    FILE *stream = NULL;
-    char *json_policy = NULL;
-    long policy_size;
-    char *json_duplicate = NULL;
-    char *json_string_pub_key = NULL;
+    char   *policy_name = "/policy/pol_duplicate";
+    char   *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_duplicate.json";
+    FILE   *stream = NULL;
+    char   *json_policy = NULL;
+    long    policy_size;
+    char   *json_duplicate = NULL;
+    char   *json_string_pub_key = NULL;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -65,9 +64,8 @@ test_fapi_duplicate(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -79,8 +77,7 @@ test_fapi_duplicate(FAPI_CONTEXT *context)
     r = Fapi_Import(context, policy_name, json_policy);
     goto_if_error(r, "Error Fapi_List", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/myCryptKey", "restricted,decrypt,noDa",
-                       "", NULL);
+    r = Fapi_CreateKey(context, "HS/SRK/myCryptKey", "restricted,decrypt,noDa", "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     r = Fapi_ExportKey(context, "HS/SRK/myCryptKey", NULL, &json_string_pub_key);
@@ -91,12 +88,12 @@ test_fapi_duplicate(FAPI_CONTEXT *context)
     r = Fapi_Import(context, "ext/myNewParent", json_string_pub_key);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/myCryptKey/myCryptKey2",
-                       "exportable,decrypt,noDa", policy_name, NULL);
+    r = Fapi_CreateKey(context, "HS/SRK/myCryptKey/myCryptKey2", "exportable,decrypt,noDa",
+                       policy_name, NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_ExportKey(context, "HS/SRK/myCryptKey/myCryptKey2",
-                       "ext/myNewParent", &json_duplicate);
+    r = Fapi_ExportKey(context, "HS/SRK/myCryptKey/myCryptKey2", "ext/myNewParent",
+                       &json_duplicate);
     goto_if_error(r, "Error Fapi_CreateKey", error);
     ASSERT(json_duplicate != NULL);
     ASSERT(strlen(json_duplicate) > ASSERT_SIZE);
@@ -127,7 +124,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_duplicate(fapi_context);
 }

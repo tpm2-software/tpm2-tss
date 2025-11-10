@@ -8,23 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>          // for bool, false, true
-#include <string.h>           // for memset, strcmp
+#include <stdbool.h> // for bool, false, true
+#include <string.h>  // for memset, strcmp
 
-#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_Key_Create, IFAPI_C...
-#include "fapi_util.h"        // for ifapi_create_primary, ifapi_get_key_pro...
-#include "ifapi_helpers.h"    // for free_string_list, ifapi_set_key_flags
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"     // for check_not_null, return_if_error_reset_s...
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for Esys_SetTimeout
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_CreateKey, Fapi_Crea...
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPMA_OBJECT_DECRYPT, TPMA_OBJECT_SIGN_E...
+#include "fapi_int.h"        // for FAPI_CONTEXT, IFAPI_Key_Create, IFAPI_C...
+#include "fapi_util.h"       // for ifapi_create_primary, ifapi_get_key_pro...
+#include "ifapi_helpers.h"   // for free_string_list, ifapi_set_key_flags
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_s...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for Esys_SetTimeout
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_CreateKey, Fapi_Crea...
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPMA_OBJECT_DECRYPT, TPMA_OBJECT_SIGN_E...
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for LOG_TRACE, goto_if_error, return_if_error
+#include "util/log.h" // for LOG_TRACE, goto_if_error, return_if_error
 
 /** One-Call function for Fapi_CreateKey
  *
@@ -69,13 +69,11 @@
  *         was not successful.
  */
 TSS2_RC
-Fapi_CreateKey(
-    FAPI_CONTEXT *context,
-    char   const *path,
-    char   const *type,
-    char   const *policyPath,
-    char   const *authValue)
-{
+Fapi_CreateKey(FAPI_CONTEXT *context,
+               char const   *path,
+               char const   *type,
+               char const   *policyPath,
+               char const   *authValue) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -156,23 +154,21 @@ Fapi_CreateKey(
  *         during authorization.
  */
 TSS2_RC
-Fapi_CreateKey_Async(
-    FAPI_CONTEXT *context,
-    char   const *path,
-    char   const *type,
-    char   const *policyPath,
-    char   const *authValue)
-{
+Fapi_CreateKey_Async(FAPI_CONTEXT *context,
+                     char const   *path,
+                     char const   *type,
+                     char const   *policyPath,
+                     char const   *authValue) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
     LOG_TRACE("type: %s", type);
     LOG_TRACE("policyPath: %s", policyPath);
     LOG_TRACE("authValue: %s", authValue);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     TPMA_OBJECT *attributes;
-    bool is_primary;
-    bool in_null_hierarchy;
+    bool         is_primary;
+    bool         in_null_hierarchy;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -201,8 +197,7 @@ Fapi_CreateKey_Async(
 
     /* If neither sign nor decrypt is set both flags will
        sign_encrypt and decrypt have to be set. */
-    if (!(*attributes & TPMA_OBJECT_SIGN_ENCRYPT) &&
-        !(*attributes & TPMA_OBJECT_DECRYPT)) {
+    if (!(*attributes & TPMA_OBJECT_SIGN_ENCRYPT) && !(*attributes & TPMA_OBJECT_DECRYPT)) {
         *attributes |= TPMA_OBJECT_SIGN_ENCRYPT;
         *attributes |= TPMA_OBJECT_DECRYPT;
     }
@@ -212,22 +207,21 @@ Fapi_CreateKey_Async(
 
     if (in_null_hierarchy && context->cmd.Key_Create.public_templ.persistent_handle) {
         /* Keys in the null hierarchy cannot be persistent. */
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
-                   "Key %s in the NULL hiearchy cannot be persistent.",
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Key %s in the NULL hiearchy cannot be persistent.",
                    error_cleanup, path);
     }
 
     /* Initialize the context state for this operation. */
     if (is_primary) {
-         context->state = KEY_CREATE_PRIMARY;
-         context->cmd.Key_Create.state = KEY_CREATE_PRIMARY_INIT;
+        context->state = KEY_CREATE_PRIMARY;
+        context->cmd.Key_Create.state = KEY_CREATE_PRIMARY_INIT;
     } else {
         context->state = KEY_CREATE;
     }
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
- error_cleanup:
+error_cleanup:
     SAFE_FREE(context->cmd.Key_Create.policyPath);
     SAFE_FREE(context->cmd.Key_Create.keyPath);
     free_string_list(context->loadKey.path_list);
@@ -268,9 +262,7 @@ Fapi_CreateKey_Async(
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the object already exists in object store.
  */
 TSS2_RC
-Fapi_CreateKey_Finish(
-    FAPI_CONTEXT *context)
-{
+Fapi_CreateKey_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -279,32 +271,32 @@ Fapi_CreateKey_Finish(
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_Key_Create * command = &context->cmd.Key_Create;
+    IFAPI_Key_Create *command = &context->cmd.Key_Create;
 
     switch (context->state) {
-        statecase(context->state, KEY_CREATE);
-            /* Finish the key creation inside the helper function. */
-            r = ifapi_key_create(context, &command->public_templ);
-            return_try_again(r);
-            goto_if_error(r, "Key create", error_cleanup);
+    statecase(context->state, KEY_CREATE);
+        /* Finish the key creation inside the helper function. */
+        r = ifapi_key_create(context, &command->public_templ);
+        return_try_again(r);
+        goto_if_error(r, "Key create", error_cleanup);
 
-            /* Cleanup any intermediate results and state stored in the context. */
-            ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
-            ifapi_cleanup_ifapi_object(context->loadKey.key_object);
-            ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
-            context->state = FAPI_STATE_INIT;
-            LOG_TRACE("finished");
-            return TSS2_RC_SUCCESS;
+        /* Cleanup any intermediate results and state stored in the context. */
+        ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
+        ifapi_cleanup_ifapi_object(context->loadKey.key_object);
+        ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
+        context->state = FAPI_STATE_INIT;
+        LOG_TRACE("finished");
+        return TSS2_RC_SUCCESS;
 
-        statecase(context->state, KEY_CREATE_PRIMARY);
+    statecase(context->state, KEY_CREATE_PRIMARY);
         r = ifapi_create_primary(context, &command->public_templ);
-            return_try_again(r);
-            goto_if_error(r, "Key create", error_cleanup);
+        return_try_again(r);
+        goto_if_error(r, "Key create", error_cleanup);
 
-            context->state = FAPI_STATE_INIT;
-            return TSS2_RC_SUCCESS;
+        context->state = FAPI_STATE_INIT;
+        return TSS2_RC_SUCCESS;
 
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
 error_cleanup:

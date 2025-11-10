@@ -8,23 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>                         // for uint8_t
-#include <stdlib.h>                         // for free
-#include <string.h>                         // for memset, strdup, memcpy
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for free
+#include <string.h> // for memset, strdup, memcpy
 
-#include "fapi_int.h"                       // for IFAPI_PCR_LOG_FILE, FAPI_...
-#include "fapi_types.h"                     // for UINT8_ARY
+#include "fapi_int.h"   // for IFAPI_PCR_LOG_FILE, FAPI_...
+#include "fapi_types.h" // for UINT8_ARY
 #include "ifapi_eventlog.h"
-#include "ifapi_helpers.h"                  // for ifapi_asprintf, ifapi_cal...
-#include "ifapi_ima_eventlog.h"             // for IFAPI_IMA_EVENT, ifapi_re...
-#include "ifapi_json_deserialize.h"         // for ifapi_json_IFAPI_EVENT_de...
-#include "ifapi_json_eventlog_serialize.h"  // for ifapi_get_tcg_firmware_ev...
-#include "ifapi_json_serialize.h"           // for ifapi_json_IFAPI_EVENT_se...
-#include "ifapi_macros.h"                   // for check_not_null, statecase
-#include "tpm_json_deserialize.h"           // for ifapi_parse_json
+#include "ifapi_helpers.h"                 // for ifapi_asprintf, ifapi_cal...
+#include "ifapi_ima_eventlog.h"            // for IFAPI_IMA_EVENT, ifapi_re...
+#include "ifapi_json_deserialize.h"        // for ifapi_json_IFAPI_EVENT_de...
+#include "ifapi_json_eventlog_serialize.h" // for ifapi_get_tcg_firmware_ev...
+#include "ifapi_json_serialize.h"          // for ifapi_json_IFAPI_EVENT_se...
+#include "ifapi_macros.h"                  // for check_not_null, statecase
+#include "tpm_json_deserialize.h"          // for ifapi_parse_json
 
 #define LOGMODULE fapi
-#include "util/log.h"                       // for goto_if_error, SAFE_FREE
+#include "util/log.h" // for goto_if_error, SAFE_FREE
 
 /** Initialize the eventlog module of FAPI.
  *
@@ -38,12 +38,10 @@
  *         the function.
  */
 TSS2_RC
-ifapi_eventlog_initialize(
-    IFAPI_EVENTLOG *eventlog,
-    const char *log_dir,
-    const char *firmware_log_file,
-    const char *ima_log_file)
-{
+ifapi_eventlog_initialize(IFAPI_EVENTLOG *eventlog,
+                          const char     *log_dir,
+                          const char     *firmware_log_file,
+                          const char     *ima_log_file) {
     check_not_null(eventlog);
     check_not_null(log_dir);
 
@@ -77,20 +75,18 @@ ifapi_eventlog_initialize(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_eventlog_get_async(
-    IFAPI_EVENTLOG *eventlog,
-    IFAPI_IO *io,
-    const TPM2_HANDLE *pcrList,
-    size_t pcrListSize)
-{
-    IFAPI_EVENT cel_event;
-    IFAPI_EVENT prev_event;
-    size_t n;
+ifapi_eventlog_get_async(IFAPI_EVENTLOG    *eventlog,
+                         IFAPI_IO          *io,
+                         const TPM2_HANDLE *pcrList,
+                         size_t             pcrListSize) {
+    IFAPI_EVENT  cel_event;
+    IFAPI_EVENT  prev_event;
+    size_t       n;
     json_object *jso_prev;
-    size_t i;
+    size_t       i;
     json_object *jso;
-    TSS2_RC r;
-    bool use_pcr0 = false;
+    TSS2_RC      r;
+    bool         use_pcr0 = false;
 
     check_not_null(eventlog);
     check_not_null(io);
@@ -110,8 +106,6 @@ ifapi_eventlog_get_async(
     eventlog->pcrListIdx = 0;
     eventlog->log = json_object_new_array();
     return_if_null(eventlog->log, "Out of memory", TSS2_FAPI_RC_MEMORY);
-
-
 
     if (eventlog->firmware_log_file) {
         use_pcr0 = ifapi_pcr_used(0, pcrList, pcrListSize);
@@ -133,18 +127,15 @@ ifapi_eventlog_get_async(
 
     if (eventlog->firmware_log_file) {
         /* Initialize event list with the firmware events defied by pcrList. */
-        r = ifapi_get_tcg_firmware_event_list(eventlog->firmware_log_file,
-                                              &pcrList[0], pcrListSize,
+        r = ifapi_get_tcg_firmware_event_list(eventlog->firmware_log_file, &pcrList[0], pcrListSize,
                                               &eventlog->log);
         return_if_error(r, "Read firmware log.");
-
 
         memset(&cel_event, 0, sizeof(IFAPI_EVENT));
         n = json_object_array_length(eventlog->log);
         for (i = 0; i < n; i++) {
             jso_prev = json_object_array_get_idx(eventlog->log, i);
-            r = ifapi_json_IFAPI_EVENT_deserialize(jso_prev, &prev_event,
-                                                   DIGEST_CHECK_WARNING);
+            r = ifapi_json_IFAPI_EVENT_deserialize(jso_prev, &prev_event, DIGEST_CHECK_WARNING);
 
             goto_if_error(r, "Deserialize event", error);
             if (prev_event.pcr == 0) {
@@ -166,8 +157,8 @@ ifapi_eventlog_get_async(
     }
     if (eventlog->ima_log_file) {
         /* Initialize event list with the IMA events. */
-        r = ifapi_read_ima_event_log(eventlog->ima_log_file, &pcrList[0],
-                                     pcrListSize, &eventlog->log);
+        r = ifapi_read_ima_event_log(eventlog->ima_log_file, &pcrList[0], pcrListSize,
+                                     &eventlog->log);
         goto_if_error(r, "Read IMA log.", error);
     }
 
@@ -178,12 +169,11 @@ ifapi_eventlog_get_async(
 
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     if (eventlog->log)
         json_object_put(eventlog->log);
     return r;
 }
-
 
 /** Retrieve the eventlog for a given list of pcrs using asynchronous io.
  *
@@ -204,22 +194,20 @@ ifapi_eventlog_get_async(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_eventlog_get_finish(
-    IFAPI_EVENTLOG *eventlog,
-    FAPI_QUOTE_INFO *fapi_quote_info,
-    IFAPI_IO *io,
-    char **log)
-{
+ifapi_eventlog_get_finish(IFAPI_EVENTLOG  *eventlog,
+                          FAPI_QUOTE_INFO *fapi_quote_info,
+                          IFAPI_IO        *io,
+                          char           **log) {
     /* eventlog parameteifapi_eventlog_get_finishr currently not used */
     check_not_null(eventlog);
     check_not_null(io);
     check_not_null(log);
 
-    TSS2_RC r;
-    char *event_log_file, *logstr;
+    TSS2_RC      r;
+    char        *event_log_file, *logstr;
     json_object *logpart, *jso_event;
-    size_t i, n_events;
-    IFAPI_EVENT event;
+    size_t       i, n_events;
+    IFAPI_EVENT  event;
     json_object *jso;
 
     LOG_TRACE("called");
@@ -239,8 +227,7 @@ loop:
             ifapi_cleanup_event(&event);
         }
         if (fapi_quote_info) {
-            r = ifapi_calculate_pcr_digest(eventlog->log,
-                                           fapi_quote_info);
+            r = ifapi_calculate_pcr_digest(eventlog->log, fapi_quote_info);
 
             goto_if_error(r, "Verify event list.", error);
         }
@@ -255,9 +242,8 @@ loop:
 
     switch (eventlog->state) {
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_INIT)
-        /* Construct the filename for the eventlog file */
-        r = ifapi_asprintf(&event_log_file, "%s/%s%i",
-                           eventlog->log_dir, IFAPI_PCR_LOG_FILE,
+    /* Construct the filename for the eventlog file */
+        r = ifapi_asprintf(&event_log_file, "%s/%s%i", eventlog->log_dir, IFAPI_PCR_LOG_FILE,
                            eventlog->pcrList[eventlog->pcrListIdx]);
         return_if_error(r, "Out of memory.");
 
@@ -279,7 +265,7 @@ loop:
         fallthrough;
 
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_READING)
-        /* Finish the reading of the eventlog file and return it directly to the output parameter */
+    /* Finish the reading of the eventlog file and return it directly to the output parameter */
         r = ifapi_io_read_finish(io, (uint8_t **)&logstr, NULL);
         return_try_again(r);
         return_if_error(r, "read_finish failed");
@@ -317,9 +303,9 @@ loop:
     }
     return TSS2_RC_SUCCESS;
 
- error:
-     json_object_put(eventlog->log);
-     return r;
+error:
+    json_object_put(eventlog->log);
+    return r;
 }
 
 /** Check event log format before appending an event to the existing event log.
@@ -341,26 +327,23 @@ loop:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_eventlog_append_check(
-    IFAPI_EVENTLOG *eventlog,
-    IFAPI_IO *io)
-{
+ifapi_eventlog_append_check(IFAPI_EVENTLOG *eventlog, IFAPI_IO *io) {
     check_not_null(eventlog);
     check_not_null(io);
 
     TSS2_RC r;
-    char *logstr = NULL;
+    char   *logstr = NULL;
 
     switch (eventlog->state) {
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_APPENDING)
-        /* No old log data can be read. */
+    /* No old log data can be read. */
         eventlog->log = json_object_new_array();
         return_if_null(eventlog->log, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
         return TSS2_RC_SUCCESS;
 
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_READING)
-        /* Finish the reading of the eventlog file and return it directly to the output parameter */
+    /* Finish the reading of the eventlog file and return it directly to the output parameter */
         r = ifapi_io_read_finish(io, (uint8_t **)&logstr, NULL);
         return_try_again(r);
         return_if_error(r, "read_finish failed");
@@ -371,7 +354,7 @@ ifapi_eventlog_append_check(
             SAFE_FREE(logstr);
             return_if_null(eventlog->log, "JSON parsing error", TSS2_FAPI_RC_BAD_VALUE);
 
-             /* libjson-c does not deliver an array if array has only one element */
+            /* libjson-c does not deliver an array if array has only one element */
             json_type jso_type = json_object_get_type(eventlog->log);
             if (jso_type != json_type_array) {
                 json_object *json_array = json_object_new_array();
@@ -413,22 +396,18 @@ ifapi_eventlog_append_check(
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_eventlog_append_finish(
-    IFAPI_EVENTLOG *eventlog,
-    IFAPI_IO *io,
-    const IFAPI_EVENT *pcr_event)
-{
+ifapi_eventlog_append_finish(IFAPI_EVENTLOG *eventlog, IFAPI_IO *io, const IFAPI_EVENT *pcr_event) {
     check_not_null(eventlog);
     check_not_null(io);
     check_not_null(pcr_event);
 
-    TSS2_RC r;
-    char *event_log_file = NULL;
-    const char *logstr2 = NULL;
+    TSS2_RC      r;
+    char        *event_log_file = NULL;
+    const char  *logstr2 = NULL;
     json_object *event = NULL;
-    size_t i, n;
+    size_t       i, n;
     json_object *jso;
-    IFAPI_EVENT prev_event;
+    IFAPI_EVENT  prev_event;
 
     switch (eventlog->state) {
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_APPENDING)
@@ -439,8 +418,7 @@ ifapi_eventlog_append_finish(
         n = json_object_array_length(eventlog->log);
         for (i = 0; i < n; i++) {
             jso = json_object_array_get_idx(eventlog->log, i);
-            r = ifapi_json_IFAPI_EVENT_deserialize(jso, &prev_event,
-                                                   DIGEST_CHECK_WARNING);
+            r = ifapi_json_IFAPI_EVENT_deserialize(jso, &prev_event, DIGEST_CHECK_WARNING);
             goto_if_error(r, "Deserialize event", error_cleanup);
 
             if (prev_event.pcr == pcr_event->pcr) {
@@ -462,12 +440,12 @@ ifapi_eventlog_append_finish(
         logstr2 = json_object_to_json_string_ext(eventlog->log, JSON_C_TO_STRING_PRETTY);
 
         /* Construct the filename for the eventlog file */
-        r = ifapi_asprintf(&event_log_file, "%s/%s%i",
-                           eventlog->log_dir, IFAPI_PCR_LOG_FILE, eventlog->event.pcr);
+        r = ifapi_asprintf(&event_log_file, "%s/%s%i", eventlog->log_dir, IFAPI_PCR_LOG_FILE,
+                           eventlog->event.pcr);
         goto_if_error(r, "Create file name", error_cleanup);
 
         /* Start writing the eventlog back to disk */
-        r = ifapi_io_write_async(io, event_log_file, (uint8_t *) logstr2, strlen(logstr2));
+        r = ifapi_io_write_async(io, event_log_file, (uint8_t *)logstr2, strlen(logstr2));
         SAFE_FREE(event_log_file);
         json_object_put(eventlog->log); /* this also frees logstr2 */
         eventlog->log = NULL;
@@ -475,7 +453,7 @@ ifapi_eventlog_append_finish(
         fallthrough;
 
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_WRITING)
-        /* Finish writing the eventlog */
+    /* Finish writing the eventlog */
         r = ifapi_io_write_finish(io);
         return_try_again(r);
         goto_if_error(r, "read_finish failed", error_cleanup);
@@ -488,20 +466,19 @@ ifapi_eventlog_append_finish(
 
     return TSS2_RC_SUCCESS;
 
- error_cleanup:
+error_cleanup:
     SAFE_FREE(event_log_file);
     if (eventlog->log)
         json_object_put(eventlog->log);
     return r;
 }
 
-
 /** Free allocated memory for an ifapi event.
  *
  * @param[in,out] event The structure to be cleaned up.
  */
 void
-ifapi_cleanup_event(IFAPI_EVENT * event) {
+ifapi_cleanup_event(IFAPI_EVENT *event) {
     if (event != NULL) {
         if (event->content_type == IFAPI_IMA_EVENT_TAG) {
             SAFE_FREE(event->content.ima_event.template_value.buffer);

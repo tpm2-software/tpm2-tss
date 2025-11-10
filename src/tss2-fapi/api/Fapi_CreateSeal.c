@@ -8,25 +8,25 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>          // for false, true
-#include <stdint.h>           // for uint8_t
-#include <stdlib.h>           // for size_t
-#include <string.h>           // for memset, strcmp
+#include <stdbool.h> // for false, true
+#include <stdint.h>  // for uint8_t
+#include <stdlib.h>  // for size_t
+#include <string.h>  // for memset, strcmp
 
-#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_CMD_STATE, IFAPI_Ke...
-#include "fapi_util.h"        // for ifapi_key_create, ifapi_key_create_prep...
-#include "ifapi_helpers.h"    // for ifapi_set_key_flags
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"     // for check_not_null, return_if_error_reset_s...
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for Esys_SetTimeout
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_CreateSeal, Fapi_Cre...
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPMA_OBJECT_SENSITIVEDATA...
+#include "fapi_int.h"        // for FAPI_CONTEXT, IFAPI_CMD_STATE, IFAPI_Ke...
+#include "fapi_util.h"       // for ifapi_key_create, ifapi_key_create_prep...
+#include "ifapi_helpers.h"   // for ifapi_set_key_flags
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_s...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for Esys_SetTimeout
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_CreateSeal, Fapi_Cre...
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPMA_OBJECT_SENSITIVEDATA...
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for LOG_TRACE, return_if_error, base_rc
+#include "util/log.h" // for LOG_TRACE, return_if_error, base_rc
 
 /** One-Call function for Fapi_CreateSeal
  *
@@ -75,15 +75,13 @@
  *         was not successful.
  */
 TSS2_RC
-Fapi_CreateSeal(
-    FAPI_CONTEXT *context,
-    char    const *path,
-    char    const *type,
-    size_t         size,
-    char    const *policyPath,
-    char    const *authValue,
-    uint8_t const *data)
-{
+Fapi_CreateSeal(FAPI_CONTEXT  *context,
+                char const    *path,
+                char const    *type,
+                size_t         size,
+                char const    *policyPath,
+                char const    *authValue,
+                uint8_t const *data) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -106,8 +104,7 @@ Fapi_CreateSeal(
     return_if_error_reset_state(r, "Set Timeout to blocking");
 #endif /* TEST_FAPI_ASYNC */
 
-    r = Fapi_CreateSeal_Async(context, path, type, size, policyPath,
-                              authValue, data);
+    r = Fapi_CreateSeal_Async(context, path, type, size, policyPath, authValue, data);
     return_if_error_reset_state(r, "CreateSeal");
 
     do {
@@ -170,15 +167,13 @@ Fapi_CreateSeal(
  *         during authorization.
  */
 TSS2_RC
-Fapi_CreateSeal_Async(
-    FAPI_CONTEXT *context,
-    char    const *path,
-    char    const *type,
-    size_t         size,
-    char    const *policyPath,
-    char    const *authValue,
-    uint8_t const *data)
-{
+Fapi_CreateSeal_Async(FAPI_CONTEXT  *context,
+                      char const    *path,
+                      char const    *type,
+                      size_t         size,
+                      char const    *policyPath,
+                      char const    *authValue,
+                      uint8_t const *data) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
     LOG_TRACE("type: %s", type);
@@ -198,8 +193,7 @@ Fapi_CreateSeal_Async(
 
     /* Copy parameters to context for use during _Finish. */
     memset(&context->cmd.Key_Create.public_templ, 0, sizeof(IFAPI_KEY_TEMPLATE));
-    r = ifapi_key_create_prepare_sensitive(context, path, policyPath, size,
-                                           authValue, data);
+    r = ifapi_key_create_prepare_sensitive(context, path, policyPath, size, authValue, data);
     return_if_error(r, "Key create.");
 
     /* Set the flags of the NV index to be created. If no type is given the empty-string
@@ -209,8 +203,8 @@ Fapi_CreateSeal_Async(
                             &context->cmd.Key_Create.public_templ);
     return_if_error(r, "Set key flags for key");
 
-    context->cmd.Key_Create.public_templ.public.publicArea.objectAttributes  &=
-        ~TPMA_OBJECT_SENSITIVEDATAORIGIN;
+    context->cmd.Key_Create.public_templ.public.publicArea.objectAttributes
+        &= ~TPMA_OBJECT_SENSITIVEDATAORIGIN;
 
     /* Initialize the context state for this operation. */
     context->state = CREATE_SEAL;
@@ -253,9 +247,7 @@ Fapi_CreateSeal_Async(
  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the object already exists in object store.
  */
 TSS2_RC
-Fapi_CreateSeal_Finish(
-    FAPI_CONTEXT *context)
-{
+Fapi_CreateSeal_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -264,20 +256,20 @@ Fapi_CreateSeal_Finish(
     check_not_null(context);
 
     switch (context->state) {
-        statecase(context->state, CREATE_SEAL);
-            /* Create the seal object. A seal object internally is a so-called
-               KEYED_HASH object and created in the same way as a regular key.
-               Thus the function name ifapi_key_create(). */
-            r = ifapi_key_create(context, &context->cmd.Key_Create.public_templ);
-            return_try_again(r);
-            goto_if_error(r, "Key create", error_cleanup);
-            break;
+    statecase(context->state, CREATE_SEAL);
+        /* Create the seal object. A seal object internally is a so-called
+           KEYED_HASH object and created in the same way as a regular key.
+           Thus the function name ifapi_key_create(). */
+        r = ifapi_key_create(context, &context->cmd.Key_Create.public_templ);
+        return_try_again(r);
+        goto_if_error(r, "Key create", error_cleanup);
+        break;
 
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
 error_cleanup:
-   /* Cleanup any intermediate results and state stored in the context. */
+    /* Cleanup any intermediate results and state stored in the context. */
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);

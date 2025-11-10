@@ -8,31 +8,28 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, int32_t
-#include <stdlib.h>           // for NULL, calloc
+#include <inttypes.h> // for PRIx32, int32_t
+#include <stdlib.h>   // for NULL, calloc
 
-#include "esys_int.h"         // for ESYS_CONTEXT, RSRC_NODE_T, _ESYS_STATE_...
-#include "esys_iutil.h"       // for iesys_compute_session_value, check_sess...
-#include "esys_types.h"       // for IESYS_RESOURCE, IESYSC_KEY_RSRC, IESYS_...
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_ESYS_RC_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_TR_Close
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPM2B_SENSITIVE_CREATE
+#include "esys_int.h"        // for ESYS_CONTEXT, RSRC_NODE_T, _ESYS_STATE_...
+#include "esys_iutil.h"      // for iesys_compute_session_value, check_sess...
+#include "esys_types.h"      // for IESYS_RESOURCE, IESYSC_KEY_RSRC, IESYS_...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_ESYS_RC_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, Esys_TR_Close
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPM2B_SENSITIVE_CREATE
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_state_if_error, LOG_ERROR, SAFE_...
+#include "util/log.h" // for return_state_if_error, LOG_ERROR, SAFE_...
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
-static void store_input_parameters (
-        ESYS_CONTEXT *esysContext,
-        const TPM2B_SENSITIVE_CREATE *inSensitive)
-{
+static void
+store_input_parameters(ESYS_CONTEXT *esysContext, const TPM2B_SENSITIVE_CREATE *inSensitive) {
     if (inSensitive == NULL) {
         esysContext->in.CreatePrimary.inSensitive = NULL;
     } else {
         esysContext->in.CreatePrimary.inSensitiveData = *inSensitive;
-        esysContext->in.CreatePrimary.inSensitive =
-            &esysContext->in.CreatePrimary.inSensitiveData;
+        esysContext->in.CreatePrimary.inSensitive = &esysContext->in.CreatePrimary.inSensitiveData;
     }
 }
 
@@ -90,26 +87,24 @@ static void store_input_parameters (
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_CreatePrimary(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR primaryHandle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_SENSITIVE_CREATE *inSensitive,
-    const TPM2B_PUBLIC *inPublic,
-    const TPM2B_DATA *outsideInfo,
-    const TPML_PCR_SELECTION *creationPCR, ESYS_TR *objectHandle,
-    TPM2B_PUBLIC **outPublic,
-    TPM2B_CREATION_DATA **creationData,
-    TPM2B_DIGEST **creationHash,
-    TPMT_TK_CREATION **creationTicket)
-{
+Esys_CreatePrimary(ESYS_CONTEXT                 *esysContext,
+                   ESYS_TR                       primaryHandle,
+                   ESYS_TR                       shandle1,
+                   ESYS_TR                       shandle2,
+                   ESYS_TR                       shandle3,
+                   const TPM2B_SENSITIVE_CREATE *inSensitive,
+                   const TPM2B_PUBLIC           *inPublic,
+                   const TPM2B_DATA             *outsideInfo,
+                   const TPML_PCR_SELECTION     *creationPCR,
+                   ESYS_TR                      *objectHandle,
+                   TPM2B_PUBLIC                **outPublic,
+                   TPM2B_CREATION_DATA         **creationData,
+                   TPM2B_DIGEST                **creationHash,
+                   TPMT_TK_CREATION            **creationTicket) {
     TSS2_RC r;
 
-    r = Esys_CreatePrimary_Async(esysContext, primaryHandle, shandle1, shandle2,
-                                 shandle3, inSensitive, inPublic, outsideInfo,
-                                 creationPCR);
+    r = Esys_CreatePrimary_Async(esysContext, primaryHandle, shandle1, shandle2, shandle3,
+                                 inSensitive, inPublic, outsideInfo, creationPCR);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -123,14 +118,12 @@ Esys_CreatePrimary(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_CreatePrimary_Finish(esysContext, objectHandle, outPublic,
-                                      creationData, creationHash,
-                                      creationTicket);
+        r = Esys_CreatePrimary_Finish(esysContext, objectHandle, outPublic, creationData,
+                                      creationHash, creationTicket);
         /* This is just debug information about the reattempt to finish the
            command */
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -177,24 +170,21 @@ Esys_CreatePrimary(
  *         ESYS_TR objects are ESYS_TR_NONE.
  */
 TSS2_RC
-Esys_CreatePrimary_Async(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR primaryHandle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_SENSITIVE_CREATE *inSensitive,
-    const TPM2B_PUBLIC *inPublic,
-    const TPM2B_DATA *outsideInfo,
-    const TPML_PCR_SELECTION *creationPCR)
-{
+Esys_CreatePrimary_Async(ESYS_CONTEXT                 *esysContext,
+                         ESYS_TR                       primaryHandle,
+                         ESYS_TR                       shandle1,
+                         ESYS_TR                       shandle2,
+                         ESYS_TR                       shandle3,
+                         const TPM2B_SENSITIVE_CREATE *inSensitive,
+                         const TPM2B_PUBLIC           *inPublic,
+                         const TPM2B_DATA             *outsideInfo,
+                         const TPML_PCR_SELECTION     *creationPCR) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, primaryHandle=%"PRIx32 ", inSensitive=%p,"
+    LOG_TRACE("context=%p, primaryHandle=%" PRIx32 ", inSensitive=%p,"
               "inPublic=%p, outsideInfo=%p, creationPCR=%p",
-              esysContext, primaryHandle, inSensitive, inPublic, outsideInfo,
-              creationPCR);
+              esysContext, primaryHandle, inSensitive, inPublic, outsideInfo, creationPCR);
     TSS2L_SYS_AUTH_COMMAND auths;
-    RSRC_NODE_T *primaryHandleNode;
+    RSRC_NODE_T           *primaryHandleNode;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -209,12 +199,11 @@ Esys_CreatePrimary_Async(
     /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, ESYS_STATE_INIT, "Check session usage");
-    store_input_parameters (esysContext, inSensitive);
+    store_input_parameters(esysContext, inSensitive);
     if (inPublic) {
-        r = iesys_adapt_auth_value(
-            &esysContext->crypto_backend,
-            &esysContext->in.CreatePrimary.inSensitive->sensitive.userAuth,
-             inPublic->publicArea.nameAlg);
+        r = iesys_adapt_auth_value(&esysContext->crypto_backend,
+                                   &esysContext->in.CreatePrimary.inSensitive->sensitive.userAuth,
+                                   inPublic->publicArea.nameAlg);
         return_state_if_error(r, ESYS_STATE_INIT, "Adapt auth value.");
     }
 
@@ -223,20 +212,18 @@ Esys_CreatePrimary_Async(
     return_state_if_error(r, ESYS_STATE_INIT, "primaryHandle unknown.");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_CreatePrimary_Prepare(esysContext->sys,
-                                       (primaryHandleNode == NULL) ? TPM2_RH_NULL
-                                        : primaryHandleNode->rsrc.handle,
-                                       esysContext->in.CreatePrimary.inSensitive,
-                                       inPublic, outsideInfo,
-                                       creationPCR);
+    r = Tss2_Sys_CreatePrimary_Prepare(
+        esysContext->sys,
+        (primaryHandleNode == NULL) ? TPM2_RH_NULL : primaryHandleNode->rsrc.handle,
+        esysContext->in.CreatePrimary.inSensitive, inPublic, outsideInfo, creationPCR);
     return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
     return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
     if (primaryHandleNode != NULL)
-        iesys_compute_session_value(esysContext->session_tab[0],
-                &primaryHandleNode->rsrc.name, &primaryHandleNode->auth);
+        iesys_compute_session_value(esysContext->session_tab[0], &primaryHandleNode->rsrc.name,
+                                    &primaryHandleNode->auth);
     else
         iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
 
@@ -245,8 +232,7 @@ Esys_CreatePrimary_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, primaryHandleNode, NULL, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT,
-                          "Error in computation of auth values");
+    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
@@ -256,8 +242,7 @@ Esys_CreatePrimary_Async(
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Finish (Execute Async)");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
 
@@ -302,19 +287,17 @@ Esys_CreatePrimary_Async(
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_CreatePrimary_Finish(
-    ESYS_CONTEXT *esysContext, ESYS_TR *objectHandle,
-    TPM2B_PUBLIC **outPublic,
-    TPM2B_CREATION_DATA **creationData,
-    TPM2B_DIGEST **creationHash,
-    TPMT_TK_CREATION **creationTicket)
-{
+Esys_CreatePrimary_Finish(ESYS_CONTEXT         *esysContext,
+                          ESYS_TR              *objectHandle,
+                          TPM2B_PUBLIC        **outPublic,
+                          TPM2B_CREATION_DATA **creationData,
+                          TPM2B_DIGEST        **creationHash,
+                          TPMT_TK_CREATION    **creationTicket) {
     TPM2B_PUBLIC *loutPublic = NULL;
-    TSS2_RC r;
+    TSS2_RC       r;
     LOG_TRACE("context=%p, objectHandle=%p, outPublic=%p,"
               "creationData=%p, creationHash=%p, creationTicket=%p",
-              esysContext, objectHandle, outPublic,
-              creationData, creationHash, creationTicket);
+              esysContext, objectHandle, outPublic, creationData, creationHash, creationTicket);
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -322,13 +305,12 @@ Esys_CreatePrimary_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != ESYS_STATE_SENT &&
-        esysContext->state != ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT && esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
     esysContext->state = ESYS_STATE_INTERNALERROR;
-    TPM2B_NAME name;
+    TPM2B_NAME   name;
     RSRC_NODE_T *objectHandleNode = NULL;
 
     /* Initialize parameter to avoid unitialized usage */
@@ -381,7 +363,8 @@ Esys_CreatePrimary_Finish(
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
-            "resubmission: %" PRIx32, r);
+                  "resubmission: %" PRIx32,
+                  r);
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
@@ -415,31 +398,23 @@ Esys_CreatePrimary_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response",
-                        error_cleanup);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response", error_cleanup);
 
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
-    r = Tss2_Sys_CreatePrimary_Complete(esysContext->sys,
-                                        &objectHandleNode->rsrc.handle,
-                                        loutPublic,
-                                        (creationData != NULL) ? *creationData
-                                         : NULL,
-                                        (creationHash != NULL) ? *creationHash
-                                         : NULL,
-                                        (creationTicket != NULL)
-                                         ? *creationTicket : NULL, &name);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                        "Received error from SAPI unmarshaling" ,
+    r = Tss2_Sys_CreatePrimary_Complete(esysContext->sys, &objectHandleNode->rsrc.handle,
+                                        loutPublic, (creationData != NULL) ? *creationData : NULL,
+                                        (creationHash != NULL) ? *creationHash : NULL,
+                                        (creationTicket != NULL) ? *creationTicket : NULL, &name);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling",
                         error_cleanup);
-
 
     /* Check name and outPublic for consistency */
     if (!iesys_compare_name(&esysContext->crypto_backend, loutPublic, &name))
-        goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE,
-            "in Public name not equal name in response", error_cleanup);
+        goto_error(r, TSS2_ESYS_RC_MALFORMED_RESPONSE, "in Public name not equal name in response",
+                   error_cleanup);
 
     /* Update the meta data of the ESYS_TR object */
     objectHandleNode->auth = (*esysContext->in.CreatePrimary.inSensitive).sensitive.userAuth;
