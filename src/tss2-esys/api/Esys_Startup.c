@@ -77,6 +77,12 @@ Esys_Startup(
 
     /* Restore the timeout value to the original value */
     esysContext->timeout = timeouttmp;
+
+    /* Handle TPM upgrade case explicitly */
+    if (r == TPM2_RC_UPGRADE) {
+        return r;  
+    } 
+    
     return_if_error(r, "Esys Finish");
 
     return TSS2_RC_SUCCESS;
@@ -209,6 +215,14 @@ Esys_Startup_Finish(
         LOG_DEBUG("Resubmission initiated and returning RC_TRY_AGAIN.");
         return r;
     }
+
+    /* Handle Handle TPM upgrade case explicitly */
+    if (r == TPM2_RC_UPGRADE) {
+        LOG_INFO("TPM is in upgrade mode. Startup command not executed");
+        esysContext->state = ESYS_STATE_INIT;
+        return r;  
+    }
+
     /* The following is the "regular error" handling. */
     if (iesys_tpm_error(r) && r != TPM2_RC_INITIALIZE) {
         LOG_WARNING("Received TPM Error");
