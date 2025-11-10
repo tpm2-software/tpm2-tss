@@ -216,7 +216,7 @@ Esys_Startup_Finish(
         return r;
     }
 
-    /* Handle Handle TPM upgrade case explicitly */
+    /* Handle TPM upgrade case explicitly */
     if (r == TPM2_RC_UPGRADE) {
         LOG_INFO("TPM is in upgrade mode. Startup command not executed");
         esysContext->state = ESYS_STATE_INIT;
