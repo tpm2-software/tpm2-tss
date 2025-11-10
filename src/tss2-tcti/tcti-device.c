@@ -501,7 +501,7 @@ Tss2_Tcti_Device_Init (
     if (ResponseCode == TPM2_RC_INITIALIZE)
     {
         LOG_INFO("TPM has not been started, random data not available"); 
-        return TPM2_RC_INITIALIZE; 
+        return TSS2_RC_SUCCESS; 
     }
 
     LOG_DEBUG ("Header read, reading rest of response");
