@@ -27,10 +27,10 @@
  * @param[in] sendObject handle of the object being sent to ac
  * @param[in] nvAuthHandle the handle indicating the source of the authorization
  *                         value
+ * @param[in] ac handle indicating the attached component
  * @param[in] optionalSession1 First session handle.
  * @param[in] optionalSession2 Second session handle.
  * @param[in] optionalSession3 Third session handle.
- * @param[in] ac handle indicating the attached component
  * @param[in] acDataIn Optional non sensitive information related to the object
  * @param[out] acDataOut May include AC specific data or information about an
  *                       error.
@@ -57,10 +57,10 @@ TSS2_RC
 Esys_AC_Send(ESYS_CONTEXT     *esysContext,
              ESYS_TR           sendObject,
              ESYS_TR           nvAuthHandle,
+             ESYS_TR           ac,
              ESYS_TR           optionalSession1,
              ESYS_TR           optionalSession2,
              ESYS_TR           optionalSession3,
-             ESYS_TR           ac,
              TPM2B_MAX_BUFFER *acDataIn,
              TPMS_AC_OUTPUT  **acDataOut) {
     TSS2_RC r;
@@ -105,10 +105,10 @@ Esys_AC_Send(ESYS_CONTEXT     *esysContext,
  * @param[in] sendObject handle of the object being sent to ac
  * @param[in] nvAuthHandle the handle indicating the source of the authorization
  *                     value
+ * @param[in] ac handle indicating the attached component
  * @param[in] optionalSession1 First session handle.
  * @param[in] optionalSession2 Second session handle.
  * @param[in] optionalSession3 Third session handle.
- * @param[in] ac handle indicating the attached component
  * @param[in] acDataIn Optional non sensitive information related to the object
  * @retval ESYS_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
@@ -165,15 +165,19 @@ Esys_AC_Send_Async(ESYS_CONTEXT     *esysContext,
     TPMI_RH_AC      tpmi_ac;
     TPMI_DH_OBJECT  tpmi_sendObject;
     TPMI_RH_NV_AUTH tpmi_nvAuthHandle;
-    r = iesys_handle_to_tpm_handle(ac, &tpmi_ac);
+    RSRC_NODE_T    *handleNode;
+    r = esys_GetResourceObject(esysContext, ac, &handleNode);
     if (r != TSS2_RC_SUCCESS)
         return r;
-    r = iesys_handle_to_tpm_handle(sendObject, &tpmi_sendObject);
+    tpmi_ac = handleNode->rsrc.handle;
+    r = esys_GetResourceObject(esysContext, sendObject, &handleNode);
     if (r != TSS2_RC_SUCCESS)
         return r;
-    r = iesys_handle_to_tpm_handle(nvAuthHandle, &tpmi_nvAuthHandle);
+    tpmi_sendObject = handleNode->rsrc.handle;
+    r = esys_GetResourceObject(esysContext, nvAuthHandle, &handleNode);
     if (r != TSS2_RC_SUCCESS)
         return r;
+    tpmi_nvAuthHandle = handleNode->rsrc.handle;
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_AC_Send_Prepare(esysContext->sys, tpmi_sendObject, tpmi_nvAuthHandle, tpmi_ac,
                                  acDataIn);

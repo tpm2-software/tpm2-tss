@@ -2150,7 +2150,7 @@ test_AC_Send(void **state) {
     ESYS_TR          ac = 0;
     TPMS_AC_OUTPUT  *acDataOut;
     TPM2B_MAX_BUFFER inputData = DUMMY_2B_DATA(.buffer);
-    r = Esys_AC_Send(esys_context, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ac, &inputData,
+    r = Esys_AC_Send(esys_context, 0, 0, ac, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, &inputData,
                      &acDataOut);
 
     assert_int_equal(r, 0x0FFF);
