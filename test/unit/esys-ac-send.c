@@ -135,7 +135,7 @@ test_ac_send(void **state) {
     TSS2_RC       r;
     ESYS_CONTEXT *ectx = (ESYS_CONTEXT *)*state;
 
-    r = Esys_AC_Send(ectx, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, 0, NULL, NULL);
+    r = Esys_AC_Send(ectx, 0, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
 
     assert_int_equal(r, TSS2_RC_SUCCESS);
 }

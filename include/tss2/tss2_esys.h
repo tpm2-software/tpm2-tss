@@ -801,10 +801,10 @@ TSS2_RC
 Esys_AC_Send_Async(ESYS_CONTEXT     *esysContext,
                    ESYS_TR           sendObject,
                    ESYS_TR           nvAuthHandle,
+                   ESYS_TR           ac,
                    ESYS_TR           optionalSession1,
                    ESYS_TR           optionalSession2,
                    ESYS_TR           optionalSession3,
-                   ESYS_TR           ac,
                    TPM2B_MAX_BUFFER *acDataIn);
 
 TSS2_RC
