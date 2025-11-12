@@ -2843,13 +2843,14 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  */
 TSS2_RC
-ifapi_key_sign(FAPI_CONTEXT    *context,
-               IFAPI_OBJECT    *sig_key_object,
-               char const      *padding,
-               TPM2B_DIGEST    *digest,
-               TPMT_SIGNATURE **tpm_signature,
-               char           **publicKey,
-               char           **certificate) {
+ifapi_key_sign(FAPI_CONTEXT      *context,
+               IFAPI_OBJECT      *sig_key_object,
+               char const        *padding,
+               TPM2B_DIGEST      *digest,
+               TPMT_TK_HASHCHECK *validation,
+               TPMT_SIGNATURE   **tpm_signature,
+               char             **publicKey,
+               char             **certificate) {
     TSS2_RC         r;
     TPMT_SIG_SCHEME sig_scheme;
     ESYS_TR         session;
@@ -2858,7 +2859,11 @@ ifapi_key_sign(FAPI_CONTEXT    *context,
         .tag = TPM2_ST_HASHCHECK,
         .hierarchy = TPM2_RH_OWNER,
     };
-    memset(&hash_validation.digest, 0, sizeof(TPM2B_DIGEST));
+    if (validation) {
+        hash_validation = *validation;
+    } else {
+        memset(&hash_validation.digest, 0, sizeof(TPM2B_DIGEST));
+    }
 
     switch (context->Key_Sign.state) {
     statecase(context->Key_Sign.state, SIGN_INIT);

@@ -471,6 +471,10 @@ typedef struct {
     const char          *keyPath;       /**< The implicit key path */
     ESYS_TR              handle;        /**< The ESYS handle of the signing key */
     TPM2B_DIGEST         digest;        /**< The digest to be signed */
+    uint8_t             *data;          /**< The data or digest passed to Fapi_Sign */
+    size_t               data_size;     /**< The message size passed to Fapi_Sign */
+    size_t               offset;        /**< The chunk offset in data */
+    size_t               chunk;         /**< The chunk size */
     TPMT_SIG_SCHEME      scheme;        /**< The signature scheme from profile */
     IFAPI_OBJECT        *key_object;    /**< The IPAPI object of the signing key */
     TPMT_SIGNATURE      *tpm_signature; /**< The signature in TPM format */
@@ -481,6 +485,8 @@ typedef struct {
     uint8_t             *ret_signature; /**< Result signature */
     size_t               signatureSize;
     char                *publicKey; /**< Public key of the signing key. */
+    TPMT_TK_HASHCHECK   *validation;
+    ESYS_TR              sequence_handle; /**< The handle for the hash update */
 } IFAPI_Key_Sign;
 
 /** The data structure holding internal state of Fapi_Unseal.
@@ -1040,6 +1046,13 @@ enum FAPI_STATE {
 
     KEY_SIGN_WAIT_FOR_KEY,
     KEY_SIGN_WAIT_FOR_SIGN,
+    KEY_SIGN_COMPUTE_HASH,
+    KEY_SIGN_WAIT_FOR_HASH,
+    KEY_SIGN_WAIT_FOR_HASH_SEQUENCE_INIT,
+    KEY_SIGN_WAIT_FOR_HASH_UPDATE_INIT,
+    KEY_SIGN_WAIT_FOR_HASH_UPDTATE,
+    KEY_SIGN_WAIT_FOR_HASH_COMPLETE_INIT,
+    KEY_SIGN_WAIT_FOR_HASH_COMPLETE,
     KEY_SIGN_CLEANUP,
 
     ENTITY_CHANGE_AUTH_WAIT_FOR_SESSION,
