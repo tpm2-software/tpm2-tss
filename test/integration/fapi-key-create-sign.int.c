@@ -4,6 +4,8 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include "fapi_int.h"
+#include "util/aux_util.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
@@ -214,6 +216,40 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context) {
         LOG_INFO("EK description: %s", description);
         SAFE_FREE(description);
     }
+
+    r = Fapi_CreateKey(context, "HS/SRK/mySignKeyRestricted", SIGN_TEMPLATE ",restricted", "",
+                       PASSWORD);
+    goto_if_error(r, "Error Fapi_CreateKey_Async", error);
+
+    SAFE_FREE(signature);
+
+    /*
+     * Test with a restricted signing key, which will sign the digest of
+     * the date passed to Fapi_Sign.
+     */
+
+#define DATA_SIZE  1050
+#define FILL_VALUE 0xFF
+
+    uint8_t test_data[DATA_SIZE];
+
+    /* Create an array of size > 1024 filled with 0xff */
+    memset(test_data, FILL_VALUE, DATA_SIZE * sizeof(uint8_t));
+
+    /* The sha256 digest of the test array */
+    TPM2B_DIGEST test_digest
+        = { .size = 32,
+            .buffer = { 0xa0, 0x0e, 0x39, 0xbf, 0x64, 0x74, 0xee, 0x12, 0xe0, 0x21, 0x89,
+                        0xd6, 0x1c, 0xc4, 0x18, 0x24, 0xc6, 0x32, 0xe7, 0xf3, 0x4f, 0xf8,
+                        0x0c, 0x5a, 0xf6, 0xb8, 0x96, 0x52, 0x7c, 0xb6, 0x7f, 0x59 } };
+
+    r = Fapi_Sign(context, "HS/SRK/mySignKeyRestricted", sigscheme, &test_data[0], DATA_SIZE,
+                  &signature, &signatureSize, NULL, NULL);
+    goto_if_error(r, "Error Fapi_Sign", error);
+
+    r = Fapi_VerifySignature(context, "HS/SRK/mySignKeyRestricted", &test_digest.buffer[0],
+                             test_digest.size, signature, signatureSize);
+    goto_if_error(r, "Error Fapi_VerifySignature", error);
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);

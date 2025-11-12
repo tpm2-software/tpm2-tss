@@ -114,13 +114,14 @@ TSS2_RC
 ifapi_load_key(FAPI_CONTEXT *context, char const *keyPath, IFAPI_OBJECT **key_object);
 
 TSS2_RC
-ifapi_key_sign(FAPI_CONTEXT    *context,
-               IFAPI_OBJECT    *sig_key_object,
-               char const      *padding,
-               TPM2B_DIGEST    *digest,
-               TPMT_SIGNATURE **tpm_signature,
-               char           **publicKey,
-               char           **certificate);
+ifapi_key_sign(FAPI_CONTEXT      *context,
+               IFAPI_OBJECT      *sig_key_object,
+               char const        *padding,
+               TPM2B_DIGEST      *digest,
+               TPMT_TK_HASHCHECK *validation,
+               TPMT_SIGNATURE   **tpm_signature,
+               char             **publicKey,
+               char             **certificate);
 
 TSS2_RC
 ifapi_authorize_object(FAPI_CONTEXT *context, IFAPI_OBJECT *object, ESYS_TR *session);
