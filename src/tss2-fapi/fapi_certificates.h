@@ -291,7 +291,18 @@ static char *root_cert_list[] = {
     "50yAxy0Z/MeV2NTXqKpLwdhWNuzOSFZnzRKsh9MxY3zj8nebDNlHTDGSMR0=\n"
     "-----END CERTIFICATE-----",
 
-    /* NTC_TPM_EK_Root_CA_01 */
+    /*
+      Nuvoton Certificates
+
+      The original sources can be found at the links below.
+      https://www.nuvoton.com/products/cloud-computing/security/trusted-platform-module-tpm/?tab=6
+      https://www.nuvoton.com/export/sites/nuvoton/files/security/Nuvoton_TPM_EK_Certificate_Chain_Rev2.2.pdf
+
+      The names of the certificates are taken from the PDF document.
+    */
+
+    /* Nuvoton TPM Root CA 1010
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NTC%20TPM%20EK%20Root%20CA%2001.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDSjCCAjKgAwIBAgIGAK3jXfbVMA0GCSqGSIb3DQEBBQUAMFIxUDAcBgNVBAMT\n"
     "FU5UQyBUUE0gRUsgUm9vdCBDQSAwMTAlBgNVBAoTHk51dm90b24gVGVjaG5vbG9n\n"
@@ -313,7 +324,8 @@ static char *root_cert_list[] = {
     "jpXUdJlh22tp12UMsreibmi5bsWYBgybwSbRgvzE\n"
     "-----END CERTIFICATE-----\n",
 
-    /* NTC_TPM_EK_Root_CA_02 */
+    /* Nuvoton TPM Root CA 1011
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NTC%20TPM%20EK%20Root%20CA%2002.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDSjCCAjKgAwIBAgIGAPadBmPZMA0GCSqGSIb3DQEBBQUAMFIxUDAcBgNVBAMT\n"
     "FU5UQyBUUE0gRUsgUm9vdCBDQSAwMjAlBgNVBAoTHk51dm90b24gVGVjaG5vbG9n\n"
@@ -335,7 +347,8 @@ static char *root_cert_list[] = {
     "hEKQ9DhBPtpHAbhFA4jhCiG9HA8FdEplJ+M4uxNz\n"
     "-----END CERTIFICATE-----\n",
 
-    /* NTC_TPM_EK_Root_CA_ARSUF_01 */
+    /* Nuvoton TPM Root CA 1012
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NTC_TPM_EK_Root_CA_ARSUF_01.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDWTCCAkGgAwIBAgIJAMklAEG4bgQ6MA0GCSqGSIb3DQEBBQUAMFgxVjAiBgNV\n"
     "BAMTG05UQyBUUE0gRUsgUm9vdCBDQSBBUlNVRiAwMTAlBgNVBAoTHk51dm90b24g\n"
@@ -357,7 +370,8 @@ static char *root_cert_list[] = {
     "SePqlm1PtWkygt9bYaInLZYkcknXTD/7BtzAyyS25HtG/YTvuMtKItCp7Z4n\n"
     "-----END CERTIFICATE-----\n",
 
-    /* Nuvoton TPM Root CA 1013 */
+    /* Nuvoton TPM Root CA 1013
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%201013.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDkjCCAnqgAwIBAgIISN0JfIK6vE0wDQYJKoZIhvcNAQEFBQAwVTFTMB8GA1UE\n"
     "AxMYTnV2b3RvbiBUUE0gUm9vdCBDQSAxMDEzMCUGA1UEChMeTnV2b3RvbiBUZWNo\n"
@@ -381,7 +395,8 @@ static char *root_cert_list[] = {
     "3r3WOnnr\n"
     "-----END CERTIFICATE-----\n",
 
-    /* Nuvoton TPM Root CA 1014 */
+    /* Nuvoton TPM Root CA 1014
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%201014.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDkjCCAnqgAwIBAgIIbXSeZ/22esUwDQYJKoZIhvcNAQEFBQAwVTFTMB8GA1UE\n"
     "AxMYTnV2b3RvbiBUUE0gUm9vdCBDQSAxMDE0MCUGA1UEChMeTnV2b3RvbiBUZWNo\n"
@@ -405,7 +420,8 @@ static char *root_cert_list[] = {
     "x7bKAs+x\n"
     "-----END CERTIFICATE-----\n",
 
-    /* Nuvoton TPM Root CA 1110 */
+    /* Nuvoton TPM Root CA 1110
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%201110.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICBjCCAaygAwIBAgIIEDiqn2SaqGMwCgYIKoZIzj0EAwIwVTFTMB8GA1UEAxMY\n"
     "TnV2b3RvbiBUUE0gUm9vdCBDQSAxMTEwMCUGA1UEChMeTnV2b3RvbiBUZWNobm9s\n"
@@ -420,7 +436,8 @@ static char *root_cert_list[] = {
     "wAxoKqH7Q5kCIGfsxiLr2j9nJ9jELwXz0/VWN9PhUNdM3qmsx2JEne6p\n"
     "-----END CERTIFICATE-----\n",
 
-    /* Nuvoton TPM Root CA 1111 */
+    /* Nuvoton TPM Root CA 1111
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%201111.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICBzCCAa2gAwIBAgIJAN/u3L0l8osZMAoGCCqGSM49BAMCMFUxUzAfBgNVBAMT\n"
     "GE51dm90b24gVFBNIFJvb3QgQ0EgMTExMTAlBgNVBAoTHk51dm90b24gVGVjaG5v\n"
@@ -435,7 +452,8 @@ static char *root_cert_list[] = {
     "2N/xZkcohRZIAiBDufnmhZWCbX4pibbzAOgcxjsc5+qmpAovxW9ipWJEsA==\n"
     "-----END CERTIFICATE-----\n",
 
-    /* Nuvoton TPM Root CA 1210 */
+    /* Nuvoton TPM Root CA 1210
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NuvotonTPMRootCA1210.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICHTCCAaOgAwIBAgIBATAKBggqhkjOPQQDAzBVMR0wGwYDVQQDExROdXZvdG9u\n"
     "VFBNUm9vdENBMTIxMDEnMCUGA1UEChMeTnV2b3RvbiBUZWNobm9sb2d5IENvcnBv\n"
@@ -451,7 +469,8 @@ static char *root_cert_list[] = {
     "azaJJ7CuWqE9XgXOlfZR0vU=\n"
     "-----END CERTIFICATE-----\n",
 
-    /* Nuvoton TPM Root CA 2010 */
+    /* Nuvoton TPM Root CA 2010
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202010.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDkjCCAnqgAwIBAgIIWAnP9p2CIZcwDQYJKoZIhvcNAQEFBQAwVTFTMB8GA1UE\n"
     "AxMYTnV2b3RvbiBUUE0gUm9vdCBDQSAyMDEwMCUGA1UEChMeTnV2b3RvbiBUZWNo\n"
@@ -475,7 +494,8 @@ static char *root_cert_list[] = {
     "8yWxV8ri\n"
     "-----END CERTIFICATE-----\n",
 
-    /* Nuvoton TPM Root CA 2011 */
+    /* Nuvoton TPM Root CA 2011
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202011.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDkjCCAnqgAwIBAgIIGCgneR7Ow/EwDQYJKoZIhvcNAQEFBQAwVTFTMB8GA1UE\n"
     "AxMYTnV2b3RvbiBUUE0gUm9vdCBDQSAyMDExMCUGA1UEChMeTnV2b3RvbiBUZWNo\n"
@@ -499,7 +519,8 @@ static char *root_cert_list[] = {
     "H3TryFJ7\n"
     "-----END CERTIFICATE-----\n",
 
-    /* Nuvoton TPM Root CA 2110 */
+    /* Nuvoton TPM Root CA 2110
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202110.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICBjCCAaygAwIBAgIIP5MvnZk8FrswCgYIKoZIzj0EAwIwVTFTMB8GA1UEAxMY\n"
     "TnV2b3RvbiBUUE0gUm9vdCBDQSAyMTEwMCUGA1UEChMeTnV2b3RvbiBUZWNobm9s\n"
@@ -514,7 +535,8 @@ static char *root_cert_list[] = {
     "B6Xtqm7J8L4CICjT3/Y+rrSnf8zrBXqWeHDh8Wi41+w2ppq6Ev9orZFI\n"
     "-----END CERTIFICATE-----\n",
 
-    /* Nuvoton TPM Root CA 2111 */
+    /* Nuvoton TPM Root CA 2111
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202111.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICBzCCAa2gAwIBAgIJAOCIUWvKMfuGMAoGCCqGSM49BAMCMFUxUzAfBgNVBAMT\n"
     "GE51dm90b24gVFBNIFJvb3QgQ0EgMjExMTAlBgNVBAoTHk51dm90b24gVGVjaG5v\n"
@@ -529,7 +551,8 @@ static char *root_cert_list[] = {
     "6I5w6hPTLigCIQDLLFlXK1xw1a1D1/idVhdd3a8gkE0FnTJO890WwiQbpg==\n"
     "-----END CERTIFICATE-----",
 
-    /* Nuvoton TPM Root CA 2112 */
+    /* Nuvoton TPM Root CA 2112
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202112.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICBjCCAa2gAwIBAgIJAOmPfeHxqsTXMAoGCCqGSM49BAMCMFUxUzAfBgNVBAMT\n"
     "GE51dm90b24gVFBNIFJvb3QgQ0EgMjExMjAlBgNVBAoTHk51dm90b24gVGVjaG5v\n"
@@ -544,7 +567,8 @@ static char *root_cert_list[] = {
     "TR4/YoYg3t8CIHC7KC8PS56v9xhPQQjJmN+DxH51RQ2s8ONrb1D8z/2m\n"
     "-----END CERTIFICATE-----\n",
 
-    /* Nuvoton NPCTxxx ECC521 RootCA */
+    /* Nuvoton NPCTxxx ECC521 RootCA
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NPCTxxxECC521RootCA.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICaTCCAcugAwIBAgIBAjAKBggqhkjOPQQDBDBWMR4wHAYDVQQDExVOUENUeHh4\n"
     "IEVDQzUyMSBSb290Q0ExJzAlBgNVBAoTHk51dm90b24gVGVjaG5vbG9neSBDb3Jw\n"
@@ -561,7 +585,8 @@ static char *root_cert_list[] = {
     "k4fcaU9h6ghtC0Rwjye33dZG+uuCoD+UJPXnbELFsVIno4CMU5wrbN/pjkTT\n"
     "-----END CERTIFICATE-----\n"
 
-    /* Nuvoton TPM Root CA 2012 */
+    /* Nuvoton TPM Root CA 2012
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202012.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIIDkjCCAnqgAwIBAgIIa3MUqRGqmRMwDQYJKoZIhvcNAQEFBQAwVTFTMB8GA1UE\n"
     "AxMYTnV2b3RvbiBUUE0gUm9vdCBDQSAyMDEyMCUGA1UEChMeTnV2b3RvbiBUZWNo\n"
@@ -585,7 +610,8 @@ static char *root_cert_list[] = {
     "WLEibrpZ\n"
     "-----END CERTIFICATE-----\n"
 
-    /* Nuvoton TPM Root CA 2210 */
+    /* Nuvoton TPM Root CA 2210
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NuvotonTPMRootCA2210.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICHTCCAaOgAwIBAgIBATAKBggqhkjOPQQDAzBVMR0wGwYDVQQDExROdXZvdG9u\n"
     "VFBNUm9vdENBMjIxMDEnMCUGA1UEChMeTnV2b3RvbiBUZWNobm9sb2d5IENvcnBv\n"
@@ -601,7 +627,8 @@ static char *root_cert_list[] = {
     "Gsu50pM52YTnRvX55OV5gvk=\n"
     "-----END CERTIFICATE-----\n"
 
-    /* Nuvoton TPM Root CA 2211 */
+    /* Nuvoton TPM Root CA 2211
+       https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NuvotonTPMRootCA2211.cer */
     "-----BEGIN CERTIFICATE-----\n"
     "MIICHDCCAaOgAwIBAgIBATAKBggqhkjOPQQDAzBVMR0wGwYDVQQDExROdXZvdG9u\n"
     "VFBNUm9vdENBMjIxMTEnMCUGA1UEChMeTnV2b3RvbiBUZWNobm9sb2d5IENvcnBv\n"
