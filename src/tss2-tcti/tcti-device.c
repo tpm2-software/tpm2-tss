@@ -457,6 +457,15 @@ Tss2_Tcti_Device_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *
             return TSS2_TCTI_RC_IO_ERROR;
         }
     }
+    /* Decode response code from header */
+    UINT32 ResponseCode = ((UINT32)rsp[6] << 24) | ((UINT32)rsp[7] << 16) | ((UINT32)rsp[8] << 8)
+                          | ((UINT32)rsp[9]);
+
+    /* Early exit if the TPM is not started */
+    if (ResponseCode == TPM2_RC_INITIALIZE) {
+        LOG_INFO("TPM not started,random data unavailable");
+        return TSS2_RC_SUCCESS;
+    }
     LOG_DEBUG("Header read, reading rest of response");
     fds.fd = tcti_dev->fd;
     fds.events = POLLIN;
