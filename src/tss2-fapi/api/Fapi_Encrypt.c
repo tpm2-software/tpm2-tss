@@ -35,6 +35,8 @@
  * Encrypt the provided data for the target key using the TPM encryption
  * schemes as specified in the crypto profile.
  * This function does not use the TPM; i.e. works in non-TPM mode.
+ * Note, that the size of the plain text must not exceed the maximum supported
+ * size for payloads in a TPM2B_MAX_BUFFER, i.e TPM2_MAX_DIGEST_BUFFER.
  *
  * @param[in,out] context The FAPI_CONTEXT
  * @param[in] keyPath THe path to the encryption key
@@ -50,7 +52,7 @@
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND: if keyPath does not map to a FAPI key.
  * @retval TSS2_FAPI_RC_BAD_KEY: if the key at keyPath is unsuitable for
  *         encryption.
- * @retval TSS2_FAPI_RC_BAD_VALUE: if plainTextSize is 0.
+ * @retval TSS2_FAPI_RC_BAD_VALUE: if plainTextSize is 0 or larger than TPM2_MAX_DIGEST_BUFFER.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
@@ -91,6 +93,7 @@ Fapi_Encrypt(FAPI_CONTEXT  *context,
     check_not_null(keyPath);
     check_not_null(plainText);
     check_not_null(cipherText);
+    check_in_bounds(plainTextSize, TPM2_MAX_DIGEST_BUFFER);
 
     /* Check whether TCTI and ESYS are initialized */
     return_if_null(context->esys, "Command can't be executed in none TPM mode.",
@@ -136,6 +139,9 @@ Fapi_Encrypt(FAPI_CONTEXT  *context,
  * schemes as specified in the crypto profile.
  * This function does not use the TPM; i.e. works in non-TPM mode.
  *
+ * Note, that the size of the plain text must not exceed the maximum supported
+ * size for payloads in a TPM2B_MAX_BUFFER, i.e TPM2_MAX_DIGEST_BUFFER.
+ *
  * Call Fapi_Encrypt_Finish to finish the execution of this command.
  *
  * @param[in,out] context The FAPI_CONTEXT
@@ -150,7 +156,7 @@ Fapi_Encrypt(FAPI_CONTEXT  *context,
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND: if keyPath does not map to a FAPI key.
  * @retval TSS2_FAPI_RC_BAD_KEY: if the key at keyPath is unsuitable for
  *         encryption.
- * @retval TSS2_FAPI_RC_BAD_VALUE: if plainTextSize is 0.
+ * @retval TSS2_FAPI_RC_BAD_VALUE: if plainTextSize is 0 or larger than TPM2_MAX_DIGEST_BUFFER.
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory for
@@ -177,6 +183,7 @@ Fapi_Encrypt_Async(FAPI_CONTEXT  *context,
     check_not_null(context);
     check_not_null(keyPath);
     check_not_null(plainText);
+    check_in_bounds(plainTextSize, TPM2_MAX_DIGEST_BUFFER);
 
     /* Cleanup command context. */
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
