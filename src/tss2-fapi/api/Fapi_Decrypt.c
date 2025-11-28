@@ -31,6 +31,9 @@
  *
  * Decrypts data that was previously encrypted with Fapi_Encrypt.
  *
+ * Note, that the size of the cipher text must not exceed the maximum supported
+ * size for payloads in a TPM2B_MAX_BUFFER, i.e TPM2_MAX_DIGEST_BUFFER.
+ *
  * @param[in,out] context The FAPI_CONTEXT
  * @param[in] keyPath The decryption key.
  * @param[in] cipherText The ciphertext to decrypt.
@@ -46,7 +49,7 @@
  *         the file.
  * @retval TSS2_FAPI_RC_BAD_KEY: if the decryption key is unsuitable for the
  *         requested operation.
- * @retval TSS2_FAPI_RC_BAD_VALUE: if the decryption fails
+ * @retval TSS2_FAPI_RC_BAD_VALUE: if the decryption fails or the cipher text size is invalid
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -84,6 +87,7 @@ Fapi_Decrypt(FAPI_CONTEXT  *context,
     check_not_null(context);
     check_not_null(keyPath);
     check_not_null(cipherText);
+    check_in_bounds(cipherTextSize, TPM2_MAX_DIGEST_BUFFER);
 
     /* Check whether TCTI and ESYS are initialized */
     return_if_null(context->esys, "Command can't be executed in none TPM mode.",
@@ -127,6 +131,9 @@ Fapi_Decrypt(FAPI_CONTEXT  *context,
  *
  * Decrypts data that was previously encrypted with Fapi_Encrypt.
  *
+ * Note, that the size of the cipher text must not exceed the maximum supported
+ * size for payloads in a TPM2B_MAX_BUFFER, i.e TPM2_MAX_DIGEST_BUFFER.
+ *
  * Call Fapi_Decrypt_Finish to finish the execution of this command.
  *
  * @param[in,out] context The FAPI_CONTEXT
@@ -141,7 +148,7 @@ Fapi_Decrypt(FAPI_CONTEXT  *context,
  *         the file.
  * @retval TSS2_FAPI_RC_BAD_KEY: if the decryption key is unsuitable for the
  *         requested operation.
- * @retval TSS2_FAPI_RC_BAD_VALUE: if the decryption fails
+ * @retval TSS2_FAPI_RC_BAD_VALUE: if the decryption fails or the cipher text size is invalid
  * @retval TSS2_FAPI_RC_BAD_SEQUENCE: if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_IO_ERROR: if the data cannot be saved.
@@ -164,6 +171,7 @@ Fapi_Decrypt_Async(FAPI_CONTEXT  *context,
     check_not_null(context);
     check_not_null(keyPath);
     check_not_null(cipherText);
+    check_in_bounds(cipherTextSize, TPM2_MAX_DIGEST_BUFFER);
 
     /* Cleanup command context. */
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
