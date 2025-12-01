@@ -1460,8 +1460,9 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
         FAPI_SYNC(r, "Search Object", cleanup);
 
         r = ifapi_keystore_load_async(&fapi_ctx->keystore, &fapi_ctx->io, nv_path);
+        goto_if_error2(r, "Could not open: %s", cleanup, nv_path);
+
         SAFE_FREE(nv_path);
-        return_if_error2(r, "Could not open: %s", nv_path);
 
         fallthrough;
 
