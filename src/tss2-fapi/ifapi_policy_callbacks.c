@@ -1437,9 +1437,13 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
         current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
+        fapi_ctx->current_auth_object
+            = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
     } else {
         /* Start with the bottom of the policy stack */
         current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
+        fapi_ctx->current_auth_object
+            = fapi_ctx->policy.policyutil_stack->pol_exec_ctx->auth_object;
     }
     cb_ctx = current_policy->app_data;
     esys_ctx = fapi_ctx->esys;

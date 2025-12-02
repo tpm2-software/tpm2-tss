@@ -138,8 +138,10 @@ clear_current_policy(FAPI_CONTEXT *context) {
     }
     prev_pol = context->policy.util_current_policy->prev;
 
-    SAFE_FREE(context->policy.util_current_policy->pol_exec_ctx->app_data);
-    SAFE_FREE(context->policy.util_current_policy->pol_exec_ctx);
+    if (context->policy.util_current_policy->pol_exec_ctx) {
+        SAFE_FREE(context->policy.util_current_policy->pol_exec_ctx->app_data);
+        SAFE_FREE(context->policy.util_current_policy->pol_exec_ctx);
+    }
     SAFE_FREE(context->policy.util_current_policy);
 
     if (!prev_pol) {
@@ -288,7 +290,9 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session) {
                 }
                 utl_ctx = utl_ctx->prev;
             }
-            pol_util_ctx->pol_exec_ctx->session = ESYS_TR_NONE;
+            if (pol_util_ctx->pol_exec_ctx) {
+                pol_util_ctx->pol_exec_ctx->session = ESYS_TR_NONE;
+            }
         }
         goto_if_error(r, "Execute policy.", error);
 
