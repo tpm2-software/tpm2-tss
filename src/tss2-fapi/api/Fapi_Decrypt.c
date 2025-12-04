@@ -21,11 +21,38 @@
 #include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2_BA...
 #include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
 #include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Decrypt, Fapi_Decryp...
+#include "tss2_mu.h"         // for unmarshaling of encrypted ecc data.
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h" // for TPM2B_PUBLIC_KEY_RSA, TPM2B_PUBLIC, TPM...
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, LOG_TRACE, goto_if_error
+
+static TPM2_RC
+unmarshal_ecc_crypt_result(const uint8_t    *crypt_buf,
+                           size_t            size_crypt_buf,
+                           TPM2B_ECC_POINT  *c1,
+                           TPM2B_MAX_BUFFER *c2,
+                           TPM2B_DIGEST     *c3) {
+    TSS2_RC rc;
+    size_t  pos = 0;
+    size_t  offset = 0;
+
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(&crypt_buf[pos], size_crypt_buf, &offset, c1);
+    return_if_error(rc, "Unmarshal Point.");
+
+    pos += offset;
+    offset = 0;
+    rc = Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(&crypt_buf[pos], size_crypt_buf, &offset, c2);
+    return_if_error(rc, "Unmarshal Max Buffer.");
+
+    pos += offset;
+    offset = 0;
+    rc = Tss2_MU_TPM2B_DIGEST_Unmarshal(&crypt_buf[pos], size_crypt_buf, &offset, c3);
+    return_if_error(rc, "Unmarshal Digest.");
+
+    return rc;
+}
 
 /** One-Call function for Fapi_Decrypt
  *
@@ -242,6 +269,7 @@ Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTex
 
     TSS2_RC               r;
     TPM2B_PUBLIC_KEY_RSA *tpmPlainText = NULL;
+    TPM2B_MAX_BUFFER     *ecc_plain_text;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -297,6 +325,12 @@ Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTex
         r = ifapi_authorize_object(context, command->key_object, &command->auth_session);
         return_try_again(r);
         goto_if_error(r, "Authorize key.", error_cleanup);
+
+        if (command->key_object->misc.key.public.publicArea.type == TPM2_ALG_ECC) {
+            context->state = DATA_DECRYPT_PREPARE_ECC_ENCRYPTION;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
         TPM2B_DATA null_data = { .size = 0, .buffer = {} };
 
         /* Copy cipher data to tpm object */
@@ -319,15 +353,17 @@ Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTex
         goto_if_error_reset_state(r, "RSA decryption.", error_cleanup);
 
         /* Duplicate the decrypted plaintext for returning to the user. */
-        if (plainTextSize)
-            command->plainTextSize = tpmPlainText->size;
         if (plainText) {
+            command->plainTextSize = tpmPlainText->size;
             command->plainText = malloc(tpmPlainText->size);
             goto_if_null(command->plainText, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
 
             memcpy(command->plainText, &tpmPlainText->buffer[0], tpmPlainText->size);
             SAFE_FREE(tpmPlainText);
         }
+        fallthrough;
+
+    statecase(context->state, DATA_DECRYPT_PREPARE_FLUSH);
 
         /* Flush the used key. */
         if (!command->key_object->misc.key.persistent_handle) {
@@ -357,6 +393,37 @@ Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTex
         if (plainTextSize)
             *plainTextSize = command->plainTextSize;
         break;
+
+    statecase(context->state, DATA_DECRYPT_PREPARE_ECC_ENCRYPTION)
+    /* Decrypt the actual data. */
+        TPM2B_ECC_POINT  c1;
+        TPM2B_MAX_BUFFER c2;
+        TPM2B_DIGEST     c3;
+
+        r = unmarshal_ecc_crypt_result(command->in_data, command->numBytes, &c1, &c2, &c3);
+        goto_if_error(r, "Unmarshal ECC cipher", error_cleanup);
+
+        r = Esys_ECC_Decrypt_Async(context->esys, context->cmd.Data_EncryptDecrypt.key_handle,
+                                   command->auth_session,
+                                   ENC_SESSION_IF_POLICY(command->auth_session), ESYS_TR_NONE, &c1,
+                                   &c2, &c3, &command->profile->ecc_crypt_scheme);
+        goto_if_error(r, "Error esys rsa decrypt", error_cleanup);
+        fallthrough;
+
+    statecase(context->state, DATA_DECRYPT_WAIT_FOR_ECC_DECRYPTION);
+        r = Esys_ECC_Decrypt_Finish(context->esys, &ecc_plain_text);
+        return_try_again(r);
+        goto_if_error_reset_state(r, "ECC decryption.", error_cleanup);
+        if (ecc_plain_text) {
+            command->plainTextSize = ecc_plain_text->size;
+            command->plainText = malloc(ecc_plain_text->size);
+            goto_if_null(command->plainText, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+
+            memcpy(command->plainText, &ecc_plain_text->buffer[0], ecc_plain_text->size);
+            SAFE_FREE(ecc_plain_text);
+        }
+        context->state = DATA_DECRYPT_PREPARE_FLUSH;
+        return TSS2_FAPI_RC_TRY_AGAIN;
 
     statecasedefault(context->state);
     }

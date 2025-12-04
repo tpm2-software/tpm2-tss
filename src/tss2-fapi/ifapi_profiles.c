@@ -417,6 +417,14 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
     r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->nameAlg);
     return_if_error(r, "Bad value for field \"nameAlg\".");
 
+    if (!ifapi_get_sub_object(jso, "ecc_crypt_scheme", &jso2)) {
+        out->ecc_crypt_scheme.scheme = TPM2_ALG_KDF2;
+        out->ecc_crypt_scheme.details.kdf2.hashAlg = out->nameAlg;
+    } else {
+        r = ifapi_json_TPMT_KDF_SCHEME_deserialize(jso2, &out->ecc_crypt_scheme);
+        return_if_error(r, "Bad value for field \"ecc_crypt_scheme\".");
+    }
+
     if (out->type == TPM2_ALG_RSA) {
         if (!ifapi_get_sub_object(jso, "exponent", &jso2)) {
             LOG_ERROR("Field \"exponent\" not found.");
