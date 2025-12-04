@@ -1523,7 +1523,7 @@ ifapi_json_TPMI_ALG_CIPHER_MODE_deserialize(json_object *jso, TPMI_ALG_CIPHER_MO
  */
 TSS2_RC
 ifapi_json_TPMI_ALG_KDF_deserialize(json_object *jso, TPMI_ALG_KDF *out) {
-    SUBTYPE_FILTER(TPMI_ALG_KDF, TPM2_ALG_ID, TPM2_ALG_MGF1, TPM2_ALG_KDF1_SP800_56A,
+    SUBTYPE_FILTER(TPMI_ALG_KDF, TPM2_ALG_ID, TPM2_ALG_KDF2, TPM2_ALG_MGF1, TPM2_ALG_KDF1_SP800_56A,
                    TPM2_ALG_KDF1_SP800_108, TPM2_ALG_NULL);
 }
 
@@ -3031,6 +3031,22 @@ ifapi_json_TPMS_KEY_SCHEME_ECDH_deserialize(json_object *jso, TPMS_KEY_SCHEME_EC
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
+ifapi_json_TPMS_SCHEME_KDF2_deserialize(json_object *jso, TPMS_SCHEME_KDF2 *out) {
+    LOG_TRACE("call");
+    return ifapi_json_TPMS_SCHEME_HASH_deserialize(jso, out);
+}
+
+/*** Table 154 - Definition of Types for KDF Schemes ***/
+
+/** Deserialize a TPMS_SCHEME_MGF1 json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
 ifapi_json_TPMS_SCHEME_MGF1_deserialize(json_object *jso, TPMS_SCHEME_MGF1 *out) {
     LOG_TRACE("call");
     return ifapi_json_TPMS_SCHEME_HASH_deserialize(jso, out);
@@ -3085,6 +3101,9 @@ ifapi_json_TPMU_KDF_SCHEME_deserialize(UINT32 selector, json_object *jso, TPMU_K
     case TPM2_ALG_KDF1_SP800_56A:
         return ifapi_json_TPMS_SCHEME_KDF1_SP800_56A_deserialize(jso, &out->kdf1_sp800_56a);
     case TPM2_ALG_KDF1_SP800_108:
+        return ifapi_json_TPMS_SCHEME_KDF1_SP800_108_deserialize(jso, &out->kdf1_sp800_108);
+
+    case TPM2_ALG_KDF2:
         return ifapi_json_TPMS_SCHEME_KDF1_SP800_108_deserialize(jso, &out->kdf1_sp800_108);
 
     case TPM2_ALG_NULL: {
