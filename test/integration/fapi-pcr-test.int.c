@@ -48,12 +48,12 @@ const char *log_exp[] = {
         \"digest\":\"0f89ee1fcb7b0a4f7809d1267a029719004c5a5e5ec323a7c3523a20974f9a3f202f56fadba4cd9e8d654ab9f2e96dc5c795ea176fa20ede8d854c342f903533\"\n\
       },\n\
       {\n\
-        \"hashAlg\":\"SM3_256\",\n\
+        \"hashAlg\":\"sm3_256\",\n\
         \"digest\":\"24c898bdb4d258f9bebb2e820d4ed478a7c013b37bd9e5006515730c18a70416\"\n\
       }\n\
     ],\n\
-    \"type\":\"tss2\",\n\
-    \"sub_event\":{\n\
+    \"" CONTENT_TYPE "\":\"tss2\",\n\
+    \"" CONTENT "\":{\n\
       \"data\":\"00010203040506070809\",\n\
       \"event\":{\n\
         \"test\":\"myfile\"\n\
