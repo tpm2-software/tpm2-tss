@@ -4,6 +4,7 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include "tss2_common.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
@@ -477,6 +478,11 @@ iesys_MU_IESYS_SESSION_Unmarshal(const uint8_t *buffer,
     ret = Tss2_MU_UINT16_Unmarshal(buffer, size, &offset_loc,
                                    (dst == NULL) ? &out_sizeSessionValue : &dst->sizeSessionValue);
     return_if_error(ret, "Error unmarshaling subfield sizeSessionValue");
+
+    if (((dst == NULL) ? out_sizeSessionValue : dst->sizeSessionValue)
+        > sizeof(dst->sessionValue)) {
+        return_error(TSS2_ESYS_RC_BAD_SIZE, "sizeSessionValue exceeds sizeof(sessionValue)");
+    }
 
     ret = iesys_MU_BYTE_array_Unmarshal(
         buffer, size, &offset_loc, (dst == NULL) ? out_sizeSessionValue : dst->sizeSessionValue,
