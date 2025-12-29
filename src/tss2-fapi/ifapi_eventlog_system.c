@@ -270,7 +270,7 @@ parse_sha1_log_event(TCG_EVENT const *event, size_t size, size_t *event_size) {
         LOG_ERROR("insufficient size for SpecID event header");
         return false;
     }
-    if (event->pcrIndex > TPM2_MAX_PCRS) {
+    if (event->pcrIndex >= TPM2_MAX_PCRS) {
         LOG_ERROR("Invalid PCR index");
         return false;
     }
