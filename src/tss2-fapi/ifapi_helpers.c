@@ -2438,6 +2438,9 @@ ifapi_compute_policy_digest(TPML_PCRVALUES     *pcrs,
             pcr_selection->pcrSelections[j].sizeofSelect = 3;
         }
         UINT32 pcrIndex = pcrs->pcrs[i].pcr;
+        if (pcrIndex >= TPM2_MAX_PCRS) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid PCR index %" PRIu32, cleanup, pcrIndex);
+        }
         if (pcrIndex + 1 > max_pcr)
             max_pcr = pcrIndex + 1;
         pcr_selection->pcrSelections[j].pcrSelect[pcrIndex / 8] |= ((BYTE)1) << pcrIndex % 8;

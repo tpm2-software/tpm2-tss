@@ -1024,6 +1024,11 @@ ifapi_json_TPMS_PCRVALUE_deserialize(json_object *jso, TPMS_PCRVALUE *out) {
     r = ifapi_json_UINT32_deserialize(jso2, &out->pcr);
     return_if_error(r, "Bad value for field \"pcr\".");
 
+    if (out->pcr >= TPM2_MAX_PCRS) {
+        LOG_ERROR("Invalid PCR index %" PRIu32, out->pcr);
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+
     if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
         LOG_ERROR("Field \"hashAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
