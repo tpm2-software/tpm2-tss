@@ -161,6 +161,18 @@ enum IFAPI_CHECK_NV_STATE {
     CHECK_NV_WAIT_FOR_READ_PUBLIC
 };
 
+/** The states for the FAPI's policy instantiation*/
+enum IFAPI_INSTANTIATE_POLICIES_STATE {
+    POLICIES_INSTANTIATION_INIT = 0,
+    POLICIES_INSTANTIATION_WAIT
+};
+
+typedef struct {
+    enum IFAPI_INSTANTIATE_POLICIES_STATE state;
+    size_t                                pol_idx;
+    TPMS_POLICY                          *policies[5];
+} IFAPI_POLICIES;
+
 #define IFAPI_MAX_CAP_INFO 17
 
 typedef struct {
@@ -611,6 +623,8 @@ typedef struct {
     bool                   cert_chain_exists;
     uint8_t               *certs;
     size_t                 cert_list_size;
+    IFAPI_POLICIES         policies;
+
 } IFAPI_Provision;
 
 /** The data structure holding internal state of regenerate primary key.
