@@ -222,17 +222,21 @@ sha_digest_json_cb(UINT8       *digest,
 
 /** Get UINT32 size value from buffer and increase offset.
  */
-UINT32
-get_size_from_buffer(UINT8 *buffer, size_t *offset, IFAPI_IMA_TEMPLATE *template) {
-    UINT32 size;
-    memcpy(&size, &buffer[*offset], sizeof(UINT32));
+TSS2_RC
+get_size_from_buffer(UINT8 *buffer, size_t *offset, IFAPI_IMA_TEMPLATE *template, UINT32 *size) {
+    UINT32 bsize;
+    /* Validate bounds for UINT32*/
+    if (*offset > template->event_size || template->event_size - *offset < sizeof(UINT32)) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid size field in IMA event.");
+    }
+    memcpy(&bsize, &buffer[*offset], sizeof(UINT32));
     *offset += sizeof(UINT32);
     if (template->convert_to_big_endian) {
-        size = endian_swap_32(size);
+        bsize = endian_swap_32(bsize);
     }
-    return size;
+    *size = bsize;
+    return TSS2_RC_SUCCESS;
 }
-
 /** Callback for digest with name of used hash algorithm,
  */
 static TSS2_RC
@@ -247,9 +251,13 @@ digest_with_hash_name_cb(UINT8       *digest,
     const EVP_MD *md;
     int           digest_size;
     UINT32        digest_buffer_size;
+    size_t        max_strlen;
 
-    digest_buffer_size = get_size_from_buffer(buffer, offset, template);
-    alg_name_size = strlen((char *)&buffer[*offset]) - 1; /**< strip : */
+    r = get_size_from_buffer(buffer, offset, template, &digest_buffer_size);
+    return_if_error(r, "Get size from event buffer");
+
+    max_strlen = template->event_size - *offset;
+    alg_name_size = strnlen((char *)&buffer[*offset], max_strlen) - 1; /**< strip : */
     if (alg_name_size > CRYPTO_MAX_ALG_NAME) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid hash name.");
     }
@@ -290,8 +298,11 @@ signature_cb(UINT8       *digest,
     UNUSED(jso);
     UINT32 digest_size;
     UNUSED(template);
+    TSS2_RC r;
 
-    digest_size = get_size_from_buffer(buffer, offset, template);
+    r = get_size_from_buffer(buffer, offset, template, &digest_size);
+    return_if_error(r, "Get size from event buffer");
+
     LOGBLOB_TRACE(&buffer[*offset], digest_size, "IMA Signature:");
     *offset += digest_size;
     return TSS2_RC_SUCCESS;
@@ -305,14 +316,20 @@ eventname_ng_json_cb(UINT8       *digest,
                      size_t      *offset,
                      json_object *jso,
                      IFAPI_IMA_TEMPLATE *template) {
-    size_t size;
-    UINT32 size_from_buffer;
+    size_t  size;
+    UINT32  size_from_buffer;
+    size_t  max_strlen;
+    TSS2_RC r;
+
     UNUSED(digest);
     UNUSED(jso);
 
     /* Get size from buffer with 0 Terminator. */
-    size_from_buffer = get_size_from_buffer(buffer, offset, template);
-    size = strlen((const char *)&buffer[*offset]);
+    r = get_size_from_buffer(buffer, offset, template, &size_from_buffer);
+    return_if_error(r, "Get size from event buffer");
+
+    max_strlen = template->event_size - *offset;
+    size = strnlen((const char *)&buffer[*offset], max_strlen);
     if (size != size_from_buffer - 1) {
         size_from_buffer = endian_swap_32(size_from_buffer);
         /* Try with endian swap */
