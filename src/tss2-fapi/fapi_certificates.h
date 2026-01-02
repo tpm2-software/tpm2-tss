@@ -583,7 +583,7 @@ static char *root_cert_list[] = {
     "gYsAMIGHAkIBOEEErw+Y4yMWsXAadaSW6xd/mBVGsXqhMpzj4papN/7GqjXDfuK9\n"
     "MgsZ7Px8flVvyCwklFaQ3BAmW4tfyl4N9L0CQUkCk38aTqb9ujPyxEr992ohb/fN\n"
     "k4fcaU9h6ghtC0Rwjye33dZG+uuCoD+UJPXnbELFsVIno4CMU5wrbN/pjkTT\n"
-    "-----END CERTIFICATE-----\n"
+    "-----END CERTIFICATE-----\n",
 
     /* Nuvoton TPM Root CA 2012
        https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202012.cer */
@@ -608,7 +608,7 @@ static char *root_cert_list[] = {
     "9xP1vbWU4+F8wqxI40YJqy+OvZpgj1BEMdGdaqlvurWQsqnJqdpt6dl/LPNuM+wO\n"
     "KMnl4L+aSkMfxa/ixA7MTuuvNp6DrRQYovEOguixGu84bq2iH7SQRBRyMN+vq9i9\n"
     "WLEibrpZ\n"
-    "-----END CERTIFICATE-----\n"
+    "-----END CERTIFICATE-----\n",
 
     /* Nuvoton TPM Root CA 2210
        https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NuvotonTPMRootCA2210.cer */
@@ -625,7 +625,7 @@ static char *root_cert_list[] = {
     "hkjOPQQDAwNoADBlAjA1VI6Ssp4u19dhl4QxzAk25F5eyWluPN70sQMxhUiN4364\n"
     "G7dZennpRQ0E6ks9aE0CMQDWJTRTmp3nvkH9KObvKYq6d4KhRiyW73GHfq4KmVM6\n"
     "Gsu50pM52YTnRvX55OV5gvk=\n"
-    "-----END CERTIFICATE-----\n"
+    "-----END CERTIFICATE-----\n",
 
     /* Nuvoton TPM Root CA 2211
        https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NuvotonTPMRootCA2211.cer */
@@ -642,7 +642,7 @@ static char *root_cert_list[] = {
     "hkjOPQQDAwNnADBkAjBy87O2aPZ/DsiWhwAmxrljlNa0B5W4viPlFdh/gG0hl0Ki\n"
     "mFtunbjZUFS0ghSWoZ4CMEilQvtS56K0eJHD9bcMihldgKr44uVsvekQ+x+d7tQA\n"
     "iOG5MMXWeNJhlPZ+m1lpJg==\n"
-    "-----END CERTIFICATE-----\n"
+    "-----END CERTIFICATE-----\n",
 
     /* AMD root certificate ECC */
     "-----BEGIN CERTIFICATE-----\n"
