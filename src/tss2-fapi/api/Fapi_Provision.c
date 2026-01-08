@@ -1050,7 +1050,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         r = Esys_DictionaryAttackParameters_Finish(context->esys);
         return_try_again(r);
 
-        goto_if_error_reset_state(r, "DictionaryAttackParameters_Finish", error_cleanup);
+        if (r == TPM2_RC_LOCKOUT) {
+            LOG_WARNING("Authorization lockout hierarchy failed");
+            LOG_WARNING("Dictionary attack parameters could not be set");
+        } else {
+            goto_if_error_reset_state(r, "DictionaryAttackParameters_Finish", error_cleanup);
+        }
 
         /* Generate template for SRK creation. */
         r = ifapi_set_key_flags(defaultProfile->srk_template,
