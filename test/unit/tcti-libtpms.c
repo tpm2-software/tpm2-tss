@@ -183,9 +183,9 @@ TPMLIB_Process(unsigned char **resp_buf,
 }
 TPM_RESULT
 TPMLIB_SetState(enum TPMLIB_StateType st, const unsigned char *buf, uint32_t buf_len) {
-    check_expected_ptr(st);
+    check_expected(st);
     check_expected_ptr(buf);
-    check_expected_ptr(buf_len);
+    check_expected(buf_len);
     return mock_type(int);
 }
 void
