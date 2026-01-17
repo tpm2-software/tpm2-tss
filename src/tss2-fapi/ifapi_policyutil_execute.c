@@ -79,6 +79,7 @@ new_policy(FAPI_CONTEXT *context, TPMS_POLICY *policy, IFAPI_POLICYUTIL_STACK **
         context->policy.util_current_policy->next = *current_policy;
         (*current_policy)->prev = context->policy.util_current_policy;
     }
+    context->policy.util_current_policy = *current_policy;
     return TSS2_RC_SUCCESS;
 }
 
