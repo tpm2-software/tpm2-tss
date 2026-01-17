@@ -1406,6 +1406,7 @@ ifapi_copy_ifapi_key(IFAPI_KEY *dest, const IFAPI_KEY *src) {
     dest->with_auth = src->with_auth;
     dest->delete_prohibited = src->delete_prohibited;
     dest->ek_profile = src->ek_profile;
+    dest->auth_primary_set = src->auth_primary_set;
 
     return r;
 

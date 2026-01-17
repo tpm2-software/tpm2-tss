@@ -345,6 +345,8 @@ ifapi_set_auth_primary(FAPI_CONTEXT          *context,
     memset(inSensitive, 0, sizeof(TPMS_SENSITIVE_CREATE));
 
     if (!object->misc.key.with_auth) {
+        /* Auth value for esys object was already set during creation
+           of primary key. */
         return TSS2_RC_SUCCESS;
     }
 
@@ -359,6 +361,7 @@ ifapi_set_auth_primary(FAPI_CONTEXT          *context,
             inSensitive->userAuth.size = strlen(auth);
             memcpy(&inSensitive->userAuth.buffer[0], auth, inSensitive->userAuth.size);
         }
+        object->misc.key.auth_primary_set = true;
         return TSS2_RC_SUCCESS;
     }
     SAFE_FREE(auth);
@@ -388,6 +391,9 @@ ifapi_set_auth(FAPI_CONTEXT *context, IFAPI_OBJECT *auth_object, const char *des
     obj_path = ifapi_get_object_path(auth_object);
 
     /* Check whether callback is defined. */
+    if (auth_object->objectType == IFAPI_KEY_OBJ && auth_object->misc.key.auth_primary_set) {
+        return TSS2_RC_SUCCESS;
+    }
     if (context->callbacks.auth) {
         r = context->callbacks.auth(obj_path, description, &auth, context->callbacks.authData);
         return_if_error(r, "policyAuthCallback");
@@ -1977,6 +1983,8 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent) {
         r = ifapi_copy_ifapi_key_object(&context->loadKey.auth_object,
                                         &context->createPrimary.pkey_object);
         goto_if_error(r, "Could not copy primary key", error_cleanup);
+
+        ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
 
         if (context->loadKey.key_list) {
             context->loadKey.state = LOAD_KEY_LOAD_KEY;

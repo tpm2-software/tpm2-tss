@@ -544,6 +544,7 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
 
         ifapi_cleanup_ifapi_object(&cb_ctx->object);
         cb_ctx->object = *cb_ctx->auth_object_ptr;
+        cb_ctx->auth_object = cb_ctx->object;
         fallthrough;
 
     statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_KEY);
@@ -553,17 +554,12 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
         fapi_ctx->createPrimary = cb_ctx->create_primary_ctx;
         cb_ctx->object = *cb_ctx->auth_object_ptr;
         *auth_handle = cb_ctx->auth_object_ptr->public.handle;
-
-        r = ifapi_authorize_object(fapi_ctx, cb_ctx->auth_object_ptr, authSession);
-        return_try_again(r);
+        r = ifapi_authorize_object(fapi_ctx, &cb_ctx->load_ctx.auth_object, authSession);
         fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
         fapi_ctx->createPrimary = cb_ctx->create_primary_ctx;
-
-        goto_if_error(r, "Authorize  object.", cleanup);
-
+        FAPI_SYNC(r, "Fapi authorize object.", cleanup);
         cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
         break;
-    /* FALLTHRU */
 
     statecasedefault(cb_ctx->cb_state);
     }
@@ -1352,6 +1348,7 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
         /* Prepare policy execution */
         r = ifapi_policyutil_execute_prepare(fapi_ctx, current_policy->hash_alg, cb_ctx->policy);
         /* Next state will switch from prev context to next context. */
+        fapi_ctx->policy.util_current_policy = fapi_ctx->policy.util_current_policy->prev;
         goto_if_error(r, "Prepare policy execution.", cleanup);
         fallthrough;
 
@@ -1526,6 +1523,9 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
         r = ifapi_policyutil_execute_prepare(fapi_ctx, current_policy->hash_alg,
                                              &current_policy->policy_list->policy);
         return_if_error(r, "Prepare policy execution.");
+
+        /* Next state will switch from prev context to next context. */
+        fapi_ctx->policy.util_current_policy = fapi_ctx->policy.util_current_policy->prev;
         fallthrough;
 
     statecase(cb_ctx->cb_state, POL_CB_EXECUTE_SUB_POLICY)

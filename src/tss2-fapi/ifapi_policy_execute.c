@@ -837,7 +837,6 @@ execute_policy_secret(ESYS_CONTEXT          *esys_ctx,
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
         /* Callback for the object authorization. */
         return_if_null(cb->cbauth, "Policy Auth Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
-        current_policy->flush_handle = false;
         r = cb->cbauth(&policy->objectName, &current_policy->object_handle,
                        &current_policy->auth_handle, &current_policy->auth_session,
                        cb->cbauth_userdata);
@@ -864,6 +863,7 @@ execute_policy_secret(ESYS_CONTEXT          *esys_ctx,
         r = Esys_PolicySecret_Finish(esys_ctx, NULL, NULL);
         return_try_again(r);
         goto_if_error(r, "FAPI PolicySecret_Finish", cleanup);
+
         if (!current_policy->flush_handle) {
             current_policy->state = POLICY_EXECUTE_INIT;
             return r;
@@ -1181,7 +1181,7 @@ execute_policy_cp_hash(ESYS_CONTEXT          *esys_ctx,
     /* Prepare the policy execution. */
         r = Esys_PolicyCpHash_Async(esys_ctx, current_policy->session, ESYS_TR_NONE, ESYS_TR_NONE,
                                     ESYS_TR_NONE, &policy->cpHash);
-        return_if_error(r, "Execute PolicyNameH.");
+        return_if_error(r, "Execute PolicyCpHash.");
 
         fallthrough;
 
@@ -1333,7 +1333,7 @@ execute_policy_or(ESYS_CONTEXT          *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyOR_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyPCR_Finish.");
+        try_again_or_error(r, "Execute PolicyOR_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
