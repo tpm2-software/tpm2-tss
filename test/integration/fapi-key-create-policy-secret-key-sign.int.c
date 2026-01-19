@@ -18,13 +18,33 @@
 #include "tss2_common.h"     // for BYTE, TSS2_RC, TSS2_RC_SUCCESS, TSS2_FA...
 #include "tss2_fapi.h"       // for Fapi_CreateKey, Fapi_Delete, Fapi_Sign
 #include "tss2_tpm2_types.h" // for TPM2B_DIGEST
+#include <openssl/sha.h>     // for DIGEST functions and constants
 
 #define LOGMODULE test
 #include "util/log.h" // for SAFE_FREE, goto_if_error, LOG_ERROR
 
-#define NV_SIZE       34
-#define PASSWORD      "abc"
-#define SIGN_TEMPLATE "sign"
+#define NV_SIZE                         34
+#define PASSWORD                        "abc"
+#define SIGN_TEMPLATE                   "sign"
+#define SIGN_KEY_PATH                   "/HN/signing"
+#define SIGN_POLICY_PATH                "/policy/sign"
+#define TOKEN_OBJECT_PATH               "/HN/token_0"
+#define TOKEN_OBJECT_POLICY_PATH        "/policy/token_object"
+
+#define POLICY_BRANCH_TOKEN_ACCESS_NAME "TokenAccess"
+#define POLICY_BRANCH_TOKEN_DELETE_NAME "TokenDelete"
+
+struct passwords {
+    const char *token;
+};
+
+static TSS2_RC
+
+auth_callback_token0(const char *p, const char *d, const char **auth, void *data) {
+    struct passwords *passwords = (struct passwords *)data;
+    *auth = passwords->token;
+    return TSS2_RC_SUCCESS;
+}
 
 static TSS2_RC
 auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
@@ -99,6 +119,12 @@ test_fapi_key_create_policy_secret_key_sign(FAPI_CONTEXT *context) {
     char    *publicKey = NULL;
     char    *certificate = NULL;
 
+    const char      *token = "abcdefg";
+    struct passwords pws = { .token = token };
+    size_t           signature_size;
+    const char      *plain_text = "Hello World.";
+    const size_t     plain_text_size = strlen(plain_text);
+
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
@@ -159,13 +185,66 @@ test_fapi_key_create_policy_secret_key_sign(FAPI_CONTEXT *context) {
     ASSERT(strstr(publicKey, "BEGIN PUBLIC KEY"));
     ASSERT(strstr(certificate, "BEGIN CERTIFICATE"));
 
-    r = Fapi_Delete(context, "/");
-    goto_if_error(r, "Error Fapi_Delete", error);
-
     SAFE_FREE(signature);
     SAFE_FREE(publicKey);
     SAFE_FREE(certificate);
     SAFE_FREE(json_policy);
+
+    /*
+     * Test of policy secret with a key used as auth object.
+     */
+    static const char SIGN_POLICY[] = "{"
+                                      "\"name\":\"Dynamic policy\","
+                                      "\"description\":\"Dynamic policy\","
+                                      "\"policy\":["
+                                      "{"
+                                      "\"type\":\"secret\","
+                                      "\"objectPath\":\"" TOKEN_OBJECT_PATH "\""
+                                      "}"
+                                      "]"
+                                      "}";
+
+    static const char TOKEN_OBJECT_POLICY[]
+        = "{"
+          "\"name\": \"Token Object Policy\","
+          "\"description\": \"Access policy for token objects\","
+          "\"policy\": ["
+          "{"
+          "\"type\": \"password\""
+          "}"
+          "]"
+          "}"
+          // These closing brackets get silently accepted
+          "]"
+          "}";
+
+    goto_if_error(Fapi_SetAuthCB(context, auth_callback_token0, (void *)&pws), "SetAuthCB",
+                  cleanup);
+
+    goto_if_error(Fapi_Import(context, TOKEN_OBJECT_POLICY_PATH, TOKEN_OBJECT_POLICY), "Import",
+                  cleanup);
+
+    goto_if_error(Fapi_Import(context, SIGN_POLICY_PATH, SIGN_POLICY), "Import", cleanup);
+
+    /* The token object only exists to be used for policySecret */
+    goto_if_error(Fapi_CreateKey(context, TOKEN_OBJECT_PATH, "", TOKEN_OBJECT_POLICY_PATH, token),
+                  "CreateKey", cleanup);
+
+    goto_if_error(Fapi_CreateKey(context, SIGN_KEY_PATH, "sign", SIGN_POLICY_PATH, NULL),
+                  "CreateKey", cleanup);
+
+    uint8_t hash[SHA256_DIGEST_LENGTH] = { 0 };
+    SHA256((const uint8_t *)plain_text, plain_text_size, hash);
+
+    goto_if_error(Fapi_Sign(context, SIGN_KEY_PATH, NULL, hash, SHA256_DIGEST_LENGTH, &signature,
+                            &signature_size, NULL, NULL),
+                  "Fapi_Sign", cleanup);
+    SAFE_FREE(signature);
+cleanup:
+
+    r = Fapi_Delete(context, "/");
+    goto_if_error(r, "Error Fapi_Delete", error);
+
     return EXIT_SUCCESS;
 
 error:
