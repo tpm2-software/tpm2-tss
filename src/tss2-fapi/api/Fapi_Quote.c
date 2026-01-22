@@ -37,7 +37,7 @@
  *
  * @param[in,out] context The FAPI_CONTEXT
  * @param[in] pcrList The list of PCRs that are to be quoted
- * @param[in] pcrListSize The size of pcrList in bytes
+ * @param[in] pcrListSize The number of entries in the pcrList array
  * @param[in] keyPath The path to the signing key
  * @param[in] quoteType The type of quote. May be NULL
  * @param[in] qualifyingData A nonce provided by the caller. May be NULL
@@ -154,7 +154,7 @@ Fapi_Quote(FAPI_CONTEXT  *context,
  *
  * @param[in,out] context The FAPI_CONTEXT
  * @param[in] pcrList The list of PCRs that are to be quoted
- * @param[in] pcrListSize The size of pcrList in bytes
+ * @param[in] pcrListSize The number of entries in the pcrList array
  * @param[in] keyPath The path to the signing key
  * @param[in] quoteType The type of quote. May be NULL
  * @param[in] qualifyingData A nonce provided by the caller. May be NULL
