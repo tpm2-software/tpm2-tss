@@ -180,8 +180,31 @@ AM_CONDITIONAL(VENDOR, test "x$enable_vendor" = "xyes")
 AS_IF([test "x$enable_vendor" != "xyes"],
     [AC_DEFINE([DISABLE_VENDOR], [1], [Disable Vendor Extensions])])
 
+AC_ARG_ENABLE([pqc],
+            [AS_HELP_STRING([--disable-pqc],
+                            [don't build with post-quantum cryptography support; Default: Auto])],,
+            [enable_pqc=auto])
+AS_IF([test "x$enable_pqc" = "xauto"],
+    [PKG_CHECK_MODULES([CRYPTO_PQC],
+                       [libcrypto >= 3.3.0],
+                       [enable_pqc=yes],
+                       [AC_CHECK_HEADER([openssl/opensslv.h],
+                           [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                               #include <openssl/opensslv.h>
+                               #if OPENSSL_VERSION_NUMBER < 0x30300000L
+                               #error OpenSSL version too old
+                               #endif
+                           ]], [[]])],
+                           [enable_pqc=yes],
+                           [enable_pqc=no])],
+                       [enable_pqc=no])])])
+AM_CONDITIONAL(PQC, test "x$enable_pqc" != xno)
+AS_IF([test "x$enable_pqc" = "xyes"],
+    [AC_DEFINE([ENABLE_PQC], [1], [Enable Post-Quantum Cryptography])])
 
 m4_define([ossl_min_version], [1.1.0])
+m4_define([ossl_pqc_min_version], [3.3.0])
+m4_define([ossl_pqc_err], [PQC support requires OpenSSL >= ossl_pqc_min_version])
 m4_define([ossl_err], [OpenSSL libcrypto is missing or version requirements not met. OpenSSL version must be >= ossl_min_version])
 AS_IF([test "x$enable_esys" = xyes],
       [AS_IF([test "x$with_crypto" = xossl], [
@@ -207,6 +230,21 @@ AS_IF([test "x$enable_esys" = xyes],
        ], [AC_MSG_ERROR([Bad value for --with-crypto $with_crypto])])])
 AC_SUBST([TSS2_ESYS_CFLAGS_CRYPTO])
 AC_SUBST([TSS2_ESYS_LDFLAGS_CRYPTO])
+
+AS_IF([test "x$enable_pqc" = "xyes"],
+    [AS_IF([test "x$with_crypto" != "xossl"],
+        [AC_MSG_ERROR([PQC support requires OpenSSL as the crypto backend])])
+     PKG_CHECK_MODULES([CRYPTO_PQC], [libcrypto >= ossl_pqc_min_version],,
+        [AC_CHECK_HEADER([openssl/opensslv.h],
+            [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                #include <openssl/opensslv.h>
+                #if OPENSSL_VERSION_NUMBER < 0x30300000L
+                #error OpenSSL version too old
+                #endif
+            ]], [[]])],
+            [],
+            [AC_MSG_ERROR([ossl_pqc_err])])],
+        [AC_MSG_ERROR([ossl_pqc_err])])])])
 
 AS_IF([test "x$enable_fapi" != xno && test "x$enable_esys" = "xno"],
     [AC_MSG_ERROR([ESYS has to be enabled to compile FAPI.])])
@@ -750,6 +788,7 @@ AC_MSG_RESULT([
     maxloglevel:        $with_maxloglevel
     doxygen:            $DX_FLAG_doc $enable_doxygen_doc
     crypto backend:     $with_crypto
+    Post Quantum:       $enable_pqc
     sysconfdir:         $sysconfdir
     localstatedir:      $localstatedir
     runstatedir:        $runstatedir
