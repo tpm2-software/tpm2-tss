@@ -779,8 +779,8 @@ Tss2_Tcti_Libtpms_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char 
     struct libtpms_callbacks callbacks
         = { .sizeOfStruct = sizeof(struct libtpms_callbacks),
             .tpm_nvram_init = tcti_libtpms_cb_nvram_init,
-            .tpm_nvram_loaddata = NULL,
-            .tpm_nvram_storedata = NULL,
+            .tpm_nvram_loaddata = tcti_libtpms_cb_nvram_loaddata,
+            .tpm_nvram_storedata = tcti_libtpms_cb_nvram_storedata,
             .tpm_nvram_deletename = tcti_libtpms_cb_nvram_deletename,
             .tpm_io_init = tcti_libtpms_cb_io_init,
             .tpm_io_getlocality = tcti_libtpms_cb_io_getlocality,
