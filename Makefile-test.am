@@ -51,7 +51,7 @@ test_helper_tpm_cmd_tcti_dummy_LDFLAGS = $(TESTS_LDFLAGS)
 test_helper_tpm_cmd_tcti_dummy_LDADD = $(TESTS_LDADD)
 endif #UNIT
 
-### Rules to enumerate binary test files for FAPI from b64 files.
+### Rules to enerate binary test files for FAPI from b64 files.
 
 if FAPI
 FAPI_TEST_BINS = \
@@ -356,6 +356,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-data-crypt-persistent.fint \
     test/integration/fapi-data-crypt-rsa.fint \
     test/integration/fapi-data-crypt-rsa-persistent.fint \
+    test/integration/fapi-ecc-encrypt-decrypt.fint \
     test/integration/fapi-duplicate.fint \
     test/integration/fapi-export-policy.fint \
     test/integration/fapi-ext-public-key.fint \
@@ -2514,6 +2515,13 @@ test_integration_fapi_data_crypt_rsa_persistent_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_data_crypt_rsa_persistent_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_data_crypt_rsa_persistent_fint_SOURCES = \
     test/integration/fapi-data-crypt.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_ecc_encrypt_decrypt_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
+test_integration_fapi_ecc_encrypt_decrypt_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_ecc_encrypt_decrypt_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_ecc_encrypt_decrypt_fint_SOURCES = \
+    test/integration/fapi-ecc-encrypt-decrypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_duplicate_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
