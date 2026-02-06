@@ -290,19 +290,23 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
         return_if_error_reset_state(r, "read_finish failed");
 
         if (commandObject.objectType != IFAPI_KEY_OBJ) {
+            *pubKey = commandObject;
+            strdup_check(pubKey->misc.ext_pub_key.pem_ext_public,
+                         commandObject.misc.ext_pub_key.pem_ext_public, r, cleanup);
+        } else if (commandObject.objectType == IFAPI_KEY_OBJ) {
+            pubKey->objectType = IFAPI_EXT_PUB_KEY_OBJ;
+            pubKey->misc.ext_pub_key.public = commandObject.misc.key.public;
+
+            /* Convert the TPM key format to PEM. */
+            r = ifapi_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
+                                           &pubKey->misc.ext_pub_key.pem_ext_public, &sizePem);
+            goto_if_error(r, "Convert public TPM key to pem.", cleanup);
+        } else {
             /* No key object was loaded */
             ifapi_cleanup_ifapi_object(&commandObject);
             goto_error(r, TSS2_FAPI_RC_BAD_PATH, "%s is not a key object.", cleanup,
                        command->pathOfKeyToDuplicate);
         }
-
-        pubKey->objectType = IFAPI_EXT_PUB_KEY_OBJ;
-        pubKey->misc.ext_pub_key.public = commandObject.misc.key.public;
-
-        /* Convert the TPM key format to PEM. */
-        r = ifapi_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
-                                       &pubKey->misc.ext_pub_key.pem_ext_public, &sizePem);
-        goto_if_error(r, "Convert public TPM key to pem.", cleanup);
 
         r = ifapi_json_IFAPI_OBJECT_serialize(pubKey, &jsoOut);
         goto_if_error(r, "Error serialize FAPI KEY object", cleanup);
