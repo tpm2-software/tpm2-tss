@@ -1322,6 +1322,11 @@ execute_policy_or(ESYS_CONTEXT          *esys_ctx,
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
     /* Prepare the policy execution. */
+        if (policy->branches->count < 2) {
+            LOG_ERROR("At least 2 branches are required for policy or, but only got %u",
+                      policy->branches->count);
+            return TSS2_FAPI_RC_BAD_VALUE;
+        }
         r = compute_or_digest_list(policy->branches, current_hash_alg,
                                    &current_policy->digest_list);
         return_if_error(r, "Compute policy or digest list.");
