@@ -55,6 +55,53 @@
 static __thread TSS2_TCTI_LIBTPMS_CONTEXT *current_tcti_libtpms = NULL;
 
 /*
+ * If the mapped memory for the state file does not suffice, reallocate.
+ */
+static TSS2_RC
+tcti_libtpms_ensure_state_len(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms, size_t state_len) {
+    int    ret;
+    char  *new_state_mmap;
+    size_t new_state_mmap_len;
+    int    state_fd;
+
+    if (state_len > tcti_libtpms->state_mmap_len) {
+        new_state_mmap_len = (state_len / STATE_MMAP_CHUNK_LEN + 1) * STATE_MMAP_CHUNK_LEN;
+        LOG_DEBUG("Mapped memory region is too small: %zu > %zu. Reallocating to %zu...", state_len,
+                  tcti_libtpms->state_mmap_len, new_state_mmap_len);
+        new_state_mmap = mremap(tcti_libtpms->state_mmap, tcti_libtpms->state_mmap_len,
+                                new_state_mmap_len, MREMAP_MAYMOVE);
+        if (new_state_mmap == MAP_FAILED) {
+            LOG_ERROR("mremap failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
+            return TSS2_TCTI_RC_IO_ERROR;
+        }
+        tcti_libtpms->state_mmap = new_state_mmap;
+        tcti_libtpms->state_mmap_len = new_state_mmap_len;
+
+        LOG_DEBUG("Successfully mapped state file to %zu bytes.", tcti_libtpms->state_mmap_len);
+
+        /* allocate more disk space */
+        if (tcti_libtpms->state_path) {
+            state_fd = open(tcti_libtpms->state_path, O_RDWR | O_CREAT, 0644);
+            if (state_fd == -1) {
+                LOG_ERROR("open failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
+                return TSS2_TCTI_RC_IO_ERROR;
+            }
+
+            ret = posix_fallocate(state_fd, 0, (off_t)tcti_libtpms->state_mmap_len);
+            if (ret != 0) {
+                LOG_ERROR("fallocate failed on file %s: %d", tcti_libtpms->state_path, ret);
+                close(state_fd);
+                return TSS2_TCTI_RC_IO_ERROR;
+            }
+
+            close(state_fd);
+        }
+    }
+
+    return TSS2_RC_SUCCESS;
+}
+
+/*
  * Map the state file for this context into memory and allocate disk space. The
  * file descriptor is closed again. Once this context reaches the end of its
  * lifetime, the memory must be unmapped and the file must be truncated to its
@@ -121,53 +168,6 @@ cleanup_fd:
     }
 
     return rc;
-}
-
-/*
- * If the mapped memory for the state file does not suffice, reallocate.
- */
-static TSS2_RC
-tcti_libtpms_ensure_state_len(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms, size_t state_len) {
-    int    ret;
-    char  *new_state_mmap;
-    size_t new_state_mmap_len;
-    int    state_fd;
-
-    if (state_len > tcti_libtpms->state_mmap_len) {
-        new_state_mmap_len = (state_len / STATE_MMAP_CHUNK_LEN + 1) * STATE_MMAP_CHUNK_LEN;
-        LOG_DEBUG("Mapped memory region is too small: %zu > %zu. Reallocating to %zu...", state_len,
-                  tcti_libtpms->state_mmap_len, new_state_mmap_len);
-        new_state_mmap = mremap(tcti_libtpms->state_mmap, tcti_libtpms->state_mmap_len,
-                                new_state_mmap_len, MREMAP_MAYMOVE);
-        if (new_state_mmap == MAP_FAILED) {
-            LOG_ERROR("mremap failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
-            return TSS2_TCTI_RC_IO_ERROR;
-        }
-        tcti_libtpms->state_mmap = new_state_mmap;
-        tcti_libtpms->state_mmap_len = new_state_mmap_len;
-
-        LOG_DEBUG("Successfully mapped state file to %zu bytes.", tcti_libtpms->state_mmap_len);
-
-        /* allocate more disk space */
-        if (tcti_libtpms->state_path) {
-            state_fd = open(tcti_libtpms->state_path, O_RDWR | O_CREAT, 0644);
-            if (state_fd == -1) {
-                LOG_ERROR("open failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
-                return TSS2_TCTI_RC_IO_ERROR;
-            }
-
-            ret = posix_fallocate(state_fd, 0, (off_t)tcti_libtpms->state_mmap_len);
-            if (ret != 0) {
-                LOG_ERROR("fallocate failed on file %s: %d", tcti_libtpms->state_path, ret);
-                close(state_fd);
-                return TSS2_TCTI_RC_IO_ERROR;
-            }
-
-            close(state_fd);
-        }
-    }
-
-    return TSS2_RC_SUCCESS;
 }
 
 /*
