@@ -13,11 +13,12 @@
 #include <fcntl.h>             // for open, posix_fallocate, O_CREAT, O_RDWR
 #include <inttypes.h>          // for uint32_t, PRIx32, PRIu32, PRIxPTR
 #include <libtpms/tpm_error.h> // for TPM_SUCCESS, TPM_FAIL, TPM_RETRY
-#include <netinet/in.h>        // for htonl, ntohl
-#include <stdio.h>             // for NULL, ssize_t
-#include <stdlib.h>            // for free
-#include <string.h>            // for memcpy, strerror, memset, strdup, strlen
-#include <unistd.h>            // for close, lseek, truncate
+#include <libtpms/tpm_nvfilename.h> // for TPM_PERMANENT_ALL_NAME, TPM_SAVESTATE_NAME, TPM_VOLATILESTATE_NAME
+#include <netinet/in.h>             // for htonl, ntohl
+#include <stdio.h>                  // for NULL, ssize_t
+#include <stdlib.h>                 // for free
+#include <string.h>                 // for memcpy, strerror, memset, strdup, strlen
+#include <unistd.h>                 // for close, lseek, truncate
 
 #include "tcti-common.h" // for TSS2_TCTI_COMMON_CONTEXT, tpm_header_t
 #include "tcti-libtpms.h"
@@ -55,14 +56,15 @@
 static __thread TSS2_TCTI_LIBTPMS_CONTEXT *current_tcti_libtpms = NULL;
 
 /*
- * If the mapped memory for the state file does not suffice, reallocate.
+ * If the mapped memory for the state file does not suffice, reallocate. This
+ * may move tcti_libtpms->state_mmap to a new memory location.
  */
 static TSS2_RC
 tcti_libtpms_ensure_state_len(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms, size_t state_len) {
-    int    ret;
-    char  *new_state_mmap;
-    size_t new_state_mmap_len;
-    int    state_fd;
+    int            ret;
+    unsigned char *new_state_mmap;
+    size_t         new_state_mmap_len;
+    int            state_fd;
 
     if (state_len > tcti_libtpms->state_mmap_len) {
         new_state_mmap_len = (state_len / STATE_MMAP_CHUNK_LEN + 1) * STATE_MMAP_CHUNK_LEN;
@@ -113,43 +115,45 @@ tcti_libtpms_map_state_file(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
     int     ret;
     int     state_fd = -1;
     ssize_t file_len = 0;
+    int     flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
-    /* if no/empty state path, skip */
-    if (tcti_libtpms->state_path == NULL) {
-        LOG_DEBUG("No state path. Skip mapping state file.");
-        return TPM2_RC_SUCCESS;
-    }
     LOG_DEBUG("Mapping state file: %s", tcti_libtpms->state_path);
 
     tcti_libtpms->state_mmap_len = STATE_MMAP_CHUNK_LEN;
 
-    /* open file */
-    state_fd = open(tcti_libtpms->state_path, O_RDWR | O_CREAT, 0644);
-    if (state_fd == -1) {
-        LOG_ERROR("open failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
-        return TSS2_TCTI_RC_IO_ERROR;
-    }
+    /* if state path was given, prepare file */
+    if (tcti_libtpms->state_path != NULL) {
+        /* open file */
+        state_fd = open(tcti_libtpms->state_path, O_RDWR | O_CREAT, 0644);
+        if (state_fd == -1) {
+            LOG_ERROR("open failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
+            return TSS2_TCTI_RC_IO_ERROR;
+        }
 
-    /* get file size (to detect if state does already exist). */
-    file_len = lseek(state_fd, 0L, SEEK_END);
-    if (file_len < 0) {
-        LOG_ERROR("lseek failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
-        rc = TSS2_TCTI_RC_IO_ERROR;
-        goto cleanup_fd;
-    }
-    tcti_libtpms->state_mmap_len = (file_len / STATE_MMAP_CHUNK_LEN + 1) * STATE_MMAP_CHUNK_LEN;
+        /* get file size (to detect if state does already exist). */
+        file_len = lseek(state_fd, 0L, SEEK_END);
+        if (file_len < 0) {
+            LOG_ERROR("lseek failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
+            rc = TSS2_TCTI_RC_IO_ERROR;
+            goto cleanup_fd;
+        }
+        tcti_libtpms->state_mmap_len = (file_len / STATE_MMAP_CHUNK_LEN + 1) * STATE_MMAP_CHUNK_LEN;
 
-    /* allocate disk space */
-    ret = posix_fallocate(state_fd, 0, (off_t)tcti_libtpms->state_mmap_len);
-    if (ret != 0) {
-        LOG_ERROR("fallocate failed on file %s: %d", tcti_libtpms->state_path, ret);
-        rc = TSS2_TCTI_RC_IO_ERROR;
-        goto cleanup_fd;
+        /* allocate disk space */
+        ret = posix_fallocate(state_fd, 0, (off_t)tcti_libtpms->state_mmap_len);
+        if (ret != 0) {
+            LOG_ERROR("fallocate failed on file %s: %d", tcti_libtpms->state_path, ret);
+            rc = TSS2_TCTI_RC_IO_ERROR;
+            goto cleanup_fd;
+        }
+
+        flags = MAP_SHARED;
     }
 
     /* map memory (either backed by file or not) */
     tcti_libtpms->state_mmap
-        = mmap(NULL, tcti_libtpms->state_mmap_len, PROT_READ | PROT_WRITE, MAP_SHARED, state_fd, 0);
+        = mmap(NULL, tcti_libtpms->state_mmap_len, PROT_READ | PROT_WRITE, flags, state_fd, 0);
+    /* for non-file-backed memory, contents are zeroized by mmap */
     if (tcti_libtpms->state_mmap == MAP_FAILED) {
         tcti_libtpms->state_mmap_len = 0;
         LOG_ERROR("mmap failed on file %s: %s", tcti_libtpms->state_path, strerror(errno));
@@ -157,6 +161,8 @@ tcti_libtpms_map_state_file(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
         goto cleanup_fd;
     }
 
+    /* Current state length is file_len (which is 0 for non-file-backed memory).
+     */
     tcti_libtpms->state_len = file_len;
 
     rc = TPM2_RC_SUCCESS;
@@ -167,127 +173,6 @@ cleanup_fd:
         close(state_fd);
     }
 
-    return rc;
-}
-
-/*
- * Retrieve libtpms state and save it to the state file.
- */
-static TSS2_RC
-tcti_libtpms_store_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
-    TSS2_RC        rc;
-    int            ret;
-    unsigned char *permanent_buf, *volatile_buf;
-    uint32_t       permanent_buf_len, volatile_buf_len;
-    uint32_t       permanent_buf_len_be, volatile_buf_len_be;
-    size_t         offset = 0;
-    size_t         size;
-
-    /* if no state file, skip loading */
-    if (tcti_libtpms->state_path == NULL) {
-        LOG_DEBUG("No state file. Skip storing state file.");
-        return TPM2_RC_SUCCESS;
-    }
-    LOG_DEBUG("Storing state to file: %s", tcti_libtpms->state_path);
-
-    /* get states */
-    LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_GetState, TPMLIB_STATE_PERMANENT, &permanent_buf,
-                     &permanent_buf_len);
-    LIBTPMS_API_CALL(cleanup_permanent, tcti_libtpms, TPMLIB_GetState, TPMLIB_STATE_VOLATILE,
-                     &volatile_buf, &volatile_buf_len);
-
-    /* check if enough memory is allocated first */
-    size = sizeof(uint32_t) + permanent_buf_len + sizeof(uint32_t) + volatile_buf_len;
-    rc = tcti_libtpms_ensure_state_len(tcti_libtpms, size);
-    if (rc != TSS2_RC_SUCCESS) {
-        goto cleanup_volatile;
-    }
-
-    /* write permanent buffer length (big endian) */
-    size = sizeof(permanent_buf_len_be);
-    permanent_buf_len_be = htonl(permanent_buf_len);
-    memcpy(tcti_libtpms->state_mmap + offset, &permanent_buf_len_be, size);
-    offset += size;
-
-    /* write permanent buffer */
-    size = permanent_buf_len;
-    memcpy(tcti_libtpms->state_mmap + offset, permanent_buf, size);
-    offset += size;
-
-    /* write volatile buffer length (big endian) */
-    size = sizeof(volatile_buf_len_be);
-    volatile_buf_len_be = htonl(volatile_buf_len);
-    memcpy(tcti_libtpms->state_mmap + offset, &volatile_buf_len_be, size);
-    offset += size;
-
-    /* write volatile buffer */
-    size = volatile_buf_len;
-    memcpy(tcti_libtpms->state_mmap + offset, volatile_buf, size);
-    offset += size;
-
-    tcti_libtpms->state_len = offset;
-
-    rc = TPM2_RC_SUCCESS;
-
-cleanup_volatile:
-    free(volatile_buf);
-
-cleanup_permanent:
-    free(permanent_buf);
-
-fail:
-    return rc;
-}
-
-/*
- * Load the libtpms state from the mapped memory (state file). This has to be
- * called after TPMLIB_ChooseTPMVersion and before TPMLIB_MainInit.
- */
-static TSS2_RC
-tcti_libtpms_load_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
-    TSS2_RC        rc;
-    int            ret;
-    unsigned char *permanent_buf, *volatile_buf;
-    uint32_t       permanent_buf_len, volatile_buf_len;
-    size_t         offset = 0;
-
-    /* if no/empty state file, skip loading */
-    if (tcti_libtpms->state_path == NULL || tcti_libtpms->state_len == 0) {
-        LOG_DEBUG("No/empty state file found. Skip loading state file.");
-        return TPM2_RC_SUCCESS;
-    }
-    LOG_DEBUG("Loading from state file: %s", tcti_libtpms->state_path);
-
-    tcti_libtpms->state_len = 0;
-
-    /* permanent buffer length (big endian) */
-    memcpy(&permanent_buf_len, tcti_libtpms->state_mmap, sizeof(permanent_buf_len));
-    permanent_buf_len = ntohl(permanent_buf_len);
-    offset += sizeof(permanent_buf_len);
-
-    /* permanent buffer */
-    permanent_buf = (unsigned char *)tcti_libtpms->state_mmap + offset;
-    offset += permanent_buf_len;
-
-    /* volatile buffer length (big endian) */
-    memcpy(&volatile_buf_len, tcti_libtpms->state_mmap + offset, sizeof(volatile_buf_len));
-    volatile_buf_len = ntohl(volatile_buf_len);
-    offset += sizeof(volatile_buf_len);
-
-    /* volatile buffer */
-    volatile_buf = (unsigned char *)tcti_libtpms->state_mmap + offset;
-    offset += volatile_buf_len;
-
-    LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_SetState, TPMLIB_STATE_PERMANENT, permanent_buf,
-                     permanent_buf_len);
-    LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_SetState, TPMLIB_STATE_VOLATILE, volatile_buf,
-                     volatile_buf_len);
-
-    tcti_libtpms->state_len = offset;
-
-    rc = TPM2_RC_SUCCESS;
-
-fail:
     return rc;
 }
 
@@ -327,27 +212,17 @@ Tss2_Tcti_Libtpms_Reset(TSS2_TCTI_CONTEXT *tcti_ctx) {
         return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
-    /* Get NV (i.e. permanent state) */
-    unsigned char *permanent_state;
-    uint32_t       permanent_state_len;
-    LIBTPMS_API_CALL(fail, tcti_libtpms, TPMLIB_GetState, TPMLIB_STATE_PERMANENT, &permanent_state,
-                     &permanent_state_len);
+    LOG_DEBUG("Resetting libtpms TPM...");
 
     /* TPM power off */
     tcti_libtpms->TPMLIB_Terminate();
 
-    /* Set NV to the same value, will be picked up by MainInit() */
-    LIBTPMS_API_CALL(cleanup, tcti_libtpms, TPMLIB_SetState, TPMLIB_STATE_PERMANENT,
-                     permanent_state, permanent_state_len);
-
-    /* Load state and power on */
+    /* Power on (internally reloads state) */
     LIBTPMS_API_CALL(cleanup, tcti_libtpms, TPMLIB_MainInit);
 
     rc = TSS2_RC_SUCCESS;
 
 cleanup:
-    free(permanent_state);
-fail:
     return rc;
 }
 
@@ -388,12 +263,6 @@ tcti_libtpms_transmit(TSS2_TCTI_CONTEXT *tcti_ctx, size_t size, const uint8_t *c
                      (uint32_t *)&resp_size, (uint32_t *)&respbufsize, (uint8_t *)cmd_buf, size);
     tcti_libtpms->response_len = resp_size;
     tcti_libtpms->response_buffer_len = respbufsize;
-
-    rc = tcti_libtpms_store_state(tcti_libtpms);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to store state file");
-        return TSS2_TCTI_RC_IO_ERROR;
-    }
 
     tcti_common->state = TCTI_STATE_RECEIVE;
 
@@ -567,12 +436,6 @@ tcti_libtpms_dl(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
         goto cleanup_dl;
     }
 
-    tcti_libtpms->TPMLIB_GetState = dlsym(tcti_libtpms->libtpms, "TPMLIB_GetState");
-    if (tcti_libtpms->TPMLIB_GetState == NULL) {
-        LOG_ERROR("Could not resolve libtpms symbol TPMLIB_GetState(): %s", dlerror());
-        goto cleanup_dl;
-    }
-
     tcti_libtpms->TPMLIB_MainInit = dlsym(tcti_libtpms->libtpms, "TPMLIB_MainInit");
     if (tcti_libtpms->TPMLIB_MainInit == NULL) {
         LOG_ERROR("Could not resolve libtpms symbol TPMLIB_MainInit(): %s", dlerror());
@@ -585,22 +448,9 @@ tcti_libtpms_dl(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
         goto cleanup_dl;
     }
 
-    tcti_libtpms->TPMLIB_SetState = dlsym(tcti_libtpms->libtpms, "TPMLIB_SetState");
-    if (tcti_libtpms->TPMLIB_SetState == NULL) {
-        LOG_ERROR("Could not resolve libtpms symbol TPMLIB_SetState(): %s", dlerror());
-        goto cleanup_dl;
-    }
-
     tcti_libtpms->TPMLIB_Terminate = dlsym(tcti_libtpms->libtpms, "TPMLIB_Terminate");
     if (tcti_libtpms->TPMLIB_Terminate == NULL) {
         LOG_ERROR("Could not resolve libtpms symbol TPMLIB_Terminate(): %s", dlerror());
-        goto cleanup_dl;
-    }
-
-    tcti_libtpms->TPM_IO_TpmEstablished_Reset
-        = dlsym(tcti_libtpms->libtpms, "TPM_IO_TpmEstablished_Reset");
-    if (tcti_libtpms->TPM_IO_TpmEstablished_Reset == NULL) {
-        LOG_ERROR("Could not resolve libtpms symbol TPM_IO_TpmEstablished_Reset(): %s", dlerror());
         goto cleanup_dl;
     }
 
@@ -625,14 +475,107 @@ TPM_RESULT
 tcti_libtpms_cb_nvram_init(void) {
     LOG_TRACE("tcti-libtpms callback nvram_init() called.");
 
+    /* Nothing to do here, the map file is initialized as part of the
+     * initialization of tcti-libtpms.
+     */
+
     return TPM_SUCCESS;
 }
 
+/**
+ * @brief Parse the libtpms states from the mapped memory.
+ *
+ * WARNING: This function assumes initialized state memory. Do not call before
+ * the state was stored at least once!
+ *
+ * This function extracts the permanent and volatile state buffers from the
+ * memory-mapped state file. It updates the provided pointers with the buffer
+ * addresses and their lengths.
+ *
+ * @param tcti_libtpms The libtpms TCTI context containing the mapped state
+ * memory.
+ * @param permanent_buf_len_ptr To return the address of the permanent buffer
+ * length. Due to alignment issues: do not dereference directly.
+ * @param permanent_buf_len To return the length of the permanent buffer.
+ * @param permanent_buf To return the address of the permanent buffer.
+ * @param volatile_buf_len_ptr To return the address of the volatile buffer
+ * length. Due to alignment issues: do not dereference directly.
+ * @param volatile_buf_len To return the length of the volatile buffer.
+ * @param volatile_buf To return the address of the volatile buffer.
+ */
+static void
+parse_state(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms,
+            unsigned char            **permanent_buf_len_ptr,
+            uint32_t                  *permanent_buf_len,
+            unsigned char            **permanent_buf,
+            unsigned char            **volatile_buf_len_ptr,
+            uint32_t                  *volatile_buf_len,
+            unsigned char            **volatile_buf) {
+
+    /* layout statefile:
+     * - permanent_buf_len (4 bytes, big endian)
+     * - permanent_buf (permanent_buf_len bytes)
+     * - volatile_buf_len (4 bytes, big endian)
+     * - volatile_buf (volatile_buf_len bytes)
+     *
+     * To avoid unaligned 32-bit accesses on architectures that forbid them,
+     * read the 4-byte length fields via memcpy into a local uint32_t and
+     * convert with ntohl(). Also perform simple bounds checks against the
+     * mapped state length.
+     */
+    uint32_t tmp_be;
+
+    /* permanent buffer length */
+    *permanent_buf_len_ptr = tcti_libtpms->state_mmap;
+    memcpy(&tmp_be, tcti_libtpms->state_mmap, sizeof(tmp_be));
+    *permanent_buf_len = ntohl(tmp_be);
+    *permanent_buf = (unsigned char *)tcti_libtpms->state_mmap + sizeof(uint32_t);
+
+    /* volatile buffer length pointer is after the permanent buffer */
+    *volatile_buf_len_ptr = (*permanent_buf + *permanent_buf_len);
+    memcpy(&tmp_be, (unsigned char *)*volatile_buf_len_ptr, sizeof(tmp_be));
+    *volatile_buf_len = ntohl(tmp_be);
+    *volatile_buf = (unsigned char *)*volatile_buf_len_ptr + sizeof(uint32_t);
+}
+
+/**
+ * @brief Load TPM state from persistent storage.
+ *
+ * This function is called when the TPM needs to retrieve state data from
+ * persistent storage. The implementing function must allocate a buffer and
+ * return it along with its length.
+ *
+ * [UNDOCUMENTED] If the state is empty, the function should leave the
+ * parameters untouched and return TPM_RETRY.
+ *
+ * @param tcti_libtpms The libtpms TCTI context containing the mapped state memory.
+ * @param tpm_number Always 0; can be ignored.
+ * @param name       Type of state to load. Must be one of: - TPM_SAVESTATE_NAME
+ *                   - TPM_VOLATILESTATE_NAME - TPM_PERMANENT_ALL_NAME
+ * @param data       Pointer to receive allocated buffer containing the loaded
+ *                   state data. The caller is responsible for freeing this
+ *                   buffer.
+ * @param length     Pointer to receive the length of the allocated buffer in
+ * bytes.
+ *
+ * @return TPM_RETRY on empty state; TPM_SUCCESS on success; appropriate failure
+ * code otherwise.
+ */
 TPM_RESULT
-tcti_libtpms_cb_nvram_loaddata(unsigned char **data MAYBE_UNUSED,
-                               uint32_t *length     MAYBE_UNUSED,
-                               uint32_t tpm_number  MAYBE_UNUSED,
-                               const char *name     MAYBE_UNUSED) {
+tcti_libtpms_load(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms,
+                  unsigned char            **data,
+                  uint32_t                  *length,
+                  uint32_t tpm_number        MAYBE_UNUSED,
+                  const char                *name) {
+    unsigned char *permanent_buf_len_ptr;
+    uint32_t       permanent_buf_len;
+    unsigned char *permanent_buf;
+    unsigned char *volatile_buf_len_ptr;
+    uint32_t       volatile_buf_len;
+    unsigned char *volatile_buf;
+    unsigned char *state_buf;
+    uint32_t       state_buf_len;
+
     LOG_TRACE("tcti-libtpms callback nvram_loaddata() called: "
               "data=0x%" PRIxPTR ", "
               "length=0x%" PRIxPTR ", "
@@ -640,14 +583,103 @@ tcti_libtpms_cb_nvram_loaddata(unsigned char **data MAYBE_UNUSED,
               "name=%s",
               (uintptr_t)data, (uintptr_t)length, tpm_number, name);
 
-    return TPM_RETRY;
+    /* undocumented requirement: if state is empty, this function must return TPM_RETRY. */
+    if (tcti_libtpms->state_len == 0) {
+        LOG_DEBUG("States are empty. Return TPM_RETRY.");
+        return TPM_RETRY;
+    }
+
+    /* layout statefile:
+     * - permanent_buf_len (4 bytes, big endian)
+     * - permanent_buf (permanent_buf_len bytes)
+     * - volatile_buf_len (4 bytes, big endian)
+     * - volatile_buf (volatile_buf_len bytes)
+     */
+    parse_state(tcti_libtpms, &permanent_buf_len_ptr, &permanent_buf_len, &permanent_buf,
+                &volatile_buf_len_ptr, &volatile_buf_len, &volatile_buf);
+
+    LOG_TRACE("Loading state from %s: permanent[%" PRIu32 "]=%p, volatile[%" PRIu32 "]=%p",
+              tcti_libtpms->state_path, permanent_buf_len, permanent_buf, volatile_buf_len,
+              volatile_buf);
+
+    if (strcmp(name, TPM_SAVESTATE_NAME) == 0) {
+        LOG_ERROR("Loading state is not supported yet.");
+        return TPM_FAIL;
+    } else if (strcmp(name, TPM_PERMANENT_ALL_NAME) == 0) {
+        state_buf = permanent_buf;
+        state_buf_len = permanent_buf_len;
+    } else if (strcmp(name, TPM_VOLATILESTATE_NAME) == 0) {
+        state_buf = volatile_buf;
+        state_buf_len = volatile_buf_len;
+    } else {
+        LOG_ERROR("Unknown name parameter: %s", name);
+        return TPM_FAIL;
+    }
+
+    /* undocumented requirement: if state is empty, this function must return TPM_RETRY. */
+    if (state_buf_len == 0) {
+        LOG_DEBUG("State %s is empty. Return TPM_RETRY.", name);
+        return TPM_RETRY;
+    }
+
+    *data = malloc(state_buf_len);
+    if (*data == NULL) {
+        LOG_ERROR("Failed to allocate memory for libtpms state.");
+        return TPM_FAIL;
+    }
+    memcpy(*data, state_buf, state_buf_len);
+    *length = state_buf_len;
+
+    return TPM_SUCCESS;
 }
 
 TPM_RESULT
-tcti_libtpms_cb_nvram_storedata(const unsigned char *data MAYBE_UNUSED,
-                                uint32_t length           MAYBE_UNUSED,
-                                uint32_t tpm_number       MAYBE_UNUSED,
-                                const char *name          MAYBE_UNUSED) {
+tcti_libtpms_cb_nvram_loaddata(unsigned char **data,
+                               uint32_t       *length,
+                               uint32_t        tpm_number,
+                               const char     *name) {
+    if (current_tcti_libtpms == NULL) {
+        LOG_ERROR("No TCTI registered as currently active before loading state.");
+        return TPM_FAIL;
+    }
+
+    return tcti_libtpms_load(current_tcti_libtpms, data, length, tpm_number, name);
+}
+
+/**
+ * @brief Store TPM state data to persistent storage.
+ *
+ * This function is called when the TPM wants to store state to persistent storage. The data and
+ * length parameters provide the data to be stored and the number of bytes. The implementing
+ * function must not free the data buffer.
+ *
+ * @param tcti_libtpms The libtpms TCTI context containing the mapped state memory.
+ * @param tpm_number Always 0; can be ignored.
+ * @param name       Type of state to store. Must be one of:
+ *                   - TPM_SAVESTATE_NAME
+ *                   - TPM_VOLATILESTATE_NAME
+ *                   - TPM_PERMANENT_ALL_NAME
+ * @param data Pointer to the data buffer to be stored; must not be freed by this function
+ * @param length The number of bytes in the data buffer
+ *
+ * @return TPM_SUCCESS on success; a failure code otherwise
+ */
+TPM_RESULT
+tcti_libtpms_store(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms,
+                   const unsigned char       *data,
+                   uint32_t                   length,
+                   uint32_t tpm_number        MAYBE_UNUSED,
+                   const char                *name) {
+    unsigned char *permanent_buf_len_ptr;
+    uint32_t       permanent_buf_len;
+    unsigned char *permanent_buf;
+    unsigned char *volatile_buf_len_ptr;
+    uint32_t       volatile_buf_len;
+    unsigned char *volatile_buf;
+    uint32_t       permanent_buf_len_be, volatile_buf_len_be;
+    size_t         new_size = 0;
+    TPM2_RC        rc;
+
     LOG_TRACE("tcti-libtpms callback nvram_storedata() called: "
               "data=0x%" PRIxPTR ", "
               "length=%" PRIu32 ", "
@@ -655,7 +687,110 @@ tcti_libtpms_cb_nvram_storedata(const unsigned char *data MAYBE_UNUSED,
               "name=%s",
               (uintptr_t)data, length, tpm_number, name);
 
+    /* If state is empty, initialize the state with 8 bytes of zeros. This
+     * represents an empty state.
+     */
+    if (tcti_libtpms->state_len == 0) {
+        new_size = sizeof(uint32_t) + sizeof(uint32_t);
+
+        rc = tcti_libtpms_ensure_state_len(tcti_libtpms, new_size);
+        if (rc != TSS2_RC_SUCCESS) {
+            return TSS2_TCTI_RC_MEMORY;
+        }
+
+        memset(tcti_libtpms->state_mmap, 0, new_size);
+        tcti_libtpms->state_len = new_size;
+    }
+
+    /* layout statefile:
+     * - permanent_buf_len (4 bytes, big endian)
+     * - permanent_buf (permanent_buf_len bytes)
+     * - volatile_buf_len (4 bytes, big endian)
+     * - volatile_buf (volatile_buf_len bytes)
+     */
+    parse_state(tcti_libtpms, &permanent_buf_len_ptr, &permanent_buf_len, &permanent_buf,
+                &volatile_buf_len_ptr, &volatile_buf_len, &volatile_buf);
+
+    if (strcmp(name, TPM_SAVESTATE_NAME) == 0) {
+        LOG_ERROR("Saving state is not supported yet.");
+        return TPM_FAIL;
+
+    } else if (strcmp(name, TPM_VOLATILESTATE_NAME) == 0) {
+        /* check if enough memory is allocated first */
+        new_size = sizeof(uint32_t) + permanent_buf_len + sizeof(uint32_t) + length;
+        rc = tcti_libtpms_ensure_state_len(tcti_libtpms, new_size);
+        if (rc != TSS2_RC_SUCCESS) {
+            return TPM_FAIL;
+        }
+
+        /* memory might have moved, refresh pointers */
+        parse_state(tcti_libtpms, &permanent_buf_len_ptr, &permanent_buf_len, &permanent_buf,
+                    &volatile_buf_len_ptr, &volatile_buf_len, &volatile_buf);
+
+        /* move everything which is behind volatile state, here nothing */
+
+        /* write volatile buffer length (big endian) */
+        volatile_buf_len_be = htonl(length);
+        memcpy(volatile_buf_len_ptr, &volatile_buf_len_be, sizeof(volatile_buf_len_be));
+
+        /* write volatile buffer */
+        memcpy(volatile_buf, data, length);
+
+    } else if (strcmp(name, TPM_PERMANENT_ALL_NAME) == 0) {
+        /* check if enough memory is allocated first */
+        new_size = sizeof(uint32_t) + length + sizeof(uint32_t) + volatile_buf_len;
+        rc = tcti_libtpms_ensure_state_len(tcti_libtpms, new_size);
+        if (rc != TSS2_RC_SUCCESS) {
+            return TPM_FAIL;
+        }
+
+        /* memory might have moved, refresh pointers */
+        parse_state(tcti_libtpms, &permanent_buf_len_ptr, &permanent_buf_len, &permanent_buf,
+                    &volatile_buf_len_ptr, &volatile_buf_len, &volatile_buf);
+
+        /* move everything which is behind permanent state, i.e.
+         * - volatile_buf_len
+         * - volatile_buf
+         */
+        memmove(tcti_libtpms->state_mmap + sizeof(uint32_t) + length,
+                tcti_libtpms->state_mmap + sizeof(uint32_t) + permanent_buf_len,
+                sizeof(uint32_t) + volatile_buf_len);
+
+        /* write permanent buffer length (big endian) */
+        permanent_buf_len_be = htonl(length);
+        memcpy(permanent_buf_len_ptr, &permanent_buf_len_be, sizeof(permanent_buf_len_be));
+
+        /* write permanent buffer */
+        memcpy(permanent_buf, data, length);
+    } else {
+        LOG_ERROR("Unknown name parameter: %s", name);
+        return TPM_FAIL;
+    }
+
+    /* state changed, refresh a last time for the logging call */
+    parse_state(tcti_libtpms, &permanent_buf_len_ptr, &permanent_buf_len, &permanent_buf,
+                &volatile_buf_len_ptr, &volatile_buf_len, &volatile_buf);
+
+    LOG_TRACE("Stored state to %s: permanent[%" PRIu32 "]=%p, volatile[%" PRIu32 "]=%p",
+              tcti_libtpms->state_path, permanent_buf_len, permanent_buf, volatile_buf_len,
+              volatile_buf);
+
+    tcti_libtpms->state_len = new_size;
+
     return TPM_SUCCESS;
+}
+
+TPM_RESULT
+tcti_libtpms_cb_nvram_storedata(const unsigned char *data,
+                                uint32_t             length,
+                                uint32_t             tpm_number,
+                                const char          *name) {
+    if (current_tcti_libtpms == NULL) {
+        LOG_ERROR("No TCTI registered as currently active before loading state.");
+        return TPM_FAIL;
+    }
+
+    return tcti_libtpms_store(current_tcti_libtpms, data, length, tpm_number, name);
 }
 
 TPM_RESULT
@@ -779,8 +914,8 @@ Tss2_Tcti_Libtpms_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char 
     struct libtpms_callbacks callbacks
         = { .sizeOfStruct = sizeof(struct libtpms_callbacks),
             .tpm_nvram_init = tcti_libtpms_cb_nvram_init,
-            .tpm_nvram_loaddata = NULL,
-            .tpm_nvram_storedata = NULL,
+            .tpm_nvram_loaddata = tcti_libtpms_cb_nvram_loaddata,
+            .tpm_nvram_storedata = tcti_libtpms_cb_nvram_storedata,
             .tpm_nvram_deletename = tcti_libtpms_cb_nvram_deletename,
             .tpm_io_init = tcti_libtpms_cb_io_init,
             .tpm_io_getlocality = tcti_libtpms_cb_io_getlocality,
@@ -788,10 +923,6 @@ Tss2_Tcti_Libtpms_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char 
     LIBTPMS_API_CALL(cleanup_state_mmap, tcti_libtpms, TPMLIB_ChooseTPMVersion,
                      TPMLIB_TPM_VERSION_2);
     LIBTPMS_API_CALL(cleanup_state_mmap, tcti_libtpms, TPMLIB_RegisterCallbacks, &callbacks);
-    rc = tcti_libtpms_load_state(tcti_libtpms);
-    if (rc != TPM2_RC_SUCCESS) {
-        goto cleanup_state_mmap;
-    }
     LIBTPMS_API_CALL(cleanup_state_mmap, tcti_libtpms, TPMLIB_MainInit);
 
     tcti_libtpms->response_buffer = NULL;
@@ -801,9 +932,7 @@ Tss2_Tcti_Libtpms_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char 
     return TSS2_RC_SUCCESS;
 
 cleanup_state_mmap:
-    if (tcti_libtpms->state_path != NULL) {
-        munmap(tcti_libtpms->state_mmap, tcti_libtpms->state_mmap_len);
-    }
+    munmap(tcti_libtpms->state_mmap, tcti_libtpms->state_mmap_len);
 
 cleanup_state_path:
     free(tcti_libtpms->state_path);
