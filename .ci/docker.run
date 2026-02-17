@@ -76,21 +76,28 @@ if [[ "$CC" == "gcc" && "$ENABLE_COVERAGE" == "true" ]]; then
 fi
 
 if ldconfig -p 2>/dev/null| grep libasan > /dev/null && ldconfig -p 2>/dev/null| grep libubsan > /dev/null; then
-  if [ $little_endian -eq 1 ]; then
+  if [ "$CC" == "gcc" ] && [ $little_endian -eq 1  ]; then
     SANITIZER_OPTION="--with-sanitizer=undefined,address"
   fi
 fi
 
 if [ "$SCANBUILD" == "yes" ]; then
-  scan-build --status-bugs ../configure --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
-elif [ "$CC" == "clang" ]; then
-  ../configure --enable-unit --enable-self-generated-certificate  --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
+  scan-build --status-bugs ../configure \
+    --enable-unit \
+    --enable-integration \
+    ${WITH_TCTI:+--with-integrationtcti=$WITH_TCTI} \
+    --enable-self-generated-certificate \
+    --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
 else
-  if [ "$WITH_TCTI" == "mssim" ]; then
-    ../configure $SANITIZER_OPTION --disable-tcti-swtpm --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
-  else
-    ../configure $SANITIZER_OPTION --enable-debug=yes --enable-unit --enable-self-generated-certificate --enable-integration --with-crypto=$WITH_CRYPTO $CONFIGURE_OPTIONS
-  fi
+  ../configure \
+    $SANITIZER_OPTION \
+    --enable-debug=yes \
+    --enable-unit \
+    --enable-integration \
+    ${WITH_TCTI:+--with-integrationtcti=$WITH_TCTI} \
+    --enable-self-generated-certificate \
+    --with-crypto=$WITH_CRYPTO \
+    $CONFIGURE_OPTIONS
 fi
 
 if [ "$SCANBUILD" == "yes" ]; then
