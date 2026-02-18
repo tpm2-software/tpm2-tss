@@ -140,8 +140,8 @@ tcti_from_info(TSS2_TCTI_INFO_FUNC infof, const char *conf, TSS2_TCTI_CONTEXT **
  */
 TSS2_RC
 tctildr_conf_parse(const char *name_conf, char *name, char *conf) {
-    char  *split;
-    size_t combined_length;
+    const char *split;
+    size_t      combined_length;
 
     if (name_conf == NULL) {
         LOG_ERROR("'name_conf' param may NOT be NULL");

@@ -230,8 +230,8 @@ ifapi_profiles_get(const IFAPI_PROFILES *profiles,
     check_not_null(profiles);
     check_not_null(name);
     check_not_null(profile);
-    char  *split;
-    size_t len;
+    const char *split;
+    size_t      len;
 
     /* if no name or nor profile prefix is given, use the default profile */
     if (!name || !(strncmp(name, "P_", 2) == 0 || strncmp(name, "/P_", 3) == 0)) {
