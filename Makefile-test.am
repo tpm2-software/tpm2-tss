@@ -17,6 +17,9 @@ if FAPI
 TESTS_CFLAGS += -DTEST_FAPI
 endif
 
+TESTS_CFLAGS += -DCMOCKA_ENABLE_DEPRECATED=1
+TESTS_CFLAGS += -Wno-error=deprecated-declarations
+
 check_LTLIBRARIES =
 # test harness configuration
 TEST_EXTENSIONS = .int .fint
