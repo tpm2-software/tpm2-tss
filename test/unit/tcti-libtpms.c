@@ -1782,7 +1782,7 @@ tcti_libtpms_teardown_two_states(void **state) {
 
         free(ctxs[i]);
     }
-    free(ctxs);
+    free((void *)ctxs);
 
     /* try to delete state files */
     ret = unlink(STATEFILE_PATH_REAL0);
