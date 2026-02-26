@@ -1645,6 +1645,111 @@ check_ECC_Decrypt(void **state) {
     }
 }
 
+void
+check_Encapsulate(void **state) {
+    TSS2_RC           r;
+    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    TPM2B_KEM_CIPHERTEXT *ciphertext;
+    TPM2B_SHARED_SECRET  *secret;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_Encapsulate_Finish(esys_context, &ciphertext, &secret);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_Decapsulate(void **state) {
+    TSS2_RC           r;
+    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    TPM2B_SHARED_SECRET *secret;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_Decapsulate_Finish(esys_context, &secret);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_SignDigest(void **state) {
+    TSS2_RC           r;
+    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    TPMT_SIGNATURE   *signature;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_SignDigest_Finish(esys_context, &signature);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_VerifyDigestSignature(void **state) {
+    TSS2_RC           r;
+    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    TPMT_TK_VERIFIED *validation;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_VerifyDigestSignature_Finish(esys_context, &validation);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_SignSequenceStart(void **state) {
+    TSS2_RC           r;
+    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    ESYS_TR           sequenceHandle;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_SignSequenceStart_Finish(esys_context, &sequenceHandle);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_VerifySequenceStart(void **state) {
+    TSS2_RC           r;
+    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    ESYS_TR           sequenceHandle;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_VerifySequenceStart_Finish(esys_context, &sequenceHandle);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_SignSequenceComplete(void **state) {
+    TSS2_RC           r;
+    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    TPMT_SIGNATURE   *signature;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_SignSequenceComplete_Finish(esys_context, &signature);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
+void
+check_VerifySequenceComplete(void **state) {
+    TSS2_RC           r;
+    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    TPMT_TK_VERIFIED *validation;
+    for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
+        esys_context->state = esys_states[i];
+        r = Esys_VerifySequenceComplete_Finish(esys_context, &validation);
+        assert_int_equal(r, TSS2_ESYS_RC_BAD_SEQUENCE);
+    }
+}
+
 int
 main(void) {
     const struct CMUnitTest tests[] = {
@@ -1794,7 +1899,20 @@ main(void) {
         cmocka_unit_test_setup_teardown(check_Policy_AC_SendSelect, esys_unit_setup,
                                         esys_unit_teardown),
         cmocka_unit_test_setup_teardown(check_ECC_Encrypt, esys_unit_setup, esys_unit_teardown),
-        cmocka_unit_test_setup_teardown(check_ECC_Decrypt, esys_unit_setup, esys_unit_teardown)
+        cmocka_unit_test_setup_teardown(check_ECC_Decrypt, esys_unit_setup, esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_Encapsulate, esys_unit_setup, esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_Decapsulate, esys_unit_setup, esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_SignDigest, esys_unit_setup, esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_VerifyDigestSignature, esys_unit_setup,
+                                        esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_SignSequenceStart, esys_unit_setup,
+                                        esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_VerifySequenceStart, esys_unit_setup,
+                                        esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_SignSequenceComplete, esys_unit_setup,
+                                        esys_unit_teardown),
+        cmocka_unit_test_setup_teardown(check_VerifySequenceComplete, esys_unit_setup,
+                                        esys_unit_teardown)
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

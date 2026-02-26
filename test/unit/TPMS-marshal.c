@@ -362,6 +362,94 @@ tpms_capability_data_intel_ptt_marshal_unmarshal(void **state) {
     assert_memory_equal(buf, buf2, sizeof(buf2));
 }
 
+static void
+tpms_mlkem_parms_marshal_unmarshal(void **state) {
+    TPMS_MLKEM_PARMS src  = { 0 };
+    TPMS_MLKEM_PARMS dest = { 0 };
+    uint8_t          buf[64];
+    size_t           offset1 = 0, offset2 = 0;
+    TSS2_RC          rc;
+
+    src.symmetric.algorithm = TPM2_ALG_NULL;
+    src.scheme = TPM2_MLKEM_1024;
+
+    rc = Tss2_MU_TPMS_MLKEM_PARMS_Marshal(&src, buf, sizeof(buf), &offset1);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, 4u); /* algorithm(2) + scheme(2) */
+
+    rc = Tss2_MU_TPMS_MLKEM_PARMS_Unmarshal(buf, sizeof(buf), &offset2, &dest);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, offset2);
+    assert_int_equal(dest.symmetric.algorithm, src.symmetric.algorithm);
+    assert_int_equal(dest.scheme, src.scheme);
+}
+
+/* Restricted decryption key: symmetric field carries a real cipher (AES-128-CFB)
+ * so the wire encoding grows from 4 to 8 bytes. */
+static void
+tpms_mlkem_parms_restricted_marshal_unmarshal(void **state) {
+    TPMS_MLKEM_PARMS src  = { 0 };
+    TPMS_MLKEM_PARMS dest = { 0 };
+    uint8_t          buf[64];
+    size_t           offset1 = 0, offset2 = 0;
+    TSS2_RC          rc;
+
+    src.symmetric.algorithm  = TPM2_ALG_AES;
+    src.symmetric.keyBits.aes = 128;
+    src.symmetric.mode.aes   = TPM2_ALG_CFB;
+    src.scheme = TPM2_MLKEM_768;
+
+    rc = Tss2_MU_TPMS_MLKEM_PARMS_Marshal(&src, buf, sizeof(buf), &offset1);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, 8u); /* algorithm(2) + keyBits(2) + mode(2) + scheme(2) */
+
+    rc = Tss2_MU_TPMS_MLKEM_PARMS_Unmarshal(buf, sizeof(buf), &offset2, &dest);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, offset2);
+    assert_int_equal(dest.symmetric.algorithm, src.symmetric.algorithm);
+    assert_int_equal(dest.symmetric.keyBits.aes, src.symmetric.keyBits.aes);
+    assert_int_equal(dest.symmetric.mode.aes, src.symmetric.mode.aes);
+    assert_int_equal(dest.scheme, src.scheme);
+}
+
+static void
+tpms_mldsa_parms_marshal_unmarshal(void **state) {
+    TPMS_MLDSA_PARMS src  = { .scheme = TPM2_MLDSA_87, .hashAlg = TPM2_ALG_SHA384 };
+    TPMS_MLDSA_PARMS dest = { 0 };
+    uint8_t          buf[64];
+    size_t           offset1 = 0, offset2 = 0;
+    TSS2_RC          rc;
+
+    rc = Tss2_MU_TPMS_MLDSA_PARMS_Marshal(&src, buf, sizeof(buf), &offset1);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, 4u); /* scheme(2) + hashAlg(2) */
+
+    rc = Tss2_MU_TPMS_MLDSA_PARMS_Unmarshal(buf, sizeof(buf), &offset2, &dest);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, offset2);
+    assert_int_equal(dest.scheme, src.scheme);
+    assert_int_equal(dest.hashAlg, src.hashAlg);
+}
+
+static void
+tpms_hash_mldsa_parms_marshal_unmarshal(void **state) {
+    TPMS_HASH_MLDSA_PARMS src  = { .scheme = TPM2_MLDSA_44, .hashAlg = TPM2_ALG_SHA256 };
+    TPMS_HASH_MLDSA_PARMS dest = { 0 };
+    uint8_t               buf[64];
+    size_t                offset1 = 0, offset2 = 0;
+    TSS2_RC               rc;
+
+    rc = Tss2_MU_TPMS_HASH_MLDSA_PARMS_Marshal(&src, buf, sizeof(buf), &offset1);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, 4u); /* scheme(2) + hashAlg(2) */
+
+    rc = Tss2_MU_TPMS_HASH_MLDSA_PARMS_Unmarshal(buf, sizeof(buf), &offset2, &dest);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, offset2);
+    assert_int_equal(dest.scheme, src.scheme);
+    assert_int_equal(dest.hashAlg, src.hashAlg);
+}
+
 int
 main(void) {
     const struct CMUnitTest tests[]
@@ -375,6 +463,10 @@ main(void) {
             cmocka_unit_test(tpms_unmarshal_buffer_null_offset_null),
             cmocka_unit_test(tpms_unmarshal_dest_null_offset_valid),
             cmocka_unit_test(tpms_unmarshal_buffer_size_lt_data_nad_lt_offset),
-            cmocka_unit_test(tpms_capability_data_intel_ptt_marshal_unmarshal) };
+            cmocka_unit_test(tpms_capability_data_intel_ptt_marshal_unmarshal),
+            cmocka_unit_test(tpms_mlkem_parms_marshal_unmarshal),
+            cmocka_unit_test(tpms_mlkem_parms_restricted_marshal_unmarshal),
+            cmocka_unit_test(tpms_mldsa_parms_marshal_unmarshal),
+            cmocka_unit_test(tpms_hash_mldsa_parms_marshal_unmarshal) };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

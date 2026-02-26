@@ -2423,6 +2423,165 @@ test_Policy_AC_SendSelect(void **state) {
     assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */);
 }
 
+static void
+test_Encapsulate(void **state) {
+    TSS2_RC                    r;
+    TSS2_TCTI_CONTEXT         *tcti;
+    ESYS_CONTEXT              *esys_context = (ESYS_CONTEXT *)*state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR               keyHandle  = DUMMY_TR_HANDLE_KEY;
+    TPM2B_KEM_CIPHERTEXT *ciphertext;
+    TPM2B_SHARED_SECRET  *secret;
+    r = Esys_Encapsulate(esys_context, keyHandle,
+                         ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                         &ciphertext, &secret);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */);
+}
+
+static void
+test_Decapsulate(void **state) {
+    TSS2_RC                    r;
+    TSS2_TCTI_CONTEXT         *tcti;
+    ESYS_CONTEXT              *esys_context = (ESYS_CONTEXT *)*state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR              keyHandle   = DUMMY_TR_HANDLE_KEY;
+    TPM2B_KEM_CIPHERTEXT ciphertext  = { 0 };
+    TPM2B_SHARED_SECRET *secret;
+    r = Esys_Decapsulate(esys_context, keyHandle,
+                         ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                         &ciphertext, &secret);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */);
+}
+
+static void
+test_SignDigest(void **state) {
+    TSS2_RC                    r;
+    TSS2_TCTI_CONTEXT         *tcti;
+    ESYS_CONTEXT              *esys_context = (ESYS_CONTEXT *)*state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR             keyHandle  = DUMMY_TR_HANDLE_KEY;
+    TPM2B_SIGNATURE_CTX context    = { 0 };
+    TPM2B_DIGEST        digest     = { 0 };
+    TPMT_TK_HASHCHECK   validation = { 0 };
+    TPMT_SIGNATURE     *signature;
+    r = Esys_SignDigest(esys_context, keyHandle,
+                        ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                        &context, &digest, &validation, &signature);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */);
+}
+
+static void
+test_VerifyDigestSignature(void **state) {
+    TSS2_RC                    r;
+    TSS2_TCTI_CONTEXT         *tcti;
+    ESYS_CONTEXT              *esys_context = (ESYS_CONTEXT *)*state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR             keyHandle  = DUMMY_TR_HANDLE_KEY;
+    TPM2B_SIGNATURE_CTX context    = { 0 };
+    TPM2B_DIGEST        digest     = { 0 };
+    TPMT_SIGNATURE      signature  = DUMMY_TPMT_SIGNATURE;
+    TPMT_TK_VERIFIED   *validation;
+    r = Esys_VerifyDigestSignature(esys_context, keyHandle,
+                                   ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                                   &context, &digest, &signature, &validation);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */);
+}
+
+static void
+test_SignSequenceStart(void **state) {
+    TSS2_RC                    r;
+    TSS2_TCTI_CONTEXT         *tcti;
+    ESYS_CONTEXT              *esys_context = (ESYS_CONTEXT *)*state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR             keyHandle      = DUMMY_TR_HANDLE_KEY;
+    TPM2B_AUTH          auth           = { 0 };
+    TPM2B_SIGNATURE_CTX context        = { 0 };
+    ESYS_TR             sequenceHandle;
+    r = Esys_SignSequenceStart(esys_context, keyHandle,
+                               ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                               &auth, &context, &sequenceHandle);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */);
+}
+
+static void
+test_VerifySequenceStart(void **state) {
+    TSS2_RC                    r;
+    TSS2_TCTI_CONTEXT         *tcti;
+    ESYS_CONTEXT              *esys_context = (ESYS_CONTEXT *)*state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR              keyHandle      = DUMMY_TR_HANDLE_KEY;
+    TPM2B_AUTH           auth           = { 0 };
+    TPM2B_SIGNATURE_HINT hint           = { 0 };
+    TPM2B_SIGNATURE_CTX  context        = { 0 };
+    ESYS_TR              sequenceHandle;
+    r = Esys_VerifySequenceStart(esys_context, keyHandle,
+                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                                 &auth, &hint, &context, &sequenceHandle);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */);
+}
+
+static void
+test_SignSequenceComplete(void **state) {
+    TSS2_RC                    r;
+    TSS2_TCTI_CONTEXT         *tcti;
+    ESYS_CONTEXT              *esys_context = (ESYS_CONTEXT *)*state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR          keyHandle = DUMMY_TR_HANDLE_KEY;
+    TPM2B_MAX_BUFFER buffer    = DUMMY_2B_DATA(.buffer);
+    TPMT_SIGNATURE  *signature;
+    r = Esys_SignSequenceComplete(esys_context, ESYS_TR_NONE, keyHandle,
+                                  ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                                  &buffer, &signature);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */);
+}
+
+static void
+test_VerifySequenceComplete(void **state) {
+    TSS2_RC                    r;
+    TSS2_TCTI_CONTEXT         *tcti;
+    ESYS_CONTEXT              *esys_context = (ESYS_CONTEXT *)*state;
+    Esys_GetTcti(esys_context, &tcti);
+    TSS2_TCTI_CONTEXT_YIELDER *tcti_yielder = tcti_yielder_cast(tcti);
+
+    ESYS_TR           keyHandle   = DUMMY_TR_HANDLE_KEY;
+    TPMT_SIGNATURE    signature   = DUMMY_TPMT_SIGNATURE;
+    TPMT_TK_VERIFIED *validation;
+    r = Esys_VerifySequenceComplete(esys_context, ESYS_TR_NONE, keyHandle,
+                                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                                    &signature, &validation);
+
+    assert_int_equal(r, TPM2_RC_YIELDED);
+    assert_int_equal(tcti_yielder->count, 5 /* _ESYS_MAX_SUBMISSIONS */);
+}
+
 int
 main(int argc, char *argv[]) {
     const struct CMUnitTest tests[]
@@ -2542,6 +2701,14 @@ main(int argc, char *argv[]) {
             cmocka_unit_test_setup_teardown(test_Vendor_TCG_Test, setup, teardown),
             cmocka_unit_test_setup_teardown(test_AC_GetCapability, setup, teardown),
             cmocka_unit_test_setup_teardown(test_AC_Send, setup, teardown),
-            cmocka_unit_test_setup_teardown(test_Policy_AC_SendSelect, setup, teardown) };
+            cmocka_unit_test_setup_teardown(test_Policy_AC_SendSelect, setup, teardown),
+            cmocka_unit_test_setup_teardown(test_Encapsulate, setup, teardown),
+            cmocka_unit_test_setup_teardown(test_Decapsulate, setup, teardown),
+            cmocka_unit_test_setup_teardown(test_SignDigest, setup, teardown),
+            cmocka_unit_test_setup_teardown(test_VerifyDigestSignature, setup, teardown),
+            cmocka_unit_test_setup_teardown(test_SignSequenceStart, setup, teardown),
+            cmocka_unit_test_setup_teardown(test_VerifySequenceStart, setup, teardown),
+            cmocka_unit_test_setup_teardown(test_SignSequenceComplete, setup, teardown),
+            cmocka_unit_test_setup_teardown(test_VerifySequenceComplete, setup, teardown) };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

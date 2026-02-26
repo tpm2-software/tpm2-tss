@@ -392,6 +392,117 @@ tpmu_name_marshal(void **state) {
     assert_memory_equal(buf + 2, digest, TPM2_SHA1_DIGEST_SIZE);
 }
 
+/*
+ * Roundtrip tests for the new ML-KEM and ML-DSA arms added to
+ * TPMU_PUBLIC_ID and TPMU_PUBLIC_PARMS.
+ */
+static void
+tpmu_public_id_mlkem_marshal_unmarshal(void **state) {
+    TPMU_PUBLIC_ID src  = { 0 };
+    TPMU_PUBLIC_ID dest = { 0 };
+    uint8_t        buf[sizeof(src)];
+    size_t         offset1 = 0, offset2 = 0;
+    TSS2_RC        rc;
+
+    src.mlkem.size = TPM2_MLKEM_512_KEY_BYTES;
+    memset(src.mlkem.buffer, 0xBC, src.mlkem.size);
+
+    rc = Tss2_MU_TPMU_PUBLIC_ID_Marshal(&src, TPM2_ALG_MLKEM, buf, sizeof(buf), &offset1);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, (size_t)(2 + TPM2_MLKEM_512_KEY_BYTES));
+
+    rc = Tss2_MU_TPMU_PUBLIC_ID_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_MLKEM, &dest);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, offset2);
+    assert_int_equal(dest.mlkem.size, src.mlkem.size);
+    assert_memory_equal(dest.mlkem.buffer, src.mlkem.buffer, src.mlkem.size);
+}
+
+static void
+tpmu_public_id_mldsa_marshal_unmarshal(void **state) {
+    TPMU_PUBLIC_ID src  = { 0 };
+    TPMU_PUBLIC_ID dest = { 0 };
+    uint8_t        buf[sizeof(src)];
+    size_t         offset1 = 0, offset2 = 0;
+    TSS2_RC        rc;
+
+    src.mldsa.size = TPM2_MLDSA_44_KEY_BYTES;
+    memset(src.mldsa.buffer, 0xDE, src.mldsa.size);
+
+    rc = Tss2_MU_TPMU_PUBLIC_ID_Marshal(&src, TPM2_ALG_MLDSA, buf, sizeof(buf), &offset1);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, (size_t)(2 + TPM2_MLDSA_44_KEY_BYTES));
+
+    rc = Tss2_MU_TPMU_PUBLIC_ID_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_MLDSA, &dest);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, offset2);
+    assert_int_equal(dest.mldsa.size, src.mldsa.size);
+    assert_memory_equal(dest.mldsa.buffer, src.mldsa.buffer, src.mldsa.size);
+}
+
+static void
+tpmu_public_parms_mlkem_marshal_unmarshal(void **state) {
+    TPMU_PUBLIC_PARMS src  = { 0 };
+    TPMU_PUBLIC_PARMS dest = { 0 };
+    uint8_t           buf[64];
+    size_t            offset1 = 0, offset2 = 0;
+    TSS2_RC           rc;
+
+    src.mlkemDetail.symmetric.algorithm = TPM2_ALG_NULL;
+    src.mlkemDetail.scheme = TPM2_MLKEM_512;
+
+    rc = Tss2_MU_TPMU_PUBLIC_PARMS_Marshal(&src, TPM2_ALG_MLKEM, buf, sizeof(buf), &offset1);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+
+    rc = Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_MLKEM, &dest);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, offset2);
+    assert_int_equal(dest.mlkemDetail.symmetric.algorithm, src.mlkemDetail.symmetric.algorithm);
+    assert_int_equal(dest.mlkemDetail.scheme, src.mlkemDetail.scheme);
+}
+
+static void
+tpmu_public_parms_mldsa_marshal_unmarshal(void **state) {
+    TPMU_PUBLIC_PARMS src  = { 0 };
+    TPMU_PUBLIC_PARMS dest = { 0 };
+    uint8_t           buf[64];
+    size_t            offset1 = 0, offset2 = 0;
+    TSS2_RC           rc;
+
+    src.mldsaDetail.scheme = TPM2_MLDSA_65;
+    src.mldsaDetail.hashAlg = TPM2_ALG_SHA256;
+
+    rc = Tss2_MU_TPMU_PUBLIC_PARMS_Marshal(&src, TPM2_ALG_MLDSA, buf, sizeof(buf), &offset1);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+
+    rc = Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_MLDSA, &dest);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, offset2);
+    assert_int_equal(dest.mldsaDetail.scheme, src.mldsaDetail.scheme);
+    assert_int_equal(dest.mldsaDetail.hashAlg, src.mldsaDetail.hashAlg);
+}
+
+static void
+tpmu_public_parms_hash_mldsa_marshal_unmarshal(void **state) {
+    TPMU_PUBLIC_PARMS src  = { 0 };
+    TPMU_PUBLIC_PARMS dest = { 0 };
+    uint8_t           buf[64];
+    size_t            offset1 = 0, offset2 = 0;
+    TSS2_RC           rc;
+
+    src.hashMldsaDetail.scheme = TPM2_MLDSA_87;
+    src.hashMldsaDetail.hashAlg = TPM2_ALG_SHA512;
+
+    rc = Tss2_MU_TPMU_PUBLIC_PARMS_Marshal(&src, TPM2_ALG_HASH_MLDSA, buf, sizeof(buf), &offset1);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+
+    rc = Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_HASH_MLDSA, &dest);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+    assert_int_equal(offset1, offset2);
+    assert_int_equal(dest.hashMldsaDetail.scheme, src.hashMldsaDetail.scheme);
+    assert_int_equal(dest.hashMldsaDetail.hashAlg, src.hashMldsaDetail.hashAlg);
+}
+
 int
 main(void) {
     const struct CMUnitTest tests[] = {
@@ -406,6 +517,11 @@ main(void) {
         cmocka_unit_test(tpmu_unmarshal_dest_null_offset_valid),
         cmocka_unit_test(tpmu_unmarshal_buffer_size_lt_data_nad_lt_offset),
         cmocka_unit_test(tpmu_name_marshal),
+        cmocka_unit_test(tpmu_public_id_mlkem_marshal_unmarshal),
+        cmocka_unit_test(tpmu_public_id_mldsa_marshal_unmarshal),
+        cmocka_unit_test(tpmu_public_parms_mlkem_marshal_unmarshal),
+        cmocka_unit_test(tpmu_public_parms_mldsa_marshal_unmarshal),
+        cmocka_unit_test(tpmu_public_parms_hash_mldsa_marshal_unmarshal),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

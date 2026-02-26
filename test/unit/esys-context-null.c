@@ -1771,6 +1771,130 @@ check_ECC_Decrypt(void **state) {
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 }
 
+void
+check_Encapsulate(void **state) {
+    TSS2_RC r;
+
+    r = Esys_Encapsulate(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_Encapsulate_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_Encapsulate_Finish(NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_Decapsulate(void **state) {
+    TSS2_RC r;
+
+    r = Esys_Decapsulate(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_Decapsulate_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_Decapsulate_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_SignDigest(void **state) {
+    TSS2_RC r;
+
+    r = Esys_SignDigest(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                        NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_SignDigest_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_SignDigest_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_SignSequenceStart(void **state) {
+    TSS2_RC r;
+
+    r = Esys_SignSequenceStart(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                               NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_SignSequenceStart_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                     NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_SignSequenceStart_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_SignSequenceComplete(void **state) {
+    TSS2_RC r;
+
+    r = Esys_SignSequenceComplete(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                  NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_SignSequenceComplete_Async(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                        NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_SignSequenceComplete_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_VerifyDigestSignature(void **state) {
+    TSS2_RC r;
+
+    r = Esys_VerifyDigestSignature(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                   NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_VerifyDigestSignature_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                         NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_VerifyDigestSignature_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_VerifySequenceStart(void **state) {
+    TSS2_RC r;
+
+    r = Esys_VerifySequenceStart(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                 NULL, NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_VerifySequenceStart_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                       NULL, NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_VerifySequenceStart_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
+void
+check_VerifySequenceComplete(void **state) {
+    TSS2_RC r;
+
+    r = Esys_VerifySequenceComplete(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                    NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_VerifySequenceComplete_Async(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                          NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+
+    r = Esys_VerifySequenceComplete_Finish(NULL, NULL);
+    assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
+}
+
 int
 main(void) {
     const struct CMUnitTest tests[] = { cmocka_unit_test(check_Startup),
@@ -1890,6 +2014,14 @@ main(void) {
                                         cmocka_unit_test(check_AC_Send),
                                         cmocka_unit_test(check_Policy_AC_SendSelect),
                                         cmocka_unit_test(check_ECC_Encrypt),
-                                        cmocka_unit_test(check_ECC_Decrypt) };
+                                        cmocka_unit_test(check_ECC_Decrypt),
+                                        cmocka_unit_test(check_Encapsulate),
+                                        cmocka_unit_test(check_Decapsulate),
+                                        cmocka_unit_test(check_SignDigest),
+                                        cmocka_unit_test(check_SignSequenceStart),
+                                        cmocka_unit_test(check_SignSequenceComplete),
+                                        cmocka_unit_test(check_VerifyDigestSignature),
+                                        cmocka_unit_test(check_VerifySequenceStart),
+                                        cmocka_unit_test(check_VerifySequenceComplete) };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
