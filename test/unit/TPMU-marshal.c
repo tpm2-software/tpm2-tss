@@ -404,12 +404,12 @@ tpmu_public_id_mlkem_marshal_unmarshal(void **state) {
     size_t         offset1 = 0, offset2 = 0;
     TSS2_RC        rc;
 
-    src.mlkem.size = TPM2_MLKEM_512_KEY_BYTES;
+    src.mlkem.size = TPM2_MLKEM_512_PUB_SIZE;
     memset(src.mlkem.buffer, 0xBC, src.mlkem.size);
 
     rc = Tss2_MU_TPMU_PUBLIC_ID_Marshal(&src, TPM2_ALG_MLKEM, buf, sizeof(buf), &offset1);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
-    assert_int_equal(offset1, (size_t)(2 + TPM2_MLKEM_512_KEY_BYTES));
+    assert_int_equal(offset1, (size_t)(2 + TPM2_MLKEM_512_PUB_SIZE));
 
     rc = Tss2_MU_TPMU_PUBLIC_ID_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_MLKEM, &dest);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
@@ -426,12 +426,12 @@ tpmu_public_id_mldsa_marshal_unmarshal(void **state) {
     size_t         offset1 = 0, offset2 = 0;
     TSS2_RC        rc;
 
-    src.mldsa.size = TPM2_MLDSA_44_KEY_BYTES;
+    src.mldsa.size = TPM2_MLDSA_44_PUB_SIZE;
     memset(src.mldsa.buffer, 0xDE, src.mldsa.size);
 
     rc = Tss2_MU_TPMU_PUBLIC_ID_Marshal(&src, TPM2_ALG_MLDSA, buf, sizeof(buf), &offset1);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
-    assert_int_equal(offset1, (size_t)(2 + TPM2_MLDSA_44_KEY_BYTES));
+    assert_int_equal(offset1, (size_t)(2 + TPM2_MLDSA_44_PUB_SIZE));
 
     rc = Tss2_MU_TPMU_PUBLIC_ID_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_MLDSA, &dest);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
@@ -449,7 +449,7 @@ tpmu_public_parms_mlkem_marshal_unmarshal(void **state) {
     TSS2_RC           rc;
 
     src.mlkemDetail.symmetric.algorithm = TPM2_ALG_NULL;
-    src.mlkemDetail.scheme = TPM2_MLKEM_512;
+    src.mlkemDetail.parameterSet = TPM2_MLKEM_PARMS_512;
 
     rc = Tss2_MU_TPMU_PUBLIC_PARMS_Marshal(&src, TPM2_ALG_MLKEM, buf, sizeof(buf), &offset1);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
@@ -458,7 +458,7 @@ tpmu_public_parms_mlkem_marshal_unmarshal(void **state) {
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(offset1, offset2);
     assert_int_equal(dest.mlkemDetail.symmetric.algorithm, src.mlkemDetail.symmetric.algorithm);
-    assert_int_equal(dest.mlkemDetail.scheme, src.mlkemDetail.scheme);
+    assert_int_equal(dest.mlkemDetail.parameterSet, src.mlkemDetail.parameterSet);
 }
 
 static void
@@ -469,8 +469,8 @@ tpmu_public_parms_mldsa_marshal_unmarshal(void **state) {
     size_t            offset1 = 0, offset2 = 0;
     TSS2_RC           rc;
 
-    src.mldsaDetail.scheme = TPM2_MLDSA_65;
-    src.mldsaDetail.hashAlg = TPM2_ALG_SHA256;
+    src.mldsaDetail.parameterSet = TPM2_MLDSA_PARMS_65;
+    src.mldsaDetail.allowExternalMu = 1;
 
     rc = Tss2_MU_TPMU_PUBLIC_PARMS_Marshal(&src, TPM2_ALG_MLDSA, buf, sizeof(buf), &offset1);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
@@ -478,8 +478,8 @@ tpmu_public_parms_mldsa_marshal_unmarshal(void **state) {
     rc = Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_MLDSA, &dest);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(offset1, offset2);
-    assert_int_equal(dest.mldsaDetail.scheme, src.mldsaDetail.scheme);
-    assert_int_equal(dest.mldsaDetail.hashAlg, src.mldsaDetail.hashAlg);
+    assert_int_equal(dest.mldsaDetail.parameterSet, src.mldsaDetail.parameterSet);
+    assert_int_equal(dest.mldsaDetail.allowExternalMu, src.mldsaDetail.allowExternalMu);
 }
 
 static void
@@ -490,8 +490,8 @@ tpmu_public_parms_hash_mldsa_marshal_unmarshal(void **state) {
     size_t            offset1 = 0, offset2 = 0;
     TSS2_RC           rc;
 
-    src.hashMldsaDetail.scheme = TPM2_MLDSA_87;
-    src.hashMldsaDetail.hashAlg = TPM2_ALG_SHA512;
+    src.hash_mldsaDetail.parameterSet = TPM2_MLDSA_PARMS_87;
+    src.hash_mldsaDetail.hashAlg = TPM2_ALG_SHA512;
 
     rc = Tss2_MU_TPMU_PUBLIC_PARMS_Marshal(&src, TPM2_ALG_HASH_MLDSA, buf, sizeof(buf), &offset1);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
@@ -499,8 +499,8 @@ tpmu_public_parms_hash_mldsa_marshal_unmarshal(void **state) {
     rc = Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_HASH_MLDSA, &dest);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(offset1, offset2);
-    assert_int_equal(dest.hashMldsaDetail.scheme, src.hashMldsaDetail.scheme);
-    assert_int_equal(dest.hashMldsaDetail.hashAlg, src.hashMldsaDetail.hashAlg);
+    assert_int_equal(dest.hash_mldsaDetail.parameterSet, src.hash_mldsaDetail.parameterSet);
+    assert_int_equal(dest.hash_mldsaDetail.hashAlg, src.hash_mldsaDetail.hashAlg);
 }
 
 int

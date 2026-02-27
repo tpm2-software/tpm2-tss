@@ -371,17 +371,17 @@ tpms_mlkem_parms_marshal_unmarshal(void **state) {
     TSS2_RC          rc;
 
     src.symmetric.algorithm = TPM2_ALG_NULL;
-    src.scheme = TPM2_MLKEM_1024;
+    src.parameterSet = TPM2_MLKEM_PARMS_1024;
 
     rc = Tss2_MU_TPMS_MLKEM_PARMS_Marshal(&src, buf, sizeof(buf), &offset1);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
-    assert_int_equal(offset1, 4u); /* algorithm(2) + scheme(2) */
+    assert_int_equal(offset1, 4u); /* algorithm(2) + parameterSet(2) */
 
     rc = Tss2_MU_TPMS_MLKEM_PARMS_Unmarshal(buf, sizeof(buf), &offset2, &dest);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(offset1, offset2);
     assert_int_equal(dest.symmetric.algorithm, src.symmetric.algorithm);
-    assert_int_equal(dest.scheme, src.scheme);
+    assert_int_equal(dest.parameterSet, src.parameterSet);
 }
 
 /* Restricted decryption key: symmetric field carries a real cipher (AES-128-CFB)
@@ -397,11 +397,11 @@ tpms_mlkem_parms_restricted_marshal_unmarshal(void **state) {
     src.symmetric.algorithm  = TPM2_ALG_AES;
     src.symmetric.keyBits.aes = 128;
     src.symmetric.mode.aes   = TPM2_ALG_CFB;
-    src.scheme = TPM2_MLKEM_768;
+    src.parameterSet = TPM2_MLKEM_PARMS_768;
 
     rc = Tss2_MU_TPMS_MLKEM_PARMS_Marshal(&src, buf, sizeof(buf), &offset1);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
-    assert_int_equal(offset1, 8u); /* algorithm(2) + keyBits(2) + mode(2) + scheme(2) */
+    assert_int_equal(offset1, 8u); /* algorithm(2) + keyBits(2) + mode(2) + parameterSet(2) */
 
     rc = Tss2_MU_TPMS_MLKEM_PARMS_Unmarshal(buf, sizeof(buf), &offset2, &dest);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
@@ -409,12 +409,12 @@ tpms_mlkem_parms_restricted_marshal_unmarshal(void **state) {
     assert_int_equal(dest.symmetric.algorithm, src.symmetric.algorithm);
     assert_int_equal(dest.symmetric.keyBits.aes, src.symmetric.keyBits.aes);
     assert_int_equal(dest.symmetric.mode.aes, src.symmetric.mode.aes);
-    assert_int_equal(dest.scheme, src.scheme);
+    assert_int_equal(dest.parameterSet, src.parameterSet);
 }
 
 static void
 tpms_mldsa_parms_marshal_unmarshal(void **state) {
-    TPMS_MLDSA_PARMS src  = { .scheme = TPM2_MLDSA_87, .hashAlg = TPM2_ALG_SHA384 };
+    TPMS_MLDSA_PARMS src  = { .parameterSet = TPM2_MLDSA_PARMS_87, .allowExternalMu = 1 };
     TPMS_MLDSA_PARMS dest = { 0 };
     uint8_t          buf[64];
     size_t           offset1 = 0, offset2 = 0;
@@ -422,18 +422,18 @@ tpms_mldsa_parms_marshal_unmarshal(void **state) {
 
     rc = Tss2_MU_TPMS_MLDSA_PARMS_Marshal(&src, buf, sizeof(buf), &offset1);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
-    assert_int_equal(offset1, 4u); /* scheme(2) + hashAlg(2) */
+    assert_int_equal(offset1, 3u); /* parameterSet(2) + allowExternalMu(1) */
 
     rc = Tss2_MU_TPMS_MLDSA_PARMS_Unmarshal(buf, sizeof(buf), &offset2, &dest);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(offset1, offset2);
-    assert_int_equal(dest.scheme, src.scheme);
-    assert_int_equal(dest.hashAlg, src.hashAlg);
+    assert_int_equal(dest.parameterSet, src.parameterSet);
+    assert_int_equal(dest.allowExternalMu, src.allowExternalMu);
 }
 
 static void
 tpms_hash_mldsa_parms_marshal_unmarshal(void **state) {
-    TPMS_HASH_MLDSA_PARMS src  = { .scheme = TPM2_MLDSA_44, .hashAlg = TPM2_ALG_SHA256 };
+    TPMS_HASH_MLDSA_PARMS src  = { .parameterSet = TPM2_MLDSA_PARMS_44, .hashAlg = TPM2_ALG_SHA256 };
     TPMS_HASH_MLDSA_PARMS dest = { 0 };
     uint8_t               buf[64];
     size_t                offset1 = 0, offset2 = 0;
@@ -441,12 +441,12 @@ tpms_hash_mldsa_parms_marshal_unmarshal(void **state) {
 
     rc = Tss2_MU_TPMS_HASH_MLDSA_PARMS_Marshal(&src, buf, sizeof(buf), &offset1);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
-    assert_int_equal(offset1, 4u); /* scheme(2) + hashAlg(2) */
+    assert_int_equal(offset1, 4u); /* parameterSet(2) + hashAlg(2) */
 
     rc = Tss2_MU_TPMS_HASH_MLDSA_PARMS_Unmarshal(buf, sizeof(buf), &offset2, &dest);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(offset1, offset2);
-    assert_int_equal(dest.scheme, src.scheme);
+    assert_int_equal(dest.parameterSet, src.parameterSet);
     assert_int_equal(dest.hashAlg, src.hashAlg);
 }
 
