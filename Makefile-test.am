@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2015 - 2018 Intel Corporation
 # Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
+# Copyright (c) 2026 Fraunhofer SIT
 # All rights reserved.
 
 TESTS_CFLAGS = $(AM_CFLAGS) $(CRYPTO_CFLAGS) -I$(srcdir)/include -I$(srcdir)/src/tss2-mu \
@@ -419,7 +420,8 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-provisioning-error.fint \
     test/integration/fapi-info.fint \
     test/integration/fapi-unseal.fint \
-    test/integration/fapi-unseal-persistent.fint
+    test/integration/fapi-unseal-persistent.fint \
+    test/integration/fapi-policy-complex.fint
 
 if TESTDEVICE
 if DEVICEDESTRUCTIVE
@@ -2576,6 +2578,14 @@ test_integration_fapi_policy_or_nv_read_write_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_policy_or_nv_read_write_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_policy_or_nv_read_write_fint_SOURCES = \
     test/integration/fapi-policy-or-nv-read-write.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+
+test_integration_fapi_policy_complex_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
+test_integration_fapi_policy_complex_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_policy_complex_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_policy_complex_fint_SOURCES = \
+    test/integration/fapi-policy-complex.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_info_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
