@@ -56,10 +56,13 @@ AC_SUBST([HOSTOS])
 
 AM_CONDITIONAL(HOSTOS_LINUX, [test x"$HOSTOS" = xLinux])
 
-IMA_MEASUREMENTS="/sys/kernel/security/ima/binary_runtime_measurements"
+IMA_MEASUREMENTS1="/sys/kernel/security/ima/binary_runtime_measurements"
+IMA_MEASUREMENTS2="/sys/kernel/security/integrity/ima/binary_runtime_measurements"
 
-AS_IF([ test -e "$IMA_MEASUREMENTS"], [imameasurements_std="$IMA_MEASUREMENTS" ],
-      [imameasurements_std="/dev/null" ] )
+AS_IF([ test -e "$IMA_MEASUREMENTS1"], [imameasurements_std="$IMA_MEASUREMENTS1" ],
+      [ AS_IF([ test -e "$IMA_MEASUREMENTS2"], [imameasurements_std="$IMA_MEASUREMENTS2" ],
+      [imameasurements_std="/dev/null" ] ) ] )
+
 AC_SUBST(imameasurements_std)
 
 AC_ARG_WITH([imameasurements],

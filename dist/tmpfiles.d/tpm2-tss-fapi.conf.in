@@ -5,3 +5,12 @@ d       @runstatedir@/tpm2-tss/eventlog                2775 tss  tss   -        
 a+      @runstatedir@/tpm2-tss/eventlog                -    -    -     -           default:group:tss:rwx
 z-	/sys/kernel/security/tpm[0-9]/binary_bios_measurements	0440  root tss	-	    -
 z-	/sys/kernel/security/ima/binary_runtime_measurements	0440  root tss	-	    -
+z-	/sys/kernel/security/integrity/ima/binary_runtime_measurements	0440  root tss	-	    -
+z-	/sys/kernel/security/integrity/ima/binary_runtime_measurements_sha1	0440  root tss	-	    -
+z-	/sys/kernel/security/integrity/ima/binary_runtime_measurements_sha256	0440  root tss	-	    -
+z-	/sys/kernel/security/integrity/ima/binary_runtime_measurements_sha384	0440  root tss	-	    -
+z-	/sys/kernel/security/integrity/ima/binary_runtime_measurements_sha512	0440  root tss	-	    -
+z-	/sys/kernel/security/integrity/ima/ascii_runtime_measurements_sha1	0440  root tss	-	    -
+z-	/sys/kernel/security/integrity/ima/ascii_runtime_measurements_sha256	0440  root tss	-	    -
+z-	/sys/kernel/security/integrity/ima/ascii_runtime_measurements_sha384	0440  root tss	-	    -
+z-	/sys/kernel/security/integrity/ima/ascii_runtime_measurements_sha512	0440  root tss	-	    -
