@@ -15,8 +15,8 @@
 
 #include <stdint.h>
 
-#define TPM2_MAX_COMMAND_SIZE  4096 /* maximum size of a command */
-#define TPM2_MAX_RESPONSE_SIZE 4096 /* maximum size of a response */
+#define TPM2_MAX_COMMAND_SIZE  8192 /* maximum size of a command */
+#define TPM2_MAX_RESPONSE_SIZE 8192 /* maximum size of a response */
 
 /* TPM constants for buffer sizes */
 #define TPM2_NUM_PCR_BANKS      16

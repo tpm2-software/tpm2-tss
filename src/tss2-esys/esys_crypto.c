@@ -69,7 +69,7 @@ iesys_crypto_hash_update2b(ESYS_CRYPTO_CALLBACKS    *crypto_cb,
 TSS2_RC
 iesys_crypto_hmac_update2b(ESYS_CRYPTO_CALLBACKS    *crypto_cb,
                            ESYS_CRYPTO_CONTEXT_BLOB *context,
-                           TPM2B                    *tpm2b) {
+                           const TPM2B              *tpm2b) {
     return iesys_crypto_hmac_update(crypto_cb, context, tpm2b->buffer, tpm2b->size);
 }
 
@@ -382,19 +382,19 @@ iesys_crypto_authHmac(ESYS_CRYPTO_CALLBACKS *crypto_cb,
     r = iesys_crypto_hmac_update(crypto_cb, cryptoContext, pHash, pHash_size);
     goto_if_error(r, "Error", error);
 
-    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *)nonceNewer);
+    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (const TPM2B *)nonceNewer);
     goto_if_error(r, "Error", error);
 
-    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *)nonceOlder);
+    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (const TPM2B *)nonceOlder);
     goto_if_error(r, "Error", error);
 
     if (nonceDecrypt != NULL) {
-        r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *)nonceDecrypt);
+        r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (const TPM2B *)nonceDecrypt);
         goto_if_error(r, "Error", error);
     }
 
     if (nonceEncrypt != NULL) {
-        r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *)nonceEncrypt);
+        r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (const TPM2B *)nonceEncrypt);
         goto_if_error(r, "Error", error);
     }
 
@@ -439,8 +439,8 @@ iesys_crypto_KDFaHmac(ESYS_CRYPTO_CALLBACKS *crypto_cb,
                       size_t                 hmacKeySize,
                       uint32_t               counter,
                       const char            *label,
-                      TPM2B_NONCE           *contextU,
-                      TPM2B_NONCE           *contextV,
+                      const TPM2B           *contextU,
+                      const TPM2B           *contextV,
                       uint32_t               bitlength,
                       uint8_t               *hmac,
                       size_t                *hmacSize) {
@@ -469,10 +469,10 @@ iesys_crypto_KDFaHmac(ESYS_CRYPTO_CALLBACKS *crypto_cb,
         goto_if_error(r, "Error", error);
     }
 
-    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *)contextU);
+    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, contextU);
     goto_if_error(r, "Error", error);
 
-    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, (TPM2B *)contextV);
+    r = iesys_crypto_hmac_update2b(crypto_cb, cryptoContext, contextV);
     goto_if_error(r, "Error", error);
 
     buffer32_size = 0;
@@ -518,8 +518,8 @@ iesys_crypto_KDFa(ESYS_CRYPTO_CALLBACKS *crypto_cb,
                   uint8_t               *hmacKey,
                   size_t                 hmacKeySize,
                   const char            *label,
-                  TPM2B_NONCE           *contextU,
-                  TPM2B_NONCE           *contextV,
+                  const TPM2B           *contextU,
+                  const TPM2B           *contextV,
                   uint32_t               bitLength,
                   uint32_t              *counterInOut,
                   BYTE                  *outKey,
@@ -680,8 +680,8 @@ iesys_xor_parameter_obfuscation(ESYS_CRYPTO_CALLBACKS *crypto_cb,
                                 TPM2_ALG_ID            hash_alg,
                                 uint8_t               *key,
                                 size_t                 key_size,
-                                TPM2B_NONCE           *contextU,
-                                TPM2B_NONCE           *contextV,
+                                const TPM2B           *contextU,
+                                const TPM2B           *contextV,
                                 BYTE                  *data,
                                 size_t                 data_size) {
     TSS2_RC          r;
