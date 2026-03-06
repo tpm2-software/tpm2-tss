@@ -327,7 +327,11 @@ ESYS_TESTS_INTEGRATION_OPTIONAL = \
     test/integration/esys-policy-template-opt.int \
     test/integration/esys-pp-commands.int \
     test/integration/esys-zgen-2phase.int \
-    test/integration/esys-auto-session-flags.int
+    test/integration/esys-auto-session-flags.int \
+    test/integration/esys-pqc-create.int \
+    test/integration/esys-pqc-kem.int \
+    test/integration/esys-pqc-sign.int \
+    test/integration/esys-pqc-credential.int
 
 if TESTDEVICE
 
@@ -419,7 +423,8 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-provisioning-error.fint \
     test/integration/fapi-info.fint \
     test/integration/fapi-unseal.fint \
-    test/integration/fapi-unseal-persistent.fint
+    test/integration/fapi-unseal-persistent.fint \
+    test/integration/fapi-pqc-provision.fint
 
 if TESTDEVICE
 if DEVICEDESTRUCTIVE
@@ -2075,6 +2080,34 @@ test_integration_esys_ecc_encrypt_decrypt_int_SOURCES = \
     test/integration/esys-ecc-encrypt-decrypt.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
+test_integration_esys_pqc_create_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_pqc_create_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_pqc_create_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_pqc_create_int_SOURCES = \
+    test/integration/esys-pqc-create.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_pqc_kem_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_pqc_kem_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_pqc_kem_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_pqc_kem_int_SOURCES = \
+    test/integration/esys-pqc-kem.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_pqc_sign_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_pqc_sign_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_pqc_sign_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_pqc_sign_int_SOURCES = \
+    test/integration/esys-pqc-sign.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_pqc_credential_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_pqc_credential_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_pqc_credential_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_pqc_credential_int_SOURCES = \
+    test/integration/esys-pqc-credential.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
 endif #ESYS
 
 test_integration_sys_policy_template_int_CFLAGS  = $(TESTS_CFLAGS)
@@ -2722,6 +2755,14 @@ test_integration_fapi_provisioning_with_template_rsa_fint_LDADD   = $(TESTS_LDAD
 test_integration_fapi_provisioning_with_template_rsa_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_provisioning_with_template_rsa_fint_SOURCES = \
     test/integration/fapi-provisioning-with-template.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_pqc_provision_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_MLDSA\"
+test_integration_fapi_pqc_provision_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_pqc_provision_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_pqc_provision_fint_SOURCES = \
+    test/integration/fapi-pqc-provision.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 endif #FAPI

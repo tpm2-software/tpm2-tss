@@ -372,6 +372,7 @@ test_backend_set(void **state) {
     CHECK_BACKEND_FN(crypto_cb, aes_encrypt);
     CHECK_BACKEND_FN(crypto_cb, sm4_decrypt);
     CHECK_BACKEND_FN(crypto_cb, sm4_encrypt);
+    CHECK_BACKEND_FN(crypto_cb, mlkem_encapsulate);
     CHECK_BACKEND_FN(crypto_cb, get_ecdh_point);
     CHECK_BACKEND_FN(crypto_cb, get_random2b);
     CHECK_BACKEND_FN(crypto_cb, rsa_pk_encrypt);
@@ -381,6 +382,7 @@ test_backend_set(void **state) {
                                       .aes_encrypt = (void *)0xBADCC0DE,
                                       .sm4_decrypt = (void *)0xBADCC0DE,
                                       .sm4_encrypt = (void *)0xBADCC0DE,
+                                      .mlkem_encapsulate = (void *)0xBADCC0DE,
                                       .get_ecdh_point = (void *)0xBADCC0DE,
                                       .get_random2b = (void *)0xBADCC0DE,
                                       .rsa_pk_encrypt = (void *)0xBADCC0DE,
@@ -418,6 +420,7 @@ test_backend_set(void **state) {
     CHECK_BACKEND_FN(crypto_cb, get_ecdh_point);
     CHECK_BACKEND_FN(crypto_cb, get_random2b);
     CHECK_BACKEND_FN(crypto_cb, rsa_pk_encrypt);
+    CHECK_BACKEND_FN(crypto_cb, mlkem_encapsulate);
 }
 
 int

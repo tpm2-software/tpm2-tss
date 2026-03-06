@@ -95,14 +95,15 @@ TSS2_RC iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC        *key,
 
 TSS2_RC iesys_cryptmbed_init(void *userdata);
 
-#define iesys_crypto_get_random2b_internal   iesys_cryptmbed_random2b
-#define iesys_crypto_get_ecdh_point_internal iesys_cryptmbed_get_ecdh_point
-#define iesys_crypto_aes_encrypt_internal    iesys_cryptmbed_sym_aes_encrypt
-#define iesys_crypto_aes_decrypt_internal    iesys_cryptmbed_sym_aes_decrypt
-#define iesys_crypto_sm4_encrypt_internal    NULL
-#define iesys_crypto_sm4_decrypt_internal    NULL
+#define iesys_crypto_get_random2b_internal      iesys_cryptmbed_random2b
+#define iesys_crypto_get_ecdh_point_internal    iesys_cryptmbed_get_ecdh_point
+#define iesys_crypto_aes_encrypt_internal       iesys_cryptmbed_sym_aes_encrypt
+#define iesys_crypto_aes_decrypt_internal       iesys_cryptmbed_sym_aes_decrypt
+#define iesys_crypto_sm4_encrypt_internal       NULL
+#define iesys_crypto_sm4_decrypt_internal       NULL
+#define iesys_crypto_mlkem_encapsulate_internal NULL
 
-#define iesys_crypto_init_internal           iesys_cryptmbed_init
+#define iesys_crypto_init_internal              iesys_cryptmbed_init
 
 #ifdef __cplusplus
 } /* extern "C" */
