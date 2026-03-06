@@ -40,35 +40,30 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_esys_pqc_credential(ESYS_CONTEXT *esys_context)
-{
+test_esys_pqc_credential(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
 
     ESYS_TR ek_handle = ESYS_TR_NONE;
     ESYS_TR ak_handle = ESYS_TR_NONE;
 
-    TPM2B_PUBLIC        *ek_pub         = NULL;
-    TPM2B_CREATION_DATA *ek_cdata       = NULL;
-    TPM2B_DIGEST        *ek_chash       = NULL;
-    TPMT_TK_CREATION    *ek_cticket     = NULL;
+    TPM2B_PUBLIC        *ek_pub = NULL;
+    TPM2B_CREATION_DATA *ek_cdata = NULL;
+    TPM2B_DIGEST        *ek_chash = NULL;
+    TPMT_TK_CREATION    *ek_cticket = NULL;
 
-    TPM2B_PUBLIC        *ak_pub         = NULL;
-    TPM2B_CREATION_DATA *ak_cdata       = NULL;
-    TPM2B_DIGEST        *ak_chash       = NULL;
-    TPMT_TK_CREATION    *ak_cticket     = NULL;
+    TPM2B_PUBLIC        *ak_pub = NULL;
+    TPM2B_CREATION_DATA *ak_cdata = NULL;
+    TPM2B_DIGEST        *ak_chash = NULL;
+    TPMT_TK_CREATION    *ak_cticket = NULL;
 
-    TPM2B_NAME             *ak_name       = NULL;
+    TPM2B_NAME             *ak_name = NULL;
     TPM2B_ID_OBJECT        *credentialBlob = NULL;
-    TPM2B_ENCRYPTED_SECRET *encSecret     = NULL;
-    TPM2B_DIGEST           *certInfo      = NULL;
+    TPM2B_ENCRYPTED_SECRET *encSecret = NULL;
+    TPM2B_DIGEST           *certInfo = NULL;
 
-    TPM2B_DIGEST credential = {
-        .size = 20,
-        .buffer = { 0x01, 0x02, 0x03, 0x04, 0x05,
-                    0x06, 0x07, 0x08, 0x09, 0x0a,
-                    0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
-                    0x10, 0x11, 0x12, 0x13, 0x14 }
-    };
+    TPM2B_DIGEST credential
+        = { .size = 20, .buffer = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a,
+                                    0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14 } };
 
     /* Auth values */
     TPM2B_AUTH ekAuth = { .size = 0, .buffer = {} };
@@ -91,11 +86,10 @@ test_esys_pqc_credential(ESYS_CONTEXT *esys_context)
     };
     inSensitiveAK.sensitive.userAuth = akAuth;
 
-    TPM2B_DATA outsideInfo    = { .size = 0, .buffer = {} };
+    TPM2B_DATA         outsideInfo = { .size = 0, .buffer = {} };
     TPML_PCR_SELECTION creationPCR = { .count = 0 };
 
-    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER,
-                        &(TPM2B_AUTH){ .size = 0, .buffer = {} });
+    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &(TPM2B_AUTH){ .size = 0, .buffer = {} });
     goto_if_error(r, "Error: TR_SetAuth (owner)", error);
 
     /* ML-KEM-1024 EK: restricted decryption */
@@ -117,18 +111,15 @@ test_esys_pqc_credential(ESYS_CONTEXT *esys_context)
                     .keyBits.aes = 128,
                     .mode.aes    = TPM2_ALG_CFB,
                 },
-                .scheme = TPM2_MLKEM_1024,
+                .parameterSet = TPM2_MLKEM_PARMS_1024,
             },
             .unique.mlkem = { .size = 0, .buffer = {} },
         },
     };
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_ENDORSEMENT,
-                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitiveEK, &inPublicEK,
-                           &outsideInfo, &creationPCR,
-                           &ek_handle,
-                           &ek_pub, &ek_cdata, &ek_chash, &ek_cticket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_ENDORSEMENT, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitiveEK, &inPublicEK, &outsideInfo, &creationPCR,
+                           &ek_handle, &ek_pub, &ek_cdata, &ek_chash, &ek_cticket);
     goto_if_error(r, "Error: CreatePrimary (ML-KEM EK)", error);
 
     r = Esys_TR_SetAuth(esys_context, ek_handle, &ekAuth);
@@ -160,12 +151,9 @@ test_esys_pqc_credential(ESYS_CONTEXT *esys_context)
         },
     };
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER,
-                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitiveAK, &inPublicAK,
-                           &outsideInfo, &creationPCR,
-                           &ak_handle,
-                           &ak_pub, &ak_cdata, &ak_chash, &ak_cticket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitiveAK, &inPublicAK, &outsideInfo, &creationPCR,
+                           &ak_handle, &ak_pub, &ak_cdata, &ak_chash, &ak_cticket);
     goto_if_error(r, "Error: CreatePrimary (RSA AK)", error);
 
     r = Esys_TR_SetAuth(esys_context, ak_handle, &akAuth);
@@ -175,21 +163,17 @@ test_esys_pqc_credential(ESYS_CONTEXT *esys_context)
     goto_if_error(r, "Error: TR_GetName (AK)", error);
 
     /* MakeCredential: public-key operation, no auth required */
-    r = Esys_MakeCredential(esys_context, ek_handle,
-                            ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                            &credential, ak_name,
-                            &credentialBlob, &encSecret);
+    r = Esys_MakeCredential(esys_context, ek_handle, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                            &credential, ak_name, &credentialBlob, &encSecret);
     goto_if_error(r, "Error: MakeCredential", error);
 
-    r = Esys_ActivateCredential(esys_context, ak_handle, ek_handle,
-                                ESYS_TR_PASSWORD, ESYS_TR_PASSWORD,
-                                ESYS_TR_NONE,
-                                credentialBlob, encSecret,
+    r = Esys_ActivateCredential(esys_context, ak_handle, ek_handle, ESYS_TR_PASSWORD,
+                                ESYS_TR_PASSWORD, ESYS_TR_NONE, credentialBlob, encSecret,
                                 &certInfo);
     goto_if_error(r, "Error: ActivateCredential", error);
 
-    if (certInfo->size != credential.size ||
-        memcmp(certInfo->buffer, credential.buffer, credential.size) != 0) {
+    if (certInfo->size != credential.size
+        || memcmp(certInfo->buffer, credential.buffer, credential.size) != 0) {
         LOG_ERROR("ActivateCredential roundtrip FAILED: certInfo mismatch.");
         goto error;
     }
@@ -202,8 +186,14 @@ test_esys_pqc_credential(ESYS_CONTEXT *esys_context)
     goto_if_error(r, "Error: FlushContext (EK)", error);
     ek_handle = ESYS_TR_NONE;
 
-    Esys_Free(ek_pub);    Esys_Free(ek_cdata);  Esys_Free(ek_chash);  Esys_Free(ek_cticket);
-    Esys_Free(ak_pub);    Esys_Free(ak_cdata);  Esys_Free(ak_chash);  Esys_Free(ak_cticket);
+    Esys_Free(ek_pub);
+    Esys_Free(ek_cdata);
+    Esys_Free(ek_chash);
+    Esys_Free(ek_cticket);
+    Esys_Free(ak_pub);
+    Esys_Free(ak_cdata);
+    Esys_Free(ak_chash);
+    Esys_Free(ak_cticket);
     Esys_Free(ak_name);
     Esys_Free(credentialBlob);
     Esys_Free(encSecret);
@@ -219,8 +209,14 @@ error:
         if (Esys_FlushContext(esys_context, ek_handle) != TSS2_RC_SUCCESS)
             LOG_ERROR("Cleanup ek_handle failed.");
     }
-    Esys_Free(ek_pub);    Esys_Free(ek_cdata);  Esys_Free(ek_chash);  Esys_Free(ek_cticket);
-    Esys_Free(ak_pub);    Esys_Free(ak_cdata);  Esys_Free(ak_chash);  Esys_Free(ak_cticket);
+    Esys_Free(ek_pub);
+    Esys_Free(ek_cdata);
+    Esys_Free(ek_chash);
+    Esys_Free(ek_cticket);
+    Esys_Free(ak_pub);
+    Esys_Free(ak_cdata);
+    Esys_Free(ak_chash);
+    Esys_Free(ak_cticket);
     Esys_Free(ak_name);
     Esys_Free(credentialBlob);
     Esys_Free(encSecret);

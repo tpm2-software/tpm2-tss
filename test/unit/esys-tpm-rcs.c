@@ -2180,11 +2180,10 @@ test_Encapsulate(void **state) {
     ESYS_CONTEXT      *esys_context = (ESYS_CONTEXT *)*state;
     Esys_GetTcti(esys_context, &tcti);
 
-    ESYS_TR               keyHandle  = DUMMY_TR_HANDLE_KEY;
+    ESYS_TR               keyHandle = DUMMY_TR_HANDLE_KEY;
     TPM2B_KEM_CIPHERTEXT *ciphertext;
     TPM2B_SHARED_SECRET  *secret;
-    r = Esys_Encapsulate(esys_context, keyHandle,
-                         ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+    r = Esys_Encapsulate(esys_context, keyHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                          &ciphertext, &secret);
 
     assert_int_equal(r, 0x0FFF);
@@ -2197,11 +2196,10 @@ test_Decapsulate(void **state) {
     ESYS_CONTEXT      *esys_context = (ESYS_CONTEXT *)*state;
     Esys_GetTcti(esys_context, &tcti);
 
-    ESYS_TR              keyHandle   = DUMMY_TR_HANDLE_KEY;
-    TPM2B_KEM_CIPHERTEXT ciphertext  = { 0 };
+    ESYS_TR              keyHandle = DUMMY_TR_HANDLE_KEY;
+    TPM2B_KEM_CIPHERTEXT ciphertext = { 0 };
     TPM2B_SHARED_SECRET *secret;
-    r = Esys_Decapsulate(esys_context, keyHandle,
-                         ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+    r = Esys_Decapsulate(esys_context, keyHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                          &ciphertext, &secret);
 
     assert_int_equal(r, 0x0FFF);
@@ -2214,13 +2212,12 @@ test_SignDigest(void **state) {
     ESYS_CONTEXT      *esys_context = (ESYS_CONTEXT *)*state;
     Esys_GetTcti(esys_context, &tcti);
 
-    ESYS_TR             keyHandle  = DUMMY_TR_HANDLE_KEY;
-    TPM2B_SIGNATURE_CTX context    = { 0 };
-    TPM2B_DIGEST        digest     = { 0 };
+    ESYS_TR             keyHandle = DUMMY_TR_HANDLE_KEY;
+    TPM2B_SIGNATURE_CTX context = { 0 };
+    TPM2B_DIGEST        digest = { 0 };
     TPMT_TK_HASHCHECK   validation = { 0 };
     TPMT_SIGNATURE     *signature;
-    r = Esys_SignDigest(esys_context, keyHandle,
-                        ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+    r = Esys_SignDigest(esys_context, keyHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                         &context, &digest, &validation, &signature);
 
     assert_int_equal(r, 0x0FFF);
@@ -2233,14 +2230,13 @@ test_VerifyDigestSignature(void **state) {
     ESYS_CONTEXT      *esys_context = (ESYS_CONTEXT *)*state;
     Esys_GetTcti(esys_context, &tcti);
 
-    ESYS_TR             keyHandle  = DUMMY_TR_HANDLE_KEY;
-    TPM2B_SIGNATURE_CTX context    = { 0 };
-    TPM2B_DIGEST        digest     = { 0 };
-    TPMT_SIGNATURE      signature  = DUMMY_TPMT_SIGNATURE;
+    ESYS_TR             keyHandle = DUMMY_TR_HANDLE_KEY;
+    TPM2B_SIGNATURE_CTX context = { 0 };
+    TPM2B_DIGEST        digest = { 0 };
+    TPMT_SIGNATURE      signature = DUMMY_TPMT_SIGNATURE;
     TPMT_TK_VERIFIED   *validation;
-    r = Esys_VerifyDigestSignature(esys_context, keyHandle,
-                                   ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                                   &context, &digest, &signature, &validation);
+    r = Esys_VerifyDigestSignature(esys_context, keyHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                                   ESYS_TR_NONE, &context, &digest, &signature, &validation);
 
     assert_int_equal(r, 0x0FFF);
 }
@@ -2252,13 +2248,12 @@ test_SignSequenceStart(void **state) {
     ESYS_CONTEXT      *esys_context = (ESYS_CONTEXT *)*state;
     Esys_GetTcti(esys_context, &tcti);
 
-    ESYS_TR             keyHandle      = DUMMY_TR_HANDLE_KEY;
-    TPM2B_AUTH          auth           = { 0 };
-    TPM2B_SIGNATURE_CTX context        = { 0 };
+    ESYS_TR             keyHandle = DUMMY_TR_HANDLE_KEY;
+    TPM2B_AUTH          auth = { 0 };
+    TPM2B_SIGNATURE_CTX context = { 0 };
     ESYS_TR             sequenceHandle;
-    r = Esys_SignSequenceStart(esys_context, keyHandle,
-                               ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                               &auth, &context, &sequenceHandle);
+    r = Esys_SignSequenceStart(esys_context, keyHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                               ESYS_TR_NONE, &auth, &context, &sequenceHandle);
 
     assert_int_equal(r, 0x0FFF);
 }
@@ -2270,14 +2265,13 @@ test_VerifySequenceStart(void **state) {
     ESYS_CONTEXT      *esys_context = (ESYS_CONTEXT *)*state;
     Esys_GetTcti(esys_context, &tcti);
 
-    ESYS_TR              keyHandle      = DUMMY_TR_HANDLE_KEY;
-    TPM2B_AUTH           auth           = { 0 };
-    TPM2B_SIGNATURE_HINT hint           = { 0 };
-    TPM2B_SIGNATURE_CTX  context        = { 0 };
+    ESYS_TR              keyHandle = DUMMY_TR_HANDLE_KEY;
+    TPM2B_AUTH           auth = { 0 };
+    TPM2B_SIGNATURE_HINT hint = { 0 };
+    TPM2B_SIGNATURE_CTX  context = { 0 };
     ESYS_TR              sequenceHandle;
-    r = Esys_VerifySequenceStart(esys_context, keyHandle,
-                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                                 &auth, &hint, &context, &sequenceHandle);
+    r = Esys_VerifySequenceStart(esys_context, keyHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                                 ESYS_TR_NONE, &auth, &hint, &context, &sequenceHandle);
 
     assert_int_equal(r, 0x0FFF);
 }
@@ -2290,11 +2284,10 @@ test_SignSequenceComplete(void **state) {
     Esys_GetTcti(esys_context, &tcti);
 
     ESYS_TR          keyHandle = DUMMY_TR_HANDLE_KEY;
-    TPM2B_MAX_BUFFER buffer    = DUMMY_2B_DATA(.buffer);
+    TPM2B_MAX_BUFFER buffer = DUMMY_2B_DATA(.buffer);
     TPMT_SIGNATURE  *signature;
-    r = Esys_SignSequenceComplete(esys_context, ESYS_TR_NONE, keyHandle,
-                                  ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                                  &buffer, &signature);
+    r = Esys_SignSequenceComplete(esys_context, ESYS_TR_NONE, keyHandle, ESYS_TR_PASSWORD,
+                                  ESYS_TR_NONE, ESYS_TR_NONE, &buffer, &signature);
 
     assert_int_equal(r, 0x0FFF);
 }
@@ -2306,12 +2299,11 @@ test_VerifySequenceComplete(void **state) {
     ESYS_CONTEXT      *esys_context = (ESYS_CONTEXT *)*state;
     Esys_GetTcti(esys_context, &tcti);
 
-    ESYS_TR           keyHandle   = DUMMY_TR_HANDLE_KEY;
-    TPMT_SIGNATURE    signature   = DUMMY_TPMT_SIGNATURE;
+    ESYS_TR           keyHandle = DUMMY_TR_HANDLE_KEY;
+    TPMT_SIGNATURE    signature = DUMMY_TPMT_SIGNATURE;
     TPMT_TK_VERIFIED *validation;
-    r = Esys_VerifySequenceComplete(esys_context, ESYS_TR_NONE, keyHandle,
-                                    ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    &signature, &validation);
+    r = Esys_VerifySequenceComplete(esys_context, ESYS_TR_NONE, keyHandle, ESYS_TR_PASSWORD,
+                                    ESYS_TR_NONE, ESYS_TR_NONE, &signature, &validation);
 
     assert_int_equal(r, 0x0FFF);
 }
