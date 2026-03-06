@@ -36,20 +36,19 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_esys_pqc_kem(ESYS_CONTEXT *esys_context)
-{
+test_esys_pqc_kem(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
 
     ESYS_TR mlkem_handle = ESYS_TR_NONE;
 
-    TPM2B_PUBLIC        *outPublic      = NULL;
-    TPM2B_CREATION_DATA *creationData   = NULL;
-    TPM2B_DIGEST        *creationHash   = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
     TPMT_TK_CREATION    *creationTicket = NULL;
 
-    TPM2B_KEM_CIPHERTEXT *ciphertext   = NULL;
-    TPM2B_SHARED_SECRET  *enc_secret   = NULL;
-    TPM2B_SHARED_SECRET  *dec_secret   = NULL;
+    TPM2B_KEM_CIPHERTEXT *ciphertext = NULL;
+    TPM2B_SHARED_SECRET  *enc_secret = NULL;
+    TPM2B_SHARED_SECRET  *dec_secret = NULL;
 
     TPM2B_AUTH authValue = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
@@ -62,7 +61,7 @@ test_esys_pqc_kem(ESYS_CONTEXT *esys_context)
     };
     inSensitive.sensitive.userAuth = authValue;
 
-    TPM2B_DATA outsideInfo    = { .size = 0, .buffer = {} };
+    TPM2B_DATA         outsideInfo = { .size = 0, .buffer = {} };
     TPML_PCR_SELECTION creationPCR = { .count = 0 };
 
     TPM2B_PUBLIC inPublic = {
@@ -78,40 +77,34 @@ test_esys_pqc_kem(ESYS_CONTEXT *esys_context)
             .authPolicy = { .size = 0 },
             .parameters.mlkemDetail = {
                 .symmetric = { .algorithm = TPM2_ALG_NULL },
-                .scheme    = TPM2_MLKEM_1024,
+                .parameterSet = TPM2_MLKEM_PARMS_1024,
             },
             .unique.mlkem = { .size = 0, .buffer = {} },
         },
     };
 
-    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER,
-                        &(TPM2B_AUTH){ .size = 0, .buffer = {} });
+    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &(TPM2B_AUTH){ .size = 0, .buffer = {} });
     goto_if_error(r, "Error: TR_SetAuth (owner)", error);
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER,
-                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitive, &inPublic,
-                           &outsideInfo, &creationPCR,
-                           &mlkem_handle,
-                           &outPublic, &creationData,
-                           &creationHash, &creationTicket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitive, &inPublic, &outsideInfo, &creationPCR,
+                           &mlkem_handle, &outPublic, &creationData, &creationHash,
+                           &creationTicket);
     goto_if_error(r, "Error: CreatePrimary (ML-KEM-1024)", error);
 
     r = Esys_TR_SetAuth(esys_context, mlkem_handle, &authValue);
     goto_if_error(r, "Error: TR_SetAuth (ML-KEM key)", error);
 
-    r = Esys_Encapsulate(esys_context, mlkem_handle,
-                         ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+    r = Esys_Encapsulate(esys_context, mlkem_handle, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                          &ciphertext, &enc_secret);
     goto_if_error(r, "Error: Encapsulate", error);
 
-    r = Esys_Decapsulate(esys_context, mlkem_handle,
-                         ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+    r = Esys_Decapsulate(esys_context, mlkem_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                          ciphertext, &dec_secret);
     goto_if_error(r, "Error: Decapsulate", error);
 
-    if (enc_secret->size != dec_secret->size ||
-        memcmp(enc_secret->buffer, dec_secret->buffer, enc_secret->size) != 0) {
+    if (enc_secret->size != dec_secret->size
+        || memcmp(enc_secret->buffer, dec_secret->buffer, enc_secret->size) != 0) {
         LOG_ERROR("KEM roundtrip FAILED: shared secrets do not match.");
         goto error;
     }

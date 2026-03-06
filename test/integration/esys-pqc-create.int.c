@@ -32,21 +32,20 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_esys_pqc_create(ESYS_CONTEXT *esys_context)
-{
+test_esys_pqc_create(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
 
     ESYS_TR mlkem_handle = ESYS_TR_NONE;
     ESYS_TR mldsa_handle = ESYS_TR_NONE;
 
-    TPM2B_PUBLIC        *mlkem_pub      = NULL;
-    TPM2B_CREATION_DATA *mlkem_cdata    = NULL;
-    TPM2B_DIGEST        *mlkem_chash    = NULL;
+    TPM2B_PUBLIC        *mlkem_pub = NULL;
+    TPM2B_CREATION_DATA *mlkem_cdata = NULL;
+    TPM2B_DIGEST        *mlkem_chash = NULL;
     TPMT_TK_CREATION    *mlkem_cticket = NULL;
 
-    TPM2B_PUBLIC        *mldsa_pub      = NULL;
-    TPM2B_CREATION_DATA *mldsa_cdata    = NULL;
-    TPM2B_DIGEST        *mldsa_chash    = NULL;
+    TPM2B_PUBLIC        *mldsa_pub = NULL;
+    TPM2B_CREATION_DATA *mldsa_cdata = NULL;
+    TPM2B_DIGEST        *mldsa_chash = NULL;
     TPMT_TK_CREATION    *mldsa_cticket = NULL;
 
     TPM2B_AUTH authValuePrimary = { .size = 0, .buffer = {} };
@@ -59,7 +58,7 @@ test_esys_pqc_create(ESYS_CONTEXT *esys_context)
         },
     };
 
-    TPM2B_DATA outsideInfo = { .size = 0, .buffer = {} };
+    TPM2B_DATA         outsideInfo = { .size = 0, .buffer = {} };
     TPML_PCR_SELECTION creationPCR = { .count = 0 };
 
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValuePrimary);
@@ -78,19 +77,15 @@ test_esys_pqc_create(ESYS_CONTEXT *esys_context)
             .authPolicy = { .size = 0 },
             .parameters.mlkemDetail = {
                 .symmetric = { .algorithm = TPM2_ALG_NULL },
-                .scheme    = TPM2_MLKEM_1024,
+                .parameterSet = TPM2_MLKEM_PARMS_1024,
             },
             .unique.mlkem = { .size = 0, .buffer = {} },
         },
     };
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER,
-                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitive, &inPublicMLKEM,
-                           &outsideInfo, &creationPCR,
-                           &mlkem_handle,
-                           &mlkem_pub, &mlkem_cdata,
-                           &mlkem_chash, &mlkem_cticket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitive, &inPublicMLKEM, &outsideInfo, &creationPCR,
+                           &mlkem_handle, &mlkem_pub, &mlkem_cdata, &mlkem_chash, &mlkem_cticket);
     goto_if_error(r, "Error: CreatePrimary (ML-KEM-1024)", error);
 
     TPM2B_PUBLIC inPublicMLDSA = {
@@ -105,19 +100,15 @@ test_esys_pqc_create(ESYS_CONTEXT *esys_context)
                                   TPMA_OBJECT_SENSITIVEDATAORIGIN),
             .authPolicy = { .size = 0 },
             .parameters.mldsaDetail = {
-                .scheme = TPM2_MLDSA_65,
+                .parameterSet = TPM2_MLDSA_PARMS_65,
             },
             .unique.mldsa = { .size = 0, .buffer = {} },
         },
     };
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER,
-                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitive, &inPublicMLDSA,
-                           &outsideInfo, &creationPCR,
-                           &mldsa_handle,
-                           &mldsa_pub, &mldsa_cdata,
-                           &mldsa_chash, &mldsa_cticket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitive, &inPublicMLDSA, &outsideInfo, &creationPCR,
+                           &mldsa_handle, &mldsa_pub, &mldsa_cdata, &mldsa_chash, &mldsa_cticket);
     goto_if_error(r, "Error: CreatePrimary (ML-DSA-65)", error);
 
     r = Esys_FlushContext(esys_context, mlkem_handle);

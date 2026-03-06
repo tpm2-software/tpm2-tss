@@ -40,20 +40,19 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_esys_pqc_sign(ESYS_CONTEXT *esys_context)
-{
+test_esys_pqc_sign(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
 
-    ESYS_TR mldsa_handle  = ESYS_TR_NONE;
-    ESYS_TR sign_seq      = ESYS_TR_NONE;
-    ESYS_TR verify_seq    = ESYS_TR_NONE;
+    ESYS_TR mldsa_handle = ESYS_TR_NONE;
+    ESYS_TR sign_seq = ESYS_TR_NONE;
+    ESYS_TR verify_seq = ESYS_TR_NONE;
 
-    TPM2B_PUBLIC        *outPublic      = NULL;
-    TPM2B_CREATION_DATA *creationData   = NULL;
-    TPM2B_DIGEST        *creationHash   = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
+    TPM2B_CREATION_DATA *creationData = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
     TPMT_TK_CREATION    *creationTicket = NULL;
 
-    TPMT_SIGNATURE   *signature  = NULL;
+    TPMT_SIGNATURE   *signature = NULL;
     TPMT_TK_VERIFIED *validation = NULL;
 
     /* Auth values */
@@ -61,16 +60,10 @@ test_esys_pqc_sign(ESYS_CONTEXT *esys_context)
     TPM2B_AUTH seqAuth = { .size = 4, .buffer = { 9, 8, 7, 6 } };
 
     /* Application data split into two chunks */
-    TPM2B_MAX_BUFFER data1 = {
-        .size = 10,
-        .buffer = { 0x00, 0x01, 0x02, 0x03, 0x04,
-                    0x05, 0x06, 0x07, 0x08, 0x09 }
-    };
-    TPM2B_MAX_BUFFER data2 = {
-        .size = 10,
-        .buffer = { 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
-                    0x0f, 0x10, 0x11, 0x12, 0x13 }
-    };
+    TPM2B_MAX_BUFFER data1
+        = { .size = 10, .buffer = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 } };
+    TPM2B_MAX_BUFFER data2
+        = { .size = 10, .buffer = { 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13 } };
 
     TPM2B_SENSITIVE_CREATE inSensitive = {
         .size = 0,
@@ -81,7 +74,7 @@ test_esys_pqc_sign(ESYS_CONTEXT *esys_context)
     };
     inSensitive.sensitive.userAuth = keyAuth;
 
-    TPM2B_DATA outsideInfo    = { .size = 0, .buffer = {} };
+    TPM2B_DATA         outsideInfo = { .size = 0, .buffer = {} };
     TPML_PCR_SELECTION creationPCR = { .count = 0 };
 
     TPM2B_PUBLIC inPublic = {
@@ -96,78 +89,61 @@ test_esys_pqc_sign(ESYS_CONTEXT *esys_context)
                                   TPMA_OBJECT_SENSITIVEDATAORIGIN),
             .authPolicy = { .size = 0 },
             .parameters.mldsaDetail = {
-                .scheme = TPM2_MLDSA_65,
+                .parameterSet = TPM2_MLDSA_PARMS_65,
             },
             .unique.mldsa = { .size = 0, .buffer = {} },
         },
     };
 
-    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER,
-                        &(TPM2B_AUTH){ .size = 0, .buffer = {} });
+    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &(TPM2B_AUTH){ .size = 0, .buffer = {} });
     goto_if_error(r, "Error: TR_SetAuth (owner)", error);
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER,
-                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitive, &inPublic,
-                           &outsideInfo, &creationPCR,
-                           &mldsa_handle,
-                           &outPublic, &creationData,
-                           &creationHash, &creationTicket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitive, &inPublic, &outsideInfo, &creationPCR,
+                           &mldsa_handle, &outPublic, &creationData, &creationHash,
+                           &creationTicket);
     goto_if_error(r, "Error: CreatePrimary (ML-DSA-65)", error);
 
     r = Esys_TR_SetAuth(esys_context, mldsa_handle, &keyAuth);
     goto_if_error(r, "Error: TR_SetAuth (ML-DSA key)", error);
 
     /* NULL context means no pre-hash context string */
-    r = Esys_SignSequenceStart(esys_context, mldsa_handle,
-                               ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                               &seqAuth,
-                               NULL /* context */,
-                               &sign_seq);
+    r = Esys_SignSequenceStart(esys_context, mldsa_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                               ESYS_TR_NONE, &seqAuth, NULL /* context */, &sign_seq);
     goto_if_error(r, "Error: SignSequenceStart", error);
 
     r = Esys_TR_SetAuth(esys_context, sign_seq, &seqAuth);
     goto_if_error(r, "Error: TR_SetAuth (sign_seq)", error);
 
-    r = Esys_SequenceUpdate(esys_context, sign_seq,
-                            ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+    r = Esys_SequenceUpdate(esys_context, sign_seq, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                             &data1);
     goto_if_error(r, "Error: SequenceUpdate (sign, data1)", error);
 
     /* SignSequenceComplete: sh1 = seqHandle auth, sh2 = keyHandle auth */
-    r = Esys_SignSequenceComplete(esys_context, sign_seq, mldsa_handle,
-                                  ESYS_TR_PASSWORD, ESYS_TR_PASSWORD,
-                                  ESYS_TR_NONE,
-                                  &data2, &signature);
+    r = Esys_SignSequenceComplete(esys_context, sign_seq, mldsa_handle, ESYS_TR_PASSWORD,
+                                  ESYS_TR_PASSWORD, ESYS_TR_NONE, &data2, &signature);
     goto_if_error(r, "Error: SignSequenceComplete", error);
     sign_seq = ESYS_TR_NONE; /* consumed by Complete */
 
-    r = Esys_VerifySequenceStart(esys_context, mldsa_handle,
-                                 ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                                 &seqAuth,
-                                 NULL /* hint */,
-                                 NULL /* context */,
+    r = Esys_VerifySequenceStart(esys_context, mldsa_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                                 ESYS_TR_NONE, &seqAuth, NULL /* hint */, NULL /* context */,
                                  &verify_seq);
     goto_if_error(r, "Error: VerifySequenceStart", error);
 
     r = Esys_TR_SetAuth(esys_context, verify_seq, &seqAuth);
     goto_if_error(r, "Error: TR_SetAuth (verify_seq)", error);
 
-    r = Esys_SequenceUpdate(esys_context, verify_seq,
-                            ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+    r = Esys_SequenceUpdate(esys_context, verify_seq, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                             &data1);
     goto_if_error(r, "Error: SequenceUpdate (verify, data1)", error);
 
-    r = Esys_SequenceUpdate(esys_context, verify_seq,
-                            ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+    r = Esys_SequenceUpdate(esys_context, verify_seq, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                             &data2);
     goto_if_error(r, "Error: SequenceUpdate (verify, data2)", error);
 
     /* VerifySequenceComplete: sh1 = seqHandle auth, sh2 = keyHandle auth */
-    r = Esys_VerifySequenceComplete(esys_context, verify_seq, mldsa_handle,
-                                    ESYS_TR_PASSWORD, ESYS_TR_PASSWORD,
-                                    ESYS_TR_NONE,
-                                    signature, &validation);
+    r = Esys_VerifySequenceComplete(esys_context, verify_seq, mldsa_handle, ESYS_TR_PASSWORD,
+                                    ESYS_TR_PASSWORD, ESYS_TR_NONE, signature, &validation);
     goto_if_error(r, "Error: VerifySequenceComplete", error);
     verify_seq = ESYS_TR_NONE; /* consumed by Complete */
 
