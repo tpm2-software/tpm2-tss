@@ -364,7 +364,7 @@ tpms_capability_data_intel_ptt_marshal_unmarshal(void **state) {
 
 static void
 tpms_mlkem_parms_marshal_unmarshal(void **state) {
-    TPMS_MLKEM_PARMS src  = { 0 };
+    TPMS_MLKEM_PARMS src = { 0 };
     TPMS_MLKEM_PARMS dest = { 0 };
     uint8_t          buf[64];
     size_t           offset1 = 0, offset2 = 0;
@@ -388,15 +388,15 @@ tpms_mlkem_parms_marshal_unmarshal(void **state) {
  * so the wire encoding grows from 4 to 8 bytes. */
 static void
 tpms_mlkem_parms_restricted_marshal_unmarshal(void **state) {
-    TPMS_MLKEM_PARMS src  = { 0 };
+    TPMS_MLKEM_PARMS src = { 0 };
     TPMS_MLKEM_PARMS dest = { 0 };
     uint8_t          buf[64];
     size_t           offset1 = 0, offset2 = 0;
     TSS2_RC          rc;
 
-    src.symmetric.algorithm  = TPM2_ALG_AES;
+    src.symmetric.algorithm = TPM2_ALG_AES;
     src.symmetric.keyBits.aes = 128;
-    src.symmetric.mode.aes   = TPM2_ALG_CFB;
+    src.symmetric.mode.aes = TPM2_ALG_CFB;
     src.parameterSet = TPM2_MLKEM_PARMS_768;
 
     rc = Tss2_MU_TPMS_MLKEM_PARMS_Marshal(&src, buf, sizeof(buf), &offset1);
@@ -414,7 +414,7 @@ tpms_mlkem_parms_restricted_marshal_unmarshal(void **state) {
 
 static void
 tpms_mldsa_parms_marshal_unmarshal(void **state) {
-    TPMS_MLDSA_PARMS src  = { .parameterSet = TPM2_MLDSA_PARMS_87, .allowExternalMu = 1 };
+    TPMS_MLDSA_PARMS src = { .parameterSet = TPM2_MLDSA_PARMS_87, .allowExternalMu = 1 };
     TPMS_MLDSA_PARMS dest = { 0 };
     uint8_t          buf[64];
     size_t           offset1 = 0, offset2 = 0;
@@ -433,7 +433,7 @@ tpms_mldsa_parms_marshal_unmarshal(void **state) {
 
 static void
 tpms_hash_mldsa_parms_marshal_unmarshal(void **state) {
-    TPMS_HASH_MLDSA_PARMS src  = { .parameterSet = TPM2_MLDSA_PARMS_44, .hashAlg = TPM2_ALG_SHA256 };
+    TPMS_HASH_MLDSA_PARMS src = { .parameterSet = TPM2_MLDSA_PARMS_44, .hashAlg = TPM2_ALG_SHA256 };
     TPMS_HASH_MLDSA_PARMS dest = { 0 };
     uint8_t               buf[64];
     size_t                offset1 = 0, offset2 = 0;

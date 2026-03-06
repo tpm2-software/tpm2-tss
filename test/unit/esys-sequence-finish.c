@@ -1647,9 +1647,9 @@ check_ECC_Decrypt(void **state) {
 
 void
 check_Encapsulate(void **state) {
-    TSS2_RC           r;
-    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
-    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    TSS2_RC               r;
+    ESYS_CONTEXT         *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE       esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
     TPM2B_KEM_CIPHERTEXT *ciphertext;
     TPM2B_SHARED_SECRET  *secret;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
@@ -1661,9 +1661,9 @@ check_Encapsulate(void **state) {
 
 void
 check_Decapsulate(void **state) {
-    TSS2_RC           r;
-    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
-    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    TSS2_RC              r;
+    ESYS_CONTEXT        *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE      esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
     TPM2B_SHARED_SECRET *secret;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
@@ -1674,10 +1674,10 @@ check_Decapsulate(void **state) {
 
 void
 check_SignDigest(void **state) {
-    TSS2_RC           r;
-    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
-    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
-    TPMT_SIGNATURE   *signature;
+    TSS2_RC         r;
+    ESYS_CONTEXT   *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
         r = Esys_SignDigest_Finish(esys_context, &signature);
@@ -1700,10 +1700,10 @@ check_VerifyDigestSignature(void **state) {
 
 void
 check_SignSequenceStart(void **state) {
-    TSS2_RC           r;
-    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
-    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
-    ESYS_TR           sequenceHandle;
+    TSS2_RC         r;
+    ESYS_CONTEXT   *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    ESYS_TR         sequenceHandle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
         r = Esys_SignSequenceStart_Finish(esys_context, &sequenceHandle);
@@ -1713,10 +1713,10 @@ check_SignSequenceStart(void **state) {
 
 void
 check_VerifySequenceStart(void **state) {
-    TSS2_RC           r;
-    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
-    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
-    ESYS_TR           sequenceHandle;
+    TSS2_RC         r;
+    ESYS_CONTEXT   *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    ESYS_TR         sequenceHandle;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
         r = Esys_VerifySequenceStart_Finish(esys_context, &sequenceHandle);
@@ -1726,10 +1726,10 @@ check_VerifySequenceStart(void **state) {
 
 void
 check_SignSequenceComplete(void **state) {
-    TSS2_RC           r;
-    ESYS_CONTEXT     *esys_context = (ESYS_CONTEXT *)*state;
-    enum ESYS_STATE   esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
-    TPMT_SIGNATURE   *signature;
+    TSS2_RC         r;
+    ESYS_CONTEXT   *esys_context = (ESYS_CONTEXT *)*state;
+    enum ESYS_STATE esys_states[3] = { ESYS_STATE_INIT, ESYS_STATE_INTERNALERROR };
+    TPMT_SIGNATURE *signature;
     for (size_t i = 0; i < sizeof(esys_states) / sizeof(esys_states[0]); i++) {
         esys_context->state = esys_states[i];
         r = Esys_SignSequenceComplete_Finish(esys_context, &signature);

@@ -1803,12 +1803,10 @@ void
 check_SignDigest(void **state) {
     TSS2_RC r;
 
-    r = Esys_SignDigest(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                        NULL, NULL, NULL, NULL);
+    r = Esys_SignDigest(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SignDigest_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL, NULL, NULL);
+    r = Esys_SignDigest_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_SignDigest_Finish(NULL, NULL);
@@ -1819,12 +1817,10 @@ void
 check_SignSequenceStart(void **state) {
     TSS2_RC r;
 
-    r = Esys_SignSequenceStart(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                               NULL, NULL, NULL);
+    r = Esys_SignSequenceStart(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SignSequenceStart_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                     NULL, NULL);
+    r = Esys_SignSequenceStart_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_SignSequenceStart_Finish(NULL, NULL);
@@ -1835,12 +1831,10 @@ void
 check_SignSequenceComplete(void **state) {
     TSS2_RC r;
 
-    r = Esys_SignSequenceComplete(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                  NULL, NULL);
+    r = Esys_SignSequenceComplete(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_SignSequenceComplete_Async(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                        NULL);
+    r = Esys_SignSequenceComplete_Async(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_SignSequenceComplete_Finish(NULL, NULL);
@@ -1851,12 +1845,12 @@ void
 check_VerifyDigestSignature(void **state) {
     TSS2_RC r;
 
-    r = Esys_VerifyDigestSignature(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                   NULL, NULL, NULL, NULL);
+    r = Esys_VerifyDigestSignature(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL,
+                                   NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_VerifyDigestSignature_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                         NULL, NULL, NULL);
+    r = Esys_VerifyDigestSignature_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL,
+                                         NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_VerifyDigestSignature_Finish(NULL, NULL);
@@ -1867,12 +1861,12 @@ void
 check_VerifySequenceStart(void **state) {
     TSS2_RC r;
 
-    r = Esys_VerifySequenceStart(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                 NULL, NULL, NULL, NULL);
+    r = Esys_VerifySequenceStart(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL,
+                                 NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
-    r = Esys_VerifySequenceStart_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                       NULL, NULL, NULL);
+    r = Esys_VerifySequenceStart_Async(NULL, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL,
+                                       NULL, NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_VerifySequenceStart_Finish(NULL, NULL);
@@ -1883,8 +1877,8 @@ void
 check_VerifySequenceComplete(void **state) {
     TSS2_RC r;
 
-    r = Esys_VerifySequenceComplete(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                    NULL, NULL);
+    r = Esys_VerifySequenceComplete(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL,
+                                    NULL);
     assert_int_equal(r, TSS2_ESYS_RC_BAD_REFERENCE);
 
     r = Esys_VerifySequenceComplete_Async(NULL, 0, 0, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
