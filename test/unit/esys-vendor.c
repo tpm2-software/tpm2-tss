@@ -81,7 +81,7 @@ static void
 get_response(const char *id, uint8_t *resp_buf, size_t *resp_len) {
 
     if (!resp_buf) {
-        *resp_len = 4096;
+        *resp_len = TPM2_MAX_RESPONSE_SIZE;
         return;
     }
 

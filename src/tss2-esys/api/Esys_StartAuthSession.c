@@ -468,8 +468,8 @@ Esys_StartAuthSession_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *sessionHandle) 
             LOGBLOB_DEBUG(secret, secret_size, "ESYS Session Secret");
             r = iesys_crypto_KDFa(
                 &esysContext->crypto_backend, esysContext->in.StartAuthSession.authHash, secret,
-                secret_size, "ATH", &lnonceTPM, esysContext->in.StartAuthSession.nonceCaller,
-                authHash_size * 8, NULL,
+                secret_size, "ATH", (TPM2B *)&lnonceTPM,
+                (TPM2B *)esysContext->in.StartAuthSession.nonceCaller, authHash_size * 8, NULL,
                 &sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.buffer[0], FALSE);
             free(secret);
             return_if_error(r, "Error in KDFa computation.");
