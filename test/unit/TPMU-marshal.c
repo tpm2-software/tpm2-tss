@@ -398,7 +398,7 @@ tpmu_name_marshal(void **state) {
  */
 static void
 tpmu_public_id_mlkem_marshal_unmarshal(void **state) {
-    TPMU_PUBLIC_ID src  = { 0 };
+    TPMU_PUBLIC_ID src = { 0 };
     TPMU_PUBLIC_ID dest = { 0 };
     uint8_t        buf[sizeof(src)];
     size_t         offset1 = 0, offset2 = 0;
@@ -420,7 +420,7 @@ tpmu_public_id_mlkem_marshal_unmarshal(void **state) {
 
 static void
 tpmu_public_id_mldsa_marshal_unmarshal(void **state) {
-    TPMU_PUBLIC_ID src  = { 0 };
+    TPMU_PUBLIC_ID src = { 0 };
     TPMU_PUBLIC_ID dest = { 0 };
     uint8_t        buf[sizeof(src)];
     size_t         offset1 = 0, offset2 = 0;
@@ -442,7 +442,7 @@ tpmu_public_id_mldsa_marshal_unmarshal(void **state) {
 
 static void
 tpmu_public_parms_mlkem_marshal_unmarshal(void **state) {
-    TPMU_PUBLIC_PARMS src  = { 0 };
+    TPMU_PUBLIC_PARMS src = { 0 };
     TPMU_PUBLIC_PARMS dest = { 0 };
     uint8_t           buf[64];
     size_t            offset1 = 0, offset2 = 0;
@@ -463,7 +463,7 @@ tpmu_public_parms_mlkem_marshal_unmarshal(void **state) {
 
 static void
 tpmu_public_parms_mldsa_marshal_unmarshal(void **state) {
-    TPMU_PUBLIC_PARMS src  = { 0 };
+    TPMU_PUBLIC_PARMS src = { 0 };
     TPMU_PUBLIC_PARMS dest = { 0 };
     uint8_t           buf[64];
     size_t            offset1 = 0, offset2 = 0;
@@ -484,7 +484,7 @@ tpmu_public_parms_mldsa_marshal_unmarshal(void **state) {
 
 static void
 tpmu_public_parms_hash_mldsa_marshal_unmarshal(void **state) {
-    TPMU_PUBLIC_PARMS src  = { 0 };
+    TPMU_PUBLIC_PARMS src = { 0 };
     TPMU_PUBLIC_PARMS dest = { 0 };
     uint8_t           buf[64];
     size_t            offset1 = 0, offset2 = 0;
@@ -496,7 +496,8 @@ tpmu_public_parms_hash_mldsa_marshal_unmarshal(void **state) {
     rc = Tss2_MU_TPMU_PUBLIC_PARMS_Marshal(&src, TPM2_ALG_HASH_MLDSA, buf, sizeof(buf), &offset1);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
 
-    rc = Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_HASH_MLDSA, &dest);
+    rc = Tss2_MU_TPMU_PUBLIC_PARMS_Unmarshal(buf, sizeof(buf), &offset2, TPM2_ALG_HASH_MLDSA,
+                                             &dest);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(offset1, offset2);
     assert_int_equal(dest.hash_mldsaDetail.parameterSet, src.hash_mldsaDetail.parameterSet);

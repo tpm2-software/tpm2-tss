@@ -36,42 +36,31 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_pqc_provision(FAPI_CONTEXT *context)
-{
+test_fapi_pqc_provision(FAPI_CONTEXT *context) {
     TSS2_RC r;
 
-    uint8_t *signature      = NULL;
+    uint8_t *signature = NULL;
     size_t   signature_size = 0;
-    char    *public_key     = NULL;
-    char    *certificate    = NULL;
+    char    *public_key = NULL;
+    char    *certificate = NULL;
 
     /* 32-byte digest representing SHA-256("pqc-test-message") */
-    uint8_t digest[32] = {
-        0x8e, 0x7a, 0x1b, 0xc3, 0x45, 0xf2, 0x67, 0x9a,
-        0x11, 0x02, 0x33, 0x84, 0x75, 0xe6, 0xc7, 0xd8,
-        0x09, 0xfa, 0x2b, 0x4c, 0x3d, 0x6e, 0x7f, 0x90,
-        0xa1, 0xb2, 0xc3, 0xd4, 0xe5, 0xf6, 0x07, 0x18
-    };
+    uint8_t digest[32] = { 0x8e, 0x7a, 0x1b, 0xc3, 0x45, 0xf2, 0x67, 0x9a, 0x11, 0x02, 0x33,
+                           0x84, 0x75, 0xe6, 0xc7, 0xd8, 0x09, 0xfa, 0x2b, 0x4c, 0x3d, 0x6e,
+                           0x7f, 0x90, 0xa1, 0xb2, 0xc3, 0xd4, 0xe5, 0xf6, 0x07, 0x18 };
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error_cleanup);
 
-    r = Fapi_CreateKey(context, FAPI_PROFILE "/HS/SRK/pqcSignKey",
-                       "sign,noDa",
-                       "" /* no policy */,
+    r = Fapi_CreateKey(context, FAPI_PROFILE "/HS/SRK/pqcSignKey", "sign,noDa", "" /* no policy */,
                        NULL /* no authValue */);
     goto_if_error(r, "Error Fapi_CreateKey (ML-DSA-65)", error_cleanup);
 
-    r = Fapi_Sign(context, FAPI_PROFILE "/HS/SRK/pqcSignKey",
-                  NULL /* padding */,
-                  digest, sizeof(digest),
-                  &signature, &signature_size,
-                  &public_key, &certificate);
+    r = Fapi_Sign(context, FAPI_PROFILE "/HS/SRK/pqcSignKey", NULL /* padding */, digest,
+                  sizeof(digest), &signature, &signature_size, &public_key, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error_cleanup);
 
-    r = Fapi_VerifySignature(context,
-                             FAPI_PROFILE "/HS/SRK/pqcSignKey",
-                             digest, sizeof(digest),
+    r = Fapi_VerifySignature(context, FAPI_PROFILE "/HS/SRK/pqcSignKey", digest, sizeof(digest),
                              signature, signature_size);
     goto_if_error(r, "Error Fapi_VerifySignature", error_cleanup);
 
@@ -92,7 +81,6 @@ error_cleanup:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_pqc_provision(fapi_context);
 }

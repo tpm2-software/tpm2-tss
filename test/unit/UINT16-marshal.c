@@ -210,9 +210,9 @@ static void
 mlkem_parameter_set_marshal_unmarshal(void **state) {
     TPMI_MLKEM_PARMS src = TPM2_MLKEM_PARMS_768;
     TPMI_MLKEM_PARMS dest = TPM2_MLKEM_PARMS_NONE;
-    uint8_t buf[2];
-    size_t offset = 0;
-    TSS2_RC rc;
+    uint8_t          buf[2];
+    size_t           offset = 0;
+    TSS2_RC          rc;
 
     rc = Tss2_MU_TPMI_MLKEM_PARMS_Marshal(src, buf, sizeof(buf), &offset);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
@@ -230,9 +230,9 @@ static void
 mldsa_parameter_set_marshal_unmarshal(void **state) {
     TPMI_MLDSA_PARMS src = TPM2_MLDSA_PARMS_65;
     TPMI_MLDSA_PARMS dest = TPM2_MLDSA_PARMS_NONE;
-    uint8_t buf[2];
-    size_t offset = 0;
-    TSS2_RC rc;
+    uint8_t          buf[2];
+    size_t           offset = 0;
+    TSS2_RC          rc;
 
     rc = Tss2_MU_TPMI_MLDSA_PARMS_Marshal(src, buf, sizeof(buf), &offset);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
