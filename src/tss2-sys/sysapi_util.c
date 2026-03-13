@@ -277,7 +277,15 @@ GetNumHandles(TPM2_CC commandCode, bool req) {
                                                     { TPM2_CC_ACT_SetTimeout, 1, 0 },
                                                     { TPM2_CC_CertifyX509, 2, 0 },
                                                     { TPM2_CC_ECC_Encrypt, 1, 0 },
-                                                    { TPM2_CC_ECC_Decrypt, 1, 0 } };
+                                                    { TPM2_CC_ECC_Decrypt, 1, 0 },
+                                                    { TPM2_CC_Encapsulate, 1, 0 },
+                                                    { TPM2_CC_Decapsulate, 1, 0 },
+                                                    { TPM2_CC_SignDigest, 1, 0 },
+                                                    { TPM2_CC_VerifyDigestSignature, 1, 0 },
+                                                    { TPM2_CC_SignSequenceStart, 1, 1 },
+                                                    { TPM2_CC_VerifySequenceStart, 1, 1 },
+                                                    { TPM2_CC_SignSequenceComplete, 1, 0 },
+                                                    { TPM2_CC_VerifySequenceComplete, 1, 0 } };
 
     size_t i;
 
