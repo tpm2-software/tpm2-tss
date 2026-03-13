@@ -180,5 +180,87 @@ The table below illustrates the key differences:
 * high-range: noDa: 1, unique key size set to zero.
 * legacy: noDa: 0, unique key size set to zero.
 
+# Check existing SRK
+The follwing script determines which FAPI profiles are appropriate for an existing SRK key.
+
+```bash
+#!/bin/bash
+
+# It will be checked whether a FAPI profile in /etc/... exists
+# which corresponds to the current persistent SRK with the
+# handle 0x81000001
+
+if ! command -v tss2_provision &> /dev/null; then
+    echo "Error tss2_provisioning not installed."
+    exit 1
+fi
+
+SRK_HANDLE=0x81000001
+
+if tpm2_getcap handles-persistent| grep $SRK_HANDLE > /dev/null; then
+    echo "Check SRK default handle $SRK_HANDLE"
+else
+    echo "Persistent SRK handle $SRK_HANDLE does not exist"
+    exit 1
+fi
+
+PROFILES=( \
+P_ECCP256SHA256-low-range \
+P_RSA2048SHA256-low-range \
+P_ECCP256SHA256-high-range \
+P_RSA2048SHA256-high-range \
+P_ECCP256SHA256-legacy \
+P_RSA2048SHA256-legacy \
+P_ECCP384SHA384 \
+P_RSA3072SHA384 \
+P_ECCP256SHA256 \
+P_RSA2048SHA256 \
+)
+
+TMPDIR=$(mktemp -d)
+
+USER_DIR="${TMPDIR}/tpm2-tss/user/keystore"
+SYSTEM_DIR="${TMPDIR}/tpm2-tss/system/keystore"
+LOG_DIR="${TMPDIR}/tpm2-tss/eventlog/"
+
+for d in /usr/local/etc/tpm2-tss/fapi-profiles/ /etc/tpm2-tss/fapi-profiles/; do
+    if [[ -d $d ]]; then
+        PROFILE_DIR=$d
+        break;
+    fi
+done
+
+if [ -z "$PROFILE_DIR" ]; then
+    echo "Profile dir not found"
+    exit 1
+fi
+
+for PROFILE in "${PROFILES[@]}"; do
+    config_file=${TMPDIR}/fapi_config.json
+    cat <<EOF > "$config_file"
+{
+    "profile_name": "${PROFILE}",
+    "profile_dir": "${PROFILE_DIR}",
+    "user_dir": "${USER_DIR}",
+    "system_dir": "${SYSTEM_DIR}",
+    "tcti": "",
+    "system_pcrs": [],
+    "log_dir": "${LOG_DIR}",
+    "firmware_log_file": "/sys/kernel/security/tpm0/binary_bios_measurements",
+    "ima_log_file": "/sys/kernel/security/ima/binary_runtime_measurements"
+}
+EOF
+    export TSS2_FAPICONF="$config_file"
+    if tss2_provision > /dev/null 2>&1 ;then
+        echo "+ ${PROFILE} provisioned"
+    else
+        echo "- ${PROFILE} failed"
+    fi
+    rm "$config_file"
+    rm -r -f $TMPDIR/tmp2-tss
+done
+rm -r -f $TMPDIR
+```
+
 This work is licensed under the
 [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
