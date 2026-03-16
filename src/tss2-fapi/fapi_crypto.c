@@ -121,6 +121,9 @@ ifapi_get_profile_sig_scheme(const IFAPI_PROFILE *profile,
     } else if (tpmPublic->type == TPM2_ALG_ECC) {
         *signatureScheme = profile->ecc_signing_scheme;
         return TSS2_RC_SUCCESS;
+    } else if (tpmPublic->type == TPM2_ALG_MLDSA || tpmPublic->type == TPM2_ALG_HASH_MLDSA) {
+        *signatureScheme = profile->mldsa_signing_scheme;
+        return TSS2_RC_SUCCESS;
     } else {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid key type.");
     }
@@ -186,6 +189,30 @@ static const TPM2B_PUBLIC templateEccSign = {
 };
 
 /**
+ * A FAPI template for ML-DSA signing keys
+ */
+static const TPM2B_PUBLIC templateMldsaSign = {
+    .size = 0,
+    .publicArea = {
+        .type = TPM2_ALG_MLDSA,
+        .nameAlg = TPM2_ALG_SHA256,
+        .objectAttributes = ( TPMA_OBJECT_SIGN_ENCRYPT ),
+        .authPolicy = {
+            .size = 0,
+            .buffer = {},
+        },
+        .parameters.mldsaDetail = {
+            .parameterSet = TPM2_MLDSA_PARMS_65,
+            .allowExternalMu = 0,
+        },
+        .unique.mldsa = {
+            .size = 0,
+            .buffer = {},
+        },
+    },
+};
+
+/**
  * Initializes a FAPI key template for a given signature algorithm.
  *
  * @param[in]  signatureAlgorithm The signature algorithm to use. Must be
@@ -210,6 +237,9 @@ ifapi_initialize_sign_public(TPM2_ALG_ID signatureAlgorithm, TPM2B_PUBLIC *publi
     } else if (signatureAlgorithm == TPM2_ALG_ECC) {
         /* ECC key template */
         memcpy(public, &templateEccSign, sizeof(TPM2B_PUBLIC));
+    } else if (signatureAlgorithm == TPM2_ALG_MLDSA || signatureAlgorithm == TPM2_ALG_HASH_MLDSA) {
+        /* ML-DSA key template */
+        memcpy(public, &templateMldsaSign, sizeof(TPM2B_PUBLIC));
     } else {
         /* Invalid key type */
         LOG_ERROR("No suitable template found");
@@ -395,6 +425,341 @@ cleanup:
         ECDSA_SIG_free(ecdsaSignature);
     return r;
 }
+
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+
+/* OpenSSL 3.5 algorithm name strings for PQC key types from obj_mac.h */
+#define OSSL_ALG_MLDSA_44   LN_ML_DSA_44
+#define OSSL_ALG_MLDSA_65   LN_ML_DSA_65
+#define OSSL_ALG_MLDSA_87   LN_ML_DSA_87
+#define OSSL_ALG_MLKEM_512  LN_ML_KEM_512
+#define OSSL_ALG_MLKEM_768  LN_ML_KEM_768
+#define OSSL_ALG_MLKEM_1024 LN_ML_KEM_1024
+
+/**
+ * Map a TPM ML-DSA parameter set to an OpenSSL algorithm name.
+ *
+ * @param[in] parameterSet The TPM ML-DSA parameter set
+ * @return The OpenSSL algorithm name string, or NULL if unknown
+ */
+static const char *
+ifapi_mldsa_parms_to_ossl_name(TPMI_MLDSA_PARMS parameterSet) {
+    switch (parameterSet) {
+    case TPM2_MLDSA_PARMS_44:
+        return OSSL_ALG_MLDSA_44;
+    case TPM2_MLDSA_PARMS_65:
+        return OSSL_ALG_MLDSA_65;
+    case TPM2_MLDSA_PARMS_87:
+        return OSSL_ALG_MLDSA_87;
+    default:
+        return NULL;
+    }
+}
+
+/**
+ * Check if an EVP_PKEY is an ML-DSA key.
+ *
+ * @param[in] pkey The OpenSSL EVP_PKEY to check
+ * @return true if the key is ML-DSA, false otherwise
+ */
+static bool
+is_mldsa_key(const EVP_PKEY *pkey) {
+    return (EVP_PKEY_is_a(pkey, OSSL_ALG_MLDSA_44) || EVP_PKEY_is_a(pkey, OSSL_ALG_MLDSA_65)
+            || EVP_PKEY_is_a(pkey, OSSL_ALG_MLDSA_87));
+}
+
+/**
+ * Converts a public ML-DSA key created by the TPM into one that can be used
+ * by OpenSSL.
+ *
+ * @param[in]  tpmPublicKey The public ML-DSA key created by the TPM
+ * @param[out] evpPublicKey The converted public ML-DSA key for OpenSSL
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if one of the parameters is NULL
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_FAPI_RC_NOT_IMPLEMENTED if ML-DSA is not supported
+ */
+static TSS2_RC
+ossl_mldsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey) {
+    /* Check for NULL parameters */
+    return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(evpPublicKey, "evpPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC         r = TSS2_RC_SUCCESS;
+    OSSL_PARAM_BLD *build = NULL;
+    OSSL_PARAM     *params = NULL;
+    EVP_PKEY_CTX   *ctx = NULL;
+    const char     *alg_name = NULL;
+
+    alg_name = ifapi_mldsa_parms_to_ossl_name(
+        tpmPublicKey->publicArea.parameters.mldsaDetail.parameterSet);
+    if (!alg_name) {
+        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unknown ML-DSA parameter set.", error_cleanup);
+    }
+
+    build = OSSL_PARAM_BLD_new();
+    goto_if_null(build, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+
+    if (!OSSL_PARAM_BLD_push_octet_string(build, OSSL_PKEY_PARAM_PUB_KEY,
+                                          tpmPublicKey->publicArea.unique.mldsa.buffer,
+                                          tpmPublicKey->publicArea.unique.mldsa.size)) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create ML-DSA key parameters", error_cleanup);
+    }
+    params = OSSL_PARAM_BLD_to_param(build);
+    goto_if_null(params, "Create ML-DSA key parameters", TSS2_FAPI_RC_GENERAL_FAILURE,
+                 error_cleanup);
+
+    ctx = EVP_PKEY_CTX_new_from_name(NULL, alg_name, NULL);
+    goto_if_null(ctx, "Create ML-DSA EVP_PKEY_CTX", TSS2_FAPI_RC_MEMORY, error_cleanup);
+
+    if (EVP_PKEY_fromdata_init(ctx) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Initialize ML-DSA key import", error_cleanup);
+    }
+
+    if (EVP_PKEY_fromdata(ctx, evpPublicKey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create ML-DSA EVP_PKEY", error_cleanup);
+    }
+
+error_cleanup:
+    EVP_PKEY_CTX_free(ctx);
+    OSSL_PARAM_free(params);
+    OSSL_PARAM_BLD_free(build);
+    return r;
+}
+
+/**
+ * Extract ML-DSA public key from an EVP_PKEY into a TPM2B_PUBLIC.
+ *
+ * @param[in]  publicKey The OpenSSL EVP_PKEY with the ML-DSA public key
+ * @param[out] tpmPublic The TPM2B_PUBLIC structure to fill
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if one of the parameters is NULL
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE on OpenSSL error
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the key type is unknown
+ */
+static TSS2_RC
+get_mldsa_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
+    /* Check for NULL parameters */
+    return_if_null(publicKey, "publicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(tpmPublic, "tpmPublic is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    size_t  key_len = 0;
+
+    /* Determine the parameter set from the key type */
+    if (EVP_PKEY_is_a(publicKey, OSSL_ALG_MLDSA_44)) {
+        tpmPublic->publicArea.parameters.mldsaDetail.parameterSet = TPM2_MLDSA_PARMS_44;
+    } else if (EVP_PKEY_is_a(publicKey, OSSL_ALG_MLDSA_65)) {
+        tpmPublic->publicArea.parameters.mldsaDetail.parameterSet = TPM2_MLDSA_PARMS_65;
+    } else if (EVP_PKEY_is_a(publicKey, OSSL_ALG_MLDSA_87)) {
+        tpmPublic->publicArea.parameters.mldsaDetail.parameterSet = TPM2_MLDSA_PARMS_87;
+    } else {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Unknown ML-DSA key type.");
+    }
+
+    /* Get the raw public key size first */
+    if (!EVP_PKEY_get_raw_public_key(publicKey, NULL, &key_len)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not get ML-DSA public key size.");
+    }
+
+    if (key_len > sizeof(tpmPublic->publicArea.unique.mldsa.buffer)) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "ML-DSA public key too large.");
+    }
+
+    /* Extract the raw public key */
+    if (!EVP_PKEY_get_raw_public_key(publicKey, tpmPublic->publicArea.unique.mldsa.buffer,
+                                     &key_len)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not get ML-DSA public key.");
+    }
+    tpmPublic->publicArea.unique.mldsa.size = (UINT16)key_len;
+    tpmPublic->publicArea.parameters.mldsaDetail.allowExternalMu = 0;
+    tpmPublic->publicArea.nameAlg = TPM2_ALG_SHA256;
+
+    return r;
+}
+
+/**
+ * Check if an EVP_PKEY is an ML-KEM key.
+ *
+ * @param[in] pkey The OpenSSL EVP_PKEY to check
+ * @return true if the key is ML-KEM, false otherwise
+ */
+static bool
+is_mlkem_key(const EVP_PKEY *pkey) {
+    return (EVP_PKEY_is_a(pkey, OSSL_ALG_MLKEM_512) || EVP_PKEY_is_a(pkey, OSSL_ALG_MLKEM_768)
+            || EVP_PKEY_is_a(pkey, OSSL_ALG_MLKEM_1024));
+}
+
+/**
+ * Extract ML-KEM public (encapsulation) key from an EVP_PKEY into a TPM2B_PUBLIC.
+ *
+ * @param[in]  publicKey The OpenSSL EVP_PKEY with the ML-KEM public key
+ * @param[out] tpmPublic The TPM2B_PUBLIC structure to fill
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if one of the parameters is NULL
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE on OpenSSL error
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the key type is unknown
+ */
+static TSS2_RC
+get_mlkem_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
+    /* Check for NULL parameters */
+    return_if_null(publicKey, "publicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(tpmPublic, "tpmPublic is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC r = TSS2_RC_SUCCESS;
+    size_t  key_len = 0;
+
+    /* Determine the parameter set from the key type */
+    if (EVP_PKEY_is_a(publicKey, OSSL_ALG_MLKEM_512)) {
+        tpmPublic->publicArea.parameters.mlkemDetail.parameterSet = TPM2_MLKEM_PARMS_512;
+    } else if (EVP_PKEY_is_a(publicKey, OSSL_ALG_MLKEM_768)) {
+        tpmPublic->publicArea.parameters.mlkemDetail.parameterSet = TPM2_MLKEM_PARMS_768;
+    } else if (EVP_PKEY_is_a(publicKey, OSSL_ALG_MLKEM_1024)) {
+        tpmPublic->publicArea.parameters.mlkemDetail.parameterSet = TPM2_MLKEM_PARMS_1024;
+    } else {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Unknown ML-KEM key type.");
+    }
+
+    /* Get the raw public key size first */
+    if (!EVP_PKEY_get_raw_public_key(publicKey, NULL, &key_len)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not get ML-KEM public key size.");
+    }
+
+    if (key_len > sizeof(tpmPublic->publicArea.unique.mlkem.buffer)) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "ML-KEM public key too large.");
+    }
+
+    /* Extract the raw public (encapsulation) key */
+    if (!EVP_PKEY_get_raw_public_key(publicKey, tpmPublic->publicArea.unique.mlkem.buffer,
+                                     &key_len)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not get ML-KEM public key.");
+    }
+    tpmPublic->publicArea.unique.mlkem.size = (UINT16)key_len;
+    tpmPublic->publicArea.parameters.mlkemDetail.symmetric.algorithm = TPM2_ALG_NULL;
+    tpmPublic->publicArea.nameAlg = TPM2_ALG_SHA256;
+
+    return r;
+}
+
+/**
+ * Verify an ML-DSA signature using OpenSSL.
+ *
+ * @param[in] publicKey The EVP_PKEY containing the ML-DSA public key
+ * @param[in] signature The signature bytes
+ * @param[in] signatureSize The size of the signature
+ * @param[in] digest The message digest (or message for pure ML-DSA)
+ * @param[in] digestSize The size of the digest
+ *
+ * @retval TSS2_RC_SUCCESS on successful verification
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if one of the parameters is NULL
+ * @retval TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED on verification failure
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE on OpenSSL error
+ */
+static TSS2_RC
+mldsa_verify_signature(EVP_PKEY      *publicKey,
+                       const uint8_t *signature,
+                       size_t         signatureSize,
+                       const uint8_t *digest,
+                       size_t         digestSize) {
+    /* Check for NULL parameters */
+    return_if_null(publicKey, "publicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(signature, "signature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(digest, "digest is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC     r = TSS2_RC_SUCCESS;
+    int         osslRC = 0;
+    EVP_MD_CTX *mdCtx = NULL;
+
+    mdCtx = EVP_MD_CTX_new();
+    goto_if_null(mdCtx, "Out of memory", TSS2_FAPI_RC_MEMORY, cleanup);
+
+    /* ML-DSA uses one-shot verification (no separate hash step) */
+    if (EVP_DigestVerifyInit_ex(mdCtx, NULL, NULL, NULL, NULL, publicKey, NULL) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP_DigestVerifyInit_ex for ML-DSA failed.",
+                   cleanup);
+    }
+
+    osslRC = EVP_DigestVerify(mdCtx, signature, signatureSize, digest, digestSize);
+    if (osslRC != 1) {
+        goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
+                   "ML-DSA signature verification failed.", cleanup);
+    }
+
+cleanup:
+    EVP_MD_CTX_free(mdCtx);
+    return r;
+}
+
+/**
+ * Load ML-DSA private key material from an EVP_PKEY into TPM2B_SENSITIVE.
+ *
+ * @param[in]  key The EVP_PKEY with the ML-DSA private key
+ * @param[out] priv The TPM2B_SENSITIVE to populate
+ *
+ * @return true on success, false on failure
+ */
+static bool
+load_private_MLDSA_from_key(EVP_PKEY *key, TPM2B_SENSITIVE *priv) {
+    /* Check for NULL parameters */
+    return_if_null(key, "key is NULL", false);
+    return_if_null(priv, "priv is NULL", false);
+
+    priv->sensitiveArea.sensitiveType = TPM2_ALG_MLDSA;
+    size_t key_len = 0;
+
+    /* Get the raw private key size */
+    if (!EVP_PKEY_get_raw_private_key(key, NULL, &key_len)) {
+        LOG_ERROR("Could not get ML-DSA private key size.");
+        return false;
+    }
+
+    if (key_len > sizeof(priv->sensitiveArea.sensitive.mldsa.buffer)) {
+        LOG_ERROR("ML-DSA private key too large: %zu", key_len);
+        return false;
+    }
+
+    if (!EVP_PKEY_get_raw_private_key(key, priv->sensitiveArea.sensitive.mldsa.buffer, &key_len)) {
+        LOG_ERROR("Could not extract ML-DSA private key.");
+        return false;
+    }
+    priv->sensitiveArea.sensitive.mldsa.size = (UINT16)key_len;
+    return true;
+}
+
+/**
+ * Load an ML-DSA key from EVP_PKEY into TPM2B_PUBLIC and TPM2B_SENSITIVE.
+ *
+ * @param[in]  key  The EVP_PKEY containing the ML-DSA key pair
+ * @param[out] pub  The TPM2B_PUBLIC to populate
+ * @param[out] priv The TPM2B_SENSITIVE to populate
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE if one of the parameters is NULL
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE on failure
+ */
+static TSS2_RC
+load_MLDSA_key(EVP_PKEY *key, TPM2B_PUBLIC *pub, TPM2B_SENSITIVE *priv) {
+    /* Check for NULL parameters */
+    return_if_null(key, "key is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(pub, "pub is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(priv, "priv is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC rc = TSS2_RC_SUCCESS;
+
+    if (!load_private_MLDSA_from_key(key, priv)) {
+        rc = TSS2_FAPI_RC_GENERAL_FAILURE;
+        goto out;
+    }
+    rc = get_mldsa_tpm2b_public_from_evp(key, pub);
+out:
+    EVP_PKEY_free(key);
+    return rc;
+}
+
+#endif /* OPENSSL_VERSION_NUMBER >= 0x30500000L */
 
 /**
  * Converts a public RSA key created by the TPM into one that can be used by
@@ -660,6 +1025,11 @@ ifapi_pub_pem_key_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, char **pemKey, int 
         r = ossl_rsa_pub_from_tpm(tpmPublicKey, &evpPublicKey);
     } else if (tpmPublicKey->publicArea.type == TPM2_ALG_ECC) {
         r = ossl_ecc_pub_from_tpm(tpmPublicKey, &evpPublicKey);
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+    } else if (tpmPublicKey->publicArea.type == TPM2_ALG_MLDSA
+               || tpmPublicKey->publicArea.type == TPM2_ALG_HASH_MLDSA) {
+        r = ossl_mldsa_pub_from_tpm(tpmPublicKey, &evpPublicKey);
+#endif
     } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid alg id.", cleanup);
     }
@@ -816,6 +1186,23 @@ ifapi_der_sig_to_tpm(const TPMT_PUBLIC   *tpmPublic,
     } else if (tpmPublic->type == TPM2_ALG_KEYEDHASH) {
         return ifapi_hmac_sig_to_tpm(signature, signatureSize, hashAlgorithm, tpmSignature);
 
+    } else if (tpmPublic->type == TPM2_ALG_MLDSA) {
+        /* ML-DSA signatures are raw byte buffers */
+        tpmSignature->sigAlg = TPM2_ALG_MLDSA;
+        if (signatureSize > sizeof(tpmSignature->signature.mldsa.buffer)) {
+            return_error(TSS2_FAPI_RC_BAD_VALUE, "ML-DSA signature too large.");
+        }
+        tpmSignature->signature.mldsa.size = signatureSize;
+        memcpy(&tpmSignature->signature.mldsa.buffer[0], signature, signatureSize);
+    } else if (tpmPublic->type == TPM2_ALG_HASH_MLDSA) {
+        /* Hash-ML-DSA uses the hash_mldsa signature structure */
+        tpmSignature->sigAlg = TPM2_ALG_HASH_MLDSA;
+        tpmSignature->signature.hash_mldsa.hash = hashAlgorithm;
+        if (signatureSize > sizeof(tpmSignature->signature.hash_mldsa.signature.buffer)) {
+            return_error(TSS2_FAPI_RC_BAD_VALUE, "Hash-ML-DSA signature too large.");
+        }
+        tpmSignature->signature.hash_mldsa.signature.size = signatureSize;
+        memcpy(&tpmSignature->signature.hash_mldsa.signature.buffer[0], signature, signatureSize);
     } else {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid key tpye.");
     }
@@ -1221,6 +1608,10 @@ ifapi_get_signature_algorithm_from_pem(const char *pemKey) {
         algorithmId = TPM2_ALG_RSA;
     } else if (EVP_PKEY_type(EVP_PKEY_id(publicKey)) == EVP_PKEY_EC) {
         algorithmId = TPM2_ALG_ECC;
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+    } else if (is_mldsa_key(publicKey)) {
+        algorithmId = TPM2_ALG_MLDSA;
+#endif
     } else {
         algorithmId = TPM2_ALG_ERROR;
     }
@@ -1266,6 +1657,16 @@ ifapi_get_tpm2b_public_from_pem(const char *pemKey, TPM2B_PUBLIC *tpmPublic) {
         tpmPublic->publicArea.type = TPM2_ALG_ECC;
         r = get_ecc_tpm2b_public_from_evp(publicKey, tpmPublic);
         goto_if_error(r, "Get public for ECC key.", cleanup);
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+    } else if (is_mldsa_key(publicKey)) {
+        tpmPublic->publicArea.type = TPM2_ALG_MLDSA;
+        r = get_mldsa_tpm2b_public_from_evp(publicKey, tpmPublic);
+        goto_if_error(r, "Get public for ML-DSA key.", cleanup);
+    } else if (is_mlkem_key(publicKey)) {
+        tpmPublic->publicArea.type = TPM2_ALG_MLKEM;
+        r = get_mlkem_tpm2b_public_from_evp(publicKey, tpmPublic);
+        goto_if_error(r, "Get public for ML-KEM key.", cleanup);
+#endif
     } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong key_type", cleanup);
     }
@@ -1461,6 +1862,11 @@ ifapi_verify_signature(const IFAPI_OBJECT *keyObject,
         r = ecdsa_verify_signature(publicKey, signature, signatureSize, digest, digestSize);
         goto_if_error(r, "Verify ECC signature", error_cleanup);
 
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+    } else if (is_mldsa_key(publicKey)) {
+        r = mldsa_verify_signature(publicKey, signature, signatureSize, digest, digestSize);
+        goto_if_error(r, "Verify ML-DSA signature", error_cleanup);
+#endif
     } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong key type", error_cleanup);
     }
@@ -1737,6 +2143,16 @@ ifapi_cert_to_pem(const uint8_t *certBuffer,
         tpmPublic->publicArea.type = TPM2_ALG_ECC;
         r = get_ecc_tpm2b_public_from_evp(publicKey, tpmPublic);
         goto_if_error(r, "Get public for ECC key.", cleanup);
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+    } else if (is_mldsa_key(publicKey)) {
+        tpmPublic->publicArea.type = TPM2_ALG_MLDSA;
+        r = get_mldsa_tpm2b_public_from_evp(publicKey, tpmPublic);
+        goto_if_error(r, "Get public for ML-DSA key.", cleanup);
+    } else if (is_mlkem_key(publicKey)) {
+        tpmPublic->publicArea.type = TPM2_ALG_MLKEM;
+        r = get_mlkem_tpm2b_public_from_evp(publicKey, tpmPublic);
+        goto_if_error(r, "Get public for ML-KEM key.", cleanup);
+#endif
     } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong key_type", cleanup);
     }
@@ -1750,6 +2166,12 @@ ifapi_cert_to_pem(const uint8_t *certBuffer,
             *certAlgorithmId = TPM2_ALG_ECC;
             break;
         default:
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+            if (is_mldsa_key(publicKey)) {
+                *certAlgorithmId = TPM2_ALG_MLDSA;
+                break;
+            }
+#endif
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong certificate (key type).", cleanup);
         }
     }
@@ -1852,6 +2274,16 @@ ifapi_get_public_from_pem_cert(const char *pem_cert, TPM2B_PUBLIC *tpm_public) {
         tpm_public->publicArea.type = TPM2_ALG_ECC;
         r = get_ecc_tpm2b_public_from_evp(public_key, tpm_public);
         goto_if_error(r, "Get public for ECC key.", cleanup);
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+    } else if (is_mldsa_key(public_key)) {
+        tpm_public->publicArea.type = TPM2_ALG_MLDSA;
+        r = get_mldsa_tpm2b_public_from_evp(public_key, tpm_public);
+        goto_if_error(r, "Get public for ML-DSA key.", cleanup);
+    } else if (is_mlkem_key(public_key)) {
+        tpm_public->publicArea.type = TPM2_ALG_MLKEM;
+        r = get_mlkem_tpm2b_public_from_evp(public_key, tpm_public);
+        goto_if_error(r, "Get public for ML-KEM key.", cleanup);
+#endif
     } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong key_type", cleanup);
     }
@@ -1899,6 +2331,11 @@ ifapi_get_tpm_key_fingerprint(const TPM2B_PUBLIC *tpmPublicKey,
         r = ossl_rsa_pub_from_tpm(tpmPublicKey, &evpPublicKey);
     } else if (tpmPublicKey->publicArea.type == TPM2_ALG_ECC) {
         r = ossl_ecc_pub_from_tpm(tpmPublicKey, &evpPublicKey);
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+    } else if (tpmPublicKey->publicArea.type == TPM2_ALG_MLDSA
+               || tpmPublicKey->publicArea.type == TPM2_ALG_HASH_MLDSA) {
+        r = ossl_mldsa_pub_from_tpm(tpmPublicKey, &evpPublicKey);
+#endif
     } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid alg id.", cleanup);
     }
@@ -2217,10 +2654,10 @@ out:
 }
 
 TSS2_RC
-ifapi_openssl_load_private(const char *pem_key,
-                           const char *passin,
-                           const char *object_auth,
-                           TPM2B_PUBLIC *template,
+ifapi_openssl_load_private(const char      *pem_key,
+                           const char      *passin,
+                           const char      *object_auth,
+                           TPM2B_PUBLIC    *template,
                            TPM2B_PUBLIC    *pub,
                            TPM2B_SENSITIVE *priv) {
     *pub = *template;
@@ -2252,6 +2689,12 @@ ifapi_openssl_load_private(const char *pem_key,
     case TPM2_ALG_ECC:
         rc = load_ECC_key(key, pub, priv);
         break;
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        rc = load_MLDSA_key(key, pub, priv);
+        break;
+#endif
     default:
         LOG_ERROR("Cannot handle algorithm, got: 0x%x", template->publicArea.type);
         rc = TSS2_FAPI_RC_GENERAL_FAILURE;

@@ -411,6 +411,28 @@ TSS2_RC
 ifapi_json_TPMS_ECC_PARMS_serialize(const TPMS_ECC_PARMS *in, json_object **jso);
 
 TSS2_RC
+ifapi_json_TPMS_MLDSA_PARMS_serialize(const TPMS_MLDSA_PARMS *in, json_object **jso);
+
+TSS2_RC
+ifapi_json_TPMS_HASH_MLDSA_PARMS_serialize(const TPMS_HASH_MLDSA_PARMS *in, json_object **jso);
+
+TSS2_RC
+ifapi_json_TPMS_MLKEM_PARMS_serialize(const TPMS_MLKEM_PARMS *in, json_object **jso);
+
+TSS2_RC
+ifapi_json_TPM2B_PUBLIC_KEY_MLDSA_serialize(const TPM2B_PUBLIC_KEY_MLDSA *in, json_object **jso);
+
+TSS2_RC
+ifapi_json_TPM2B_PUBLIC_KEY_MLKEM_serialize(const TPM2B_PUBLIC_KEY_MLKEM *in, json_object **jso);
+
+TSS2_RC
+ifapi_json_TPM2B_SIGNATURE_MLDSA_serialize(const TPM2B_SIGNATURE_MLDSA *in, json_object **jso);
+
+TSS2_RC
+ifapi_json_TPMS_SIGNATURE_HASH_MLDSA_serialize(const TPMS_SIGNATURE_HASH_MLDSA *in,
+                                               json_object                    **jso);
+
+TSS2_RC
 ifapi_json_TPMU_PUBLIC_PARMS_serialize(const TPMU_PUBLIC_PARMS *in,
                                        UINT32                   selector,
                                        json_object            **jso);
