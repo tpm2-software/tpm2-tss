@@ -878,7 +878,7 @@ equal_policy_authorization(TPMS_POLICY *policy,
                            void        *publicVoid,
                            void        *policyRefVoid,
                            bool        *equal) {
-    TPMT_PUBLIC               *public = publicVoid;
+    TPMT_PUBLIC *public = publicVoid;
     TPM2B_NONCE               *policyRef = policyRefVoid;
     size_t                     i;
     TPML_POLICYAUTHORIZATIONS *authorizations = policy->policyAuthorizations;
