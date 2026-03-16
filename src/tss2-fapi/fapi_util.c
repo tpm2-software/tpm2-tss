@@ -964,9 +964,8 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle) {
                                pkey->nonce.size);
                     }
                     if ((public.publicArea.objectAttributes & TPMA_OBJECT_USERWITHAUTH))
-                        public.publicArea.unique.rsa.size = 0;
-                    else
-                        public.publicArea.unique.rsa.size = 256;
+                    public.publicArea.unique.rsa.size = 0;
+                    else public.publicArea.unique.rsa.size = 256;
                 } else if (public.publicArea.type == TPM2_ALG_ECC) {
                     if (pkey->nonce.size) {
                         memcpy(public.publicArea.unique.ecc.x.buffer, &pkey->nonce.buffer[0],
