@@ -2654,10 +2654,10 @@ out:
 }
 
 TSS2_RC
-ifapi_openssl_load_private(const char      *pem_key,
-                           const char      *passin,
-                           const char      *object_auth,
-                           TPM2B_PUBLIC    *template,
+ifapi_openssl_load_private(const char *pem_key,
+                           const char *passin,
+                           const char *object_auth,
+                           TPM2B_PUBLIC *template,
                            TPM2B_PUBLIC    *pub,
                            TPM2B_SENSITIVE *priv) {
     *pub = *template;
