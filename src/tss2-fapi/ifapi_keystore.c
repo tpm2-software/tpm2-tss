@@ -1522,6 +1522,8 @@ void
 ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE *duplicate) {
     if (duplicate != NULL) {
         SAFE_FREE(duplicate->certificate);
+        ifapi_cleanup_policy(duplicate->policy);
+        SAFE_FREE(duplicate->policy);
     }
 }
 
@@ -1570,7 +1572,12 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
     /* Initialize the object variables for a possible error cleanup */
 
     /* Create the copy */
-    dest->policy = ifapi_copy_policy(src->policy);
+    if (src->policy) {
+        dest->policy = ifapi_copy_policy(src->policy);
+        goto_if_null(dest->policy, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+    } else {
+        dest->policy = NULL;
+    }
     strdup_check(dest->rel_path, src->rel_path, r, error_cleanup);
 
     r = ifapi_copy_ifapi_key(&dest->misc.key, &src->misc.key);
@@ -1619,7 +1626,12 @@ ifapi_copy_ifapi_hierarchy_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
     }
 
     /* Create the copy */
-    dest->policy = ifapi_copy_policy(src->policy);
+    if (src->policy) {
+        dest->policy = ifapi_copy_policy(src->policy);
+        goto_if_null(dest->policy, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+    } else {
+        dest->policy = NULL;
+    }
     strdup_check(dest->rel_path, src->rel_path, r, error_cleanup);
 
     r = ifapi_copy_ifapi_hierarchy(&dest->misc.hierarchy, &src->misc.hierarchy);
