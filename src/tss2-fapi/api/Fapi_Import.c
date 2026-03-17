@@ -414,6 +414,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     IFAPI_OBJECT    *object = &command->object;
     IFAPI_DUPLICATE *keyTree = &object->misc.key_tree;
     ESYS_TR          auth_session;
+    char            *last_slash;
 
     switch (context->state) {
     statecase(context->state, IMPORT_WAIT_FOR_SESSION);
@@ -566,6 +567,22 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
         return_try_again(r);
         goto_if_error(r, "Search Key", error_cleanup);
 
+        size_t dir_len, parent_len;
+
+        last_slash = strrchr(command->out_path, '/');
+        if (last_slash != NULL) {
+            /* If a directory is used in the path of the imported object check
+               whether the directory matches the parent path */
+            dir_len = (size_t)(last_slash - command->out_path);
+            parent_len = strlen(command->parent_path);
+            if (dir_len > parent_len
+                || memcmp(command->parent_path + parent_len - dir_len, command->out_path, dir_len)
+                       != 0) {
+                goto_error(r, TSS2_FAPI_RC_BAD_PATH, "Directory '%s' has to be used as parent.",
+                           error_cleanup, command->parent_path);
+            }
+        }
+
         context->state = IMPORT_KEY_LOAD_PARENT;
 
         fallthrough;
@@ -598,11 +615,18 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
         try_again_or_error_goto(r, "Import", error_cleanup);
 
         if (!command->ossl_priv) {
+            char *base_name;
+            /* To determine base_name get last slash */
+            last_slash = strrchr(command->out_path, '/');
+            if (!last_slash) {
+                base_name = command->out_path;
+            } else {
+                base_name = last_slash + 1;
+            }
 
             /* Concatenate keyname and parent path */
             char *ipath = NULL;
-            r = ifapi_asprintf(&ipath, "%s%s%s", command->parent_path, IFAPI_FILE_DELIM,
-                               command->out_path);
+            r = ifapi_asprintf(&ipath, "%s%s%s", command->parent_path, IFAPI_FILE_DELIM, base_name);
             goto_if_error(r, "Out of memory.", error_cleanup);
 
             SAFE_FREE(command->out_path);

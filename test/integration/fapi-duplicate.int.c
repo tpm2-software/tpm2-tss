@@ -105,6 +105,16 @@ test_fapi_duplicate(FAPI_CONTEXT *context) {
     r = Fapi_Import(context, "importedKey", json_duplicate);
     goto_if_error(r, "Error Fapi_Import", error);
 
+    /* Check wrong parent path. */
+    r = Fapi_Import(context, "HS/SRK/importedKey2", json_duplicate);
+    if (r == TSS2_RC_SUCCESS) {
+        goto_if_error(r, "Wrong path not detected.", error);
+    }
+
+    /* Check whether path with correct parent can be use */
+    r = Fapi_Import(context, "HS/SRK/myCryptKey/importedKey2", json_duplicate);
+    goto_if_error(r, "Error Fapi_Import", error);
+
     fprintf(stderr, "Duplicate:\n%s\n", json_duplicate);
 
     r = Fapi_Delete(context, "/");
