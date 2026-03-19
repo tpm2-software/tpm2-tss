@@ -145,9 +145,9 @@ Esys_VerifySequenceComplete_Async(ESYS_CONTEXT         *esysContext,
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
     return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
-    if (keyHandleNode != NULL)
-        iesys_compute_session_value(esysContext->session_tab[0], &keyHandleNode->rsrc.name,
-                                    &keyHandleNode->auth);
+    if (sequenceHandleNode != NULL)
+        iesys_compute_session_value(esysContext->session_tab[0], &sequenceHandleNode->rsrc.name,
+                                    &sequenceHandleNode->auth);
     else
         iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
 
@@ -155,7 +155,7 @@ Esys_VerifySequenceComplete_Async(ESYS_CONTEXT         *esysContext,
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
 
     /* Generate the auth values and set them in the SAPI command buffer */
-    r = iesys_gen_auths(esysContext, keyHandleNode, NULL, NULL, &auths);
+    r = iesys_gen_auths(esysContext, sequenceHandleNode, NULL, NULL, &auths);
     return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;

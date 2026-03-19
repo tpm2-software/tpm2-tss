@@ -284,8 +284,8 @@ GetNumHandles(TPM2_CC commandCode, bool req) {
                                                     { TPM2_CC_VerifyDigestSignature, 1, 0 },
                                                     { TPM2_CC_SignSequenceStart, 1, 1 },
                                                     { TPM2_CC_VerifySequenceStart, 1, 1 },
-                                                    { TPM2_CC_SignSequenceComplete, 1, 0 },
-                                                    { TPM2_CC_VerifySequenceComplete, 1, 0 } };
+                                                    { TPM2_CC_SignSequenceComplete, 2, 0 },
+                                                    { TPM2_CC_VerifySequenceComplete, 2, 0 } };
 
     size_t i;
 

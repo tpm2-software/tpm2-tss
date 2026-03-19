@@ -1056,7 +1056,7 @@ iesys_cryptossl_mlkem_encapsulate(TPM2B_PUBLIC *pub_tpm_key,
 
     /* Load the ML-KEM public key from the TPM public area */
     params[0] = OSSL_PARAM_construct_octet_string(
-        "pub_key", (void *)pub_tpm_key->publicArea.unique.mlkem.buffer,
+        OSSL_PKEY_PARAM_PUB_KEY, (void *)pub_tpm_key->publicArea.unique.mlkem.buffer,
         pub_tpm_key->publicArea.unique.mlkem.size);
     params[1] = OSSL_PARAM_construct_end();
 

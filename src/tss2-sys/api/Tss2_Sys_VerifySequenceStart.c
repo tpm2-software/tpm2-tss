@@ -75,12 +75,12 @@ Tss2_Sys_VerifySequenceStart_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = CommonComplete(ctx);
+    rval
+        = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, sequenceHandle);
     if (rval)
         return rval;
 
-    return Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                    sequenceHandle);
+    return CommonComplete(ctx);
 }
 
 TSS2_RC
