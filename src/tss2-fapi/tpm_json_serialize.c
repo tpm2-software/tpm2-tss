@@ -3070,6 +3070,9 @@ ifapi_json_TPMU_SIG_SCHEME_serialize(const TPMU_SIG_SCHEME *in,
         return ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(&in->ecschnorr, jso);
     case TPM2_ALG_HMAC:
         return ifapi_json_TPMS_SCHEME_HMAC_serialize(&in->hmac, jso);
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        return ifapi_json_TPMS_SCHEME_HASH_serialize(&in->any, jso);
     default:
         LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -4139,12 +4142,14 @@ ifapi_json_TPMS_MLDSA_PARMS_serialize(const TPMS_MLDSA_PARMS *in, json_object **
     if (json_object_object_add(*jso, "parameterSet", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
-    jso2 = NULL;
-    r = ifapi_json_UINT16_serialize(in->allowExternalMu, &jso2);
-    return_if_error(r, "Serialize allowExternalMu");
+    if (in->allowExternalMu) {
+        jso2 = NULL;
+        r = ifapi_json_UINT16_serialize(in->allowExternalMu, &jso2);
+        return_if_error(r, "Serialize allowExternalMu");
 
-    if (json_object_object_add(*jso, "allowExternalMu", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        if (json_object_object_add(*jso, "allowExternalMu", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
     }
     return TSS2_RC_SUCCESS;
 }

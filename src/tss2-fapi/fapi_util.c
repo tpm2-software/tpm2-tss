@@ -3739,6 +3739,14 @@ ifapi_get_sig_scheme(FAPI_CONTEXT    *context,
             context->Key_Sign.scheme.scheme = TPM2_ALG_RSAPSS;
             context->Key_Sign.scheme.details.rsapss.hashAlg = hash_alg;
         }
+        if (strcasecmp("MLDSA", padding) == 0) {
+            context->Key_Sign.scheme.scheme = TPM2_ALG_MLDSA;
+            context->Key_Sign.scheme.details.any.hashAlg = hash_alg;
+        }
+        if (strcasecmp("HASH_MLDSA", padding) == 0) {
+            context->Key_Sign.scheme.scheme = TPM2_ALG_HASH_MLDSA;
+            context->Key_Sign.scheme.details.any.hashAlg = hash_alg;
+        }
         *sig_scheme = context->Key_Sign.scheme;
         return TSS2_RC_SUCCESS;
     } else {

@@ -311,6 +311,27 @@ TSS2_RC
 ifapi_json_TPMS_ECC_POINT_deserialize(json_object *jso, TPMS_ECC_POINT *out);
 
 TSS2_RC
+ifapi_json_TPM2B_PUBLIC_KEY_MLKEM_deserialize(json_object *jso, TPM2B_PUBLIC_KEY_MLKEM *out);
+
+TSS2_RC
+ifapi_json_TPM2B_PUBLIC_KEY_MLDSA_deserialize(json_object *jso, TPM2B_PUBLIC_KEY_MLDSA *out);
+
+TSS2_RC
+ifapi_json_TPM2B_SIGNATURE_MLDSA_deserialize(json_object *jso, TPM2B_SIGNATURE_MLDSA *out);
+
+TSS2_RC
+ifapi_json_TPMS_SIGNATURE_HASH_MLDSA_deserialize(json_object *jso, TPMS_SIGNATURE_HASH_MLDSA *out);
+
+TSS2_RC
+ifapi_json_TPMS_MLKEM_PARMS_deserialize(json_object *jso, TPMS_MLKEM_PARMS *out);
+
+TSS2_RC
+ifapi_json_TPMS_MLDSA_PARMS_deserialize(json_object *jso, TPMS_MLDSA_PARMS *out);
+
+TSS2_RC
+ifapi_json_TPMS_HASH_MLDSA_PARMS_deserialize(json_object *jso, TPMS_HASH_MLDSA_PARMS *out);
+
+TSS2_RC
 ifapi_json_TPMI_ALG_ECC_SCHEME_deserialize(json_object *jso, TPMI_ALG_ECC_SCHEME *out);
 
 TSS2_RC

@@ -142,6 +142,37 @@ hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor) {
             }
             break;
         }
+        case TPM2_ALG_MLDSA:
+        case TPM2_ALG_HASH_MLDSA: {
+            BYTE buf[4] = { 0x00, 0x00, 0x66, 0x66 };
+            is_success = EVP_DigestUpdate(sha256ctx, buf, sizeof(buf));
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.mldsa.buffer,
+                                          ek_public->publicArea.unique.mldsa.size);
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            break;
+        }
+        case TPM2_ALG_MLKEM: {
+            BYTE buf[4] = { 0x00, 0x00, 0x77, 0x77 };
+            is_success = EVP_DigestUpdate(sha256ctx, buf, sizeof(buf));
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.mlkem.buffer,
+                                          ek_public->publicArea.unique.mlkem.size);
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            break;
+        }
         default:
             LOG_ERROR("unsupported EK algorithm");
             goto err;
@@ -182,6 +213,25 @@ hash_ek_public(TPM2B_PUBLIC *ek_public, UINT32 vendor) {
             /* Add public key to the hash. */
             is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.ecc.y.buffer,
                                           ek_public->publicArea.unique.ecc.y.size);
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            break;
+
+        case TPM2_ALG_MLDSA:
+        case TPM2_ALG_HASH_MLDSA:
+            is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.mldsa.buffer,
+                                          ek_public->publicArea.unique.mldsa.size);
+            if (!is_success) {
+                LOG_ERROR("EVP_DigestUpdate failed");
+                goto err;
+            }
+            break;
+
+        case TPM2_ALG_MLKEM:
+            is_success = EVP_DigestUpdate(sha256ctx, ek_public->publicArea.unique.mlkem.buffer,
+                                          ek_public->publicArea.unique.mlkem.size);
             if (!is_success) {
                 LOG_ERROR("EVP_DigestUpdate failed");
                 goto err;

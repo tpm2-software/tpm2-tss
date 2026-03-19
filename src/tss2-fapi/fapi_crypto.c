@@ -19,6 +19,7 @@
 #include <openssl/objects.h>  // for OBJ_nid2sn, OBJ_txt2nid
 #include <openssl/opensslv.h> // for OPENSSL_VERSION_NUMBER
 #include <openssl/pem.h>      // for PEM_read_bio_PUBKEY, PEM_read_bio_P...
+#include <openssl/rand.h>     // for RAND_bytes
 #include <openssl/rsa.h>      // for EVP_PKEY_CTX_set_rsa_padding, EVP_P...
 #include <openssl/x509.h>     // for X509_free, X509_get_pubkey, d2i_X509
 #include <stdbool.h>          // for bool, false, true
@@ -33,6 +34,7 @@
 #include <openssl/params.h>      // for OSSL_PARAM_free
 #endif
 #include <openssl/err.h> // for ERR_print_errors_fp
+#include <openssl/kdf.h> // for EVP_PKEY_CTX_set_hkdf_md, EVP_PKEY_CTX_set1_hkdf_key
 
 #include "fapi_crypto.h"
 #include "fapi_int.h"     // for OSSL_FREE, HASH_UPDATE_BUFFER
@@ -990,6 +992,221 @@ error_cleanup:
     return r;
 }
 
+#define KEM_HYBRID_IV_SIZE  12
+#define KEM_HYBRID_TAG_SIZE 16
+#define KEM_HYBRID_KEY_SIZE 32 /* AES-256 */
+
+/**
+ * Derive an AES-256 key from a KEM shared secret using HKDF-SHA256.
+ *
+ * @param[in]  shared_secret The raw shared secret from KEM encapsulation
+ * @param[in]  shared_secret_size Size of shared_secret in bytes
+ * @param[out] derived_key Buffer of at least KEM_HYBRID_KEY_SIZE bytes
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE on crypto error
+ */
+static TSS2_RC
+kem_hkdf_derive_key(const uint8_t *shared_secret, size_t shared_secret_size, uint8_t *derived_key) {
+    TSS2_RC       r = TSS2_RC_SUCCESS;
+    EVP_PKEY_CTX *pctx = NULL;
+    size_t        outlen = KEM_HYBRID_KEY_SIZE;
+
+    pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_HKDF, NULL);
+    if (!pctx) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EVP_PKEY_CTX_new_id HKDF", cleanup);
+    }
+    if (EVP_PKEY_derive_init(pctx) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "HKDF derive_init", cleanup);
+    }
+    if (EVP_PKEY_CTX_set_hkdf_md(pctx, EVP_sha256()) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "HKDF set md", cleanup);
+    }
+    if (EVP_PKEY_CTX_set1_hkdf_key(pctx, shared_secret, (int)shared_secret_size) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "HKDF set key", cleanup);
+    }
+    if (EVP_PKEY_CTX_add1_hkdf_info(pctx, (const unsigned char *)"FAPI-KEM-HYBRID", 15) <= 0) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "HKDF set info", cleanup);
+    }
+    if (EVP_PKEY_derive(pctx, derived_key, &outlen) <= 0 || outlen != KEM_HYBRID_KEY_SIZE) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "HKDF derive", cleanup);
+    }
+cleanup:
+    OSSL_FREE(pctx, EVP_PKEY_CTX);
+    return r;
+}
+
+/**
+ * Perform AES-256-GCM encryption using a KEM shared secret.
+ *
+ * The shared secret is stretched via HKDF-SHA256 to derive an AES-256 key.
+ * A random 12-byte IV is generated.  Output layout:
+ *     IV (12 bytes) || GCM tag (16 bytes) || AES ciphertext
+ *
+ * @param[in]  shared_secret     Raw KEM shared secret
+ * @param[in]  shared_secret_size Size of shared_secret in bytes
+ * @param[in]  plainText         Data to encrypt
+ * @param[in]  plainTextSize     Size of plainText in bytes
+ * @param[out] cipherText        Callee-allocated output (IV + tag + ciphertext)
+ * @param[out] cipherTextSize    Size of cipherText in bytes
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_MEMORY on allocation failure
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE on crypto error
+ */
+TSS2_RC
+ifapi_kem_hybrid_encrypt(const uint8_t *shared_secret,
+                         size_t         shared_secret_size,
+                         const uint8_t *plainText,
+                         size_t         plainTextSize,
+                         uint8_t      **cipherText,
+                         size_t        *cipherTextSize) {
+    TSS2_RC         r = TSS2_RC_SUCCESS;
+    EVP_CIPHER_CTX *ctx = NULL;
+    uint8_t         aes_key[KEM_HYBRID_KEY_SIZE];
+    uint8_t         iv[KEM_HYBRID_IV_SIZE];
+    uint8_t         tag[KEM_HYBRID_TAG_SIZE];
+    uint8_t        *out = NULL;
+    int             outlen = 0, tmplen = 0;
+
+    /* Derive AES key from shared secret */
+    r = kem_hkdf_derive_key(shared_secret, shared_secret_size, aes_key);
+    goto_if_error(r, "HKDF key derivation", cleanup);
+
+    /* Generate random IV */
+    if (RAND_bytes(iv, KEM_HYBRID_IV_SIZE) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Generate random IV", cleanup);
+    }
+
+    /* Allocate output: IV + tag + ciphertext (same size as plaintext for GCM) */
+    size_t total = KEM_HYBRID_IV_SIZE + KEM_HYBRID_TAG_SIZE + plainTextSize;
+    out = malloc(total);
+    goto_if_null2(out, "Out of memory", r, TSS2_FAPI_RC_MEMORY, cleanup);
+
+    memcpy(out, iv, KEM_HYBRID_IV_SIZE);
+
+    ctx = EVP_CIPHER_CTX_new();
+    goto_if_null2(ctx, "EVP_CIPHER_CTX_new", r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+
+    if (EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EncryptInit_ex GCM", cleanup);
+    }
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, KEM_HYBRID_IV_SIZE, NULL) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Set GCM IV len", cleanup);
+    }
+    if (EVP_EncryptInit_ex(ctx, NULL, NULL, aes_key, iv) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EncryptInit_ex key+IV", cleanup);
+    }
+    if (EVP_EncryptUpdate(ctx, out + KEM_HYBRID_IV_SIZE + KEM_HYBRID_TAG_SIZE, &outlen, plainText,
+                          (int)plainTextSize)
+        != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EncryptUpdate", cleanup);
+    }
+    if (EVP_EncryptFinal_ex(ctx, out + KEM_HYBRID_IV_SIZE + KEM_HYBRID_TAG_SIZE + outlen, &tmplen)
+        != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EncryptFinal_ex", cleanup);
+    }
+    /* Get the GCM authentication tag */
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, KEM_HYBRID_TAG_SIZE, tag) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Get GCM tag", cleanup);
+    }
+    memcpy(out + KEM_HYBRID_IV_SIZE, tag, KEM_HYBRID_TAG_SIZE);
+
+    *cipherText = out;
+    *cipherTextSize = total;
+    out = NULL; /* prevent free */
+
+cleanup:
+    OPENSSL_cleanse(aes_key, sizeof(aes_key));
+    SAFE_FREE(out);
+    if (ctx)
+        EVP_CIPHER_CTX_free(ctx);
+    return r;
+}
+
+/**
+ * Perform AES-256-GCM decryption using a KEM shared secret.
+ *
+ * Expects input layout: IV (12 bytes) || GCM tag (16 bytes) || AES ciphertext
+ *
+ * @param[in]  shared_secret     Raw KEM shared secret
+ * @param[in]  shared_secret_size Size of shared_secret in bytes
+ * @param[in]  cipherText        The encrypted blob (IV + tag + ciphertext)
+ * @param[in]  cipherTextSize    Size of cipherText in bytes
+ * @param[out] plainText         Callee-allocated decrypted data
+ * @param[out] plainTextSize     Size of plainText in bytes
+ *
+ * @retval TSS2_RC_SUCCESS on success
+ * @retval TSS2_FAPI_RC_BAD_VALUE if ciphertext is too short
+ * @retval TSS2_FAPI_RC_MEMORY on allocation failure
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE on crypto error or authentication failure
+ */
+TSS2_RC
+ifapi_kem_hybrid_decrypt(const uint8_t *shared_secret,
+                         size_t         shared_secret_size,
+                         const uint8_t *cipherText,
+                         size_t         cipherTextSize,
+                         uint8_t      **plainText,
+                         size_t        *plainTextSize) {
+    TSS2_RC         r = TSS2_RC_SUCCESS;
+    EVP_CIPHER_CTX *ctx = NULL;
+    uint8_t         aes_key[KEM_HYBRID_KEY_SIZE];
+    uint8_t        *out = NULL;
+    int             outlen = 0, tmplen = 0;
+    size_t          header_size = KEM_HYBRID_IV_SIZE + KEM_HYBRID_TAG_SIZE;
+
+    if (cipherTextSize < header_size) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "KEM hybrid ciphertext too short (missing IV/tag).");
+    }
+
+    size_t         aes_ct_size = cipherTextSize - header_size;
+    const uint8_t *iv = cipherText;
+    const uint8_t *tag = cipherText + KEM_HYBRID_IV_SIZE;
+    const uint8_t *aes_ct = cipherText + header_size;
+
+    /* Derive AES key from shared secret */
+    r = kem_hkdf_derive_key(shared_secret, shared_secret_size, aes_key);
+    goto_if_error(r, "HKDF key derivation", cleanup);
+
+    out = malloc(aes_ct_size > 0 ? aes_ct_size : 1);
+    goto_if_null2(out, "Out of memory", r, TSS2_FAPI_RC_MEMORY, cleanup);
+
+    ctx = EVP_CIPHER_CTX_new();
+    goto_if_null2(ctx, "EVP_CIPHER_CTX_new", r, TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+
+    if (EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, NULL, NULL) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "DecryptInit_ex GCM", cleanup);
+    }
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, KEM_HYBRID_IV_SIZE, NULL) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Set GCM IV len", cleanup);
+    }
+    if (EVP_DecryptInit_ex(ctx, NULL, NULL, aes_key, iv) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "DecryptInit_ex key+IV", cleanup);
+    }
+    if (EVP_DecryptUpdate(ctx, out, &outlen, aes_ct, (int)aes_ct_size) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "DecryptUpdate", cleanup);
+    }
+    /* Set the expected GCM tag before finalizing */
+    if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, KEM_HYBRID_TAG_SIZE, (void *)tag) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Set GCM tag", cleanup);
+    }
+    if (EVP_DecryptFinal_ex(ctx, out + outlen, &tmplen) != 1) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
+                   "GCM authentication failed — ciphertext may be corrupted", cleanup);
+    }
+
+    *plainText = out;
+    *plainTextSize = (size_t)(outlen + tmplen);
+    out = NULL; /* prevent free */
+
+cleanup:
+    OPENSSL_cleanse(aes_key, sizeof(aes_key));
+    SAFE_FREE(out);
+    if (ctx)
+        EVP_CIPHER_CTX_free(ctx);
+    return r;
+}
+
 /**
  * Convert a TPM public key into a PEM formatted byte buffer. This can be
  * used by TLS libraries.
@@ -1737,6 +1954,14 @@ ifapi_verify_signature_quote(const IFAPI_OBJECT    *keyObject,
     publicKey = PEM_read_bio_PUBKEY(bufio, NULL, NULL, NULL);
     goto_if_null(publicKey, "PEM format could not be decoded.", TSS2_FAPI_RC_BAD_VALUE,
                  error_cleanup);
+
+#if OPENSSL_VERSION_NUMBER >= 0x30500000L
+    /* ML-DSA uses one-shot verification — bypass the hash-update flow */
+    if (is_mldsa_key(publicKey)) {
+        r = mldsa_verify_signature(publicKey, signature, signatureSize, digest, digestSize);
+        goto error_cleanup;
+    }
+#endif
 
     /* Create the hash engine */
     if (!(mdctx = EVP_MD_CTX_create())) {

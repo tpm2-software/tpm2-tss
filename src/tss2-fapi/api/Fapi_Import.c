@@ -433,6 +433,10 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
         if (object->misc.key.public.publicArea.type == TPM2_ALG_RSA)
             object->misc.key.signing_scheme = context->profiles.default_profile.rsa_signing_scheme;
+        else if (object->misc.key.public.publicArea.type == TPM2_ALG_MLDSA
+                 || object->misc.key.public.publicArea.type == TPM2_ALG_HASH_MLDSA)
+            object->misc.key.signing_scheme
+                = context->profiles.default_profile.mldsa_signing_scheme;
         else
             object->misc.key.signing_scheme = context->profiles.default_profile.ecc_signing_scheme;
 

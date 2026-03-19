@@ -2948,6 +2948,9 @@ ifapi_json_TPMU_SIG_SCHEME_deserialize(UINT32 selector, json_object *jso, TPMU_S
         return ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_deserialize(jso, &out->ecschnorr);
     case TPM2_ALG_HMAC:
         return ifapi_json_TPMS_SCHEME_HMAC_deserialize(jso, &out->hmac);
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        return ifapi_json_TPMS_SCHEME_HASH_deserialize(jso, &out->any);
 
     case TPM2_ALG_NULL: {
         return TSS2_RC_SUCCESS;

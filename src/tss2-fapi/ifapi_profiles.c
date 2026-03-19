@@ -382,6 +382,13 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
         return_if_error(r, "Bad value for field \"mldsa_signing_scheme\".");
     }
 
+    if (!ifapi_get_sub_object(jso, "mldsa_signing_scheme", &jso2)) {
+        memset(&out->mldsa_signing_scheme, 0, sizeof(TPMT_SIG_SCHEME));
+    } else {
+        r = ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->mldsa_signing_scheme);
+        return_if_error(r, "Bad value for field \"mldsa_signing_scheme\".");
+    }
+
     if (!ifapi_get_sub_object(jso, "rsa_decrypt_scheme", &jso2)) {
         memset(&out->rsa_decrypt_scheme, 0, sizeof(TPMT_RSA_DECRYPT));
     } else {

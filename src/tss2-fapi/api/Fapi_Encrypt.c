@@ -12,6 +12,8 @@
 #include <stdlib.h>   // for malloc, size_t, NULL
 #include <string.h>   // for strncmp, memcpy, memset
 
+#include <openssl/crypto.h> // for OPENSSL_cleanse
+
 #include "fapi_int.h"        // for IFAPI_Data_EncryptDecrypt, FAPI_CONTEXT
 #include "fapi_util.h"       // for ifapi_allocate_object, ifapi_cleanup_se...
 #include "ifapi_io.h"        // for ifapi_io_poll
@@ -271,6 +273,11 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
     IFAPI_Data_EncryptDecrypt *command = &context->cmd.Data_EncryptDecrypt;
     TPM2B_PUBLIC *public;
     TPM2B_PUBLIC_KEY_RSA *tpmCipherText = NULL;
+    TPM2B_KEM_CIPHERTEXT *kemCipherText = NULL;
+    TPM2B_SHARED_SECRET  *sharedSecret = NULL;
+    uint8_t              *aesBlob = NULL;
+    size_t                aesBlobSize = 0;
+    size_t                totalSize;
 
     switch (context->state) {
     statecase(context->state, DATA_ENCRYPT_WAIT_FOR_PROFILE);
@@ -343,6 +350,19 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
         } else if (public->publicArea.type == TPM2_ALG_ECC) {
             goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED, "ECC Encryption not yet supported",
                        error_cleanup);
+        } else if (public->publicArea.type == TPM2_ALG_MLKEM) {
+            /* ML-KEM hybrid encrypt: encapsulate to get shared secret, then AES-GCM */
+            r = Esys_Encapsulate_Async(context->esys, command->key_handle, ESYS_TR_NONE,
+                                       ESYS_TR_NONE, ESYS_TR_NONE);
+            goto_if_error(r, "Error esys encapsulate", error_cleanup);
+
+            context->state = DATA_ENCRYPT_WAIT_FOR_KEM_ENCAPSULATION;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        } else if (public->publicArea.type == TPM2_ALG_MLDSA
+                   || public->publicArea.type == TPM2_ALG_HASH_MLDSA) {
+            goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED,
+                       "ML-DSA keys are signing-only; cannot be used for encryption",
+                       error_cleanup);
         } else {
             goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED, "Unsupported algorithm (%" PRIu16 ")",
                        error_cleanup, public->publicArea.type);
@@ -376,6 +396,47 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
             goto_if_error(r, "Error: FlushContext", error_cleanup);
         }
         fallthrough;
+
+    statecase(context->state, DATA_ENCRYPT_WAIT_FOR_KEM_ENCAPSULATION);
+        {
+            r = Esys_Encapsulate_Finish(context->esys, &kemCipherText, &sharedSecret);
+            return_try_again(r);
+            goto_if_error_reset_state(r, "KEM encapsulation.", error_cleanup);
+
+            r = ifapi_kem_hybrid_encrypt(sharedSecret->buffer, sharedSecret->size, command->in_data,
+                                         command->in_dataSize, &aesBlob, &aesBlobSize);
+            OPENSSL_cleanse(sharedSecret->buffer, sharedSecret->size);
+            Esys_Free(sharedSecret);
+            if (r != TSS2_RC_SUCCESS) {
+                Esys_Free(kemCipherText);
+                goto_error(r, r, "KEM hybrid AES-GCM encrypt", error_cleanup);
+            }
+
+            /* Build output: 2-byte KEM CT length || KEM CT || AES blob */
+            totalSize = 2 + kemCipherText->size + aesBlobSize;
+            command->cipherText = malloc(totalSize);
+            if (!command->cipherText) {
+                Esys_Free(kemCipherText);
+                SAFE_FREE(aesBlob);
+                goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
+            }
+            /* Store KEM ciphertext length as big-endian 16-bit */
+            command->cipherText[0] = (uint8_t)(kemCipherText->size >> 8);
+            command->cipherText[1] = (uint8_t)(kemCipherText->size & 0xFF);
+            memcpy(command->cipherText + 2, kemCipherText->buffer, kemCipherText->size);
+            memcpy(command->cipherText + 2 + kemCipherText->size, aesBlob, aesBlobSize);
+            command->cipherTextSize = totalSize;
+
+            Esys_Free(kemCipherText);
+            SAFE_FREE(aesBlob);
+
+            /* Flush the key from the TPM. */
+            if (!command->key_object->misc.key.persistent_handle) {
+                r = Esys_FlushContext_Async(context->esys, command->key_handle);
+                goto_if_error(r, "Error: FlushContext", error_cleanup);
+            }
+            fallthrough;
+        }
 
     statecase(context->state, DATA_ENCRYPT_WAIT_FOR_FLUSH);
         if (strncmp(command->keyPath, "/ext", 4) == 0
