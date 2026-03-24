@@ -277,7 +277,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
     TPM2B_SHARED_SECRET  *sharedSecret = NULL;
     uint8_t              *aesBlob = NULL;
     size_t                aesBlobSize = 0;
-    size_t                totalSize;
+    size_t                totalSize = 0;
 
     switch (context->state) {
     statecase(context->state, DATA_ENCRYPT_WAIT_FOR_PROFILE);

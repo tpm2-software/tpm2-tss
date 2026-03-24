@@ -1063,11 +1063,12 @@ ifapi_kem_hybrid_encrypt(const uint8_t *shared_secret,
                          size_t        *cipherTextSize) {
     TSS2_RC         r = TSS2_RC_SUCCESS;
     EVP_CIPHER_CTX *ctx = NULL;
-    uint8_t         aes_key[KEM_HYBRID_KEY_SIZE];
-    uint8_t         iv[KEM_HYBRID_IV_SIZE];
-    uint8_t         tag[KEM_HYBRID_TAG_SIZE];
+    uint8_t         aes_key[KEM_HYBRID_KEY_SIZE] = { 0 };
+    uint8_t         iv[KEM_HYBRID_IV_SIZE] = { 0 };
+    uint8_t         tag[KEM_HYBRID_TAG_SIZE] = { 0 };
     uint8_t        *out = NULL;
     int             outlen = 0, tmplen = 0;
+    size_t          total = KEM_HYBRID_IV_SIZE + KEM_HYBRID_TAG_SIZE + plainTextSize;
 
     /* Derive AES key from shared secret */
     r = kem_hkdf_derive_key(shared_secret, shared_secret_size, aes_key);
@@ -1078,8 +1079,7 @@ ifapi_kem_hybrid_encrypt(const uint8_t *shared_secret,
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Generate random IV", cleanup);
     }
 
-    /* Allocate output: IV + tag + ciphertext (same size as plaintext for GCM) */
-    size_t total = KEM_HYBRID_IV_SIZE + KEM_HYBRID_TAG_SIZE + plainTextSize;
+    /* Allocate output: IV + tag + ciphertext */
     out = malloc(total);
     goto_if_null2(out, "Out of memory", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
@@ -1150,19 +1150,23 @@ ifapi_kem_hybrid_decrypt(const uint8_t *shared_secret,
                          size_t        *plainTextSize) {
     TSS2_RC         r = TSS2_RC_SUCCESS;
     EVP_CIPHER_CTX *ctx = NULL;
-    uint8_t         aes_key[KEM_HYBRID_KEY_SIZE];
+    uint8_t         aes_key[KEM_HYBRID_KEY_SIZE] = { 0 };
     uint8_t        *out = NULL;
     int             outlen = 0, tmplen = 0;
     size_t          header_size = KEM_HYBRID_IV_SIZE + KEM_HYBRID_TAG_SIZE;
+    size_t          aes_ct_size = 0;
+    const uint8_t  *iv = NULL;
+    const uint8_t  *tag = NULL;
+    const uint8_t  *aes_ct = NULL;
 
     if (cipherTextSize < header_size) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "KEM hybrid ciphertext too short (missing IV/tag).");
     }
 
-    size_t         aes_ct_size = cipherTextSize - header_size;
-    const uint8_t *iv = cipherText;
-    const uint8_t *tag = cipherText + KEM_HYBRID_IV_SIZE;
-    const uint8_t *aes_ct = cipherText + header_size;
+    aes_ct_size = cipherTextSize - header_size;
+    iv = cipherText;
+    tag = cipherText + KEM_HYBRID_IV_SIZE;
+    aes_ct = cipherText + header_size;
 
     /* Derive AES key from shared secret */
     r = kem_hkdf_derive_key(shared_secret, shared_secret_size, aes_key);
@@ -1192,7 +1196,7 @@ ifapi_kem_hybrid_decrypt(const uint8_t *shared_secret,
     }
     if (EVP_DecryptFinal_ex(ctx, out + outlen, &tmplen) != 1) {
         goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE,
-                   "GCM authentication failed — ciphertext may be corrupted", cleanup);
+                   "GCM authentication failed - ciphertext may be corrupted", cleanup);
     }
 
     *plainText = out;
@@ -1956,7 +1960,7 @@ ifapi_verify_signature_quote(const IFAPI_OBJECT    *keyObject,
                  error_cleanup);
 
 #if OPENSSL_VERSION_NUMBER >= 0x30500000L
-    /* ML-DSA uses one-shot verification — bypass the hash-update flow */
+    /* ML-DSA uses one-shot verification - bypass the hash-update flow */
     if (is_mldsa_key(publicKey)) {
         r = mldsa_verify_signature(publicKey, signature, signatureSize, digest, digestSize);
         goto error_cleanup;

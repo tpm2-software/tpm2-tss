@@ -253,11 +253,11 @@ Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTex
 
     TSS2_RC               r;
     TPM2B_PUBLIC_KEY_RSA *tpmPlainText = NULL;
-    uint16_t              kemCtSize;
-    TPM2B_KEM_CIPHERTEXT  kemCt;
+    uint16_t              kemCtSize = 0;
+    TPM2B_KEM_CIPHERTEXT  kemCt = { 0 };
     TPM2B_SHARED_SECRET  *sharedSecret = NULL;
-    const uint8_t        *aesBlob;
-    size_t                aesBlobSize;
+    const uint8_t        *aesBlob = NULL;
+    size_t                aesBlobSize = 0;
 
     /* Check for NULL parameters */
     check_not_null(context);
