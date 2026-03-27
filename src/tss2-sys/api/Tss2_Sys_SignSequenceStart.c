@@ -22,7 +22,7 @@ Tss2_Sys_SignSequenceStart_Prepare(TSS2_SYS_CONTEXT          *sysContext,
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC                rval;
 
-    if (!ctx || !context)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     rval = CommonPreparePrologue(ctx, TPM2_CC_SignSequenceStart);
@@ -43,8 +43,12 @@ Tss2_Sys_SignSequenceStart_Prepare(TSS2_SYS_CONTEXT          *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_SIGNATURE_CTX_Marshal(context, ctx->cmdBuffer, ctx->maxCmdSize,
-                                               &ctx->nextData);
+    if (!context) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
+    } else {
+        rval = Tss2_MU_TPM2B_SIGNATURE_CTX_Marshal(context, ctx->cmdBuffer, ctx->maxCmdSize,
+                                                   &ctx->nextData);
+    }
     if (rval)
         return rval;
 

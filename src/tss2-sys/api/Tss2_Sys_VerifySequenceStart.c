@@ -23,7 +23,7 @@ Tss2_Sys_VerifySequenceStart_Prepare(TSS2_SYS_CONTEXT           *sysContext,
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC                rval;
 
-    if (!ctx || !context)
+    if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     rval = CommonPreparePrologue(ctx, TPM2_CC_VerifySequenceStart);
@@ -54,8 +54,12 @@ Tss2_Sys_VerifySequenceStart_Prepare(TSS2_SYS_CONTEXT           *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_SIGNATURE_CTX_Marshal(context, ctx->cmdBuffer, ctx->maxCmdSize,
-                                               &ctx->nextData);
+    if (!context) {
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
+    } else {
+        rval = Tss2_MU_TPM2B_SIGNATURE_CTX_Marshal(context, ctx->cmdBuffer, ctx->maxCmdSize,
+                                                   &ctx->nextData);
+    }
     if (rval)
         return rval;
 
@@ -94,9 +98,6 @@ Tss2_Sys_VerifySequenceStart(TSS2_SYS_CONTEXT             *sysContext,
                              TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC                rval;
-
-    if (!context)
-        return TSS2_SYS_RC_BAD_REFERENCE;
 
     rval = Tss2_Sys_VerifySequenceStart_Prepare(sysContext, keyHandle, auth, hint, context);
     if (rval)

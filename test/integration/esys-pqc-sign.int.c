@@ -141,9 +141,9 @@ test_esys_pqc_sign(ESYS_CONTEXT *esys_context) {
                             &data2);
     goto_if_error(r, "Error: SequenceUpdate (verify, data2)", error);
 
-    /* VerifySequenceComplete: sh1 = seqHandle auth, sh2 = keyHandle auth */
+    /* VerifySequenceComplete: sh1 = seqHandle auth, keyHandle has no auth */
     r = Esys_VerifySequenceComplete(esys_context, verify_seq, mldsa_handle, ESYS_TR_PASSWORD,
-                                    ESYS_TR_PASSWORD, ESYS_TR_NONE, signature, &validation);
+                                    ESYS_TR_NONE, ESYS_TR_NONE, signature, &validation);
     goto_if_error(r, "Error: VerifySequenceComplete", error);
     verify_seq = ESYS_TR_NONE; /* consumed by Complete */
 
