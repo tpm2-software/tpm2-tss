@@ -141,24 +141,8 @@ ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
-    if (fseek(io->stream, 0L, SEEK_END) == -1) {
-        LOG_ERROR("fseek failed for \"%s\".", filename);
-        fclose(io->stream);
-        return TSS2_FAPI_RC_IO_ERROR;
-    };
-    long length = ftell(io->stream);
-    if (length == -1 || length == LONG_MAX) {
-        LOG_ERROR("ftell failed for \"%s\".", filename);
-        fclose(io->stream);
-        return TSS2_FAPI_RC_IO_ERROR;
-    };
-    fclose(io->stream);
+    long length = statbuf.st_size;
 
-    io->stream = fopen(filename, "rt");
-    if (io->stream == NULL) {
-        LOG_ERROR("Open file \"%s\": %s", filename, strerror(errno));
-        return TSS2_FAPI_RC_IO_ERROR;
-    }
     io->char_rbuffer = malloc(length + 1);
     if (io->char_rbuffer == NULL) {
         fclose(io->stream);
