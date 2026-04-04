@@ -110,18 +110,24 @@ ifapi_profiles_initialize_async(IFAPI_PROFILES *profiles,
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 #ifdef HAVE_REALLOCARRAY
-    profiles->profiles
+    IFAPI_PROFILE_ENTRY *new_profiles
         = reallocarray(profiles->profiles, profiles->num_profiles, sizeof(profiles->profiles[0]));
-    profiles->filenames = (char **)reallocarray((void *)profiles->filenames, profiles->num_profiles,
-                                                sizeof(profiles->filenames[0]));
+    char **new_filenames = (char **)reallocarray(
+        (void *)profiles->filenames, profiles->num_profiles, sizeof(profiles->filenames[0]));
 #else  /* HAVE_REALLOCARRAY */
-    profiles->profiles
+    IFAPI_PROFILE_ENTRY *new_profiles
         = realloc(profiles->profiles, profiles->num_profiles * sizeof(profiles->profiles[0]));
-    profiles->filenames = (char **)realloc((void *)profiles->filenames,
-                                           profiles->num_profiles * sizeof(profiles->filenames[0]));
+    char **new_filenames = (char **)realloc(
+        (void *)profiles->filenames, profiles->num_profiles * sizeof(profiles->filenames[0]));
 #endif /* HAVE_REALLOCARRAY */
-    /* No need for OOM checks, since num_profiles may only have become smaller */
-
+    if (!new_profiles || !new_filenames) {
+        LOG_ERROR("Out of memory.");
+        free(new_profiles);
+        free((void *)new_filenames);
+        return TSS2_FAPI_RC_MEMORY;
+    }
+    profiles->profiles = new_profiles;
+    profiles->filenames = new_filenames;
     r = ifapi_io_read_async(io, profiles->filenames[profiles->profiles_idx]);
     return_if_error2(r, "Reading profile %s", profiles->filenames[profiles->profiles_idx]);
 
