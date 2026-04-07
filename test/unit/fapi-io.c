@@ -189,10 +189,7 @@ check_io_read_async(void **state) {
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
     will_return(__wrap_fopen, MOCK_STREAM);
-    will_return(__wrap_fopen, MOCK_STREAM);
     will_return(__wrap_fcntl, 0);
-    will_return(__wrap_fseek, 0);
-    will_return(__wrap_ftell, 1);
     will_return(__wrap_malloc, NULL);
     errno = 0;
     io.char_buffer = NULL;
@@ -204,10 +201,7 @@ check_io_read_async(void **state) {
     wrap_malloc_test = false;
 
     will_return(__wrap_fopen, MOCK_STREAM);
-    will_return(__wrap_fopen, MOCK_STREAM);
     will_return(__wrap_fcntl, 0);
-    will_return(__wrap_fseek, 0);
-    will_return(__wrap_ftell, 1);
     will_return(__wrap_fcntl, 0);
     will_return(__wrap_fcntl, -1);
 
