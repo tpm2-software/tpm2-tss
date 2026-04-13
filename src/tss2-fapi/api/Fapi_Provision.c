@@ -32,7 +32,7 @@
 #include "tss2_policy.h"             // for TSS2_OBJECT
 #include "tss2_tcti.h"               // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"         // for TPMS_CAPABILITY_DATA, TPMU_CAPABILITIES
-
+#include "util/aux_util.h"           // for UNUSED, secure_mem_zero
 #define LOGMODULE fapi
 #include "util/log.h" // for goto_if_error, SAFE_FREE, goto_error
 
@@ -1632,8 +1632,11 @@ error_cleanup:
     ifapi_primary_clean(context);
     SAFE_FREE(command->root_crt);
     SAFE_FREE(*capabilityData);
+    secure_char_zero(command->authValueLockout);
     SAFE_FREE(command->authValueLockout);
+    secure_char_zero(command->authValueLockout);
     SAFE_FREE(command->authValueEh);
+    secure_char_zero(command->authValueLockout);
     SAFE_FREE(command->authValueSh);
     SAFE_FREE(command->pem_cert);
     SAFE_FREE(certData);

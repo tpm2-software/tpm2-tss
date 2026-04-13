@@ -4,6 +4,7 @@
  * All rights reserved.
  ******************************************************************************/
 
+#include "util/aux_util.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
@@ -212,6 +213,7 @@ Fapi_ChangeAuth_Async(FAPI_CONTEXT *context, char const *entityPath, char const 
 error_cleanup:
     /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->entityPath);
+    secure_char_zero((void *)command->authValue);
     SAFE_FREE(command->authValue);
     return r;
 }
@@ -580,6 +582,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(command->key_object);
     SAFE_FREE(command->entityPath);
+    secure_char_zero((void *)command->authValue);
     SAFE_FREE(command->authValue);
     if (command->pathlist) {
         for (size_t i = 0; i < command->numPathsCleanup; i++) {
@@ -587,6 +590,7 @@ error_cleanup:
         }
         SAFE_FREE(command->pathlist);
     }
+    secure_mem_zero((void *)&command->newAuthValue, sizeof(TPM2B_AUTH));
     LOG_TRACE("finished");
     context->state = FAPI_STATE_INIT;
     return r;
