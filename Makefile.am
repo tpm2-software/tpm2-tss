@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2015 - 2018 Intel Corporation
 # Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
+# Copyright (c) 2026 Fraunhofer SIT
 # All rights reserved.
 
 -include $(top_srcdir)/git.mk
@@ -816,7 +817,9 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_pcr16_read.json \
     test/data/fapi/policy/pol_action.json \
     test/data/fapi/policy/pol_cphash.json \
+    test/data/fapi/policy/pol_or_authorize_nv.json \
     test/data/fapi/policy/pol_or_read_write_secret.json \
+    test/data/fapi/policy/pol_or_or_secret.json \
     test/data/fapi/policy/pol_ek_high_range_sha256.json \
     test/data/fapi/policy/pol_ek_high_range_sha384.json \
     test/data/fapi/P_ECC_sh_eh_policy_sha384.json \

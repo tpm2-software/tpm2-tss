@@ -407,6 +407,10 @@ encode_ek_public(unsigned char *hash, UINT32 vendor) {
         return base64_encode(hash);
     } else {
         char *hash_str = malloc(AMD_EK_URI_LEN * 2 + NULL_TERM_LEN);
+        if (!hash_str) {
+            LOG_ERROR("oom");
+            return NULL;
+        }
         for (size_t i = 0; i < AMD_EK_URI_LEN; i++) {
             sprintf((char *)(hash_str + (i * 2)), "%02x", hash[i]);
         }

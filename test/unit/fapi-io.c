@@ -64,6 +64,24 @@ __wrap_fopen(const char *pathname, const char *mode, ...) {
     return mock_ptr_type(FILE *);
 }
 
+int __real_open(const char *pathname, int flags, ...);
+int
+__wrap_open(const char *pathname, int flags, ...) {
+    if (strcmp(pathname, "tss_unit_dummyf") != 0) {
+        return __real_open(pathname, flags);
+    }
+    return mock_type(int);
+}
+
+FILE *__real_fdopen(int fd, const char *mode, ...);
+FILE *
+__wrap_fdopen(int fd, const char *mode, ...) {
+    if (fd != 0) {
+        return __real_fdopen(fd, mode);
+    }
+    return mock_ptr_type(FILE *);
+}
+
 int __real_fclose(FILE *stream, ...);
 
 int
@@ -171,10 +189,7 @@ check_io_read_async(void **state) {
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
     will_return(__wrap_fopen, MOCK_STREAM);
-    will_return(__wrap_fopen, MOCK_STREAM);
     will_return(__wrap_fcntl, 0);
-    will_return(__wrap_fseek, 0);
-    will_return(__wrap_ftell, 1);
     will_return(__wrap_malloc, NULL);
     errno = 0;
     io.char_buffer = NULL;
@@ -186,10 +201,7 @@ check_io_read_async(void **state) {
     wrap_malloc_test = false;
 
     will_return(__wrap_fopen, MOCK_STREAM);
-    will_return(__wrap_fopen, MOCK_STREAM);
     will_return(__wrap_fcntl, 0);
-    will_return(__wrap_fseek, 0);
-    will_return(__wrap_ftell, 1);
     will_return(__wrap_fcntl, 0);
     will_return(__wrap_fcntl, -1);
 
@@ -276,12 +288,13 @@ check_io_write_async(void **state) {
 
     wrap_malloc_test = false;
 
-    will_return(__wrap_fopen, NULL);
+    will_return(__wrap_open, -1);
     r = ifapi_io_write_async(&io, "tss_unit_dummyf", &buffer[0], 5);
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
     wrap_fcntl_test = true;
-    will_return(__wrap_fopen, MOCK_STREAM);
+    will_return(__wrap_open, 0);
+    will_return(__wrap_fdopen, MOCK_STREAM);
     will_return(__wrap_fcntl, -1);
 
     errno = EAGAIN;
@@ -289,7 +302,8 @@ check_io_write_async(void **state) {
     assert_int_equal(r, TSS2_FAPI_RC_IO_ERROR);
 
     io.char_rbuffer = NULL;
-    will_return(__wrap_fopen, MOCK_STREAM);
+    will_return(__wrap_open, 0);
+    will_return(__wrap_fdopen, MOCK_STREAM);
     will_return(__wrap_fcntl, 0);
     will_return(__wrap_fcntl, 0);
     will_return(__wrap_fcntl, -1);

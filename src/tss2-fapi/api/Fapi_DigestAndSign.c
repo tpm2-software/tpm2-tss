@@ -29,7 +29,7 @@
 #define LOGMODULE fapi
 #include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
 
-/** One-Call function for Fapi_Sign
+/** One-Call function for Fapi_DigestAndSign
  *
  * Uses a key, identified by its path, to sign a digest and puts the result in a
  * TPM2B bytestream.
@@ -38,8 +38,8 @@
  * @param[in] keyPath The path of the signature key
  * @param[in] padding A padding algorithm. Must be either "RSA_SSA" or
  *            "RSA_PSS" or NULL
- * @param[in] digest The digest to sign. Must be already hashed
- * @param[in] digestSize The size of the digest in bytes
+ * @param[in] data The data for which the digest is calculated and signed.
+ * @param[in] dataSize The size of the data in bytes
  * @param[out] signature The signature
  * @param[out] signatureSize The size of signature in bytes. May be NULL
  * @param[out] publicKey The public key that can be used to verify signature
@@ -78,15 +78,15 @@
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_Sign(FAPI_CONTEXT  *context,
-          char const    *keyPath,
-          char const    *padding,
-          uint8_t const *digest,
-          size_t         digestSize,
-          uint8_t      **signature,
-          size_t        *signatureSize,
-          char         **publicKey,
-          char         **certificate) {
+Fapi_DigestAndSign(FAPI_CONTEXT  *context,
+                   char const    *keyPath,
+                   char const    *padding,
+                   uint8_t const *digest,
+                   size_t         digestSize,
+                   uint8_t      **signature,
+                   size_t        *signatureSize,
+                   char         **publicKey,
+                   char         **certificate) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -111,7 +111,7 @@ Fapi_Sign(FAPI_CONTEXT  *context,
     return_if_error_reset_state(r, "Set Timeout to blocking");
 #endif /* TEST_FAPI_ASYNC */
 
-    r = Fapi_Sign_Async(context, keyPath, padding, digest, digestSize);
+    r = Fapi_DigestAndSign_Async(context, keyPath, padding, digest, digestSize);
     return_if_error_reset_state(r, "Key_Sign");
 
     do {
@@ -122,7 +122,7 @@ Fapi_Sign(FAPI_CONTEXT  *context,
 
         /* Repeatedly call the finish function, until FAPI has transitioned
            through all execution stages / states of this invocation. */
-        r = Fapi_Sign_Finish(context, signature, signatureSize, publicKey, certificate);
+        r = Fapi_DigestAndSign_Finish(context, signature, signatureSize, publicKey, certificate);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Reset the ESYS timeout to non-blocking, immediate response. */
@@ -135,19 +135,20 @@ Fapi_Sign(FAPI_CONTEXT  *context,
     return TSS2_RC_SUCCESS;
 }
 
-/** Asynchronous function for Fapi_Sign
+/** Asynchronous function for Fapi_DigestAndSign
  *
  * Uses a key, identified by its path, to sign a digest and puts the result in a
  * TPM2B bytestream.
  *
- * Call Fapi_Sign_Finish to finish the execution of this command.
+ * Call Fapi_DigestAndSign_Finish to finish the execution of this command.
  *
  * @param[in,out] context The FAPI_CONTEXT
  * @param[in] keyPath The path of the signature key
  * @param[in] padding A padding algorithm. Must be either "RSA_SSA" or
  *            "RSA_PSS" or NULL
- * @param[in] digest The digest to sign. Must be already hashed
- * @param[in] digestSize The size of the digest in bytes
+ * @param[in] data The data for which the digest is calculated and signed.
+ *            The nameAlg of the key will be used to compute the hash.
+ * @param[in] dataSize The size of the data in bytes
  *
  * @retval TSS2_RC_SUCCESS: if the function call was a success.
  * @retval TSS2_FAPI_RC_BAD_REFERENCE: if context, keyPath or digest
@@ -166,18 +167,18 @@ Fapi_Sign(FAPI_CONTEXT  *context,
  *         config file.
  */
 TSS2_RC
-Fapi_Sign_Async(FAPI_CONTEXT  *context,
-                char const    *keyPath,
-                char const    *padding,
-                uint8_t const *digest,
-                size_t         digestSize) {
+Fapi_DigestAndSign_Async(FAPI_CONTEXT  *context,
+                         char const    *keyPath,
+                         char const    *padding,
+                         uint8_t const *data,
+                         size_t         dataSize) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("keyPath: %s", keyPath);
     LOG_TRACE("padding: %s", padding);
-    if (digest) {
-        LOGBLOB_TRACE(digest, digestSize, "digest");
+    if (data) {
+        LOGBLOB_TRACE(data, dataSize, "digest");
     } else {
-        LOG_TRACE("digest: (null) digestSize: %zi", digestSize);
+        LOG_TRACE("digest: (null) digestSize: %zi", dataSize);
     }
 
     TSS2_RC r;
@@ -185,7 +186,7 @@ Fapi_Sign_Async(FAPI_CONTEXT  *context,
     /* Check for NULL parameters */
     check_not_null(context);
     check_not_null(keyPath);
-    check_not_null(digest);
+    check_not_null(data);
 
     /* Cleanup command context. */
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
@@ -205,12 +206,17 @@ Fapi_Sign_Async(FAPI_CONTEXT  *context,
     return_if_error(r, "Initialize Sign");
 
     /* Copy parameters to context for use during _Finish. */
-    FAPI_COPY_DIGEST(&command->digest.buffer[0], command->digest.size, digest, digestSize);
+    command->data_size = dataSize;
+    command->data = malloc(dataSize);
+    goto_if_null2(command->data, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
+
+    memcpy(command->data, data, dataSize);
+
     strdup_check(command->keyPath, keyPath, r, error_cleanup);
     strdup_check(command->padding, padding, r, error_cleanup);
 
     /* Initialize the context state for this operation. */
-    context->state = KEY_SIGN_WAIT_FOR_KEY;
+    context->state = KEY_DIGEST_AND_SIGN_WAIT_FOR_KEY;
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
 
@@ -218,12 +224,13 @@ error_cleanup:
     /* Cleanup duplicated input parameters that were copied before. */
     SAFE_FREE(command->keyPath);
     SAFE_FREE(command->padding);
+    SAFE_FREE(command->data);
     return r;
 }
 
-/** Asynchronous finish function for Fapi_Sign
+/** Asynchronous finish function for Fapi_DigestAndSign
  *
- * This function should be called after a previous Fapi_Sign_Async.
+ * This function should be called after a previous Fapi_DigestAndSign_Async.
  *
  * @param[in,out] context The FAPI_CONTEXT
  * @param[out] signature The signature
@@ -260,15 +267,18 @@ error_cleanup:
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_Sign_Finish(FAPI_CONTEXT *context,
-                 uint8_t     **signature,
-                 size_t       *signatureSize,
-                 char        **publicKey,
-                 char        **certificate) {
+Fapi_DigestAndSign_Finish(FAPI_CONTEXT *context,
+                          uint8_t     **signature,
+                          size_t       *signatureSize,
+                          char        **publicKey,
+                          char        **certificate) {
+    TPM2B_AUTH nullAuth = { .size = 0 };
+
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
-    size_t  resultSignatureSize;
+    TSS2_RC       r;
+    size_t        resultSignatureSize;
+    TPM2B_DIGEST *digest;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -278,31 +288,85 @@ Fapi_Sign_Finish(FAPI_CONTEXT *context,
     IFAPI_Key_Sign *command = &context->Key_Sign;
 
     switch (context->state) {
-    statecase(context->state, KEY_SIGN_WAIT_FOR_KEY);
+    statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_KEY);
         /* Load the key used for signing with a helper. */
         r = ifapi_load_key(context, command->keyPath, &command->key_object);
         return_try_again(r);
         goto_if_error(r, "Fapi load key.", cleanup);
 
-        if (command->key_object->misc.key.public.publicArea.objectAttributes
-            & TPMA_OBJECT_RESTRICTED) {
-            goto_error(r, TSS2_BASE_RC_BAD_VALUE,
-                       "Restricted signing keys require the use of Fapi_DigestAndSign() instead of "
-                       "Fapi_Sign()",
-                       cleanup);
-        }
+        fallthrough;
 
-        if (command->data_size > sizeof(TPMU_HA)) {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Digest size too large.", cleanup);
+    statecase(context->state, KEY_DIGEST_AND_SIGN_COMPUTE_HASH);
+        /* Compute the digest of the passed data */
+
+        r = Esys_HashSequenceStart_Async(context->esys, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                                         &nullAuth,
+                                         command->key_object->misc.key.public.publicArea.nameAlg);
+        goto_if_error(r, "Esys_HashSequenceStart_Async", cleanup);
+
+        fallthrough;
+
+    statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_SEQUENCE_INIT);
+        r = Esys_HashSequenceStart_Finish(context->esys, &command->sequence_handle);
+        try_again_or_error_goto(r, "Esys_HashSequenceStart_Finish", cleanup);
+
+        command->offset = 0;
+        fallthrough;
+
+    statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_UPDATE_INIT);
+        TPM2B_MAX_BUFFER block = { 0 };
+
+        command->chunk = command->data_size - command->offset;
+        if (command->chunk > TPM2_MAX_DIGEST_BUFFER)
+            command->chunk = TPM2_MAX_DIGEST_BUFFER;
+
+        block.size = command->chunk;
+        memcpy(block.buffer, command->data + command->offset, command->chunk);
+
+        r = Esys_SequenceUpdate_Async(context->esys, command->sequence_handle, ESYS_TR_PASSWORD,
+                                      ESYS_TR_NONE, ESYS_TR_NONE, &block);
+        goto_if_error(r, "Esys_SequenceUpdate", cleanup);
+        fallthrough;
+
+    statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_UPDTATE);
+        r = Esys_SequenceUpdate_Finish(context->esys);
+        try_again_or_error_goto(r, "Esys_SequenceUpdate_Finish", cleanup);
+
+        command->offset += command->chunk;
+        TPM2B_MAX_BUFFER no_more_data = { .size = 0 };
+
+        if (command->offset < command->data_size) {
+            context->state = KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_UPDATE_INIT;
+            return TSS2_FAPI_RC_TRY_AGAIN;
         }
         fallthrough;
 
-    statecase(context->state, KEY_SIGN_WAIT_FOR_SIGN);
+    statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_COMPLETE_INIT);
+        r = Esys_SequenceComplete_Async(context->esys, command->sequence_handle, ESYS_TR_PASSWORD,
+                                        ESYS_TR_NONE, ESYS_TR_NONE, &no_more_data,
+                                        ESYS_TR_RH_OWNER);
+        goto_if_error(r, "Esys_SequenceComplete_Async", cleanup);
+
+        fallthrough;
+
+    statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_COMPLETE);
+        /* The update is completed and the digest and the ticket will be computed. */
+        r = Esys_SequenceComplete_Finish(context->esys, &digest, &command->validation);
+        try_again_or_error_goto(r, "Esys_SequenceComplete_Finish", cleanup);
+
+        command->sequence_handle = 0;
+        command->digest = *digest;
+        free(digest);
+        fallthrough;
+
+    statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_SIGN);
         /* Perform the signing operation using a helper. */
-        r = ifapi_key_sign(context, command->key_object, command->padding, &command->digest, NULL,
-                           &command->tpm_signature, publicKey ? &command->publicKey : NULL,
+        r = ifapi_key_sign(context, command->key_object, command->padding, &command->digest,
+                           command->validation, &command->tpm_signature,
+                           publicKey ? &command->publicKey : NULL,
                            (certificate) ? &command->certificate : NULL);
         return_try_again(r);
+        SAFE_FREE(command->validation);
         goto_if_error(r, "Fapi sign.", cleanup);
 
         /* Convert the TPM datatype signature to something useful for the caller. */
@@ -314,7 +378,7 @@ Fapi_Sign_Finish(FAPI_CONTEXT *context,
             command->signatureSize = resultSignatureSize;
         fallthrough;
 
-    statecase(context->state, KEY_SIGN_CLEANUP);
+    statecase(context->state, KEY_DIGEST_AND_SIGN_CLEANUP);
         /* Cleanup the session used for authorization. */
         r = ifapi_cleanup_session(context);
         try_again_or_error_goto(r, "Cleanup", cleanup);
@@ -334,12 +398,18 @@ Fapi_Sign_Finish(FAPI_CONTEXT *context,
 
 cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
-    ifapi_cleanup_ifapi_object(command->key_object);
+    if (r) {
+        SAFE_FREE(command->validation);
+    }
+    if (command->sequence_handle) {
+        Esys_FlushContext(context->esys, command->sequence_handle);
+    }
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     SAFE_FREE(command->tpm_signature);
     SAFE_FREE(command->keyPath);
     SAFE_FREE(command->padding);
+    SAFE_FREE(command->data);
     ifapi_session_clean(context);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     context->state = FAPI_STATE_INIT;

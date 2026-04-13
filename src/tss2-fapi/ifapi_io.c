@@ -25,7 +25,7 @@
 #include "ifapi_io.h"
 #include "ifapi_macros.h" // for check_not_null, return_error2, check_oom
 #include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_RC_S...
-
+#include <fcntl.h>        // for open
 #define LOGMODULE fapi
 #include "util/log.h" // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
 
@@ -141,24 +141,8 @@ ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
-    if (fseek(io->stream, 0L, SEEK_END) == -1) {
-        LOG_ERROR("fseek failed for \"%s\".", filename);
-        fclose(io->stream);
-        return TSS2_FAPI_RC_IO_ERROR;
-    };
-    long length = ftell(io->stream);
-    if (length == -1 || length == LONG_MAX) {
-        LOG_ERROR("ftell failed for \"%s\".", filename);
-        fclose(io->stream);
-        return TSS2_FAPI_RC_IO_ERROR;
-    };
-    fclose(io->stream);
+    long length = statbuf.st_size;
 
-    io->stream = fopen(filename, "rt");
-    if (io->stream == NULL) {
-        LOG_ERROR("Open file \"%s\": %s", filename, strerror(errno));
-        return TSS2_FAPI_RC_IO_ERROR;
-    }
     io->char_rbuffer = malloc(length + 1);
     if (io->char_rbuffer == NULL) {
         fclose(io->stream);
@@ -256,6 +240,7 @@ ifapi_io_write_async(struct IFAPI_IO *io,
                      size_t           length) {
     TSS2_RC      r;
     struct flock flock = { 0 };
+    int          fd;
 
     if (io->char_rbuffer) {
         LOG_ERROR("rbuffer still in use; maybe use of old API.");
@@ -271,7 +256,13 @@ ifapi_io_write_async(struct IFAPI_IO *io,
     }
     memcpy(io->char_rbuffer, buffer, length);
 
-    io->stream = fopen(filename, "wt");
+    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0664);
+    if (fd == -1) {
+        goto_error(r, TSS2_FAPI_RC_IO_ERROR, "Open file \"%s\" for writing: %s", error, filename,
+                   strerror(errno));
+    }
+
+    io->stream = fdopen(fd, "wt");
     if (io->stream == NULL) {
         goto_error(r, TSS2_FAPI_RC_IO_ERROR, "Open file \"%s\" for writing: %s", error, filename,
                    strerror(errno));

@@ -28,6 +28,7 @@ jobs:
           DOCKER_IMAGE: ${{ matrix.docker_image }}
           CC: ${{ matrix.compiler }}
           BASE_REF: ${{ github.base_ref }}
+          WITH_TCTI: libtpms
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
@@ -51,6 +52,7 @@ jobs:
           CC: clang
           DOCKER_IMAGE: fedora-32
           SCANBUILD: yes
+          WITH_TCTI: swtpm
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
@@ -100,6 +102,7 @@ jobs:
           CC: gcc
           DOCKER_IMAGE: ${{ matrix.docker_image }}
           WITH_CRYPTO: mbed
+          WITH_TCTI: mssim
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: failure
         if: ${{ failure() }}
@@ -146,6 +149,7 @@ jobs:
           CC: gcc
           DOCKER_IMAGE: ubuntu-20.04
           ENABLE_COVERAGE: true
+          WITH_TCTI: swtpm
           PROJECT_NAME: ${{ github.event.repository.name }}
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5

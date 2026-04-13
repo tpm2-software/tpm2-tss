@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2015 - 2018 Intel Corporation
 # Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
+# Copyright (c) 2026 Fraunhofer SIT
 # All rights reserved.
 
 TESTS_CFLAGS = $(AM_CFLAGS) $(CRYPTO_CFLAGS) -I$(srcdir)/include -I$(srcdir)/src/tss2-mu \
@@ -16,6 +17,9 @@ endif
 if FAPI
 TESTS_CFLAGS += -DTEST_FAPI
 endif
+
+TESTS_CFLAGS += -DCMOCKA_ENABLE_DEPRECATED=1
+TESTS_CFLAGS += -Wno-error=deprecated-declarations
 
 check_LTLIBRARIES =
 # test harness configuration
@@ -422,6 +426,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-unseal.fint \
     test/integration/fapi-unseal-persistent.fint \
     test/integration/fapi-pqc-provision.fint
+    test/integration/fapi-policy-complex.fint
 
 if TESTDEVICE
 if DEVICEDESTRUCTIVE
@@ -931,6 +936,8 @@ test_unit_fapi_io_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_io_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_io_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
                             -Wl,--wrap=fopen \
+                            -Wl,--wrap=open \
+                            -Wl,--wrap=fdopen \
                             -Wl,--wrap=fseek \
                             -Wl,--wrap=ftell \
                             -Wl,--wrap=fcntl \
@@ -2604,6 +2611,14 @@ test_integration_fapi_policy_or_nv_read_write_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_policy_or_nv_read_write_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_policy_or_nv_read_write_fint_SOURCES = \
     test/integration/fapi-policy-or-nv-read-write.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+
+test_integration_fapi_policy_complex_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)
+test_integration_fapi_policy_complex_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_policy_complex_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_policy_complex_fint_SOURCES = \
+    test/integration/fapi-policy-complex.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 test_integration_fapi_info_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS)

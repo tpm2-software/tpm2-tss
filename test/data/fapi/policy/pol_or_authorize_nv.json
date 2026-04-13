@@ -1,0 +1,30 @@
+{
+  "description": "Static Or-AuthorizeNV policy",
+  "policy": [
+    {
+      "type": "PolicyOR",
+      "branches": [
+        {
+          "name": "branch-1",
+          "description": "Branch 1",
+          "policy": [
+            {
+              "type": "AuthorizeNV",
+              "nvPath": "/nv/Owner/index-1"
+            }
+          ]
+        },
+        {
+          "name": "branch-2",
+          "description": "Branch 2",
+          "policy": [
+            {
+              "type": "AuthorizeNV",
+              "nvPath": "/nv/Owner/index-2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
