@@ -580,10 +580,10 @@ typedef struct {
     TPM2B_DATA             outsideInfo;
     TPML_PCR_SELECTION     creationPCR;
     ESYS_TR                handle;
-    const char            *authValueLockout;
-    const char            *authValueEh;
+    char                  *authValueLockout;
+    char                  *authValueEh;
     const char            *policyPathEh;
-    const char            *authValueSh;
+    char                  *authValueSh;
     const char            *policyPathSh;
     size_t                 digest_idx;
     size_t                 hash_size;

@@ -6,17 +6,55 @@
 #ifndef AUX_UTIL_H
 #define AUX_UTIL_H
 
+#include "util/aux_util.h"
 #include <stdbool.h> // for true, bool, false
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 #include <inttypes.h> // for PRIx32
+#include <string.h>   // for explicit_bzero
 
 #include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC_LAYER_MASK
 #include "tss2_tpm2_types.h" // for TPM2_RC_1, TPM2_RC_ASYMMETRIC, TPM2_RC_...
+#if defined(_WIN32)
+#include <windows.h> // for SecureZeroMemory
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/*
+ * secure_mem_zero(buf, size)
+ *
+ * Securely zeroes a memory region that may contain sensitive data.
+ *
+ * This macro ensures that the memory is actually overwritten and not
+ * optimized away by the compile.
+ */
+#if defined(__GLIBC__)
+#define secure_mem_zero(buf, size)                                                                 \
+    if ((buf) && (size))                                                                           \
+    explicit_bzero((buf), (size))
+#elif defined(_WIN32)
+#define secure_mem_zero(buf, size)                                                                 \
+    if ((buf) && (size))                                                                           \
+    SecureZeroMemory((buf), (size))
+#else
+#define secure_mem_zero(buf, size)                                                                 \
+    do {                                                                                           \
+        void  *mz_ptr = (buf);                                                                     \
+        size_t mz_len = (size);                                                                    \
+        if (mz_ptr && mz_len) {                                                                    \
+            volatile unsigned char *mz_p = (volatile unsigned char *)mz_ptr;                       \
+            while (mz_len--) {                                                                     \
+                *mz_p++ = 0;                                                                       \
+            }                                                                                      \
+        }                                                                                          \
+    } while (0)
+#endif
+#define secure_char_zero(str)                                                                      \
+    if ((str))                                                                                     \
+    secure_mem_zero((str), strlen((str)))
 
 #define SAFE_FREE(S)                                                                               \
     if ((S) != NULL) {                                                                             \
