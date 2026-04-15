@@ -425,7 +425,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-info.fint \
     test/integration/fapi-unseal.fint \
     test/integration/fapi-unseal-persistent.fint \
-    test/integration/fapi-pqc-provision.fint
+    test/integration/fapi-pqc-provision.fint \
     test/integration/fapi-policy-complex.fint
 
 if TESTDEVICE
