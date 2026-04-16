@@ -3920,23 +3920,18 @@ ifapi_json_TPMS_ECC_PARMS_deserialize(json_object *jso, TPMS_ECC_PARMS *out) {
  */
 TSS2_RC
 ifapi_json_TPM2B_PUBLIC_KEY_MLDSA_deserialize(json_object *jso, TPM2B_PUBLIC_KEY_MLDSA *out) {
-    TSS2_RC     r;
-    const char *hex_string = json_object_get_string(jso);
-    return_if_null(hex_string, "Bad value.", TSS2_FAPI_RC_BAD_VALUE);
+    TSS2_RC r;
+    LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    size_t len = strlen(hex_string);
-    if (len > TPM2_MAX_MLDSA_PUB_SIZE * 2) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Hex string too long for ML-DSA public key.");
-    }
-    out->size = len / 2;
-    for (size_t i = 0; i < out->size; i++) {
-        unsigned int val;
-        sscanf(&hex_string[i * 2], "%2x", &val);
-        out->buffer[i] = (BYTE)val;
-    }
-    r = TSS2_RC_SUCCESS;
+    UINT16 size = 0;
+    r = ifapi_json_byte_deserialize(jso, TPM2_MAX_MLDSA_PUB_SIZE, (BYTE *)&out->buffer, &size);
+    return_if_error(r, "byte serialize");
+
+    out->size = size;
     return r;
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
 }
 
 /** Deserialize a TPM2B_PUBLIC_KEY_MLKEM json object.
@@ -3949,23 +3944,18 @@ ifapi_json_TPM2B_PUBLIC_KEY_MLDSA_deserialize(json_object *jso, TPM2B_PUBLIC_KEY
  */
 TSS2_RC
 ifapi_json_TPM2B_PUBLIC_KEY_MLKEM_deserialize(json_object *jso, TPM2B_PUBLIC_KEY_MLKEM *out) {
-    TSS2_RC     r;
-    const char *hex_string = json_object_get_string(jso);
-    return_if_null(hex_string, "Bad value.", TSS2_FAPI_RC_BAD_VALUE);
+    TSS2_RC r;
+    LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
-    size_t len = strlen(hex_string);
 
-    if (len > TPM2_MAX_MLKEM_PUB_SIZE * 2) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Hex string too long for ML-KEM public key.");
-    }
-    out->size = len / 2;
-    for (size_t i = 0; i < out->size; i++) {
-        unsigned int val;
-        sscanf(&hex_string[i * 2], "%2x", &val);
-        out->buffer[i] = (BYTE)val;
-    }
-    r = TSS2_RC_SUCCESS;
+    UINT16 size = 0;
+    r = ifapi_json_byte_deserialize(jso, TPM2_MAX_MLKEM_PUB_SIZE, (BYTE *)&out->buffer, &size);
+    return_if_error(r, "byte serialize");
+
+    out->size = size;
     return r;
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
 }
 
 /** Deserialize a TPM2B_SIGNATURE_MLDSA json object.
@@ -3978,23 +3968,18 @@ ifapi_json_TPM2B_PUBLIC_KEY_MLKEM_deserialize(json_object *jso, TPM2B_PUBLIC_KEY
  */
 TSS2_RC
 ifapi_json_TPM2B_SIGNATURE_MLDSA_deserialize(json_object *jso, TPM2B_SIGNATURE_MLDSA *out) {
-    TSS2_RC     r;
-    const char *hex_string = json_object_get_string(jso);
-    return_if_null(hex_string, "Bad value.", TSS2_FAPI_RC_BAD_VALUE);
+    TSS2_RC r;
+    LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    size_t len = strlen(hex_string);
-    if (len > TPM2_MAX_MLDSA_SIG_SIZE * 2) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Hex string too long for ML-DSA signature.");
-    }
-    out->size = len / 2;
-    for (size_t i = 0; i < out->size; i++) {
-        unsigned int val;
-        sscanf(&hex_string[i * 2], "%2x", &val);
-        out->buffer[i] = (BYTE)val;
-    }
-    r = TSS2_RC_SUCCESS;
+    UINT16 size = 0;
+    r = ifapi_json_byte_deserialize(jso, TPM2_MAX_MLDSA_SIG_SIZE, (BYTE *)&out->buffer, &size);
+    return_if_error(r, "byte serialize");
+
+    out->size = size;
     return r;
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
 }
 
 static char *field_TPMS_SIGNATURE_HASH_MLDSA_tab[] = { "hash", "signature", "$schema" };
