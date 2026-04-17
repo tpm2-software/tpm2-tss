@@ -47,8 +47,8 @@ free_cert_list(NODE_OBJECT_T *node) {
 /* Check whether certificate is self signed. */
 static bool
 is_self_signed_cert(X509 *cert) {
-    X509_NAME *issuer = X509_get_issuer_name(cert);
-    X509_NAME *subject = X509_get_subject_name(cert);
+    const X509_NAME *issuer = X509_get_issuer_name(cert);
+    const X509_NAME *subject = X509_get_subject_name(cert);
 
     /* Compare the issuer and subject names */
     if (X509_NAME_cmp(issuer, subject) == 0) {
@@ -69,7 +69,7 @@ get_issuer_url(X509 *cert) {
         ACCESS_DESCRIPTION *ad = sk_ACCESS_DESCRIPTION_value(info, i);
         if (OBJ_obj2nid(ad->method) == NID_ad_ca_issuers && ad->location->type == GEN_URI) {
             ASN1_IA5STRING *uri = ad->location->d.uniformResourceIdentifier;
-            char           *url = strndup((char *)uri->data, uri->length);
+            char *url = strndup((char *)ASN1_STRING_get0_data(uri), ASN1_STRING_length(uri));
             AUTHORITY_INFO_ACCESS_free(info);
             return url;
         }
@@ -102,7 +102,7 @@ download_cert(char *url) {
 }
 
 void
-log_x509_name(X509_NAME *name) {
+log_x509_name(const X509_NAME *name) {
     char *str = X509_NAME_oneline(name, NULL, 0);
     LOG_DEBUG("X509_name: %s", str);
     free(str);
@@ -146,7 +146,7 @@ error:
 
 /* Function to find a certificate node by subject from issuer. */
 bool
-find_cert_by_issuer(NODE_OBJECT_T *head, X509_NAME *issuer_name) {
+find_cert_by_issuer(NODE_OBJECT_T *head, const X509_NAME *issuer_name) {
     NODE_OBJECT_T *current = head;
 
     while (current) {
