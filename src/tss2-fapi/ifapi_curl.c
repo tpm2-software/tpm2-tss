@@ -97,7 +97,7 @@ ifapi_get_crl_from_cert(X509 *cert, X509_CRL **crl) {
                 GENERAL_NAME   *gen_name = sk_GENERAL_NAME_value(distpoint->name.fullname, j);
                 ASN1_IA5STRING *asn1_str = gen_name->d.uniformResourceIdentifier;
                 SAFE_FREE(url);
-                url = (unsigned char *)strdup((char *)asn1_str->data);
+                url = (unsigned char *)strdup((char *)ASN1_STRING_get0_data(asn1_str));
                 goto_if_null2(url, "Out of memory", r, TSS2_FAPI_RC_MEMORY, cleanup);
             }
         }
@@ -139,8 +139,8 @@ cleanup:
 
 static bool
 is_self_signed(X509 *cert) {
-    X509_NAME *issuer = X509_get_issuer_name(cert);
-    X509_NAME *subject = X509_get_subject_name(cert);
+    const X509_NAME *issuer = X509_get_issuer_name(cert);
+    const X509_NAME *subject = X509_get_subject_name(cert);
 
     /* Compare the issuer and subject names */
     if (X509_NAME_cmp(issuer, subject) == 0) {
@@ -212,7 +212,7 @@ ifapi_curl_verify_ek_cert(char *root_cert_pem, char *intermed_cert_pem, char *ek
                 continue;
             }
             uri = ad->location->d.uniformResourceIdentifier;
-            url = uri->data;
+            url = (unsigned char *)ASN1_STRING_get0_data(uri);
             curl_rc = ifapi_get_curl_buffer(url, &cert_buffer, &cert_buffer_size);
             if (curl_rc != 0) {
                 goto_error(r, TSS2_FAPI_RC_NO_CERT, "Get certificate.", cleanup);
