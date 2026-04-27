@@ -332,6 +332,7 @@ ESYS_TESTS_INTEGRATION_OPTIONAL = \
     test/integration/esys-pqc-create.int \
     test/integration/esys-pqc-kem.int \
     test/integration/esys-pqc-sign.int \
+    test/integration/esys-pqc-signdigest.int \
     test/integration/esys-pqc-credential.int
 
 if TESTDEVICE
@@ -2101,6 +2102,13 @@ test_integration_esys_pqc_sign_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_pqc_sign_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_pqc_sign_int_SOURCES = \
     test/integration/esys-pqc-sign.int.c \
+    test/integration/main-esys.c test/integration/test-esys.h
+
+test_integration_esys_pqc_signdigest_int_CFLAGS  = $(TESTS_CFLAGS)
+test_integration_esys_pqc_signdigest_int_LDADD   = $(TESTS_LDADD)
+test_integration_esys_pqc_signdigest_int_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_esys_pqc_signdigest_int_SOURCES = \
+    test/integration/esys-pqc-signdigest.int.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_pqc_credential_int_CFLAGS  = $(TESTS_CFLAGS)
