@@ -272,14 +272,19 @@ ifapi_json_TCG_DIGEST2_cb(const TCG_DIGEST2 *in, size_t size, void *data) {
  */
 static TSS2_RC
 check_event_string(const TCG_EVENT2 *in, const char *string) {
-    if (strncmp((const char *)&in->Event[0], string, strlen(string)) != 0) {
+    size_t expected = strlen(string);
+    if (in->EventSize < expected) {
+        return_error2(TSS2_FAPI_RC_BAD_VALUE, "EventSize %u too small for %s", in->EventSize,
+                      string);
+    }
+    if (memcmp(in->Event, string, expected) != 0) {
         return_error2(TSS2_FAPI_RC_BAD_VALUE, "Invalid event string. %s expected", string);
     }
-    if (in->EventSize == strlen(string)) {
+    if (in->EventSize == expected) {
         /* String without NULL terminator */
         return TSS2_RC_SUCCESS;
     }
-    if (in->EventSize == strlen(string) + 1 && in->Event[strlen(string)] == '\0') {
+    if (in->EventSize == expected + 1 && in->Event[expected] == '\0') {
         /* String with NULL terminator */
         return TSS2_RC_SUCCESS;
     }
