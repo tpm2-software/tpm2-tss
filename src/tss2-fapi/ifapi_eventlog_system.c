@@ -695,6 +695,14 @@ parse_eventlog(tpm2_eventlog_context *ctx, BYTE const *eventlog, size_t size) {
     TCG_EVENT         *event = (TCG_EVENT *)eventlog;
     bool               ret;
 
+    if (size == 0) {
+        return true;
+    }
+    if (size < sizeof(*event)) {
+        LOG_ERROR("eventlog too small for first TCG_EVENT (%zu < %zu)", size, sizeof(*event));
+        return false;
+    }
+
     if (event->eventType == EV_NO_ACTION) {
         ret = specid_event(event, size, &next);
         if (!ret) {
