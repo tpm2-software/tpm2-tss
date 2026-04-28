@@ -13,8 +13,10 @@
 
 #include <openssl/evp.h>
 #include <openssl/obj_mac.h>
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
+#endif
 
 #include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, ESYS_TR_PASSWORD
