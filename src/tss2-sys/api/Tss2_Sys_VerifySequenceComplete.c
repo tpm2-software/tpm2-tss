@@ -1,0 +1,93 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+/***********************************************************************;
+ * Copyright (c) 2026, Cisco Systems, Inc.
+ * All rights reserved.
+ ***********************************************************************/
+
+#ifdef HAVE_CONFIG_H
+#include "config.h" // IWYU pragma: keep
+#endif
+
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_*
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPMI_DH_OBJECT, TPMT_SIGNATURE, TPMT_TK_VERIFIED
+
+TSS2_RC
+Tss2_Sys_VerifySequenceComplete_Prepare(TSS2_SYS_CONTEXT     *sysContext,
+                                        TPMI_DH_OBJECT        sequenceHandle,
+                                        TPMI_DH_OBJECT        keyHandle,
+                                        const TPMT_SIGNATURE *signature) {
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_RC                rval;
+
+    if (!ctx || !signature)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonPreparePrologue(ctx, TPM2_CC_VerifySequenceComplete);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(sequenceHandle, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_UINT32_Marshal(keyHandle, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
+    if (rval)
+        return rval;
+
+    rval = Tss2_MU_TPMT_SIGNATURE_Marshal(signature, ctx->cmdBuffer, ctx->maxCmdSize,
+                                          &ctx->nextData);
+    if (rval)
+        return rval;
+
+    ctx->decryptAllowed = 0;
+    ctx->encryptAllowed = 0;
+    ctx->authAllowed = 1;
+
+    return CommonPrepareEpilogue(ctx);
+}
+
+TSS2_RC
+Tss2_Sys_VerifySequenceComplete_Complete(TSS2_SYS_CONTEXT *sysContext,
+                                         TPMT_TK_VERIFIED *validation) {
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_RC                rval;
+
+    if (!ctx)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval = CommonComplete(ctx);
+    if (rval)
+        return rval;
+
+    return Tss2_MU_TPMT_TK_VERIFIED_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
+                                              validation);
+}
+
+TSS2_RC
+Tss2_Sys_VerifySequenceComplete(TSS2_SYS_CONTEXT             *sysContext,
+                                TPMI_DH_OBJECT                sequenceHandle,
+                                TPMI_DH_OBJECT                keyHandle,
+                                TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                                const TPMT_SIGNATURE         *signature,
+                                TPMT_TK_VERIFIED             *validation,
+                                TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
+    TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
+    TSS2_RC                rval;
+
+    if (!signature)
+        return TSS2_SYS_RC_BAD_REFERENCE;
+
+    rval
+        = Tss2_Sys_VerifySequenceComplete_Prepare(sysContext, sequenceHandle, keyHandle, signature);
+    if (rval)
+        return rval;
+
+    rval = CommonOneCall(ctx, cmdAuthsArray, rspAuthsArray);
+    if (rval)
+        return rval;
+
+    return Tss2_Sys_VerifySequenceComplete_Complete(sysContext, validation);
+}

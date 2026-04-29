@@ -185,6 +185,8 @@ typedef struct {
     UINT16 unique_zero;            /**< Size for unique zero bytes */
     bool   unique_rsa_set;         /**< Indicate whether unique rsa has to be set */
     bool   unique_ecc_set;         /**< Indicate whether unique ecc has to be set */
+    bool   unique_mldsa_set;       /**< Indicate whether unique mldsa has to be set */
+    bool   unique_mlkem_set;       /**< Indicate whether unique mlkem has to be set */
 } IFAPI_KEY_TEMPLATE;
 
 /** Type for representing template for NV objects
@@ -1082,6 +1084,8 @@ enum FAPI_STATE {
     DATA_ENCRYPT_WAIT_FOR_EXT_KEY,
     DATA_ENCRYPT_WAIT_FOR_FLUSH,
     DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION,
+    DATA_ENCRYPT_WAIT_FOR_KEM_ENCAPSULATION,
+    DATA_ENCRYPT_WAIT_FOR_KEM_AES,
     DATA_ENCRYPT_CLEAN,
 
     DATA_DECRYPT_WAIT_FOR_PROFILE,
@@ -1089,6 +1093,7 @@ enum FAPI_STATE {
     DATA_DECRYPT_WAIT_FOR_KEY,
     DATA_DECRYPT_WAIT_FOR_FLUSH,
     DATA_DECRYPT_WAIT_FOR_RSA_DECRYPTION,
+    DATA_DECRYPT_WAIT_FOR_KEM_DECAPSULATION,
     DATA_DECRYPT_AUTHORIZE_KEY,
     DATA_DECRYPT_CLEANUP,
 

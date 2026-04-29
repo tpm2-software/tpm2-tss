@@ -12,6 +12,9 @@
 #include <stdlib.h> // for malloc, size_t, NULL
 #include <string.h> // for memcpy, memset
 
+#include <openssl/crypto.h> // for OPENSSL_cleanse
+
+#include "fapi_crypto.h"     // for ifapi_kem_hybrid_decrypt
 #include "fapi_int.h"        // for IFAPI_Data_EncryptDecrypt, FAPI_CONTEXT
 #include "fapi_util.h"       // for ifapi_authorize_object, ifapi_cleanup_s...
 #include "ifapi_io.h"        // for ifapi_io_poll
@@ -250,6 +253,11 @@ Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTex
 
     TSS2_RC               r;
     TPM2B_PUBLIC_KEY_RSA *tpmPlainText = NULL;
+    uint16_t              kemCtSize = 0;
+    TPM2B_KEM_CIPHERTEXT  kemCt = { 0 };
+    TPM2B_SHARED_SECRET  *sharedSecret = NULL;
+    const uint8_t        *aesBlob = NULL;
+    size_t                aesBlobSize = 0;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -296,7 +304,16 @@ Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTex
 
         if (encKeyObject->misc.key.public.publicArea.type != TPM2_ALG_RSA
             && encKeyObject->misc.key.public.publicArea.type != TPM2_ALG_ECC) {
-            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid algorithm", error_cleanup);
+            if (encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_MLKEM) {
+                /* ML-KEM: fall through to authorize, then KEM decapsulate path */
+            } else if (encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_MLDSA
+                       || encKeyObject->misc.key.public.publicArea.type == TPM2_ALG_HASH_MLDSA) {
+                goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED,
+                           "ML-DSA keys are signing-only; cannot be used for decryption",
+                           error_cleanup);
+            } else {
+                goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid algorithm", error_cleanup);
+            }
         }
         fallthrough;
 
@@ -305,19 +322,44 @@ Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTex
         r = ifapi_authorize_object(context, command->key_object, &command->auth_session);
         return_try_again(r);
         goto_if_error(r, "Authorize key.", error_cleanup);
-        TPM2B_DATA null_data = { .size = 0, .buffer = {} };
 
-        /* Copy cipher data to tpm object */
-        TPM2B_PUBLIC_KEY_RSA *aux_data = (TPM2B_PUBLIC_KEY_RSA *)&context->aux_data;
-        aux_data->size = context->cmd.Data_EncryptDecrypt.numBytes;
-        memcpy(&aux_data->buffer[0], context->cmd.Data_EncryptDecrypt.in_data, aux_data->size);
+        if (command->key_object->misc.key.public.publicArea.type == TPM2_ALG_MLKEM) {
+            if (command->numBytes < 2) {
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "KEM ciphertext too short", error_cleanup);
+            }
+            kemCtSize = ((uint16_t)command->in_data[0] << 8) | (uint16_t)command->in_data[1];
+            if (2 + (size_t)kemCtSize > command->numBytes) {
+                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "KEM ciphertext length exceeds input",
+                           error_cleanup);
+            }
+            memset(&kemCt, 0, sizeof(kemCt));
+            kemCt.size = kemCtSize;
+            memcpy(kemCt.buffer, command->in_data + 2, kemCtSize);
 
-        /* Decrypt the actual data. */
-        r = Esys_RSA_Decrypt_Async(context->esys, context->cmd.Data_EncryptDecrypt.key_handle,
-                                   command->auth_session,
-                                   ENC_SESSION_IF_POLICY(command->auth_session), ESYS_TR_NONE,
-                                   aux_data, &command->profile->rsa_decrypt_scheme, &null_data);
-        goto_if_error(r, "Error esys rsa decrypt", error_cleanup);
+            r = Esys_Decapsulate_Async(context->esys, command->key_handle, command->auth_session,
+                                       ENC_SESSION_IF_POLICY(command->auth_session), ESYS_TR_NONE,
+                                       &kemCt);
+            goto_if_error(r, "Error esys decapsulate", error_cleanup);
+
+            context->state = DATA_DECRYPT_WAIT_FOR_KEM_DECAPSULATION;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
+        {
+            TPM2B_DATA null_data = { .size = 0, .buffer = {} };
+
+            /* Copy cipher data to tpm object */
+            TPM2B_PUBLIC_KEY_RSA *aux_data = (TPM2B_PUBLIC_KEY_RSA *)&context->aux_data;
+            aux_data->size = context->cmd.Data_EncryptDecrypt.numBytes;
+            memcpy(&aux_data->buffer[0], context->cmd.Data_EncryptDecrypt.in_data, aux_data->size);
+
+            /* Decrypt the actual data. */
+            r = Esys_RSA_Decrypt_Async(context->esys, context->cmd.Data_EncryptDecrypt.key_handle,
+                                       command->auth_session,
+                                       ENC_SESSION_IF_POLICY(command->auth_session), ESYS_TR_NONE,
+                                       aux_data, &command->profile->rsa_decrypt_scheme, &null_data);
+            goto_if_error(r, "Error esys rsa decrypt", error_cleanup);
+        }
 
         fallthrough;
 
@@ -344,6 +386,31 @@ Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTex
         }
 
         fallthrough;
+
+    statecase(context->state, DATA_DECRYPT_WAIT_FOR_KEM_DECAPSULATION);
+        {
+            r = Esys_Decapsulate_Finish(context->esys, &sharedSecret);
+            return_try_again(r);
+            goto_if_error_reset_state(r, "KEM decapsulation.", error_cleanup);
+
+            kemCtSize = ((uint16_t)command->in_data[0] << 8) | (uint16_t)command->in_data[1];
+            aesBlob = command->in_data + 2 + kemCtSize;
+            aesBlobSize = command->numBytes - 2 - kemCtSize;
+
+            r = ifapi_kem_hybrid_decrypt(sharedSecret->buffer, sharedSecret->size, aesBlob,
+                                         aesBlobSize, &command->plainText, &command->plainTextSize);
+            OPENSSL_cleanse(sharedSecret->buffer, sharedSecret->size);
+            Esys_Free(sharedSecret);
+            goto_if_error(r, "KEM hybrid AES-GCM decrypt", error_cleanup);
+
+            /* Flush the used key. */
+            if (!command->key_object->misc.key.persistent_handle) {
+                r = Esys_FlushContext_Async(context->esys, command->key_handle);
+                goto_if_error(r, "Error: FlushContext", error_cleanup);
+            }
+
+            fallthrough;
+        }
 
     statecase(context->state, DATA_DECRYPT_WAIT_FOR_FLUSH);
         if (!command->key_object->misc.key.persistent_handle) {
