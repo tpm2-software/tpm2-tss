@@ -11,6 +11,8 @@
 #include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 #include <string.h> // for memcpy
 
+#include "test-esys.h" // for EXIT_SKIP
+
 #include <openssl/evp.h>
 #include <openssl/obj_mac.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
@@ -311,5 +313,11 @@ error:
 
 int
 test_invoke_esys(ESYS_CONTEXT *esys_context) {
+#ifndef ENABLE_PQC
+    UNUSED(esys_context);
+    LOG_WARNING("Skipping: PQC not enabled (configure --enable-pqc)");
+    return EXIT_SKIP;
+#else
     return test_esys_pqc_sign(esys_context);
+#endif
 }

@@ -10,6 +10,8 @@
 
 #include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
+#include "test-esys.h" // for EXIT_SKIP
+
 #include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
 #include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPMA_OBJECT_*, TPM2_ALG_*
@@ -151,5 +153,11 @@ error:
 
 int
 test_invoke_esys(ESYS_CONTEXT *esys_context) {
+#ifndef ENABLE_PQC
+    UNUSED(esys_context);
+    LOG_WARNING("Skipping: PQC not enabled (configure --enable-pqc)");
+    return EXIT_SKIP;
+#else
     return test_esys_pqc_create(esys_context);
+#endif
 }

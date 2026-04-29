@@ -9,6 +9,8 @@
 #endif
 
 #include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+
+#include "test-esys.h" // for EXIT_SKIP
 #include <string.h> // for memcmp
 
 #include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
@@ -226,5 +228,11 @@ error:
 
 int
 test_invoke_esys(ESYS_CONTEXT *esys_context) {
+#ifndef ENABLE_PQC
+    UNUSED(esys_context);
+    LOG_WARNING("Skipping: PQC not enabled (configure --enable-pqc)");
+    return EXIT_SKIP;
+#else
     return test_esys_pqc_credential(esys_context);
+#endif
 }

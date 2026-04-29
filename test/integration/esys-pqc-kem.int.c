@@ -9,6 +9,8 @@
 #endif
 
 #include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+
+#include "test-esys.h" // for EXIT_SKIP
 #include <string.h> // for memcmp
 
 #include <openssl/evp.h>
@@ -475,8 +477,14 @@ error:
 
 int
 test_invoke_esys(ESYS_CONTEXT *esys_context) {
+#ifndef ENABLE_PQC
+    UNUSED(esys_context);
+    LOG_WARNING("Skipping: PQC not enabled (configure --enable-pqc)");
+    return EXIT_SKIP;
+#else
     int ret = test_esys_pqc_kem(esys_context);
     if (ret != EXIT_SUCCESS)
         return ret;
     return test_esys_pqc_kem_load_external_ossl_key(esys_context);
+#endif
 }
