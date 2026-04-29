@@ -18,7 +18,7 @@ jobs:
       run: |
         git config --global --add safe.directory /__w/tpm2-tss/tpm2-tss
         ./bootstrap
-        ./configure CC=clang --enable-unit --enable-integration --enable-pqc
+        ./configure CC=clang --enable-unit --enable-integration
         make -j compile_commands.json
     - uses: ZehMatt/clang-tidy-annotations@v1.1.2
       with:
