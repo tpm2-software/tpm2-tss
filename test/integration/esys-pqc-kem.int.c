@@ -11,7 +11,7 @@
 #include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
 #include "test-esys.h" // for EXIT_SKIP
-#include <string.h> // for memcmp
+#include <string.h>    // for memcmp
 
 #include <openssl/evp.h>
 #include <openssl/obj_mac.h>
@@ -414,6 +414,7 @@ error:
  * Interop test: OpenSSL keygen -> Esys_LoadExternal(public) -> Esys_Encapsulate,
  * then OpenSSL decapsulate with private key and compare shared secrets.
  */
+#ifdef ENABLE_PQC
 static int
 test_esys_pqc_kem_load_external_ossl_key(ESYS_CONTEXT *esys_context) {
 #if OPENSSL_VERSION_NUMBER < 0x30500000L
@@ -474,6 +475,7 @@ error:
     return EXIT_FAILURE;
 #endif
 }
+#endif /* ENABLE_PQC */
 
 int
 test_invoke_esys(ESYS_CONTEXT *esys_context) {

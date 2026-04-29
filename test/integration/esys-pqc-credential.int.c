@@ -11,7 +11,7 @@
 #include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
 #include "test-esys.h" // for EXIT_SKIP
-#include <string.h> // for memcmp
+#include <string.h>    // for memcmp
 
 #include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
