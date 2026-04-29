@@ -36,11 +36,13 @@
  * Returns TSS2_RC_SUCCESS on success.
  */
 static TSS2_RC
-test_compute_mldsa_mu(const uint8_t *pk, size_t pk_len,
-                      const uint8_t *ctx_str, size_t ctx_len,
-                      const uint8_t *message, size_t msg_len,
-                      uint8_t mu_out[64])
-{
+test_compute_mldsa_mu(const uint8_t *pk,
+                      size_t         pk_len,
+                      const uint8_t *ctx_str,
+                      size_t         ctx_len,
+                      const uint8_t *message,
+                      size_t         msg_len,
+                      uint8_t        mu_out[64]) {
     TSS2_RC     r = TSS2_RC_SUCCESS;
     EVP_MD_CTX *md_ctx = NULL;
     uint8_t     tr[64];
@@ -50,8 +52,7 @@ test_compute_mldsa_mu(const uint8_t *pk, size_t pk_len,
 
     /* Step 1: tr = SHAKE256(pk, 64) */
     if (EVP_DigestInit_ex(md_ctx, EVP_shake256(), NULL) != 1
-        || EVP_DigestUpdate(md_ctx, pk, pk_len) != 1
-        || EVP_DigestFinalXOF(md_ctx, tr, 64) != 1) {
+        || EVP_DigestUpdate(md_ctx, pk, pk_len) != 1 || EVP_DigestFinalXOF(md_ctx, tr, 64) != 1) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "SHAKE256(pk) failed", error_cleanup);
     }
 
@@ -64,7 +65,7 @@ test_compute_mldsa_mu(const uint8_t *pk, size_t pk_len,
     }
 
     {
-        uint8_t zero = 0x00;          /* pure ML-DSA, not pre-hash */
+        uint8_t zero = 0x00; /* pure ML-DSA, not pre-hash */
         uint8_t ctx_len_byte = (uint8_t)ctx_len;
 
         if (EVP_DigestUpdate(md_ctx, &zero, 1) != 1
@@ -98,10 +99,14 @@ error_cleanup:
 static const char *
 test_mldsa_parms_to_ossl_name(TPMI_MLDSA_PARMS parameterSet) {
     switch (parameterSet) {
-    case TPM2_MLDSA_PARMS_44: return OSSL_ALG_MLDSA_44;
-    case TPM2_MLDSA_PARMS_65: return OSSL_ALG_MLDSA_65;
-    case TPM2_MLDSA_PARMS_87: return OSSL_ALG_MLDSA_87;
-    default:                  return NULL;
+    case TPM2_MLDSA_PARMS_44:
+        return OSSL_ALG_MLDSA_44;
+    case TPM2_MLDSA_PARMS_65:
+        return OSSL_ALG_MLDSA_65;
+    case TPM2_MLDSA_PARMS_87:
+        return OSSL_ALG_MLDSA_87;
+    default:
+        return NULL;
     }
 }
 
@@ -128,8 +133,7 @@ test_ossl_mldsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPub
     if (!OSSL_PARAM_BLD_push_octet_string(build, OSSL_PKEY_PARAM_PUB_KEY,
                                           tpmPublicKey->publicArea.unique.mldsa.buffer,
                                           tpmPublicKey->publicArea.unique.mldsa.size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create ML-DSA key parameters",
-                   error_cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create ML-DSA key parameters", error_cleanup);
     }
 
     params = OSSL_PARAM_BLD_to_param(build);
@@ -188,19 +192,19 @@ test_ossl_mldsa_verify_with_ctx(const TPM2B_PUBLIC   *tpmPublicKey,
 
     if (ctx_len > 0) {
         OSSL_PARAM ctx_params[2];
-        ctx_params[0] = OSSL_PARAM_construct_octet_string(
-            OSSL_SIGNATURE_PARAM_CONTEXT_STRING, (void *)ctx_str, ctx_len);
+        ctx_params[0] = OSSL_PARAM_construct_octet_string(OSSL_SIGNATURE_PARAM_CONTEXT_STRING,
+                                                          (void *)ctx_str, ctx_len);
         ctx_params[1] = OSSL_PARAM_construct_end();
         if (EVP_PKEY_CTX_set_params(pkCtx, ctx_params) <= 0) {
-            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Set context string failed",
-                       error_cleanup);
+            goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Set context string failed", error_cleanup);
         }
     }
 
-    if (EVP_DigestVerify(mdCtx, signature->signature.mldsa.buffer,
-                         signature->signature.mldsa.size, message, msg_len) != 1) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "OpenSSL ML-DSA verification failed", error_cleanup);
+    if (EVP_DigestVerify(mdCtx, signature->signature.mldsa.buffer, signature->signature.mldsa.size,
+                         message, msg_len)
+        != 1) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "OpenSSL ML-DSA verification failed",
+                   error_cleanup);
     }
 
 error_cleanup:
@@ -278,22 +282,21 @@ test_esys_pqc_signdigest(ESYS_CONTEXT *esys_context) {
         },
     };
 
-    const char    *message = "Hello, ML-DSA SignDigest!";
-    const char    *ctx_str = "test";
-    uint8_t        mu[64];
-    TPM2B_DIGEST   mu_digest = { .size = 64 };
+    const char  *message = "Hello, ML-DSA SignDigest!";
+    const char  *ctx_str = "test";
+    uint8_t      mu[64];
+    TPM2B_DIGEST mu_digest = { .size = 64 };
 
     TPM2B_SIGNATURE_CTX sig_ctx = { .size = 0 };
 
     TPMT_TK_HASHCHECK hashcheck = {
-        .tag       = TPM2_ST_HASHCHECK,
+        .tag = TPM2_ST_HASHCHECK,
         .hierarchy = TPM2_RH_NULL,
-        .digest    = { .size = 0 },
+        .digest = { .size = 0 },
     };
 
     /* ---- Create ML-DSA-65 primary (allowExternalMu = 1) --------------- */
-    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER,
-                        &(TPM2B_AUTH){ .size = 0, .buffer = {} });
+    r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &(TPM2B_AUTH){ .size = 0, .buffer = {} });
     goto_if_error(r, "Error: TR_SetAuth (owner)", error);
 
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
@@ -306,12 +309,9 @@ test_esys_pqc_signdigest(ESYS_CONTEXT *esys_context) {
     goto_if_error(r, "Error: TR_SetAuth (ML-DSA key)", error);
 
     /* ---- Compute µ (mu) ----------------------------------------------- */
-    r = test_compute_mldsa_mu(
-            outPublic->publicArea.unique.mldsa.buffer,
-            outPublic->publicArea.unique.mldsa.size,
-            (const uint8_t *)ctx_str, strlen(ctx_str),
-            (const uint8_t *)message, strlen(message),
-            mu);
+    r = test_compute_mldsa_mu(outPublic->publicArea.unique.mldsa.buffer,
+                              outPublic->publicArea.unique.mldsa.size, (const uint8_t *)ctx_str,
+                              strlen(ctx_str), (const uint8_t *)message, strlen(message), mu);
     goto_if_error(r, "Error: compute µ (mu)", error);
 
     memcpy(mu_digest.buffer, mu, 64);
@@ -321,26 +321,19 @@ test_esys_pqc_signdigest(ESYS_CONTEXT *esys_context) {
     memcpy(sig_ctx.buffer, ctx_str, sig_ctx.size);
 
     /* ---- SignDigest --------------------------------------------------- */
-    r = Esys_SignDigest(esys_context, mldsa_handle,
-                        ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                        &sig_ctx, &mu_digest, &hashcheck,
-                        &signature);
+    r = Esys_SignDigest(esys_context, mldsa_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                        &sig_ctx, &mu_digest, &hashcheck, &signature);
     goto_if_error(r, "Error: SignDigest", error);
 
     /* ---- VerifyDigestSignature ---------------------------------------- */
-    r = Esys_VerifyDigestSignature(esys_context, mldsa_handle,
-                                   ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                                   &sig_ctx, &mu_digest, signature,
-                                   &validation);
+    r = Esys_VerifyDigestSignature(esys_context, mldsa_handle, ESYS_TR_NONE, ESYS_TR_NONE,
+                                   ESYS_TR_NONE, &sig_ctx, &mu_digest, signature, &validation);
     goto_if_error(r, "Error: VerifyDigestSignature", error);
 
 #if OPENSSL_VERSION_NUMBER >= 0x30500000L
     /* ---- OpenSSL cross-verification ----------------------------------- */
-    r = test_ossl_mldsa_verify_with_ctx(
-            outPublic,
-            (const uint8_t *)ctx_str, strlen(ctx_str),
-            (const uint8_t *)message, strlen(message),
-            signature);
+    r = test_ossl_mldsa_verify_with_ctx(outPublic, (const uint8_t *)ctx_str, strlen(ctx_str),
+                                        (const uint8_t *)message, strlen(message), signature);
     goto_if_error(r, "Error: OpenSSL ML-DSA cross-verification", error);
 #endif
 

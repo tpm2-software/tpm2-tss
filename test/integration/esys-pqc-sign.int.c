@@ -68,8 +68,7 @@ test_ossl_mldsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPub
     if (!OSSL_PARAM_BLD_push_octet_string(build, OSSL_PKEY_PARAM_PUB_KEY,
                                           tpmPublicKey->publicArea.unique.mldsa.buffer,
                                           tpmPublicKey->publicArea.unique.mldsa.size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create ML-DSA key parameters",
-                   error_cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create ML-DSA key parameters", error_cleanup);
     }
 
     params = OSSL_PARAM_BLD_to_param(build);
@@ -92,9 +91,9 @@ error_cleanup:
 }
 
 static TSS2_RC
-test_ossl_mldsa_verify(const TPM2B_PUBLIC *tpmPublicKey,
-                       const uint8_t      *message,
-                       size_t              messageSize,
+test_ossl_mldsa_verify(const TPM2B_PUBLIC   *tpmPublicKey,
+                       const uint8_t        *message,
+                       size_t                messageSize,
                        const TPMT_SIGNATURE *signature) {
     TSS2_RC     r = TSS2_RC_SUCCESS;
     EVP_PKEY   *publicKey = NULL;
@@ -119,11 +118,11 @@ test_ossl_mldsa_verify(const TPM2B_PUBLIC *tpmPublicKey,
                    error_cleanup);
     }
 
-    if (EVP_DigestVerify(mdCtx, signature->signature.mldsa.buffer,
-                         signature->signature.mldsa.size, message, messageSize)
+    if (EVP_DigestVerify(mdCtx, signature->signature.mldsa.buffer, signature->signature.mldsa.size,
+                         message, messageSize)
         != 1) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE,
-                   "OpenSSL ML-DSA verification failed", error_cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "OpenSSL ML-DSA verification failed",
+                   error_cleanup);
     }
 
 error_cleanup:

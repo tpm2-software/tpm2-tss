@@ -68,8 +68,7 @@ test_ossl_mlkem_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPub
     if (!OSSL_PARAM_BLD_push_octet_string(build, OSSL_PKEY_PARAM_PUB_KEY,
                                           tpmPublicKey->publicArea.unique.mlkem.buffer,
                                           tpmPublicKey->publicArea.unique.mlkem.size)) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create ML-KEM key parameters",
-                   error_cleanup);
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Create ML-KEM key parameters", error_cleanup);
     }
 
     params = OSSL_PARAM_BLD_to_param(build);
@@ -158,9 +157,9 @@ test_get_mlkem_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPubli
 }
 
 static TSS2_RC
-test_ossl_mlkem_encapsulate(EVP_PKEY *publicKey,
+test_ossl_mlkem_encapsulate(EVP_PKEY              *publicKey,
                             TPM2B_KEM_CIPHERTEXT **ciphertext,
-                            TPM2B_SHARED_SECRET **secret) {
+                            TPM2B_SHARED_SECRET  **secret) {
     TSS2_RC       r = TSS2_RC_SUCCESS;
     EVP_PKEY_CTX *ctx = NULL;
     size_t        ct_len = 0;
@@ -208,9 +207,9 @@ error_cleanup:
 }
 
 static TSS2_RC
-test_ossl_mlkem_decapsulate(EVP_PKEY *privateKey,
+test_ossl_mlkem_decapsulate(EVP_PKEY                   *privateKey,
                             const TPM2B_KEM_CIPHERTEXT *ciphertext,
-                            TPM2B_SHARED_SECRET **secret) {
+                            TPM2B_SHARED_SECRET       **secret) {
     TSS2_RC       r = TSS2_RC_SUCCESS;
     EVP_PKEY_CTX *ctx = NULL;
     size_t        ss_len = 0;
@@ -420,13 +419,13 @@ test_esys_pqc_kem_load_external_ossl_key(ESYS_CONTEXT *esys_context) {
     LOG_WARNING("Skipping ML-KEM OSSL interop test: requires OpenSSL 3.5+");
     return EXIT_SUCCESS;
 #else
-    TSS2_RC                r;
-    EVP_PKEY              *ossl_keypair = NULL;
-    TPM2B_PUBLIC           inPublic = { 0 };
-    ESYS_TR                loaded_handle = ESYS_TR_NONE;
-    TPM2B_KEM_CIPHERTEXT  *ciphertext = NULL;
-    TPM2B_SHARED_SECRET   *enc_secret = NULL;
-    TPM2B_SHARED_SECRET   *ossl_dec_secret = NULL;
+    TSS2_RC               r;
+    EVP_PKEY             *ossl_keypair = NULL;
+    TPM2B_PUBLIC          inPublic = { 0 };
+    ESYS_TR               loaded_handle = ESYS_TR_NONE;
+    TPM2B_KEM_CIPHERTEXT *ciphertext = NULL;
+    TPM2B_SHARED_SECRET  *enc_secret = NULL;
+    TPM2B_SHARED_SECRET  *ossl_dec_secret = NULL;
 
     r = test_ossl_mlkem_keygen(TPM2_MLKEM_PARMS_1024, &ossl_keypair);
     goto_if_error(r, "Error: OpenSSL ML-KEM key generation", error);
