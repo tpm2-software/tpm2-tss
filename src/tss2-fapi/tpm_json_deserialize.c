@@ -215,6 +215,9 @@ static bool
 get_number(const char *token, int64_t *num) {
     int itoken = 0;
     int pos = 0;
+    if (!token) {
+        return false;
+    }
     if (strncmp(token, "0x", 2) == 0) {
         itoken = 2;
         sscanf(&token[itoken], "%" PRIx64 "%n", num, &pos);
