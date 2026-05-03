@@ -38,7 +38,7 @@
  *
  * @param[in,out] context The FAPI_CONTEXT.
  * @param[in]     policyPath The policy path for policy store.
- * @param[in]     policy The result of policy deserialization.
+ * @param[in,out] policy The result of policy deserialization.
  * @param[in]     hash_alg The used hash alg for policy digest computations.
  * @param[out]    digest_idx The index of the current digest. The policy digest can be
  *                computed for several hash algorithms the digets index is a reverence
@@ -89,13 +89,21 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
 
     statecase(context->state, POLICY_READ);
         r = ifapi_policy_store_load_async(pstore, io, policyPath);
-        goto_if_error2(r, "Can't open: %s", cleanup, policyPath);
+        if (r) {
+            LOG_ERROR("Can't open: %s", policyPath);
+            memset(policy, 0, sizeof(TPMS_POLICY));
+            goto cleanup;
+        }
         fallthrough;
 
     statecase(context->state, POLICY_READ_FINISH);
         r = ifapi_policy_store_load_finish(pstore, io, policy);
         return_try_again(r);
-        goto_if_error(r, "read_finish failed", cleanup);
+        if (r) {
+            LOG_ERROR("read_finish failed");
+            memset(policy, 0, sizeof(TPMS_POLICY));
+            goto cleanup;
+        }
         fallthrough;
 
     statecase(context->state, POLICY_INSTANTIATE_PREPARE);
@@ -201,13 +209,21 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
 
     statecase(*state, POLICY_READ);
         r = ifapi_policy_store_load_async(pstore, io, policyPath);
-        goto_if_error2(r, "Can't open: %s", cleanup, policyPath);
+        if (r) {
+            LOG_ERROR("Can't open: %s", policyPath);
+            memset(policy, 0, sizeof(TPMS_POLICY));
+            goto cleanup;
+        }
         fallthrough;
 
     statecase(*state, POLICY_READ_FINISH);
         r = ifapi_policy_store_load_finish(pstore, io, policy);
         return_try_again(r);
-        goto_if_error(r, "read_finish failed", cleanup);
+        if (r) {
+            LOG_ERROR("read_finish failed");
+            memset(policy, 0, sizeof(TPMS_POLICY));
+            goto cleanup;
+        }
         fallthrough;
 
     statecase(*state, POLICY_EXECUTE_PREPARE);

@@ -184,6 +184,9 @@ Fapi_CreateNv_Async(FAPI_CONTEXT *context,
     check_not_null(context);
     check_not_null(path);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_NV_Cmds *nvCmd = &(context->nv_cmd);
     TPM2B_AUTH    *auth = &nvCmd->auth;
