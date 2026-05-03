@@ -233,6 +233,9 @@ Fapi_Provision_Async(FAPI_CONTEXT *context,
     /* Check for NULL parameters */
     check_not_null(context);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_Provision *command = &context->cmd.Provision;
 

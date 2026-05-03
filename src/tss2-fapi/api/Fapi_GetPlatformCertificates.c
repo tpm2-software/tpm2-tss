@@ -149,6 +149,9 @@ Fapi_GetPlatformCertificates_Async(FAPI_CONTEXT *context) {
     /* Check for NULL parameters */
     check_not_null(context);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize Fapi_GetPlatformCertificates");

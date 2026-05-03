@@ -206,6 +206,9 @@ Fapi_Quote_Async(FAPI_CONTEXT  *context,
     check_not_null(pcrList);
     check_not_null(keyPath);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Check for invalid parameters */
     if (pcrListSize == 0) {
         LOG_ERROR("pcrListSize must not be NULL");

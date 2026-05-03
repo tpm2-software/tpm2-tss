@@ -184,6 +184,9 @@ Fapi_AuthorizePolicy_Async(FAPI_CONTEXT  *context,
         check_not_null(policyRef);
     }
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     if (policyRefSize > sizeof(policy->policyRef.buffer)) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyRef too large.");
     }

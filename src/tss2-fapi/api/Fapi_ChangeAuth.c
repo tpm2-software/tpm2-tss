@@ -163,6 +163,9 @@ Fapi_ChangeAuth_Async(FAPI_CONTEXT *context, char const *entityPath, char const 
     check_not_null(context);
     check_not_null(entityPath);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful pointer aliases */
     IFAPI_Entity_ChangeAuth *command = &(context->cmd.Entity_ChangeAuth);
 

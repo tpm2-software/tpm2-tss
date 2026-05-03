@@ -161,6 +161,9 @@ Fapi_NvSetBits_Async(FAPI_CONTEXT *context, char const *nvPath, uint64_t bitmap)
     check_not_null(context);
     check_not_null(nvPath);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Helpful alias pointers */
     IFAPI_NV_Cmds *command = &context->nv_cmd;
 
