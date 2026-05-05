@@ -1,0 +1,50 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "default",
+            "description": "Ninja multi-config with vcpkg + Clang/LLVM chainload (set as default)",
+            "inherits": [
+                "clang"
+            ]
+        },
+        {
+            "name": "clang",
+            "description": "Ninja multi-config with vcpkg + Clang/LLVM chainload",
+            "inherits": [
+                "base"
+            ],
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/clang.cmake"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "clang-debug",
+            "configurePreset": "clang",
+            "configuration": "Debug"
+        },
+        {
+            "name": "clang-release",
+            "configurePreset": "clang",
+            "configuration": "Release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "clang",
+            "configurePreset": "clang"
+        }
+    ]
+}
