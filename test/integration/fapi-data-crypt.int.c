@@ -335,5 +335,11 @@ skip:
 
 int
 test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
+#ifndef ENABLE_PQC
+    UNUSED(fapi_context);
+    LOG_WARNING("Skipping: PQC not enabled (configure --enable-pqc)");
+    return EXIT_SKIP;
+#else
     return test_fapi_data_crypt(fapi_context);
+#endif
 }

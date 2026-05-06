@@ -718,24 +718,45 @@ ifapi_json_TPM2_ALG_ID_deserialize(json_object *jso, TPM2_ALG_ID *out) {
         TPM2_ALG_ID in;
         const char *name;
     } tab[] = {
-        { TPM2_ALG_ERROR, "ERROR" },       { TPM2_ALG_RSA, "RSA" },
-        { TPM2_ALG_SHA, "SHA" },           { TPM2_ALG_SHA1, "SHA1" },
-        { TPM2_ALG_HMAC, "HMAC" },         { TPM2_ALG_AES, "AES" },
-        { TPM2_ALG_MGF1, "MGF1" },         { TPM2_ALG_KEYEDHASH, "KEYEDHASH" },
-        { TPM2_ALG_XOR, "XOR" },           { TPM2_ALG_SHA256, "SHA256" },
-        { TPM2_ALG_SHA384, "SHA384" },     { TPM2_ALG_SHA512, "SHA512" },
-        { TPM2_ALG_NULL, "NULL" },         { TPM2_ALG_SM3_256, "SM3_256" },
-        { TPM2_ALG_SM4, "SM4" },           { TPM2_ALG_RSASSA, "RSASSA" },
-        { TPM2_ALG_RSAES, "RSAES" },       { TPM2_ALG_RSAPSS, "RSAPSS" },
-        { TPM2_ALG_OAEP, "OAEP" },         { TPM2_ALG_ECDSA, "ECDSA" },
-        { TPM2_ALG_ECDH, "ECDH" },         { TPM2_ALG_ECDAA, "ECDAA" },
-        { TPM2_ALG_SM2, "SM2" },           { TPM2_ALG_ECSCHNORR, "ECSCHNORR" },
-        { TPM2_ALG_ECMQV, "ECMQV" },       { TPM2_ALG_KDF1_SP800_56A, "KDF1_SP800_56A" },
-        { TPM2_ALG_KDF2, "KDF2" },         { TPM2_ALG_KDF1_SP800_108, "KDF1_SP800_108" },
-        { TPM2_ALG_ECC, "ECC" },           { TPM2_ALG_SYMCIPHER, "SYMCIPHER" },
-        { TPM2_ALG_CAMELLIA, "CAMELLIA" }, { TPM2_ALG_CTR, "CTR" },
-        { TPM2_ALG_OFB, "OFB" },           { TPM2_ALG_CBC, "CBC" },
-        { TPM2_ALG_CFB, "CFB" },           { TPM2_ALG_ECB, "ECB" },
+        { TPM2_ALG_ERROR, "ERROR" },
+        { TPM2_ALG_RSA, "RSA" },
+        { TPM2_ALG_SHA, "SHA" },
+        { TPM2_ALG_SHA1, "SHA1" },
+        { TPM2_ALG_HMAC, "HMAC" },
+        { TPM2_ALG_AES, "AES" },
+        { TPM2_ALG_MGF1, "MGF1" },
+        { TPM2_ALG_KEYEDHASH, "KEYEDHASH" },
+        { TPM2_ALG_XOR, "XOR" },
+        { TPM2_ALG_SHA256, "SHA256" },
+        { TPM2_ALG_SHA384, "SHA384" },
+        { TPM2_ALG_SHA512, "SHA512" },
+        { TPM2_ALG_NULL, "NULL" },
+        { TPM2_ALG_SM3_256, "SM3_256" },
+        { TPM2_ALG_SM4, "SM4" },
+        { TPM2_ALG_RSASSA, "RSASSA" },
+        { TPM2_ALG_RSAES, "RSAES" },
+        { TPM2_ALG_RSAPSS, "RSAPSS" },
+        { TPM2_ALG_OAEP, "OAEP" },
+        { TPM2_ALG_ECDSA, "ECDSA" },
+        { TPM2_ALG_ECDH, "ECDH" },
+        { TPM2_ALG_ECDAA, "ECDAA" },
+        { TPM2_ALG_SM2, "SM2" },
+        { TPM2_ALG_ECSCHNORR, "ECSCHNORR" },
+        { TPM2_ALG_ECMQV, "ECMQV" },
+        { TPM2_ALG_KDF1_SP800_56A, "KDF1_SP800_56A" },
+        { TPM2_ALG_KDF2, "KDF2" },
+        { TPM2_ALG_KDF1_SP800_108, "KDF1_SP800_108" },
+        { TPM2_ALG_ECC, "ECC" },
+        { TPM2_ALG_SYMCIPHER, "SYMCIPHER" },
+        { TPM2_ALG_CAMELLIA, "CAMELLIA" },
+        { TPM2_ALG_CTR, "CTR" },
+        { TPM2_ALG_OFB, "OFB" },
+        { TPM2_ALG_CBC, "CBC" },
+        { TPM2_ALG_CFB, "CFB" },
+        { TPM2_ALG_ECB, "ECB" },
+        { TPM2_ALG_MLKEM, "MLKEM" },
+        { TPM2_ALG_MLDSA, "MLDSA" },
+        { TPM2_ALG_HASH_MLDSA, "HASH_MLDSA" },
     };
 
     const char *s = json_object_get_string(jso);
@@ -1538,7 +1559,7 @@ TSS2_RC
 ifapi_json_TPMI_ALG_SIG_SCHEME_deserialize(json_object *jso, TPMI_ALG_SIG_SCHEME *out) {
     SUBTYPE_FILTER(TPMI_ALG_SIG_SCHEME, TPM2_ALG_ID, TPM2_ALG_RSASSA, TPM2_ALG_RSAPSS,
                    TPM2_ALG_ECDSA, TPM2_ALG_ECDAA, TPM2_ALG_SM2, TPM2_ALG_ECSCHNORR, TPM2_ALG_HMAC,
-                   TPM2_ALG_NULL);
+                   TPM2_ALG_MLDSA, TPM2_ALG_HASH_MLDSA, TPM2_ALG_NULL);
 }
 
 /** Deserialize a TPMU_HA json object.
@@ -2927,6 +2948,9 @@ ifapi_json_TPMU_SIG_SCHEME_deserialize(UINT32 selector, json_object *jso, TPMU_S
         return ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_deserialize(jso, &out->ecschnorr);
     case TPM2_ALG_HMAC:
         return ifapi_json_TPMS_SCHEME_HMAC_deserialize(jso, &out->hmac);
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        return ifapi_json_TPMS_SCHEME_HASH_deserialize(jso, &out->any);
 
     case TPM2_ALG_NULL: {
         return TSS2_RC_SUCCESS;
@@ -3166,6 +3190,8 @@ ifapi_json_TPMU_ASYM_SCHEME_deserialize(UINT32 selector, json_object *jso, TPMU_
         return ifapi_json_TPMS_ENC_SCHEME_RSAES_deserialize(jso, &out->rsaes);
     case TPM2_ALG_OAEP:
         return ifapi_json_TPMS_ENC_SCHEME_OAEP_deserialize(jso, &out->oaep);
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
 
     case TPM2_ALG_NULL: {
         return TSS2_RC_SUCCESS;
@@ -3630,6 +3656,10 @@ ifapi_json_TPMU_SIGNATURE_deserialize(UINT32 selector, json_object *jso, TPMU_SI
         return ifapi_json_TPMS_SIGNATURE_ECSCHNORR_deserialize(jso, &out->ecschnorr);
     case TPM2_ALG_HMAC:
         return ifapi_json_TPMT_HA_deserialize(jso, &out->hmac);
+    case TPM2_ALG_MLDSA:
+        return ifapi_json_TPM2B_SIGNATURE_MLDSA_deserialize(jso, &out->mldsa);
+    case TPM2_ALG_HASH_MLDSA:
+        return ifapi_json_TPMS_SIGNATURE_HASH_MLDSA_deserialize(jso, &out->hash_mldsa);
 
     case TPM2_ALG_NULL: {
         return TSS2_RC_SUCCESS;
@@ -3713,7 +3743,8 @@ ifapi_json_TPM2B_ENCRYPTED_SECRET_deserialize(json_object *jso, TPM2B_ENCRYPTED_
 TSS2_RC
 ifapi_json_TPMI_ALG_PUBLIC_deserialize(json_object *jso, TPMI_ALG_PUBLIC *out) {
     SUBTYPE_FILTER(TPMI_ALG_PUBLIC, TPM2_ALG_ID, TPM2_ALG_RSA, TPM2_ALG_KEYEDHASH, TPM2_ALG_ECC,
-                   TPM2_ALG_SYMCIPHER, TPM2_ALG_NULL);
+                   TPM2_ALG_SYMCIPHER, TPM2_ALG_MLDSA, TPM2_ALG_MLKEM, TPM2_ALG_HASH_MLDSA,
+                   TPM2_ALG_NULL);
 }
 
 /** Deserialize a TPMU_PUBLIC_ID json object.
@@ -3738,6 +3769,11 @@ ifapi_json_TPMU_PUBLIC_ID_deserialize(UINT32 selector, json_object *jso, TPMU_PU
         return ifapi_json_TPM2B_PUBLIC_KEY_RSA_deserialize(jso, &out->rsa);
     case TPM2_ALG_ECC:
         return ifapi_json_TPMS_ECC_POINT_deserialize(jso, &out->ecc);
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        return ifapi_json_TPM2B_PUBLIC_KEY_MLDSA_deserialize(jso, &out->mldsa);
+    case TPM2_ALG_MLKEM:
+        return ifapi_json_TPM2B_PUBLIC_KEY_MLKEM_deserialize(jso, &out->mlkem);
     default:
         LOG_TRACE("false");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3875,6 +3911,226 @@ ifapi_json_TPMS_ECC_PARMS_deserialize(json_object *jso, TPMS_ECC_PARMS *out) {
     return TSS2_RC_SUCCESS;
 }
 
+/** Deserialize a TPM2B_PUBLIC_KEY_MLDSA json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ */
+TSS2_RC
+ifapi_json_TPM2B_PUBLIC_KEY_MLDSA_deserialize(json_object *jso, TPM2B_PUBLIC_KEY_MLDSA *out) {
+    TSS2_RC r;
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    UINT16 size = 0;
+    r = ifapi_json_byte_deserialize(jso, TPM2_MAX_MLDSA_PUB_SIZE, (BYTE *)&out->buffer, &size);
+    return_if_error(r, "byte serialize");
+
+    out->size = size;
+    return r;
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+}
+
+/** Deserialize a TPM2B_PUBLIC_KEY_MLKEM json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPM2B_PUBLIC_KEY_MLKEM_deserialize(json_object *jso, TPM2B_PUBLIC_KEY_MLKEM *out) {
+    TSS2_RC r;
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    UINT16 size = 0;
+    r = ifapi_json_byte_deserialize(jso, TPM2_MAX_MLKEM_PUB_SIZE, (BYTE *)&out->buffer, &size);
+    return_if_error(r, "byte serialize");
+
+    out->size = size;
+    return r;
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+}
+
+/** Deserialize a TPM2B_SIGNATURE_MLDSA json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPM2B_SIGNATURE_MLDSA_deserialize(json_object *jso, TPM2B_SIGNATURE_MLDSA *out) {
+    TSS2_RC r;
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    UINT16 size = 0;
+    r = ifapi_json_byte_deserialize(jso, TPM2_MAX_MLDSA_SIG_SIZE, (BYTE *)&out->buffer, &size);
+    return_if_error(r, "byte serialize");
+
+    out->size = size;
+    return r;
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+}
+
+static char *field_TPMS_SIGNATURE_HASH_MLDSA_tab[] = { "hash", "signature", "$schema" };
+
+/** Deserialize a TPMS_SIGNATURE_HASH_MLDSA json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMS_SIGNATURE_HASH_MLDSA_deserialize(json_object *jso, TPMS_SIGNATURE_HASH_MLDSA *out) {
+    json_object *jso2;
+    TSS2_RC      r;
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    ifapi_check_json_object_fields(jso, &field_TPMS_SIGNATURE_HASH_MLDSA_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_SIGNATURE_HASH_MLDSA_tab));
+    if (!ifapi_get_sub_object(jso, "hash", &jso2)) {
+        LOG_ERROR("Field \"hash\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hash);
+    return_if_error(r, "Bad value for field \"hash\".");
+
+    if (!ifapi_get_sub_object(jso, "signature", &jso2)) {
+        LOG_ERROR("Field \"signature\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_TPM2B_SIGNATURE_MLDSA_deserialize(jso2, &out->signature);
+    return_if_error(r, "Bad value for field \"signature\".");
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+}
+
+static char *field_TPMS_MLDSA_PARMS_tab[]
+    = { "parameterSet", "parameterset", "allowExternalMu", "allowexternalmu", "$schema" };
+
+/** Deserialize a TPMS_MLDSA_PARMS json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMS_MLDSA_PARMS_deserialize(json_object *jso, TPMS_MLDSA_PARMS *out) {
+    json_object *jso2;
+    TSS2_RC      r;
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    ifapi_check_json_object_fields(jso, &field_TPMS_MLDSA_PARMS_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_MLDSA_PARMS_tab));
+    if (!ifapi_get_sub_object(jso, "parameterSet", &jso2)) {
+        LOG_ERROR("Field \"parameterSet\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_UINT16_deserialize(jso2, &out->parameterSet);
+    return_if_error(r, "Bad value for field \"parameterSet\".");
+
+    if (ifapi_get_sub_object(jso, "allowExternalMu", &jso2)) {
+        UINT16 tmp;
+        r = ifapi_json_UINT16_deserialize(jso2, &tmp);
+        return_if_error(r, "Bad value for field \"allowExternalMu\".");
+        out->allowExternalMu = (UINT8)tmp;
+    } else {
+        out->allowExternalMu = 0;
+    }
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+}
+
+static char *field_TPMS_HASH_MLDSA_PARMS_tab[]
+    = { "parameterSet", "parameterset", "hashAlg", "hashalg", "$schema" };
+
+/** Deserialize a TPMS_HASH_MLDSA_PARMS json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMS_HASH_MLDSA_PARMS_deserialize(json_object *jso, TPMS_HASH_MLDSA_PARMS *out) {
+    json_object *jso2;
+    TSS2_RC      r;
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    ifapi_check_json_object_fields(jso, &field_TPMS_HASH_MLDSA_PARMS_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_HASH_MLDSA_PARMS_tab));
+    if (!ifapi_get_sub_object(jso, "parameterSet", &jso2)) {
+        LOG_ERROR("Field \"parameterSet\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_UINT16_deserialize(jso2, &out->parameterSet);
+    return_if_error(r, "Bad value for field \"parameterSet\".");
+
+    if (!ifapi_get_sub_object(jso, "hashAlg", &jso2)) {
+        LOG_ERROR("Field \"hashAlg\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->hashAlg);
+    return_if_error(r, "Bad value for field \"hashAlg\".");
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+}
+
+static char *field_TPMS_MLKEM_PARMS_tab[]
+    = { "symmetric", "parameterSet", "parameterset", "$schema" };
+
+/** Deserialize a TPMS_MLKEM_PARMS json object.
+ *
+ * @param[in]  jso the json object to be deserialized.
+ * @param[out] out the deserialzed binary object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMS_MLKEM_PARMS_deserialize(json_object *jso, TPMS_MLKEM_PARMS *out) {
+    json_object *jso2;
+    TSS2_RC      r;
+    LOG_TRACE("call");
+    return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    ifapi_check_json_object_fields(jso, &field_TPMS_MLKEM_PARMS_tab[0],
+                                   SIZE_OF_ARY(field_TPMS_MLKEM_PARMS_tab));
+    if (!ifapi_get_sub_object(jso, "symmetric", &jso2)) {
+        LOG_ERROR("Field \"symmetric\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_TPMT_SYM_DEF_OBJECT_deserialize(jso2, &out->symmetric);
+    return_if_error(r, "Bad value for field \"symmetric\".");
+
+    if (!ifapi_get_sub_object(jso, "parameterSet", &jso2)) {
+        LOG_ERROR("Field \"parameterSet\" not found.");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    r = ifapi_json_UINT16_deserialize(jso2, &out->parameterSet);
+    return_if_error(r, "Bad value for field \"parameterSet\".");
+    LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+}
+
 /** Deserialize a TPMU_PUBLIC_PARMS json object.
  *
  * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
@@ -3899,6 +4155,12 @@ ifapi_json_TPMU_PUBLIC_PARMS_deserialize(UINT32             selector,
         return ifapi_json_TPMS_RSA_PARMS_deserialize(jso, &out->rsaDetail);
     case TPM2_ALG_ECC:
         return ifapi_json_TPMS_ECC_PARMS_deserialize(jso, &out->eccDetail);
+    case TPM2_ALG_MLDSA:
+        return ifapi_json_TPMS_MLDSA_PARMS_deserialize(jso, &out->mldsaDetail);
+    case TPM2_ALG_HASH_MLDSA:
+        return ifapi_json_TPMS_HASH_MLDSA_PARMS_deserialize(jso, &out->hash_mldsaDetail);
+    case TPM2_ALG_MLKEM:
+        return ifapi_json_TPMS_MLKEM_PARMS_deserialize(jso, &out->mlkemDetail);
     default:
         LOG_TRACE("false");
         return TSS2_FAPI_RC_BAD_VALUE;

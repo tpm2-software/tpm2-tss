@@ -783,6 +783,7 @@ EXTRA_DIST +=  \
     test/data/fapi/P_ECC_no_unique_init.json \
     test/data/fapi/P_RSA3072_no_unique_init.json \
     test/data/fapi/P_RSA_no_unique_init.json \
+    test/data/fapi/P_MLDSA.json \
     test/data/fapi/policy/pol_pcr16_0.json \
     test/data/fapi/policy/pol_pcr16_0_rsa_authorized.json \
     test/data/fapi/policy/pol_pcr16_0_ecc_authorized.json \

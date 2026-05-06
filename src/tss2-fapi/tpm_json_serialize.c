@@ -416,6 +416,9 @@ ifapi_json_TPM2_ALG_ID_serialize(const TPM2_ALG_ID in, json_object **jso) {
         { TPM2_ALG_CBC, "CBC" },
         { TPM2_ALG_CFB, "CFB" },
         { TPM2_ALG_ECB, "ECB" },
+        { TPM2_ALG_MLKEM, "MLKEM" },
+        { TPM2_ALG_MLDSA, "MLDSA" },
+        { TPM2_ALG_HASH_MLDSA, "HASH_MLDSA" },
     };
 
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
@@ -1287,7 +1290,8 @@ ifapi_json_TPMI_ALG_KDF_serialize(const TPMI_ALG_KDF in, json_object **jso) {
 TSS2_RC
 ifapi_json_TPMI_ALG_SIG_SCHEME_serialize(const TPMI_ALG_SIG_SCHEME in, json_object **jso) {
     CHECK_IN_LIST(TPMI_ALG_SIG_SCHEME, in, TPM2_ALG_RSASSA, TPM2_ALG_RSAPSS, TPM2_ALG_ECDSA,
-                  TPM2_ALG_ECDAA, TPM2_ALG_SM2, TPM2_ALG_ECSCHNORR, TPM2_ALG_HMAC, TPM2_ALG_NULL);
+                  TPM2_ALG_ECDAA, TPM2_ALG_SM2, TPM2_ALG_ECSCHNORR, TPM2_ALG_HMAC, TPM2_ALG_MLDSA,
+                  TPM2_ALG_HASH_MLDSA, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -3066,6 +3070,9 @@ ifapi_json_TPMU_SIG_SCHEME_serialize(const TPMU_SIG_SCHEME *in,
         return ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(&in->ecschnorr, jso);
     case TPM2_ALG_HMAC:
         return ifapi_json_TPMS_SCHEME_HMAC_serialize(&in->hmac, jso);
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        return ifapi_json_TPMS_SCHEME_HASH_serialize(&in->any, jso);
     default:
         LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3271,7 +3278,7 @@ TSS2_RC
 ifapi_json_TPMI_ALG_ASYM_SCHEME_serialize(const TPMI_ALG_ASYM_SCHEME in, json_object **jso) {
     CHECK_IN_LIST(TPMI_ALG_ASYM_SCHEME, in, TPM2_ALG_ECDH, TPM2_ALG_RSASSA, TPM2_ALG_RSAPSS,
                   TPM2_ALG_ECDSA, TPM2_ALG_ECDAA, TPM2_ALG_SM2, TPM2_ALG_ECSCHNORR, TPM2_ALG_RSAES,
-                  TPM2_ALG_OAEP, TPM2_ALG_NULL);
+                  TPM2_ALG_OAEP, TPM2_ALG_MLDSA, TPM2_ALG_HASH_MLDSA, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -3309,6 +3316,10 @@ ifapi_json_TPMU_ASYM_SCHEME_serialize(const TPMU_ASYM_SCHEME *in,
         return ifapi_json_TPMS_ENC_SCHEME_RSAES_serialize(&in->rsaes, jso);
     case TPM2_ALG_OAEP:
         return ifapi_json_TPMS_ENC_SCHEME_OAEP_serialize(&in->oaep, jso);
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        /* ML-DSA schemes have no inner detail fields to serialize. */
+        return TSS2_RC_SUCCESS;
     default:
         LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3727,6 +3738,10 @@ ifapi_json_TPMU_SIGNATURE_serialize(const TPMU_SIGNATURE *in, UINT32 selector, j
         return ifapi_json_TPMS_SIGNATURE_ECSCHNORR_serialize(&in->ecschnorr, jso);
     case TPM2_ALG_HMAC:
         return ifapi_json_TPMT_HA_serialize(&in->hmac, jso);
+    case TPM2_ALG_MLDSA:
+        return ifapi_json_TPM2B_SIGNATURE_MLDSA_serialize(&in->mldsa, jso);
+    case TPM2_ALG_HASH_MLDSA:
+        return ifapi_json_TPMS_SIGNATURE_HASH_MLDSA_serialize(&in->hash_mldsa, jso);
     default:
         LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3811,7 +3826,8 @@ ifapi_json_TPM2B_ENCRYPTED_SECRET_serialize(const TPM2B_ENCRYPTED_SECRET *in, js
 TSS2_RC
 ifapi_json_TPMI_ALG_PUBLIC_serialize(const TPMI_ALG_PUBLIC in, json_object **jso) {
     CHECK_IN_LIST(TPMI_ALG_PUBLIC, in, TPM2_ALG_RSA, TPM2_ALG_KEYEDHASH, TPM2_ALG_ECC,
-                  TPM2_ALG_SYMCIPHER, TPM2_ALG_NULL);
+                  TPM2_ALG_SYMCIPHER, TPM2_ALG_MLDSA, TPM2_ALG_MLKEM, TPM2_ALG_HASH_MLDSA,
+                  TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -3837,6 +3853,11 @@ ifapi_json_TPMU_PUBLIC_ID_serialize(const TPMU_PUBLIC_ID *in, UINT32 selector, j
         return ifapi_json_TPM2B_PUBLIC_KEY_RSA_serialize(&in->rsa, jso);
     case TPM2_ALG_ECC:
         return ifapi_json_TPMS_ECC_POINT_serialize(&in->ecc, jso);
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        return ifapi_json_TPM2B_PUBLIC_KEY_MLDSA_serialize(&in->mldsa, jso);
+    case TPM2_ALG_MLKEM:
+        return ifapi_json_TPM2B_PUBLIC_KEY_MLKEM_serialize(&in->mlkem, jso);
     default:
         LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -3967,6 +3988,242 @@ ifapi_json_TPMS_ECC_PARMS_serialize(const TPMS_ECC_PARMS *in, json_object **jso)
     return TSS2_RC_SUCCESS;
 }
 
+/** Serialize value of type TPM2B_PUBLIC_KEY_MLDSA to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPM2B_PUBLIC_KEY_MLDSA.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPM2B_PUBLIC_KEY_MLDSA_serialize(const TPM2B_PUBLIC_KEY_MLDSA *in, json_object **jso) {
+    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(jso, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    if (in->size > TPM2_MAX_MLDSA_PUB_SIZE) {
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR
+                  " = TPM2_MAX_MLDSA_PUB_SIZE)",
+                  (size_t)in->size, (size_t)TPM2_MAX_MLDSA_PUB_SIZE);
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    char hex_string[((size_t)in->size) * 2 + 1];
+
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
+        sprintf(&hex_string[off], "%02x", in->buffer[i]);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
+    return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+
+    return TSS2_RC_SUCCESS;
+}
+
+/** Serialize value of type TPM2B_PUBLIC_KEY_MLKEM to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPM2B_PUBLIC_KEY_MLKEM.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPM2B_PUBLIC_KEY_MLKEM_serialize(const TPM2B_PUBLIC_KEY_MLKEM *in, json_object **jso) {
+    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(jso, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    if (in->size > TPM2_MAX_MLKEM_PUB_SIZE) {
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR
+                  " = TPM2_MAX_MLKEM_PUB_SIZE)",
+                  (size_t)in->size, (size_t)TPM2_MAX_MLKEM_PUB_SIZE);
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    char hex_string[((size_t)in->size) * 2 + 1];
+
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
+        sprintf(&hex_string[off], "%02x", in->buffer[i]);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
+    return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+
+    return TSS2_RC_SUCCESS;
+}
+
+/** Serialize value of type TPM2B_SIGNATURE_MLDSA to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPM2B_SIGNATURE_MLDSA.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPM2B_SIGNATURE_MLDSA_serialize(const TPM2B_SIGNATURE_MLDSA *in, json_object **jso) {
+    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(jso, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    if (in->size > TPM2_MAX_MLDSA_SIG_SIZE) {
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR
+                  " = TPM2_MAX_MLDSA_SIG_SIZE)",
+                  (size_t)in->size, (size_t)TPM2_MAX_MLDSA_SIG_SIZE);
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
+    char hex_string[((size_t)in->size) * 2 + 1];
+
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
+        sprintf(&hex_string[off], "%02x", in->buffer[i]);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
+    return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+
+    return TSS2_RC_SUCCESS;
+}
+
+/** Serialize value of type TPMS_SIGNATURE_HASH_MLDSA to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_SIGNATURE_HASH_MLDSA.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMS_SIGNATURE_HASH_MLDSA_serialize(const TPMS_SIGNATURE_HASH_MLDSA *in,
+                                               json_object                    **jso) {
+    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(jso, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC      r;
+    json_object *jso2;
+    if (*jso == NULL)
+        *jso = json_object_new_object();
+    jso2 = NULL;
+    r = ifapi_json_TPMI_ALG_HASH_serialize(in->hash, &jso2);
+    return_if_error(r, "Serialize TPMI_ALG_HASH");
+
+    if (json_object_object_add(*jso, "hash", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
+    jso2 = NULL;
+    r = ifapi_json_TPM2B_SIGNATURE_MLDSA_serialize(&in->signature, &jso2);
+    return_if_error(r, "Serialize TPM2B_SIGNATURE_MLDSA");
+
+    if (json_object_object_add(*jso, "signature", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
+    return TSS2_RC_SUCCESS;
+}
+
+/** Serialize value of type TPMS_MLDSA_PARMS to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_MLDSA_PARMS.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMS_MLDSA_PARMS_serialize(const TPMS_MLDSA_PARMS *in, json_object **jso) {
+    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(jso, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC      r;
+    json_object *jso2;
+    if (*jso == NULL)
+        *jso = json_object_new_object();
+    jso2 = NULL;
+    r = ifapi_json_UINT16_serialize(in->parameterSet, &jso2);
+    return_if_error(r, "Serialize TPMI_MLDSA_PARMS");
+
+    if (json_object_object_add(*jso, "parameterSet", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
+    if (in->allowExternalMu) {
+        jso2 = NULL;
+        r = ifapi_json_UINT16_serialize(in->allowExternalMu, &jso2);
+        return_if_error(r, "Serialize allowExternalMu");
+
+        if (json_object_object_add(*jso, "allowExternalMu", jso2)) {
+            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        }
+    }
+    return TSS2_RC_SUCCESS;
+}
+
+/** Serialize value of type TPMS_HASH_MLDSA_PARMS to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_HASH_MLDSA_PARMS.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMS_HASH_MLDSA_PARMS_serialize(const TPMS_HASH_MLDSA_PARMS *in, json_object **jso) {
+    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(jso, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC      r;
+    json_object *jso2;
+    if (*jso == NULL)
+        *jso = json_object_new_object();
+    jso2 = NULL;
+    r = ifapi_json_UINT16_serialize(in->parameterSet, &jso2);
+    return_if_error(r, "Serialize TPMI_MLDSA_PARMS");
+
+    if (json_object_object_add(*jso, "parameterSet", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
+    jso2 = NULL;
+    r = ifapi_json_TPMI_ALG_HASH_serialize(in->hashAlg, &jso2);
+    return_if_error(r, "Serialize TPMI_ALG_HASH");
+
+    if (json_object_object_add(*jso, "hashAlg", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
+    return TSS2_RC_SUCCESS;
+}
+
+/** Serialize value of type TPMS_MLKEM_PARMS to json.
+ *
+ * @param[in] in value to be serialized.
+ * @param[out] jso pointer to the json object.
+ * @retval TSS2_RC_SUCCESS if the function call was a success.
+ * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_MLKEM_PARMS.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ */
+TSS2_RC
+ifapi_json_TPMS_MLKEM_PARMS_serialize(const TPMS_MLKEM_PARMS *in, json_object **jso) {
+    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(jso, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    TSS2_RC      r;
+    json_object *jso2;
+    if (*jso == NULL)
+        *jso = json_object_new_object();
+    jso2 = NULL;
+    r = ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(&in->symmetric, &jso2);
+    return_if_error(r, "Serialize TPMT_SYM_DEF_OBJECT");
+
+    if (json_object_object_add(*jso, "symmetric", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
+    jso2 = NULL;
+    r = ifapi_json_UINT16_serialize(in->parameterSet, &jso2);
+    return_if_error(r, "Serialize TPMI_MLKEM_PARMS");
+
+    if (json_object_object_add(*jso, "parameterSet", jso2)) {
+        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+    }
+    return TSS2_RC_SUCCESS;
+}
+
 /**  Serialize a TPMU_PUBLIC_PARMS to json.
  *
  * This function expects the Bitfield to be encoded as unsigned int in host-endianess.
@@ -3991,6 +4248,12 @@ ifapi_json_TPMU_PUBLIC_PARMS_serialize(const TPMU_PUBLIC_PARMS *in,
         return ifapi_json_TPMS_RSA_PARMS_serialize(&in->rsaDetail, jso);
     case TPM2_ALG_ECC:
         return ifapi_json_TPMS_ECC_PARMS_serialize(&in->eccDetail, jso);
+    case TPM2_ALG_MLDSA:
+        return ifapi_json_TPMS_MLDSA_PARMS_serialize(&in->mldsaDetail, jso);
+    case TPM2_ALG_HASH_MLDSA:
+        return ifapi_json_TPMS_HASH_MLDSA_PARMS_serialize(&in->hash_mldsaDetail, jso);
+    case TPM2_ALG_MLKEM:
+        return ifapi_json_TPMS_MLKEM_PARMS_serialize(&in->mlkemDetail, jso);
     default:
         LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
         return TSS2_FAPI_RC_BAD_VALUE;

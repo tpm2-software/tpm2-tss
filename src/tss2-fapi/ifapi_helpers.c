@@ -76,6 +76,8 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
     char *flag = strtok_r(type_dup, ", ", &saveptr);
     template->unique_ecc_set = false;
     template->unique_rsa_set = false;
+    template->unique_mldsa_set = false;
+    template->unique_mlkem_set = false;
     template->unique_zero = false;
 
     /* The default store will be the user directory */
@@ -135,6 +137,18 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
 
             template->public.publicArea.unique.ecc.y.size = strlen(unique_value) / 2;
             template->unique_ecc_set = true;
+        } else if ((unique_value = extract_value(flag, "unique_mldsa"))) {
+            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_MLDSA_PUB_SIZE,
+                                      &template->public.publicArea.unique.mldsa.buffer[0]);
+            goto_if_error(r, "Invalid unique_mldsa field", error);
+            template->public.publicArea.unique.mldsa.size = strlen(unique_value) / 2;
+            template->unique_mldsa_set = true;
+        } else if ((unique_value = extract_value(flag, "unique_mlkem"))) {
+            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_MLKEM_PUB_SIZE,
+                                      &template->public.publicArea.unique.mlkem.buffer[0]);
+            goto_if_error(r, "Invalid unique_mlkem field", error);
+            template->public.publicArea.unique.mlkem.size = strlen(unique_value) / 2;
+            template->unique_mlkem_set = true;
         } else {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid flag: %s", error, flag);
         }
@@ -144,7 +158,19 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Only ECC or RSA unique can be set", error);
     }
 
-    if ((template->unique_rsa_set || template->unique_ecc_set) & template->unique_zero) {
+    {
+        int unique_count = (template->unique_rsa_set ? 1 : 0) + (template->unique_ecc_set ? 1 : 0)
+                           + (template->unique_mldsa_set ? 1 : 0)
+                           + (template->unique_mlkem_set ? 1 : 0);
+        if (unique_count > 1) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE,
+                       "Only one unique type (RSA/ECC/MLDSA/MLKEM) can be set", error);
+        }
+    }
+
+    if ((template->unique_rsa_set || template->unique_ecc_set || template->unique_mldsa_set
+         || template->unique_mlkem_set)
+        & template->unique_zero) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "unique can't be set if unique_zero is defined",
                    error);
     }
@@ -484,6 +510,40 @@ ifapi_TPM2B_PUBLIC_KEY_RSA_cmp(TPM2B_PUBLIC_KEY_RSA *in1, TPM2B_PUBLIC_KEY_RSA *
     return memcmp(&in1->buffer[0], &in2->buffer[0], in1->size) == 0;
 }
 
+/** Compare two variables of type TPM2B_PUBLIC_KEY_MLDSA.
+ *
+ * @param[in] in1 variable to be compared with in2
+ * @param[in] in2 variable to be compared with in1
+ *
+ * @retval true if the variables are equal.
+ * @retval false if not.
+ */
+bool
+ifapi_TPM2B_PUBLIC_KEY_MLDSA_cmp(TPM2B_PUBLIC_KEY_MLDSA *in1, TPM2B_PUBLIC_KEY_MLDSA *in2) {
+
+    if (in1->size != in2->size)
+        return false;
+
+    return memcmp(&in1->buffer[0], &in2->buffer[0], in1->size) == 0;
+}
+
+/** Compare two variables of type TPM2B_PUBLIC_KEY_MLKEM.
+ *
+ * @param[in] in1 variable to be compared with in2
+ * @param[in] in2 variable to be compared with in1
+ *
+ * @retval true if the variables are equal.
+ * @retval false if not.
+ */
+bool
+ifapi_TPM2B_PUBLIC_KEY_MLKEM_cmp(TPM2B_PUBLIC_KEY_MLKEM *in1, TPM2B_PUBLIC_KEY_MLKEM *in2) {
+
+    if (in1->size != in2->size)
+        return false;
+
+    return memcmp(&in1->buffer[0], &in2->buffer[0], in1->size) == 0;
+}
+
 /**  Compare two variables of type TPMU_PUBLIC_ID.
  *
  * @param[in] in1 variable to be compared with in2.
@@ -518,6 +578,15 @@ ifapi_TPMU_PUBLIC_ID_cmp(TPMU_PUBLIC_ID *in1,
         break;
     case TPM2_ALG_ECC:
         if (!ifapi_TPMS_ECC_POINT_cmp(&in1->ecc, &in2->ecc))
+            return false;
+        break;
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        if (!ifapi_TPM2B_PUBLIC_KEY_MLDSA_cmp(&in1->mldsa, &in2->mldsa))
+            return false;
+        break;
+    case TPM2_ALG_MLKEM:
+        if (!ifapi_TPM2B_PUBLIC_KEY_MLKEM_cmp(&in1->mlkem, &in2->mlkem))
             return false;
         break;
     default:
@@ -1696,6 +1765,17 @@ ifapi_tpm_to_fapi_signature(IFAPI_OBJECT   *sig_key_object,
         /* For ECC signatures the TPM signaute has to be converted to DER. */
         r = ifapi_tpm_ecc_sig_to_der(tpm_signature, signature, signatureSize);
         goto_if_error(r, "Conversion to DER failed", error_cleanup);
+    } else if (sig_key_object->misc.key.public.publicArea.type == TPM2_ALG_MLDSA) {
+        *signatureSize = tpm_signature->signature.mldsa.size;
+        *signature = malloc(*signatureSize);
+        goto_if_null(*signature, "Out of memory.", TSS2_FAPI_RC_MEMORY, error_cleanup);
+        memcpy(*signature, &tpm_signature->signature.mldsa.buffer[0], *signatureSize);
+    } else if (sig_key_object->misc.key.public.publicArea.type == TPM2_ALG_HASH_MLDSA) {
+        *signatureSize = tpm_signature->signature.hash_mldsa.signature.size;
+        *signature = malloc(*signatureSize);
+        goto_if_null(*signature, "Out of memory.", TSS2_FAPI_RC_MEMORY, error_cleanup);
+        memcpy(*signature, &tpm_signature->signature.hash_mldsa.signature.buffer[0],
+               *signatureSize);
     } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unknown signature scheme", error_cleanup);
     }
@@ -2266,6 +2346,10 @@ ifapi_calculate_pcr_digest(json_object *jso_event_list, const FAPI_QUOTE_INFO *q
     case TPM2_ALG_SM2:
         pcr_digest_hash_alg = quote_info->sig_scheme.details.sm2.hashAlg;
         break;
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        pcr_digest_hash_alg = quote_info->sig_scheme.details.any.hashAlg;
+        break;
     default:
         LOG_ERROR("Unknown sig scheme");
         return TSS2_FAPI_RC_BAD_VALUE;
@@ -2528,6 +2612,25 @@ ifapi_cmp_public_key(TPM2B_PUBLIC *key1, TPM2B_PUBLIC *key2) {
         else
             return true;
         break;
+
+    case TPM2_ALG_MLDSA:
+    case TPM2_ALG_HASH_MLDSA:
+        if (key1->publicArea.unique.mldsa.size != key2->publicArea.unique.mldsa.size)
+            return false;
+        if (memcmp(&key1->publicArea.unique.mldsa.buffer[0],
+                   &key2->publicArea.unique.mldsa.buffer[0], key1->publicArea.unique.mldsa.size)
+            != 0)
+            return false;
+        return true;
+
+    case TPM2_ALG_MLKEM:
+        if (key1->publicArea.unique.mlkem.size != key2->publicArea.unique.mlkem.size)
+            return false;
+        if (memcmp(&key1->publicArea.unique.mlkem.buffer[0],
+                   &key2->publicArea.unique.mlkem.buffer[0], key1->publicArea.unique.mlkem.size)
+            != 0)
+            return false;
+        return true;
 
     default:
         return false;
