@@ -64,7 +64,8 @@ test_fapi_pqc_data_crypt(FAPI_CONTEXT *context) {
     r = Fapi_CreateKey(context, FAPI_PROFILE "/HS/SRK/pqcKemKey", "decrypt,noDa", NULL, NULL);
     if (r == TSS2_TCTI_RC_IO_ERROR) {
         /* TCTI IO error — simulator likely crashed (doesn't support ML-KEM Create) */
-        LOG_WARNING("Simulator crashed during ML-KEM CreateKey (rc=0x%08x), skipping.", (unsigned)r);
+        LOG_WARNING("Simulator crashed during ML-KEM CreateKey (rc=0x%08x), skipping.",
+                    (unsigned)r);
         return EXIT_SKIP;
     }
     goto_if_error(r, "Error Fapi_CreateKey (ML-KEM)", error);
