@@ -40,7 +40,7 @@
  * @retval EXIT_SUCCESS
  * @retval EXIT_SKIP
  */
-static int
+int
 test_fapi_pqc_data_crypt(FAPI_CONTEXT *context) {
     TSS2_RC  r;
     uint8_t *cipherText = NULL;
