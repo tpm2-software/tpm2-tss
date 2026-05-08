@@ -427,6 +427,7 @@ FAPI_TESTS_INTEGRATION = \
     test/integration/fapi-unseal.fint \
     test/integration/fapi-unseal-persistent.fint \
     test/integration/fapi-pqc-provision.fint \
+    test/integration/fapi-pqc-data-crypt.fint \
     test/integration/fapi-policy-complex.fint
 
 if TESTDEVICE
@@ -2781,6 +2782,14 @@ test_integration_fapi_pqc_provision_fint_LDADD   = $(TESTS_LDADD)
 test_integration_fapi_pqc_provision_fint_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_fapi_pqc_provision_fint_SOURCES = \
     test/integration/fapi-pqc-provision.int.c \
+    test/integration/main-fapi.c test/integration/test-fapi.h
+
+test_integration_fapi_pqc_data_crypt_fint_CFLAGS  = $(JSONC_CFLAGS) $(TESTS_CFLAGS) \
+ -DFAPI_PROFILE=\"P_MLKEM\"
+test_integration_fapi_pqc_data_crypt_fint_LDADD   = $(TESTS_LDADD)
+test_integration_fapi_pqc_data_crypt_fint_LDFLAGS = $(TESTS_LDFLAGS)
+test_integration_fapi_pqc_data_crypt_fint_SOURCES = \
+    test/integration/fapi-pqc-data-crypt.int.c \
     test/integration/main-fapi.c test/integration/test-fapi.h
 
 endif #FAPI

@@ -305,6 +305,11 @@ test_esys_pqc_signdigest(ESYS_CONTEXT *esys_context) {
                            ESYS_TR_NONE, &inSensitive, &inPublic, &outsideInfo, &creationPCR,
                            &mldsa_handle, &outPublic, &creationData, &creationHash,
                            &creationTicket);
+    if (number_rc(r) == (TPM2_RC_ASYMMETRIC | TPM2_RC_P)
+        || number_rc(r) == (TPM2_RC_TYPE | TPM2_RC_P) || number_rc(r) == TPM2_RC_ASYMMETRIC) {
+        LOG_WARNING("TPM does not support PQC algorithms, skipping.");
+        return EXIT_SKIP;
+    }
     goto_if_error(r, "Error: CreatePrimary (ML-DSA-65, allowExternalMu=1)", error);
 
     r = Esys_TR_SetAuth(esys_context, mldsa_handle, &keyAuth);

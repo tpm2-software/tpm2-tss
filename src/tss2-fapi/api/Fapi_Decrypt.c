@@ -28,6 +28,11 @@
 #include "tss2_tpm2_types.h" // for TPM2B_PUBLIC_KEY_RSA, TPM2B_PUBLIC, TPM...
 
 #define LOGMODULE fapi
+
+/* Maximum ciphertext size for Fapi_Decrypt input.
+ * For ML-KEM hybrid: 2 (length prefix) + KEM ciphertext + AES-GCM blob
+ * (IV 12 + plaintext up to TPM2_MAX_DIGEST_BUFFER + tag 16). */
+#define FAPI_MAX_CIPHERTEXT_SIZE (2 + TPM2_MAX_MLKEM_CT_SIZE + 12 + TPM2_MAX_DIGEST_BUFFER + 16)
 #include "util/log.h" // for SAFE_FREE, LOG_TRACE, goto_if_error
 
 /** One-Call function for Fapi_Decrypt
@@ -90,7 +95,7 @@ Fapi_Decrypt(FAPI_CONTEXT  *context,
     check_not_null(context);
     check_not_null(keyPath);
     check_not_null(cipherText);
-    check_in_bounds(cipherTextSize, TPM2_MAX_DIGEST_BUFFER);
+    check_in_bounds(cipherTextSize, FAPI_MAX_CIPHERTEXT_SIZE);
 
     /* Check whether TCTI and ESYS are initialized */
     return_if_null(context->esys, "Command can't be executed in none TPM mode.",
@@ -174,7 +179,7 @@ Fapi_Decrypt_Async(FAPI_CONTEXT  *context,
     check_not_null(context);
     check_not_null(keyPath);
     check_not_null(cipherText);
-    check_in_bounds(cipherTextSize, TPM2_MAX_DIGEST_BUFFER);
+    check_in_bounds(cipherTextSize, FAPI_MAX_CIPHERTEXT_SIZE);
 
     /* Cleanup command context. */
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
@@ -385,7 +390,8 @@ Fapi_Decrypt_Finish(FAPI_CONTEXT *context, uint8_t **plainText, size_t *plainTex
             goto_if_error(r, "Error: FlushContext", error_cleanup);
         }
 
-        fallthrough;
+        context->state = DATA_DECRYPT_WAIT_FOR_FLUSH;
+        return TSS2_FAPI_RC_TRY_AGAIN;
 
     statecase(context->state, DATA_DECRYPT_WAIT_FOR_KEM_DECAPSULATION);
         {

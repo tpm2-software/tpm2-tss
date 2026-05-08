@@ -219,14 +219,20 @@ test_esys_pqc_sign(ESYS_CONTEXT *esys_context) {
                            ESYS_TR_NONE, &inSensitive, &inPublic, &outsideInfo, &creationPCR,
                            &mldsa_handle, &outPublic, &creationData, &creationHash,
                            &creationTicket);
+    if (number_rc(r) == (TPM2_RC_ASYMMETRIC | TPM2_RC_P)
+        || number_rc(r) == (TPM2_RC_TYPE | TPM2_RC_P) || number_rc(r) == TPM2_RC_ASYMMETRIC) {
+        LOG_WARNING("TPM does not support PQC algorithms, skipping.");
+        return EXIT_SKIP;
+    }
     goto_if_error(r, "Error: CreatePrimary (ML-DSA-65)", error);
 
     r = Esys_TR_SetAuth(esys_context, mldsa_handle, &keyAuth);
     goto_if_error(r, "Error: TR_SetAuth (ML-DSA key)", error);
 
-    /* NULL context means no pre-hash context string */
-    r = Esys_SignSequenceStart(esys_context, mldsa_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
-                               ESYS_TR_NONE, &seqAuth, NULL /* context */, &sign_seq);
+    /* NULL context means no pre-hash context string.
+     * Auth Index: None — keyHandle does not require authorization. */
+    r = Esys_SignSequenceStart(esys_context, mldsa_handle, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                               &seqAuth, NULL /* context */, &sign_seq);
     goto_if_error(r, "Error: SignSequenceStart", error);
 
     r = Esys_TR_SetAuth(esys_context, sign_seq, &seqAuth);
@@ -242,7 +248,8 @@ test_esys_pqc_sign(ESYS_CONTEXT *esys_context) {
     goto_if_error(r, "Error: SignSequenceComplete", error);
     sign_seq = ESYS_TR_NONE; /* consumed by Complete */
 
-    r = Esys_VerifySequenceStart(esys_context, mldsa_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+    /* Auth Index: None — keyHandle does not require authorization. */
+    r = Esys_VerifySequenceStart(esys_context, mldsa_handle, ESYS_TR_NONE, ESYS_TR_NONE,
                                  ESYS_TR_NONE, &seqAuth, NULL /* hint */, NULL /* context */,
                                  &verify_seq);
     goto_if_error(r, "Error: VerifySequenceStart", error);

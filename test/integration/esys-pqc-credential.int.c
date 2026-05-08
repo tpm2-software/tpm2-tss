@@ -122,6 +122,11 @@ test_esys_pqc_credential(ESYS_CONTEXT *esys_context) {
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_ENDORSEMENT, ESYS_TR_PASSWORD, ESYS_TR_NONE,
                            ESYS_TR_NONE, &inSensitiveEK, &inPublicEK, &outsideInfo, &creationPCR,
                            &ek_handle, &ek_pub, &ek_cdata, &ek_chash, &ek_cticket);
+    if (number_rc(r) == (TPM2_RC_ASYMMETRIC | TPM2_RC_P)
+        || number_rc(r) == (TPM2_RC_TYPE | TPM2_RC_P) || number_rc(r) == TPM2_RC_ASYMMETRIC) {
+        LOG_WARNING("TPM does not support PQC algorithms, skipping.");
+        return EXIT_SKIP;
+    }
     goto_if_error(r, "Error: CreatePrimary (ML-KEM EK)", error);
 
     r = Esys_TR_SetAuth(esys_context, ek_handle, &ekAuth);

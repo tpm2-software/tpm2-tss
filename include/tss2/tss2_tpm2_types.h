@@ -26,7 +26,7 @@
 #define TPM2_MAX_ALG_LIST_SIZE  128
 #define TPM2_MAX_CAP_CC         256
 #define TPM2_MAX_CAP_BUFFER     1024
-#define TPM2_MAX_CONTEXT_SIZE   5120
+#define TPM2_MAX_CONTEXT_SIZE   8192
 
 /* Hash algorithm sizes */
 #define TPM2_SHA_DIGEST_SIZE     20

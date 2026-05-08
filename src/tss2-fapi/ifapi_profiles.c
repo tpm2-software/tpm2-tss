@@ -467,6 +467,13 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
         } else {
             out->mldsaParameterSet = TPM2_MLDSA_PARMS_65;
         }
+        /* ML-KEM parameter set for storage keys (optional, default to 768) */
+        if (ifapi_get_sub_object(jso, "mlkemParameterSet", &jso2)) {
+            r = ifapi_json_UINT16_deserialize(jso2, &out->mlkemParameterSet);
+            return_if_error(r, "Bad value for field \"mlkemParameterSet\".");
+        } else {
+            out->mlkemParameterSet = TPM2_MLKEM_PARMS_768;
+        }
 
     } else if (out->type == TPM2_ALG_MLKEM) {
         /* ML-KEM parameter set (optional, default to 768) */

@@ -88,6 +88,11 @@ test_esys_pqc_create(ESYS_CONTEXT *esys_context) {
     r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
                            ESYS_TR_NONE, &inSensitive, &inPublicMLKEM, &outsideInfo, &creationPCR,
                            &mlkem_handle, &mlkem_pub, &mlkem_cdata, &mlkem_chash, &mlkem_cticket);
+    if (number_rc(r) == (TPM2_RC_ASYMMETRIC | TPM2_RC_P)
+        || number_rc(r) == (TPM2_RC_TYPE | TPM2_RC_P) || number_rc(r) == TPM2_RC_ASYMMETRIC) {
+        LOG_WARNING("TPM does not support PQC algorithms, skipping.");
+        return EXIT_SKIP;
+    }
     goto_if_error(r, "Error: CreatePrimary (ML-KEM-1024)", error);
 
     TPM2B_PUBLIC inPublicMLDSA = {

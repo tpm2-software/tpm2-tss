@@ -395,7 +395,8 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
             r = Esys_FlushContext_Async(context->esys, command->key_handle);
             goto_if_error(r, "Error: FlushContext", error_cleanup);
         }
-        fallthrough;
+        context->state = DATA_ENCRYPT_WAIT_FOR_FLUSH;
+        return TSS2_FAPI_RC_TRY_AGAIN;
 
     statecase(context->state, DATA_ENCRYPT_WAIT_FOR_KEM_ENCAPSULATION);
         {

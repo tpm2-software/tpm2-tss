@@ -217,14 +217,17 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
     r = ifapi_json_char_deserialize(jso2, &out->certificate);
     return_if_error(r, "Bad value for field \"certificate\".");
 
-    if (out->public.publicArea.type != TPM2_ALG_KEYEDHASH) {
-        /* Keyed hash objects to not need a signing scheme. */
+    if (out->public.publicArea.type != TPM2_ALG_KEYEDHASH
+        && out->public.publicArea.type != TPM2_ALG_MLKEM) {
+        /* Keyed hash and ML-KEM objects do not need a signing scheme. */
         if (!ifapi_get_sub_object(jso, "signing_scheme", &jso2)) {
             LOG_ERROR("Field \"signing_scheme\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         r = ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->signing_scheme);
         return_if_error(r, "Bad value for field \"signing_scheme\".");
+    } else if (out->public.publicArea.type == TPM2_ALG_MLKEM) {
+        out->signing_scheme.scheme = TPM2_ALG_NULL;
     }
 
     if (!ifapi_get_sub_object(jso, "name", &jso2)) {
