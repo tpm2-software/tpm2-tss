@@ -524,6 +524,7 @@ ifapi_json_BYTE_array_deserialize(size_t max, json_object *jso, BYTE *out)
         int size = json_object_array_length(jso);
         if (size > (int)max) {
             LOG_ERROR("Array of BYTE too large (%i > %zu)", size, max);
+            return TSS2_FAPI_RC_BAD_VALUE;
         }
         for (int i = 0; i < size; i++) {
             json_object *jso2 = json_object_array_get_idx(jso, i);
