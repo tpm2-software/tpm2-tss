@@ -516,6 +516,18 @@ typedef struct {
     size_t digest_idx;                 /**< The index of the digest in the policy */
 } IFAPI_api_WriteAuthorizeNv;
 
+/** The states for the FAPI's policy instantiation*/
+enum IFAPI_INSTANTIATE_POLICIES_STATE {
+    POLICIES_INSTANTIATION_INIT = 0,
+    POLICIES_INSTANTIATION_WAIT
+};
+
+typedef struct {
+    enum IFAPI_INSTANTIATE_POLICIES_STATE state;
+    size_t                                pol_idx;
+    TPMS_POLICY                          *policies[5];
+} IFAPI_POLICIES;
+
 /** The data structure holding internal state of Provisioning.
  */
 typedef struct {
@@ -565,6 +577,7 @@ typedef struct {
     bool srk_exists;
     TPM2_HANDLE template_nv_index;
     TPM2_HANDLE nonce_nv_index;
+    IFAPI_POLICIES policies;
 } IFAPI_Provision;
 
 /** The data structure holding internal state of regenerate primary key.
