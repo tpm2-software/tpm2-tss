@@ -40,6 +40,53 @@
 #define FAPI_TEST_ROOT_CERT_FILE "./ca/root-ca/root-ca.cert.pem"
 #define FAPI_TEST_INT_CERT_FILE "./ca/intermed-ca/intermed-ca.cert.pem"
 
+/** Instanatiate all policies defined in the FAPI profile.
+ *
+ * The five policies which can be defined in the FAPI profile will be
+ * instantiated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ */
+TSS2_RC
+instantiate_policies(FAPI_CONTEXT *context) {
+    TSS2_RC         r = TSS2_RC_SUCCESS;
+    IFAPI_POLICIES *ctx = &context->cmd.Provision.policies;
+    size_t          i;
+    switch (ctx->state) {
+    statecase(ctx->state, POLICIES_INSTANTIATION_INIT);
+        ctx->policies[0] = context->profiles.default_profile.ek_policy;
+        ctx->policies[1] = context->profiles.default_profile.srk_policy;
+        ctx->policies[2] = context->profiles.default_profile.eh_policy;
+        ctx->policies[3] = context->profiles.default_profile.sh_policy;
+        ctx->policies[4] = context->profiles.default_profile.lockout_policy;
+        ctx->pol_idx = 0;
+        fallthrough;
+
+    statecase(ctx->state, POLICIES_INSTANTIATION_WAIT);
+        do {
+            for (i = ctx->pol_idx; i < 5 && !ctx->policies[i]; i++)
+                ;
+            if (i == 5) {
+                return TSS2_RC_SUCCESS;
+            }
+            size_t digest_idx, hash_size;
+            r = ifapi_calculate_tree_ex(&context->policy, NULL, NULL, NULL, ctx->policies[i],
+                                        context->profiles.default_profile.nameAlg, &digest_idx,
+                                        &hash_size);
+            return_try_again(r);
+            return_if_error(r, "Instantiate policy");
+            ctx->pol_idx = i + 1;
+        } while (ctx->pol_idx < 5);
+
+        fallthrough;
+
+    statecasedefault(context->state);
+    }
+    return TSS2_RC_SUCCESS;
+}
+
 /** Error cleanup of provisioning
  *
  * The profile directory will be deleted.
@@ -457,6 +504,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context)
             }
 
         statecase(context->state, PROVISION_INIT);
+            r = instantiate_policies(context);
+            return_try_again(r);
+            goto_if_error(r, "Instantiate policies", error_cleanup);
 
             command->root_crt = NULL;
             /* Check whether hierarchies are stored in the current keystore. */

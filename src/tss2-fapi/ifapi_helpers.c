@@ -1343,6 +1343,10 @@ copy_policy_element(const TPMT_POLICYELEMENT *from_policy, TPMT_POLICYELEMENT *t
                      from_policy->element.PolicySigned.publicKeyHint, r, error);
         break;
     case POLICYPCR:
+         if (from_policy->element.PolicyPCR.pcrs == NULL) {
+            goto_error(r, TSS2_FAPI_RC_BAD_REFERENCE, "Bad reference (NULL) to PCRs in policy",
+                       error);
+         }
         to_policy->element.PolicyPCR.pcrs =
             calloc(1, sizeof(TPML_PCRVALUES) +
                    from_policy->element.PolicyPCR.pcrs->count * sizeof(TPMS_PCRVALUE));
