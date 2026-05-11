@@ -218,7 +218,8 @@ set_ff_digest(json_object *jso) {
 /** Callback for digest of old IMA format.
  */
 static TSS2_RC
-sha_digest_json_cb(UINT8 *digest, UINT8 * buffer, size_t *offset, json_object *jso,
+sha_digest_json_cb(UINT8 *digest, UINT8 * buffer,
+                   size_t *offset, json_object *jso,
                    IFAPI_IMA_TEMPLATE *template) {
     TSS2_RC r;
     UNUSED(template);
@@ -238,31 +239,42 @@ sha_digest_json_cb(UINT8 *digest, UINT8 * buffer, size_t *offset, json_object *j
 
 /** Get UINT32 size value from buffer and increase offset.
  */
-UINT32
-get_size_from_buffer(UINT8 *buffer, size_t *offset, IFAPI_IMA_TEMPLATE *template) {
-    UINT32 size;
-    memcpy(&size, &buffer[*offset], sizeof(UINT32));
+/** Get UINT32 size value from buffer and increase offset.
+ */
+TSS2_RC
+get_size_from_buffer(UINT8 *buffer, size_t *offset, IFAPI_IMA_TEMPLATE *template, UINT32 *size) {
+    UINT32 bsize;
+    /* Validate bounds for UINT32*/
+    if (*offset > template->event_size || template->event_size - *offset < sizeof(UINT32)) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid size field in IMA event.");
+    }
+    memcpy(&bsize, &buffer[*offset], sizeof(UINT32));
     *offset += sizeof(UINT32);
     if (template->convert_to_big_endian) {
-        size = endian_swap_32(size);
+        bsize = endian_swap_32(bsize);
     }
-    return size;
+    *size = bsize;
+    return TSS2_RC_SUCCESS;
 }
-
 /** Callback for digest with name of used hash algorithm,
  */
 static TSS2_RC
-digest_with_hash_name_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
-                        IFAPI_IMA_TEMPLATE *template) {
+digest_with_hash_name_cb(UINT8 *digest, UINT8 *buffer,
+                         size_t *offset, json_object *jso,
+                         IFAPI_IMA_TEMPLATE *template) {
     TSS2_RC r;
     char hash_alg[CRYPTO_MAX_ALG_NAME + 1] = { 0 };
     size_t alg_name_size;
     const EVP_MD *md;
     int digest_size;
     UINT32 digest_buffer_size;
+    size_t max_strlen;
 
-    digest_buffer_size = get_size_from_buffer(buffer, offset, template);
-    alg_name_size = strlen((char *)&buffer[*offset]) - 1; /**< strip : */
+    r = get_size_from_buffer(buffer, offset, template, &digest_buffer_size);
+    return_if_error(r, "Get size from event buffer");
+
+    max_strlen = template->event_size - *offset;
+    alg_name_size = strnlen((char *)&buffer[*offset], max_strlen) - 1; /**< strip : */
     if (alg_name_size > CRYPTO_MAX_ALG_NAME) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid hash name.");
     }
@@ -294,14 +306,18 @@ digest_with_hash_name_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_obje
 /** Callback to get digest with size field (UINT32).
  */
 static TSS2_RC
-signature_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
+signature_cb(UINT8 *digest, UINT8 *buffer,
+             size_t *offset, json_object *jso,
              IFAPI_IMA_TEMPLATE *template) {
     UNUSED(digest);
     UNUSED(jso);
     UINT32 digest_size;
     UNUSED(template);
+    TSS2_RC r;
 
-    digest_size =  get_size_from_buffer(buffer, offset, template);
+    r = get_size_from_buffer(buffer, offset, template, &digest_size);
+    return_if_error(r, "Get size from event buffer");
+
     LOGBLOB_TRACE(&buffer[*offset], digest_size, "IMA Signature:");
     *offset += digest_size;
     return TSS2_RC_SUCCESS;
@@ -309,16 +325,23 @@ signature_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
 
 /** Callback to get null terminated name with size field (n-ng).
  */
-static TSS2_RC eventname_ng_json_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
+static TSS2_RC eventname_ng_json_cb(UINT8 *digest, UINT8 *buffer,
+                                    size_t *offset, json_object *jso,
                                     IFAPI_IMA_TEMPLATE *template) {
     size_t size;
     UINT32 size_from_buffer;
+    size_t max_strlen;
+    TSS2_RC r;
+
     UNUSED(digest);
     UNUSED(jso);
 
     /* Get size from buffer with 0 Terminator. */
-    size_from_buffer = get_size_from_buffer(buffer, offset, template);
-    size = strlen((const char *)&buffer[*offset]);
+    r = get_size_from_buffer(buffer, offset, template, &size_from_buffer);
+    return_if_error(r, "Get size from event buffer");
+
+    max_strlen = template->event_size - *offset;
+    size = strnlen((const char *)&buffer[*offset], max_strlen);
     if (size != size_from_buffer - 1) {
         size_from_buffer = endian_swap_32(size_from_buffer);
         /* Try with endian swap */
@@ -336,7 +359,8 @@ static TSS2_RC eventname_ng_json_cb(UINT8 *digest, UINT8 *buffer, size_t *offset
 
 /** Callback to get null terminated name (n).
  */
-static TSS2_RC eventname_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
+static TSS2_RC eventname_cb(UINT8 *digest, UINT8 *buffer,
+                            size_t *offset, json_object *jso,
                             IFAPI_IMA_TEMPLATE *template) {
     size_t size;
     UNUSED(digest);
@@ -449,7 +473,8 @@ event_header_json_cb(
 /* Type to store field data and the field callback */
 struct template_field {
     const char *field_id;
-    TSS2_RC (*field_cb) (UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
+    TSS2_RC (*field_cb) (UINT8 *digest, UINT8 *buffer,
+                         size_t *offset, json_object *jso,
                          IFAPI_IMA_TEMPLATE *template);
 };
 
@@ -490,7 +515,7 @@ static struct template_description template_tab[] = {
 
 static struct template_field field_tab[] = {
     { .field_id = "d",
-      .field_cb = sha_digest_json_cb },
+      .field_cb = sha_digest_json_cb},
     { .field_id = "n",
       .field_cb = eventname_cb },
     { .field_id = "d-ng",
@@ -560,8 +585,8 @@ convert_ima_event_buffer(
         goto_if_null2(field, "Unknown field %s", r, TSS2_FAPI_RC_BAD_VALUE, error, current_field);
 
         /* Convert the IMA data with the found callback. */
-        r = field->field_cb(&template->header.digest[0],
-                            template->event_buffer, &offset, jso, template);
+        r = field->field_cb(&template->header.digest[0], template->event_buffer,
+                            &offset, jso, template);
         *name= template->name;
         goto_if_error(r, "Get field", error);
     }
