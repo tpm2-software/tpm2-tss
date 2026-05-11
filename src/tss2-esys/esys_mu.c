@@ -11,6 +11,7 @@
 #include <inttypes.h>
 #include <string.h>
 
+#include "tss2_common.h"
 #include "tss2_esys.h"
 
 #include "esys_mu.h"
@@ -519,6 +520,11 @@ iesys_MU_IESYS_SESSION_Unmarshal(
     ret = Tss2_MU_UINT16_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? &out_sizeSessionValue : &dst->sizeSessionValue);
     return_if_error(ret, "Error unmarshaling subfield sizeSessionValue");
+
+    if (((dst == NULL) ? out_sizeSessionValue : dst->sizeSessionValue)
+        > sizeof(dst->sessionValue)) {
+        return_error(TSS2_ESYS_RC_BAD_SIZE, "sizeSessionValue exceeds sizeof(sessionValue)");
+    }
 
     ret = iesys_MU_BYTE_array_Unmarshal(buffer, size, &offset_loc,
             (dst == NULL)? out_sizeSessionValue : dst->sizeSessionValue,
