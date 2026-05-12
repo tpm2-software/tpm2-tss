@@ -80,6 +80,10 @@ read_all(SOCKET fd, uint8_t *data, size_t size, int timeout) {
             return recvd_total;
         }
         LOGBLOB_DEBUG(&data[recvd_total], recvd, "read %zd bytes from fd %d:", recvd, fd);
+        if ((size_t)recvd > (SIZE_MAX - recvd_total)) {
+            LOG_ERROR("Overflow for written_total");
+            return recvd_total;
+        }
         recvd_total += recvd;
         size -= recvd;
     } while (size > 0);
@@ -102,6 +106,10 @@ write_all(SOCKET fd, const uint8_t *buf, size_t size, int timeout) {
 #endif
         if (written >= 0) {
             LOG_DEBUG("wrote %zd bytes to fd %d", written, fd);
+            if ((size_t)written > (SIZE_MAX - written_total)) {
+                LOG_ERROR("Overflow for written_total");
+                return written_total;
+            }
             written_total += (size_t)written;
         } else {
 #ifdef _WIN32
