@@ -335,9 +335,8 @@ ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
 
     /* Get structure with public data from binary blob. */
     r = Tss2_MU_TPM2B_PUBLIC_Unmarshal(public_blob.buffer, public_blob.size, &offset, &out->public);
-    goto_if_error(r, "Invalid public data.", error_cleanup);
-
     SAFE_FREE(public_blob.buffer);
+    goto_if_error(r, "Invalid public data.", error_cleanup);
 
     if (!ifapi_get_sub_object(jso, "private", &jso2)) {
         memset(&out->private, 0, sizeof(UINT8_ARY));
