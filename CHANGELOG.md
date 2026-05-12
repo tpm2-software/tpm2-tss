@@ -3,6 +3,58 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.2.0-rc0] - 2026-05-12
+### Changed
+- Changed the project to clang-format which is now mandatory to run before posting PRs.
+  This include the public include files, though no functionality were changed there.
+- Extended CI to include linting with: clang-format, clang-tidy, reuse
+
+### Fixed
+- Fix: In some calloc calls the parameters number of elements and size were swapped.
+- configure.ac: Fix test of == to = to be POSIX compliant
+- FAPI: Add check whether auth values exist for hierarchies.
+- Fixed headers given iwyu output
+- Remove use of which in favor of command -v
+- TCTI: Fix leak if Tss2_TctiLdr_Initialize fails.
+- FAPI: Fix usage of imported external PEM keys for PolicyAuthorize.
+- test: skip tcti-spidev on 32bit architectures with 64bit time_t
+- TCTI: fix incomplete teardown in tcti-mssim.
+- FAPI: Fix Fapi_GetPlatformCertificates without certificates.
+- test: Fix incomplete teardown in error cased.
+- configure: install tmpfiles.d and sysusers.d in libdir
+- FAPI: Fixed leak in Fapi_Sign
+- FAPI: Fix Fapi_GetPlatformCertificates without certificates does not return TSS2_FAPI_RC_NO_CERT.
+- FAPI: Fix instantiation of policyduplication select when object name or public data is used.
+- FAPI: Fix nv object authorization for policy authorize nv.
+- TCTI: Fixed possible “Resource temporarily unavailable” (EAGAIN) errors
+- TESTS: Fixed use of PCR16
+- TCTI: Separate namespaces for internal struct
+- ESYS: Fix variable usage in logging message
+- Fix CodeQL complaints
+- ESYS: Fix usage of handles in Esys_AC_Send
+- FAPI: Fix segmentation fault in policy callbacks.
+- FAPI: Add proper OOM handling for profile realloc.
+- FAPI: add missing NULL check after malloc in encode_ek_public.
+- FAPI: memset zero is called in the async functions for the command state to ensure the correct cleanup in error cases.
+
+### Added
+- Add clang-format to CI
+- Add clang-tidy to CI
+- Add a .clang-tidy file and applied changes to all source code
+- Add udev rules to create tcm device
+- FAPI: Support storing EK Certificate chains in NVRAM.
+- FAPI: KDF scheme KDF2 added.
+- tcti: add interface config option for spi-ftdi.
+- Complete license information (including non-code) with REUSE
+- Add REUSE tool to CI
+- FAPI: Add new profiles for high range EKs
+- FAPI: Create FAPI NV objects for existing NV indexes
+- Enable ARM64 build on Windows
+- FAPI: Allow usage of restricted keys in Fapi_Sign .
+- FAPI: Nuvoton certificates added.
+- MU:  add TPM2_ST_ATTEST_NV_DIGEST attestation type support
+- OpenSSL 4.0 compatible macro usage
+
 ## [4.1.0] - 2024-04-26
 ### Security
 - Fixed CVE-2024-29040
