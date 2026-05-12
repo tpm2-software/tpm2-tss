@@ -8,16 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "fapi_int.h"        // for FAPI_CONTEXT, PATH_GET_DESCRIPTION_READ
-#include "fapi_util.h"       // for ifapi_get_description
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, ifapi_keysto...
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_GetDescription, Fapi_...
+#include "fapi_int.h"       // for FAPI_CONTEXT, PATH_GET_DESCRIPTION_READ
+#include "fapi_util.h"      // for ifapi_get_description
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetDescription, Fapi_...
 
 #define LOGMODULE fapi
-#include "util/log.h"        // for LOG_TRACE, base_rc, return_error, return...
+#include "util/log.h" // for LOG_TRACE, base_rc, return_error, return...
 
 /** One-Call function for Fapi_GetDescription
  *
@@ -47,11 +47,7 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_GetDescription(
-    FAPI_CONTEXT *context,
-    char   const *path,
-    char        **description)
-{
+Fapi_GetDescription(FAPI_CONTEXT *context, char const *path, char **description) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -107,10 +103,7 @@ Fapi_GetDescription(
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_GetDescription_Async(
-    FAPI_CONTEXT *context,
-    char   const *path)
-{
+Fapi_GetDescription_Async(FAPI_CONTEXT *context, char const *path) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
 
@@ -157,13 +150,10 @@ Fapi_GetDescription_Async(
  *         the function.
  */
 TSS2_RC
-Fapi_GetDescription_Finish(
-    FAPI_CONTEXT *context,
-    char        **description)
-{
+Fapi_GetDescription_Finish(FAPI_CONTEXT *context, char **description) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     IFAPI_OBJECT object;
 
     /* Check for NULL parameters */
@@ -171,21 +161,21 @@ Fapi_GetDescription_Finish(
     check_not_null(description);
 
     switch (context->state) {
-        statecase(context->state, PATH_GET_DESCRIPTION_READ);
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-            return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+    statecase(context->state, PATH_GET_DESCRIPTION_READ);
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
+        return_try_again(r);
+        return_if_error_reset_state(r, "read_finish failed");
 
-            /* Retrieve the description from the metadata object. */
-            r = ifapi_get_description(&object, description);
-            ifapi_cleanup_ifapi_object(&object);
-            return_if_error_reset_state(r, "Get description");
+        /* Retrieve the description from the metadata object. */
+        r = ifapi_get_description(&object, description);
+        ifapi_cleanup_ifapi_object(&object);
+        return_if_error_reset_state(r, "Get description");
 
-            context->state = FAPI_STATE_INIT;
-            r = TSS2_RC_SUCCESS;
-            break;
+        context->state = FAPI_STATE_INIT;
+        r = TSS2_RC_SUCCESS;
+        break;
 
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
     LOG_TRACE("finished");
     /* Cleanup any intermediate results and state stored in the context. */

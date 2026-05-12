@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for memcpy
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for memcpy
 
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPMT_PUBLIC, TPM2B_DIGEST
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPMT_PUBLIC, TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR
+#include "util/log.h" // for goto_if_error, LOG_ERROR
 
 /** This test is intended to test the ESYS command  Esys_MAC with password
  *  authentication.
@@ -36,22 +36,18 @@
  */
 
 int
-test_esys_mac(ESYS_CONTEXT * esys_context)
-{
+test_esys_mac(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
 
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
-    TPM2B_DIGEST *outMAC = NULL;
-    TPMT_TK_VERIFIED *validation = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
+    TPMT_TK_CREATION    *creationTicket = NULL;
+    TPM2B_DIGEST        *outMAC = NULL;
+    TPMT_TK_VERIFIED    *validation = NULL;
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -85,42 +81,31 @@ test_esys_mac(ESYS_CONTEXT * esys_context)
     inPublic.publicArea.parameters.keyedHashDetail.scheme.scheme = TPM2_ALG_HMAC;
     inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA256;
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
-                           &inPublic, &outsideInfo, &creationPCR,
-                           &primaryHandle, &outPublic, &creationData,
-                           &creationHash, &creationTicket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &primaryHandle, &outPublic, &creationData, &creationHash,
+                           &creationTicket);
     goto_if_error(r, "Error: CreatePrimary", error);
 
     r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    TPM2B_MAX_BUFFER test_buffer = { .size = 20,
-                                     .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-                                              1, 2, 3, 4, 5, 6, 7, 8, 9}} ;
-    r = Esys_MAC(
-        esys_context,
-        primaryHandle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        &test_buffer,
-        TPM2_ALG_SHA256,
-        &outMAC);
+    TPM2B_MAX_BUFFER test_buffer
+        = { .size = 20, .buffer = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } };
+    r = Esys_MAC(esys_context, primaryHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                 &test_buffer, TPM2_ALG_SHA256, &outMAC);
     goto_if_error(r, "Error: MAC", error);
 
-    TPM2B_DIGEST dig = { .size = 20,
-                         .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-                                  1, 2, 3, 4, 5, 6, 7, 8, 9}} ;
+    TPM2B_DIGEST dig
+        = { .size = 20, .buffer = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } };
     TPMT_SIGNATURE sig;
 
     sig.signature.hmac.hashAlg = TPM2_ALG_SHA256;
     sig.sigAlg = TPM2_ALG_HMAC;
     memcpy(sig.signature.hmac.digest.sha256, outMAC->buffer, outMAC->size);
 
-    r = Esys_VerifySignature(esys_context, primaryHandle, ESYS_TR_NONE,
-                             ESYS_TR_NONE, ESYS_TR_NONE, &dig, &sig,
-                             &validation);
+    r = Esys_VerifySignature(esys_context, primaryHandle, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                             &dig, &sig, &validation);
     goto_if_error(r, "Error: VerifySignature", error);
 
     r = Esys_FlushContext(esys_context, primaryHandle);
@@ -134,7 +119,7 @@ test_esys_mac(ESYS_CONTEXT * esys_context)
     Esys_Free(validation);
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (primaryHandle != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
@@ -152,6 +137,6 @@ test_esys_mac(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_mac(esys_context);
 }

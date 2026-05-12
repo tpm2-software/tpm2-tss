@@ -8,22 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
-#include <stdlib.h>           // for malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strcmp, strstr
-#include <unistd.h>           // for read
+#include <stdint.h> // for uint8_t
+#include <stdio.h>  // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h> // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for strcmp, strstr
+#include <unistd.h> // for read
 
-#include "test-fapi.h"        // for ASSERT, FAPI_PROFILE, pcr_reset, EXIT_SKIP
-#include "tss2_common.h"      // for TSS2_FAPI_RC_MEMORY, BYTE, TSS2_RC
-#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateKey, Fapi_Import
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "test-fapi.h"       // for ASSERT, FAPI_PROFILE, pcr_reset, EXIT_SKIP
+#include "tss2_common.h"     // for TSS2_FAPI_RC_MEMORY, BYTE, TSS2_RC
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_CreateKey, Fapi_Import
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"         // for SAFE_FREE, goto_if_error, LOG_ERROR
+#include "util/log.h" // for SAFE_FREE, goto_if_error, LOG_ERROR
 
 #define OBJECT_PATH "HS/SRK/mySignKey"
-#define USER_DATA "my user data"
+#define USER_DATA   "my user data"
 #define DESCRIPTION "PolicyAuthorize"
 
 /** Test the FAPI functions for PolicyAuthoirze with signing.
@@ -47,29 +47,30 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_key_create_policy_authorize_pem_sign(FAPI_CONTEXT *context)
-{
+test_fapi_key_create_policy_authorize_pem_sign(FAPI_CONTEXT *context) {
     TSS2_RC r;
-    char *policy_pcr = "/policy/pol_pcr";
-    char *policy_file_pcr = NULL;
-    char *policy_file_authorize = NULL;
-    char *policy_name_authorize = "/policy/pol_authorize";
+    char   *policy_pcr = "/policy/pol_pcr";
+    char   *policy_file_pcr = NULL;
+    char   *policy_file_authorize = NULL;
+    char   *policy_name_authorize = "/policy/pol_authorize";
     // uint8_t policyRef[] = { 1, 2, 3, 4, 5 };
     FILE *stream = NULL;
     char *json_policy = NULL;
-    long policy_size;
+    long  policy_size;
 
     uint8_t *signature = NULL;
-    char *publicKey = NULL;
-    char *pathList = NULL;
+    char    *publicKey = NULL;
+    char    *pathList = NULL;
 
 #ifdef TEST_ECC
     if (strcmp(FAPI_PROFILE, "P_ECC") == 0) {
         policy_file_authorize = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize_ecc_pem.json";
         policy_file_pcr = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0_ecc_authorized.json";
-    } else if (strcmp(FAPI_PROFILE, "P_ECC384" ) == 0) {
-        policy_file_authorize = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize_ecc_pem_sha384.json";
-        policy_file_pcr = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0_ecc_authorized_sha384.json";
+    } else if (strcmp(FAPI_PROFILE, "P_ECC384") == 0) {
+        policy_file_authorize
+            = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize_ecc_pem_sha384.json";
+        policy_file_pcr
+            = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0_ecc_authorized_sha384.json";
     } else {
         LOG_ERROR("Profule can't be used for test: %s", FAPI_PROFILE);
         return EXIT_SKIP;
@@ -95,9 +96,8 @@ test_fapi_key_create_policy_authorize_pem_sign(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file_pcr, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -120,9 +120,8 @@ test_fapi_key_create_policy_authorize_pem_sign(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file_authorize, "r");
     ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -136,31 +135,24 @@ test_fapi_key_create_policy_authorize_pem_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_Import", error);
 
     /* Create key and use them to authorize the policy */
-    r = Fapi_CreateKey(context, "HS/SRK/myPolicySignKey", "sign,noDa",
-                       "", NULL);
+    r = Fapi_CreateKey(context, "HS/SRK/myPolicySignKey", "sign,noDa", "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     /* Create the actual key */
-    r = Fapi_CreateKey(context, OBJECT_PATH, "sign, noda",
-                       policy_name_authorize, NULL);
+    r = Fapi_CreateKey(context, OBJECT_PATH, "sign, noda", policy_name_authorize, NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     /* Use the key */
     size_t signatureSize = 0;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x41, 0x42
-        }
-    };
+    TPM2B_DIGEST digest
+        = { .size = 32,
+            .buffer = { 0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+                        0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x31, 0xa0,
+                        0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x41, 0x42 } };
 
-    r = Fapi_Sign(context, OBJECT_PATH, NULL,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+    r = Fapi_Sign(context, OBJECT_PATH, NULL, &digest.buffer[0], digest.size, &signature,
+                  &signatureSize, &publicKey, NULL);
     goto_if_error(r, "Error Fapi_Sign", error);
     ASSERT(signature != NULL);
     ASSERT(publicKey != NULL);
@@ -187,7 +179,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_key_create_policy_authorize_pem_sign(fapi_context);
 }

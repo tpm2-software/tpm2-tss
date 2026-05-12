@@ -8,31 +8,30 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>              // for NULL, calloc, free, size_t
-#include <string.h>              // for memset
-#include <strings.h>             // for strcasecmp
+#include <stdlib.h>  // for NULL, calloc, free, size_t
+#include <string.h>  // for memset
+#include <strings.h> // for strcasecmp
 
-#include "fapi_int.h"            // for FAPI_CONTEXT, IFAPI_INITIALIZE, IFAP...
-#include "ifapi_config.h"        // for IFAPI_CONFIG, ifapi_config_initializ...
-#include "ifapi_eventlog.h"      // for ifapi_eventlog_initialize
-#include "ifapi_helpers.h"       // for ifapi_null_primary_p
-#include "ifapi_io.h"            // for ifapi_io_poll
-#include "ifapi_keystore.h"      // for ifapi_cleanup_ifapi_object, ifapi_ke...
-#include "ifapi_macros.h"        // for statecase, fallthrough, check_not_null
-#include "ifapi_policy.h"        // for ifapi_policy_ctx_init
-#include "ifapi_policy_store.h"  // for ifapi_policy_store_initialize
-#include "ifapi_profiles.h"      // for ifapi_profiles_initialize_async, ifa...
-#include "tss2_common.h"         // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_...
-#include "tss2_esys.h"           // for ESYS_TR_NONE, Esys_Finalize, Esys_Ge...
-#include "tss2_fapi.h"           // for FAPI_CONTEXT, Fapi_Initialize, Fapi_...
-#include "tss2_tcti.h"           // for TSS2_TCTI_CONTEXT
-#include "tss2_tctildr.h"        // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_...
-#include "tss2_tpm2_types.h"     // for TPMS_CAPABILITY_DATA, TPMS_TAGGED_PR...
-#include "fapi_util.h"           // for nv serialization.
+#include "fapi_int.h"           // for FAPI_CONTEXT, IFAPI_INITIALIZE, IFAP...
+#include "fapi_util.h"          // for nv serialization.
+#include "ifapi_config.h"       // for IFAPI_CONFIG, ifapi_config_initializ...
+#include "ifapi_eventlog.h"     // for ifapi_eventlog_initialize
+#include "ifapi_helpers.h"      // for ifapi_null_primary_p
+#include "ifapi_io.h"           // for ifapi_io_poll
+#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, ifapi_ke...
+#include "ifapi_macros.h"       // for statecase, fallthrough, check_not_null
+#include "ifapi_policy.h"       // for ifapi_policy_ctx_init
+#include "ifapi_policy_store.h" // for ifapi_policy_store_initialize
+#include "ifapi_profiles.h"     // for ifapi_profiles_initialize_async, ifa...
+#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_...
+#include "tss2_esys.h"          // for ESYS_TR_NONE, Esys_Finalize, Esys_Ge...
+#include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_Initialize, Fapi_...
+#include "tss2_tcti.h"          // for TSS2_TCTI_CONTEXT
+#include "tss2_tctildr.h"       // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_...
+#include "tss2_tpm2_types.h"    // for TPMS_CAPABILITY_DATA, TPMS_TAGGED_PR...
 
 #define LOGMODULE fapi
-#include "util/log.h"            // for goto_if_error, LOG_TRACE, SAFE_FREE
-
+#include "util/log.h" // for goto_if_error, LOG_TRACE, SAFE_FREE
 
 /** One-Call function for Fapi_Initialize
  *
@@ -58,10 +57,7 @@
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-Fapi_Initialize(
-    FAPI_CONTEXT **context,
-    char const *uri)
-{
+Fapi_Initialize(FAPI_CONTEXT **context, char const *uri) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -74,7 +70,7 @@ Fapi_Initialize(
     }
 
     r = Fapi_Initialize_Async(context, uri);
-    return_if_error(r,  "FAPI Async call initialize");
+    return_if_error(r, "FAPI Async call initialize");
     check_oom(*context);
 
     do {
@@ -110,10 +106,7 @@ Fapi_Initialize(
  *         internal operations or return parameters.
  */
 TSS2_RC
-Fapi_Initialize_Async(
-    FAPI_CONTEXT **context,
-    char const *uri)
-{
+Fapi_Initialize_Async(FAPI_CONTEXT **context, char const *uri) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("uri: %s", uri);
 
@@ -176,18 +169,16 @@ cleanup_return:
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-Fapi_Initialize_Finish(
-    FAPI_CONTEXT **context)
-{
+Fapi_Initialize_Finish(FAPI_CONTEXT **context) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
-    TPMI_YES_NO moreData;
+    TSS2_RC            r;
+    TPMI_YES_NO        moreData;
     TSS2_TCTI_CONTEXT *fapi_tcti = NULL;
-    TPMS_TIME_INFO *currentTime = NULL;
-    IFAPI_OBJECT object;
-    size_t i;
-    bool provisioned;
+    TPMS_TIME_INFO    *currentTime = NULL;
+    IFAPI_OBJECT       object;
+    size_t             i;
+    bool               provisioned;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -195,7 +186,7 @@ Fapi_Initialize_Finish(
 
     /* Helpful alias pointers */
     TPMS_CAPABILITY_DATA **capability = &(*context)->cmd.Initialize.capability;
-    IFAPI_INITIALIZE * command = &(*context)->cmd.Initialize;
+    IFAPI_INITIALIZE      *command = &(*context)->cmd.Initialize;
 
     switch ((*context)->state) {
     statecase((*context)->state, INITIALIZE_READ);
@@ -205,23 +196,19 @@ Fapi_Initialize_Finish(
         goto_if_error(r, "Could not finish initialization", cleanup_return);
 
         /* Initialize the event log module. */
-        r = ifapi_eventlog_initialize(&((*context)->eventlog),
-                                      (*context)->config.log_dir,
+        r = ifapi_eventlog_initialize(&((*context)->eventlog), (*context)->config.log_dir,
                                       (*context)->config.firmware_log_file,
                                       (*context)->config.ima_log_file);
         goto_if_error(r, "Initializing eventlog module", cleanup_return);
 
         /* Initialize the keystore. */
-        r = ifapi_keystore_initialize(&((*context)->keystore),
-                                      (*context)->config.keystore_dir,
-                                      (*context)->config.user_dir,
-                                      (*context)->config.profile_name);
+        r = ifapi_keystore_initialize(&((*context)->keystore), (*context)->config.keystore_dir,
+                                      (*context)->config.user_dir, (*context)->config.profile_name);
         goto_if_error2(r, "Keystore could not be initialized.", cleanup_return);
 
         /* Initialize the policy store. */
         /* Policy directory will be placed in keystore dir */
-        r = ifapi_policy_store_initialize(&((*context)->pstore),
-                                          (*context)->config.keystore_dir);
+        r = ifapi_policy_store_initialize(&((*context)->pstore), (*context)->config.keystore_dir);
         goto_if_error2(r, "Keystore could not be initialized.", cleanup_return);
 
         fallthrough;
@@ -253,8 +240,7 @@ Fapi_Initialize_Finish(
 
     statecase((*context)->state, INITIALIZE_GET_CAP);
         /* Retrieve the maximal value for transfer of nv data from the TPM. */
-        r = Esys_GetCapability_Async((*context)->esys, ESYS_TR_NONE, ESYS_TR_NONE,
-                                     ESYS_TR_NONE,
+        r = Esys_GetCapability_Async((*context)->esys, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
                                      TPM2_CAP_TPM_PROPERTIES, TPM2_PT_NV_BUFFER_MAX, 1);
         goto_if_error(r, "Error json deserialize", cleanup_return);
 
@@ -266,9 +252,8 @@ Fapi_Initialize_Finish(
         goto_if_error(r, "Get capability data.", cleanup_return);
 
         /* Check if the TPM returns the NV_BUFFER_MAX value. */
-        if ((*capability)->data.tpmProperties.count == 1 &&
-                (*capability)->data.tpmProperties.tpmProperty[0].property ==
-                TPM2_PT_NV_BUFFER_MAX) {
+        if ((*capability)->data.tpmProperties.count == 1
+            && (*capability)->data.tpmProperties.tpmProperty[0].property == TPM2_PT_NV_BUFFER_MAX) {
             (*context)->nv_buffer_max = (*capability)->data.tpmProperties.tpmProperty[0].value;
             SAFE_FREE(*capability);
             /* FAPI also contains an upper limit on the NV_MAX_BUFFER size. This is
@@ -300,8 +285,7 @@ Fapi_Initialize_Finish(
         FAPI_SYNC(r, "Read profile.", cleanup_return);
 
         if ((*context)->esys) {
-            r = Esys_ReadClock_Async((*context)->esys,
-                                     ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
+            r = Esys_ReadClock_Async((*context)->esys, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE);
             goto_if_error(r, "ReadClock_Async.", cleanup_return);
         } else {
             break;
@@ -324,7 +308,7 @@ Fapi_Initialize_Finish(
         command->numNullPrimaries = 0;
         for (i = 0; i < command->numPaths; i++) {
             if (ifapi_null_primary_p(command->pathlist[i])) {
-                if (i !=  command->numNullPrimaries) {
+                if (i != command->numNullPrimaries) {
                     char *sav_path;
                     sav_path = command->pathlist[command->numNullPrimaries];
                     command->pathlist[command->numNullPrimaries] = command->pathlist[i];
@@ -358,18 +342,16 @@ Fapi_Initialize_Finish(
         r = ifapi_keystore_load_async(&(*context)->keystore, &(*context)->io,
                                       command->pathlist[command->path_idx]);
         goto_if_error2(r, "Could not open %s", cleanup_return,
-                           command->pathlist[command->path_idx]);
+                       command->pathlist[command->path_idx]);
         fallthrough;
 
     statecase((*context)->state, INITIALIZE_READ_NULL_PRIMARY);
-        r = ifapi_keystore_load_finish(&(*context)->keystore, &(*context)->io,
-                                       &object);
+        r = ifapi_keystore_load_finish(&(*context)->keystore, &(*context)->io, &object);
         return_try_again(r);
         goto_if_error2(r, "Could not open %s", cleanup_return,
                        command->pathlist[command->path_idx]);
 
-        if (object.misc.key.reset_count !=
-            (*context)->init_time.clockInfo.resetCount) {
+        if (object.misc.key.reset_count != (*context)->init_time.clockInfo.resetCount) {
             ifapi_cleanup_ifapi_object(&object);
             /* The primary is not valid anymore. */
             r = ifapi_keystore_remove_directories(&(*context)->keystore,
@@ -413,7 +395,6 @@ cleanup_return:
     if (fapi_tcti) {
         Tss2_TctiLdr_Finalize(&fapi_tcti);
     }
-
 
     /* Free the context memory in case of an error. */
     free(*context);

@@ -8,12 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS
+
 #define LOGMODULE test
-#include "test-common.h"    // for test_sys_checks_post, test_sys_checks_pre
-#include "test.h"           // for test_invoke
-#include "tss2_common.h"    // for TSS2_RC
-#include "util/aux_util.h"  // for UNUSED
-#include "util/log.h"       // for LOG_ERROR
+#include "test-common.h"   // for test_sys_checks_post, test_sys_checks_pre
+#include "test.h"          // for test_invoke
+#include "tss2_common.h"   // for TSS2_RC
+#include "util/aux_util.h" // for UNUSED
+#include "util/log.h"      // for LOG_ERROR
 
 /**
  * This program is a template for integration tests (ones that use the TCTI
@@ -22,12 +24,10 @@
  * which TCTI to use for the test.
  */
 int
-main (int   argc,
-      char *argv[])
-{
+main(int argc, char *argv[]) {
     TSS2_TEST_SYS_CONTEXT *test_sys_ctx;
-    TSS2_RC rc;
-    int ret;
+    TSS2_RC                rc;
+    int                    ret;
 
     UNUSED(argc);
     UNUSED(argv);
@@ -46,7 +46,7 @@ main (int   argc,
     if (rc != 0 && rc != 77) {
         test_sys_teardown(test_sys_ctx);
         LOG_ERROR("Test returned %08x", rc);
-        return rc;
+        return EXIT_FAILURE;
     }
 
     ret = test_sys_checks_post(test_sys_ctx);
@@ -57,5 +57,5 @@ main (int   argc,
 
     test_sys_teardown(test_sys_ctx);
 
-    return rc;
+    return EXIT_SUCCESS;
 }

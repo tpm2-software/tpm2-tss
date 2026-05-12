@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, int32_t
-#include <stdlib.h>           // for NULL, calloc
+#include <inttypes.h> // for PRIx32, int32_t
+#include <stdlib.h>   // for NULL, calloc
 
-#include "esys_int.h"         // for ESYS_CONTEXT, _ESYS_STATE_INIT, _ESYS_S...
-#include "esys_iutil.h"       // for iesys_compute_session_value, check_sess...
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, UINT32, TSS2_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_GetCapability
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
-#include "tss2_tpm2_types.h"  // for TPMS_CAPABILITY_DATA, TPM2_CAP, TPMI_YE...
+#include "esys_int.h"        // for ESYS_CONTEXT, _ESYS_STATE_INIT, _ESYS_S...
+#include "esys_iutil.h"      // for iesys_compute_session_value, check_sess...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, UINT32, TSS2_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, Esys_GetCapability
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h" // for TPMS_CAPABILITY_DATA, TPM2_CAP, TPMI_YE...
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
+#include "util/log.h" // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** One-Call function for TPM2_GetCapability
  *
@@ -67,21 +67,19 @@
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_GetCapability(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    TPM2_CAP capability,
-    UINT32 property,
-    UINT32 propertyCount,
-    TPMI_YES_NO *moreData,
-    TPMS_CAPABILITY_DATA **capabilityData)
-{
+Esys_GetCapability(ESYS_CONTEXT          *esysContext,
+                   ESYS_TR                shandle1,
+                   ESYS_TR                shandle2,
+                   ESYS_TR                shandle3,
+                   TPM2_CAP               capability,
+                   UINT32                 property,
+                   UINT32                 propertyCount,
+                   TPMI_YES_NO           *moreData,
+                   TPMS_CAPABILITY_DATA **capabilityData) {
     TSS2_RC r;
 
-    r = Esys_GetCapability_Async(esysContext, shandle1, shandle2, shandle3,
-                                 capability, property, propertyCount);
+    r = Esys_GetCapability_Async(esysContext, shandle1, shandle2, shandle3, capability, property,
+                                 propertyCount);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -99,8 +97,7 @@ Esys_GetCapability(
         /* This is just debug information about the reattempt to finish the
            command */
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -146,18 +143,16 @@ Esys_GetCapability(
  *          of the first response parameter.
  */
 TSS2_RC
-Esys_GetCapability_Async(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    TPM2_CAP capability,
-    UINT32 property,
-    UINT32 propertyCount)
-{
+Esys_GetCapability_Async(ESYS_CONTEXT *esysContext,
+                         ESYS_TR       shandle1,
+                         ESYS_TR       shandle2,
+                         ESYS_TR       shandle3,
+                         TPM2_CAP      capability,
+                         UINT32        property,
+                         UINT32        propertyCount) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, capability=%"PRIx32 ", property=%"PRIx32 ","
-              "propertyCount=%"PRIx32 "",
+    LOG_TRACE("context=%p, capability=%" PRIx32 ", property=%" PRIx32 ","
+              "propertyCount=%" PRIx32 "",
               esysContext, capability, property, propertyCount);
     TSS2L_SYS_AUTH_COMMAND auths;
 
@@ -176,8 +171,7 @@ Esys_GetCapability_Async(
     return_state_if_error(r, ESYS_STATE_INIT, "Check session usage");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_GetCapability_Prepare(esysContext->sys, capability, property,
-                                       propertyCount);
+    r = Tss2_Sys_GetCapability_Prepare(esysContext->sys, capability, property, propertyCount);
     return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
@@ -189,8 +183,7 @@ Esys_GetCapability_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT,
-                          "Error in computation of auth values");
+    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
@@ -200,8 +193,7 @@ Esys_GetCapability_Async(
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Finish (Execute Async)");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
 
@@ -239,14 +231,11 @@ Esys_GetCapability_Async(
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_GetCapability_Finish(
-    ESYS_CONTEXT *esysContext,
-    TPMI_YES_NO *moreData,
-    TPMS_CAPABILITY_DATA **capabilityData)
-{
+Esys_GetCapability_Finish(ESYS_CONTEXT          *esysContext,
+                          TPMI_YES_NO           *moreData,
+                          TPMS_CAPABILITY_DATA **capabilityData) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, moreData=%p, capabilityData=%p",
-              esysContext, moreData, capabilityData);
+    LOG_TRACE("context=%p, moreData=%p, capabilityData=%p", esysContext, moreData, capabilityData);
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -254,8 +243,7 @@ Esys_GetCapability_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != ESYS_STATE_SENT &&
-        esysContext->state != ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT && esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -280,7 +268,8 @@ Esys_GetCapability_Finish(
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
-            "resubmission: %" PRIx32, r);
+                  "resubmission: %" PRIx32,
+                  r);
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
@@ -314,18 +303,15 @@ Esys_GetCapability_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response",
-                        error_cleanup);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response", error_cleanup);
 
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
     r = Tss2_Sys_GetCapability_Complete(esysContext->sys, moreData,
-                                        (capabilityData != NULL)
-                                         ? *capabilityData : NULL);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                        "Received error from SAPI unmarshaling" ,
+                                        (capabilityData != NULL) ? *capabilityData : NULL);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling",
                         error_cleanup);
 
     esysContext->state = ESYS_STATE_INIT;

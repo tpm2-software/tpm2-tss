@@ -7,18 +7,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>            // for memcpy
+#include <string.h> // for memcpy
 
-#include "sysapi_util.h"       // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"       // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_SYS_RC_...
-#include "tss2_sys.h"          // for TSS2_SYS_CONTEXT, Tss2_Sys_GetCommandCode
-#include "tss2_tpm2_types.h"   // for TPM2_CC
-#include "util/tss2_endian.h"  // for HOST_TO_BE_32
+#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_SYS_RC_...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, Tss2_Sys_GetCommandCode
+#include "tss2_tpm2_types.h"  // for TPM2_CC
+#include "util/tss2_endian.h" // for HOST_TO_BE_32
 
-TSS2_RC Tss2_Sys_GetCommandCode(
-    TSS2_SYS_CONTEXT *sysContext,
-    UINT8 *commandCode)
-{
+TSS2_RC
+Tss2_Sys_GetCommandCode(TSS2_SYS_CONTEXT *sysContext, UINT8 *commandCode) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx || !commandCode)

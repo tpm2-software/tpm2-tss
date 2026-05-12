@@ -8,26 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>          // for true
-#include <stdint.h>           // for uint8_t, SIZE_MAX
-#include <stdlib.h>           // for NULL, malloc, size_t
-#include <string.h>           // for memset
+#include <stdbool.h> // for true
+#include <stdint.h>  // for uint8_t, SIZE_MAX
+#include <stdlib.h>  // for NULL, malloc, size_t
+#include <string.h>  // for memset
 
-#include "fapi_int.h"         // for FAPI_CONTEXT, IFAPI_GetEsysBlob, IFAPI_...
-#include "fapi_util.h"        // for ifapi_session_clean, ifapi_cleanup_session
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"     // for statecase, check_not_null, fallthrough
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_...
-#include "tss2_esys.h"        // for Esys_SetTimeout, Esys_ContextSave_Async
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, FAPI_ESYSBLOB_DESERIALIZE
-#include "tss2_policy.h"      // for TSS2_OBJECT
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPMS_CONTEXT
+#include "fapi_int.h"        // for FAPI_CONTEXT, IFAPI_GetEsysBlob, IFAPI_...
+#include "fapi_util.h"       // for ifapi_session_clean, ifapi_cleanup_session
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"    // for statecase, check_not_null, fallthrough
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_...
+#include "tss2_esys.h"       // for Esys_SetTimeout, Esys_ContextSave_Async
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, FAPI_ESYSBLOB_DESERIALIZE
+#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPMS_CONTEXT
 
 #define LOGMODULE fapi
-#include "tss2_mu.h"          // for Tss2_MU_TPMS_CONTEXT_Marshal
-#include "util/log.h"         // for goto_if_error, LOG_TRACE, SAFE_FREE
+#include "tss2_mu.h"  // for Tss2_MU_TPMS_CONTEXT_Marshal
+#include "util/log.h" // for goto_if_error, LOG_TRACE, SAFE_FREE
 
 /** One-Call function for Fapi_GetEsysBlob
  *
@@ -74,13 +74,11 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_GetEsysBlob(
-    FAPI_CONTEXT   *context,
-    char     const *path,
-    uint8_t        *type,
-    uint8_t       **data,
-    size_t         *length)
-{
+Fapi_GetEsysBlob(FAPI_CONTEXT *context,
+                 char const   *path,
+                 uint8_t      *type,
+                 uint8_t     **data,
+                 size_t       *length) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -137,10 +135,7 @@ Fapi_GetEsysBlob(
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 TSS2_RC
-Fapi_GetEsysBlob_Async(
-    FAPI_CONTEXT   *context,
-    char     const *path)
-{
+Fapi_GetEsysBlob_Async(FAPI_CONTEXT *context, char const *path) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
 
@@ -154,9 +149,9 @@ Fapi_GetEsysBlob_Async(
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
     /* Helpful alias pointers */
-    IFAPI_GetEsysBlob * command = &(context->cmd.GetEsysBlob);
-    IFAPI_OBJECT *object = &command->object;
-    IFAPI_OBJECT *authObject = &command->auth_object;
+    IFAPI_GetEsysBlob *command = &(context->cmd.GetEsysBlob);
+    IFAPI_OBJECT      *object = &command->object;
+    IFAPI_OBJECT      *authObject = &command->auth_object;
 
     /* Copy parameters to context for use during _Finish. */
     strdup_check(command->path, path, r, error_cleanup);
@@ -165,8 +160,8 @@ Fapi_GetEsysBlob_Async(
     authObject->objectType = IFAPI_OBJ_NONE;
 
     /* Check whether TCTI and ESYS are initialized */
-    goto_if_null(context->esys, "Command can't be executed in none TPM mode.",
-                   TSS2_FAPI_RC_NO_TPM, error_cleanup);
+    goto_if_null(context->esys, "Command can't be executed in none TPM mode.", TSS2_FAPI_RC_NO_TPM,
+                 error_cleanup);
 
     /* If the async state automata of FAPI shall be tested, then we must not set
        the timeouts of ESYS to blocking mode.
@@ -233,18 +228,13 @@ error_cleanup:
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_GetEsysBlob_Finish(
-    FAPI_CONTEXT   *context,
-    uint8_t        *type,
-    uint8_t       **data,
-    size_t         *length)
-{
+Fapi_GetEsysBlob_Finish(FAPI_CONTEXT *context, uint8_t *type, uint8_t **data, size_t *length) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
-    char *path;
+    TSS2_RC       r;
+    char         *path;
     TPMS_CONTEXT *key_context = NULL;
-    size_t offset = 0;
+    size_t        offset = 0;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -252,125 +242,121 @@ Fapi_GetEsysBlob_Finish(
     *data = NULL;
 
     /* Helpful alias pointers */
-    IFAPI_GetEsysBlob * command = &(context->cmd.GetEsysBlob);
-    IFAPI_OBJECT *object = &command->object;
-    IFAPI_OBJECT *key_object = context->loadKey.key_object;
-    IFAPI_OBJECT *authObject = &context->loadKey.auth_object;
+    IFAPI_GetEsysBlob *command = &(context->cmd.GetEsysBlob);
+    IFAPI_OBJECT      *object = &command->object;
+    IFAPI_OBJECT      *key_object = context->loadKey.key_object;
+    IFAPI_OBJECT      *authObject = &context->loadKey.auth_object;
 
     switch (context->state) {
-        statecase(context->state, GET_ESYS_BLOB_GET_FILE);
-            path = command->path;
-            LOG_TRACE("GetEsysBlob object: %s", path);
+    statecase(context->state, GET_ESYS_BLOB_GET_FILE);
+        path = command->path;
+        LOG_TRACE("GetEsysBlob object: %s", path);
 
-            /* Prepare loading the object metadata from the keystore. */
-            r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
-            return_if_error2(r, "Could not open: %s", path);
+        /* Prepare loading the object metadata from the keystore. */
+        r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
+        return_if_error2(r, "Could not open: %s", path);
 
-            fallthrough;
+        fallthrough;
 
-        statecase(context->state, GET_ESYS_BLOB_READ);
-            /* Get object metadata from keystore. */
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-            return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+    statecase(context->state, GET_ESYS_BLOB_READ);
+        /* Get object metadata from keystore. */
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
+        return_try_again(r);
+        return_if_error_reset_state(r, "read_finish failed");
 
-            /* Initialize the ESYS object for the key or NV Index. */
-            r = ifapi_initialize_object(context->esys, object);
-            goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
+        /* Initialize the ESYS object for the key or NV Index. */
+        r = ifapi_initialize_object(context->esys, object);
+        goto_if_error_reset_state(r, "Initialize NV object", error_cleanup);
 
-            if (object->objectType == IFAPI_KEY_OBJ) {
-                /* If the object is a key, we jump over to GET_ESYS_BLOB_KEY. */
-                command->is_key = true;
-                context->state = GET_ESYS_BLOB_KEY;
-                return TSS2_FAPI_RC_TRY_AGAIN;
+        if (object->objectType == IFAPI_KEY_OBJ) {
+            /* If the object is a key, we jump over to GET_ESYS_BLOB_KEY. */
+            command->is_key = true;
+            context->state = GET_ESYS_BLOB_KEY;
+            return TSS2_FAPI_RC_TRY_AGAIN;
 
-            } else  if (object->objectType != IFAPI_NV_OBJ) {
-                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Key or NV object expected.",
-                           error_cleanup);
-            }
+        } else if (object->objectType != IFAPI_NV_OBJ) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Key or NV object expected.", error_cleanup);
+        }
+        *type = FAPI_ESYSBLOB_DESERIALIZE;
+        fallthrough;
+
+    statecase(context->state, GET_ESYS_BLOB_SERIALIZE);
+        r = Esys_TR_Serialize(context->esys, object->public.handle, data, length);
+        goto_if_error(r, "Serialize object", error_cleanup);
+
+        context->state = FAPI_STATE_INIT;
+        LOG_DEBUG("success");
+        r = TSS2_RC_SUCCESS;
+        break;
+
+    statecase(context->state, GET_ESYS_BLOB_KEY);
+        if (object->misc.key.persistent_handle) {
             *type = FAPI_ESYSBLOB_DESERIALIZE;
-            fallthrough;
+            context->state = GET_ESYS_BLOB_SERIALIZE;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+        fallthrough;
 
-        statecase(context->state, GET_ESYS_BLOB_SERIALIZE);
-            r = Esys_TR_Serialize(context->esys, object->public.handle, data, length);
-            goto_if_error(r, "Serialize object", error_cleanup);
+    statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_KEY);
+        /* Loading the key is needed for blob computation. */
+        r = ifapi_load_key(context, command->path, &key_object);
+        return_try_again(r);
+        goto_if_error(r, "Fapi load key.", error_cleanup);
 
-            context->state = FAPI_STATE_INIT;
-            LOG_DEBUG("success");
-            r = TSS2_RC_SUCCESS;
-            break;
+        command->type = FAPI_ESYSBLOB_CONTEXTLOAD;
 
-        statecase(context->state, GET_ESYS_BLOB_KEY);
-            if (object->misc.key.persistent_handle) {
-                *type = FAPI_ESYSBLOB_DESERIALIZE;
-                context->state = GET_ESYS_BLOB_SERIALIZE;
-                return TSS2_FAPI_RC_TRY_AGAIN;
-            }
-            fallthrough;
+        /* Prepare the saving of the context. */
+        r = Esys_ContextSave_Async(context->esys, key_object->public.handle);
+        goto_if_error(r, "Error esys context save", error_cleanup);
 
-        statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_KEY);
-            /* Loading the key is needed for blob computation. */
-            r = ifapi_load_key(context, command->path, &key_object);
+        fallthrough;
+
+    statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_CONTEXT_SAVE);
+        /* Save and get the context. */
+        r = Esys_ContextSave_Finish(context->esys, &key_context);
+        return_try_again(r);
+        goto_if_error(r, "Error esys context save", error_cleanup);
+
+        command->length = 0;
+        r = Tss2_MU_TPMS_CONTEXT_Marshal(key_context, NULL, SIZE_MAX, &command->length);
+        goto_if_error(r, "Marshaling context", error_cleanup);
+
+        command->data = malloc(command->length);
+        goto_if_null2(command->data, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
+
+        r = Tss2_MU_TPMS_CONTEXT_Marshal(key_context, command->data, command->length, &offset);
+        SAFE_FREE(key_context);
+        goto_if_error(r, "Marshaling context", error_cleanup);
+
+        /* Flush current object used for blob computation. */
+        if (!key_object->misc.key.persistent_handle) {
+            r = Esys_FlushContext_Async(context->esys, key_object->public.handle);
+            goto_if_error(r, "Flush Context", error_cleanup);
+        }
+
+        fallthrough;
+
+    statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_FLUSH);
+        if (!key_object->misc.key.persistent_handle) {
+            r = Esys_FlushContext_Finish(context->esys);
             return_try_again(r);
-            goto_if_error(r, "Fapi load key.", error_cleanup);
+            goto_if_error(r, "Flush Context", error_cleanup);
+        }
 
-            command->type = FAPI_ESYSBLOB_CONTEXTLOAD;
+        fallthrough;
 
-            /* Prepare the saving of the context. */
-            r = Esys_ContextSave_Async(context->esys, key_object->public.handle);
-            goto_if_error(r, "Error esys context save", error_cleanup);
+    statecase(context->state, GET_ESYS_BLOB_CLEANUP)
+    /* Cleanup the session used for authorization. */
+        r = ifapi_cleanup_session(context);
+        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        *type = command->type;
+        *data = command->data;
+        *length = command->length;
 
-            fallthrough;
+        context->state = FAPI_STATE_INIT;
+        break;
 
-        statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_CONTEXT_SAVE);
-            /* Save and get the context. */
-            r = Esys_ContextSave_Finish(context->esys, &key_context);
-            return_try_again(r);
-            goto_if_error(r, "Error esys context save", error_cleanup);
-
-            command->length = 0;
-            r = Tss2_MU_TPMS_CONTEXT_Marshal(key_context, NULL, SIZE_MAX,
-                                             &command->length);
-            goto_if_error(r, "Marshaling context", error_cleanup);
-
-            command->data = malloc(command->length);
-            goto_if_null2(command->data, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-                          error_cleanup);
-
-            r = Tss2_MU_TPMS_CONTEXT_Marshal(key_context, command->data, command->length,
-                                             &offset);
-            SAFE_FREE(key_context);
-            goto_if_error(r, "Marshaling context", error_cleanup);
-
-            /* Flush current object used for blob computation. */
-            if (!key_object->misc.key.persistent_handle) {
-                r = Esys_FlushContext_Async(context->esys, key_object->public.handle);
-                goto_if_error(r, "Flush Context", error_cleanup);
-            }
-
-            fallthrough;
-
-        statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_FLUSH);
-            if (!key_object->misc.key.persistent_handle) {
-                r = Esys_FlushContext_Finish(context->esys);
-                return_try_again(r);
-                goto_if_error(r, "Flush Context", error_cleanup);
-            }
-
-            fallthrough;
-
-        statecase(context->state, GET_ESYS_BLOB_CLEANUP)
-            /* Cleanup the session used for authorization. */
-            r = ifapi_cleanup_session(context);
-            try_again_or_error_goto(r, "Cleanup", error_cleanup);
-            *type = command->type;
-            *data = command->data;
-            *length = command->length;
-
-            context->state = FAPI_STATE_INIT;
-            break;
-
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
     /* Reset the ESYS timeout to non-blocking, immediate response. */

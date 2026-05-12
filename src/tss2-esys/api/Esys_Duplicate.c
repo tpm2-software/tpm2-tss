@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, int32_t
-#include <stdlib.h>           // for NULL, calloc
+#include <inttypes.h> // for PRIx32, int32_t
+#include <stdlib.h>   // for NULL, calloc
 
-#include "esys_int.h"         // for ESYS_CONTEXT, RSRC_NODE_T, _ESYS_STATE_...
-#include "esys_iutil.h"       // for iesys_compute_session_value, esys_GetRe...
-#include "esys_types.h"       // for IESYS_RESOURCE
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_Duplicate
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
-#include "tss2_tpm2_types.h"  // for TPM2B_DATA, TPM2B_ENCRYPTED_SECRET, TPM...
+#include "esys_int.h"        // for ESYS_CONTEXT, RSRC_NODE_T, _ESYS_STATE_...
+#include "esys_iutil.h"      // for iesys_compute_session_value, esys_GetRe...
+#include "esys_types.h"      // for IESYS_RESOURCE
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, Esys_Duplicate
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h" // for TPM2B_DATA, TPM2B_ENCRYPTED_SECRET, TPM...
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
+#include "util/log.h" // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** One-Call function for TPM2_Duplicate
  *
@@ -74,24 +74,21 @@
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_Duplicate(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR objectHandle,
-    ESYS_TR newParentHandle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_DATA *encryptionKeyIn,
-    const TPMT_SYM_DEF_OBJECT *symmetricAlg,
-    TPM2B_DATA **encryptionKeyOut,
-    TPM2B_PRIVATE **duplicate,
-    TPM2B_ENCRYPTED_SECRET **outSymSeed)
-{
+Esys_Duplicate(ESYS_CONTEXT              *esysContext,
+               ESYS_TR                    objectHandle,
+               ESYS_TR                    newParentHandle,
+               ESYS_TR                    shandle1,
+               ESYS_TR                    shandle2,
+               ESYS_TR                    shandle3,
+               const TPM2B_DATA          *encryptionKeyIn,
+               const TPMT_SYM_DEF_OBJECT *symmetricAlg,
+               TPM2B_DATA               **encryptionKeyOut,
+               TPM2B_PRIVATE            **duplicate,
+               TPM2B_ENCRYPTED_SECRET   **outSymSeed) {
     TSS2_RC r;
 
-    r = Esys_Duplicate_Async(esysContext, objectHandle, newParentHandle,
-                             shandle1, shandle2, shandle3, encryptionKeyIn,
-                             symmetricAlg);
+    r = Esys_Duplicate_Async(esysContext, objectHandle, newParentHandle, shandle1, shandle2,
+                             shandle3, encryptionKeyIn, symmetricAlg);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -105,13 +102,11 @@ Esys_Duplicate(
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
     do {
-        r = Esys_Duplicate_Finish(esysContext, encryptionKeyOut, duplicate,
-                                  outSymSeed);
+        r = Esys_Duplicate_Finish(esysContext, encryptionKeyOut, duplicate, outSymSeed);
         /* This is just debug information about the reattempt to finish the
            command */
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -155,23 +150,21 @@ Esys_Duplicate(
  *         ESYS_TR objects are ESYS_TR_NONE.
  */
 TSS2_RC
-Esys_Duplicate_Async(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR objectHandle,
-    ESYS_TR newParentHandle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_DATA *encryptionKeyIn,
-    const TPMT_SYM_DEF_OBJECT *symmetricAlg)
-{
+Esys_Duplicate_Async(ESYS_CONTEXT              *esysContext,
+                     ESYS_TR                    objectHandle,
+                     ESYS_TR                    newParentHandle,
+                     ESYS_TR                    shandle1,
+                     ESYS_TR                    shandle2,
+                     ESYS_TR                    shandle3,
+                     const TPM2B_DATA          *encryptionKeyIn,
+                     const TPMT_SYM_DEF_OBJECT *symmetricAlg) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, objectHandle=%"PRIx32 ", newParentHandle=%"PRIx32 ","
+    LOG_TRACE("context=%p, objectHandle=%" PRIx32 ", newParentHandle=%" PRIx32 ","
               "encryptionKeyIn=%p, symmetricAlg=%p",
               esysContext, objectHandle, newParentHandle, encryptionKeyIn, symmetricAlg);
     TSS2L_SYS_AUTH_COMMAND auths;
-    RSRC_NODE_T *objectHandleNode;
-    RSRC_NODE_T *newParentHandleNode;
+    RSRC_NODE_T           *objectHandleNode;
+    RSRC_NODE_T           *newParentHandleNode;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -194,20 +187,18 @@ Esys_Duplicate_Async(
     return_state_if_error(r, ESYS_STATE_INIT, "newParentHandle unknown.");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_Duplicate_Prepare(esysContext->sys,
-                                   (objectHandleNode == NULL) ? TPM2_RH_NULL
-                                    : objectHandleNode->rsrc.handle,
-                                   (newParentHandleNode == NULL) ? TPM2_RH_NULL
-                                    : newParentHandleNode->rsrc.handle,
-                                   encryptionKeyIn, symmetricAlg);
+    r = Tss2_Sys_Duplicate_Prepare(
+        esysContext->sys, (objectHandleNode == NULL) ? TPM2_RH_NULL : objectHandleNode->rsrc.handle,
+        (newParentHandleNode == NULL) ? TPM2_RH_NULL : newParentHandleNode->rsrc.handle,
+        encryptionKeyIn, symmetricAlg);
     return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
     return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
     if (objectHandleNode != NULL)
-        iesys_compute_session_value(esysContext->session_tab[0],
-                &objectHandleNode->rsrc.name, &objectHandleNode->auth);
+        iesys_compute_session_value(esysContext->session_tab[0], &objectHandleNode->rsrc.name,
+                                    &objectHandleNode->auth);
     else
         iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
 
@@ -216,8 +207,7 @@ Esys_Duplicate_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, objectHandleNode, newParentHandleNode, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT,
-                          "Error in computation of auth values");
+    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
@@ -227,8 +217,7 @@ Esys_Duplicate_Async(
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Finish (Execute Async)");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
 
@@ -274,17 +263,14 @@ Esys_Duplicate_Async(
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_Duplicate_Finish(
-    ESYS_CONTEXT *esysContext,
-    TPM2B_DATA **encryptionKeyOut,
-    TPM2B_PRIVATE **duplicate,
-    TPM2B_ENCRYPTED_SECRET **outSymSeed)
-{
+Esys_Duplicate_Finish(ESYS_CONTEXT            *esysContext,
+                      TPM2B_DATA             **encryptionKeyOut,
+                      TPM2B_PRIVATE          **duplicate,
+                      TPM2B_ENCRYPTED_SECRET **outSymSeed) {
     TSS2_RC r;
     LOG_TRACE("context=%p, encryptionKeyOut=%p, duplicate=%p,"
               "outSymSeed=%p",
-              esysContext, encryptionKeyOut, duplicate,
-              outSymSeed);
+              esysContext, encryptionKeyOut, duplicate, outSymSeed);
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -292,8 +278,7 @@ Esys_Duplicate_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != ESYS_STATE_SENT &&
-        esysContext->state != ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT && esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -334,7 +319,8 @@ Esys_Duplicate_Finish(
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
-            "resubmission: %" PRIx32, r);
+                  "resubmission: %" PRIx32,
+                  r);
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
@@ -368,20 +354,16 @@ Esys_Duplicate_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response",
-                        error_cleanup);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response", error_cleanup);
 
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
-    r = Tss2_Sys_Duplicate_Complete(esysContext->sys,
-                                    (encryptionKeyOut != NULL)
-                                     ? *encryptionKeyOut : NULL,
-                                    (duplicate != NULL) ? *duplicate : NULL,
-                                    (outSymSeed != NULL) ? *outSymSeed : NULL);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                        "Received error from SAPI unmarshaling" ,
+    r = Tss2_Sys_Duplicate_Complete(
+        esysContext->sys, (encryptionKeyOut != NULL) ? *encryptionKeyOut : NULL,
+        (duplicate != NULL) ? *duplicate : NULL, (outSymSeed != NULL) ? *outSymSeed : NULL);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling",
                         error_cleanup);
 
     esysContext->state = ESYS_STATE_INIT;

@@ -8,26 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <dirent.h>         // for closedir, dirent, opendir, readdir, scandir
-#include <errno.h>          // for errno, EAGAIN, EINTR
-#include <fcntl.h>          // for fcntl, flock, F_GETFL, F_SETFL, F_SETLK
-#include <limits.h>         // for LONG_MAX
-#include <poll.h>           // for pollfd, poll, POLLIN, POLLOUT
-#include <stdio.h>          // for fclose, fileno, size_t, NULL, fopen, remove
-#include <stdlib.h>         // for free, calloc, malloc
-#include <string.h>         // for strcmp, strerror, strlen, strdup, memcpy
-#include <sys/stat.h>       // for stat, fstat, S_ISDIR
-#include <unistd.h>         // for access, read, rmdir, write
+#include <dirent.h>   // for closedir, dirent, opendir, readdir, scandir
+#include <errno.h>    // for errno, EAGAIN, EINTR
+#include <fcntl.h>    // for fcntl, flock, F_GETFL, F_SETFL, F_SETLK
+#include <limits.h>   // for LONG_MAX
+#include <poll.h>     // for pollfd, poll, POLLIN, POLLOUT
+#include <stdio.h>    // for fclose, fileno, size_t, NULL, fopen, remove
+#include <stdlib.h>   // for free, calloc, malloc
+#include <string.h>   // for strcmp, strerror, strlen, strdup, memcpy
+#include <sys/stat.h> // for stat, fstat, S_ISDIR
+#include <unistd.h>   // for access, read, rmdir, write
 
-#include "fapi_int.h"       // for FAPI_WRITE
-#include "fapi_types.h"     // for NODE_OBJECT_T
-#include "ifapi_helpers.h"  // for ifapi_asprintf, ifapi_create_dirs
+#include "fapi_int.h"      // for FAPI_WRITE
+#include "fapi_types.h"    // for NODE_OBJECT_T
+#include "ifapi_helpers.h" // for ifapi_asprintf, ifapi_create_dirs
 #include "ifapi_io.h"
-#include "ifapi_macros.h"   // for check_not_null, return_error2, check_oom
-#include "tss2_common.h"    // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_RC_S...
-
+#include "ifapi_macros.h" // for check_not_null, return_error2, check_oom
+#include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_RC_S...
+#include <fcntl.h>        // for open
 #define LOGMODULE fapi
-#include "util/log.h"       // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
+#include "util/log.h" // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
 
 /** Determine if a sub file in directory is also a directory
  *
@@ -39,9 +39,9 @@
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 static TSS2_RC
-is_directory(const char* dir_name, struct dirent *entry, bool *isdir) {
+is_directory(const char *dir_name, struct dirent *entry, bool *isdir) {
     TSS2_RC r;
-    char *path;
+    char   *path;
 
     /* stat is used if d_type is not supported or unknown. */
     struct stat file_stat;
@@ -72,9 +72,9 @@ is_directory(const char* dir_name, struct dirent *entry, bool *isdir) {
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 static TSS2_RC
-is_regular_file(const char* dir_name, struct dirent *entry, bool *isreg) {
+is_regular_file(const char *dir_name, struct dirent *entry, bool *isreg) {
     TSS2_RC r;
-    char *path;
+    char   *path;
 
     /* stat is used if d_type is not supported or unknown. */
     struct stat file_stat;
@@ -103,12 +103,9 @@ is_regular_file(const char* dir_name, struct dirent *entry, bool *isreg) {
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 TSS2_RC
-ifapi_io_read_async(
-    struct IFAPI_IO *io,
-    const char *filename)
-{
-    struct stat statbuf;
-    struct flock flock  = { 0 };
+ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
+    struct stat  statbuf;
+    struct flock flock = { 0 };
 
     if (io->char_rbuffer) {
         LOG_ERROR("rbuffer still in use; maybe use of old API.");
@@ -139,31 +136,14 @@ ifapi_io_read_async(
     flock.l_whence = SEEK_SET;
 
     if (fcntl(fileno(io->stream), F_SETLK, &flock) == -1) {
-        LOG_ERROR("File \"%s\" could not be locked: %s",
-                  filename, strerror(errno));
+        LOG_ERROR("File \"%s\" could not be locked: %s", filename, strerror(errno));
         fclose(io->stream);
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
-    if (fseek(io->stream, 0L, SEEK_END) == -1) {
-        LOG_ERROR("fseek failed for \"%s\".", filename);
-        fclose(io->stream);
-        return TSS2_FAPI_RC_IO_ERROR;
-    };
-    long length = ftell(io->stream);
-    if (length == -1  || length == LONG_MAX) {
-        LOG_ERROR("ftell failed for \"%s\".", filename);
-        fclose(io->stream);
-        return TSS2_FAPI_RC_IO_ERROR;
-    };
-    fclose(io->stream);
+    long length = statbuf.st_size;
 
-    io->stream = fopen(filename, "rt");
-    if (io->stream == NULL) {
-        LOG_ERROR("Open file \"%s\": %s", filename, strerror(errno));
-        return TSS2_FAPI_RC_IO_ERROR;
-    }
-    io->char_rbuffer = malloc (length + 1);
+    io->char_rbuffer = malloc(length + 1);
     if (io->char_rbuffer == NULL) {
         fclose(io->stream);
         io->stream = NULL;
@@ -203,19 +183,14 @@ ifapi_io_read_async(
  *         Call this function again later.
  */
 TSS2_RC
-ifapi_io_read_finish(
-    struct IFAPI_IO *io,
-    uint8_t **buffer,
-    size_t *length)
-{
+ifapi_io_read_finish(struct IFAPI_IO *io, uint8_t **buffer, size_t *length) {
     io->pollevents = POLLIN;
     if (ifapi_io_retry-- > 0)
         return TSS2_FAPI_RC_TRY_AGAIN;
     else
         ifapi_io_retry = IFAPI_IO_RETRIES;
 
-    ssize_t ret = read(fileno(io->stream),
-                       &io->char_rbuffer[io->buffer_idx],
+    ssize_t ret = read(fileno(io->stream), &io->char_rbuffer[io->buffer_idx],
                        io->buffer_length - io->buffer_idx);
     if (ret < 0 && (errno == EINTR || errno == EAGAIN))
         return TSS2_FAPI_RC_TRY_AGAIN;
@@ -259,14 +234,13 @@ ifapi_io_read_finish(
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 TSS2_RC
-ifapi_io_write_async(
-    struct IFAPI_IO *io,
-    const char *filename,
-    const uint8_t *buffer,
-    size_t length)
-{
-    TSS2_RC r;
+ifapi_io_write_async(struct IFAPI_IO *io,
+                     const char      *filename,
+                     const uint8_t   *buffer,
+                     size_t           length) {
+    TSS2_RC      r;
     struct flock flock = { 0 };
+    int          fd;
 
     if (io->char_rbuffer) {
         LOG_ERROR("rbuffer still in use; maybe use of old API.");
@@ -282,10 +256,15 @@ ifapi_io_write_async(
     }
     memcpy(io->char_rbuffer, buffer, length);
 
-    io->stream = fopen(filename, "wt");
+    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0664);
+    if (fd == -1) {
+        goto_error(r, TSS2_FAPI_RC_IO_ERROR, "Open file \"%s\" for writing: %s", error, filename,
+                   strerror(errno));
+    }
+
+    io->stream = fdopen(fd, "wt");
     if (io->stream == NULL) {
-        goto_error(r, TSS2_FAPI_RC_IO_ERROR,
-                   "Open file \"%s\" for writing: %s", error, filename,
+        goto_error(r, TSS2_FAPI_RC_IO_ERROR, "Open file \"%s\" for writing: %s", error, filename,
                    strerror(errno));
     }
     /* Locking the file. Lock will be released upon close */
@@ -294,8 +273,7 @@ ifapi_io_write_async(
 
     if (fcntl(fileno(io->stream), F_SETLK, &flock) == -1) {
         fclose(io->stream);
-        goto_error(r, TSS2_FAPI_RC_IO_ERROR,
-                   "File \"%s\" could not be locked: %s", error, filename,
+        goto_error(r, TSS2_FAPI_RC_IO_ERROR, "File \"%s\" could not be locked: %s", error, filename,
                    strerror(errno));
     }
 
@@ -303,18 +281,16 @@ ifapi_io_write_async(
     int rc, flags = fcntl(fileno(io->stream), F_GETFL, 0);
     if (flags < 0) {
         fclose(io->stream);
-        goto_error(r, TSS2_FAPI_RC_IO_ERROR,
-                   "fcntl failed with %d", error, errno);
+        goto_error(r, TSS2_FAPI_RC_IO_ERROR, "fcntl failed with %d", error, errno);
     }
     rc = fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK);
     if (rc < 0) {
         fclose(io->stream);
-        goto_error(r, TSS2_FAPI_RC_IO_ERROR,
-                   "fcntl failed with %d", error, errno);
+        goto_error(r, TSS2_FAPI_RC_IO_ERROR, "fcntl failed with %d", error, errno);
     }
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     SAFE_FREE(io->char_rbuffer);
     return r;
 }
@@ -330,17 +306,14 @@ ifapi_io_write_async(
  *         Call this function again later.
  */
 TSS2_RC
-ifapi_io_write_finish(
-    struct IFAPI_IO *io)
-{
+ifapi_io_write_finish(struct IFAPI_IO *io) {
     io->pollevents = POLLOUT;
     if (ifapi_io_retry-- > 0)
         return TSS2_FAPI_RC_TRY_AGAIN;
     else
         ifapi_io_retry = IFAPI_IO_RETRIES;
 
-    ssize_t ret = write(fileno(io->stream),
-                        &io->char_rbuffer[io->buffer_idx],
+    ssize_t ret = write(fileno(io->stream), &io->char_rbuffer[io->buffer_idx],
                         io->buffer_length - io->buffer_idx);
     if (ret < 0 && (errno == EINTR || errno == EAGAIN))
         return TSS2_FAPI_RC_TRY_AGAIN;
@@ -371,9 +344,7 @@ ifapi_io_write_finish(
  * @retval TSS2_FAPI_RC_IO_ERROR if an I/O error occurred
  */
 TSS2_RC
-ifapi_io_check_file_writeable(
-    const char *file)
-{
+ifapi_io_check_file_writeable(const char *file) {
     /* Check access rights to file  */
     if (access(file, FAPI_WRITE)) {
         return_error2(TSS2_FAPI_RC_IO_ERROR, "File %s is not writeable.", file);
@@ -391,10 +362,8 @@ ifapi_io_check_file_writeable(
  *         the function.
  */
 TSS2_RC
-ifapi_io_check_create_dir(
-    const char *dirname, int mode)
-{
-    TSS2_RC r;
+ifapi_io_check_create_dir(const char *dirname, int mode) {
+    TSS2_RC     r;
     struct stat fbuffer;
 
     /* Check existence of dirname and try to create it otherwise */
@@ -423,8 +392,7 @@ ifapi_io_check_create_dir(
  * @retval TSS2_FAPI_RC_IO_ERROR If the file could not be removed.
  */
 TSS2_RC
-ifapi_io_remove_file(const char *file)
-{
+ifapi_io_remove_file(const char *file) {
     if (remove(file) != 0) {
         LOG_ERROR("File: %s can't be deleted.", file);
         return TSS2_FAPI_RC_IO_ERROR;
@@ -445,23 +413,18 @@ ifapi_io_remove_file(const char *file)
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 TSS2_RC
-ifapi_io_remove_directories(
-    const char *dirname,
-    const char *keystore_path,
-    const char *sub_dir)
-{
-    DIR *dir;
+ifapi_io_remove_directories(const char *dirname, const char *keystore_path, const char *sub_dir) {
+    DIR           *dir;
     struct dirent *entry;
-    TSS2_RC r;
-    char *path;
-    size_t len_kstore_path, len_dir_path, diff_len, pos;
-    bool is_dir;
+    TSS2_RC        r;
+    char          *path;
+    size_t         len_kstore_path, len_dir_path, diff_len, pos;
+    bool           is_dir;
 
     LOG_TRACE("Removing directory: %s", dirname);
 
     if (!(dir = opendir(dirname))) {
-        return_error2(TSS2_FAPI_RC_IO_ERROR, "Could not open directory: %s",
-                      dirname);
+        return_error2(TSS2_FAPI_RC_IO_ERROR, "Could not open directory: %s", dirname);
     }
 
     /* Iterating through the list of entries inside the directory. */
@@ -540,17 +503,13 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_io_dirfiles(
-    const char *dirname,
-    char ***files,
-    size_t *numfiles)
-{
-    char **paths;
-    int numentries = 0;
+ifapi_io_dirfiles(const char *dirname, char ***files, size_t *numfiles) {
+    char          **paths;
+    int             numentries = 0;
     struct dirent **namelist;
-    size_t numpaths = 0;
-    bool is_reg_file;
-    TSS2_RC r;
+    size_t          numpaths = 0;
+    bool            is_reg_file;
+    TSS2_RC         r;
     check_not_null(dirname);
     check_not_null(files);
     check_not_null(numfiles);
@@ -559,19 +518,19 @@ ifapi_io_dirfiles(
 
     numentries = scandir(dirname, &namelist, NULL, alphasort);
     if (numentries < 0) {
-        return_error2(TSS2_FAPI_RC_IO_ERROR, "Could not open directory: %s",
-                      dirname);
+        return_error2(TSS2_FAPI_RC_IO_ERROR, "Could not open directory: %s", dirname);
     }
 
-    paths = calloc(numentries, sizeof(*paths));
-    check_oom(paths);
+    paths = (char **)calloc(numentries, sizeof(*paths));
+    goto_if_null2(paths, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_oom);
 
     /* Iterating through the list of entries inside the directory. */
-    for (size_t i = 0; i < (size_t) numentries; i++) {
+    for (size_t i = 0; i < (size_t)numentries; i++) {
         LOG_TRACE("Looking at %s", namelist[i]->d_name);
 
         r = is_regular_file(dirname, namelist[i], &is_reg_file);
-        if (r) goto  error_oom;
+        if (r)
+            goto error_oom;
         if (!is_reg_file)
             continue;
 
@@ -589,7 +548,7 @@ ifapi_io_dirfiles(
     for (int i = 0; i < numentries; i++) {
         free(namelist[i]);
     }
-    free(namelist);
+    free((void *)namelist);
 
     return TSS2_RC_SUCCESS;
 
@@ -597,11 +556,11 @@ error_oom:
     for (int i = 0; i < numentries; i++) {
         free(namelist[i]);
     }
-    free(namelist);
+    free((void *)namelist);
     LOG_ERROR("Out of memory");
     for (size_t i = 0; i < numpaths; i++)
         free(paths[i]);
-    free(paths);
+    free((void *)paths);
     return TSS2_FAPI_RC_MEMORY;
 }
 
@@ -616,14 +575,13 @@ error_oom:
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 static TSS2_RC
-dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
-{
-    DIR *dir;
+dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n) {
+    DIR           *dir;
     struct dirent *entry;
-    TSS2_RC r;
-    char *path;
+    TSS2_RC        r;
+    char          *path;
     NODE_OBJECT_T *second;
-    bool is_dir;
+    bool           is_dir;
 
     if (!(dir = opendir(dir_name))) {
         return TSS2_RC_SUCCESS;
@@ -633,6 +591,8 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
     while ((entry = readdir(dir)) != NULL) {
         path = NULL;
         r = is_directory(dir_name, entry, &is_dir);
+        if (r)
+            closedir(dir);
         return_if_error(r, "directory check failed");
 
         if (is_dir) {
@@ -688,7 +648,6 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
     return TSS2_RC_SUCCESS;
 }
 
-
 /** Recursive enumerate the list of files in a directory.
  *
  * Enumerage the regular files (no directories, symlinks etc) from a given directory.
@@ -701,13 +660,9 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n)
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 TSS2_RC
-ifapi_io_dirfiles_all(
-    const char *searchPath,
-    char ***pathlist,
-    size_t *numPaths)
-{
-    TSS2_RC r;
-    size_t n;
+ifapi_io_dirfiles_all(const char *searchPath, char ***pathlist, size_t *numPaths) {
+    TSS2_RC        r;
+    size_t         n;
     NODE_OBJECT_T *head;
 
     *numPaths = 0;
@@ -719,9 +674,8 @@ ifapi_io_dirfiles_all(
 
     if (*numPaths > 0) {
         size_t size_path_list = *numPaths * sizeof(char *);
-        pathlist2 = calloc(1, size_path_list);
-        goto_if_null2(pathlist2, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                      cleanup);
+        pathlist2 = (char **)calloc(1, size_path_list);
+        goto_if_null2(pathlist2, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
         n = *numPaths;
 
         /* Move file names from list to array */
@@ -751,8 +705,7 @@ cleanup:
  * @retval false The file does not exist.
  */
 bool
-ifapi_io_path_exists(const char *path)
-{
+ifapi_io_path_exists(const char *path) {
     struct stat fbuffer;
 
     if (stat(path, &fbuffer) == 0)
@@ -760,7 +713,6 @@ ifapi_io_path_exists(const char *path)
     else
         return false;
 }
-
 
 /** Wait for file I/O to be ready.
  *
@@ -773,7 +725,7 @@ ifapi_io_path_exists(const char *path)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_io_poll(IFAPI_IO * io) {
+ifapi_io_poll(IFAPI_IO *io) {
     int rc;
     /* Check for NULL parameters */
     check_not_null(io);
@@ -822,8 +774,8 @@ ifapi_io_poll_handles(IFAPI_IO *io, FAPI_POLL_HANDLE **handles, size_t *num_hand
     (*handles)->fd = fileno(io->stream);
     *num_handles = 1;
 
-    LOG_TRACE("Returning %zi poll handles for fd %i with event %i",
-              *num_handles, (*handles)->fd, (*handles)->events);
+    LOG_TRACE("Returning %zi poll handles for fd %i with event %i", *num_handles, (*handles)->fd,
+              (*handles)->events);
 
     return TSS2_RC_SUCCESS;
 }

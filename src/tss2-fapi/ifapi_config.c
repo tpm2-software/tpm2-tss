@@ -5,23 +5,23 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"                  // for SYSCONFDIR
+#include "config.h" // for SYSCONFDIR
 #endif
 
-#include <json.h>                    // for json_object_put, json_object
-#include <stdint.h>                  // for uint8_t
-#include <stdlib.h>                  // for NULL, getenv, size_t
-#include <string.h>                  // for strncmp, strlen, memset, strdup
+#include <json.h>   // for json_object_put, json_object
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for NULL, getenv, size_t
+#include <string.h> // for strncmp, strlen, memset, strdup
 
-#include "fapi_int.h"                // for IFAPI_FILE_DELIM, DEFAULT_LOG_DIR
+#include "fapi_int.h" // for IFAPI_FILE_DELIM, DEFAULT_LOG_DIR
 #include "ifapi_config.h"
-#include "ifapi_helpers.h"           // for ifapi_asprintf
-#include "ifapi_json_deserialize.h"  // for ifapi_json_char_deserialize
-#include "ifapi_macros.h"            // for return_try_again
-#include "tpm_json_deserialize.h"    // for ifapi_get_sub_object, ifapi_json...
+#include "ifapi_helpers.h"          // for ifapi_asprintf
+#include "ifapi_json_deserialize.h" // for ifapi_json_char_deserialize
+#include "ifapi_macros.h"           // for return_try_again
+#include "tpm_json_deserialize.h"   // for ifapi_get_sub_object, ifapi_json...
 
 #define LOGMODULE fapi
-#include "util/log.h"                // for return_if_error, SAFE_FREE, retu...
+#include "util/log.h" // for return_if_error, SAFE_FREE, retu...
 
 /**
  * The path of the default config file
@@ -39,8 +39,7 @@
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
-ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
-{
+ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out) {
     /* Check for NULL parameters */
     return_if_null(out, "out is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(jso, "jso is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -49,7 +48,7 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
 
     /* Deserialize the JSON object) */
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
     LOG_TRACE("call");
 
     if (ifapi_get_sub_object(jso, "profile_dir", &jso2)) {
@@ -153,8 +152,7 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_config_initialize_async(IFAPI_IO *io)
-{
+ifapi_config_initialize_async(IFAPI_IO *io) {
     /* Check for NULL parameters */
     return_if_null(io, "io is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -186,7 +184,7 @@ ifapi_config_initialize_async(IFAPI_IO *io)
 
 static TSS2_RC
 expand_home(char **path) {
-    size_t startPos = 0;
+    size_t  startPos = 0;
     TSS2_RC r;
 
     return_if_null(path, "Null passed for path", TSS2_FAPI_RC_BAD_VALUE);
@@ -203,13 +201,11 @@ expand_home(char **path) {
     if (startPos != 0) {
         LOG_DEBUG("Expanding path %s to user's home", *path);
         char *homeDir = getenv("HOME");
-        return_if_null(homeDir, "Home directory can't be determined.",
-                       TSS2_FAPI_RC_BAD_PATH);
+        return_if_null(homeDir, "Home directory can't be determined.", TSS2_FAPI_RC_BAD_PATH);
         if (strncmp(&(*path)[startPos], IFAPI_FILE_DELIM, strlen(IFAPI_FILE_DELIM)) == 0) {
             startPos += strlen(IFAPI_FILE_DELIM);
         }
-        r = ifapi_asprintf(&newPath, "%s%s%s", homeDir, IFAPI_FILE_DELIM,
-                           &(*path)[startPos]);
+        r = ifapi_asprintf(&newPath, "%s%s%s", homeDir, IFAPI_FILE_DELIM, &(*path)[startPos]);
         return_if_error(r, "Out of memory.");
 
         SAFE_FREE(*path);
@@ -236,8 +232,7 @@ expand_home(char **path) {
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
-{
+ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config) {
     /* Check for NULL parameters */
     return_if_null(config, "config is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(io, "io is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -247,8 +242,8 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
 
     /* Finish reading operation */
     uint8_t *configFileContent = NULL;
-    size_t configFileContentSize = 0;
-    TSS2_RC r = ifapi_io_read_finish(io, &configFileContent, &configFileContentSize);
+    size_t   configFileContentSize = 0;
+    TSS2_RC  r = ifapi_io_read_finish(io, &configFileContent, &configFileContentSize);
     return_try_again(r);
     goto_if_error(r, "Could not finish read operation", error);
     if (configFileContent == NULL || configFileContentSize == 0) {
@@ -259,8 +254,7 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
 
     /* Parse and deserialize the configuration file */
     jso = ifapi_parse_json((char *)configFileContent);
-    goto_if_null(jso, "Could not parse JSON objects",
-            TSS2_FAPI_RC_GENERAL_FAILURE, error);
+    goto_if_null(jso, "Could not parse JSON objects", TSS2_FAPI_RC_GENERAL_FAILURE, error);
     r = ifapi_json_IFAPI_CONFIG_deserialize(jso, config);
     goto_if_error(r, "Could not deserialize configuration", error);
 
@@ -301,7 +295,7 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config)
     }
     return r;
 
- error:
+error:
     SAFE_FREE(config->profile_dir);
     SAFE_FREE(config->user_dir);
     SAFE_FREE(config->keystore_dir);

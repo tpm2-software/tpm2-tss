@@ -8,17 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_mu.h"          // for Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal, Tss...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPM2B_MAX_BUFFER, TPM2_CC_GetTestResult
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal, Tss...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPM2B_MAX_BUFFER, TPM2_CC_GetTestResult
 
-TSS2_RC Tss2_Sys_GetTestResult_Prepare(
-    TSS2_SYS_CONTEXT *sysContext)
-{
+TSS2_RC
+Tss2_Sys_GetTestResult_Prepare(TSS2_SYS_CONTEXT *sysContext) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -34,13 +33,12 @@ TSS2_RC Tss2_Sys_GetTestResult_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_GetTestResult_Complete(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_MAX_BUFFER *outData,
-    TSS2_RC *testResult)
-{
+TSS2_RC
+Tss2_Sys_GetTestResult_Complete(TSS2_SYS_CONTEXT *sysContext,
+                                TPM2B_MAX_BUFFER *outData,
+                                TSS2_RC          *testResult) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -49,28 +47,22 @@ TSS2_RC Tss2_Sys_GetTestResult_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(ctx->cmdBuffer,
-                                              ctx->maxCmdSize,
-                                              &ctx->nextData,
+    rval = Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
                                               outData);
     if (rval)
         return rval;
 
-    return Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
-                                    ctx->maxCmdSize,
-                                    &ctx->nextData,
-                                    testResult);
+    return Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, testResult);
 }
 
-TSS2_RC Tss2_Sys_GetTestResult(
-    TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER *outData,
-    TSS2_RC *testResult,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_GetTestResult(TSS2_SYS_CONTEXT             *sysContext,
+                       TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                       TPM2B_MAX_BUFFER             *outData,
+                       TSS2_RC                      *testResult,
+                       TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     rval = Tss2_Sys_GetTestResult_Prepare(sysContext);
     if (rval)

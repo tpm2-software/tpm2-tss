@@ -8,21 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE, UINT16
-#include "tss2_mu.h"          // for Tss2_MU_TPM2B_ECC_POINT_Unmarshal, Tss2...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPM2B_ECC_POINT, TPM2B_ECC_PARAMETER
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE, UINT16
+#include "tss2_mu.h"         // for Tss2_MU_TPM2B_ECC_POINT_Unmarshal, Tss2...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPM2B_ECC_POINT, TPM2B_ECC_PARAMETER
 
-TSS2_RC Tss2_Sys_Commit_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT signHandle,
-    const TPM2B_ECC_POINT *P1,
-    const TPM2B_SENSITIVE_DATA *s2,
-    const TPM2B_ECC_PARAMETER *y2)
-{
+TSS2_RC
+Tss2_Sys_Commit_Prepare(TSS2_SYS_CONTEXT           *sysContext,
+                        TPMI_DH_OBJECT              signHandle,
+                        const TPM2B_ECC_POINT      *P1,
+                        const TPM2B_SENSITIVE_DATA *s2,
+                        const TPM2B_ECC_PARAMETER  *y2) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -31,36 +30,27 @@ TSS2_RC Tss2_Sys_Commit_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(signHandle, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(signHandle, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
     if (!P1) {
         ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     } else {
-        rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(P1, ctx->cmdBuffer,
-                                               ctx->maxCmdSize,
-                                               &ctx->nextData);
+        rval = Tss2_MU_TPM2B_ECC_POINT_Marshal(P1, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     }
 
     if (rval)
         return rval;
 
     if (!s2) {
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
 
     } else {
 
-        rval = Tss2_MU_TPM2B_SENSITIVE_DATA_Marshal(s2, ctx->cmdBuffer,
-                                                    ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_SENSITIVE_DATA_Marshal(s2, ctx->cmdBuffer, ctx->maxCmdSize,
                                                     &ctx->nextData);
     }
 
@@ -68,14 +58,11 @@ TSS2_RC Tss2_Sys_Commit_Prepare(
         return rval;
 
     if (!y2) {
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
 
     } else {
 
-        rval = Tss2_MU_TPM2B_ECC_PARAMETER_Marshal(y2, ctx->cmdBuffer,
-                                                   ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_ECC_PARAMETER_Marshal(y2, ctx->cmdBuffer, ctx->maxCmdSize,
                                                    &ctx->nextData);
     }
 
@@ -89,15 +76,14 @@ TSS2_RC Tss2_Sys_Commit_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_Commit_Complete(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2B_ECC_POINT *K,
-    TPM2B_ECC_POINT *L,
-    TPM2B_ECC_POINT *E,
-    UINT16 *counter)
-{
+TSS2_RC
+Tss2_Sys_Commit_Complete(TSS2_SYS_CONTEXT *sysContext,
+                         TPM2B_ECC_POINT  *K,
+                         TPM2B_ECC_POINT  *L,
+                         TPM2B_ECC_POINT  *E,
+                         UINT16           *counter) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -106,44 +92,35 @@ TSS2_RC Tss2_Sys_Commit_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer,
-                                             ctx->maxCmdSize,
-                                             &ctx->nextData, K);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, K);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer,
-                                             ctx->maxCmdSize,
-                                             &ctx->nextData, L);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, L);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer,
-                                             ctx->maxCmdSize,
-                                             &ctx->nextData, E);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, E);
     if (rval)
         return rval;
 
-    return Tss2_MU_UINT16_Unmarshal(ctx->cmdBuffer,
-                                    ctx->maxCmdSize,
-                                    &ctx->nextData, counter);
+    return Tss2_MU_UINT16_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, counter);
 }
 
-TSS2_RC Tss2_Sys_Commit(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT signHandle,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    const TPM2B_ECC_POINT *P1,
-    const TPM2B_SENSITIVE_DATA *s2,
-    const TPM2B_ECC_PARAMETER *y2,
-    TPM2B_ECC_POINT *K,
-    TPM2B_ECC_POINT *L,
-    TPM2B_ECC_POINT *E,
-    UINT16 *counter,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_Commit(TSS2_SYS_CONTEXT             *sysContext,
+                TPMI_DH_OBJECT                signHandle,
+                TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                const TPM2B_ECC_POINT        *P1,
+                const TPM2B_SENSITIVE_DATA   *s2,
+                const TPM2B_ECC_PARAMETER    *y2,
+                TPM2B_ECC_POINT              *K,
+                TPM2B_ECC_POINT              *L,
+                TPM2B_ECC_POINT              *E,
+                UINT16                       *counter,
+                TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     rval = Tss2_Sys_Commit_Prepare(sysContext, signHandle, P1, s2, y2);
     if (rval)

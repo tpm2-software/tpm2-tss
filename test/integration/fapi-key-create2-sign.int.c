@@ -8,39 +8,37 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>             // for json_object_object_add, json_object_put
-#include <stdbool.h>          // for bool, false, true
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, size_t, fopen, fclose, fileno, fseek
-#include <stdlib.h>           // for malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strcmp, strlen, strncmp
-#include <unistd.h>           // for read
+#include <json.h>    // for json_object_object_add, json_object_put
+#include <stdbool.h> // for bool, false, true
+#include <stdint.h>  // for uint8_t
+#include <stdio.h>   // for NULL, size_t, fopen, fclose, fileno, fseek
+#include <stdlib.h>  // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>  // for strcmp, strlen, strncmp
+#include <unistd.h>  // for read
 
-#include "ifapi_macros.h"     // for goto_if_null2
-#include "test-fapi.h"        // for ASSERT, pcr_reset, ASSERT_SIZE, FAPI_PR...
-#include "tss2_common.h"      // for BYTE, TSS2_FAPI_RC_GENERAL_FAILURE, TSS...
-#include "tss2_fapi.h"        // for Fapi_CreateKey, Fapi_Import, Fapi_Verif...
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "ifapi_macros.h"    // for goto_if_null2
+#include "test-fapi.h"       // for ASSERT, pcr_reset, ASSERT_SIZE, FAPI_PR...
+#include "tss2_common.h"     // for BYTE, TSS2_FAPI_RC_GENERAL_FAILURE, TSS...
+#include "tss2_fapi.h"       // for Fapi_CreateKey, Fapi_Import, Fapi_Verif...
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, SAFE_FREE, LOG_ERROR
+#include "util/log.h" // for goto_if_error, SAFE_FREE, LOG_ERROR
 
-#define PASSWORD "abc"
-#define SIGN_TEMPLATE  "sign,noDa"
-#define DECRYPT_TEMPLATE  "restricted,decrypt,noDa"
-#define EVENT_SIZE 10
+#define PASSWORD         "abc"
+#define SIGN_TEMPLATE    "sign,noDa"
+#define DECRYPT_TEMPLATE "restricted,decrypt,noDa"
+#define EVENT_SIZE       10
 
 static bool cb_called = false;
 
 static TSS2_RC
-branch_callback(
-    char   const *objectPath,
-    char   const *description,
-    char  const **branchNames,
-    size_t        numBranches,
-    size_t       *selectedBranch,
-    void         *userData)
-{
+branch_callback(char const  *objectPath,
+                char const  *description,
+                char const **branchNames,
+                size_t       numBranches,
+                size_t      *selectedBranch,
+                void        *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -58,8 +56,7 @@ branch_callback(
     else if (!strcmp(branchNames[1], "branch0"))
         *selectedBranch = 1;
     else {
-        LOG_ERROR("BranchName not found. Got \"%s\" and \"%s\"",
-                  branchNames[0], branchNames[1]);
+        LOG_ERROR("BranchName not found. Got \"%s\" and \"%s\"", branchNames[0], branchNames[1]);
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
@@ -67,14 +64,12 @@ branch_callback(
     return TSS2_RC_SUCCESS;
 }
 
-
 static char *
-read_policy(FAPI_CONTEXT *context, char *policy_name)
-{
+read_policy(FAPI_CONTEXT *context, char *policy_name) {
     FILE *stream = NULL;
-    long policy_size;
+    long  policy_size;
     char *json_policy = NULL;
-    char policy_file[1024];
+    char  policy_file[1024];
 
     if (snprintf(&policy_file[0], 1023, TOP_SOURCEDIR "/test/data/fapi/%s.json", policy_name) < 0)
         return NULL;
@@ -99,8 +94,7 @@ read_policy(FAPI_CONTEXT *context, char *policy_name)
 }
 
 json_object *
-get_json_hex_string(const uint8_t *buffer, size_t size)
-{
+get_json_hex_string(const uint8_t *buffer, size_t size) {
 
     char hex_string[size * 2 + 1];
 
@@ -113,12 +107,7 @@ get_json_hex_string(const uint8_t *buffer, size_t size)
 }
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -153,48 +142,46 @@ auth_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_key_create_sign(FAPI_CONTEXT *context)
-{
+test_fapi_key_create_sign(FAPI_CONTEXT *context) {
     TSS2_RC r;
-    char *sigscheme = NULL;
+    char   *sigscheme = NULL;
 
-    const char *cert =
-        "-----BEGIN CERTIFICATE-----\n"
-        "MIIDBjCCAe4CCQDcvXBOEVM0UTANBgkqhkiG9w0BAQsFADBFMQswCQYDVQQGEwJE\n"
-        "RTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50ZXJuZXQgV2lkZ2l0\n"
-        "cyBQdHkgTHRkMB4XDTE5MDIyODEwNDkyM1oXDTM1MDgyNzEwNDkyM1owRTELMAkG\n"
-        "A1UEBhMCREUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGEludGVybmV0\n"
-        "IFdpZGdpdHMgUHR5IEx0ZDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\n"
-        "AKBi+iKwkgM55iCMwXrLCJlu7TzlMu/LlkyGrm99ip2B5+/Cl6a62d8pKelg6zkH\n"
-        "jI7+AAPteJiW4O+2qVWF8hJ5BXTjGtYbM0iZ6enCb8eyC54C7xVMc21ZIv3ob4Et\n"
-        "50ZOuzY2pfpzE3vIaXt1CkHlfyI/hdK+mM/dVvuCz5p3AIlHrEWS3rSNgWbCsB2E\n"
-        "TM55qSGKaLmtTbUvEKRF0TJrFLntfXkv10QD5pgn52+QV9k59OogqZOsDvkXzKPX\n"
-        "rXF+XC0gLiGBEGAr1dv9F03xMOtO77bQTdGOeC61Tip6Nb0V3ebMckZXwdFi+Nhe\n"
-        "FRuU33CaObtV6u5PZvSue/MCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAcamUPe8I\n"
-        "nMOHcv9x5lVN1joihVRmKc0QqNLFc6XpJY8+U5rGkZvOcDe9Da8L97wDNXpKmU/q\n"
-        "pprj3rT8l3v0Z5xs8Vdr8lxS6T5NhqQV0UCsn1x14gZJcE48y9/LazYi6Zcar+BX\n"
-        "Am4vewAV3HmQ8X2EctsRhXe4wlAq4slIfEWaaofa8ai7BzO9KwpMLsGPWoNetkB9\n"
-        "19+SFt0lFFOj/6vDw5pCpSd1nQlo1ug69mJYSX/wcGkV4t4LfGhV8jRPDsGs6I5n\n"
-        "ETHSN5KV1XCPYJmRCjFY7sIt1x4zN7JJRO9DVw+YheIlduVfkBiF+GlQgLlFTjrJ\n"
-        "VrpSGMIFSu301A==\n"
-        "-----END CERTIFICATE-----\n";
+    const char *cert = "-----BEGIN CERTIFICATE-----\n"
+                       "MIIDBjCCAe4CCQDcvXBOEVM0UTANBgkqhkiG9w0BAQsFADBFMQswCQYDVQQGEwJE\n"
+                       "RTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50ZXJuZXQgV2lkZ2l0\n"
+                       "cyBQdHkgTHRkMB4XDTE5MDIyODEwNDkyM1oXDTM1MDgyNzEwNDkyM1owRTELMAkG\n"
+                       "A1UEBhMCREUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGEludGVybmV0\n"
+                       "IFdpZGdpdHMgUHR5IEx0ZDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\n"
+                       "AKBi+iKwkgM55iCMwXrLCJlu7TzlMu/LlkyGrm99ip2B5+/Cl6a62d8pKelg6zkH\n"
+                       "jI7+AAPteJiW4O+2qVWF8hJ5BXTjGtYbM0iZ6enCb8eyC54C7xVMc21ZIv3ob4Et\n"
+                       "50ZOuzY2pfpzE3vIaXt1CkHlfyI/hdK+mM/dVvuCz5p3AIlHrEWS3rSNgWbCsB2E\n"
+                       "TM55qSGKaLmtTbUvEKRF0TJrFLntfXkv10QD5pgn52+QV9k59OogqZOsDvkXzKPX\n"
+                       "rXF+XC0gLiGBEGAr1dv9F03xMOtO77bQTdGOeC61Tip6Nb0V3ebMckZXwdFi+Nhe\n"
+                       "FRuU33CaObtV6u5PZvSue/MCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAcamUPe8I\n"
+                       "nMOHcv9x5lVN1joihVRmKc0QqNLFc6XpJY8+U5rGkZvOcDe9Da8L97wDNXpKmU/q\n"
+                       "pprj3rT8l3v0Z5xs8Vdr8lxS6T5NhqQV0UCsn1x14gZJcE48y9/LazYi6Zcar+BX\n"
+                       "Am4vewAV3HmQ8X2EctsRhXe4wlAq4slIfEWaaofa8ai7BzO9KwpMLsGPWoNetkB9\n"
+                       "19+SFt0lFFOj/6vDw5pCpSd1nQlo1ug69mJYSX/wcGkV4t4LfGhV8jRPDsGs6I5n\n"
+                       "ETHSN5KV1XCPYJmRCjFY7sIt1x4zN7JJRO9DVw+YheIlduVfkBiF+GlQgLlFTjrJ\n"
+                       "VrpSGMIFSu301A==\n"
+                       "-----END CERTIFICATE-----\n";
 
-    uint8_t       *signature = NULL;
-    char          *publicKey = NULL;
-    char          *certificate = NULL;
-    uint8_t       *publicblob = NULL;
-    uint8_t       *privateblob = NULL;
-    char          *policy = NULL;
-    char          *path_list = NULL;
-    size_t         publicsize;
-    size_t         privatesize;
-    json_object   *jso = NULL;
-    char           *description = NULL;
-    char *policy_pcr = "/policy/pol_pcr16_0";
-    char *policy_authorize = "/policy/pol_authorize";
-    char *policy_or = "/policy/pol_pcr16_0_or";
-    uint8_t policyRef[] = { 1, 2, 3, 4, 5 };
-    uint8_t data[EVENT_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    uint8_t     *signature = NULL;
+    char        *publicKey = NULL;
+    char        *certificate = NULL;
+    uint8_t     *publicblob = NULL;
+    uint8_t     *privateblob = NULL;
+    char        *policy = NULL;
+    char        *path_list = NULL;
+    size_t       publicsize;
+    size_t       privatesize;
+    json_object *jso = NULL;
+    char        *description = NULL;
+    char        *policy_pcr = "/policy/pol_pcr16_0";
+    char        *policy_authorize = "/policy/pol_authorize";
+    char        *policy_or = "/policy/pol_pcr16_0_or";
+    uint8_t      policyRef[] = { 1, 2, 3, 4, 5 };
+    uint8_t      data[EVENT_SIZE] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
     char *json_policy = NULL;
 
@@ -231,38 +218,35 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     SAFE_FREE(json_policy);
 
     json_policy = read_policy(context, policy_authorize);
-     if (!json_policy)
-         goto error;
+    if (!json_policy)
+        goto error;
 
     r = Fapi_Import(context, policy_authorize, json_policy);
     SAFE_FREE(json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    r = Fapi_CreateKey(context, "/HS/SRK/myPolicySignKey", SIGN_TEMPLATE,
-                       "", PASSWORD);
+    r = Fapi_CreateKey(context, "/HS/SRK/myPolicySignKey", SIGN_TEMPLATE, "", PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_AuthorizePolicy(context, policy_pcr,
-                             "/HS/SRK/myPolicySignKey", policyRef, sizeof(policyRef));
+    r = Fapi_AuthorizePolicy(context, policy_pcr, "/HS/SRK/myPolicySignKey", policyRef,
+                             sizeof(policyRef));
     goto_if_error(r, "Authorize policy", error);
 
-
-    r = Fapi_CreateKey(context, "HS/SRK/myDecryptKey1", DECRYPT_TEMPLATE ,
-                       policy_authorize,
+    r = Fapi_CreateKey(context, "HS/SRK/myDecryptKey1", DECRYPT_TEMPLATE, policy_authorize,
                        PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey_Async", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/myDecryptKeyErr", "decrypt,noDa" "", "",
+    r = Fapi_CreateKey(context, "HS/SRK/myDecryptKeyErr",
+                       "decrypt,noDa"
+                       "",
+                       "", PASSWORD);
+    goto_if_error(r, "Error Fapi_CreateKey_Async", error);
+
+    r = Fapi_CreateKey(context, "HS/SRK/myDecryptKey1/myDecryptKey2", DECRYPT_TEMPLATE, policy_or,
                        PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey_Async", error);
 
-    r = Fapi_CreateKey(context, "HS/SRK/myDecryptKey1/myDecryptKey2", DECRYPT_TEMPLATE ,
-                       policy_or,
-                       PASSWORD);
-    goto_if_error(r, "Error Fapi_CreateKey_Async", error);
-
-    r = Fapi_CreateKey(context, "HS/SRK/myDecryptKeyErr/mySignKey", SIGN_TEMPLATE "", "",
-                       PASSWORD);
+    r = Fapi_CreateKey(context, "HS/SRK/myDecryptKeyErr/mySignKey", SIGN_TEMPLATE "", "", PASSWORD);
     /* The Key creation should fail due to missing attribute "restricted"
        for myDecryptKeyErr */
     if (r == TSS2_RC_SUCCESS) {
@@ -270,27 +254,21 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
         goto error;
     }
 
-    r = Fapi_CreateKey(context, "HS/SRK/myDecryptKey1/myDecryptKey2/mySignKey",
-                       SIGN_TEMPLATE "", "",
-                       PASSWORD);
+    r = Fapi_CreateKey(context, "HS/SRK/myDecryptKey1/myDecryptKey2/mySignKey", SIGN_TEMPLATE "",
+                       "", PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey_Async", error);
 
     goto_if_error(r, "Error Fapi_CreateKey_Finish", error);
     size_t signatureSize = 0;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x67, 0x68
-        }
-    };
+    TPM2B_DIGEST digest
+        = { .size = 32,
+            .buffer = { 0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+                        0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x31, 0xa0,
+                        0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x67, 0x68 } };
 
-    r = Fapi_GetTpmBlobs(context,  "HS/SRK/myDecryptKey1/myDecryptKey2/mySignKey", &publicblob,
-                         &publicsize,
-                         &privateblob, &privatesize, &policy);
+    r = Fapi_GetTpmBlobs(context, "HS/SRK/myDecryptKey1/myDecryptKey2/mySignKey", &publicblob,
+                         &publicsize, &privateblob, &privatesize, &policy);
     goto_if_error(r, "Error Fapi_GetTpmBlobs", error);
     ASSERT(publicblob != NULL);
     ASSERT(privateblob != NULL);
@@ -301,8 +279,8 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_SetCertificate", error);
 
     r = Fapi_Sign(context, "HS/SRK/myDecryptKey1/myDecryptKey2/mySignKey", sigscheme,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, &certificate);
+                  &digest.buffer[0], digest.size, &signature, &signatureSize, &publicKey,
+                  &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
     ASSERT(signature != NULL);
     ASSERT(publicKey != NULL);
@@ -311,15 +289,15 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     ASSERT(strlen(certificate) > ASSERT_SIZE);
 
     r = Fapi_VerifySignature(context, "HS/SRK/myDecryptKey1/myDecryptKey2/mySignKey",
-                  &digest.buffer[0], digest.size, signature, signatureSize);
+                             &digest.buffer[0], digest.size, signature, signatureSize);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
     /* Create json date to import binary public and private blobs under the same
        parent key. */
-    json_object * publicblobHex_jso = get_json_hex_string(publicblob, publicsize);
+    json_object *publicblobHex_jso = get_json_hex_string(publicblob, publicsize);
     goto_if_null2(publicblobHex_jso, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
 
-    json_object * privateblobHex_jso = get_json_hex_string(privateblob, privatesize);
+    json_object *privateblobHex_jso = get_json_hex_string(privateblob, privatesize);
     goto_if_null2(privateblobHex_jso, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
 
     jso = json_object_new_object();
@@ -332,25 +310,25 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
-    const char * jso_string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
+    const char *jso_string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
 
     r = Fapi_Import(context, "HS/SRK/myDecryptKey1/myDecryptKey2/mySignKey2", jso_string);
     goto_if_error(r, "Error Fapi_Import", error);
 
     r = Fapi_VerifySignature(context, "HS/SRK/myDecryptKey1/myDecryptKey2/mySignKey2",
-                  &digest.buffer[0], digest.size, signature, signatureSize);
+                             &digest.buffer[0], digest.size, signature, signatureSize);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
     r = Fapi_VerifySignature(context, "HS/SRK/myDecryptKey1/myDecryptKey2/mySignKey2",
-                  &digest.buffer[0], digest.size, signature, signatureSize);
+                             &digest.buffer[0], digest.size, signature, signatureSize);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
     r = Fapi_PcrExtend(context, 16, data, EVENT_SIZE, "{ \"test\": \"myfile\" }");
     goto_if_error(r, "Error Fapi_PcrExtend", error);
 
     r = Fapi_Sign(context, "HS/SRK/myDecryptKey1/myDecryptKey2/mySignKey", sigscheme,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, &certificate);
+                  &digest.buffer[0], digest.size, &signature, &signatureSize, &publicKey,
+                  &certificate);
 
     /* The signing should fail due to violation of Policy PCR */
 
@@ -418,7 +396,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_key_create_sign(fapi_context);
 }

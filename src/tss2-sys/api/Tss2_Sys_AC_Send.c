@@ -8,21 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_mu.h"          // for Tss2_MU_TPM2_HANDLE_Marshal, Tss2_MU_TP...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPM2B_MAX_BUFFER, TPMI_DH_OBJECT, TPMI_...
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_TPM2_HANDLE_Marshal, Tss2_MU_TP...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPM2B_MAX_BUFFER, TPMI_DH_OBJECT, TPMI_...
 
-TSS2_RC Tss2_Sys_AC_Send_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT sendObject,
-    TPMI_RH_NV_AUTH authHandle,
-    TPMI_RH_AC ac,
-    TPM2B_MAX_BUFFER *acDataIn)
-{
+TSS2_RC
+Tss2_Sys_AC_Send_Prepare(TSS2_SYS_CONTEXT *sysContext,
+                         TPMI_DH_OBJECT    sendObject,
+                         TPMI_RH_NV_AUTH   authHandle,
+                         TPMI_RH_AC        ac,
+                         TPM2B_MAX_BUFFER *acDataIn) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -31,34 +30,25 @@ TSS2_RC Tss2_Sys_AC_Send_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2_HANDLE_Marshal(sendObject, ctx->cmdBuffer,
-                                       ctx->maxCmdSize,
-                                       &ctx->nextData);
+    rval = Tss2_MU_TPM2_HANDLE_Marshal(sendObject, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2_HANDLE_Marshal(authHandle, ctx->cmdBuffer,
-                                       ctx->maxCmdSize,
-                                       &ctx->nextData);
+    rval = Tss2_MU_TPM2_HANDLE_Marshal(authHandle, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2_HANDLE_Marshal(ac, ctx->cmdBuffer,
-                                       ctx->maxCmdSize,
-                                       &ctx->nextData);
+    rval = Tss2_MU_TPM2_HANDLE_Marshal(ac, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
     if (!acDataIn) {
         ctx->decryptNull = 1;
 
-        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
-                                      &ctx->nextData);
+        rval = Tss2_MU_UINT16_Marshal(0, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     } else {
 
-        rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(acDataIn, ctx->cmdBuffer,
-                                                ctx->maxCmdSize,
+        rval = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(acDataIn, ctx->cmdBuffer, ctx->maxCmdSize,
                                                 &ctx->nextData);
     }
     if (rval)
@@ -71,12 +61,10 @@ TSS2_RC Tss2_Sys_AC_Send_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_AC_Send_Complete(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMS_AC_OUTPUT *acDataOut)
-{
+TSS2_RC
+Tss2_Sys_AC_Send_Complete(TSS2_SYS_CONTEXT *sysContext, TPMS_AC_OUTPUT *acDataOut) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -85,27 +73,23 @@ TSS2_RC Tss2_Sys_AC_Send_Complete(
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMS_AC_OUTPUT_Unmarshal(ctx->cmdBuffer,
-                                            ctx->maxCmdSize,
-                                            &ctx->nextData,
+    return Tss2_MU_TPMS_AC_OUTPUT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
                                             acDataOut);
 }
 
-TSS2_RC Tss2_Sys_AC_Send(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_DH_OBJECT sendObject,
-    TPMI_RH_NV_AUTH authHandle,
-    TPMI_RH_AC ac,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    TPM2B_MAX_BUFFER *acDataIn,
-    TPMS_AC_OUTPUT *acDataOut,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_AC_Send(TSS2_SYS_CONTEXT             *sysContext,
+                 TPMI_DH_OBJECT                sendObject,
+                 TPMI_RH_NV_AUTH               authHandle,
+                 TPMI_RH_AC                    ac,
+                 TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                 TPM2B_MAX_BUFFER             *acDataIn,
+                 TPMS_AC_OUTPUT               *acDataOut,
+                 TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
-    rval = Tss2_Sys_AC_Send_Prepare(sysContext, sendObject, authHandle, ac,
-                                    acDataIn);
+    rval = Tss2_Sys_AC_Send_Prepare(sysContext, sendObject, authHandle, ac, acDataIn);
     if (rval)
         return rval;
 

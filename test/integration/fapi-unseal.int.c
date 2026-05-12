@@ -8,18 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS, size_t
-#include <string.h>           // for memcmp
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS, size_t
+#include <string.h> // for memcmp
 
-#include "test-fapi.h"        // for ASSERT, test_invoke_fapi
-#include "tss2_common.h"      // for BYTE, TSS2_FAPI_RC_BAD_PATH, TSS2_RC
-#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateSeal, Fapi_Unseal
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "test-fapi.h"       // for ASSERT, test_invoke_fapi
+#include "tss2_common.h"     // for BYTE, TSS2_FAPI_RC_BAD_PATH, TSS2_RC
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_CreateSeal, Fapi_Unseal
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, SAFE_FREE, LOG_ERROR
-
+#include "util/log.h" // for goto_if_error, SAFE_FREE, LOG_ERROR
 
 /** Test the FAPI functions for sealing.
  *
@@ -34,43 +33,35 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_unseal(FAPI_CONTEXT *context)
-{
-    TSS2_RC r;
-    size_t resultSize;
+test_fapi_unseal(FAPI_CONTEXT *context) {
+    TSS2_RC  r;
+    size_t   resultSize;
     uint8_t *result = NULL;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00,
-        }
-    };
+    TPM2B_DIGEST digest = { .size = 32,
+                            .buffer = {
+                                0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+                                0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            } };
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
 #ifdef PERSISTENT
-    r = Fapi_CreateSeal(context, "/HS/SRK/mySealObject", "noDa,0x81000004",
-                        digest.size,
-                        "", "",  &digest.buffer[0]);
+    r = Fapi_CreateSeal(context, "/HS/SRK/mySealObject", "noDa,0x81000004", digest.size, "", "",
+                        &digest.buffer[0]);
 #else
-    r = Fapi_CreateSeal(context, "/HS/SRK/mySealObject", "noDa,0x81000004",
-                        digest.size,
-                        "", "",  &digest.buffer[0]);
+    r = Fapi_CreateSeal(context, "/HS/SRK/mySealObject", "noDa,0x81000004", digest.size, "", "",
+                        &digest.buffer[0]);
 #endif
     goto_if_error(r, "Error Fapi_CreateSeal", error);
 
-    r = Fapi_Unseal(context, "/HS/SRK/mySealObject", &result,
-                    &resultSize);
+    r = Fapi_Unseal(context, "/HS/SRK/mySealObject", &result, &resultSize);
     goto_if_error(r, "Error Fapi_CreateSeal", error);
     ASSERT(result != NULL);
 
-    if (resultSize != digest.size ||
-            memcmp(result, &digest.buffer[0], resultSize) != 0) {
+    if (resultSize != digest.size || memcmp(result, &digest.buffer[0], resultSize) != 0) {
         LOG_ERROR("Error: unealed data not  equal to origin");
         goto error;
     }
@@ -79,14 +70,11 @@ test_fapi_unseal(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, "/HS/SRK/mySealObject");
     goto_if_error(r, "Error Fapi_Delete", error);
 
-    r = Fapi_CreateSeal(context, "/HS/SRK/myRandomSealObject", "noDa",
-                        128,
-                        "", "",  NULL);
+    r = Fapi_CreateSeal(context, "/HS/SRK/myRandomSealObject", "noDa", 128, "", "", NULL);
     goto_if_error(r, "Error Fapi_CreateSeal", error);
 
     result = NULL;
-    r = Fapi_Unseal(context, "/HS/SRK/myRandomSealObject", &result,
-                    &resultSize);
+    r = Fapi_Unseal(context, "/HS/SRK/myRandomSealObject", &result, &resultSize);
     goto_if_error(r, "Error Fapi_CreateSeal", error);
     ASSERT(result != NULL);
 
@@ -127,7 +115,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_unseal(fapi_context);
 }

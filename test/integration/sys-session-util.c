@@ -8,30 +8,29 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>          // for PRIu16, uint8_t
-#include <stdbool.h>           // for bool, false, true
-#include <stdlib.h>            // for free, calloc
-#include <string.h>            // for memcpy, NULL, memset, strlen, size_t
-#include <uthash.h>            // for UT_hash_handle, HASH_DEL, HASH_FIND_INT
+#include <inttypes.h> // for PRIu16, uint8_t
+#include <stdbool.h>  // for bool, false, true
+#include <stdlib.h>   // for free, calloc
+#include <string.h>   // for memcpy, NULL, memset, strlen, size_t
+#include <uthash.h>   // for UT_hash_handle, HASH_DEL, HASH_FIND_INT
 
-#include "session-util.h"      // for SESSION, GetEntity, ENTITY, KDFa, chec...
-#include "sys-util.h"          // for ConcatSizedByteBuffer, CopySizedByteBu...
-#include "test-common.h"       // for TEST_ABI_VERSION
-#include "tss2_common.h"       // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2_S...
-#include "tss2_sys.h"          // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tcti.h"         // for TSS2_TCTI_CONTEXT
-#include "tss2_tpm2_types.h"   // for TPM2B_MAX_BUFFER, TPM2B_DIGEST, TPM2_R...
-#include "util/tpm2b.h"        // for TPM2B
-#include "util/tss2_endian.h"  // for BE_TO_HOST_32
+#include "session-util.h"     // for SESSION, GetEntity, ENTITY, KDFa, chec...
+#include "sys-util.h"         // for ConcatSizedByteBuffer, CopySizedByteBu...
+#include "test-common.h"      // for TEST_ABI_VERSION
+#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2_S...
+#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h"  // for TPM2B_MAX_BUFFER, TPM2B_DIGEST, TPM2_R...
+#include "util/tpm2b.h"       // for TPM2B
+#include "util/tss2_endian.h" // for BE_TO_HOST_32
 
 #define LOGMODULE test
-#include "util/log.h"          // for LOGBLOB_DEBUG, LOG_ERROR, LOGBLOB_ERROR
+#include "util/log.h" // for LOGBLOB_DEBUG, LOG_ERROR, LOGBLOB_ERROR
 
 static SESSION *sessions = NULL;
 
 SESSION *
-get_session(TPMI_SH_AUTH_SESSION hndl)
-{
+get_session(TPMI_SH_AUTH_SESSION hndl) {
     SESSION *s;
 
     HASH_FIND_INT(sessions, &hndl, s);
@@ -39,17 +38,13 @@ get_session(TPMI_SH_AUTH_SESSION hndl)
 }
 
 static TSS2_RC
-start_auth_session(
-    SESSION *session,
-    TSS2_SYS_CONTEXT *sys_context)
-{
-    TSS2_RC rval;
+start_auth_session(SESSION *session, TSS2_SYS_CONTEXT *sys_context) {
+    TSS2_RC                rval;
     TPM2B_ENCRYPTED_SECRET key;
-    char label[] = "ATH";
-    UINT16 bytes;
+    char                   label[] = "ATH";
+    UINT16                 bytes;
 
     key.size = 0;
-
 
     if (session->nonceOlder.size == 0)
         session->nonceOlder.size = GetDigestSize(session->authHash);
@@ -59,12 +54,10 @@ start_auth_session(
     session->nonceTpmDecrypt.size = 0;
     session->nonceTpmEncrypt.size = 0;
 
-    rval = Tss2_Sys_StartAuthSession(
-            sys_context, session->tpmKey, session->bind, 0,
-            &session->nonceOlder, &session->encryptedSalt,
-            session->sessionType, &session->symmetric,
-            session->authHash, &session->sessionHandle,
-            &session->nonceNewer, 0);
+    rval = Tss2_Sys_StartAuthSession(sys_context, session->tpmKey, session->bind, 0,
+                                     &session->nonceOlder, &session->encryptedSalt,
+                                     session->sessionType, &session->symmetric, session->authHash,
+                                     &session->sessionHandle, &session->nonceNewer, 0);
     if (rval != TPM2_RC_SUCCESS)
         return rval;
 
@@ -79,15 +72,13 @@ start_auth_session(
         return rval;
 
     /* Generate the key used as input to the KDF. */
-    rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key,
-            (TPM2B *)&session->authValueBind);
+    rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key, (TPM2B *)&session->authValueBind);
     if (rval != TPM2_RC_SUCCESS) {
         Tss2_Sys_FlushContext(sys_context, session->sessionHandle);
         return rval;
     }
 
-    rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key,
-            (TPM2B *)&session->salt);
+    rval = ConcatSizedByteBuffer((TPM2B_MAX_BUFFER *)&key, (TPM2B *)&session->salt);
     if (rval != TPM2_RC_SUCCESS) {
         Tss2_Sys_FlushContext(sys_context, session->sessionHandle);
         return rval;
@@ -95,45 +86,41 @@ start_auth_session(
 
     bytes = GetDigestSize(session->authHash) * 8;
 
-    rval = KDFa(session->authHash, (TPM2B *)&key, label,
-                (TPM2B *)&session->nonceNewer,
-                (TPM2B *)&session->nonceOlder,
-                bytes, (TPM2B_MAX_BUFFER *)&session->sessionKey);
+    rval = KDFa(session->authHash, (TPM2B *)&key, label, (TPM2B *)&session->nonceNewer,
+                (TPM2B *)&session->nonceOlder, bytes, (TPM2B_MAX_BUFFER *)&session->sessionKey);
 
     return rval;
 }
 
 static TSS2_RC
-compute_session_auth(
-    TSS2_SYS_CONTEXT *sysContext,
-    SESSION *session,
-    TPMS_AUTH_COMMAND *pSessionDataIn,
-    bool command,
-    TPM2_HANDLE handle1,
-    TPM2_HANDLE handle2,
-    TPM2_HANDLE handle3,
-    TPM2B_MAX_BUFFER *hmacKey)
-{
+compute_session_auth(TSS2_SYS_CONTEXT  *sysContext,
+                     SESSION           *session,
+                     TPMS_AUTH_COMMAND *pSessionDataIn,
+                     bool               command,
+                     TPM2_HANDLE        handle1,
+                     TPM2_HANDLE        handle2,
+                     TPM2_HANDLE        handle3,
+                     TPM2B_MAX_BUFFER  *hmacKey) {
     TPM2B_DIGEST *buffer_list[7];
-    TPM2B_DIGEST pHash = TPM2B_DIGEST_INIT;
-    TPM2B_DIGEST sessionAttributesByteBuffer = {
-        .size = 1,
-        .buffer = { pSessionDataIn->sessionAttributes, }
-    };
-    UINT16 i;
-    TSS2_RC rval;
-    TPM2_CC cmdCode;
+    TPM2B_DIGEST  pHash = TPM2B_DIGEST_INIT;
+    TPM2B_DIGEST  sessionAttributesByteBuffer = { .size = 1,
+                                                  .buffer = {
+                                                     pSessionDataIn->sessionAttributes,
+                                                 } };
+    UINT16        i;
+    TSS2_RC       rval;
+    TPM2_CC       cmdCode;
 
-    rval = tpm_calc_phash(sysContext, handle1, handle2, handle3,
-                        session->authHash, command, &pHash);
+    rval
+        = tpm_calc_phash(sysContext, handle1, handle2, handle3, session->authHash, command, &pHash);
     if (rval != TPM2_RC_SUCCESS) {
-        LOG_ERROR ("tpm_calc_phash failed with RC: 0x%x", rval);
+        LOG_ERROR("tpm_calc_phash failed with RC: 0x%x", rval);
         return rval;
     }
 
     rval = Tss2_Sys_GetCommandCode(sysContext, (UINT8 *)&cmdCode);
     if (rval != TPM2_RC_SUCCESS) {
-        LOG_ERROR ("Tss2_Sys_GetCommandCode failed with RC: 0x%x", rval);
+        LOG_ERROR("Tss2_Sys_GetCommandCode failed with RC: 0x%x", rval);
         return rval;
     }
 
@@ -151,18 +138,15 @@ compute_session_auth(
     buffer_list[i++] = 0;
 
     for (int j = 0; buffer_list[j] != 0; j++) {
-            LOGBLOB_DEBUG(&buffer_list[j]->buffer[0],
-                    buffer_list[j]->size, "bufferlist[%d]:", j);
-            ;
+        LOGBLOB_DEBUG(&buffer_list[j]->buffer[0], buffer_list[j]->size, "bufferlist[%d]:", j);
+        ;
     }
 
-    rval = hmac(session->authHash, hmacKey->buffer,
-            hmacKey->size, buffer_list,
-            (TPM2B_DIGEST *)&pSessionDataIn->hmac);
+    rval = hmac(session->authHash, hmacKey->buffer, hmacKey->size, buffer_list,
+                (TPM2B_DIGEST *)&pSessionDataIn->hmac);
 
     if (rval != TPM2_RC_SUCCESS) {
-        LOGBLOB_ERROR(pSessionDataIn->hmac.buffer,
-                      pSessionDataIn->hmac.size,
+        LOGBLOB_ERROR(pSessionDataIn->hmac.buffer, pSessionDataIn->hmac.size,
                       "HMAC Failed rval = %d !!!", rval);
         return rval;
     }
@@ -170,20 +154,18 @@ compute_session_auth(
 }
 
 TSS2_RC
-compute_command_hmac(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2_HANDLE handle1,
-    TPM2_HANDLE handle2,
-    TPM2_HANDLE handle3,
-    TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn)
-{
-    TPM2_HANDLE handles[3] = {handle1, handle2, handle3};
-    ENTITY *entity;
-    SESSION *session;
+compute_command_hmac(TSS2_SYS_CONTEXT       *sysContext,
+                     TPM2_HANDLE             handle1,
+                     TPM2_HANDLE             handle2,
+                     TPM2_HANDLE             handle3,
+                     TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn) {
+    TPM2_HANDLE      handles[3] = { handle1, handle2, handle3 };
+    ENTITY          *entity;
+    SESSION         *session;
     TPM2B_MAX_BUFFER hmac_key;
-    TSS2_RC rval = TPM2_RC_SUCCESS;
-    unsigned int i;
-    unsigned int count = pSessionsDataIn->count;
+    TSS2_RC          rval = TPM2_RC_SUCCESS;
+    unsigned int     i;
+    unsigned int     count = pSessionsDataIn->count;
 
     if (count > 3) {
         LOG_ERROR("Bad value for session count: %" PRIu16, count);
@@ -207,37 +189,30 @@ compute_command_hmac(
         if (handles[i] != session->bind || handles[i] == TPM2_RH_NULL)
             ConcatSizedByteBuffer(&hmac_key, (TPM2B *)&entity->entityAuth);
 
-        rval = compute_session_auth(sysContext,
-                session,
-                &pSessionsDataIn->auths[i],
-                true,
-                handle1,
-                handle2,
-                handle3,
-                &hmac_key);
+        rval = compute_session_auth(sysContext, session, &pSessionsDataIn->auths[i], true, handle1,
+                                    handle2, handle3, &hmac_key);
         if (rval != TPM2_RC_SUCCESS) {
-            LOG_ERROR ("compute_session_auth failed with RC: 0x%x", rval);
+            LOG_ERROR("compute_session_auth failed with RC: 0x%x", rval);
             break;
         }
     }
     return rval;
 }
 
-TSS2_RC check_response_hmac(
-        TSS2_SYS_CONTEXT *sysContext,
-        TSS2L_SYS_AUTH_COMMAND *pSessionsDataIn,
-        TPM2_HANDLE handle1,
-        TPM2_HANDLE handle2,
-        TPM2_HANDLE handle3,
-        TSS2L_SYS_AUTH_RESPONSE *pSessionsDataOut)
-{
-    TPM2_HANDLE handles[3] = {handle1, handle2, handle3};
-    ENTITY *entity;
-    SESSION *session;
+TSS2_RC
+check_response_hmac(TSS2_SYS_CONTEXT        *sysContext,
+                    TSS2L_SYS_AUTH_COMMAND  *pSessionsDataIn,
+                    TPM2_HANDLE              handle1,
+                    TPM2_HANDLE              handle2,
+                    TPM2_HANDLE              handle3,
+                    TSS2L_SYS_AUTH_RESPONSE *pSessionsDataOut) {
+    TPM2_HANDLE      handles[3] = { handle1, handle2, handle3 };
+    ENTITY          *entity;
+    SESSION         *session;
     TPM2B_MAX_BUFFER hmac_key;
-    TSS2_RC rval = TPM2_RC_SUCCESS;
-    unsigned int i;
-    unsigned int count = pSessionsDataIn->count;
+    TSS2_RC          rval = TPM2_RC_SUCCESS;
+    unsigned int     i;
+    unsigned int     count = pSessionsDataIn->count;
 
     if (count > 3) {
         LOG_ERROR("Bad value for session count: %" PRIu16, count);
@@ -261,14 +236,8 @@ TSS2_RC check_response_hmac(
         if (handles[i] != session->bind)
             ConcatSizedByteBuffer(&hmac_key, (TPM2B *)&entity->entityAuth);
 
-        rval = compute_session_auth(sysContext,
-                    session,
-                    &pSessionsDataIn->auths[i],
-                    false,
-                    handle1,
-                    handle2,
-                    handle3,
-                    &hmac_key);
+        rval = compute_session_auth(sysContext, session, &pSessionsDataIn->auths[i], false, handle1,
+                                    handle2, handle3, &hmac_key);
 
         if (rval != TPM2_RC_SUCCESS)
             return rval;
@@ -281,20 +250,19 @@ TSS2_RC check_response_hmac(
     return rval;
 }
 
-TSS2_RC create_auth_session(
-    SESSION **psession,
-    TPMI_DH_OBJECT tpmKey,
-    TPM2B_MAX_BUFFER *salt,
-    TPMI_DH_ENTITY bind,
-    TPM2B_AUTH *bindAuth,
-    TPM2B_NONCE *nonceCaller,
-    TPM2B_ENCRYPTED_SECRET *encryptedSalt,
-    TPM2_SE sessionType,
-    TPMT_SYM_DEF *symmetric,
-    TPMI_ALG_HASH algId,
-    TSS2_SYS_CONTEXT *sysContext)
-{
-    TSS2_RC rval;
+TSS2_RC
+create_auth_session(SESSION               **psession,
+                    TPMI_DH_OBJECT          tpmKey,
+                    TPM2B_MAX_BUFFER       *salt,
+                    TPMI_DH_ENTITY          bind,
+                    TPM2B_AUTH             *bindAuth,
+                    TPM2B_NONCE            *nonceCaller,
+                    TPM2B_ENCRYPTED_SECRET *encryptedSalt,
+                    TPM2_SE                 sessionType,
+                    TPMT_SYM_DEF           *symmetric,
+                    TPMI_ALG_HASH           algId,
+                    TSS2_SYS_CONTEXT       *sysContext) {
+    TSS2_RC  rval;
     SESSION *session, *tmp;
 
     if (psession == NULL)
@@ -335,14 +303,14 @@ TSS2_RC create_auth_session(
     return TSS2_RC_SUCCESS;
 }
 
-void end_auth_session(SESSION *session)
-{
+void
+end_auth_session(SESSION *session) {
     HASH_DEL(sessions, session);
     free(session);
 }
 
-void roll_nonces(SESSION *session, TPM2B_NONCE *new_nonce)
-{
+void
+roll_nonces(SESSION *session, TPM2B_NONCE *new_nonce) {
     session->nonceOlder = session->nonceNewer;
     session->nonceNewer = *new_nonce;
 }
@@ -352,22 +320,19 @@ void roll_nonces(SESSION *session, TPM2B_NONCE *new_nonce)
  * This is needed where we need to keep the state of the existing SysContext.
  */
 TSS2_RC
-sys_context_from_sys_context(
-    TSS2_SYS_CONTEXT *sysContext,
-    TSS2_SYS_CONTEXT **newSysContext)
-{
-    TSS2_ABI_VERSION abiVersion = TEST_ABI_VERSION;
+sys_context_from_sys_context(TSS2_SYS_CONTEXT *sysContext, TSS2_SYS_CONTEXT **newSysContext) {
+    TSS2_ABI_VERSION   abiVersion = TEST_ABI_VERSION;
     TSS2_TCTI_CONTEXT *tctiContext;
-    TSS2_RC rval = TPM2_RC_SUCCESS;
-    size_t size;
+    TSS2_RC            rval = TPM2_RC_SUCCESS;
+    size_t             size;
 
-    rval = Tss2_Sys_GetTctiContext (sysContext, &tctiContext);
-    if( rval != TSS2_RC_SUCCESS ) {
+    rval = Tss2_Sys_GetTctiContext(sysContext, &tctiContext);
+    if (rval != TSS2_RC_SUCCESS) {
         return rval;
     }
 
     size = Tss2_Sys_GetContextSize(0);
-    *newSysContext = (TSS2_SYS_CONTEXT *) calloc(1, size);
+    *newSysContext = (TSS2_SYS_CONTEXT *)calloc(1, size);
     if (*newSysContext == NULL) {
         return 1;
     }
@@ -381,23 +346,21 @@ sys_context_from_sys_context(
 }
 
 TSS2_RC
-tpm_calc_phash(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2_HANDLE handle1,
-    TPM2_HANDLE handle2,
-    TPM2_HANDLE handle3,
-    TPMI_ALG_HASH authHash,
-    bool command,
-    TPM2B_DIGEST *pHash)
-{
-    TSS2_RC rval = TPM2_RC_SUCCESS;
-    UINT32 i;
-    TPM2B_NAME name1, name2, name3;
-    TPM2B_MAX_BUFFER hashInput;
-    UINT8 *hashInputPtr;
-    size_t parametersSize;
-    const uint8_t *startParams;
-    TPM2_CC cmdCode;
+tpm_calc_phash(TSS2_SYS_CONTEXT *sysContext,
+               TPM2_HANDLE       handle1,
+               TPM2_HANDLE       handle2,
+               TPM2_HANDLE       handle3,
+               TPMI_ALG_HASH     authHash,
+               bool              command,
+               TPM2B_DIGEST     *pHash) {
+    TSS2_RC           rval = TPM2_RC_SUCCESS;
+    UINT32            i;
+    TPM2B_NAME        name1, name2, name3;
+    TPM2B_MAX_BUFFER  hashInput;
+    UINT8            *hashInputPtr;
+    size_t            parametersSize;
+    const uint8_t    *startParams;
+    TPM2_CC           cmdCode;
     TSS2_SYS_CONTEXT *sysContextCopy;
 
     name1.size = 0;
@@ -423,7 +386,7 @@ tpm_calc_phash(
         if (rval != TPM2_RC_SUCCESS)
             goto cleanup_sys_context_copy;
 
-cleanup_sys_context_copy:
+    cleanup_sys_context_copy:
         Tss2_Sys_Finalize(sysContextCopy);
         free(sysContextCopy);
         if (rval != TPM2_RC_SUCCESS)
@@ -466,8 +429,8 @@ cleanup_sys_context_copy:
     if (hashInput.size + parametersSize > sizeof(hashInput.buffer))
         return TSS2_SYS_RC_INSUFFICIENT_BUFFER;
 
-    for(i = 0; i < parametersSize; i++)
-        hashInput.buffer[hashInput.size + i ] = startParams[i];
+    for (i = 0; i < parametersSize; i++)
+        hashInput.buffer[hashInput.size + i] = startParams[i];
 
     hashInput.size += (UINT16)parametersSize;
     LOGBLOB_DEBUG(&hashInput.buffer[0], hashInput.size, "PHASH input bytes=");
@@ -483,16 +446,13 @@ cleanup_sys_context_copy:
     return rval;
 }
 
-UINT32 tpm_handle_to_name(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2_HANDLE handle,
-    TPM2B_NAME *name)
-{
-    TSS2_RC rval;
+UINT32
+tpm_handle_to_name(TSS2_SYS_CONTEXT *sysContext, TPM2_HANDLE handle, TPM2B_NAME *name) {
+    TSS2_RC    rval;
     TPM2B_NAME qualified_name = TPM2B_NAME_INIT;
     TPM2B_PUBLIC public;
     TPM2B_NV_PUBLIC nvPublic;
-    UINT8 *namePtr;
+    UINT8          *namePtr;
 
     if (!sysContext || !name)
         return TSS2_SYS_RC_BAD_VALUE;
@@ -504,46 +464,42 @@ UINT32 tpm_handle_to_name(
         return TSS2_RC_SUCCESS;
     }
 
-    switch(handle >> TPM2_HR_SHIFT)
-    {
-        case TPM2_HT_NV_INDEX:
-            nvPublic.size = 0;
-            rval = Tss2_Sys_NV_ReadPublic(sysContext, handle, 0,
-                                          &nvPublic, name, 0);
-            break;
+    switch (handle >> TPM2_HR_SHIFT) {
+    case TPM2_HT_NV_INDEX:
+        nvPublic.size = 0;
+        rval = Tss2_Sys_NV_ReadPublic(sysContext, handle, 0, &nvPublic, name, 0);
+        break;
 
-        case TPM2_HT_TRANSIENT:
-        case TPM2_HT_PERSISTENT:
-            public.size = 0;
-            rval = Tss2_Sys_ReadPublic(sysContext, handle, 0,
-                                       &public, name, &qualified_name, 0);
-            break;
+    case TPM2_HT_TRANSIENT:
+    case TPM2_HT_PERSISTENT:
+        public
+        .size = 0;
+        rval = Tss2_Sys_ReadPublic(sysContext, handle, 0, &public, name, &qualified_name, 0);
+        break;
 
-        default:
-            rval = TPM2_RC_SUCCESS;
-            name->size = sizeof(TPM2_HANDLE);
-            *(TPM2_HANDLE *)namePtr = BE_TO_HOST_32(handle);
+    default:
+        rval = TPM2_RC_SUCCESS;
+        name->size = sizeof(TPM2_HANDLE);
+        *(TPM2_HANDLE *)namePtr = BE_TO_HOST_32(handle);
     }
     return rval;
 }
 
 TSS2_RC
-KDFa(
-    TPMI_ALG_HASH hash,
-    TPM2B *key,
-    const char *label,
-    TPM2B *contextU,
-    TPM2B *contextV,
-    UINT16 bits,
-    TPM2B_MAX_BUFFER *result_key)
-{
-    TPM2B_DIGEST digest;
-    TPM2B_DIGEST tpm2blabel, tpm2bbits, tpm2bctr;
+KDFa(TPMI_ALG_HASH     hash,
+     TPM2B            *key,
+     const char       *label,
+     TPM2B            *contextU,
+     TPM2B            *contextV,
+     UINT16            bits,
+     TPM2B_MAX_BUFFER *result_key) {
+    TPM2B_DIGEST  digest;
+    TPM2B_DIGEST  tpm2blabel, tpm2bbits, tpm2bctr;
     TPM2B_DIGEST *buffer_list[8];
-    UINT32 counter;
-    TSS2_RC rval;
-    int i, j;
-    UINT16 bytes = bits / 8;
+    UINT32        counter;
+    TSS2_RC       rval;
+    int           i, j;
+    UINT16        bytes = bits / 8;
 
     result_key->size = 0;
     tpm2bctr.size = 4;
@@ -590,14 +546,12 @@ KDFa(
 }
 
 static TSS2_RC
-gen_session_key(
-    SESSION *session,
-    TPM2B_MAX_BUFFER *session_key,
-    TPM2B_IV *iv,
-    TPM2B_AUTH *auth_value)
-{
-    TSS2_RC rval = TSS2_RC_SUCCESS;
-    UINT32 aes_block_size = 16;
+gen_session_key(SESSION          *session,
+                TPM2B_MAX_BUFFER *session_key,
+                TPM2B_IV         *iv,
+                TPM2B_AUTH       *auth_value) {
+    TSS2_RC          rval = TSS2_RC_SUCCESS;
+    UINT32           aes_block_size = 16;
     TPM2B_MAX_BUFFER key, sessionValue;
 
     if (iv == NULL || session_key == NULL)
@@ -606,13 +560,9 @@ gen_session_key(
     CopySizedByteBuffer((TPM2B *)&sessionValue, (TPM2B *)&session->sessionKey);
     CatSizedByteBuffer((TPM2B *)&sessionValue, (TPM2B *)auth_value);
 
-    rval = KDFa (session->authHash,
-                 (TPM2B *)&sessionValue,
-                 "CFB",
-                 (TPM2B *)&session->nonceNewer,
-                 (TPM2B *)&session->nonceOlder,
-                 session->symmetric.keyBits.sym + aes_block_size * 8,
-                 &key);
+    rval = KDFa(session->authHash, (TPM2B *)&sessionValue, "CFB", (TPM2B *)&session->nonceNewer,
+                (TPM2B *)&session->nonceOlder, session->symmetric.keyBits.sym + aes_block_size * 8,
+                &key);
     if (rval != TSS2_RC_SUCCESS)
         return rval;
 
@@ -622,25 +572,22 @@ gen_session_key(
     iv->size = aes_block_size;
     session_key->size = (session->symmetric.keyBits.sym) / 8;
     UINT16 total_size = session_key->size + iv->size;
-    if (iv->size > sizeof (iv->buffer) ||
-         (total_size) > TPM2_MAX_DIGEST_BUFFER)
+    if (iv->size > sizeof(iv->buffer) || (total_size) > TPM2_MAX_DIGEST_BUFFER)
         return TSS2_SYS_RC_GENERAL_FAILURE;
 
-    memcpy (iv->buffer, &key.buffer[session_key->size], iv->size);
-    memcpy (session_key->buffer, key.buffer, session_key->size);
+    memcpy(iv->buffer, &key.buffer[session_key->size], iv->size);
+    memcpy(session_key->buffer, key.buffer, session_key->size);
     return rval;
 }
 
 static TSS2_RC
-encrypt_param_cfb(
-    SESSION *session,
-    TPM2B_MAX_BUFFER *encrypted_data,
-    TPM2B_MAX_BUFFER *clear_data,
-    TPM2B_AUTH *auth_value)
-{
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+encrypt_param_cfb(SESSION          *session,
+                  TPM2B_MAX_BUFFER *encrypted_data,
+                  TPM2B_MAX_BUFFER *clear_data,
+                  TPM2B_AUTH       *auth_value) {
+    TSS2_RC          rval = TSS2_RC_SUCCESS;
     TPM2B_MAX_BUFFER encryptKey = TPM2B_MAX_BUFFER_INIT;
-    TPM2B_IV iv = TPM2B_IV_INIT;
+    TPM2B_IV         iv = TPM2B_IV_INIT;
 
     rval = gen_session_key(session, &encryptKey, &iv, auth_value);
     if (rval)
@@ -650,15 +597,13 @@ encrypt_param_cfb(
 }
 
 static TSS2_RC
-decrypt_param_cfb(
-    SESSION *session,
-    TPM2B_MAX_BUFFER *clear_data,
-    TPM2B_MAX_BUFFER *encrypted_data,
-    TPM2B_AUTH *auth_value)
-{
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+decrypt_param_cfb(SESSION          *session,
+                  TPM2B_MAX_BUFFER *clear_data,
+                  TPM2B_MAX_BUFFER *encrypted_data,
+                  TPM2B_AUTH       *auth_value) {
+    TSS2_RC          rval = TSS2_RC_SUCCESS;
     TPM2B_MAX_BUFFER encryptKey = TPM2B_MAX_BUFFER_INIT;
-    TPM2B_IV iv = TPM2B_IV_INIT;
+    TPM2B_IV         iv = TPM2B_IV_INIT;
 
     rval = gen_session_key(session, &encryptKey, &iv, auth_value);
     if (rval)
@@ -668,17 +613,15 @@ decrypt_param_cfb(
 }
 
 static TSS2_RC
-encrypt_decrypt_xor(
-    SESSION *session,
-    TPM2B_MAX_BUFFER *output_data,
-    TPM2B_MAX_BUFFER *input_data,
-    TPM2B_AUTH *auth_value)
-{
-    TSS2_RC rval = TSS2_RC_SUCCESS;
+encrypt_decrypt_xor(SESSION          *session,
+                    TPM2B_MAX_BUFFER *output_data,
+                    TPM2B_MAX_BUFFER *input_data,
+                    TPM2B_AUTH       *auth_value) {
+    TSS2_RC          rval = TSS2_RC_SUCCESS;
     TPM2B_MAX_BUFFER key;
     TPM2B_MAX_BUFFER mask = { .size = 0, .buffer = 0 };
-    UINT16 i;
-    UINT16 size = input_data->size;
+    UINT16           i;
+    UINT16           size = input_data->size;
 
     if (size > TPM2_MAX_DIGEST_BUFFER) {
         LOG_ERROR("Bad value for inputData size: %" PRIu16, size);
@@ -688,12 +631,8 @@ encrypt_decrypt_xor(
     CopySizedByteBuffer((TPM2B *)&key, (TPM2B *)&session->sessionKey);
     CatSizedByteBuffer((TPM2B *)&key, (TPM2B *)auth_value);
 
-    rval = KDFa(session->authHash,
-            (TPM2B *)&key,
-            "XOR",
-            (TPM2B *)&session->nonceNewer,
-            (TPM2B *)&session->nonceOlder,
-            input_data->size * 8, &mask);
+    rval = KDFa(session->authHash, (TPM2B *)&key, "XOR", (TPM2B *)&session->nonceNewer,
+                (TPM2B *)&session->nonceOlder, input_data->size * 8, &mask);
 
     if (rval)
         return rval;
@@ -707,25 +646,21 @@ encrypt_decrypt_xor(
 }
 
 TSS2_RC
-encrypt_command_param(
-    SESSION *session,
-    TPM2B_MAX_BUFFER *encrypted_data,
-    TPM2B_MAX_BUFFER *clear_data,
-    TPM2B_AUTH *auth_value)
-{
-    return session->symmetric.algorithm == TPM2_ALG_AES ?
-        encrypt_param_cfb(session, encrypted_data, clear_data, auth_value) :
-        encrypt_decrypt_xor(session, encrypted_data, clear_data, auth_value);
+encrypt_command_param(SESSION          *session,
+                      TPM2B_MAX_BUFFER *encrypted_data,
+                      TPM2B_MAX_BUFFER *clear_data,
+                      TPM2B_AUTH       *auth_value) {
+    return session->symmetric.algorithm == TPM2_ALG_AES
+               ? encrypt_param_cfb(session, encrypted_data, clear_data, auth_value)
+               : encrypt_decrypt_xor(session, encrypted_data, clear_data, auth_value);
 }
 
 TSS2_RC
-decrypt_response_param(
-    SESSION *session,
-    TPM2B_MAX_BUFFER *clear_data,
-    TPM2B_MAX_BUFFER *encrypted_data,
-    TPM2B_AUTH *auth_value)
-{
-    return session->symmetric.algorithm == TPM2_ALG_AES ?
-        decrypt_param_cfb(session, clear_data, encrypted_data, auth_value) :
-        encrypt_decrypt_xor(session, clear_data, encrypted_data, auth_value);
+decrypt_response_param(SESSION          *session,
+                       TPM2B_MAX_BUFFER *clear_data,
+                       TPM2B_MAX_BUFFER *encrypted_data,
+                       TPM2B_AUTH       *auth_value) {
+    return session->symmetric.algorithm == TPM2_ALG_AES
+               ? decrypt_param_cfb(session, clear_data, encrypted_data, auth_value)
+               : encrypt_decrypt_xor(session, clear_data, encrypted_data, auth_value);
 }

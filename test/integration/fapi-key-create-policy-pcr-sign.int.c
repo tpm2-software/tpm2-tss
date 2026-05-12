@@ -8,24 +8,23 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>             // for json_object_object_get_ex, json_object_put
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
-#include <stdlib.h>           // for malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strcmp, strstr, strlen
-#include <unistd.h>           // for read
+#include <json.h>   // for json_object_object_get_ex, json_object_put
+#include <stdint.h> // for uint8_t
+#include <stdio.h>  // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h> // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for strcmp, strstr, strlen
+#include <unistd.h> // for read
 
-#include "test-fapi.h"        // for ASSERT, CHECK_JSON, FAPI_PROFILE, pcr_r...
-#include "tss2_common.h"      // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_RC, TSS...
-#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_ExportPolicy, Fapi_Cr...
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "test-fapi.h"       // for ASSERT, CHECK_JSON, FAPI_PROFILE, pcr_r...
+#include "tss2_common.h"     // for BYTE, TSS2_FAPI_RC_MEMORY, TSS2_RC, TSS...
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_ExportPolicy, Fapi_Cr...
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"         // for SAFE_FREE, goto_if_error, LOG_ERROR
+#include "util/log.h" // for SAFE_FREE, goto_if_error, LOG_ERROR
 
-#define PASSWORD NULL
-#define SIGN_TEMPLATE  "sign,noDa"
-
+#define PASSWORD      NULL
+#define SIGN_TEMPLATE "sign,noDa"
 
 /** Test the FAPI functions for PolicyPCR with key creation and usage.
  *
@@ -47,170 +46,190 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
-{
-    TSS2_RC r;
-    char *policy_name = "/policy/pol_pcr16_0";
-    char *policy_pcr_read = "/policy/pol_pcr16_read";
-    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0.json";
-    char *policy_fail_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0_fail.json";
-    char *policy_pcr_read_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_read.json";
-    FILE *stream = NULL;
-    char *json_policy = NULL;
-    long policy_size;
+test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context) {
+    TSS2_RC      r;
+    char        *policy_name = "/policy/pol_pcr16_0";
+    char        *policy_pcr_read = "/policy/pol_pcr16_read";
+    char        *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0.json";
+    char        *policy_fail_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_0_fail.json";
+    char        *policy_pcr_read_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_pcr16_read.json";
+    FILE        *stream = NULL;
+    char        *json_policy = NULL;
+    long         policy_size;
     json_object *jso = NULL;
     json_object *jso_pcrs, *jso_policy, *jso_policy_list;
 
     uint8_t *signature = NULL;
-    char   *publicKey = NULL;
-    char   *certificate = NULL;
-    char *policy = NULL;
-    char *path_list = NULL;
+    char    *publicKey = NULL;
+    char    *certificate = NULL;
+    char    *policy = NULL;
+    char    *path_list = NULL;
 
-#define POLICY_SHA256_CHECK "{" \
-        "  \"description\":\"Description pol_16_0\"," \
-        "  \"policyDigests\":[" \
-        "    {" \
-        "      \"hashAlg\":\"sha256\"," \
-        "      \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"" \
-        "    }" \
-        "  ]," \
-        "  \"policy\":[" \
-        "    {" \
-        "      \"type\":\"POLICYPCR\"," \
-        "      \"policyDigests\":[" \
-        "        {" \
-        "          \"hashAlg\":\"sha256\"," \
-        "          \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"" \
-        "        }" \
-        "      ]," \
-        "      \"pcrs\":[" \
-        "        {" \
-        "          \"pcr\":16," \
-        "          \"hashAlg\":\"sha256\"," \
-        "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\"" \
-        "        }" \
-        "      ]" \
-        "    }" \
-        "  ]" \
-        "}";
+#define POLICY_SHA256_CHECK                                                                        \
+    "{"                                                                                            \
+    "  \"description\":\"Description pol_16_0\","                                                  \
+    "  \"policyDigests\":["                                                                        \
+    "    {"                                                                                        \
+    "      \"hashAlg\":\"sha256\","                                                                \
+    "      \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\""        \
+    "    }"                                                                                        \
+    "  ],"                                                                                         \
+    "  \"policy\":["                                                                               \
+    "    {"                                                                                        \
+    "      \"type\":\"POLICYPCR\","                                                                \
+    "      \"policyDigests\":["                                                                    \
+    "        {"                                                                                    \
+    "          \"hashAlg\":\"sha256\","                                                            \
+    "          \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\""    \
+    "        }"                                                                                    \
+    "      ],"                                                                                     \
+    "      \"pcrs\":["                                                                             \
+    "        {"                                                                                    \
+    "          \"pcr\":16,"                                                                        \
+    "          \"hashAlg\":\"sha256\","                                                            \
+    "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\""    \
+    "        }"                                                                                    \
+    "      ]"                                                                                      \
+    "    }"                                                                                        \
+    "  ]"                                                                                          \
+    "}";
 
+#define POLICY_SHA384_CHECK                                                                        \
+    "{"                                                                                            \
+    "  \"description\":\"Description pol_16_0\","                                                  \
+    "  \"policyDigests\":["                                                                        \
+    "    {"                                                                                        \
+    "      \"hashAlg\":\"sha384\","                                                                \
+    "      "                                                                                       \
+    "\"digest\":"                                                                                  \
+    "\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fc" \
+    "ccedd5\""                                                                                     \
+    "    }"                                                                                        \
+    "  ],"                                                                                         \
+    "  \"policy\":["                                                                               \
+    "    {"                                                                                        \
+    "      \"type\":\"POLICYPCR\","                                                                \
+    "      \"policyDigests\":["                                                                    \
+    "        {"                                                                                    \
+    "          \"hashAlg\":\"sha384\","                                                            \
+    "          "                                                                                   \
+    "\"digest\":"                                                                                  \
+    "\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fc" \
+    "ccedd5\""                                                                                     \
+    "        }"                                                                                    \
+    "      ],"                                                                                     \
+    "      \"pcrs\":["                                                                             \
+    "        {"                                                                                    \
+    "          \"pcr\":16,"                                                                        \
+    "          \"hashAlg\":\"sha256\","                                                            \
+    "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\""    \
+    "        }"                                                                                    \
+    "      ]"                                                                                      \
+    "    }"                                                                                        \
+    "  ]"                                                                                          \
+    "}";
 
-#define POLICY_SHA384_CHECK "{" \
-        "  \"description\":\"Description pol_16_0\"," \
-        "  \"policyDigests\":[" \
-        "    {" \
-        "      \"hashAlg\":\"sha384\"," \
-        "      \"digest\":\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fcccedd5\"" \
-        "    }" \
-        "  ]," \
-        "  \"policy\":[" \
-        "    {" \
-        "      \"type\":\"POLICYPCR\"," \
-        "      \"policyDigests\":[" \
-        "        {" \
-        "          \"hashAlg\":\"sha384\"," \
-        "          \"digest\":\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fcccedd5\"" \
-        "        }" \
-        "      ]," \
-        "      \"pcrs\":[" \
-        "        {" \
-        "          \"pcr\":16," \
-        "          \"hashAlg\":\"sha256\"," \
-        "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\"" \
-        "        }" \
-        "      ]" \
-        "    }" \
-        "  ]" \
-        "}" ;
+#define POLICY_SHA256_EXPORT_CHECK                                                                 \
+    "{"                                                                                            \
+    "  \"description\":\"Description pol_16_0\","                                                  \
+    "  \"policyDigests\":["                                                                        \
+    "    {"                                                                                        \
+    "      \"hashAlg\":\"sha256\","                                                                \
+    "      \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\""        \
+    "    },"                                                                                       \
+    "    { "                                                                                       \
+    "         \"hashAlg\":\"sha384\","                                                             \
+    "         "                                                                                    \
+    "\"digest\":"                                                                                  \
+    "\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fc" \
+    "ccedd5\""                                                                                     \
+    "    },"                                                                                       \
+    "    {"                                                                                        \
+    "      \"hashAlg\":\"sha1\","                                                                  \
+    "      \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\""                                \
+    "    }"                                                                                        \
+    "  ],"                                                                                         \
+    "  \"policy\":["                                                                               \
+    "    {"                                                                                        \
+    "      \"type\":\"POLICYPCR\","                                                                \
+    "      \"policyDigests\":["                                                                    \
+    "        {"                                                                                    \
+    "          \"hashAlg\":\"sha256\","                                                            \
+    "          \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\""    \
+    "        },"                                                                                   \
+    "        { "                                                                                   \
+    "          \"hashAlg\":\"sha384\","                                                            \
+    "          "                                                                                   \
+    "\"digest\":"                                                                                  \
+    "\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fc" \
+    "ccedd5\""                                                                                     \
+    "        },"                                                                                   \
+    "        {"                                                                                    \
+    "          \"hashAlg\":\"sha1\","                                                              \
+    "          \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\""                            \
+    "        }"                                                                                    \
+    "      ],"                                                                                     \
+    "      \"pcrs\":["                                                                             \
+    "        {"                                                                                    \
+    "          \"pcr\":16,"                                                                        \
+    "          \"hashAlg\":\"sha256\","                                                            \
+    "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\""    \
+    "        }"                                                                                    \
+    "      ]"                                                                                      \
+    "    }"                                                                                        \
+    "  ]"                                                                                          \
+    "}";
 
-    #define POLICY_SHA256_EXPORT_CHECK "{" \
-        "  \"description\":\"Description pol_16_0\"," \
-        "  \"policyDigests\":[" \
-        "    {" \
-        "      \"hashAlg\":\"sha256\"," \
-        "      \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"" \
-        "    }," \
-        "    { " \
-        "         \"hashAlg\":\"sha384\"," \
-        "         \"digest\":\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fcccedd5\"" \
-        "    }," \
-        "    {" \
-        "      \"hashAlg\":\"sha1\"," \
-        "      \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\"" \
-        "    }" \
-        "  ]," \
-        "  \"policy\":[" \
-        "    {" \
-        "      \"type\":\"POLICYPCR\"," \
-        "      \"policyDigests\":[" \
-        "        {" \
-        "          \"hashAlg\":\"sha256\"," \
-        "          \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"" \
-        "        }," \
-        "        { " \
-        "          \"hashAlg\":\"sha384\"," \
-        "          \"digest\":\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fcccedd5\"" \
-        "        }," \
-        "        {" \
-        "          \"hashAlg\":\"sha1\"," \
-        "          \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\"" \
-        "        }" \
-        "      ]," \
-        "      \"pcrs\":[" \
-        "        {" \
-        "          \"pcr\":16," \
-        "          \"hashAlg\":\"sha256\"," \
-        "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\"" \
-        "        }" \
-        "      ]" \
-        "    }" \
-        "  ]" \
-        "}";
-
-#define POLICY_SHA384_EXPORT_CHECK "{" \
-        "  \"description\":\"Description pol_16_0\"," \
-        "  \"policyDigests\":[" \
-        "    { " \
-        "         \"hashAlg\":\"sha384\"," \
-        "         \"digest\":\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fcccedd5\"" \
-        "     }," \
-        "    {" \
-        "      \"hashAlg\":\"sha256\"," \
-        "      \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"" \
-        "    }," \
-        "    {" \
-        "      \"hashAlg\":\"sha1\"," \
-        "      \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\"" \
-        "    }"                                                        \
-        "  ]," \
-        "  \"policy\":[" \
-        "    {" \
-        "      \"type\":\"POLICYPCR\"," \
-        "      \"policyDigests\":[" \
-        "    { "                           \
-        "         \"hashAlg\":\"sha384\"," \
-        "         \"digest\":\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fcccedd5\"" \
-        "     }," \
-        "        {" \
-        "          \"hashAlg\":\"sha256\"," \
-        "          \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\"" \
-        "        }," \
-        "        {" \
-        "          \"hashAlg\":\"sha1\"," \
-        "          \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\"" \
-        "        }" \
-        "      ]," \
-        "      \"pcrs\":[" \
-        "        {" \
-        "          \"pcr\":16," \
-        "          \"hashAlg\":\"sha256\"," \
-        "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\"" \
-        "        }" \
-        "      ]" \
-        "    }" \
-        "  ]" \
-        "}";
+#define POLICY_SHA384_EXPORT_CHECK                                                                 \
+    "{"                                                                                            \
+    "  \"description\":\"Description pol_16_0\","                                                  \
+    "  \"policyDigests\":["                                                                        \
+    "    { "                                                                                       \
+    "         \"hashAlg\":\"sha384\","                                                             \
+    "         "                                                                                    \
+    "\"digest\":"                                                                                  \
+    "\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fc" \
+    "ccedd5\""                                                                                     \
+    "     },"                                                                                      \
+    "    {"                                                                                        \
+    "      \"hashAlg\":\"sha256\","                                                                \
+    "      \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\""        \
+    "    },"                                                                                       \
+    "    {"                                                                                        \
+    "      \"hashAlg\":\"sha1\","                                                                  \
+    "      \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\""                                \
+    "    }"                                                                                        \
+    "  ],"                                                                                         \
+    "  \"policy\":["                                                                               \
+    "    {"                                                                                        \
+    "      \"type\":\"POLICYPCR\","                                                                \
+    "      \"policyDigests\":["                                                                    \
+    "    { "                                                                                       \
+    "         \"hashAlg\":\"sha384\","                                                             \
+    "         "                                                                                    \
+    "\"digest\":"                                                                                  \
+    "\"c1923346b6d44a154b58b57b4327ee70c29ac536f9209d94880de6834f370587846a2834e3e88af61efd8679fc" \
+    "ccedd5\""                                                                                     \
+    "     },"                                                                                      \
+    "        {"                                                                                    \
+    "          \"hashAlg\":\"sha256\","                                                            \
+    "          \"digest\":\"bff2d58e9813f97cefc14f72ad8133bc7092d652b7c877959254af140c841f36\""    \
+    "        },"                                                                                   \
+    "        {"                                                                                    \
+    "          \"hashAlg\":\"sha1\","                                                              \
+    "          \"digest\":\"eab0d71ae6088009cbd0b50729fde69eb453649c\""                            \
+    "        }"                                                                                    \
+    "      ],"                                                                                     \
+    "      \"pcrs\":["                                                                             \
+    "        {"                                                                                    \
+    "          \"pcr\":16,"                                                                        \
+    "          \"hashAlg\":\"sha256\","                                                            \
+    "          \"digest\":\"0000000000000000000000000000000000000000000000000000000000000000\""    \
+    "        }"                                                                                    \
+    "      ]"                                                                                      \
+    "    }"                                                                                        \
+    "  ]"                                                                                          \
+    "}";
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -227,9 +246,8 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -241,28 +259,24 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     r = Fapi_Import(context, policy_name, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    r = Fapi_CreateKey(context, "/HS/SRK/mySignKey", SIGN_TEMPLATE,
-                       policy_name, PASSWORD);
+    r = Fapi_CreateKey(context, "/HS/SRK/mySignKey", SIGN_TEMPLATE, policy_name, PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "\
-        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey",
+                            "-----BEGIN "
+                            "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_SetCertificate", error);
 
     size_t signatureSize = 0;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00,
-        }
-    };
+    TPM2B_DIGEST digest = { .size = 32,
+                            .buffer = {
+                                0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            } };
 
-    r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, &certificate);
+    r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL, &digest.buffer[0], digest.size, &signature,
+                  &signatureSize, &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
     ASSERT(signature != NULL);
     ASSERT(publicKey != NULL);
@@ -293,7 +307,7 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     ASSERT(policy != NULL);
     LOG_INFO("\nTEST_JSON\nPolicy export1:\n%s\nEND_JSON", policy);
     if (strcmp(FAPI_PROFILE, "P_ECC384") == 0 || strcmp(FAPI_PROFILE, "P_RSA3072") == 0) {
-        const char *policy_sha384_export_check =  POLICY_SHA384_EXPORT_CHECK;
+        const char *policy_sha384_export_check = POLICY_SHA384_EXPORT_CHECK;
         CHECK_JSON(policy, policy_sha384_export_check, error)
     } else {
         const char *policy_sha256_export_check = POLICY_SHA256_EXPORT_CHECK;
@@ -322,9 +336,8 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     SAFE_FREE(path_list);
 
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_fail_file, "r");
     ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -336,17 +349,15 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     r = Fapi_Import(context, policy_pcr_read, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    r = Fapi_CreateKey(context, "/HS/SRK/mySignKey", SIGN_TEMPLATE,
-                       policy_pcr_read, PASSWORD);
+    r = Fapi_CreateKey(context, "/HS/SRK/mySignKey", SIGN_TEMPLATE, policy_pcr_read, PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
     signatureSize = 0;
 
     signature = NULL;
     publicKey = NULL;
     certificate = NULL;
-    r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, &certificate);
+    r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL, &digest.buffer[0], digest.size, &signature,
+                  &signatureSize, &publicKey, &certificate);
     if (r == TSS2_RC_SUCCESS) {
         LOG_ERROR("Policy did not fail.");
         goto error;
@@ -375,9 +386,8 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
     SAFE_FREE(path_list);
 
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_pcr_read_file, "r");
     ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -397,22 +407,20 @@ test_fapi_key_create_policy_pcr_sign(FAPI_CONTEXT *context)
 
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
 
-
-    r = Fapi_CreateKey(context, "/HS/SRK/mySignKey", SIGN_TEMPLATE,
-                       policy_pcr_read, PASSWORD);
+    r = Fapi_CreateKey(context, "/HS/SRK/mySignKey", SIGN_TEMPLATE, policy_pcr_read, PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
     signatureSize = 0;
 
-    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey", "-----BEGIN "  \
-        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    r = Fapi_SetCertificate(context, "HS/SRK/mySignKey",
+                            "-----BEGIN "
+                            "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     signature = NULL;
     publicKey = NULL;
     certificate = NULL;
-    r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, &certificate);
+    r = Fapi_Sign(context, "/HS/SRK/mySignKey", NULL, &digest.buffer[0], digest.size, &signature,
+                  &signatureSize, &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
     ASSERT(signature != NULL);
     ASSERT(publicKey != NULL);
@@ -493,7 +501,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_key_create_policy_pcr_sign(fapi_context);
 }

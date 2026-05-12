@@ -8,21 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>          // for uint8_t
-#include <stdlib.h>          // for malloc, size_t, NULL
-#include <string.h>          // for memcpy, memset
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for malloc, size_t, NULL
+#include <string.h> // for memcpy, memset
 
-#include "fapi_crypto.h"     // for ifapi_verify_signature
-#include "fapi_int.h"        // for IFAPI_Key_VerifySignature, FAPI_CONTEXT
-#include "fapi_util.h"       // for ifapi_non_tpm_mode_init
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, ifapi_keysto...
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"     // for TSS2_RC, TSS2_FAPI_RC_MEMORY, TSS2_RC_SU...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_VerifySignature, Fapi...
+#include "fapi_crypto.h"    // for ifapi_verify_signature
+#include "fapi_int.h"       // for IFAPI_Key_VerifySignature, FAPI_CONTEXT
+#include "fapi_util.h"      // for ifapi_non_tpm_mode_init
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"    // for TSS2_RC, TSS2_FAPI_RC_MEMORY, TSS2_RC_SU...
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_VerifySignature, Fapi...
 
 #define LOGMODULE fapi
-#include "util/log.h"        // for LOG_TRACE, SAFE_FREE, LOGBLOB_TRACE, ret...
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, LOGBLOB_TRACE, ret...
 
 /** One-Call function for Fapi_VerifySignature
  *
@@ -61,14 +61,12 @@
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_VerifySignature(
-    FAPI_CONTEXT  *context,
-    char    const *keyPath,
-    uint8_t const *digest,
-    size_t         digestSize,
-    uint8_t const *signature,
-    size_t         signatureSize)
-{
+Fapi_VerifySignature(FAPI_CONTEXT  *context,
+                     char const    *keyPath,
+                     uint8_t const *digest,
+                     size_t         digestSize,
+                     uint8_t const *signature,
+                     size_t         signatureSize) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -79,8 +77,7 @@ Fapi_VerifySignature(
     check_not_null(digest);
     check_not_null(signature);
 
-    r = Fapi_VerifySignature_Async(context, keyPath, digest, digestSize,
-                                   signature, signatureSize);
+    r = Fapi_VerifySignature_Async(context, keyPath, digest, digestSize, signature, signatureSize);
     return_if_error_reset_state(r, "Key_VerifySignature");
 
     do {
@@ -136,14 +133,12 @@ Fapi_VerifySignature(
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_VerifySignature_Async(
-    FAPI_CONTEXT  *context,
-    char    const *keyPath,
-    uint8_t const *digest,
-    size_t         digestSize,
-    uint8_t const *signature,
-    size_t         signatureSize)
-{
+Fapi_VerifySignature_Async(FAPI_CONTEXT  *context,
+                           char const    *keyPath,
+                           uint8_t const *digest,
+                           size_t         digestSize,
+                           uint8_t const *signature,
+                           size_t         signatureSize) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("keyPath: %s", keyPath);
     if (digest) {
@@ -169,18 +164,16 @@ Fapi_VerifySignature_Async(
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
     /* Helpful alias pointers */
-    IFAPI_Key_VerifySignature * command = &context->cmd.Key_VerifySignature;
+    IFAPI_Key_VerifySignature *command = &context->cmd.Key_VerifySignature;
 
     r = ifapi_non_tpm_mode_init(context);
     return_if_error(r, "Initialize VerifySignature");
 
     /* Copy parameters to context for use during _Finish. */
-    uint8_t * signatureBuffer = malloc(signatureSize);
-    uint8_t * digestBuffer = malloc(digestSize);
-    goto_if_null2(signatureBuffer, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-            error_cleanup);
-    goto_if_null2(digestBuffer, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-            error_cleanup);
+    uint8_t *signatureBuffer = malloc(signatureSize);
+    uint8_t *digestBuffer = malloc(digestSize);
+    goto_if_null2(signatureBuffer, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
+    goto_if_null2(digestBuffer, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
     memcpy(signatureBuffer, signature, signatureSize);
     memcpy(digestBuffer, digest, digestSize);
     command->signature = signatureBuffer;
@@ -229,9 +222,7 @@ error_cleanup:
  *         be verified
  */
 TSS2_RC
-Fapi_VerifySignature_Finish(
-    FAPI_CONTEXT  *context)
-{
+Fapi_VerifySignature_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -240,16 +231,15 @@ Fapi_VerifySignature_Finish(
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_Key_VerifySignature * command = &context->cmd.Key_VerifySignature;
+    IFAPI_Key_VerifySignature *command = &context->cmd.Key_VerifySignature;
 
-    r = ifapi_keystore_load_finish(&context->keystore, &context->io,
-                                   &command->key_object);
+    r = ifapi_keystore_load_finish(&context->keystore, &context->io, &command->key_object);
     return_try_again(r);
     return_if_error_reset_state(r, "read_finish failed");
 
     /* Verify the signature using a helper that tests all known signature schemes. */
-    r = ifapi_verify_signature(&command->key_object, command->signature,
-           command->signatureSize, command->digest, command->digestSize);
+    r = ifapi_verify_signature(&command->key_object, command->signature, command->signatureSize,
+                               command->digest, command->digestSize);
     goto_if_error(r, "Verify signature.", cleanup);
 
 cleanup:

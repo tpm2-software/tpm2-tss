@@ -8,20 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_mu.h"          // for Tss2_MU_TPM2_HANDLE_Marshal
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPMI_RH_NV_AUTH, TPMI_RH_NV_INDEX, TPMI...
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_TPM2_HANDLE_Marshal
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPMI_RH_NV_AUTH, TPMI_RH_NV_INDEX, TPMI...
 
-TSS2_RC Tss2_Sys_PolicyAuthorizeNV_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_NV_AUTH authHandle,
-    TPMI_RH_NV_INDEX nvIndex,
-    TPMI_SH_POLICY policySession)
-{
+TSS2_RC
+Tss2_Sys_PolicyAuthorizeNV_Prepare(TSS2_SYS_CONTEXT *sysContext,
+                                   TPMI_RH_NV_AUTH   authHandle,
+                                   TPMI_RH_NV_INDEX  nvIndex,
+                                   TPMI_SH_POLICY    policySession) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -30,20 +29,15 @@ TSS2_RC Tss2_Sys_PolicyAuthorizeNV_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2_HANDLE_Marshal(authHandle, ctx->cmdBuffer,
-                                       ctx->maxCmdSize,
-                                       &ctx->nextData);
+    rval = Tss2_MU_TPM2_HANDLE_Marshal(authHandle, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2_HANDLE_Marshal(nvIndex, ctx->cmdBuffer,
-                                       ctx->maxCmdSize,
-                                       &ctx->nextData);
+    rval = Tss2_MU_TPM2_HANDLE_Marshal(nvIndex, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2_HANDLE_Marshal(policySession, ctx->cmdBuffer,
-                                       ctx->maxCmdSize,
+    rval = Tss2_MU_TPM2_HANDLE_Marshal(policySession, ctx->cmdBuffer, ctx->maxCmdSize,
                                        &ctx->nextData);
     if (rval)
         return rval;
@@ -55,9 +49,8 @@ TSS2_RC Tss2_Sys_PolicyAuthorizeNV_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_PolicyAuthorizeNV_Complete(
-    TSS2_SYS_CONTEXT *sysContext)
-{
+TSS2_RC
+Tss2_Sys_PolicyAuthorizeNV_Complete(TSS2_SYS_CONTEXT *sysContext) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
@@ -66,19 +59,17 @@ TSS2_RC Tss2_Sys_PolicyAuthorizeNV_Complete(
     return CommonComplete(ctx);
 }
 
-TSS2_RC Tss2_Sys_PolicyAuthorizeNV(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_NV_AUTH authHandle,
-    TPMI_RH_NV_INDEX nvIndex,
-    TPMI_SH_POLICY policySession,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_PolicyAuthorizeNV(TSS2_SYS_CONTEXT             *sysContext,
+                           TPMI_RH_NV_AUTH               authHandle,
+                           TPMI_RH_NV_INDEX              nvIndex,
+                           TPMI_SH_POLICY                policySession,
+                           TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                           TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
-    rval = Tss2_Sys_PolicyAuthorizeNV_Prepare(sysContext, authHandle,
-                                              nvIndex, policySession);
+    rval = Tss2_Sys_PolicyAuthorizeNV_Prepare(sysContext, authHandle, nvIndex, policySession);
     if (rval)
         return rval;
 

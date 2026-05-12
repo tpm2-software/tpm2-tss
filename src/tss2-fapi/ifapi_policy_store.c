@@ -8,44 +8,38 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>                           // for json_object_put, json_obj...
-#include <stdint.h>                         // for uint8_t
-#include <stdio.h>                          // for NULL, remove
-#include <stdlib.h>                         // for free
-#include <string.h>                         // for strdup, strlen, memset
+#include <json.h>   // for json_object_put, json_obj...
+#include <stdint.h> // for uint8_t
+#include <stdio.h>  // for NULL, remove
+#include <stdlib.h> // for free
+#include <string.h> // for strdup, strlen, memset
 
-#include "fapi_int.h"                       // for IFAPI_FILE_DELIM, IFAPI_P...
-#include "ifapi_helpers.h"                  // for ifapi_asprintf, ifapi_pat...
-#include "ifapi_io.h"                       // for ifapi_io_path_exists, IFA...
-#include "ifapi_keystore.h"                 // for ifapi_check_valid_path
-#include "ifapi_macros.h"                   // for goto_if_error2, return_tr...
-#include "ifapi_policy_json_deserialize.h"  // for ifapi_json_TPMS_POLICY_de...
-#include "ifapi_policy_json_serialize.h"    // for ifapi_json_TPMS_POLICY_se...
+#include "fapi_int.h"                      // for IFAPI_FILE_DELIM, IFAPI_P...
+#include "ifapi_helpers.h"                 // for ifapi_asprintf, ifapi_pat...
+#include "ifapi_io.h"                      // for ifapi_io_path_exists, IFA...
+#include "ifapi_keystore.h"                // for ifapi_check_valid_path
+#include "ifapi_macros.h"                  // for goto_if_error2, return_tr...
+#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
 #include "ifapi_policy_store.h"
-#include "ifapi_policy_types.h"             // for TPMS_POLICY
-#include "tpm_json_deserialize.h"           // for ifapi_parse_json
+#include "ifapi_policy_types.h"   // for TPMS_POLICY
+#include "tpm_json_deserialize.h" // for ifapi_parse_json
 
 #define LOGMODULE fapi
-#include "util/log.h"                       // for SAFE_FREE, return_if_error
+#include "util/log.h" // for SAFE_FREE, return_if_error
 
 /** Compute absolute path of policy for IO.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
-policy_rel_path_to_abs_path(
-    IFAPI_POLICY_STORE *pstore,
-    const char *rel_path,
-    char **abs_path)
-{
+policy_rel_path_to_abs_path(IFAPI_POLICY_STORE *pstore, const char *rel_path, char **abs_path) {
     TSS2_RC r;
 
     if (ifapi_path_type_p(rel_path, IFAPI_POLICY_PATH)) {
-        r = ifapi_asprintf(abs_path, "%s%s%s.json", pstore->policydir,
-                           IFAPI_FILE_DELIM, rel_path);
+        r = ifapi_asprintf(abs_path, "%s%s%s.json", pstore->policydir, IFAPI_FILE_DELIM, rel_path);
     } else {
-        r = ifapi_asprintf(abs_path, "%s%s%s%s%s.json", pstore->policydir,
-                           IFAPI_FILE_DELIM, IFAPI_POLICY_PATH, IFAPI_FILE_DELIM, rel_path);
-
+        r = ifapi_asprintf(abs_path, "%s%s%s%s%s.json", pstore->policydir, IFAPI_FILE_DELIM,
+                           IFAPI_POLICY_PATH, IFAPI_FILE_DELIM, rel_path);
     }
     return_if_error(r, "Create policy file name.");
     return r;
@@ -60,20 +54,16 @@ policy_rel_path_to_abs_path(
  * @retval TSS2_FAPI_RC_IO_ERROR If the file can't be removed.
  */
 TSS2_RC
-ifapi_policy_delete(
-    IFAPI_POLICY_STORE * pstore,
-    char *path)
-{
+ifapi_policy_delete(IFAPI_POLICY_STORE *pstore, char *path) {
     TSS2_RC r;
-    char *abs_path = NULL;
+    char   *abs_path = NULL;
 
     /* Convert relative path to absolute path in policy store */
     r = policy_rel_path_to_abs_path(pstore, path, &abs_path);
     goto_if_error2(r, "Path %s could not be created.", cleanup, path);
 
     if (!ifapi_io_path_exists(abs_path)) {
-        goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND,
-                   "Policy %s not found.", cleanup, path);
+        goto_error(r, TSS2_FAPI_RC_PATH_NOT_FOUND, "Policy %s not found.", cleanup, path);
     }
 
     if (remove(abs_path) != 0) {
@@ -100,22 +90,21 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_policy_store_initialize(
-    IFAPI_POLICY_STORE *pstore,
-    const char *config_policydir)
-{
+ifapi_policy_store_initialize(IFAPI_POLICY_STORE *pstore, const char *config_policydir) {
     TSS2_RC r;
-    char *policy_dir = NULL;
+    char   *policy_dir = NULL;
 
     memset(pstore, 0, sizeof(IFAPI_POLICY_STORE));
     check_not_null(config_policydir);
 
     strdup_check(pstore->policydir, config_policydir, r, error);
 
-    r = ifapi_asprintf(&policy_dir, "%s%s%s", config_policydir,
-                       (strcmp(&config_policydir[strlen(config_policydir) - 1],
-                        IFAPI_FILE_DELIM) == 0) ? "" : IFAPI_FILE_DELIM,
-					   IFAPI_POLICY_PATH);
+    r = ifapi_asprintf(
+        &policy_dir, "%s%s%s", config_policydir,
+        (strcmp(&config_policydir[strlen(config_policydir) - 1], IFAPI_FILE_DELIM) == 0)
+            ? ""
+            : IFAPI_FILE_DELIM,
+        IFAPI_POLICY_PATH);
     goto_if_error(r, "Out of memory.", error);
 
     r = ifapi_io_check_create_dir(policy_dir, FAPI_READ);
@@ -143,13 +132,9 @@ error:
  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
  */
 TSS2_RC
-ifapi_policy_store_load_async(
-    IFAPI_POLICY_STORE *pstore,
-    IFAPI_IO *io,
-    const char *path)
-{
+ifapi_policy_store_load_async(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, const char *path) {
     TSS2_RC r;
-    char *abs_path = NULL;
+    char   *abs_path = NULL;
 
     LOG_TRACE("Load policy: %s", path);
 
@@ -203,14 +188,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_policy_store_load_finish(
-    IFAPI_POLICY_STORE *pstore,
-    IFAPI_IO *io,
-    TPMS_POLICY *policy)
-{
-    TSS2_RC r;
+ifapi_policy_store_load_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, TPMS_POLICY *policy) {
+    TSS2_RC      r;
     json_object *jso = NULL;
-    uint8_t *buffer = NULL;
+    uint8_t     *buffer = NULL;
     /* ptore parameter is used to be prepared if transmission of state information
        between async and finish will be necessary in future extensions. */
     UNUSED(pstore);
@@ -233,7 +214,6 @@ cleanup:
         json_object_put(jso);
     LOG_TRACE("Return %x", r);
     return r;
-
 }
 
 /**  Start writing FAPI object to the key store.
@@ -253,16 +233,14 @@ cleanup:
  *         the function.
  */
 TSS2_RC
-ifapi_policy_store_store_async(
-    IFAPI_POLICY_STORE *pstore,
-    IFAPI_IO *io,
-    const char *path,
-    const TPMS_POLICY *policy)
-{
-    TSS2_RC r;
-    char *jso_string = NULL;
+ifapi_policy_store_store_async(IFAPI_POLICY_STORE *pstore,
+                               IFAPI_IO           *io,
+                               const char         *path,
+                               const TPMS_POLICY  *policy) {
+    TSS2_RC      r;
+    char        *jso_string = NULL;
     json_object *jso = NULL;
-    char *abs_path = NULL;
+    char        *abs_path = NULL;
 
     LOG_TRACE("Store policy: %s", path);
 
@@ -278,13 +256,11 @@ ifapi_policy_store_store_async(
     r = ifapi_json_TPMS_POLICY_serialize(policy, &jso);
     goto_if_error2(r, "Policy %s could not be serialized.", cleanup, path);
 
-    jso_string = strdup(json_object_to_json_string_ext(jso,
-                                                       JSON_C_TO_STRING_PRETTY));
-    goto_if_null2(jso_string, "Converting json to string", r, TSS2_FAPI_RC_MEMORY,
-                  cleanup);
+    jso_string = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
+    goto_if_null2(jso_string, "Converting json to string", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
     /* Start writing the json string to disk */
-    r = ifapi_io_write_async(io, abs_path, (uint8_t *) jso_string, strlen(jso_string));
+    r = ifapi_io_write_async(io, abs_path, (uint8_t *)jso_string, strlen(jso_string));
     free(jso_string);
     goto_if_error(r, "write_async failed", cleanup);
 
@@ -307,10 +283,7 @@ cleanup:
            Call this function again later.
  */
 TSS2_RC
-ifapi_policy_store_store_finish(
-    IFAPI_POLICY_STORE *pstore,
-    IFAPI_IO *io)
-{
+ifapi_policy_store_store_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io) {
     TSS2_RC r;
 
     /* Pstore parameter is used to be prepared if transmission of state information
@@ -326,29 +299,25 @@ ifapi_policy_store_store_finish(
     return TSS2_RC_SUCCESS;
 }
 
- /** Check whether policy already exists.
-  *
-  * @param[in] pstore The key directories and default profile.
-  * @param[in] path The relative path of the policy.
-  * @retval TSS2_RC_SUCCESS if the object does not exist.
-  * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the policy file exists.
-  * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
-  */
+/** Check whether policy already exists.
+ *
+ * @param[in] pstore The key directories and default profile.
+ * @param[in] path The relative path of the policy.
+ * @retval TSS2_RC_SUCCESS if the object does not exist.
+ * @retval TSS2_FAPI_RC_PATH_ALREADY_EXISTS if the policy file exists.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the output data.
+ */
 TSS2_RC
-ifapi_policystore_check_overwrite(
-    IFAPI_POLICY_STORE *pstore,
-    const char *path)
-{
+ifapi_policystore_check_overwrite(IFAPI_POLICY_STORE *pstore, const char *path) {
     TSS2_RC r;
-    char *abs_path = NULL;
+    char   *abs_path = NULL;
 
     /* Convert relative path to absolute path in keystore */
     r = policy_rel_path_to_abs_path(pstore, path, &abs_path);
     goto_if_error2(r, "Object %s not found.", cleanup, path);
 
     if (ifapi_io_path_exists(abs_path)) {
-        goto_error(r, TSS2_FAPI_RC_PATH_ALREADY_EXISTS,
-                   "Object %s already exists.", cleanup, path);
+        goto_error(r, TSS2_FAPI_RC_PATH_ALREADY_EXISTS, "Object %s already exists.", cleanup, path);
     }
     r = TSS2_RC_SUCCESS;
 

@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, int32_t
-#include <stdlib.h>           // for NULL, calloc
+#include <inttypes.h> // for PRIx32, int32_t
+#include <stdlib.h>   // for NULL, calloc
 
-#include "esys_int.h"         // for ESYS_CONTEXT, _ESYS_STATE_INIT, RSRC_NO...
-#include "esys_iutil.h"       // for iesys_compute_session_value, check_sess...
-#include "esys_types.h"       // for IESYS_RESOURCE
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_Unseal, Esy...
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
-#include "tss2_tpm2_types.h"  // for TPM2B_SENSITIVE_DATA, TPM2_RC_RETRY
+#include "esys_int.h"        // for ESYS_CONTEXT, _ESYS_STATE_INIT, RSRC_NO...
+#include "esys_iutil.h"      // for iesys_compute_session_value, check_sess...
+#include "esys_types.h"      // for IESYS_RESOURCE
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, Esys_Unseal, Esy...
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h" // for TPM2B_SENSITIVE_DATA, TPM2_RC_RETRY
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
+#include "util/log.h" // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** One-Call function for TPM2_Unseal
  *
@@ -63,18 +63,15 @@
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_Unseal(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR itemHandle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    TPM2B_SENSITIVE_DATA **outData)
-{
+Esys_Unseal(ESYS_CONTEXT          *esysContext,
+            ESYS_TR                itemHandle,
+            ESYS_TR                shandle1,
+            ESYS_TR                shandle2,
+            ESYS_TR                shandle3,
+            TPM2B_SENSITIVE_DATA **outData) {
     TSS2_RC r;
 
-    r = Esys_Unseal_Async(esysContext, itemHandle, shandle1, shandle2,
-                          shandle3);
+    r = Esys_Unseal_Async(esysContext, itemHandle, shandle1, shandle2, shandle3);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -92,8 +89,7 @@ Esys_Unseal(
         /* This is just debug information about the reattempt to finish the
            command */
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -135,18 +131,15 @@ Esys_Unseal(
  *         of the first command parameter.
  */
 TSS2_RC
-Esys_Unseal_Async(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR itemHandle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3)
-{
+Esys_Unseal_Async(ESYS_CONTEXT *esysContext,
+                  ESYS_TR       itemHandle,
+                  ESYS_TR       shandle1,
+                  ESYS_TR       shandle2,
+                  ESYS_TR       shandle3) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, itemHandle=%"PRIx32 "",
-              esysContext, itemHandle);
+    LOG_TRACE("context=%p, itemHandle=%" PRIx32 "", esysContext, itemHandle);
     TSS2L_SYS_AUTH_COMMAND auths;
-    RSRC_NODE_T *itemHandleNode;
+    RSRC_NODE_T           *itemHandleNode;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -167,17 +160,16 @@ Esys_Unseal_Async(
     return_state_if_error(r, ESYS_STATE_INIT, "itemHandle unknown.");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_Unseal_Prepare(esysContext->sys,
-                                (itemHandleNode == NULL) ? TPM2_RH_NULL
-                                 : itemHandleNode->rsrc.handle);
+    r = Tss2_Sys_Unseal_Prepare(
+        esysContext->sys, (itemHandleNode == NULL) ? TPM2_RH_NULL : itemHandleNode->rsrc.handle);
     return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
     return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
     if (itemHandleNode != NULL)
-        iesys_compute_session_value(esysContext->session_tab[0],
-                &itemHandleNode->rsrc.name, &itemHandleNode->auth);
+        iesys_compute_session_value(esysContext->session_tab[0], &itemHandleNode->rsrc.name,
+                                    &itemHandleNode->auth);
     else
         iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
 
@@ -186,8 +178,7 @@ Esys_Unseal_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, itemHandleNode, NULL, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT,
-                          "Error in computation of auth values");
+    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
@@ -197,8 +188,7 @@ Esys_Unseal_Async(
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Finish (Execute Async)");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
 
@@ -235,13 +225,9 @@ Esys_Unseal_Async(
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_Unseal_Finish(
-    ESYS_CONTEXT *esysContext,
-    TPM2B_SENSITIVE_DATA **outData)
-{
+Esys_Unseal_Finish(ESYS_CONTEXT *esysContext, TPM2B_SENSITIVE_DATA **outData) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, outData=%p",
-              esysContext, outData);
+    LOG_TRACE("context=%p, outData=%p", esysContext, outData);
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -249,8 +235,7 @@ Esys_Unseal_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != ESYS_STATE_SENT &&
-        esysContext->state != ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT && esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -275,7 +260,8 @@ Esys_Unseal_Finish(
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
-            "resubmission: %" PRIx32, r);
+                  "resubmission: %" PRIx32,
+                  r);
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
@@ -309,17 +295,14 @@ Esys_Unseal_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response",
-                        error_cleanup);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response", error_cleanup);
 
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
-    r = Tss2_Sys_Unseal_Complete(esysContext->sys,
-                                 (outData != NULL) ? *outData : NULL);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                        "Received error from SAPI unmarshaling" ,
+    r = Tss2_Sys_Unseal_Complete(esysContext->sys, (outData != NULL) ? *outData : NULL);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling",
                         error_cleanup);
 
     esysContext->state = ESYS_STATE_INIT;

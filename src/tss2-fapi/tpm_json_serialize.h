@@ -6,13 +6,13 @@
 #ifndef FAPI_TPM_JSON_SERIALIZE_H
 #define FAPI_TPM_JSON_SERIALIZE_H
 
-#include <json.h>             // for json_object
+#include <json.h> // for json_object
 
-#include "tss2_common.h"      // for TSS2_RC, UINT32, INT32, UINT16, UINT64
-#include "tss2_tpm2_types.h"  // for TPM2B_CREATION_DATA, TPM2B_DATA, TPM2B_...
+#include "tss2_common.h"     // for TSS2_RC, UINT32, INT32, UINT16, UINT64
+#include "tss2_tpm2_types.h" // for TPM2B_CREATION_DATA, TPM2B_DATA, TPM2B_...
 
 #define YES 1
-#define NO 0
+#define NO  0
 
 TSS2_RC
 ifapi_json_TPM2_HANDLE_serialize(const TPM2_HANDLE in, json_object **jso);
@@ -75,41 +75,34 @@ TSS2_RC
 ifapi_json_TPMI_YES_NO_serialize(const TPMI_YES_NO in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_RH_HIERARCHY_serialize(const TPMI_RH_HIERARCHY in,
-                                       json_object **jso);
+ifapi_json_TPMI_RH_HIERARCHY_serialize(const TPMI_RH_HIERARCHY in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_RH_NV_INDEX_serialize(const TPMI_RH_NV_INDEX in,
-                                      json_object **jso);
+ifapi_json_TPMI_RH_NV_INDEX_serialize(const TPMI_RH_NV_INDEX in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMI_ALG_HASH_serialize(const TPMI_ALG_HASH in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(const TPMI_ALG_SYM_OBJECT in,
-        json_object **jso);
+ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(const TPMI_ALG_SYM_OBJECT in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_SYM_MODE_serialize(const TPMI_ALG_SYM_MODE in,
-                                       json_object **jso);
+ifapi_json_TPMI_ALG_SYM_MODE_serialize(const TPMI_ALG_SYM_MODE in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_CIPHER_MODE_serialize(const TPMI_ALG_CIPHER_MODE in,
-                                          json_object **jso);
+ifapi_json_TPMI_ALG_CIPHER_MODE_serialize(const TPMI_ALG_CIPHER_MODE in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMI_ALG_KDF_serialize(const TPMI_ALG_KDF in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_SIG_SCHEME_serialize(const TPMI_ALG_SIG_SCHEME in,
-        json_object **jso);
+ifapi_json_TPMI_ALG_SIG_SCHEME_serialize(const TPMI_ALG_SIG_SCHEME in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMS_EMPTY_serialize(const TPMS_EMPTY *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMU_HA_serialize(const TPMU_HA *in, UINT32 selector,
-                             json_object **jso);
+ifapi_json_TPMU_HA_serialize(const TPMU_HA *in, UINT32 selector, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMT_HA_serialize(const TPMT_HA *in, json_object **jso);
@@ -130,39 +123,31 @@ TSS2_RC
 ifapi_json_TPM2B_EVENT_serialize(const TPM2B_EVENT *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPM2B_MAX_NV_BUFFER_serialize(const TPM2B_MAX_NV_BUFFER *in,
-        json_object **jso);
+ifapi_json_TPM2B_MAX_NV_BUFFER_serialize(const TPM2B_MAX_NV_BUFFER *in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPM2B_NAME_serialize(const TPM2B_NAME *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_PCR_SELECT_serialize(const TPMS_PCR_SELECT *in,
-                                     json_object **jso);
+ifapi_json_TPMS_PCR_SELECT_serialize(const TPMS_PCR_SELECT *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_PCR_SELECTION_serialize(const TPMS_PCR_SELECTION *in,
-                                        json_object **jso);
+ifapi_json_TPMS_PCR_SELECTION_serialize(const TPMS_PCR_SELECTION *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMT_TK_CREATION_serialize(const TPMT_TK_CREATION *in,
-                                      json_object **jso);
+ifapi_json_TPMT_TK_CREATION_serialize(const TPMT_TK_CREATION *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_ALG_PROPERTY_serialize(const TPMS_ALG_PROPERTY *in,
-                                       json_object **jso);
+ifapi_json_TPMS_ALG_PROPERTY_serialize(const TPMS_ALG_PROPERTY *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_TAGGED_PROPERTY_serialize(const TPMS_TAGGED_PROPERTY *in,
-        json_object **jso);
+ifapi_json_TPMS_TAGGED_PROPERTY_serialize(const TPMS_TAGGED_PROPERTY *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_TAGGED_PCR_SELECT_serialize(const TPMS_TAGGED_PCR_SELECT *in,
-        json_object **jso);
+ifapi_json_TPMS_TAGGED_PCR_SELECT_serialize(const TPMS_TAGGED_PCR_SELECT *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_TAGGED_POLICY_serialize(const TPMS_TAGGED_POLICY *in,
-                                        json_object **jso);
+ifapi_json_TPMS_TAGGED_POLICY_serialize(const TPMS_TAGGED_POLICY *in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMS_ACT_DATA_serialize(const TPMS_ACT_DATA *in, json_object **jso);
@@ -177,316 +162,258 @@ TSS2_RC
 ifapi_json_TPML_HANDLE_serialize(const TPML_HANDLE *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPML_DIGEST_VALUES_serialize(const TPML_DIGEST_VALUES *in,
-                                        json_object **jso);
+ifapi_json_TPML_DIGEST_VALUES_serialize(const TPML_DIGEST_VALUES *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPML_PCR_SELECTION_serialize(const TPML_PCR_SELECTION *in,
-                                        json_object **jso);
+ifapi_json_TPML_PCR_SELECTION_serialize(const TPML_PCR_SELECTION *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPML_ALG_PROPERTY_serialize(const TPML_ALG_PROPERTY *in,
-                                       json_object **jso);
+ifapi_json_TPML_ALG_PROPERTY_serialize(const TPML_ALG_PROPERTY *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPML_TAGGED_TPM_PROPERTY_serialize(const TPML_TAGGED_TPM_PROPERTY
-        *in, json_object **jso);
+ifapi_json_TPML_TAGGED_TPM_PROPERTY_serialize(const TPML_TAGGED_TPM_PROPERTY *in,
+                                              json_object                   **jso);
 
 TSS2_RC
-ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(const TPML_TAGGED_PCR_PROPERTY
-        *in, json_object **jso);
+ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(const TPML_TAGGED_PCR_PROPERTY *in,
+                                              json_object                   **jso);
 
 TSS2_RC
-ifapi_json_TPML_ECC_CURVE_serialize(const TPML_ECC_CURVE *in,
-                                    json_object **jso);
+ifapi_json_TPML_ECC_CURVE_serialize(const TPML_ECC_CURVE *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPML_TAGGED_POLICY_serialize(const TPML_TAGGED_POLICY *in,
-                                        json_object **jso);
+ifapi_json_TPML_TAGGED_POLICY_serialize(const TPML_TAGGED_POLICY *in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPML_ACT_DATA_serialize(const TPML_ACT_DATA *in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMU_CAPABILITIES_serialize(const TPMU_CAPABILITIES *in,
-                                       UINT32 selector, json_object **jso);
+                                       UINT32                   selector,
+                                       json_object            **jso);
 
 TSS2_RC
-ifapi_json_TPMS_CAPABILITY_DATA_serialize(const TPMS_CAPABILITY_DATA *in,
-        json_object **jso);
+ifapi_json_TPMS_CAPABILITY_DATA_serialize(const TPMS_CAPABILITY_DATA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_CLOCK_INFO_serialize(const TPMS_CLOCK_INFO *in,
-                                     json_object **jso);
+ifapi_json_TPMS_CLOCK_INFO_serialize(const TPMS_CLOCK_INFO *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_TIME_INFO_serialize(const TPMS_TIME_INFO *in,
-                                    json_object **jso);
+ifapi_json_TPMS_TIME_INFO_serialize(const TPMS_TIME_INFO *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_TIME_ATTEST_INFO_serialize(const TPMS_TIME_ATTEST_INFO *in,
-        json_object **jso);
+ifapi_json_TPMS_TIME_ATTEST_INFO_serialize(const TPMS_TIME_ATTEST_INFO *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_CERTIFY_INFO_serialize(const TPMS_CERTIFY_INFO *in,
-                                       json_object **jso);
+ifapi_json_TPMS_CERTIFY_INFO_serialize(const TPMS_CERTIFY_INFO *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_QUOTE_INFO_serialize(const TPMS_QUOTE_INFO *in,
-                                     json_object **jso);
+ifapi_json_TPMS_QUOTE_INFO_serialize(const TPMS_QUOTE_INFO *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_COMMAND_AUDIT_INFO_serialize(const TPMS_COMMAND_AUDIT_INFO *in,
-        json_object **jso);
+ifapi_json_TPMS_COMMAND_AUDIT_INFO_serialize(const TPMS_COMMAND_AUDIT_INFO *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SESSION_AUDIT_INFO_serialize(const TPMS_SESSION_AUDIT_INFO *in,
-        json_object **jso);
+ifapi_json_TPMS_SESSION_AUDIT_INFO_serialize(const TPMS_SESSION_AUDIT_INFO *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_CREATION_INFO_serialize(const TPMS_CREATION_INFO *in,
-                                        json_object **jso);
+ifapi_json_TPMS_CREATION_INFO_serialize(const TPMS_CREATION_INFO *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_NV_CERTIFY_INFO_serialize(const TPMS_NV_CERTIFY_INFO *in,
-        json_object **jso);
+ifapi_json_TPMS_NV_CERTIFY_INFO_serialize(const TPMS_NV_CERTIFY_INFO *in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMI_ST_ATTEST_serialize(const TPMI_ST_ATTEST in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMU_ATTEST_serialize(const TPMU_ATTEST *in, UINT32 selector,
-                                 json_object **jso);
+ifapi_json_TPMU_ATTEST_serialize(const TPMU_ATTEST *in, UINT32 selector, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMS_ATTEST_serialize(const TPMS_ATTEST *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_AES_KEY_BITS_serialize(const TPMI_AES_KEY_BITS in,
-                                       json_object **jso);
+ifapi_json_TPMI_AES_KEY_BITS_serialize(const TPMI_AES_KEY_BITS in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMU_SYM_KEY_BITS_serialize(const TPMU_SYM_KEY_BITS *in,
-                                       UINT32 selector, json_object **jso);
+                                       UINT32                   selector,
+                                       json_object            **jso);
 
 TSS2_RC
-ifapi_json_TPMU_SYM_MODE_serialize(const TPMU_SYM_MODE *in, UINT32 selector,
-                                   json_object **jso);
+ifapi_json_TPMU_SYM_MODE_serialize(const TPMU_SYM_MODE *in, UINT32 selector, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(const TPMT_SYM_DEF_OBJECT *in,
-        json_object **jso);
+ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(const TPMT_SYM_DEF_OBJECT *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SYMCIPHER_PARMS_serialize(const TPMS_SYMCIPHER_PARMS *in,
-        json_object **jso);
+ifapi_json_TPMS_SYMCIPHER_PARMS_serialize(const TPMS_SYMCIPHER_PARMS *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SCHEME_HASH_serialize(const TPMS_SCHEME_HASH *in,
-                                      json_object **jso);
+ifapi_json_TPMS_SCHEME_HASH_serialize(const TPMS_SCHEME_HASH *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SCHEME_ECDAA_serialize(const TPMS_SCHEME_ECDAA *in,
-                                       json_object **jso);
+ifapi_json_TPMS_SCHEME_ECDAA_serialize(const TPMS_SCHEME_ECDAA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_serialize(const TPMI_ALG_KEYEDHASH_SCHEME
-        in, json_object **jso);
+ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_serialize(const TPMI_ALG_KEYEDHASH_SCHEME in,
+                                               json_object                   **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SCHEME_HMAC_serialize(const TPMS_SCHEME_HMAC *in,
-                                      json_object **jso);
+ifapi_json_TPMS_SCHEME_HMAC_serialize(const TPMS_SCHEME_HMAC *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SCHEME_XOR_serialize(const TPMS_SCHEME_XOR *in,
-                                     json_object **jso);
+ifapi_json_TPMS_SCHEME_XOR_serialize(const TPMS_SCHEME_XOR *in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMU_SCHEME_KEYEDHASH_serialize(const TPMU_SCHEME_KEYEDHASH *in,
-        UINT32 selector, json_object **jso);
+                                           UINT32                       selector,
+                                           json_object                **jso);
 
 TSS2_RC
-ifapi_json_TPMT_KEYEDHASH_SCHEME_serialize(const TPMT_KEYEDHASH_SCHEME *in,
-        json_object **jso);
+ifapi_json_TPMT_KEYEDHASH_SCHEME_serialize(const TPMT_KEYEDHASH_SCHEME *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_RSASSA_serialize(const TPMS_SIG_SCHEME_RSASSA *in,
-        json_object **jso);
+ifapi_json_TPMS_SIG_SCHEME_RSASSA_serialize(const TPMS_SIG_SCHEME_RSASSA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_RSAPSS_serialize(const TPMS_SIG_SCHEME_RSAPSS *in,
-        json_object **jso);
+ifapi_json_TPMS_SIG_SCHEME_RSAPSS_serialize(const TPMS_SIG_SCHEME_RSAPSS *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_ECDSA_serialize(const TPMS_SIG_SCHEME_ECDSA *in,
-        json_object **jso);
+ifapi_json_TPMS_SIG_SCHEME_ECDSA_serialize(const TPMS_SIG_SCHEME_ECDSA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_SM2_serialize(const TPMS_SIG_SCHEME_SM2 *in,
-        json_object **jso);
+ifapi_json_TPMS_SIG_SCHEME_SM2_serialize(const TPMS_SIG_SCHEME_SM2 *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(const TPMS_SIG_SCHEME_ECSCHNORR
-        *in, json_object **jso);
+ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(const TPMS_SIG_SCHEME_ECSCHNORR *in,
+                                               json_object                    **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(const TPMS_SIG_SCHEME_ECDAA *in,
-        json_object **jso);
+ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(const TPMS_SIG_SCHEME_ECDAA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMU_SIG_SCHEME_serialize(const TPMU_SIG_SCHEME *in, UINT32 selector,
-                                     json_object **jso);
+ifapi_json_TPMU_SIG_SCHEME_serialize(const TPMU_SIG_SCHEME *in, UINT32 selector, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMT_SIG_SCHEME_serialize(const TPMT_SIG_SCHEME *in,
-                                     json_object **jso);
+ifapi_json_TPMT_SIG_SCHEME_serialize(const TPMT_SIG_SCHEME *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_ENC_SCHEME_OAEP_serialize(const TPMS_ENC_SCHEME_OAEP *in,
-        json_object **jso);
+ifapi_json_TPMS_ENC_SCHEME_OAEP_serialize(const TPMS_ENC_SCHEME_OAEP *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_ENC_SCHEME_RSAES_serialize(const TPMS_ENC_SCHEME_RSAES *in,
-        json_object **jso);
+ifapi_json_TPMS_ENC_SCHEME_RSAES_serialize(const TPMS_ENC_SCHEME_RSAES *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_KEY_SCHEME_ECDH_serialize(const TPMS_KEY_SCHEME_ECDH *in,
-        json_object **jso);
+ifapi_json_TPMS_KEY_SCHEME_ECDH_serialize(const TPMS_KEY_SCHEME_ECDH *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SCHEME_MGF1_serialize(const TPMS_SCHEME_MGF1 *in,
-                                      json_object **jso);
+ifapi_json_TPMS_SCHEME_MGF1_serialize(const TPMS_SCHEME_MGF1 *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SCHEME_KDF1_SP800_56A_serialize(const TPMS_SCHEME_KDF1_SP800_56A
-        *in, json_object **jso);
+ifapi_json_TPMS_SCHEME_KDF1_SP800_56A_serialize(const TPMS_SCHEME_KDF1_SP800_56A *in,
+                                                json_object                     **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SCHEME_KDF1_SP800_108_serialize(const TPMS_SCHEME_KDF1_SP800_108
-        *in, json_object **jso);
+ifapi_json_TPMS_SCHEME_KDF1_SP800_108_serialize(const TPMS_SCHEME_KDF1_SP800_108 *in,
+                                                json_object                     **jso);
 
 TSS2_RC
-ifapi_json_TPMU_KDF_SCHEME_serialize(const TPMU_KDF_SCHEME *in, UINT32 selector,
-                                     json_object **jso);
+ifapi_json_TPMU_KDF_SCHEME_serialize(const TPMU_KDF_SCHEME *in, UINT32 selector, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMT_KDF_SCHEME_serialize(const TPMT_KDF_SCHEME *in,
-                                     json_object **jso);
+ifapi_json_TPMT_KDF_SCHEME_serialize(const TPMT_KDF_SCHEME *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_ASYM_SCHEME_serialize(const TPMI_ALG_ASYM_SCHEME in,
-        json_object **jso);
+ifapi_json_TPMI_ALG_ASYM_SCHEME_serialize(const TPMI_ALG_ASYM_SCHEME in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMU_ASYM_SCHEME_serialize(const TPMU_ASYM_SCHEME *in,
-                                      UINT32 selector, json_object **jso);
+                                      UINT32                  selector,
+                                      json_object           **jso);
 
 TSS2_RC
-ifapi_json_TPMT_ASYM_SCHEME_serialize(const TPMT_ASYM_SCHEME *in,
-                                      json_object **jso);
+ifapi_json_TPMT_ASYM_SCHEME_serialize(const TPMT_ASYM_SCHEME *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_RSA_SCHEME_serialize(const TPMI_ALG_RSA_SCHEME in,
-        json_object **jso);
+ifapi_json_TPMI_ALG_RSA_SCHEME_serialize(const TPMI_ALG_RSA_SCHEME in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMT_RSA_SCHEME_serialize(const TPMT_RSA_SCHEME *in,
-                                     json_object **jso);
+ifapi_json_TPMT_RSA_SCHEME_serialize(const TPMT_RSA_SCHEME *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPM2B_PUBLIC_KEY_RSA_serialize(const TPM2B_PUBLIC_KEY_RSA *in,
-        json_object **jso);
+ifapi_json_TPM2B_PUBLIC_KEY_RSA_serialize(const TPM2B_PUBLIC_KEY_RSA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_RSA_KEY_BITS_serialize(const TPMI_RSA_KEY_BITS in,
-                                       json_object **jso);
+ifapi_json_TPMI_RSA_KEY_BITS_serialize(const TPMI_RSA_KEY_BITS in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPM2B_ECC_PARAMETER_serialize(const TPM2B_ECC_PARAMETER *in,
-        json_object **jso);
+ifapi_json_TPM2B_ECC_PARAMETER_serialize(const TPM2B_ECC_PARAMETER *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_ECC_POINT_serialize(const TPMS_ECC_POINT *in,
-                                    json_object **jso);
+ifapi_json_TPMS_ECC_POINT_serialize(const TPMS_ECC_POINT *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_ECC_SCHEME_serialize(const TPMI_ALG_ECC_SCHEME in,
-        json_object **jso);
+ifapi_json_TPMI_ALG_ECC_SCHEME_serialize(const TPMI_ALG_ECC_SCHEME in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMI_ECC_CURVE_serialize(const TPMI_ECC_CURVE in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMT_ECC_SCHEME_serialize(const TPMT_ECC_SCHEME *in,
-                                     json_object **jso);
+ifapi_json_TPMT_ECC_SCHEME_serialize(const TPMT_ECC_SCHEME *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_RSA_serialize(const TPMS_SIGNATURE_RSA *in,
-                                        json_object **jso);
+ifapi_json_TPMS_SIGNATURE_RSA_serialize(const TPMS_SIGNATURE_RSA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_RSASSA_serialize(const TPMS_SIGNATURE_RSASSA *in,
-        json_object **jso);
+ifapi_json_TPMS_SIGNATURE_RSASSA_serialize(const TPMS_SIGNATURE_RSASSA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_RSAPSS_serialize(const TPMS_SIGNATURE_RSAPSS *in,
-        json_object **jso);
+ifapi_json_TPMS_SIGNATURE_RSAPSS_serialize(const TPMS_SIGNATURE_RSAPSS *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_ECC_serialize(const TPMS_SIGNATURE_ECC *in,
-                                        json_object **jso);
+ifapi_json_TPMS_SIGNATURE_ECC_serialize(const TPMS_SIGNATURE_ECC *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_ECDSA_serialize(const TPMS_SIGNATURE_ECDSA *in,
-        json_object **jso);
+ifapi_json_TPMS_SIGNATURE_ECDSA_serialize(const TPMS_SIGNATURE_ECDSA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_ECDAA_serialize(const TPMS_SIGNATURE_ECDAA *in,
-        json_object **jso);
+ifapi_json_TPMS_SIGNATURE_ECDAA_serialize(const TPMS_SIGNATURE_ECDAA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_SM2_serialize(const TPMS_SIGNATURE_SM2 *in,
-                                        json_object **jso);
+ifapi_json_TPMS_SIGNATURE_SM2_serialize(const TPMS_SIGNATURE_SM2 *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_ECSCHNORR_serialize(const TPMS_SIGNATURE_ECSCHNORR
-        *in, json_object **jso);
+ifapi_json_TPMS_SIGNATURE_ECSCHNORR_serialize(const TPMS_SIGNATURE_ECSCHNORR *in,
+                                              json_object                   **jso);
 
 TSS2_RC
-ifapi_json_TPMU_SIGNATURE_serialize(const TPMU_SIGNATURE *in, UINT32 selector,
-                                    json_object **jso);
+ifapi_json_TPMU_SIGNATURE_serialize(const TPMU_SIGNATURE *in, UINT32 selector, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMT_SIGNATURE_serialize(const TPMT_SIGNATURE *in,
-                                    json_object **jso);
+ifapi_json_TPMT_SIGNATURE_serialize(const TPMT_SIGNATURE *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPM2B_ENCRYPTED_SECRET_serialize(const TPM2B_ENCRYPTED_SECRET *in,
-        json_object **jso);
+ifapi_json_TPM2B_ENCRYPTED_SECRET_serialize(const TPM2B_ENCRYPTED_SECRET *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMI_ALG_PUBLIC_serialize(const TPMI_ALG_PUBLIC in,
-                                     json_object **jso);
+ifapi_json_TPMI_ALG_PUBLIC_serialize(const TPMI_ALG_PUBLIC in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMU_PUBLIC_ID_serialize(const TPMU_PUBLIC_ID *in, UINT32 selector,
-                                    json_object **jso);
+ifapi_json_TPMU_PUBLIC_ID_serialize(const TPMU_PUBLIC_ID *in, UINT32 selector, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_KEYEDHASH_PARMS_serialize(const TPMS_KEYEDHASH_PARMS *in,
-        json_object **jso);
+ifapi_json_TPMS_KEYEDHASH_PARMS_serialize(const TPMS_KEYEDHASH_PARMS *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_RSA_PARMS_serialize(const TPMS_RSA_PARMS *in,
-                                    json_object **jso);
+ifapi_json_TPMS_RSA_PARMS_serialize(const TPMS_RSA_PARMS *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_ECC_PARMS_serialize(const TPMS_ECC_PARMS *in,
-                                    json_object **jso);
+ifapi_json_TPMS_ECC_PARMS_serialize(const TPMS_ECC_PARMS *in, json_object **jso);
 
 TSS2_RC
 ifapi_json_TPMU_PUBLIC_PARMS_serialize(const TPMU_PUBLIC_PARMS *in,
-                                       UINT32 selector, json_object **jso);
+                                       UINT32                   selector,
+                                       json_object            **jso);
 
 TSS2_RC
 ifapi_json_TPMT_PUBLIC_serialize(const TPMT_PUBLIC *in, json_object **jso);
@@ -504,19 +431,15 @@ TSS2_RC
 ifapi_json_TPMA_NV_serialize(const TPMA_NV in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_NV_PUBLIC_serialize(const TPMS_NV_PUBLIC *in,
-                                    json_object **jso);
+ifapi_json_TPMS_NV_PUBLIC_serialize(const TPMS_NV_PUBLIC *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPM2B_NV_PUBLIC_serialize(const TPM2B_NV_PUBLIC *in,
-                                     json_object **jso);
+ifapi_json_TPM2B_NV_PUBLIC_serialize(const TPM2B_NV_PUBLIC *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_CREATION_DATA_serialize(const TPMS_CREATION_DATA *in,
-                                        json_object **jso);
+ifapi_json_TPMS_CREATION_DATA_serialize(const TPMS_CREATION_DATA *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPM2B_CREATION_DATA_serialize(const TPM2B_CREATION_DATA *in,
-        json_object **jso);
+ifapi_json_TPM2B_CREATION_DATA_serialize(const TPM2B_CREATION_DATA *in, json_object **jso);
 
 #endif /* FAPI_TPM_JSON_SERIALIZE_H */

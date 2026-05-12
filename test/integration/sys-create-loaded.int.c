@@ -8,39 +8,33 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, uint8_t
-#include <stdlib.h>           // for exit, NULL, size_t
-#include <string.h>           // for memset, memcpy
+#include <inttypes.h> // for PRIx32, uint8_t
+#include <stdlib.h>   // for exit, NULL, size_t
+#include <string.h>   // for memset, memcpy
 
-#include "test-esys.h"        // for EXIT_SKIP
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_mu.h"          // for Tss2_MU_TPMT_PUBLIC_Marshal
-#include "tss2_sys.h"         // for Tss2_Sys_CreateLoaded, Tss2_Sys_FlushCo...
-#include "tss2_tpm2_types.h"  // for TPMT_PUBLIC, TPM2B_NAME, TPMS_RSA_PARMS
+#include "test-esys.h"       // for EXIT_SKIP
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_mu.h"         // for Tss2_MU_TPMT_PUBLIC_Marshal
+#include "tss2_sys.h"        // for Tss2_Sys_CreateLoaded, Tss2_Sys_FlushCo...
+#include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPM2B_NAME, TPMS_RSA_PARMS
 
 #define LOGMODULE test
-#include "sys-util.h"         // for TPM2B_NAME_INIT
-#include "util/log.h"         // for LOG_ERROR, LOG_INFO, LOGBLOB_INFO
+#include "sys-util.h" // for TPM2B_NAME_INIT
+#include "util/log.h" // for LOG_ERROR, LOG_INFO, LOGBLOB_INFO
 
 TSS2_RC
-test_invoke (TSS2_SYS_CONTEXT *sys_context)
-{
-    TSS2_RC                 rc              = TSS2_RC_SUCCESS;
-    TPM2B_SENSITIVE_CREATE  in_sensitive    = { 0 };
-    TPMT_PUBLIC             in_public       = { 0 };
+test_invoke(TSS2_SYS_CONTEXT *sys_context) {
+    TSS2_RC                 rc = TSS2_RC_SUCCESS;
+    TPM2B_SENSITIVE_CREATE  in_sensitive = { 0 };
+    TPMT_PUBLIC             in_public = { 0 };
     TPM2B_TEMPLATE          public_template = { 0 };
-    TPM2B_PRIVATE           out_private     = { 0 };
-    TPM2B_PUBLIC            out_public      = { 0 };
-    TPM2B_NAME              name            = TPM2B_NAME_INIT;
-    TPM2B_NAME              qualified_name  = TPM2B_NAME_INIT;
-    TPM2_HANDLE             object_handle   = 0;
-    TSS2L_SYS_AUTH_COMMAND  auth_cmd = {
-        .auths = {{ .sessionHandle = TPM2_RH_PW }},
-        .count = 1
-    };
-    TSS2L_SYS_AUTH_RESPONSE auth_rsp = {
-        .count = 0
-    };
+    TPM2B_PRIVATE           out_private = { 0 };
+    TPM2B_PUBLIC            out_public = { 0 };
+    TPM2B_NAME              name = TPM2B_NAME_INIT;
+    TPM2B_NAME              qualified_name = TPM2B_NAME_INIT;
+    TPM2_HANDLE             object_handle = 0;
+    TSS2L_SYS_AUTH_COMMAND  auth_cmd = { .auths = { { .sessionHandle = TPM2_RH_PW } }, .count = 1 };
+    TSS2L_SYS_AUTH_RESPONSE auth_rsp = { .count = 0 };
 
     if (sys_context == NULL)
         return TSS2_RC_LAYER_MASK | TSS2_BASE_RC_BAD_REFERENCE;
@@ -59,11 +53,10 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     in_public.parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
     in_public.parameters.rsaDetail.keyBits = 2048;
 
-    uint8_t public_buf[sizeof(in_public)] = {0};
-    size_t offset = 0;
+    uint8_t public_buf[sizeof(in_public)] = { 0 };
+    size_t  offset = 0;
 
-    rc = Tss2_MU_TPMT_PUBLIC_Marshal(&in_public, public_buf,
-                                     sizeof(in_public), &offset);
+    rc = Tss2_MU_TPMT_PUBLIC_Marshal(&in_public, public_buf, sizeof(in_public), &offset);
     if (rc != TPM2_RC_SUCCESS) {
         LOG_ERROR("Tss2_MU_TPMT_PUBLIC_Marshal FAILED! Response Code: 0x%x", rc);
         exit(1);
@@ -75,16 +68,9 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
      * stays in the TPM
      */
     LOG_INFO("Calling CreateLoaded");
-    rc = Tss2_Sys_CreateLoaded (sys_context,
-                                TPM2_RH_OWNER,
-                                &auth_cmd,
-                                &in_sensitive,
-                                &public_template,
-                                &object_handle,
-                                &out_private,
-                                &out_public,
-                                &name,
-                                &auth_rsp);
+    rc = Tss2_Sys_CreateLoaded(sys_context, TPM2_RH_OWNER, &auth_cmd, &in_sensitive,
+                               &public_template, &object_handle, &out_private, &out_public, &name,
+                               &auth_rsp);
     if (rc == TPM2_RC_SUCCESS) {
         LOG_INFO("success object handle: 0x%x", object_handle);
     } else if (rc == TPM2_RC_COMMAND_CODE) {
@@ -100,13 +86,8 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     /* Check if the object is really loaded by accessing its
      * public area */
     LOG_INFO("Calling ReadPublic");
-    rc = Tss2_Sys_ReadPublic (sys_context,
-                              object_handle,
-                              NULL,
-                              &out_public,
-                              &name,
-                              &qualified_name,
-                              NULL);
+    rc = Tss2_Sys_ReadPublic(sys_context, object_handle, NULL, &out_public, &name, &qualified_name,
+                             NULL);
     if (rc == TPM2_RC_SUCCESS) {
         LOG_INFO("success! Object's qualified name is:");
         LOGBLOB_INFO(qualified_name.name, qualified_name.size, "%s", "name:");
@@ -115,7 +96,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
         exit(1);
     }
 
-    rc = Tss2_Sys_FlushContext (sys_context, object_handle);
+    rc = Tss2_Sys_FlushContext(sys_context, object_handle);
     if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Tss2_Sys_FlushContext failed: 0x%" PRIx32, rc);
         exit(1);

@@ -8,26 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>     // for uint64_t
-#include <stdio.h>        // for NULL
-#include <stdlib.h>       // for EXIT_FAILURE, EXIT_SUCCESS
+#include <inttypes.h> // for uint64_t
+#include <stdio.h>    // for NULL
+#include <stdlib.h>   // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-fapi.h"    // for test_invoke_fapi
-#include "tss2_common.h"  // for TSS2_RC, TSS2_FAPI_RC_ALREADY_PROVISIONED
-#include "tss2_fapi.h"    // for Fapi_Delete, Fapi_CreateNv, Fapi_NvSetBits
+#include "test-fapi.h"   // for test_invoke_fapi
+#include "tss2_common.h" // for TSS2_RC, TSS2_FAPI_RC_ALREADY_PROVISIONED
+#include "tss2_fapi.h"   // for Fapi_Delete, Fapi_CreateNv, Fapi_NvSetBits
 
 #define LOGMODULE test
-#include "util/log.h"     // for goto_if_error, UNUSED, LOG_ERROR, return_error
+#include "util/log.h" // for goto_if_error, UNUSED, LOG_ERROR, return_error
 
 #define PASSWORD "abc"
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -53,10 +48,9 @@ auth_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_nv_set_bits(FAPI_CONTEXT *context)
-{
+test_fapi_nv_set_bits(FAPI_CONTEXT *context) {
     TSS2_RC r;
-    char *nvPathBitMap = "/nv/Owner/myNV_BitMap";
+    char   *nvPathBitMap = "/nv/Owner/myNV_BitMap";
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -116,7 +110,6 @@ test_fapi_nv_set_bits(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, nvPathBitMap);
     goto_if_error(r, "Error Fapi_Delete", error);
 
-
     r = Fapi_Delete(context, "/");
 
     goto_if_error(r, "Error Fapi_Delete", error);
@@ -129,7 +122,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *context)
-{
+test_invoke_fapi(FAPI_CONTEXT *context) {
     return test_fapi_nv_set_bits(context);
 }

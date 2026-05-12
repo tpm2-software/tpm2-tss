@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, int32_t
-#include <stdlib.h>           // for NULL, calloc
+#include <inttypes.h> // for PRIx32, int32_t
+#include <stdlib.h>   // for NULL, calloc
 
-#include "esys_int.h"         // for ESYS_CONTEXT, _ESYS_STATE_INIT, RSRC_NO...
-#include "esys_iutil.h"       // for iesys_compute_session_value, check_sess...
-#include "esys_types.h"       // for IESYS_RESOURCE
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_Commit, Esy...
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
-#include "tss2_tpm2_types.h"  // for TPM2B_ECC_POINT, TPM2B_ECC_PARAMETER
+#include "esys_int.h"        // for ESYS_CONTEXT, _ESYS_STATE_INIT, RSRC_NO...
+#include "esys_iutil.h"      // for iesys_compute_session_value, check_sess...
+#include "esys_types.h"      // for IESYS_RESOURCE
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, Esys_Commit, Esy...
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h" // for TPM2B_ECC_POINT, TPM2B_ECC_PARAMETER
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
+#include "util/log.h" // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** One-Call function for TPM2_Commit
  *
@@ -69,24 +69,21 @@
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_Commit(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR signHandle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_ECC_POINT *P1,
-    const TPM2B_SENSITIVE_DATA *s2,
-    const TPM2B_ECC_PARAMETER *y2,
-    TPM2B_ECC_POINT **K,
-    TPM2B_ECC_POINT **L,
-    TPM2B_ECC_POINT **E,
-    UINT16 *counter)
-{
+Esys_Commit(ESYS_CONTEXT               *esysContext,
+            ESYS_TR                     signHandle,
+            ESYS_TR                     shandle1,
+            ESYS_TR                     shandle2,
+            ESYS_TR                     shandle3,
+            const TPM2B_ECC_POINT      *P1,
+            const TPM2B_SENSITIVE_DATA *s2,
+            const TPM2B_ECC_PARAMETER  *y2,
+            TPM2B_ECC_POINT           **K,
+            TPM2B_ECC_POINT           **L,
+            TPM2B_ECC_POINT           **E,
+            UINT16                     *counter) {
     TSS2_RC r;
 
-    r = Esys_Commit_Async(esysContext, signHandle, shandle1, shandle2, shandle3,
-                          P1, s2, y2);
+    r = Esys_Commit_Async(esysContext, signHandle, shandle1, shandle2, shandle3, P1, s2, y2);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -104,8 +101,7 @@ Esys_Commit(
         /* This is just debug information about the reattempt to finish the
            command */
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -148,22 +144,20 @@ Esys_Commit(
  *         ESYS_TR objects are ESYS_TR_NONE.
  */
 TSS2_RC
-Esys_Commit_Async(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR signHandle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_ECC_POINT *P1,
-    const TPM2B_SENSITIVE_DATA *s2,
-    const TPM2B_ECC_PARAMETER *y2)
-{
+Esys_Commit_Async(ESYS_CONTEXT               *esysContext,
+                  ESYS_TR                     signHandle,
+                  ESYS_TR                     shandle1,
+                  ESYS_TR                     shandle2,
+                  ESYS_TR                     shandle3,
+                  const TPM2B_ECC_POINT      *P1,
+                  const TPM2B_SENSITIVE_DATA *s2,
+                  const TPM2B_ECC_PARAMETER  *y2) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, signHandle=%"PRIx32 ", P1=%p,"
+    LOG_TRACE("context=%p, signHandle=%" PRIx32 ", P1=%p,"
               "s2=%p, y2=%p",
               esysContext, signHandle, P1, s2, y2);
     TSS2L_SYS_AUTH_COMMAND auths;
-    RSRC_NODE_T *signHandleNode;
+    RSRC_NODE_T           *signHandleNode;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -184,17 +178,17 @@ Esys_Commit_Async(
     return_state_if_error(r, ESYS_STATE_INIT, "signHandle unknown.");
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_Commit_Prepare(esysContext->sys,
-                                (signHandleNode == NULL) ? TPM2_RH_NULL
-                                 : signHandleNode->rsrc.handle, P1, s2, y2);
+    r = Tss2_Sys_Commit_Prepare(
+        esysContext->sys, (signHandleNode == NULL) ? TPM2_RH_NULL : signHandleNode->rsrc.handle, P1,
+        s2, y2);
     return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
     return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
     if (signHandleNode != NULL)
-        iesys_compute_session_value(esysContext->session_tab[0],
-                &signHandleNode->rsrc.name, &signHandleNode->auth);
+        iesys_compute_session_value(esysContext->session_tab[0], &signHandleNode->rsrc.name,
+                                    &signHandleNode->auth);
     else
         iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
 
@@ -203,8 +197,7 @@ Esys_Commit_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, signHandleNode, NULL, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT,
-                          "Error in computation of auth values");
+    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
@@ -214,8 +207,7 @@ Esys_Commit_Async(
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Finish (Execute Async)");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
 
@@ -257,18 +249,15 @@ Esys_Commit_Async(
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_Commit_Finish(
-    ESYS_CONTEXT *esysContext,
-    TPM2B_ECC_POINT **K,
-    TPM2B_ECC_POINT **L,
-    TPM2B_ECC_POINT **E,
-    UINT16 *counter)
-{
+Esys_Commit_Finish(ESYS_CONTEXT     *esysContext,
+                   TPM2B_ECC_POINT **K,
+                   TPM2B_ECC_POINT **L,
+                   TPM2B_ECC_POINT **E,
+                   UINT16           *counter) {
     TSS2_RC r;
     LOG_TRACE("context=%p, K=%p, L=%p,"
               "E=%p, counter=%p",
-              esysContext, K, L,
-              E, counter);
+              esysContext, K, L, E, counter);
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -276,8 +265,7 @@ Esys_Commit_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != ESYS_STATE_SENT &&
-        esysContext->state != ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT && esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -318,7 +306,8 @@ Esys_Commit_Finish(
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
-            "resubmission: %" PRIx32, r);
+                  "resubmission: %" PRIx32,
+                  r);
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
@@ -352,19 +341,15 @@ Esys_Commit_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response",
-                        error_cleanup);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response", error_cleanup);
 
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
-    r = Tss2_Sys_Commit_Complete(esysContext->sys,
-                                 (K != NULL) ? *K : NULL,
-                                 (L != NULL) ? *L : NULL,
+    r = Tss2_Sys_Commit_Complete(esysContext->sys, (K != NULL) ? *K : NULL, (L != NULL) ? *L : NULL,
                                  (E != NULL) ? *E : NULL, counter);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                        "Received error from SAPI unmarshaling" ,
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling",
                         error_cleanup);
 
     esysContext->state = ESYS_STATE_INIT;

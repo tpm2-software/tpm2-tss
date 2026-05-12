@@ -7,5 +7,5 @@ Name: tss2-tcti-spi-ftdi
 Description: TCTI library for communicating with a TPM over USB-FTDI-SPI converter.
 URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
-Cflags: -I${includedir} -I${includedir}/tss
+Cflags: -I${includedir} -I${includedir}/tss2
 Libs: -ltss2-tcti-spi-helper -ltss2-tcti-spi-ftdi -L${libdir} -lftdi

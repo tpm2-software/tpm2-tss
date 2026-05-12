@@ -8,54 +8,51 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>               // for uint8_t, int32_t, uint32_t, uint64_t
-#include <stdlib.h>                 // for NULL, size_t, free, malloc
-#include <string.h>                 // for memcpy, memset
+#include <inttypes.h> // for uint8_t, int32_t, uint32_t, uint64_t
+#include <stdlib.h>   // for NULL, size_t, free, malloc
+#include <string.h>   // for memcpy, memset
 
-#include "../helper/cmocka_all.h"                 // for assert_int_equal, CMUnitTest, cmo...
-#include "tss2-tcti/tcti-common.h"  // for header_unmarshal, tpm_header_t
-#include "tss2_common.h"            // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...
-#include "tss2_esys.h"              // for ESYS_CONTEXT, ESYS_TR_NONE, Esys_...
-#include "tss2_tcti.h"              // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CANCEL
-#include "tss2_tpm2_types.h"        // for TPM2_CC_Policy_AC_SendSelect
-#include "util/aux_util.h"          // for UNUSED
+#include "../helper/cmocka_all.h"  // for assert_int_equal, CMUnitTest, cmo...
+#include "tss2-tcti/tcti-common.h" // for header_unmarshal, tpm_header_t
+#include "tss2_common.h"           // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TC...
+#include "tss2_esys.h"             // for ESYS_CONTEXT, ESYS_TR_NONE, Esys_...
+#include "tss2_tcti.h"             // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CANCEL
+#include "tss2_tpm2_types.h"       // for TPM2_CC_Policy_AC_SendSelect
+#include "util/aux_util.h"         // for UNUSED
 
 #define LOGMODULE tests
 #include "util/log.h"
 
-#define TCTI_FAKE_MAGIC 0x46414b4500000000ULL        /* 'FAKE\0' */
+#define TCTI_FAKE_MAGIC   0x46414b4500000000ULL /* 'FAKE\0' */
 #define TCTI_FAKE_VERSION 0x1
 
 const uint8_t yielded_response[] = {
-    0x80, 0x01,                 /* TPM_ST_NO_SESSION */
-    0x00, 0x00, 0x00, 0x0A,     /* Response Size 10 */
-    0x00, 0x00, 0x00, 0x00      /* TPM_RC_YIELDED */
+    0x80, 0x01,             /* TPM_ST_NO_SESSION */
+    0x00, 0x00, 0x00, 0x0A, /* Response Size 10 */
+    0x00, 0x00, 0x00, 0x00  /* TPM_RC_YIELDED */
 };
 
 typedef struct {
-    uint64_t magic;
-    uint32_t version;
+    uint64_t               magic;
+    uint32_t               version;
     TSS2_TCTI_TRANSMIT_FCN transmit;
-    TSS2_TCTI_RECEIVE_FCN receive;
-    TSS2_RC(*finalize) (TSS2_TCTI_CONTEXT * tctiContext);
-    TSS2_RC(*cancel) (TSS2_TCTI_CONTEXT * tctiContext);
-    TSS2_RC(*getPollHandles) (TSS2_TCTI_CONTEXT * tctiContext,
-                           TSS2_TCTI_POLL_HANDLE * handles,
-                           size_t * num_handles);
-    TSS2_RC(*setLocality) (TSS2_TCTI_CONTEXT * tctiContext, uint8_t locality);
+    TSS2_TCTI_RECEIVE_FCN  receive;
+    TSS2_RC (*finalize)(TSS2_TCTI_CONTEXT *tctiContext);
+    TSS2_RC (*cancel)(TSS2_TCTI_CONTEXT *tctiContext);
+    TSS2_RC(*getPollHandles)
+    (TSS2_TCTI_CONTEXT *tctiContext, TSS2_TCTI_POLL_HANDLE *handles, size_t *num_handles);
+    TSS2_RC (*setLocality)(TSS2_TCTI_CONTEXT *tctiContext, uint8_t locality);
 } TSS2_TCTI_CONTEXT_FAKE;
 
 static TSS2_RC
-tcti_fake_policy_ac_sendselect_transmit (
-    TSS2_TCTI_CONTEXT *tcti_ctx,
-    size_t size,
-    const uint8_t *cmd_buf)
-{
+tcti_fake_policy_ac_sendselect_transmit(TSS2_TCTI_CONTEXT *tcti_ctx,
+                                        size_t             size,
+                                        const uint8_t     *cmd_buf) {
     UNUSED(tcti_ctx);
 
-    TSS2_RC rc;
+    TSS2_RC      rc;
     tpm_header_t header;
-    rc = header_unmarshal (cmd_buf, &header);
+    rc = header_unmarshal(cmd_buf, &header);
     if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
@@ -66,11 +63,10 @@ tcti_fake_policy_ac_sendselect_transmit (
 }
 
 static TSS2_RC
-tcti_fake_policy_ac_sendselect_receive (
-    TSS2_TCTI_CONTEXT * tctiContext,
-    size_t * response_size,
-    uint8_t * response_buffer, int32_t timeout)
-{
+tcti_fake_policy_ac_sendselect_receive(TSS2_TCTI_CONTEXT *tctiContext,
+                                       size_t            *response_size,
+                                       uint8_t           *response_buffer,
+                                       int32_t            timeout) {
     UNUSED(tctiContext);
     UNUSED(timeout);
 
@@ -82,16 +78,13 @@ tcti_fake_policy_ac_sendselect_receive (
 }
 
 static void
-tcti_fake_policy_ac_sendselect_finalize (TSS2_TCTI_CONTEXT * tctiContext)
-{
+tcti_fake_policy_ac_sendselect_finalize(TSS2_TCTI_CONTEXT *tctiContext) {
     UNUSED(tctiContext);
 }
 
 static TSS2_RC
-tcti_fake_initialize(TSS2_TCTI_CONTEXT * tctiContext, size_t * contextSize)
-{
-    TSS2_TCTI_CONTEXT_FAKE *tcti_fake =
-        (TSS2_TCTI_CONTEXT_FAKE *) tctiContext;
+tcti_fake_initialize(TSS2_TCTI_CONTEXT *tctiContext, size_t *contextSize) {
+    TSS2_TCTI_CONTEXT_FAKE *tcti_fake = (TSS2_TCTI_CONTEXT_FAKE *)tctiContext;
 
     if (tctiContext == NULL && contextSize == NULL) {
         return TSS2_TCTI_RC_BAD_VALUE;
@@ -115,11 +108,10 @@ tcti_fake_initialize(TSS2_TCTI_CONTEXT * tctiContext, size_t * contextSize)
 }
 
 static int
-setup(void **state)
-{
-    TSS2_RC r;
-    ESYS_CONTEXT *ectx;
-    size_t size = sizeof(TSS2_TCTI_CONTEXT_FAKE);
+setup(void **state) {
+    TSS2_RC            r;
+    ESYS_CONTEXT      *ectx;
+    size_t             size = sizeof(TSS2_TCTI_CONTEXT_FAKE);
     TSS2_TCTI_CONTEXT *tcti = malloc(size);
 
     r = tcti_fake_initialize(tcti, &size);
@@ -131,10 +123,9 @@ setup(void **state)
 }
 
 static int
-teardown(void **state)
-{
+teardown(void **state) {
     TSS2_TCTI_CONTEXT *tcti;
-    ESYS_CONTEXT *ectx = (ESYS_CONTEXT *) * state;
+    ESYS_CONTEXT      *ectx = (ESYS_CONTEXT *)*state;
     Esys_GetTcti(ectx, &tcti);
     Esys_Finalize(&ectx);
     free(tcti);
@@ -142,20 +133,18 @@ teardown(void **state)
 }
 
 static void
-test_policy_ac_sendselect(void **state)
-{
-    TSS2_RC r;
-    ESYS_CONTEXT *ectx = (ESYS_CONTEXT *) * state;
+test_policy_ac_sendselect(void **state) {
+    TSS2_RC       r;
+    ESYS_CONTEXT *ectx = (ESYS_CONTEXT *)*state;
 
-    r = Esys_Policy_AC_SendSelect(ectx, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL, NULL, NULL, 0);
+    r = Esys_Policy_AC_SendSelect(ectx, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, NULL, NULL, NULL,
+                                  0);
 
     assert_int_equal(r, TSS2_RC_SUCCESS);
 }
 
 int
-main(int argc, char *argv[])
-{
+main(int argc, char *argv[]) {
     UNUSED(argc);
     UNUSED(argv);
     const struct CMUnitTest tests[] = {

@@ -8,62 +8,65 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>              // for PRIu32
-#include <openssl/evp.h>           // for EVP_get_digestbyname, EVP_MD, EVP_...
-#include <stdbool.h>               // for bool, false, true
-#include <stdio.h>                 // for fread, fclose, FILE, fopen, sprintf
-#include <stdlib.h>                // for calloc, malloc
-#include <string.h>                // for memcpy, strlen, strcmp, memcmp
-#include <strings.h>               // for strncasecmp
+#include <inttypes.h>    // for PRIu32
+#include <openssl/evp.h> // for EVP_get_digestbyname, EVP_MD, EVP_...
+#include <stdbool.h>     // for bool, false, true
+#include <stdio.h>       // for fread, fclose, FILE, fopen, sprintf
+#include <stdlib.h>      // for calloc, malloc
+#include <string.h>      // for memcpy, strlen, strcmp, memcmp
+#include <strings.h>     // for strncasecmp
 
-#include "ifapi_eventlog.h"        // for CONTENT, CONTENT_TYPE
-#include "ifapi_helpers.h"         // for ifapi_check_json_object_fields
+#include "ifapi_eventlog.h" // for CONTENT, CONTENT_TYPE
+#include "ifapi_helpers.h"  // for ifapi_check_json_object_fields
 #include "ifapi_ima_eventlog.h"
-#include "ifapi_macros.h"          // for goto_if_null2, return_error2, goto...
-#include "tpm_json_deserialize.h"  // for ifapi_get_sub_object, ifapi_json_U...
-#include "tss2_common.h"           // for UINT8, TSS2_RC, TSS2_FAPI_RC_BAD_V...
-#include "tss2_tpm2_types.h"       // for TPM2_SHA1_DIGEST_SIZE, TPM2_SHA512...
+#include "ifapi_macros.h"         // for goto_if_null2, return_error2, goto...
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifapi_json_U...
+#include "tss2_common.h"          // for UINT8, TSS2_RC, TSS2_FAPI_RC_BAD_V...
+#include "tss2_tpm2_types.h"      // for TPM2_SHA1_DIGEST_SIZE, TPM2_SHA512...
 
 #define LOGMODULE fapijson
-#include "util/log.h"              // for return_error, return_if_null, retu...
+#include "util/log.h" // for return_error, return_if_null, retu...
 
 /* Defines from kernel ima.h */
 #define IMA_TEMPLATE_FIELD_ID_MAX_LEN 16
-#define IMA_TEMPLATE_NUM_FIELDS_MAX 15
+#define IMA_TEMPLATE_NUM_FIELDS_MAX   15
 /* Define from kernel crypt.h */
 #define CRYPTO_MAX_ALG_NAME 128
 
-static uint32_t endian_swap_32(uint32_t data) {
+static uint32_t
+endian_swap_32(uint32_t data) {
     uint32_t converted;
     uint8_t *bytes = (uint8_t *)&data;
     uint8_t *tmp = (uint8_t *)&converted;
-    size_t i;
-    for(i=0; i < sizeof(uint32_t); i ++) {
+    size_t   i;
+    for (i = 0; i < sizeof(uint32_t); i++) {
         tmp[i] = bytes[sizeof(uint32_t) - i - 1];
     }
     return converted;
 }
 
-static bool big_endian_arch(void) {
+static bool
+big_endian_arch(void) {
 
     uint32_t test_word;
     uint8_t *test_byte;
 
     test_word = 0xFF000000;
-    test_byte = (uint8_t *) (&test_word);
+    test_byte = (uint8_t *)(&test_word);
     return test_byte[0] == 0xFF;
 }
 
-static bool little_endian_pcr(uint32_t pcr) {
+static bool
+little_endian_pcr(uint32_t pcr) {
 
     uint8_t *test_pcr;
 
-    test_pcr = (uint8_t *) (&pcr);
+    test_pcr = (uint8_t *)(&pcr);
     return test_pcr[0];
 }
 
-static bool need_to_convert_to_big_endian(IFAPI_IMA_TEMPLATE *template)
-{
+static bool
+need_to_convert_to_big_endian(IFAPI_IMA_TEMPLATE *template) {
     return big_endian_arch() && little_endian_pcr(template->header.pcr);
 }
 
@@ -80,8 +83,7 @@ get_json_content(json_object *jso, json_object **jso_sub) {
 }
 
 static TSS2_RC
-add_uint8_ary_to_json(UINT8 *buffer, UINT32 size, json_object *jso, const char *jso_tag)
-{
+add_uint8_ary_to_json(UINT8 *buffer, UINT32 size, json_object *jso, const char *jso_tag) {
     json_object *jso_byte_string = NULL;
 
     return_if_null(buffer, "Bad reference.", TSS2_FAPI_RC_BAD_VALUE);
@@ -106,8 +108,7 @@ add_uint8_ary_to_json(UINT8 *buffer, UINT32 size, json_object *jso, const char *
 }
 
 static TSS2_RC
-add_string_to_json(const char *string, json_object *jso, const char *jso_tag)
-{
+add_string_to_json(const char *string, json_object *jso, const char *jso_tag) {
     json_object *jso_string = NULL;
 
     return_if_null(string, "Bad reference.", TSS2_FAPI_RC_BAD_VALUE);
@@ -123,8 +124,7 @@ add_string_to_json(const char *string, json_object *jso, const char *jso_tag)
 }
 
 static TSS2_RC
-add_number_to_json(UINT32 number, json_object *jso, const char *jso_tag)
-{
+add_number_to_json(UINT32 number, json_object *jso, const char *jso_tag) {
     json_object *jso_number = NULL;
 
     return_if_null(jso, "Bad reference.", TSS2_FAPI_RC_BAD_VALUE);
@@ -139,8 +139,7 @@ add_number_to_json(UINT32 number, json_object *jso, const char *jso_tag)
 }
 
 static bool
-zero_digest(UINT8 *buffer, size_t size)
-{
+zero_digest(UINT8 *buffer, size_t size) {
     if (buffer[0] == 0 && memcmp(&buffer[0], &buffer[1], size - 1) == 0) {
         return true;
     } else {
@@ -149,55 +148,45 @@ zero_digest(UINT8 *buffer, size_t size)
 }
 
 static UINT8 digest_ff[TPM2_SHA512_DIGEST_SIZE] = {
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 };
 
 /* Replace current sha1 digest with digest of 0xff values. */
 static TSS2_RC
 set_ff_digest(json_object *jso) {
-    TSS2_RC r;
-    json_object
-        *jso_digest = NULL,
-        *jso_ary = NULL,
-        *jso_digest_type = NULL;
+    TSS2_RC      r;
+    json_object *jso_digest = NULL, *jso_ary = NULL, *jso_digest_type = NULL;
 
     jso_digest = json_object_new_object();
     return_if_null(jso_digest, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    r = add_uint8_ary_to_json(digest_ff,TPM2_SHA1_DIGEST_SIZE, jso_digest, "digest");
+    r = add_uint8_ary_to_json(digest_ff, TPM2_SHA1_DIGEST_SIZE, jso_digest, "digest");
     goto_if_error2(r, "Add digest to json", error);
 
     jso_digest_type = NULL;
-    jso_digest_type = json_object_new_string ("sha1");
+    jso_digest_type = json_object_new_string("sha1");
     goto_if_null(jso_digest_type, "Out of memory.", TSS2_FAPI_RC_MEMORY, error);
 
     if (json_object_object_add(jso_digest, "hashAlg", jso_digest_type)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.",
-                   error);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.", error);
     }
 
     jso_ary = json_object_new_array();
     goto_if_null(jso_ary, "Out of memory.", TSS2_FAPI_RC_MEMORY, error);
 
     if (json_object_array_add(jso_ary, jso_digest)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.",
-                   error);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.", error);
     }
     json_object_object_del(jso, "digests");
     if (json_object_object_add(jso, "digests", jso_ary)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.",
-                   error);
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.", error);
     }
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     if (jso_digest)
         json_object_put(jso_digest);
     if (jso_digest_type)
@@ -210,7 +199,10 @@ set_ff_digest(json_object *jso) {
 /** Callback for digest of old IMA format.
  */
 static TSS2_RC
-sha_digest_json_cb(UINT8 *digest, UINT8 * buffer, size_t *offset, json_object *jso,
+sha_digest_json_cb(UINT8       *digest,
+                   UINT8       *buffer,
+                   size_t      *offset,
+                   json_object *jso,
                    IFAPI_IMA_TEMPLATE *template) {
     TSS2_RC r;
     UNUSED(template);
@@ -218,8 +210,8 @@ sha_digest_json_cb(UINT8 *digest, UINT8 * buffer, size_t *offset, json_object *j
     LOGBLOB_TRACE(&buffer[*offset], TPM2_SHA1_DIGEST_SIZE, "IMA buffer");
     LOGBLOB_TRACE(digest, TPM2_SHA1_DIGEST_SIZE, "IMA digest");
 
-    if (jso && zero_digest(digest, TPM2_SHA1_DIGEST_SIZE) &&
-        zero_digest(&buffer[*offset], TPM2_SHA1_DIGEST_SIZE)) {
+    if (jso && zero_digest(digest, TPM2_SHA1_DIGEST_SIZE)
+        && zero_digest(&buffer[*offset], TPM2_SHA1_DIGEST_SIZE)) {
         r = set_ff_digest(jso);
         return_if_error(r, "Set 0xff in digest.");
     }
@@ -244,14 +236,17 @@ get_size_from_buffer(UINT8 *buffer, size_t *offset, IFAPI_IMA_TEMPLATE *template
 /** Callback for digest with name of used hash algorithm,
  */
 static TSS2_RC
-digest_with_hash_name_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
-                        IFAPI_IMA_TEMPLATE *template) {
-    TSS2_RC r;
-    char hash_alg[CRYPTO_MAX_ALG_NAME + 1] = { 0 };
-    size_t alg_name_size;
+digest_with_hash_name_cb(UINT8       *digest,
+                         UINT8       *buffer,
+                         size_t      *offset,
+                         json_object *jso,
+                         IFAPI_IMA_TEMPLATE *template) {
+    TSS2_RC       r;
+    char          hash_alg[CRYPTO_MAX_ALG_NAME + 1] = { 0 };
+    size_t        alg_name_size;
     const EVP_MD *md;
-    int digest_size;
-    UINT32 digest_buffer_size;
+    int           digest_size;
+    UINT32        digest_buffer_size;
 
     digest_buffer_size = get_size_from_buffer(buffer, offset, template);
     alg_name_size = strlen((char *)&buffer[*offset]) - 1; /**< strip : */
@@ -274,8 +269,8 @@ digest_with_hash_name_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_obje
     }
     LOGBLOB_TRACE(&buffer[*offset], digest_size, "IMA data_hash");
 
-    if (jso && zero_digest(digest, template->hash_size) &&
-        zero_digest(&buffer[*offset], digest_size)) {
+    if (jso && zero_digest(digest, template->hash_size)
+        && zero_digest(&buffer[*offset], digest_size)) {
         r = set_ff_digest(jso);
         return_if_error(r, "Set 0xff in digest.");
     }
@@ -286,14 +281,17 @@ digest_with_hash_name_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_obje
 /** Callback to get digest with size field (UINT32).
  */
 static TSS2_RC
-signature_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
+signature_cb(UINT8       *digest,
+             UINT8       *buffer,
+             size_t      *offset,
+             json_object *jso,
              IFAPI_IMA_TEMPLATE *template) {
     UNUSED(digest);
     UNUSED(jso);
     UINT32 digest_size;
     UNUSED(template);
 
-    digest_size =  get_size_from_buffer(buffer, offset, template);
+    digest_size = get_size_from_buffer(buffer, offset, template);
     LOGBLOB_TRACE(&buffer[*offset], digest_size, "IMA Signature:");
     *offset += digest_size;
     return TSS2_RC_SUCCESS;
@@ -301,8 +299,12 @@ signature_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
 
 /** Callback to get null terminated name with size field (n-ng).
  */
-static TSS2_RC eventname_ng_json_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
-                                    IFAPI_IMA_TEMPLATE *template) {
+static TSS2_RC
+eventname_ng_json_cb(UINT8       *digest,
+                     UINT8       *buffer,
+                     size_t      *offset,
+                     json_object *jso,
+                     IFAPI_IMA_TEMPLATE *template) {
     size_t size;
     UINT32 size_from_buffer;
     UNUSED(digest);
@@ -316,8 +318,8 @@ static TSS2_RC eventname_ng_json_cb(UINT8 *digest, UINT8 *buffer, size_t *offset
         /* Try with endian swap */
         if (size != size_from_buffer - 1) {
             return_error2(TSS2_FAPI_RC_BAD_VALUE,
-                          "Invalid digest size, string length: %zu size from buffer: %"
-                          PRIu32, size, size_from_buffer);
+                          "Invalid digest size, string length: %zu size from buffer: %" PRIu32,
+                          size, size_from_buffer);
         }
     }
     LOG_TRACE("IMA name: %s", (const char *)&buffer[*offset]);
@@ -328,8 +330,12 @@ static TSS2_RC eventname_ng_json_cb(UINT8 *digest, UINT8 *buffer, size_t *offset
 
 /** Callback to get null terminated name (n).
  */
-static TSS2_RC eventname_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
-                            IFAPI_IMA_TEMPLATE *template) {
+static TSS2_RC
+eventname_cb(UINT8       *digest,
+             UINT8       *buffer,
+             size_t      *offset,
+             json_object *jso,
+             IFAPI_IMA_TEMPLATE *template) {
     size_t size;
     UNUSED(digest);
     UNUSED(jso);
@@ -339,7 +345,7 @@ static TSS2_RC eventname_cb(UINT8 *digest, UINT8 *buffer, size_t *offset, json_o
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Too long event name.");
     }
     LOG_TRACE("IMA name: %s", (const char *)&buffer[*offset]);
-    template->name =  (char *)&buffer[*offset];
+    template->name = (char *)&buffer[*offset];
     *offset += size + 1; /**< with 0 terminator */
     return TSS2_RC_SUCCESS;
 }
@@ -359,18 +365,16 @@ init_event_list_json_cb(json_object **jso) {
 /** Callback to convert header of IMA template to JSON.
  */
 TSS2_RC
-event_header_json_cb(
-    size_t recnum,
-    UINT32 pcr,
-    const char* ima_type,
-    UINT8 *digest,
-    size_t digest_size,
-    json_object *jso_list,
-    json_object **jso)
-{
-    TSS2_RC r;
+event_header_json_cb(size_t        recnum,
+                     UINT32        pcr,
+                     const char   *ima_type,
+                     UINT8        *digest,
+                     size_t        digest_size,
+                     json_object  *jso_list,
+                     json_object **jso) {
+    TSS2_RC      r;
     json_object *jso_digest, *jso_digest_type, *jso_ary, *jso_content;
-    char *hash_name;
+    char        *hash_name;
 
     *jso = json_object_new_object();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
@@ -386,24 +390,23 @@ event_header_json_cb(
 
     jso_digest_type = NULL;
     switch (digest_size) {
-        case TPM2_SHA1_DIGEST_SIZE:
-            hash_name = "sha1";
-            break;
-        case TPM2_SHA256_DIGEST_SIZE:
-            hash_name = "sha256";
-            break;
-        case TPM2_SHA384_DIGEST_SIZE:
-            hash_name = "sha384";
-            break;
-        case TPM2_SHA512_DIGEST_SIZE:
-            hash_name = "sha512";
-            break;
-        default:
-            return_error2(TSS2_FAPI_RC_BAD_VALUE, "Invalid hash size %zu",
-                          digest_size);
+    case TPM2_SHA1_DIGEST_SIZE:
+        hash_name = "sha1";
+        break;
+    case TPM2_SHA256_DIGEST_SIZE:
+        hash_name = "sha256";
+        break;
+    case TPM2_SHA384_DIGEST_SIZE:
+        hash_name = "sha384";
+        break;
+    case TPM2_SHA512_DIGEST_SIZE:
+        hash_name = "sha512";
+        break;
+    default:
+        return_error2(TSS2_FAPI_RC_BAD_VALUE, "Invalid hash size %zu", digest_size);
     }
 
-    jso_digest_type = json_object_new_string (hash_name);
+    jso_digest_type = json_object_new_string(hash_name);
     return_if_null(jso_digest_type, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     if (json_object_object_add(jso_digest, "hashAlg", jso_digest_type)) {
@@ -441,8 +444,8 @@ event_header_json_cb(
 /* Type to store field data and the field callback */
 struct template_field {
     const char *field_id;
-    TSS2_RC (*field_cb) (UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso,
-                         IFAPI_IMA_TEMPLATE *template);
+    TSS2_RC(*field_cb)
+    (UINT8 *digest, UINT8 *buffer, size_t *offset, json_object *jso, IFAPI_IMA_TEMPLATE *template);
 };
 
 /* Type for storing the IMA template descriptor */
@@ -453,44 +456,34 @@ struct template_description {
 
 /* Callbacks to initialize result list and add events to the list */
 struct event_callbacks {
-    TSS2_RC (*init_list_cb) (json_object **jso);
-    TSS2_RC (*add_header_cb) (size_t recnum,
-                              UINT32 pcr,
-                              const char* ima_type,
-                              UINT8 *digest,
-                              size_t digest_size,
-                              json_object *jso_list,
-                              json_object **jso_current_event);
+    TSS2_RC (*init_list_cb)(json_object **jso);
+    TSS2_RC(*add_header_cb)
+    (size_t        recnum,
+     UINT32        pcr,
+     const char   *ima_type,
+     UINT8        *digest,
+     size_t        digest_size,
+     json_object  *jso_list,
+     json_object **jso_current_event);
 };
 
-static struct event_callbacks event_callbacks = {
-    .init_list_cb = init_event_list_json_cb,
-    .add_header_cb = event_header_json_cb
-};
+static struct event_callbacks event_callbacks
+    = { .init_list_cb = init_event_list_json_cb, .add_header_cb = event_header_json_cb };
 
 /*
  * Supported Descriptors and Template Fields.
  */
-static struct template_description template_tab[] = {
-    { .ima_type = "ima",
-      .format = "d|n"},
-    { .ima_type = "ima-ng",
-      .format = "d-ng|n-ng"},
-    { .ima_type = "ima-sig",
-      .format = "d-ng|n-ng|sig"}
-};
+static struct template_description template_tab[]
+    = { { .ima_type = "ima", .format = "d|n" },
+        { .ima_type = "ima-ng", .format = "d-ng|n-ng" },
+        { .ima_type = "ima-sig", .format = "d-ng|n-ng|sig" } };
 
 static struct template_field field_tab[] = {
-    { .field_id = "d",
-      .field_cb = sha_digest_json_cb },
-    { .field_id = "n",
-      .field_cb = eventname_cb },
-    { .field_id = "d-ng",
-      .field_cb = digest_with_hash_name_cb},
-    { .field_id = "n-ng",
-      .field_cb = eventname_ng_json_cb},
-    { .field_id = "sig",
-      .field_cb = signature_cb},
+    { .field_id = "d", .field_cb = sha_digest_json_cb },
+    { .field_id = "n", .field_cb = eventname_cb },
+    { .field_id = "d-ng", .field_cb = digest_with_hash_name_cb },
+    { .field_id = "n-ng", .field_cb = eventname_ng_json_cb },
+    { .field_id = "sig", .field_cb = signature_cb },
 };
 
 /**  Convert the IMA event to output format.
@@ -506,20 +499,16 @@ static struct template_field field_tab[] = {
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  */
 static TSS2_RC
-convert_ima_event_buffer(
-    IFAPI_IMA_TEMPLATE *template,
-    json_object *jso,
-    char **name)
-{
-    TSS2_RC r;
-    size_t offset = 0;
-    size_t i, j;
-    char *copy_of_template_format = NULL;
-    char *copy_of_template_format_orig = NULL;
-    char *current_field;
+convert_ima_event_buffer(IFAPI_IMA_TEMPLATE *template, json_object *jso, char **name) {
+    TSS2_RC                      r;
+    size_t                       offset = 0;
+    size_t                       i, j;
+    char                        *copy_of_template_format = NULL;
+    char                        *copy_of_template_format_orig = NULL;
+    char                        *current_field;
     struct template_description *template_desc = NULL;
-    size_t size_of_template_tab = sizeof(template_tab) / sizeof(template_tab[0]);
-    size_t size_of_field_tab = sizeof(field_tab) / sizeof(field_tab[0]);
+    size_t       size_of_template_tab = sizeof(template_tab) / sizeof(template_tab[0]);
+    size_t       size_of_field_tab = sizeof(field_tab) / sizeof(field_tab[0]);
     json_object *jso_content;
 
     /* Search template decription corresponding to the template type. */
@@ -552,16 +541,17 @@ convert_ima_event_buffer(
         goto_if_null2(field, "Unknown field %s", r, TSS2_FAPI_RC_BAD_VALUE, error, current_field);
 
         /* Convert the IMA data with the found callback. */
-        r = field->field_cb(&template->header.digest[0],
-                            template->event_buffer, &offset, jso, template);
-        *name= template->name;
+        r = field->field_cb(&template->header.digest[0], template->event_buffer, &offset, jso,
+                            template);
+        *name = template->name;
         goto_if_error(r, "Get field", error);
     }
     if (jso) {
         r = get_json_content(jso, &jso_content);
         goto_if_error(r, "Get sub event", error);
 
-        r = add_uint8_ary_to_json(template->event_buffer, template->event_size, jso_content, "template_data");
+        r = add_uint8_ary_to_json(template->event_buffer, template->event_size, jso_content,
+                                  "template_data");
         goto_if_error(r, "Create data to be hashed", error);
     }
 
@@ -586,15 +576,14 @@ error:
  * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
  */
 static TSS2_RC
-read_event_buffer(IFAPI_IMA_TEMPLATE *template, FILE *fp)
-{
-    bool old_ima_format;
+read_event_buffer(IFAPI_IMA_TEMPLATE *template, FILE *fp) {
+    bool   old_ima_format;
     size_t size, rsize;
 
     /* Check IMA  legacy format. */
     if (strcmp(template->ima_type, "ima") == 0) {
         old_ima_format = true;
-         /* Size is fixed for old IMA format. */
+        /* Size is fixed for old IMA format. */
         template->event_size = TPM2_SHA1_DIGEST_SIZE + TCG_EVENT_NAME_LEN_MAX + 1;
         size = TPM2_SHA1_DIGEST_SIZE;
     } else {
@@ -628,10 +617,9 @@ read_event_buffer(IFAPI_IMA_TEMPLATE *template, FILE *fp)
             field_len = endian_swap_32(field_len);
         }
         if (field_len > template->event_size - TPM2_SHA1_DIGEST_SIZE) {
-             return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid ima data");
+            return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid ima data");
         }
-        rsize = fread(template->event_buffer +TPM2_SHA1_DIGEST_SIZE,
-                      field_len, 1, fp);
+        rsize = fread(template->event_buffer + TPM2_SHA1_DIGEST_SIZE, field_len, 1, fp);
         if (rsize != 1) {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid ima data");
         }
@@ -639,8 +627,8 @@ read_event_buffer(IFAPI_IMA_TEMPLATE *template, FILE *fp)
     return TSS2_RC_SUCCESS;
 }
 
-size_t read_ima_header(IFAPI_IMA_TEMPLATE *template, FILE *fp, TSS2_RC *rc)
-{
+size_t
+read_ima_header(IFAPI_IMA_TEMPLATE *template, FILE *fp, TSS2_RC *rc) {
     /* header: pcr register, sha1 digest, size field ima type string, start of ima type */
     size_t header_size = sizeof(UINT32) + TPM2_SHA1_DIGEST_SIZE + sizeof(UINT32) + 3;
     size_t size, rsize;
@@ -663,16 +651,14 @@ size_t read_ima_header(IFAPI_IMA_TEMPLATE *template, FILE *fp, TSS2_RC *rc)
 
     if (memcmp(&template->header.digest[pos_ima_type], "ima", 3) == 0) {
         /* Start of IMA type string found. */
-        memcpy(&template->ima_type_size,
-               &template->header.digest[pos_ima_type - sizeof(UINT32)],
+        memcpy(&template->ima_type_size, &template->header.digest[pos_ima_type - sizeof(UINT32)],
                sizeof(UINT32));
         if (template->convert_to_big_endian) {
             template->ima_type_size = endian_swap_32(template->ima_type_size);
         }
         memcpy(&template->ima_type[0], "ima", 3);
         /* Get the description of the IMA event. */
-        if (template->ima_type_size < 3 ||
-            template->ima_type_size >= TCG_EVENT_NAME_LEN_MAX) {
+        if (template->ima_type_size < 3 || template->ima_type_size >= TCG_EVENT_NAME_LEN_MAX) {
             LOG_ERROR("Invalid ima data");
             *rc = TSS2_FAPI_RC_BAD_VALUE;
             return 0;
@@ -689,7 +675,7 @@ size_t read_ima_header(IFAPI_IMA_TEMPLATE *template, FILE *fp, TSS2_RC *rc)
         } else {
             template->ima_type[3] = '\0';
         }
-        template->hash_alg =  TPM2_ALG_SHA1;
+        template->hash_alg = TPM2_ALG_SHA1;
         template->hash_size = TPM2_SHA1_DIGEST_SIZE;
         return header_size;
     }
@@ -708,17 +694,17 @@ size_t read_ima_header(IFAPI_IMA_TEMPLATE *template, FILE *fp, TSS2_RC *rc)
  *         internal operations or return parameters.
  */
 TSS2_RC
-ifapi_read_ima_event_log(
-    const char *filename,
-    const uint32_t *pcrList,
-    size_t  pcrListSize,
-    json_object **jso_list) {
+ifapi_read_ima_event_log(const char     *filename,
+                         const uint32_t *pcrList,
+                         size_t          pcrListSize,
+                         json_object   **jso_list) {
     TSS2_RC r;
-    FILE *fp = NULL;
+    FILE   *fp = NULL;
     IFAPI_IMA_TEMPLATE template = { 0 };
-    size_t recnum = 0, i;
-    json_object *jso_current_event = NULL;;
-    bool add_event;
+    size_t       recnum = 0, i;
+    json_object *jso_current_event = NULL;
+    ;
+    bool     add_event;
     uint32_t pcr = 0;
 
     return_if_null(jso_list, "Bad reference.", TSS2_FAPI_RC_BAD_VALUE);
@@ -738,8 +724,7 @@ ifapi_read_ima_event_log(
             return_error(r, "Invalid ima data.")
         }
         add_event = true;
-        if (!template.ima_type_size ||
-            template.ima_type_size > TCG_EVENT_NAME_LEN_MAX) {
+        if (!template.ima_type_size || template.ima_type_size > TCG_EVENT_NAME_LEN_MAX) {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid ima type size", error);
         }
 
@@ -747,7 +732,7 @@ ifapi_read_ima_event_log(
         for (i = 0; i < pcrListSize; i++) {
             pcr = template.header.pcr;
             if (template.convert_to_big_endian) {
-                pcr= endian_swap_32(pcr);
+                pcr = endian_swap_32(pcr);
             }
             if (pcrList[i] == pcr)
                 break;
@@ -758,10 +743,9 @@ ifapi_read_ima_event_log(
         }
 
         if (add_event) {
-            r = event_callbacks.add_header_cb(recnum, pcr,
-                                              template.ima_type, template.header.digest,
-                                              template.hash_size,
-                                              *jso_list, &jso_current_event);
+            r = event_callbacks.add_header_cb(recnum, pcr, template.ima_type,
+                                              template.header.digest, template.hash_size, *jso_list,
+                                              &jso_current_event);
             goto_if_error(r, "Add header to event list.", error);
 
             recnum += 1;
@@ -777,12 +761,11 @@ ifapi_read_ima_event_log(
             goto_if_error(r, "Create json event.", error);
         }
         SAFE_FREE(template.event_buffer);
-
     }
     fclose(fp);
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     SAFE_FREE(template.event_buffer);
     if (fp)
         fclose(fp);
@@ -791,11 +774,7 @@ ifapi_read_ima_event_log(
     return r;
 }
 
-static char *field_IFAPI_IMA_EVENT_tab[] = {
-    "template_value",
-    "template_data",
-    "template_name"
-};
+static char *field_IFAPI_IMA_EVENT_tab[] = { "template_value", "template_data", "template_name" };
 
 /** Deserialize a IFAPI_IMA_EVENT_TYPE json object.
  *
@@ -805,15 +784,14 @@ static char *field_IFAPI_IMA_EVENT_tab[] = {
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
 TSS2_RC
-ifapi_json_IFAPI_IMA_EVENT_TYPE_deserialize(json_object *jso, IFAPI_IMA_EVENT_TYPE *out)
-{
+ifapi_json_IFAPI_IMA_EVENT_TYPE_deserialize(json_object *jso, IFAPI_IMA_EVENT_TYPE *out) {
     LOG_TRACE("call");
     return ifapi_json_IFAPI_IMA_EVENT_TYPE_deserialize_txt(jso, out);
 }
 
 typedef struct {
     IFAPI_IMA_EVENT_TYPE in;
-    char *name;
+    char                *name;
 } IFAPI_IFAPI_IMA_EVENT_TYPE_ASSIGN;
 
 static IFAPI_IFAPI_IMA_EVENT_TYPE_ASSIGN deserialize_IFAPI_IMA_EVENT_TYPE_tab[] = {
@@ -830,19 +808,15 @@ static IFAPI_IFAPI_IMA_EVENT_TYPE_ASSIGN deserialize_IFAPI_IMA_EVENT_TYPE_tab[] 
  * @retval TSS2_FAPI_RC_BAD_VALUE if the json object can't be deserialized.
  */
 TSS2_RC
-ifapi_json_IFAPI_IMA_EVENT_TYPE_deserialize_txt(json_object *jso,
-        IFAPI_IMA_EVENT_TYPE *out)
-{
+ifapi_json_IFAPI_IMA_EVENT_TYPE_deserialize_txt(json_object *jso, IFAPI_IMA_EVENT_TYPE *out) {
     LOG_TRACE("call");
     const char *token = json_object_get_string(jso);
-    size_t i;
-    size_t n = sizeof(deserialize_IFAPI_IMA_EVENT_TYPE_tab) /
-        sizeof(deserialize_IFAPI_IMA_EVENT_TYPE_tab[0]);
+    size_t      i;
+    size_t      n = sizeof(deserialize_IFAPI_IMA_EVENT_TYPE_tab)
+               / sizeof(deserialize_IFAPI_IMA_EVENT_TYPE_tab[0]);
     size_t size = strlen(token);
     for (i = 0; i < n; i++) {
-        if (strncasecmp(&token[0],
-                        &deserialize_IFAPI_IMA_EVENT_TYPE_tab[i].name[0],
-                        size) == 0) {
+        if (strncasecmp(&token[0], &deserialize_IFAPI_IMA_EVENT_TYPE_tab[i].name[0], size) == 0) {
             *out = deserialize_IFAPI_IMA_EVENT_TYPE_tab[i].in;
             return TSS2_RC_SUCCESS;
         }
@@ -860,10 +834,9 @@ ifapi_json_IFAPI_IMA_EVENT_TYPE_deserialize_txt(json_object *jso,
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso,  IFAPI_IMA_EVENT *out)
-{
+ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso, IFAPI_IMA_EVENT *out) {
     json_object *jso2;
-    TSS2_RC r;
+    TSS2_RC      r;
 
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -892,8 +865,7 @@ ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso,  IFAPI_IMA_EVENT *out)
 }
 
 TSS2_RC
-ifapi_get_ima_eventname(IFAPI_IMA_EVENT *ima_event, char **name)
-{
+ifapi_get_ima_eventname(IFAPI_IMA_EVENT *ima_event, char **name) {
     TSS2_RC r;
     IFAPI_IMA_TEMPLATE template;
     size_t i;
@@ -901,10 +873,9 @@ ifapi_get_ima_eventname(IFAPI_IMA_EVENT *ima_event, char **name)
 
     memset(&template, 0, sizeof(template));
     for (i = 0; i < n; i++) {
-        if (deserialize_IFAPI_IMA_EVENT_TYPE_tab[i].in ==
-            ima_event->template_name) {
+        if (deserialize_IFAPI_IMA_EVENT_TYPE_tab[i].in == ima_event->template_name) {
             char *tab_name = deserialize_IFAPI_IMA_EVENT_TYPE_tab[i].name;
-            memcpy(&template.ima_type, tab_name, strlen(tab_name)+1);
+            memcpy(&template.ima_type, tab_name, strlen(tab_name) + 1);
             break;
         }
     }

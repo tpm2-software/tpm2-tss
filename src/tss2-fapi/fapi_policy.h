@@ -6,8 +6,4 @@
 #ifndef FAPI_POLICY_H
 #define FAPI_POLICY_H
 
-
-
-
-
 #endif /* FAPI_POLICY_H */

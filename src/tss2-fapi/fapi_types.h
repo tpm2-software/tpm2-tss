@@ -11,9 +11,9 @@
 #include <stdlib.h>
 
 /** The data structure representing an unit8_t array.
-  */
+ */
 typedef struct {
-    size_t size;
+    size_t   size;
     uint8_t *buffer;
 } UINT8_ARY;
 
@@ -22,9 +22,9 @@ typedef struct {
  * The structure is used for the processing of file paths
  */
 typedef struct str_node {
-    char *str;              /**< A string of the string list */
-    bool free_string;       /**< Indicates whether a free has to called on cleanup */
-    struct str_node *next;  /**< Pointer to next element */
+    char            *str;         /**< A string of the string list */
+    bool             free_string; /**< Indicates whether a free has to called on cleanup */
+    struct str_node *next;        /**< Pointer to next element */
 } NODE_STR_T;
 
 /** The data structure storing a linked list of objects.
@@ -32,8 +32,8 @@ typedef struct str_node {
  * The structure is used for the processing of file paths
  */
 typedef struct object_node {
-    void   *object;             /**< The pointer to the object  */
-    size_t size;                /**< Will be used only for BYTE arrays */
+    void               *object; /**< The pointer to the object  */
+    size_t              size;   /**< Will be used only for BYTE arrays */
     struct object_node *next;   /**< Pointer to next element */
 } NODE_OBJECT_T;
 

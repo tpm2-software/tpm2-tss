@@ -8,14 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_esys.h"        // for Esys_Free, Esys_FlushContext, ESYS_TR_NONE
-#include "tss2_tpm2_types.h"  // for TPM2B_AUTH, TPM2B_DATA, TPM2B_PUBLIC
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"       // for Esys_Free, Esys_FlushContext, ESYS_TR_NONE
+#include "tss2_tpm2_types.h" // for TPM2B_AUTH, TPM2B_DATA, TPM2B_PUBLIC
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_INFO
+#include "util/log.h" // for goto_if_error, LOG_ERROR, LOG_INFO
 
 /** This test is intended to test the command Esys_Certify.
  *
@@ -33,22 +33,18 @@
  */
 
 int
-test_esys_certify(ESYS_CONTEXT * esys_context)
-{
+test_esys_certify(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR signHandle = ESYS_TR_NONE;
 
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
-    TPM2B_ATTEST *certifyInfo = NULL;
-    TPMT_SIGNATURE *signature = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
+    TPMT_TK_CREATION    *creationTicket = NULL;
+    TPM2B_ATTEST        *certifyInfo = NULL;
+    TPMT_SIGNATURE      *signature = NULL;
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -103,17 +99,12 @@ test_esys_certify(ESYS_CONTEXT * esys_context)
             },
         };
 
-    TPM2B_AUTH authValue = {
-                .size = 0,
-                .buffer = {}
-    };
-
+    TPM2B_AUTH authValue = { .size = 0, .buffer = {} };
 
     TPM2B_DATA outsideInfo = {
-            .size = 0,
-            .buffer = {},
+        .size = 0,
+        .buffer = {},
     };
-
 
     TPML_PCR_SELECTION creationPCR = {
         .count = 0,
@@ -124,31 +115,19 @@ test_esys_certify(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
-                           &inPublic, &outsideInfo, &creationPCR,
-                           &signHandle, &outPublic, &creationData,
-                           &creationHash, &creationTicket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &signHandle, &outPublic, &creationData, &creationHash, &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
-    TPM2B_DATA qualifyingData = {0};
+    TPM2B_DATA      qualifyingData = { 0 };
     TPMT_SIG_SCHEME inScheme = { .scheme = TPM2_ALG_NULL };
 
-    r = Esys_Certify (
-        esys_context,
-        signHandle,
-        signHandle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        &qualifyingData,
-        &inScheme,
-        &certifyInfo,
-        &signature
-        );
+    r = Esys_Certify(esys_context, signHandle, signHandle, ESYS_TR_PASSWORD, ESYS_TR_PASSWORD,
+                     ESYS_TR_NONE, &qualifyingData, &inScheme, &certifyInfo, &signature);
     goto_if_error(r, "Error: Certify", error);
 
-    r = Esys_FlushContext(esys_context,signHandle);
+    r = Esys_FlushContext(esys_context, signHandle);
     goto_if_error(r, "Error: FlushContext", error);
 
     Esys_Free(outPublic);
@@ -159,7 +138,7 @@ test_esys_certify(ESYS_CONTEXT * esys_context)
     Esys_Free(signature);
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (signHandle != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, signHandle) != TSS2_RC_SUCCESS) {
@@ -176,6 +155,6 @@ test_esys_certify(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_certify(esys_context);
 }

@@ -7,14 +7,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_Free, Esys_FlushContext
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPM2_ALG_SHA256, TPM2B_SE...
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_Free, Esys_FlushContext
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPM2_ALG_SHA256, TPM2B_SE...
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_INFO
+#include "util/log.h" // for goto_if_error, LOG_ERROR, LOG_INFO
 
 /** This test is intended to test policy authentication for the ESYS command
  *  Create.
@@ -39,16 +39,15 @@
  */
 
 int
-test_esys_create_policy_auth(ESYS_CONTEXT * esys_context)
-{
+test_esys_create_policy_auth(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     ESYS_TR trialHandle = ESYS_TR_NONE;
     ESYS_TR policyHandle = ESYS_TR_NONE;
 
-    TPM2B_DIGEST *trialDigest = NULL;
-    TPM2B_PUBLIC *outPublic = NULL;
-    TPM2B_PUBLIC *outPublic2 = NULL;
+    TPM2B_DIGEST  *trialDigest = NULL;
+    TPM2B_PUBLIC  *outPublic = NULL;
+    TPM2B_PUBLIC  *outPublic2 = NULL;
     TPM2B_PRIVATE *outPrivate2 = NULL;
 
     TPMT_SYM_DEF policyAlgo = {
@@ -57,27 +56,23 @@ test_esys_create_policy_auth(ESYS_CONTEXT * esys_context)
         .mode.aes = TPM2_ALG_CFB,
     };
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL, TPM2_SE_TRIAL, &policyAlgo,
-                              TPM2_ALG_SHA256, &trialHandle);
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, TPM2_SE_TRIAL, &policyAlgo, TPM2_ALG_SHA256,
+                              &trialHandle);
     goto_if_error(r, "Error esys start trial session", error);
 
-    r = Esys_PolicyCommandCode(esys_context, trialHandle, ESYS_TR_NONE,
-                               ESYS_TR_NONE, ESYS_TR_NONE, TPM2_CC_Create);
+    r = Esys_PolicyCommandCode(esys_context, trialHandle, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                               TPM2_CC_Create);
     goto_if_error(r, "Error esys policy command code", error);
 
-    r = Esys_PolicyGetDigest(esys_context, trialHandle, ESYS_TR_NONE,
-                             ESYS_TR_NONE, ESYS_TR_NONE, &trialDigest);
+    r = Esys_PolicyGetDigest(esys_context, trialHandle, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                             &trialDigest);
     goto_if_error(r, "Error esys policy get digest", error);
 
     r = Esys_FlushContext(esys_context, trialHandle);
     goto_if_error(r, "Error esys flush context", error);
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -173,11 +168,9 @@ test_esys_create_policy_auth(ESYS_CONTEXT * esys_context)
         .count = 0,
     };
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitivePrimary, &inPublic,
-                           &outsideInfo, &creationPCR, &primaryHandle,
-                           &outPublic, NULL, NULL, NULL);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &primaryHandle, &outPublic, NULL, NULL, NULL);
     goto_if_error(r, "Error esys create primary", error);
 
     LOG_INFO("Created Primary Key");
@@ -185,29 +178,19 @@ test_esys_create_policy_auth(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, primaryHandle, &authValuePrimary);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL, TPM2_SE_POLICY, &policyAlgo,
-                              TPM2_ALG_SHA256, &policyHandle);
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, TPM2_SE_POLICY, &policyAlgo, TPM2_ALG_SHA256,
+                              &policyHandle);
     goto_if_error(r, "Error esys start policy session", error);
 
-    r = Esys_PolicyCommandCode(esys_context, policyHandle, ESYS_TR_NONE,
-                               ESYS_TR_NONE, ESYS_TR_NONE, TPM2_CC_Create);
+    r = Esys_PolicyCommandCode(esys_context, policyHandle, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                               TPM2_CC_Create);
     goto_if_error(r, "Error esys policy command code", error);
 
-    TPM2B_SENSITIVE_CREATE inSensitive2 = {
-        .size = 0,
-        .sensitive = {
-            .userAuth = {
-                 .size = 0,
-                 .buffer = {0}
-             },
-            .data = {
-                 .size = 0,
-                 .buffer = {0}
-             }
-        }
-    };
+    TPM2B_SENSITIVE_CREATE inSensitive2
+        = { .size = 0,
+            .sensitive = { .userAuth = { .size = 0, .buffer = { 0 } },
+                           .data = { .size = 0, .buffer = { 0 } } } };
 
     TPM2B_PUBLIC inPublic2 = {
         .size = 0,
@@ -247,17 +230,16 @@ test_esys_create_policy_auth(ESYS_CONTEXT * esys_context)
 
     TPM2B_DATA outsideInfo2 = {
         .size = 0,
-        .buffer = {}
-        ,
+        .buffer = {},
     };
 
     TPML_PCR_SELECTION creationPCR2 = {
         .count = 0,
     };
 
-    r = Esys_Create(esys_context, primaryHandle, policyHandle, ESYS_TR_NONE,
-                    ESYS_TR_NONE, &inSensitive2, &inPublic2, &outsideInfo2,
-                    &creationPCR2, &outPrivate2, &outPublic2, NULL, NULL, NULL);
+    r = Esys_Create(esys_context, primaryHandle, policyHandle, ESYS_TR_NONE, ESYS_TR_NONE,
+                    &inSensitive2, &inPublic2, &outsideInfo2, &creationPCR2, &outPrivate2,
+                    &outPublic2, NULL, NULL, NULL);
     goto_if_error(r, "Error esys create ", error);
 
     LOG_INFO("\nSecond key created.");
@@ -291,7 +273,7 @@ error:
     }
 
     if (primaryHandle != ESYS_TR_NONE) {
-         if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
+        if (Esys_FlushContext(esys_context, primaryHandle) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup primaryHandle failed.");
         }
     }
@@ -304,6 +286,6 @@ error:
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_create_policy_auth(esys_context);
 }

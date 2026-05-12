@@ -8,11 +8,10 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "tss2_sys.h"       // for TSS2_SYS_CONTEXT, Tss2_Sys_Finalize
-#include "util/aux_util.h"  // for UNUSED
+#include "tss2_sys.h"      // for TSS2_SYS_CONTEXT, Tss2_Sys_Finalize
+#include "util/aux_util.h" // for UNUSED
 
-void Tss2_Sys_Finalize(
-    TSS2_SYS_CONTEXT *sysContext)
-{
+void
+Tss2_Sys_Finalize(TSS2_SYS_CONTEXT *sysContext) {
     UNUSED(sysContext);
 }

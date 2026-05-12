@@ -22,13 +22,13 @@
  */
 #ifndef TCTI_I2C_FTDI_H
 #define TCTI_I2C_FTDI_H
-#include <sys/time.h>  // for timeval
+#include <sys/time.h> // for timeval
 
 /* The default 7-bit I2C device address defined by TCG */
 #define I2C_DEV_ADDR_DEFAULT 0x2E
 
 typedef struct {
-    struct timeval timeout;
+    struct timeval        timeout;
     struct mpsse_context *mpsse;
 } PLATFORM_USERDATA;
 

@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RESMGR_RC_LAYER, TSS2_RES...
-#include "tss2_esys.h"        // for Esys_SetAlgorithmSet, ESYS_CONTEXT, ESY...
-#include "tss2_tpm2_types.h"  // for TPM2_RC_COMMAND_CODE, TPM2_RC_BAD_AUTH
+#include "test-esys.h"       // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RESMGR_RC_LAYER, TSS2_RES...
+#include "tss2_esys.h"       // for Esys_SetAlgorithmSet, ESYS_CONTEXT, ESY...
+#include "tss2_tpm2_types.h" // for TPM2_RC_COMMAND_CODE, TPM2_RC_BAD_AUTH
 
 #define LOGMODULE test
-#include "util/log.h"         // for LOG_WARNING, goto_if_error, number_rc
+#include "util/log.h" // for LOG_WARNING, goto_if_error, number_rc
 
 /** Test the ESYS function Esys_SetAlgorithmSet.
  *
@@ -32,24 +32,17 @@
  */
 
 int
-test_esys_set_algorithm_set(ESYS_CONTEXT * esys_context)
-{
+test_esys_set_algorithm_set(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
-    int failure_return = EXIT_FAILURE;
+    int     failure_return = EXIT_FAILURE;
 
     UINT32 algorithmSet = 0;
 
-    r = Esys_SetAlgorithmSet(
-        esys_context,
-        ESYS_TR_RH_PLATFORM,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        algorithmSet);
+    r = Esys_SetAlgorithmSet(esys_context, ESYS_TR_RH_PLATFORM, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                             ESYS_TR_NONE, algorithmSet);
 
-    if ((r == TPM2_RC_COMMAND_CODE) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
+    if ((r == TPM2_RC_COMMAND_CODE) || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER))
+        || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_SetAlgorithmSet not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;
@@ -65,11 +58,11 @@ test_esys_set_algorithm_set(ESYS_CONTEXT * esys_context)
 
     return EXIT_SUCCESS;
 
- error:
+error:
     return failure_return;
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_set_algorithm_set(esys_context);
 }

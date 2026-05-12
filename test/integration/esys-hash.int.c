@@ -8,14 +8,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_common.h"      // for TSS2_RC
-#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_Hash, ESY...
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPM2B_MAX_BUFFER, TPM2_AL...
+#include "tss2_common.h"     // for TSS2_RC
+#include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_Hash, ESY...
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPM2B_MAX_BUFFER, TPM2_AL...
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error
+#include "util/log.h" // for goto_if_error
 
 /** This test is intended to test the ESYS command  Esys_HASH.
  *
@@ -31,40 +31,30 @@
  */
 
 int
-test_esys_hash(ESYS_CONTEXT * esys_context, ESYS_TR hierarchy)
-{
-    TSS2_RC r;
-    TPM2B_MAX_BUFFER data = { .size = 20,
-                              .buffer={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
-                                       1, 2, 3, 4, 5, 6, 7, 8, 9}};
-    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA256;
-    TPM2B_DIGEST *outHash = NULL;
+test_esys_hash(ESYS_CONTEXT *esys_context, ESYS_TR hierarchy) {
+    TSS2_RC          r;
+    TPM2B_MAX_BUFFER data
+        = { .size = 20, .buffer = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } };
+    TPMI_ALG_HASH      hashAlg = TPM2_ALG_SHA256;
+    TPM2B_DIGEST      *outHash = NULL;
     TPMT_TK_HASHCHECK *validation = NULL;
 
-    r = Esys_Hash(
-        esys_context,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        &data,
-        hashAlg,
-        hierarchy,
-        &outHash,
-        &validation);
+    r = Esys_Hash(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, &data, hashAlg, hierarchy,
+                  &outHash, &validation);
     goto_if_error(r, "Error: Hash", error);
 
     Esys_Free(outHash);
     Esys_Free(validation);
     return EXIT_SUCCESS;
 
- error:
+error:
     Esys_Free(outHash);
     Esys_Free(validation);
     return EXIT_FAILURE;
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     int rc = test_esys_hash(esys_context, ESYS_TR_RH_OWNER);
     if (rc)
         return rc;

@@ -8,13 +8,12 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE, UINT16
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "sysapi_util.h" // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h" // for TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE, UINT16
+#include "tss2_sys.h"    // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
 
-TSS2_RC Tss2_Sys_Abort(
-    TSS2_SYS_CONTEXT *sysContext)
-{
+TSS2_RC
+Tss2_Sys_Abort(TSS2_SYS_CONTEXT *sysContext) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)

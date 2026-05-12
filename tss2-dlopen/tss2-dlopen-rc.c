@@ -14,30 +14,34 @@
  *
  * For new versions of this file, please check:
  * http://github.com/tpm2-software/tpm2-tss/tss2-dlopen
-*/
+ */
 
-#include <dlfcn.h>         // for dlsym, dlopen, RTLD_LOCAL, RTLD_NOW
-#include <stdint.h>        // for uint8_t
-#include <stdio.h>         // for NULL
-#include <tss2/tss2_rc.h>  // for TSS2_RC_HANDLER, Tss2_RC_Decode, Tss2_RC_S...
+#include <dlfcn.h>        // for dlsym, dlopen, RTLD_LOCAL, RTLD_NOW
+#include <stdint.h>       // for uint8_t
+#include <stdio.h>        // for NULL
+#include <tss2/tss2_rc.h> // for TSS2_RC_HANDLER, Tss2_RC_Decode, Tss2_RC_S...
 
-#include "tss2_common.h"   // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_BASE_RC_NOT...
+#include "tss2_common.h" // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_BASE_RC_NOT...
 
-#define str(s) xstr(s)
+#define str(s)  xstr(s)
 #define xstr(s) #s
 
 #ifdef ENABLE_WARN
-#define WARN(str, ...) do { fprintf(stderr, "WARNING: " str "\n", ## __VA_ARGS__); } while (0)
+#define WARN(str, ...)                                                                             \
+    do {                                                                                           \
+        fprintf(stderr, "WARNING: " str "\n", ##__VA_ARGS__);                                      \
+    } while (0)
 #else /* ENABLE_WARN */
-#define WARN(...) do { } while (0)
+#define WARN(...)                                                                                  \
+    do {                                                                                           \
+    } while (0)
 #endif /* ENABLE_WARN */
 
 #define LIB "libtss2-rc.so.0"
 static void *dlhandle = NULL;
 
 static TSS2_RC
-init_dlhandle(void)
-{
+init_dlhandle(void) {
     if (dlhandle)
         return TSS2_RC_SUCCESS;
     dlhandle = dlopen(LIB, RTLD_NOW | RTLD_LOCAL);
@@ -51,12 +55,11 @@ init_dlhandle(void)
 static const char *error = LIB " not found.";
 
 const char *
-Tss2_RC_Decode(TSS2_RC rc)
-{
+Tss2_RC_Decode(TSS2_RC rc) {
     if (init_dlhandle() != TSS2_RC_SUCCESS)
         return error;
 
-    static const char * (*sym) (TSS2_RC rc) = NULL;
+    static const char *(*sym)(TSS2_RC rc) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Tss2_RC_Decode");
     if (!sym) {
@@ -68,12 +71,11 @@ Tss2_RC_Decode(TSS2_RC rc)
 }
 
 TSS2_RC_HANDLER
-Tss2_RC_SetHandler(uint8_t layer, const char *name, TSS2_RC_HANDLER handler)
-{
+Tss2_RC_SetHandler(uint8_t layer, const char *name, TSS2_RC_HANDLER handler) {
     if (init_dlhandle() != TSS2_RC_SUCCESS)
         return NULL;
 
-    TSS2_RC_HANDLER (*sym) (uint8_t layer, const char *name, TSS2_RC_HANDLER handler) = NULL;
+    TSS2_RC_HANDLER (*sym)(uint8_t layer, const char *name, TSS2_RC_HANDLER handler) = NULL;
     if (!sym)
         sym = dlsym(dlhandle, "Tss2_RC_SetHandler");
     if (!sym) {

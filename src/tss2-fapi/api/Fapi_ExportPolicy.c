@@ -8,31 +8,31 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>                     // for PRIu16
-#include <json.h>                         // for json_object_to_json_string_ext
-#include <stdbool.h>                      // for false, true
-#include <string.h>                       // for memset, size_t, NULL
+#include <inttypes.h> // for PRIu16
+#include <json.h>     // for json_object_to_json_string_ext
+#include <stdbool.h>  // for false, true
+#include <string.h>   // for memset, size_t, NULL
 
-#include "fapi_crypto.h"                  // for ifapi_hash_get_digest_size
-#include "fapi_int.h"                     // for IFAPI_ExportPolicy, FAPI_CO...
-#include "fapi_util.h"                    // for ifapi_session_init
-#include "ifapi_helpers.h"                // for ifapi_cleanup_policy, ifapi...
-#include "ifapi_io.h"                     // for ifapi_io_poll
-#include "ifapi_keystore.h"               // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"                 // for check_not_null, statecase
-#include "ifapi_policy.h"                 // for ifapi_calculate_tree
-#include "ifapi_policy_json_serialize.h"  // for ifapi_json_TPMS_POLICY_seri...
-#include "ifapi_policy_store.h"           // for ifapi_policy_store_load_async
-#include "ifapi_policy_types.h"           // for TPMS_POLICY
-#include "ifapi_profiles.h"               // for IFAPI_PROFILES, IFAPI_PROFILE
-#include "tss2_common.h"                  // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_esys.h"                    // for Esys_SetTimeout
-#include "tss2_fapi.h"                    // for FAPI_CONTEXT, Fapi_ExportPo...
-#include "tss2_tcti.h"                    // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"              // for TPML_DIGEST_VALUES, TPMT_HA
+#include "fapi_crypto.h"                 // for ifapi_hash_get_digest_size
+#include "fapi_int.h"                    // for IFAPI_ExportPolicy, FAPI_CO...
+#include "fapi_util.h"                   // for ifapi_session_init
+#include "ifapi_helpers.h"               // for ifapi_cleanup_policy, ifapi...
+#include "ifapi_io.h"                    // for ifapi_io_poll
+#include "ifapi_keystore.h"              // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"                // for check_not_null, statecase
+#include "ifapi_policy.h"                // for ifapi_calculate_tree
+#include "ifapi_policy_json_serialize.h" // for ifapi_json_TPMS_POLICY_seri...
+#include "ifapi_policy_store.h"          // for ifapi_policy_store_load_async
+#include "ifapi_policy_types.h"          // for TPMS_POLICY
+#include "ifapi_profiles.h"              // for IFAPI_PROFILES, IFAPI_PROFILE
+#include "tss2_common.h"                 // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_esys.h"                   // for Esys_SetTimeout
+#include "tss2_fapi.h"                   // for FAPI_CONTEXT, Fapi_ExportPo...
+#include "tss2_tcti.h"                   // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"             // for TPML_DIGEST_VALUES, TPMT_HA
 
 #define LOGMODULE fapi
-#include "util/log.h"                     // for LOG_TRACE, SAFE_FREE, goto_...
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_...
 
 /** One-Call function for Fapi_ExportPolicy
  *
@@ -65,11 +65,7 @@
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_ExportPolicy(
-    FAPI_CONTEXT *context,
-    char   const *path,
-    char        **jsonPolicy)
-{
+Fapi_ExportPolicy(FAPI_CONTEXT *context, char const *path, char **jsonPolicy) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r, r2;
@@ -114,7 +110,6 @@ Fapi_ExportPolicy(
     return_if_error_reset_state(r, "PolicyExport");
 
     return TSS2_RC_SUCCESS;
-
 }
 
 /** Asynchronous function for Fapi_ExportPolicy
@@ -139,10 +134,7 @@ Fapi_ExportPolicy(
  *         config file.
  */
 TSS2_RC
-Fapi_ExportPolicy_Async(
-    FAPI_CONTEXT *context,
-    char   const *path)
-{
+Fapi_ExportPolicy_Async(FAPI_CONTEXT *context, char const *path) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
 
@@ -156,7 +148,7 @@ Fapi_ExportPolicy_Async(
     memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
     /* Helpful alias pointers */
-    IFAPI_ExportPolicy * command = &context->cmd.ExportPolicy;
+    IFAPI_ExportPolicy *command = &context->cmd.ExportPolicy;
 
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
@@ -170,7 +162,7 @@ Fapi_ExportPolicy_Async(
     }
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->path, path, r ,error_cleanup);
+    strdup_check(command->path, path, r, error_cleanup);
     memset(&command->object, 0, sizeof(IFAPI_OBJECT));
     memset(&command->policy, 0, sizeof(TPMS_POLICY));
 
@@ -211,126 +203,113 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-Fapi_ExportPolicy_Finish(
-    FAPI_CONTEXT *context,
-    char        **jsonPolicy)
-{
+Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
     LOG_TRACE("called for context:%p", context);
 
     json_object *jso = NULL;
-    TSS2_RC r = TSS2_RC_SUCCESS;
-    size_t hashSize, digestIdx, i;
+    TSS2_RC      r = TSS2_RC_SUCCESS;
+    size_t       hashSize, digestIdx, i;
 
     /* Check for NULL parameters */
     check_not_null(context);
     check_not_null(jsonPolicy);
 
     /* Helpful alias pointers */
-    IFAPI_ExportPolicy * command = &context->cmd.ExportPolicy;
+    IFAPI_ExportPolicy *command = &context->cmd.ExportPolicy;
 
     switch (context->state) {
-        statecase(context->state, POLICY_EXPORT_READ_POLICY);
-            /* This is the entry point if a policy from the policy store shall
-               be exported. */
-            /* Load the policy to be exported from the policy store. */
-            r = ifapi_policy_store_load_async(&context->pstore, &context->io,
-                                              command->path);
-            goto_if_error2(r, "Can't open: %s", error_cleanup,
-                    command->path);
-            fallthrough;
+    statecase(context->state, POLICY_EXPORT_READ_POLICY);
+        /* This is the entry point if a policy from the policy store shall
+           be exported. */
+        /* Load the policy to be exported from the policy store. */
+        r = ifapi_policy_store_load_async(&context->pstore, &context->io, command->path);
+        goto_if_error2(r, "Can't open: %s", error_cleanup, command->path);
+        fallthrough;
 
-        statecase(context->state, POLICY_EXPORT_READ_POLICY_FINISH);
-            r = ifapi_policy_store_load_finish(&context->pstore, &context->io, &command->policy);
+    statecase(context->state, POLICY_EXPORT_READ_POLICY_FINISH);
+        r = ifapi_policy_store_load_finish(&context->pstore, &context->io, &command->policy);
+        return_try_again(r);
+        return_if_error_reset_state(r, "read_finish failed");
+
+        /* Start with digest computation from default profile. */
+        command->hashAlg = context->profiles.default_profile.nameAlg;
+        command->profile_idx = 0;
+        fallthrough;
+
+    statecase(context->state, POLICY_EXPORT_CHECK_DIGEST);
+        /* Check whether a policy digest was computed for the default name hash alg. */
+        command->compute_policy = true;
+        for (i = 0; i < command->policy.policyDigests.count; i++) {
+            if (command->policy.policyDigests.digests[i].hashAlg == command->hashAlg) {
+                command->compute_policy = false;
+                break;
+            }
+        }
+        fallthrough;
+
+    statecase(context->state, POLICY_EXPORT_COMPUTE_POLICY_DIGEST);
+        if (command->compute_policy) {
+            /* Compute policy digest for the current hash alg */
+            if (!(hashSize = ifapi_hash_get_digest_size(command->hashAlg))) {
+                goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED,
+                           "Unsupported hash algorithm (%" PRIu16 ")", error_cleanup,
+                           command->hashAlg);
+            }
+            r = ifapi_calculate_tree(context, NULL, &command->policy, command->hashAlg, &digestIdx,
+                                     &hashSize);
             return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+        }
 
-            /* Start with digest computation from default profile. */
-            command->hashAlg = context->profiles.default_profile.nameAlg;
-            command->profile_idx = 0;
-            fallthrough;
-
-        statecase(context->state, POLICY_EXPORT_CHECK_DIGEST);
-            /* Check whether a policy digest was computed for the default name hash alg. */
-            command->compute_policy = true;
-            for (i = 0; i < command->policy.policyDigests.count; i++) {
-                if (command->policy.policyDigests.digests[i].hashAlg == command->hashAlg) {
-                    command->compute_policy = false;
-                    break;
-                }
+        if (r) {
+            /* The computation of the policy digest was not possible. */
+            LOG_WARNING("The computation of the policy digest was not possible.");
+        } else {
+            /* Loop for all hash algs in current profiles. */
+            if (command->profile_idx < context->profiles.num_profiles) {
+                command->hashAlg = context->profiles.profiles[command->profile_idx].profile.nameAlg;
+                command->profile_idx++;
+                context->state = POLICY_EXPORT_CHECK_DIGEST;
+                return TSS2_FAPI_RC_TRY_AGAIN;
             }
-            fallthrough;
+        }
 
-        statecase(context->state, POLICY_EXPORT_COMPUTE_POLICY_DIGEST);
-            if (command->compute_policy) {
-                /* Compute policy digest for the current hash alg */
-                if (!(hashSize = ifapi_hash_get_digest_size(command->hashAlg))) {
-                    goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED,
-                               "Unsupported hash algorithm (%" PRIu16 ")",
-                               error_cleanup, command->hashAlg);
-                }
-                r = ifapi_calculate_tree(context, NULL,
-                                         &command->policy, command->hashAlg,
-                                         &digestIdx, &hashSize);
-                return_try_again(r);
-            }
+        /* Serialize the policy to JSON. */
+        r = ifapi_json_TPMS_POLICY_serialize(&command->policy, &jso);
+        goto_if_error(r, "Serialize policy", error_cleanup);
 
-            if (r) {
-                /* The computation of the policy digest was not possible. */
-                LOG_WARNING("The computation of the policy digest was not possible.");
-            } else {
-                /* Loop for all hash algs in current profiles. */
-                if (command->profile_idx < context->profiles.num_profiles) {
-                    command->hashAlg =
-                        context->profiles.profiles[command->profile_idx].profile.nameAlg;
-                    command->profile_idx++;
-                    context->state = POLICY_EXPORT_CHECK_DIGEST;
-                    return TSS2_FAPI_RC_TRY_AGAIN;
-                }
-            }
+        /* Duplicate the JSON string to be returned to the caller. */
+        strdup_check(*jsonPolicy, json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY), r,
+                     error_cleanup);
 
-            /* Serialize the policy to JSON. */
-            r = ifapi_json_TPMS_POLICY_serialize(&command->policy, &jso);
-            goto_if_error(r, "Serialize policy", error_cleanup);
+        break;
 
-            /* Duplicate the JSON string to be returned to the caller. */
-            strdup_check(*jsonPolicy,
-                    json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY),
-                    r, error_cleanup);
+    statecase(context->state, POLICY_EXPORT_READ_OBJECT);
+        /* This is the entry point if a policy for a key from the key store
+           shall be exported. */
+        memset(&command->object, 0, sizeof(IFAPI_OBJECT));
+        /* Load the key meta data from the keystore. */
+        r = ifapi_keystore_load_async(&context->keystore, &context->io, command->path);
+        goto_if_error2(r, "Could not open: %s", error_cleanup, command->path);
+        fallthrough;
 
-            break;
+    statecase(context->state, POLICY_EXPORT_READ_OBJECT_FINISH);
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, &command->object);
+        return_try_again(r);
+        goto_if_error(r, "read_finish failed", error_cleanup);
 
-        statecase(context->state, POLICY_EXPORT_READ_OBJECT);
-            /* This is the entry point if a policy for a key from the key store
-               shall be exported. */
-            memset(&command->object, 0, sizeof(IFAPI_OBJECT));
-            /* Load the key meta data from the keystore. */
-            r = ifapi_keystore_load_async(&context->keystore, &context->io,
-                                          command->path);
-            goto_if_error2(r, "Could not open: %s", error_cleanup, command->path);
-            fallthrough;
+        goto_if_null2(command->object.policy, "Object has no policy", r, TSS2_FAPI_RC_BAD_PATH,
+                      error_cleanup);
 
-        statecase(context->state, POLICY_EXPORT_READ_OBJECT_FINISH);
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io,
-                                           &command->object);
-            return_try_again(r);
-            goto_if_error(r, "read_finish failed", error_cleanup);
+        /* Serialize the policy to JSON. */
+        r = ifapi_json_TPMS_POLICY_serialize(context->cmd.ExportPolicy.object.policy, &jso);
+        goto_if_error(r, "Serialize policy", error_cleanup);
 
-            goto_if_null2(command->object.policy,
-                          "Object has no policy",
-                          r, TSS2_FAPI_RC_BAD_PATH, error_cleanup);
+        /* Duplicate the JSON string to be returned to the caller. */
+        strdup_check(*jsonPolicy, json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY), r,
+                     error_cleanup);
+        break;
 
-            /* Serialize the policy to JSON. */
-            r = ifapi_json_TPMS_POLICY_serialize(context->
-                cmd.ExportPolicy.object.policy, &jso);
-            goto_if_error(r, "Serialize policy", error_cleanup);
-
-            /* Duplicate the JSON string to be returned to the caller. */
-            strdup_check(*jsonPolicy,
-                    json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY),
-                    r, error_cleanup);
-            break;
-
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
     /* Cleanup any intermediate results and state stored in the context. */

@@ -5,14 +5,14 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_EvictControl, Esys_T...
-#include "tss2_tpm2_types.h"  // for TPM2B_SENSITIVE_CREATE, TPM2_PERSISTENT...
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_EvictControl, Esys_T...
+#include "tss2_tpm2_types.h" // for TPM2B_SENSITIVE_CREATE, TPM2_PERSISTENT...
 
 #define LOGMODULE test
-#include "util/log.h"         // for LOG_ERROR, goto_if_error, LOG_INFO
+#include "util/log.h" // for LOG_ERROR, goto_if_error, LOG_INFO
 
 /** This tests the Esys_TR_ToTPMPublic function by
  *  creating a Primary Object Key and then attempting to retrieve
@@ -31,18 +31,14 @@
  */
 
 int
-test_esys_tr_toTpmPublic_key(ESYS_CONTEXT * ectx)
-{
+test_esys_tr_toTpmPublic_key(ESYS_CONTEXT *ectx) {
     int rc = EXIT_FAILURE;
 
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
     ESYS_TR keyHandle = ESYS_TR_NONE;
 
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -103,10 +99,8 @@ test_esys_tr_toTpmPublic_key(ESYS_CONTEXT * ectx)
     };
 
     /* create a key */
-    r = Esys_CreatePrimary(ectx, ESYS_TR_RH_OWNER,
-                           ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                           &inSensitivePrimary, &inPublic, &outsideInfo,
-                           &creationPCR,
+    r = Esys_CreatePrimary(ectx, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                           &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
                            &primaryHandle, NULL, NULL, NULL, NULL);
     goto_if_error(r, "Create primary", out);
 
@@ -121,9 +115,8 @@ test_esys_tr_toTpmPublic_key(ESYS_CONTEXT * ectx)
     }
 
     /* make it persistent */
-    r = Esys_EvictControl(ectx, ESYS_TR_RH_OWNER, primaryHandle,
-                          ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                          TPM2_PERSISTENT_FIRST, &keyHandle);
+    r = Esys_EvictControl(ectx, ESYS_TR_RH_OWNER, primaryHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                          ESYS_TR_NONE, TPM2_PERSISTENT_FIRST, &keyHandle);
     goto_if_error(r, "EvictControl make persistent", error);
 
     /* handle should be persistent */
@@ -144,9 +137,8 @@ error:
         LOG_ERROR("TR close on key object");
     }
 
-    r = Esys_EvictControl(ectx, ESYS_TR_RH_OWNER, keyHandle,
-                          ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
-                          TPM2_PERSISTENT_FIRST, &keyHandle);
+    r = Esys_EvictControl(ectx, ESYS_TR_RH_OWNER, keyHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                          ESYS_TR_NONE, TPM2_PERSISTENT_FIRST, &keyHandle);
     if (r != TSS2_RC_SUCCESS) {
         rc = EXIT_FAILURE;
         LOG_ERROR("Esys_EvictControl");
@@ -157,6 +149,6 @@ out:
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_tr_toTpmPublic_key(esys_context);
 }

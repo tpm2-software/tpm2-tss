@@ -8,25 +8,25 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>             // for json_object_put, json_tokener_parse
-#include <stdint.h>           // for uint8_t
-#include <stdlib.h>           // for NULL, size_t, malloc
-#include <string.h>           // for memset, memcmp, memcpy
+#include <json.h>   // for json_object_put, json_tokener_parse
+#include <stdint.h> // for uint8_t
+#include <stdlib.h> // for NULL, size_t, malloc
+#include <string.h> // for memset, memcmp, memcpy
 
-#include "fapi_crypto.h"      // for ifapi_verify_signature_quote
-#include "fapi_int.h"         // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
-#include "fapi_util.h"        // for ifapi_non_tpm_mode_init
-#include "ifapi_eventlog.h"   // for FAPI_QUOTE_INFO
-#include "ifapi_helpers.h"    // for ifapi_calculate_pcr_digest, ifapi_get_q...
-#include "ifapi_io.h"         // for ifapi_io_poll
-#include "ifapi_keystore.h"   // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"     // for check_not_null, strdup_check, return_if...
-#include "tss2_common.h"      // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_fapi.h"        // for FAPI_CONTEXT, Fapi_VerifyQuote, Fapi_Ve...
-#include "tss2_tpm2_types.h"  // for TPM2B_DATA, TPM2B_ATTEST, TPMS_ATTEST
+#include "fapi_crypto.h"     // for ifapi_verify_signature_quote
+#include "fapi_int.h"        // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"       // for ifapi_non_tpm_mode_init
+#include "ifapi_eventlog.h"  // for FAPI_QUOTE_INFO
+#include "ifapi_helpers.h"   // for ifapi_calculate_pcr_digest, ifapi_get_q...
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"    // for check_not_null, strdup_check, return_if...
+#include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_VerifyQuote, Fapi_Ve...
+#include "tss2_tpm2_types.h" // for TPM2B_DATA, TPM2B_ATTEST, TPMS_ATTEST
 
 #define LOGMODULE fapi
-#include "util/log.h"         // for LOG_TRACE, SAFE_FREE, goto_if_error
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
 
 /** One-Call function for Fapi_VerifyQuote
  *
@@ -68,16 +68,14 @@
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_VerifyQuote(
-    FAPI_CONTEXT  *context,
-    char    const *publicKeyPath,
-    uint8_t const *qualifyingData,
-    size_t         qualifyingDataSize,
-    char    const *quoteInfo,
-    uint8_t const *signature,
-    size_t         signatureSize,
-    char           const *pcrLog)
-{
+Fapi_VerifyQuote(FAPI_CONTEXT  *context,
+                 char const    *publicKeyPath,
+                 uint8_t const *qualifyingData,
+                 size_t         qualifyingDataSize,
+                 char const    *quoteInfo,
+                 uint8_t const *signature,
+                 size_t         signatureSize,
+                 char const    *pcrLog) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -88,10 +86,8 @@ Fapi_VerifyQuote(
     check_not_null(quoteInfo);
     check_not_null(signature);
 
-    r = Fapi_VerifyQuote_Async(context, publicKeyPath,
-                               qualifyingData, qualifyingDataSize,
-                               quoteInfo, signature,
-                               signatureSize, pcrLog);
+    r = Fapi_VerifyQuote_Async(context, publicKeyPath, qualifyingData, qualifyingDataSize,
+                               quoteInfo, signature, signatureSize, pcrLog);
     return_if_error_reset_state(r, "Key_VerifyQuote");
 
     do {
@@ -147,16 +143,14 @@ Fapi_VerifyQuote(
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_VerifyQuote_Async(
-    FAPI_CONTEXT  *context,
-    char    const *publicKeyPath,
-    uint8_t const *qualifyingData,
-    size_t         qualifyingDataSize,
-    char    const *quoteInfo,
-    uint8_t const *signature,
-    size_t         signatureSize,
-    char    const *pcrLog)
-{
+Fapi_VerifyQuote_Async(FAPI_CONTEXT  *context,
+                       char const    *publicKeyPath,
+                       uint8_t const *qualifyingData,
+                       size_t         qualifyingDataSize,
+                       char const    *quoteInfo,
+                       uint8_t const *signature,
+                       size_t         signatureSize,
+                       char const    *pcrLog) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("publicKeyPath: %s", publicKeyPath);
     if (qualifyingData) {
@@ -194,7 +188,7 @@ Fapi_VerifyQuote_Async(
     }
 
     /* Helpful alias pointers */
-    IFAPI_PCR * command = &context->cmd.pcr;
+    IFAPI_PCR *command = &context->cmd.pcr;
 
     if (qualifyingDataSize > sizeof(command->qualifyingData.buffer)) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "qualifyingDataSize too large.");
@@ -204,9 +198,8 @@ Fapi_VerifyQuote_Async(
     return_if_error(r, "Initialize VerifyQuote");
 
     /* Copy parameters to context for use during _Finish. */
-    uint8_t * signatureBuffer = malloc(signatureSize);
-    goto_if_null2(signatureBuffer, "Out of memory",
-            r, TSS2_FAPI_RC_MEMORY, error_cleanup);
+    uint8_t *signatureBuffer = malloc(signatureSize);
+    goto_if_null2(signatureBuffer, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
     memcpy(signatureBuffer, signature, signatureSize);
     command->signature = signatureBuffer;
     command->signatureSize = signatureSize;
@@ -217,9 +210,8 @@ Fapi_VerifyQuote_Async(
     command->event_list = NULL;
 
     if (qualifyingData != NULL) {
-        FAPI_COPY_DIGEST(&command->qualifyingData.buffer[0],
-                command->qualifyingData.size,
-                qualifyingData, qualifyingDataSize);
+        FAPI_COPY_DIGEST(&command->qualifyingData.buffer[0], command->qualifyingData.size,
+                         qualifyingData, qualifyingDataSize);
     } else {
         command->qualifyingData.size = 0;
     }
@@ -266,12 +258,10 @@ error_cleanup:
  *         be verified
  */
 TSS2_RC
-Fapi_VerifyQuote_Finish(
-    FAPI_CONTEXT  *context)
-{
+Fapi_VerifyQuote_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     IFAPI_OBJECT key_object;
     TPM2B_ATTEST attest2b;
 
@@ -279,69 +269,65 @@ Fapi_VerifyQuote_Finish(
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_PCR * command = &context->cmd.pcr;
+    IFAPI_PCR *command = &context->cmd.pcr;
 
     memset(&key_object, 0, sizeof(IFAPI_OBJECT));
 
     switch (context->state) {
-        statecase(context->state, VERIFY_QUOTE_READ);
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io, &key_object);
-            return_try_again(r);
-            goto_if_error_reset_state(r, "read_finish failed", error_cleanup);
+    statecase(context->state, VERIFY_QUOTE_READ);
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, &key_object);
+        return_try_again(r);
+        goto_if_error_reset_state(r, "read_finish failed", error_cleanup);
 
-            /* Recalculate the quote-info and attest2b buffer. */
-            r = ifapi_get_quote_info(command->quoteInfo, &attest2b,
-                                     &command->fapi_quote_info);
-            goto_if_error(r, "Get quote info.", error_cleanup);
+        /* Recalculate the quote-info and attest2b buffer. */
+        r = ifapi_get_quote_info(command->quoteInfo, &attest2b, &command->fapi_quote_info);
+        goto_if_error(r, "Get quote info.", error_cleanup);
 
-            if (command->fapi_quote_info.attest.magic != TPM2_GENERATED_VALUE) {
-                goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
-                           "Attest without TPM2 generated value", error_cleanup);
-            }
+        if (command->fapi_quote_info.attest.magic != TPM2_GENERATED_VALUE) {
+            goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
+                       "Attest without TPM2 generated value", error_cleanup);
+        }
 
-            /* Verify the signature over the attest2b structure. */
-            r = ifapi_verify_signature_quote(&key_object,
-                                             command->signature,
-                                             command->signatureSize,
-                                             &attest2b.attestationData[0],
-                                             attest2b.size,
-                                             &command->fapi_quote_info.sig_scheme);
-            goto_if_error(r, "Verify signature.", error_cleanup);
+        /* Verify the signature over the attest2b structure. */
+        r = ifapi_verify_signature_quote(&key_object, command->signature, command->signatureSize,
+                                         &attest2b.attestationData[0], attest2b.size,
+                                         &command->fapi_quote_info.sig_scheme);
+        goto_if_error(r, "Verify signature.", error_cleanup);
 
-            /* Check qualifying data */
-            if (command->qualifyingData.size != command->fapi_quote_info.attest.extraData.size ||
-                memcmp(&command->qualifyingData.buffer[0],
-                       &command->fapi_quote_info.attest.extraData.buffer[0],
-                       command->qualifyingData.size) != 0) {
-                context->state = FAPI_STATE_INIT;
-                goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
-                           "Invalid qualifying data for quote", error_cleanup);
-            }
+        /* Check qualifying data */
+        if (command->qualifyingData.size != command->fapi_quote_info.attest.extraData.size
+            || memcmp(&command->qualifyingData.buffer[0],
+                      &command->fapi_quote_info.attest.extraData.buffer[0],
+                      command->qualifyingData.size)
+                   != 0) {
+            context->state = FAPI_STATE_INIT;
+            goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
+                       "Invalid qualifying data for quote", error_cleanup);
+        }
 
-            /* If no logData was provided then the operation is done. */
-            if (!command->logData) {
-                context->state = FAPI_STATE_INIT;
-                break;
-            }
-
-            /* If logData was provided then the pcr_digests need to be recalculated
-               and verified against the quote_info. */
-
-            /* Parse the logData JSON. */
-            command->event_list = json_tokener_parse(context->cmd.pcr.logData);
-            if (!command->event_list) {
-                goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Bad value for logData", error_cleanup);
-            }
-
-            /* Recalculate and verify the PCR digests. */
-            r = ifapi_calculate_pcr_digest(command->event_list,
-                                           &command->fapi_quote_info);
-
-            goto_if_error(r, "Verify event list.", error_cleanup);
-
+        /* If no logData was provided then the operation is done. */
+        if (!command->logData) {
+            context->state = FAPI_STATE_INIT;
             break;
+        }
 
-        statecasedefault(context->state);
+        /* If logData was provided then the pcr_digests need to be recalculated
+           and verified against the quote_info. */
+
+        /* Parse the logData JSON. */
+        command->event_list = json_tokener_parse(context->cmd.pcr.logData);
+        if (!command->event_list) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Bad value for logData", error_cleanup);
+        }
+
+        /* Recalculate and verify the PCR digests. */
+        r = ifapi_calculate_pcr_digest(command->event_list, &command->fapi_quote_info);
+
+        goto_if_error(r, "Verify event list.", error_cleanup);
+
+        break;
+
+    statecasedefault(context->state);
     }
 
 error_cleanup:

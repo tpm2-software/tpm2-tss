@@ -55,6 +55,9 @@ EXPORTS
     Fapi_Sign
     Fapi_Sign_Async
     Fapi_Sign_Finish
+    Fapi_DigestAndSign
+    Fapi_DigestAndSign_Async
+    Fapi_DigestAndSign_Finish
     Fapi_VerifySignature
     Fapi_VerifySignature_Async
     Fapi_VerifySignature_Finish

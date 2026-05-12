@@ -8,27 +8,25 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>             // for json_object_new_string, json_object
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, size_t, sprintf
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for strncmp
+#include <json.h>   // for json_object_new_string, json_object
+#include <stdint.h> // for uint8_t
+#include <stdio.h>  // for NULL, size_t, sprintf
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for strncmp
 
-#include "test-fapi.h"        // for init_fapi, fapi_profile, test_invoke_fapi
-#include "tss2_common.h"      // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SUCCESS
-#include "tss2_fapi.h"        // for Fapi_CreateKey, Fapi_Delete, Fapi_Finalize
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "test-fapi.h"       // for init_fapi, fapi_profile, test_invoke_fapi
+#include "tss2_common.h"     // for TSS2_FAPI_RC_BAD_VALUE, TSS2_RC_SUCCESS
+#include "tss2_fapi.h"       // for Fapi_CreateKey, Fapi_Delete, Fapi_Finalize
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, SAFE_FREE, UNUSED, retur...
+#include "util/log.h" // for goto_if_error, SAFE_FREE, UNUSED, retur...
 
-#define PASSWORD "abc"
-#define SIGN_TEMPLATE  "sign,noDa"
-
+#define PASSWORD      "abc"
+#define SIGN_TEMPLATE "sign,noDa"
 
 json_object *
-get_json_hex_string(const uint8_t *buffer, size_t size)
-{
+get_json_hex_string(const uint8_t *buffer, size_t size) {
 
     char hex_string[size * 2 + 1];
 
@@ -41,12 +39,7 @@ get_json_hex_string(const uint8_t *buffer, size_t size)
 }
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -73,13 +66,12 @@ auth_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
-{
-    TSS2_RC        r;
-    char          *sigscheme = NULL;
-    uint8_t       *signature = NULL;
-    char          *publicKey = NULL;
-    char          *path_list = NULL;
+test_fapi_key_create_null_sign(FAPI_CONTEXT *context) {
+    TSS2_RC  r;
+    char    *sigscheme = NULL;
+    uint8_t *signature = NULL;
+    char    *publicKey = NULL;
+    char    *path_list = NULL;
 
     if (strncmp("P_ECC", fapi_profile, 5) != 0)
         sigscheme = "RSA_PSS";
@@ -90,8 +82,7 @@ test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
     r = Fapi_SetAuthCB(context, auth_callback, NULL);
     goto_if_error(r, "Error SetPolicyAuthCallback", error);
 
-    r = Fapi_CreateKey(context, "HN/myNullPrimary", "noDa,0x81000004", "",
-                       PASSWORD);
+    r = Fapi_CreateKey(context, "HN/myNullPrimary", "noDa,0x81000004", "", PASSWORD);
 
     if (r == TSS2_RC_SUCCESS) {
         goto_if_error(r, "Persistent handle not allowed.", error);
@@ -100,8 +91,7 @@ test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
         goto_if_error(r, "Wrong check persistent.", error);
     }
 
-    r = Fapi_CreateKey(context, "HN/myNullPrimary", "restricted,decrypt,noDa", "",
-                       NULL);
+    r = Fapi_CreateKey(context, "HN/myNullPrimary", "restricted,decrypt,noDa", "", NULL);
 
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
@@ -115,29 +105,23 @@ test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
         goto_if_error(r, "Wrong check persistent.", error);
     }
 
-    r = Fapi_CreateKey(context, "HN/myNullPrimary/myNullSignKey", SIGN_TEMPLATE, "",
-                       PASSWORD);
+    r = Fapi_CreateKey(context, "HN/myNullPrimary/myNullSignKey", SIGN_TEMPLATE, "", PASSWORD);
 
     goto_if_error(r, "Error Fapi_CreateKey", error);
     size_t signatureSize = 0;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x67, 0x68
-        }
-    };
+    TPM2B_DIGEST digest
+        = { .size = 32,
+            .buffer = { 0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+                        0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x31, 0xa0,
+                        0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x67, 0x68 } };
 
-    r = Fapi_Sign(context, "HN/myNullPrimary/myNullSignKey", sigscheme,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, NULL);
+    r = Fapi_Sign(context, "HN/myNullPrimary/myNullSignKey", sigscheme, &digest.buffer[0],
+                  digest.size, &signature, &signatureSize, &publicKey, NULL);
     goto_if_error(r, "Error Fapi_Sign", error);
 
-    r = Fapi_VerifySignature(context, "HN/myNullPrimary/myNullSignKey",
-                  &digest.buffer[0], digest.size, signature, signatureSize);
+    r = Fapi_VerifySignature(context, "HN/myNullPrimary/myNullSignKey", &digest.buffer[0],
+                             digest.size, signature, signatureSize);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
     Fapi_Finalize(&context);
@@ -146,8 +130,7 @@ test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
         goto error;
 
     /* Test the creation of a primary in the storage hierarchy. */
-    r = Fapi_CreateKey(context, "HS/myPrimary", "noDa", "",
-                        PASSWORD);
+    r = Fapi_CreateKey(context, "HS/myPrimary", "noDa", "", PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     r = Fapi_Delete(context, "HS/myPrimary");
@@ -155,42 +138,39 @@ test_fapi_key_create_null_sign(FAPI_CONTEXT *context)
 
     /* Test the creation of a primary in the storage hierarchy with a policy. */
 
-    char *policy_name = "/policy/pol_pcr16_0";
-    const char *json_policy =
-        "{"                                         \
-        "\"description\":\"Description pol_16_0\"," \
-        "\"policy\":[" \
-        "{" \
-            "\"type\":\"POLICYPCR\"," \
-            "\"pcrs\":[" \
-                "{" \
-                    "\"pcr\":16," \
-                    "\"hashAlg\":\"TPM2_ALG_SHA256\"," \
-                    "\"digest\":\"00000000000000000000000000000000000000000000000000000000000000000\"" \
-                "}" \
-               "]" \
-             "}" \
-           "]" \
-        "}";
+    char       *policy_name = "/policy/pol_pcr16_0";
+    const char *json_policy
+        = "{"
+          "\"description\":\"Description pol_16_0\","
+          "\"policy\":["
+          "{"
+          "\"type\":\"POLICYPCR\","
+          "\"pcrs\":["
+          "{"
+          "\"pcr\":16,"
+          "\"hashAlg\":\"TPM2_ALG_SHA256\","
+          "\"digest\":\"00000000000000000000000000000000000000000000000000000000000000000\""
+          "}"
+          "]"
+          "}"
+          "]"
+          "}";
 
     r = Fapi_Import(context, policy_name, json_policy);
     goto_if_error(r, "Error Fapi_Import", error);
 
-    r = Fapi_CreateKey(context, "HS/myPrimary", "noDa", policy_name,
-                       NULL);
+    r = Fapi_CreateKey(context, "HS/myPrimary", "noDa", policy_name, NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     r = Fapi_Delete(context, "HS/myPrimary");
     goto_if_error(r, "Error Fapi_Delete", error);
 
     /* Test the creation of a primary in the endorsement hierarchy. */
-    r = Fapi_CreateKey(context, "HE/myPrimary", "noDa", "",
-                        PASSWORD);
+    r = Fapi_CreateKey(context, "HE/myPrimary", "noDa", "", PASSWORD);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     r = Fapi_Delete(context, "HE/myPrimary");
     goto_if_error(r, "Error Fapi_Delete", error);
-
 
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
@@ -209,7 +189,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_key_create_null_sign(fapi_context);
 }

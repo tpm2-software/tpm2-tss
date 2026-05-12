@@ -8,16 +8,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for uint8_t
-#include <stdbool.h>          // for false, bool, true
-#include <stdio.h>            // for size_t, NULL
+#include <inttypes.h> // for uint8_t
+#include <stdbool.h>  // for false, bool, true
+#include <stdio.h>    // for size_t, NULL
 
-#include "../helper/cmocka_all.h"           // for assert_int_equal, assert_true, cmocka_u...
-#include "fapi_crypto.h"      // for ifapi_get_profile_sig_scheme, IFAPI_CRY...
-#include "ifapi_helpers.h"    // for ifapi_get_name, ifapi_TPMT_PUBLIC_cmp
-#include "ifapi_profiles.h"   // for IFAPI_PROFILE
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_tpm2_types.h"  // for TPMT_PUBLIC, TPMT_SIG_SCHEME, TPM2_ALG_...
+#include "../helper/cmocka_all.h" // for assert_int_equal, assert_true, cmocka_u...
+#include "fapi_crypto.h"          // for ifapi_get_profile_sig_scheme, IFAPI_CRY...
+#include "ifapi_helpers.h"        // for ifapi_get_name, ifapi_TPMT_PUBLIC_cmp
+#include "ifapi_profiles.h"       // for IFAPI_PROFILE
+#include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_tpm2_types.h"      // for TPMT_PUBLIC, TPMT_SIG_SCHEME, TPM2_ALG_...
 
 #define LOGMODULE tests
 #include "util/log.h"
@@ -32,18 +32,20 @@
 bool wrap_activate_crypto_hash_update = false;
 bool wrap_activate_crypto_hash_finish = false;
 
-
 /*
  * Wrappers for crypto functions.
  */
 TSS2_RC
 __real_ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context,
-                                const uint8_t *buffer, size_t size, ...);
+                                const uint8_t             *buffer,
+                                size_t                     size,
+                                ...);
 
 TSS2_RC
 __wrap_ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context,
-                                const uint8_t *buffer, size_t size, ...)
-{
+                                const uint8_t             *buffer,
+                                size_t                     size,
+                                ...) {
     if (wrap_activate_crypto_hash_update)
         return mock_type(int);
     else
@@ -52,12 +54,15 @@ __wrap_ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context,
 
 TSS2_RC
 __real_ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
-                                const uint8_t *digest, size_t size, ...);
+                                const uint8_t              *digest,
+                                size_t                      size,
+                                ...);
 
 TSS2_RC
 __wrap_ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
-                                const uint8_t *digest, size_t size, ...)
-{
+                                const uint8_t              *digest,
+                                size_t                      size,
+                                ...) {
     if (wrap_activate_crypto_hash_finish)
         return mock_type(int);
     else
@@ -68,9 +73,8 @@ __wrap_ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
  * Check all cases to determine the first index of an NV path.
  */
 static void
-check_get_nv_start_index2(char *path, TPM2_HANDLE exp_start_idx, TSS2_RC exp_r)
-{
-    TSS2_RC r;
+check_get_nv_start_index2(char *path, TPM2_HANDLE exp_start_idx, TSS2_RC exp_r) {
+    TSS2_RC     r;
     TPM2_HANDLE nv_index;
 
     r = ifapi_get_nv_start_index(path, &nv_index);
@@ -81,8 +85,7 @@ check_get_nv_start_index2(char *path, TPM2_HANDLE exp_start_idx, TSS2_RC exp_r)
 }
 
 static void
-check_get_nv_start_index(void **state)
-{
+check_get_nv_start_index(void **state) {
     check_get_nv_start_index2("/nv/wrong_path", 0, TSS2_FAPI_RC_BAD_PATH);
     check_get_nv_start_index2("/nv/TPM", 0x01000000, TSS2_RC_SUCCESS);
     check_get_nv_start_index2("/nv/Owner", 0x01800000, TSS2_RC_SUCCESS);
@@ -102,8 +105,7 @@ check_get_nv_start_index(void **state)
  * Test all cases which check whether a given NV index is valid for a certain path.
  */
 static void
-check_check_nv_index2(char *path, TPM2_HANDLE nv_index, TSS2_RC exp_r)
-{
+check_check_nv_index2(char *path, TPM2_HANDLE nv_index, TSS2_RC exp_r) {
     TSS2_RC r;
 
     r = ifapi_check_nv_index(path, nv_index);
@@ -111,8 +113,7 @@ check_check_nv_index2(char *path, TPM2_HANDLE nv_index, TSS2_RC exp_r)
 }
 
 static void
-check_check_nv_index(void **state)
-{
+check_check_nv_index(void **state) {
     check_check_nv_index2("/nv/TPM", 0x01000000, TSS2_RC_SUCCESS);
     check_check_nv_index2("/nv/TPM", 0x013fffff, TSS2_RC_SUCCESS);
     check_check_nv_index2("/nv/TPM", 0xffffff, TSS2_FAPI_RC_BAD_VALUE);
@@ -172,11 +173,7 @@ check_check_nv_index(void **state)
  * TPM2_ALG_KEYEDHASH and TPM2_ALG_SYMCIPHER.
  */
 static void
-check_cmp_TPMU_PUBLIC_ID2(
-    TPMT_PUBLIC *pid1,
-    TPMT_PUBLIC *pid2,
-    bool exp_r)
-{
+check_cmp_TPMU_PUBLIC_ID2(TPMT_PUBLIC *pid1, TPMT_PUBLIC *pid2, bool exp_r) {
     bool r;
     r = ifapi_TPMT_PUBLIC_cmp(pid1, pid2);
     if (exp_r)
@@ -187,18 +184,12 @@ check_cmp_TPMU_PUBLIC_ID2(
 
 static void
 check_cmp_TPMU_PUBLIC_ID(void **state) {
-    TPM2B_DIGEST digest1 = {
-        .size = 10,
-        .buffer = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
-    };
-    TPM2B_DIGEST digest2 = {
-        .size = 10,
-        .buffer = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 }
-    };
-    TPMT_PUBLIC keyed_hash1;
-    TPMT_PUBLIC sym1;
-    TPMT_PUBLIC keyed_hash2;
-    TPMT_PUBLIC sym2;
+    TPM2B_DIGEST digest1 = { .size = 10, .buffer = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } };
+    TPM2B_DIGEST digest2 = { .size = 10, .buffer = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 } };
+    TPMT_PUBLIC  keyed_hash1;
+    TPMT_PUBLIC  sym1;
+    TPMT_PUBLIC  keyed_hash2;
+    TPMT_PUBLIC  sym2;
 
     keyed_hash1.type = TPM2_ALG_KEYEDHASH;
     keyed_hash1.unique.keyedHash = digest1;
@@ -258,7 +249,7 @@ static void
 check_get_name(void **state) {
     TPMT_PUBLIC public = { 0 };
     TPM2B_NAME name;
-    TSS2_RC r;
+    TSS2_RC    r;
 
     public.nameAlg = TPM2_ALG_SHA256;
     public.authPolicy.size = 0xFFFF;
@@ -268,7 +259,7 @@ check_get_name(void **state) {
     wrap_activate_crypto_hash_update = true;
     will_return(__wrap_ifapi_crypto_hash_update, TSS2_FAPI_RC_GENERAL_FAILURE);
 
-     r = ifapi_get_name(&in_public, &name);
+    r = ifapi_get_name(&in_public, &name);
     assert_int_equal(r, TSS2_FAPI_RC_GENERAL_FAILURE);
     wrap_activate_crypto_hash_update = false;
 
@@ -286,15 +277,13 @@ check_get_name(void **state) {
  */
 static void
 check_get_profile_sig_scheme(void **stat) {
-    IFAPI_PROFILE profile;
+    IFAPI_PROFILE   profile;
     TPMT_SIG_SCHEME sig_scheme;
-    TPMT_PUBLIC tpm_public;
-    TSS2_RC r;
-    TPMT_SIG_SCHEME ecc_scheme = { .scheme = TPM2_ALG_ECDSA,
-                                   .details.ecdsa = TPM2_ALG_SHA1 };
-    TPMT_SIG_SCHEME rsa_scheme = { .scheme = TPM2_ALG_RSAPSS,
-                                   .details.rsapss = TPM2_ALG_SHA1 };
-    TPMI_ALG_HASH hash_alg;
+    TPMT_PUBLIC     tpm_public;
+    TSS2_RC         r;
+    TPMT_SIG_SCHEME ecc_scheme = { .scheme = TPM2_ALG_ECDSA, .details.ecdsa = TPM2_ALG_SHA1 };
+    TPMT_SIG_SCHEME rsa_scheme = { .scheme = TPM2_ALG_RSAPSS, .details.rsapss = TPM2_ALG_SHA1 };
+    TPMI_ALG_HASH   hash_alg;
 
     profile.rsa_signing_scheme = rsa_scheme;
     profile.ecc_signing_scheme = ecc_scheme;
@@ -304,14 +293,14 @@ check_get_profile_sig_scheme(void **stat) {
     assert_int_equal(r, TSS2_RC_SUCCESS);
     assert_true(sig_scheme.scheme == TPM2_ALG_RSAPSS);
     hash_alg = sig_scheme.details.rsapss.hashAlg;
-    assert_true(hash_alg== TPM2_ALG_SHA1);
+    assert_true(hash_alg == TPM2_ALG_SHA1);
 
     tpm_public.type = TPM2_ALG_ECC;
     r = ifapi_get_profile_sig_scheme(&profile, &tpm_public, &sig_scheme);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     assert_true(sig_scheme.scheme == TPM2_ALG_ECDSA);
     hash_alg = sig_scheme.details.ecdsa.hashAlg;
-    assert_true(hash_alg== TPM2_ALG_SHA1);
+    assert_true(hash_alg == TPM2_ALG_SHA1);
 
     tpm_public.type = TPM2_ALG_NULL;
     r = ifapi_get_profile_sig_scheme(&profile, &tpm_public, &sig_scheme);
@@ -319,13 +308,10 @@ check_get_profile_sig_scheme(void **stat) {
 }
 
 int
-main(int argc, char *argv[])
-{
+main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(check_get_nv_start_index),
-        cmocka_unit_test(check_check_nv_index),
-        cmocka_unit_test(check_cmp_TPMU_PUBLIC_ID),
-        cmocka_unit_test(check_get_name),
+        cmocka_unit_test(check_get_nv_start_index),     cmocka_unit_test(check_check_nv_index),
+        cmocka_unit_test(check_cmp_TPMU_PUBLIC_ID),     cmocka_unit_test(check_get_name),
         cmocka_unit_test(check_get_profile_sig_scheme),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);

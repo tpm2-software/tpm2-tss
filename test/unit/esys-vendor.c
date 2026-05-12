@@ -6,17 +6,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for uint8_t, int32_t
-#include <stdbool.h>          // for false
-#include <stdlib.h>           // for NULL, size_t, calloc, free, strtol
-#include <string.h>           // for strcmp, strlen
+#include <inttypes.h> // for uint8_t, int32_t
+#include <stdbool.h>  // for false
+#include <stdlib.h>   // for NULL, size_t, calloc, free, strtol
+#include <string.h>   // for strcmp, strlen
 
-#include "../helper/cmocka_all.h"           // for assert_int_equal, assert_true, will_ret...
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, UINT16, TSS2_...
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_Finalize, Esys_Free
-#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CANCEL
-#include "tss2_tpm2_types.h"  // for TPM2B_MAX_CAP_BUFFER, TPMS_CAPABILITY_DATA
-#include "util/aux_util.h"    // for UNUSED
+#include "../helper/cmocka_all.h" // for assert_int_equal, assert_true, will_ret...
+#include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC, UINT16, TSS2_...
+#include "tss2_esys.h"            // for ESYS_TR_NONE, Esys_Finalize, Esys_Free
+#include "tss2_tcti.h"            // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CANCEL
+#include "tss2_tpm2_types.h"      // for TPM2B_MAX_CAP_BUFFER, TPMS_CAPABILITY_DATA
+#include "util/aux_util.h"        // for UNUSED
 
 #define LOGMODULE tests
 #include "util/log.h"
@@ -25,18 +25,15 @@ struct vendor_tests;
 
 typedef struct vendor_tests vendor_tests;
 struct vendor_tests {
-    const char *id; /* name this to the name of the test function */
-    char *resp;     /* The response buffer of the TPM as a hex string */
-    char *expected; /* The expected data to check in the test as a hex string */
+    const char *id;       /* name this to the name of the test function */
+    char       *resp;     /* The response buffer of the TPM as a hex string */
+    char       *expected; /* The expected data to check in the test as a hex string */
 };
 
-vendor_tests tests[] =
-{
-    {
-        .id = "ptt_property_1_count_1024",
-        .resp = "8001000000170000000001000001000000000100000003",
-        .expected = "0000000100000003"
-    },
+vendor_tests tests[] = {
+    { .id = "ptt_property_1_count_1024",
+      .resp = "8001000000170000000001000001000000000100000003",
+      .expected = "0000000100000003" },
 };
 
 /* This passes the function name to TCTI Recieve function where a lookup of function name
@@ -46,8 +43,7 @@ vendor_tests tests[] =
 #define TEST_MOCK_SETUP will_return_always(tcti_fake_recv, __func__)
 
 static void
-unhex(const char *hexstr, uint8_t *buf, size_t *len)
-{
+unhex(const char *hexstr, uint8_t *buf, size_t *len) {
     /* should always be even in length ie bit index 0 unset */
     size_t l = strlen(hexstr);
     assert_false(l & 0x1);
@@ -57,7 +53,7 @@ unhex(const char *hexstr, uint8_t *buf, size_t *len)
 
     size_t i;
     for (i = 0; i < *len; i++) {
-        char tmp_str[4] = {0};
+        char tmp_str[4] = { 0 };
         tmp_str[0] = hexstr[i * 2];
         tmp_str[1] = hexstr[i * 2 + 1];
         buf[i] = strtol(tmp_str, NULL, 16);
@@ -65,8 +61,8 @@ unhex(const char *hexstr, uint8_t *buf, size_t *len)
 }
 
 #define get_expected(buf) _get_expected(__func__, (buf)->buffer, &(buf)->size)
-static void _get_expected(const char *id, uint8_t *resp_buf, UINT16 *resp_len)
-{
+static void
+_get_expected(const char *id, uint8_t *resp_buf, UINT16 *resp_len) {
 
     size_t i;
     for (i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
@@ -79,11 +75,10 @@ static void _get_expected(const char *id, uint8_t *resp_buf, UINT16 *resp_len)
         }
     }
     assert_true(false);
-
 }
 
-static void get_response(const char *id, uint8_t *resp_buf, size_t *resp_len)
-{
+static void
+get_response(const char *id, uint8_t *resp_buf, size_t *resp_len) {
 
     if (!resp_buf) {
         *resp_len = 4096;
@@ -101,22 +96,18 @@ static void get_response(const char *id, uint8_t *resp_buf, size_t *resp_len)
     assert_true(false);
 }
 
-#define TCTI_FAKE_MAGIC 0x46414b4500000000ULL        /* 'FAKE\0' */
+#define TCTI_FAKE_MAGIC   0x46414b4500000000ULL /* 'FAKE\0' */
 #define TCTI_FAKE_VERSION 0x1
 
 typedef TSS2_TCTI_CONTEXT_COMMON_V1 TSS2_TCTI_CONTEXT_FAKE;
 
 void
-tcti_fake_finalize(TSS2_TCTI_CONTEXT *tctiContext)
-{
+tcti_fake_finalize(TSS2_TCTI_CONTEXT *tctiContext) {
     UNUSED(tctiContext);
 }
 
-static TSS2_RC tcti_fake_transmit(
-        TSS2_TCTI_CONTEXT *tctiContext,
-        size_t size,
-        uint8_t const *command)
-{
+static TSS2_RC
+tcti_fake_transmit(TSS2_TCTI_CONTEXT *tctiContext, size_t size, uint8_t const *command) {
 
     UNUSED(tctiContext);
     UNUSED(size);
@@ -124,31 +115,25 @@ static TSS2_RC tcti_fake_transmit(
     return TSS2_RC_SUCCESS;
 }
 
-static TSS2_RC tcti_fake_recv(
-        TSS2_TCTI_CONTEXT *tctiContext,
-        size_t *size,
-        uint8_t *response,
-        int32_t timeout)
-{
+static TSS2_RC
+tcti_fake_recv(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, uint8_t *response, int32_t timeout) {
     UNUSED(tctiContext);
     UNUSED(timeout);
 
     /* Use size_t to cast 64 bit number to pointer (needed for 32 bit systems) */
-    const char *id = (const char*)(size_t)mock();
+    const char *id = (const char *)(size_t)mock();
 
     get_response(id, response, size);
     return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC
-Tss2_FAKE_TCTI_Initialize(const char *nameConf,
-        TSS2_TCTI_CONTEXT **tcti)
-{
+Tss2_FAKE_TCTI_Initialize(const char *nameConf, TSS2_TCTI_CONTEXT **tcti) {
     if (tcti == NULL)
         return TSS2_BASE_RC_GENERAL_FAILURE;
 
     /* This is to calm down scan-build */
-    TSS2_TCTI_CONTEXT_FAKE **faketcti = (TSS2_TCTI_CONTEXT_FAKE**)tcti;
+    TSS2_TCTI_CONTEXT_FAKE **faketcti = (TSS2_TCTI_CONTEXT_FAKE **)tcti;
 
     *faketcti = calloc(1, sizeof(TSS2_TCTI_CONTEXT_FAKE));
     TSS2_TCTI_MAGIC(*faketcti) = TCTI_FAKE_MAGIC;
@@ -163,54 +148,49 @@ Tss2_FAKE_TCTI_Initialize(const char *nameConf,
     return TSS2_RC_SUCCESS;
 }
 
-static int test_setup(void **state)
-{
-    Tss2_FAKE_TCTI_Initialize(NULL,
-            (TSS2_TCTI_CONTEXT**)state);
+static int
+test_setup(void **state) {
+    Tss2_FAKE_TCTI_Initialize(NULL, (TSS2_TCTI_CONTEXT **)state);
     return 0;
 }
 
-static int test_teardown(void **state)
-{
+static int
+test_teardown(void **state) {
     free(*state);
     *state = NULL;
     return 0;
 }
 
 static void
-ptt_property_1_count_1024(void **state)
-{
-    TSS2_RC r;
+ptt_property_1_count_1024(void **state) {
+    TSS2_RC       r;
     ESYS_CONTEXT *ectx;
 
     TEST_MOCK_SETUP;
 
-    r = Esys_Initialize(&ectx, (TSS2_TCTI_CONTEXT*)*state, NULL);
+    r = Esys_Initialize(&ectx, (TSS2_TCTI_CONTEXT *)*state, NULL);
     assert_int_equal(r, TSS2_RC_SUCCESS);
 
-    TPMI_YES_NO more_data;
+    TPMI_YES_NO           more_data;
     TPMS_CAPABILITY_DATA *cap_data = NULL;
-    r = Esys_GetCapability(ectx, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-        TPM2_CAP_VENDOR_PROPERTY, 1, 1024, &more_data, &cap_data);
+    r = Esys_GetCapability(ectx, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, TPM2_CAP_VENDOR_PROPERTY,
+                           1, 1024, &more_data, &cap_data);
     assert_int_equal(r, TSS2_RC_SUCCESS);
     assert_int_equal(cap_data->capability, TPM2_CAP_VENDOR_PROPERTY);
 
-    TPM2B_MAX_CAP_BUFFER expected = {0};
+    TPM2B_MAX_CAP_BUFFER expected = { 0 };
     get_expected(&expected);
     assert_int_equal(cap_data->data.vendor.size, expected.size);
-    assert_memory_equal(cap_data->data.vendor.buffer, expected.buffer,
-            expected.size);
+    assert_memory_equal(cap_data->data.vendor.buffer, expected.buffer, expected.size);
 
     Esys_Free(cap_data);
     Esys_Finalize(&ectx);
 }
 
 int
-main(int argc, char *argv[])
-{
+main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
-    cmocka_unit_test_setup_teardown(ptt_property_1_count_1024,
-            test_setup, test_teardown),
+        cmocka_unit_test_setup_teardown(ptt_property_1_count_1024, test_setup, test_teardown),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

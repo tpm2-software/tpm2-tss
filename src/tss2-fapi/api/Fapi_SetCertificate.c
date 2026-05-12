@@ -8,19 +8,19 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>          // for NULL
-#include <string.h>          // for memset
+#include <stdlib.h> // for NULL
+#include <string.h> // for memset
 
-#include "fapi_int.h"        // for IFAPI_Key_SetCertificate, FAPI_CONTEXT
-#include "fapi_util.h"       // for ifapi_esys_serialize_object, ifapi_initi...
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"    // for check_not_null, strdup_check, goto_if_er...
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_SetCertificate, Fapi_...
+#include "fapi_int.h"       // for IFAPI_Key_SetCertificate, FAPI_CONTEXT
+#include "fapi_util.h"      // for ifapi_esys_serialize_object, ifapi_initi...
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"   // for check_not_null, strdup_check, goto_if_er...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetCertificate, Fapi_...
 
 #define LOGMODULE fapi
-#include "util/log.h"        // for LOG_TRACE, SAFE_FREE, goto_if_error, bas...
+#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error, bas...
 
 /** One-Call function for Fapi_SetCertificate
  *
@@ -56,11 +56,7 @@
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_SetCertificate(
-    FAPI_CONTEXT  *context,
-    char    const *path,
-    char    const *x509certData)
-{
+Fapi_SetCertificate(FAPI_CONTEXT *context, char const *path, char const *x509certData) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -121,11 +117,7 @@ Fapi_SetCertificate(
  *         or contains illegal characters.
  */
 TSS2_RC
-Fapi_SetCertificate_Async(
-    FAPI_CONTEXT  *context,
-    char    const *path,
-    char    const *x509certData)
-{
+Fapi_SetCertificate_Async(FAPI_CONTEXT *context, char const *path, char const *x509certData) {
     LOG_TRACE("called for context:%p", context);
     LOG_TRACE("path: %s", path);
     LOG_TRACE("x509certData: %s", x509certData);
@@ -144,7 +136,7 @@ Fapi_SetCertificate_Async(
     }
 
     /* Helpful alias pointers */
-    IFAPI_Key_SetCertificate * command = &context->cmd.Key_SetCertificate;
+    IFAPI_Key_SetCertificate *command = &context->cmd.Key_SetCertificate;
 
     r = ifapi_non_tpm_mode_init(context);
     goto_if_error(r, "Initialize SetCertificate", error_cleanup);
@@ -199,9 +191,7 @@ error_cleanup:
  *         during authorization.
  */
 TSS2_RC
-Fapi_SetCertificate_Finish(
-    FAPI_CONTEXT  *context)
-{
+Fapi_SetCertificate_Finish(FAPI_CONTEXT *context) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -210,57 +200,56 @@ Fapi_SetCertificate_Finish(
     check_not_null(context);
 
     /* Helpful alias pointers */
-    IFAPI_Key_SetCertificate * command = &context->cmd.Key_SetCertificate;
-    IFAPI_OBJECT *key_object = &command->key_object;
-    const char ** pem_cert = &command->pem_cert;
-    char ** pem_cert_dup = &command->pem_cert_dup;
+    IFAPI_Key_SetCertificate *command = &context->cmd.Key_SetCertificate;
+    IFAPI_OBJECT             *key_object = &command->key_object;
+    const char              **pem_cert = &command->pem_cert;
+    char                    **pem_cert_dup = &command->pem_cert_dup;
 
     switch (context->state) {
-        statecase(context->state, KEY_SET_CERTIFICATE_READ)
-            r = ifapi_keystore_load_finish(&context->keystore, &context->io, key_object);
-            return_try_again(r);
-            return_if_error_reset_state(r, "read_finish failed");
+    statecase(context->state, KEY_SET_CERTIFICATE_READ)
+        r = ifapi_keystore_load_finish(&context->keystore, &context->io, key_object);
+        return_try_again(r);
+        return_if_error_reset_state(r, "read_finish failed");
 
-            /* Duplicate and store the certificate in the key object. */
-            if (!*pem_cert) {
-                strdup_check(*pem_cert_dup, "", r, error_cleanup);
-            } else {
-                strdup_check(*pem_cert_dup, *pem_cert, r, error_cleanup);
-            }
-            if (key_object->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
-                SAFE_FREE(key_object->misc.ext_pub_key.certificate);
-                key_object->misc.ext_pub_key.certificate = *pem_cert_dup;
-            } else {
-                SAFE_FREE(key_object->misc.key.certificate);
-                key_object->misc.key.certificate = *pem_cert_dup;
-            }
+        /* Duplicate and store the certificate in the key object. */
+        if (!*pem_cert) {
+            strdup_check(*pem_cert_dup, "", r, error_cleanup);
+        } else {
+            strdup_check(*pem_cert_dup, *pem_cert, r, error_cleanup);
+        }
+        if (key_object->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
+            SAFE_FREE(key_object->misc.ext_pub_key.certificate);
+            key_object->misc.ext_pub_key.certificate = *pem_cert_dup;
+        } else {
+            SAFE_FREE(key_object->misc.key.certificate);
+            key_object->misc.key.certificate = *pem_cert_dup;
+        }
 
-            r = ifapi_initialize_object(context->esys, key_object);
-            goto_if_error_reset_state(r, "Initialize key object", error_cleanup);
+        r = ifapi_initialize_object(context->esys, key_object);
+        goto_if_error_reset_state(r, "Initialize key object", error_cleanup);
 
-            /* Perform esys serialization if necessary */
-            r = ifapi_esys_serialize_object(context->esys, key_object);
-            goto_if_error(r, "Prepare serialization", error_cleanup);
+        /* Perform esys serialization if necessary */
+        r = ifapi_esys_serialize_object(context->esys, key_object);
+        goto_if_error(r, "Prepare serialization", error_cleanup);
 
-            /* Start writing the NV object to the key store */
-            r = ifapi_keystore_store_async(&context->keystore, &context->io,
-                    command->key_path, key_object);
-            goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup,
-                    command->key_path);
+        /* Start writing the NV object to the key store */
+        r = ifapi_keystore_store_async(&context->keystore, &context->io, command->key_path,
+                                       key_object);
+        goto_if_error_reset_state(r, "Could not open: %sh", error_cleanup, command->key_path);
 
-            context->state = KEY_SET_CERTIFICATE_WRITE;
-            fallthrough;
+        context->state = KEY_SET_CERTIFICATE_WRITE;
+        fallthrough;
 
-        statecase(context->state, KEY_SET_CERTIFICATE_WRITE)
-            /* Finish writing the object to the key store */
-            r = ifapi_keystore_store_finish(&context->io);
-            return_try_again(r);
-            goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
+    statecase(context->state, KEY_SET_CERTIFICATE_WRITE)
+    /* Finish writing the object to the key store */
+        r = ifapi_keystore_store_finish(&context->io);
+        return_try_again(r);
+        goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
-            r = TSS2_RC_SUCCESS;
-            break;
+        r = TSS2_RC_SUCCESS;
+        break;
 
-        statecasedefault(context->state);
+    statecasedefault(context->state);
     }
 
 error_cleanup:

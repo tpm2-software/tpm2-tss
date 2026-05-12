@@ -8,26 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdio.h>        // for fopen, NULL, fclose, fileno, fseek, ftell
-#include <stdlib.h>       // for malloc, EXIT_FAILURE, EXIT_SUCCESS
-#include <unistd.h>       // for read
+#include <stdio.h>  // for fopen, NULL, fclose, fileno, fseek, ftell
+#include <stdlib.h> // for malloc, EXIT_FAILURE, EXIT_SUCCESS
+#include <unistd.h> // for read
 
-#include "test-fapi.h"    // for pcr_reset, test_invoke_fapi
-#include "tss2_common.h"  // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_FAPI_...
-#include "tss2_fapi.h"    // for Fapi_Delete, Fapi_CreateNv, Fapi_NvIncrement
+#include "test-fapi.h"   // for pcr_reset, test_invoke_fapi
+#include "tss2_common.h" // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE, TSS2_FAPI_...
+#include "tss2_fapi.h"   // for Fapi_Delete, Fapi_CreateNv, Fapi_NvIncrement
 
 #define LOGMODULE test
-#include "util/log.h"     // for goto_if_error, LOG_ERROR, SAFE_FREE, UNUSED
+#include "util/log.h" // for goto_if_error, LOG_ERROR, SAFE_FREE, UNUSED
 
 #define PASSWORD "abc"
 
 static TSS2_RC
-auth_callback(
-    char const *objectPath,
-    char const *description,
-    const char **auth,
-    void *userData)
-{
+auth_callback(char const *objectPath, char const *description, const char **auth, void *userData) {
     UNUSED(description);
     UNUSED(userData);
 
@@ -59,15 +54,14 @@ auth_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_nv_increment(FAPI_CONTEXT *context)
-{
+test_fapi_nv_increment(FAPI_CONTEXT *context) {
     TSS2_RC r;
-    char *nvPathCounter = "nv/Owner/myNV_Counter";
-    char *policy_name = "/policy/pol_nv_change_auth";
-    char *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_nv_change_auth.json";
-    FILE *stream = NULL;
-    char *json_policy = NULL;
-    long policy_size;
+    char   *nvPathCounter = "nv/Owner/myNV_Counter";
+    char   *policy_name = "/policy/pol_nv_change_auth";
+    char   *policy_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_nv_change_auth.json";
+    FILE   *stream = NULL;
+    char   *json_policy = NULL;
+    long    policy_size;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
@@ -84,9 +78,8 @@ test_fapi_nv_increment(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -118,7 +111,7 @@ test_fapi_nv_increment(FAPI_CONTEXT *context)
     r = Fapi_NvIncrement(context, nvPathCounter);
     goto_if_error(r, "Error Fapi_CreateNv", error);
 
-       r = Fapi_Delete(context, nvPathCounter);
+    r = Fapi_Delete(context, nvPathCounter);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
 
     /* Test with password noda set */
@@ -157,7 +150,6 @@ test_fapi_nv_increment(FAPI_CONTEXT *context)
     r = Fapi_Delete(context, nvPathCounter);
     goto_if_error(r, "Error Fapi_NV_Undefine", error);
 
-
     r = Fapi_Delete(context, "/");
     goto_if_error(r, "Error Fapi_Delete", error);
 
@@ -171,7 +163,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *context)
-{
+test_invoke_fapi(FAPI_CONTEXT *context) {
     return test_fapi_nv_increment(context);
 }

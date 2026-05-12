@@ -8,28 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for uint8_t
-#include <stdio.h>            // for NULL, fclose, fileno, fopen, FILE, size_t
-#include <stdlib.h>           // for free, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for memset, strcmp
-#include <unistd.h>           // for read
+#include <inttypes.h> // for uint8_t
+#include <stdio.h>    // for NULL, fclose, fileno, fopen, FILE, size_t
+#include <stdlib.h>   // for free, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h>   // for memset, strcmp
+#include <unistd.h>   // for read
 
-#include "test-fapi.h"        // for FAPI_PROFILE, ASSERT, CHECK_JSON_FIELDS
-#include "tss2_common.h"      // for TSS2_RC, TSS2_FAPI_RC_NOT_IMPLEMENTED
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_Finalize, Esys_GetCa...
-#include "tss2_fapi.h"        // for Fapi_Delete, Fapi_CreateNv, Fapi_Import
-#include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT
-#include "tss2_tpm2_types.h"  // for TPMS_CAPABILITY_DATA, TPM2_CAP_COMMANDS
+#include "test-fapi.h"       // for FAPI_PROFILE, ASSERT, CHECK_JSON_FIELDS
+#include "tss2_common.h"     // for TSS2_RC, TSS2_FAPI_RC_NOT_IMPLEMENTED
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_Finalize, Esys_GetCa...
+#include "tss2_fapi.h"       // for Fapi_Delete, Fapi_CreateNv, Fapi_Import
+#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT
+#include "tss2_tpm2_types.h" // for TPMS_CAPABILITY_DATA, TPM2_CAP_COMMANDS
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR, SAFE_FREE
+#include "util/log.h" // for goto_if_error, LOG_ERROR, SAFE_FREE
 
 static TSS2_RC
-check_tpm_cmd(FAPI_CONTEXT *context, TPM2_CC command_code)
-{
-    TSS2_RC r;
-    TSS2_TCTI_CONTEXT *tcti;
-    ESYS_CONTEXT *esys;
+check_tpm_cmd(FAPI_CONTEXT *context, TPM2_CC command_code) {
+    TSS2_RC               r;
+    TSS2_TCTI_CONTEXT    *tcti;
+    ESYS_CONTEXT         *esys;
     TPMS_CAPABILITY_DATA *cap_data;
 
     r = Fapi_GetTcti(context, &tcti);
@@ -38,14 +37,12 @@ check_tpm_cmd(FAPI_CONTEXT *context, TPM2_CC command_code)
     r = Esys_Initialize(&esys, tcti, NULL);
     goto_if_error(r, "Error Fapi_GetTcti", error);
 
-    r = Esys_GetCapability(esys,
-                           ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                           TPM2_CAP_COMMANDS, command_code, 1, NULL, &cap_data);
+    r = Esys_GetCapability(esys, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, TPM2_CAP_COMMANDS,
+                           command_code, 1, NULL, &cap_data);
     Esys_Finalize(&esys);
     return_if_error(r, "Error: GetCapabilities");
 
-    if ((cap_data->data.command.commandAttributes[0] & TPMA_CC_COMMANDINDEX_MASK) ==
-            command_code) {
+    if ((cap_data->data.command.commandAttributes[0] & TPMA_CC_COMMANDINDEX_MASK) == command_code) {
         free(cap_data);
         return TSS2_RC_SUCCESS;
     } else {
@@ -76,19 +73,18 @@ error:
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
-{
+test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context) {
     TSS2_RC r;
     ssize_t ret;
     uint8_t data[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    char *policy1_name = "/policy/pol_authorize_nv";
-    char *policy1_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize_nv.json";
-    char *policy2_name;
-    char *policy2_file;
-    size_t policy_nv_auth_size;
-    FILE *stream = NULL;
-    char json[1024];
-    char *policy = NULL;
+    char   *policy1_name = "/policy/pol_authorize_nv";
+    char   *policy1_file = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize_nv.json";
+    char   *policy2_name;
+    char   *policy2_file;
+    size_t  policy_nv_auth_size;
+    FILE   *stream = NULL;
+    char    json[1024];
+    char   *policy = NULL;
 
     if (check_tpm_cmd(context, TPM2_CC_PolicyAuthorizeNV) != TPM2_RC_SUCCESS) {
         LOG_WARNING("Command PolicyAuthorizeNV not available.");
@@ -144,7 +140,7 @@ test_fapi_nv_authorizenv_cphash(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_ExportPolicy", error);
     ASSERT(policy != NULL);
     LOG_INFO("Policy authorize nv: %s", policy);
-    char *fields_policy_authorize[] =  { "policy", "0", "type" };
+    char *fields_policy_authorize[] = { "policy", "0", "type" };
     CHECK_JSON_FIELDS(policy, fields_policy_authorize, "POLICYAUTHORIZENV", error);
 
     r = Fapi_WriteAuthorizeNv(context, "/nv/Owner/myNV", policy2_name);
@@ -177,7 +173,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *context)
-{
+test_invoke_fapi(FAPI_CONTEXT *context) {
     return test_fapi_nv_authorizenv_cphash(context);
 }

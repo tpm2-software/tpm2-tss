@@ -4,10 +4,10 @@
 #ifndef TCG_EFI_EVENT_H
 #define TCG_EFI_EVENT_H 1
 
-#include <uchar.h>        // for char16_t
-#include <uuid/uuid.h>    // for uuid_t
+#include <uchar.h>     // for char16_t
+#include <uuid/uuid.h> // for uuid_t
 
-#include "tss2_common.h"  // for UINT32, BYTE, UINT64, UINT8, UINT16
+#include "tss2_common.h" // for UINT32, BYTE, UINT64, UINT8, UINT16
 
 /*
  * Log event types. These are spread out over 2 specs:
@@ -56,21 +56,21 @@
 #endif
 
 typedef struct {
-  UINT16 AlgorithmId;
-  UINT8 Digest[];
+    UINT16 AlgorithmId;
+    UINT8  Digest[];
 } PACKED TCG_DIGEST2;
 
 typedef struct {
-  UINT32 EventSize;
-  UINT8 Event [];
+    UINT32 EventSize;
+    UINT8  Event[];
 } PACKED TCG_EVENT2;
 
 typedef struct {
-  UINT32 PCRIndex;
-  UINT32 EventType;
-  UINT32 DigestCount;
-  TCG_DIGEST2 Digests [];
- /* TCG_EVENT2 comes next */
+    UINT32      PCRIndex;
+    UINT32      EventType;
+    UINT32      DigestCount;
+    TCG_DIGEST2 Digests[];
+    /* TCG_EVENT2 comes next */
 } PACKED TCG_EVENT_HEADER2;
 
 /* Helper structure for dealing with unaligned char16_t */
@@ -79,25 +79,25 @@ typedef struct {
 } PACKED UTF16_CHAR;
 
 typedef struct {
-  uuid_t VariableName;
-  UINT64 UnicodeNameLength;
-  UINT64 VariableDataLength;
-  char16_t UnicodeName[];
-  /* INT8 VariableData[] comes next */
+    uuid_t   VariableName;
+    UINT64   UnicodeNameLength;
+    UINT64   VariableDataLength;
+    char16_t UnicodeName[];
+    /* INT8 VariableData[] comes next */
 } PACKED UEFI_VARIABLE_DATA;
 
 typedef UINT64 UEFI_PHYSICAL_ADDRESS;
 typedef struct {
     UEFI_PHYSICAL_ADDRESS BlobBase;
-    UINT64 BlobLength;
+    UINT64                BlobLength;
 } PACKED UEFI_PLATFORM_FIRMWARE_BLOB;
 
 typedef struct {
     UINT32 pcrIndex;
     UINT32 eventType;
-    BYTE digest[20];
+    BYTE   digest[20];
     UINT32 eventDataSize;
-    BYTE event[];
+    BYTE   event[];
 } PACKED TCG_EVENT;
 
 typedef struct {
@@ -107,27 +107,27 @@ typedef struct {
 
 typedef struct {
     UINT8 vendorInfoSize;
-    BYTE vendorInfo[];
+    BYTE  vendorInfo[];
 } PACKED TCG_VENDOR_INFO;
 
 typedef struct {
-    BYTE Signature[16];
-    UINT32 platformClass;
-    UINT8 specVersionMinor;
-    UINT8 specVersionMajor;
-    UINT8 specErrata;
-    UINT8 uintnSize;
-    UINT32 numberOfAlgorithms;
+    BYTE           Signature[16];
+    UINT32         platformClass;
+    UINT8          specVersionMinor;
+    UINT8          specVersionMajor;
+    UINT8          specErrata;
+    UINT8          uintnSize;
+    UINT32         numberOfAlgorithms;
     TCG_SPECID_ALG digestSizes[];
     /* then TCG_VendorStuff */
 } PACKED TCG_SPECID_EVENT;
 
 typedef struct {
     UEFI_PHYSICAL_ADDRESS ImageLocationInMemory;
-    UINT64 ImageLengthInMemory;
-    UINT64 ImageLinkTimeAddress;
-    UINT64 LengthOfDevicePath;
-    BYTE DevicePath[];
+    UINT64                ImageLengthInMemory;
+    UINT64                ImageLinkTimeAddress;
+    UINT64                LengthOfDevicePath;
+    BYTE                  DevicePath[];
 } PACKED UEFI_IMAGE_LOAD_EVENT;
 
 /*
@@ -142,7 +142,7 @@ typedef struct {
     } Cases;
 } PACKED EV_NO_ACTION_STRUCT;
 
-static const BYTE STARTUP_LOCALITY_SIGNATURE[16] = {0x53, 0x74, 0x61, 0x72, 0x74, 0x75, 0x70, 0x4C,
-    0x6F, 0x63, 0x61, 0x6C, 0x69, 0x74, 0x79, 0};
+static const BYTE STARTUP_LOCALITY_SIGNATURE[16] = { 0x53, 0x74, 0x61, 0x72, 0x74, 0x75, 0x70, 0x4C,
+                                                     0x6F, 0x63, 0x61, 0x6C, 0x69, 0x74, 0x79, 0 };
 
 #endif

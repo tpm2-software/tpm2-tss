@@ -8,38 +8,38 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>      // for PRIuPTR, PRIx32, uint8_t, PRIi32, PRIu32
-#include <stdio.h>         // for NULL, size_t, sprintf
+#include <inttypes.h> // for PRIuPTR, PRIx32, uint8_t, PRIi32, PRIu32
+#include <stdio.h>    // for NULL, size_t, sprintf
 
-#include "ifapi_macros.h"  // for check_oom, return_error2
+#include "ifapi_macros.h" // for check_oom, return_error2
 #include "tpm_json_serialize.h"
 
 #define LOGMODULE fapijson
-#include "util/log.h"      // for return_error, return_if_error, return_if_null
+#include "util/log.h" // for return_error, return_if_error, return_if_null
 
-#define CHECK_IN_LIST(type, needle, ...) \
-    type tab[] = { __VA_ARGS__ }; \
-    size_t i; \
-    for(i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) \
-        if (needle == tab[i]) \
-            break; \
-    if (i == sizeof(tab) / sizeof(tab[0])) { \
-        LOG_ERROR("Bad value"); \
-        return TSS2_FAPI_RC_BAD_VALUE; \
+#define CHECK_IN_LIST(type, needle, ...)                                                           \
+    type   tab[] = { __VA_ARGS__ };                                                                \
+    size_t i;                                                                                      \
+    for (i = 0; i < sizeof(tab) / sizeof(tab[0]); i++)                                             \
+        if (needle == tab[i])                                                                      \
+            break;                                                                                 \
+    if (i == sizeof(tab) / sizeof(tab[0])) {                                                       \
+        LOG_ERROR("Bad value");                                                                    \
+        return TSS2_FAPI_RC_BAD_VALUE;                                                             \
     }
 
-#define JSON_CLEAR(jso) \
-    if (jso) {                   \
-        json_object_put(jso); \
+#define JSON_CLEAR(jso)                                                                            \
+    if (jso) {                                                                                     \
+        json_object_put(jso);                                                                      \
     }
 
-#define return_if_jso_error(r,msg, jso)       \
-    if ((r) != TSS2_RC_SUCCESS) { \
-        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r)); \
-        if (jso) {                                                   \
-            json_object_put(jso);                                    \
-        } \
-        return r;  \
+#define return_if_jso_error(r, msg, jso)                                                           \
+    if ((r) != TSS2_RC_SUCCESS) {                                                                  \
+        LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r));                               \
+        if (jso) {                                                                                 \
+            json_object_put(jso);                                                                  \
+        }                                                                                          \
+        return r;                                                                                  \
     }
 
 /** Serialize a TPMS_EMPTY.
@@ -49,8 +49,7 @@
  * @retval TSS2_RC_SUCCESS is always returnde.
  */
 TSS2_RC
-ifapi_json_TPMS_EMPTY_serialize(const TPMS_EMPTY *in, json_object **jso)
-{
+ifapi_json_TPMS_EMPTY_serialize(const TPMS_EMPTY *in, json_object **jso) {
     UNUSED(in);
     UNUSED(jso);
     return TSS2_RC_SUCCESS;
@@ -66,21 +65,19 @@ ifapi_json_TPMS_EMPTY_serialize(const TPMS_EMPTY *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if sizeofSelect is too big.
  */
 TSS2_RC
-ifapi_json_pcr_select_serialize(
-    const UINT8 sizeofSelect,
-    const BYTE pcrSelect[],
-    json_object **jso)
-{
+ifapi_json_pcr_select_serialize(const UINT8   sizeofSelect,
+                                const BYTE    pcrSelect[],
+                                json_object **jso) {
     if (*jso == NULL) {
         *jso = json_object_new_array();
         return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     }
     if (sizeofSelect > TPM2_PCR_SELECT_MAX) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_PCR_SELECT_MAX)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_PCR_SELECT_MAX)",
                   (size_t)sizeofSelect, (size_t)TPM2_PCR_SELECT_MAX);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    UINT32 i1, i2;
+    UINT32       i1, i2;
     json_object *jso2;
     for (i1 = 0; i1 < TPM2_PCR_LAST - TPM2_PCR_FIRST; i1++) {
         i2 = i1 + TPM2_PCR_FIRST;
@@ -104,9 +101,7 @@ ifapi_json_pcr_select_serialize(
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_PCR_SELECTION.
  */
 TSS2_RC
-ifapi_json_TPMS_PCR_SELECT_serialize(const TPMS_PCR_SELECT *in,
-                                        json_object **jso)
-{
+ifapi_json_TPMS_PCR_SELECT_serialize(const TPMS_PCR_SELECT *in, json_object **jso) {
     TSS2_RC r;
 
     r = ifapi_json_pcr_select_serialize(in->sizeofSelect, &in->pcrSelect[0], jso);
@@ -114,7 +109,6 @@ ifapi_json_TPMS_PCR_SELECT_serialize(const TPMS_PCR_SELECT *in,
 
     return TSS2_RC_SUCCESS;
 }
-
 
 /** Serialize a TPMS_PCR_SELECTION structure to json.
  *
@@ -125,14 +119,12 @@ ifapi_json_TPMS_PCR_SELECT_serialize(const TPMS_PCR_SELECT *in,
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_PCR_SELECTION.
  */
 TSS2_RC
-ifapi_json_TPMS_PCR_SELECTION_serialize(const TPMS_PCR_SELECTION *in,
-                                        json_object **jso)
-{
+ifapi_json_TPMS_PCR_SELECTION_serialize(const TPMS_PCR_SELECTION *in, json_object **jso) {
     if (*jso == NULL) {
         *jso = json_object_new_object();
         return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     }
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2 = NULL;
     r = ifapi_json_TPMI_ALG_HASH_serialize(in->hash, &jso2);
     return_if_error(r, "Serialize pcr selection");
@@ -159,9 +151,7 @@ ifapi_json_TPMS_PCR_SELECTION_serialize(const TPMS_PCR_SELECTION *in,
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_TAGGED_PCR_SELECT.
  */
 TSS2_RC
-ifapi_json_TPMS_TAGGED_PCR_SELECT_serialize(const TPMS_TAGGED_PCR_SELECT *in,
-        json_object **jso)
-{
+ifapi_json_TPMS_TAGGED_PCR_SELECT_serialize(const TPMS_TAGGED_PCR_SELECT *in, json_object **jso) {
     TSS2_RC r;
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -191,8 +181,7 @@ ifapi_json_TPMS_TAGGED_PCR_SELECT_serialize(const TPMS_TAGGED_PCR_SELECT *in,
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_TAGGED_POLICY.
  */
 TSS2_RC
-ifapi_json_TPMS_TAGGED_POLICY_serialize(const TPMS_TAGGED_POLICY *in, json_object **jso)
-{
+ifapi_json_TPMS_TAGGED_POLICY_serialize(const TPMS_TAGGED_POLICY *in, json_object **jso) {
     TSS2_RC r;
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -222,8 +211,7 @@ ifapi_json_TPMS_TAGGED_POLICY_serialize(const TPMS_TAGGED_POLICY *in, json_objec
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_ACT_DATA.
  */
 TSS2_RC
-ifapi_json_TPMS_ACT_DATA_serialize(const TPMS_ACT_DATA *in, json_object **jso)
-{
+ifapi_json_TPMS_ACT_DATA_serialize(const TPMS_ACT_DATA *in, json_object **jso) {
     TSS2_RC r;
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -260,11 +248,10 @@ ifapi_json_TPMS_ACT_DATA_serialize(const TPMS_ACT_DATA *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type UINT16.
  */
 TSS2_RC
-ifapi_json_UINT16_serialize(const UINT16 in, json_object **jso)
-{
+ifapi_json_UINT16_serialize(const UINT16 in, json_object **jso) {
     *jso = json_object_new_int64(in);
     if (*jso == NULL) {
-        LOG_ERROR("Bad value %04"PRIx16"", in);
+        LOG_ERROR("Bad value %04" PRIx16 "", in);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;
@@ -279,11 +266,10 @@ ifapi_json_UINT16_serialize(const UINT16 in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type UINT32.
  */
 TSS2_RC
-ifapi_json_UINT32_serialize(const UINT32 in, json_object **jso)
-{
+ifapi_json_UINT32_serialize(const UINT32 in, json_object **jso) {
     *jso = json_object_new_int64(in);
     if (*jso == NULL) {
-        LOG_ERROR("Bad value %"PRIx32 "", in);
+        LOG_ERROR("Bad value %" PRIx32 "", in);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;
@@ -298,11 +284,10 @@ ifapi_json_UINT32_serialize(const UINT32 in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type INT32.
  */
 TSS2_RC
-ifapi_json_INT32_serialize(const INT32 in, json_object **jso)
-{
+ifapi_json_INT32_serialize(const INT32 in, json_object **jso) {
     *jso = json_object_new_int64(in);
     if (*jso == NULL) {
-        LOG_ERROR("Bad value %"PRIi32 "", in);
+        LOG_ERROR("Bad value %" PRIi32 "", in);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;
@@ -317,30 +302,32 @@ ifapi_json_INT32_serialize(const INT32 in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type UINT64.
  */
 TSS2_RC
-ifapi_json_UINT64_serialize(UINT64 in, json_object **jso)
-{
+ifapi_json_UINT64_serialize(UINT64 in, json_object **jso) {
     json_object *jso1 = NULL, *jso2 = NULL;
     if (in < 0x1000000000000) {
-        *jso = json_object_new_int64((int64_t) in);
+        *jso = json_object_new_int64((int64_t)in);
         if (*jso == NULL) {
-            LOG_ERROR("Bad value %"PRIu32 "", (uint32_t)in);
+            LOG_ERROR("Bad value %" PRIu32 "", (uint32_t)in);
             return TSS2_FAPI_RC_BAD_VALUE;
         }
         return TSS2_RC_SUCCESS;
     }
 
-    jso1 = json_object_new_int64((int64_t) (in / 0x100000000));
+    jso1 = json_object_new_int64((int64_t)(in / 0x100000000));
     return_if_null(jso1, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     in %= 0x100000000;
 
-    jso2 = json_object_new_int64((int64_t) in);
-    if (!jso2) json_object_put(jso1);
+    jso2 = json_object_new_int64((int64_t)in);
+    if (!jso2)
+        json_object_put(jso1);
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     *jso = json_object_new_array();
-    if (!*jso) json_object_put(jso1);
-    if (!*jso) json_object_put(jso2);
+    if (!*jso)
+        json_object_put(jso1);
+    if (!*jso)
+        json_object_put(jso2);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     if (json_object_array_add(*jso, jso1)) {
@@ -362,8 +349,7 @@ ifapi_json_UINT64_serialize(UINT64 in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPM2_GENERATED.
  */
 TSS2_RC
-ifapi_json_TPM2_GENERATED_serialize(const TPM2_GENERATED in, json_object **jso)
-{
+ifapi_json_TPM2_GENERATED_serialize(const TPM2_GENERATED in, json_object **jso) {
     if (in != TPM2_GENERATED_VALUE) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant.");
     }
@@ -386,14 +372,16 @@ ifapi_json_TPM2_GENERATED_serialize(const TPM2_GENERATED in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPM2_ALG_ID.
  */
 TSS2_RC
-ifapi_json_TPM2_ALG_ID_serialize(const TPM2_ALG_ID in, json_object **jso)
-{
-    static const struct { TPM2_ALG_ID in; const char *name; } tab[] = {
+ifapi_json_TPM2_ALG_ID_serialize(const TPM2_ALG_ID in, json_object **jso) {
+    static const struct {
+        TPM2_ALG_ID in;
+        const char *name;
+    } tab[] = {
         { TPM2_ALG_ERROR, "ERROR" },
         { TPM2_ALG_RSA, "RSA" },
         { TPM2_ALG_TDES, "TDES" },
-/* We prefer SHA1 as output over SHA */
-/*      { TPM2_ALG_SHA, "sha" },*/
+        /* We prefer SHA1 as output over SHA */
+        /*      { TPM2_ALG_SHA, "sha" },*/
         { TPM2_ALG_SHA1, "sha1" },
         { TPM2_ALG_CMAC, "CMAC" },
         { TPM2_ALG_HMAC, "HMAC" },
@@ -449,17 +437,15 @@ ifapi_json_TPM2_ALG_ID_serialize(const TPM2_ALG_ID in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPM2_ECC_CURVE.
  */
 TSS2_RC
-ifapi_json_TPM2_ECC_CURVE_serialize(const TPM2_ECC_CURVE in, json_object **jso)
-{
-    static const struct { TPM2_ECC_CURVE in; char *name; } tab[] = {
-        { TPM2_ECC_NONE, "NONE" },
-        { TPM2_ECC_NIST_P192, "NIST_P192" },
-        { TPM2_ECC_NIST_P224, "NIST_P224" },
-        { TPM2_ECC_NIST_P256, "NIST_P256" },
-        { TPM2_ECC_NIST_P384, "NIST_P384" },
-        { TPM2_ECC_NIST_P521, "NIST_P521" },
-        { TPM2_ECC_BN_P256, "BN_P256" },
-        { TPM2_ECC_BN_P638, "BN_P638" },
+ifapi_json_TPM2_ECC_CURVE_serialize(const TPM2_ECC_CURVE in, json_object **jso) {
+    static const struct {
+        TPM2_ECC_CURVE in;
+        char          *name;
+    } tab[] = {
+        { TPM2_ECC_NONE, "NONE" },           { TPM2_ECC_NIST_P192, "NIST_P192" },
+        { TPM2_ECC_NIST_P224, "NIST_P224" }, { TPM2_ECC_NIST_P256, "NIST_P256" },
+        { TPM2_ECC_NIST_P384, "NIST_P384" }, { TPM2_ECC_NIST_P521, "NIST_P521" },
+        { TPM2_ECC_BN_P256, "BN_P256" },     { TPM2_ECC_BN_P638, "BN_P638" },
         { TPM2_ECC_SM2_P256, "SM2_P256" },
     };
 
@@ -482,9 +468,11 @@ ifapi_json_TPM2_ECC_CURVE_serialize(const TPM2_ECC_CURVE in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPM2_CC.
  */
 TSS2_RC
-ifapi_json_TPM2_CC_serialize(const TPM2_CC in, json_object **jso)
-{
-    static const struct { TPM2_CC in; char *name; } tab[] = {
+ifapi_json_TPM2_CC_serialize(const TPM2_CC in, json_object **jso) {
+    static const struct {
+        TPM2_CC in;
+        char   *name;
+    } tab[] = {
         /* We don't want to return FIRST but the actual value */
         /* { TPM2_CC_FIRST, "FIRST" }, */
         { TPM2_CC_NV_UndefineSpaceSpecial, "NV_UndefineSpaceSpecial" },
@@ -623,21 +611,23 @@ ifapi_json_TPM2_CC_serialize(const TPM2_CC in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPM2_EO.
  */
 TSS2_RC
-ifapi_json_TPM2_EO_serialize(const TPM2_EO in, json_object **jso)
-{
-    static const struct { TPM2_EO in; char *name; } tab[] = {
-        { TPM2_EO_EQ,          "EQ" },
-        { TPM2_EO_NEQ,         "TPM2_EO_NEQ" },
-        { TPM2_EO_SIGNED_GT,   "SIGNED_GT" },
+ifapi_json_TPM2_EO_serialize(const TPM2_EO in, json_object **jso) {
+    static const struct {
+        TPM2_EO in;
+        char   *name;
+    } tab[] = {
+        { TPM2_EO_EQ, "EQ" },
+        { TPM2_EO_NEQ, "TPM2_EO_NEQ" },
+        { TPM2_EO_SIGNED_GT, "SIGNED_GT" },
         { TPM2_EO_UNSIGNED_GT, "UNSIGNED_GT" },
-        { TPM2_EO_SIGNED_LT,   "SIGNED_LT" },
+        { TPM2_EO_SIGNED_LT, "SIGNED_LT" },
         { TPM2_EO_UNSIGNED_LT, "UNSIGNED_LT" },
-        { TPM2_EO_SIGNED_GE,   "SIGNED_GE" },
+        { TPM2_EO_SIGNED_GE, "SIGNED_GE" },
         { TPM2_EO_UNSIGNED_GE, "UNSIGNED_GE" },
-        { TPM2_EO_SIGNED_LE,   "SIGNED_LE" },
+        { TPM2_EO_SIGNED_LE, "SIGNED_LE" },
         { TPM2_EO_UNSIGNED_LE, "UNSIGNED_LE" },
-        { TPM2_EO_BITSET,      "BITSET" },
-        { TPM2_EO_BITCLEAR,    "BITCLEAR" },
+        { TPM2_EO_BITSET, "BITSET" },
+        { TPM2_EO_BITCLEAR, "BITCLEAR" },
     };
 
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
@@ -659,9 +649,11 @@ ifapi_json_TPM2_EO_serialize(const TPM2_EO in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPM2_ST.
  */
 TSS2_RC
-ifapi_json_TPM2_ST_serialize(const TPM2_ST in, json_object **jso)
-{
-    static const struct { TPM2_ST in; char *name; } tab[] = {
+ifapi_json_TPM2_ST_serialize(const TPM2_ST in, json_object **jso) {
+    static const struct {
+        TPM2_ST in;
+        char   *name;
+    } tab[] = {
         { TPM2_ST_RSP_COMMAND, "RSP_COMMAND" },
         { TPM2_ST_NULL, "NULL" },
         { TPM2_ST_NO_SESSIONS, "NO_SESSIONS" },
@@ -700,9 +692,11 @@ ifapi_json_TPM2_ST_serialize(const TPM2_ST in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPM2_CAP.
  */
 TSS2_RC
-ifapi_json_TPM2_CAP_serialize(const TPM2_CAP in, json_object **jso)
-{
-    static const struct { TPM2_CAP in; char *name; } tab[] = {
+ifapi_json_TPM2_CAP_serialize(const TPM2_CAP in, json_object **jso) {
+    static const struct {
+        TPM2_CAP in;
+        char    *name;
+    } tab[] = {
         { TPM2_CAP_ALGS, "ALGS" },
         { TPM2_CAP_HANDLES, "HANDLES" },
         { TPM2_CAP_COMMANDS, "COMMANDS" },
@@ -713,7 +707,7 @@ ifapi_json_TPM2_CAP_serialize(const TPM2_CAP in, json_object **jso)
         { TPM2_CAP_PCR_PROPERTIES, "PCR_PROPERTIES" },
         { TPM2_CAP_ECC_CURVES, "ECC_CURVES" },
         { TPM2_CAP_AUTH_POLICIES, "AUTH_POLICIES" },
-        { TPM2_CAP_ACT, "ACT"},
+        { TPM2_CAP_ACT, "ACT" },
         { TPM2_CAP_LAST, "LAST" },
         { TPM2_CAP_VENDOR_PROPERTY, "VENDOR_PROPERTY" },
     };
@@ -737,9 +731,11 @@ ifapi_json_TPM2_CAP_serialize(const TPM2_CAP in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPM2_PT.
  */
 TSS2_RC
-ifapi_json_TPM2_PT_serialize(const TPM2_PT in, json_object **jso)
-{
-    static const struct { TPM2_PT in; char *name; } tab[] = {
+ifapi_json_TPM2_PT_serialize(const TPM2_PT in, json_object **jso) {
+    static const struct {
+        TPM2_PT in;
+        char   *name;
+    } tab[] = {
         { TPM2_PT_NONE, "NONE" },
         { TPM2_PT_GROUP, "GROUP" },
         //{ TPM2_PT_FIXED, "FIXED" },
@@ -820,7 +816,7 @@ ifapi_json_TPM2_PT_serialize(const TPM2_PT in, json_object **jso)
             return TSS2_RC_SUCCESS;
         }
     }
-    return_error2(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant: %"PRIx32, in);
+    return_error2(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant: %" PRIx32, in);
 }
 
 /** Serialize TPM2_PT_PCR to json.
@@ -832,9 +828,11 @@ ifapi_json_TPM2_PT_serialize(const TPM2_PT in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPM2_PT_PCR.
  */
 TSS2_RC
-ifapi_json_TPM2_PT_PCR_serialize(const TPM2_PT_PCR in, json_object **jso)
-{
-    static const struct { TPM2_PT_PCR in; char *name; } tab[] = {
+ifapi_json_TPM2_PT_PCR_serialize(const TPM2_PT_PCR in, json_object **jso) {
+    static const struct {
+        TPM2_PT_PCR in;
+        char       *name;
+    } tab[] = {
         { TPM2_PT_PCR_SAVE, "SAVE" },
         { TPM2_PT_PCR_EXTEND_L0, "EXTEND_L0" },
         { TPM2_PT_PCR_RESET_L0, "RESET_L0" },
@@ -859,7 +857,7 @@ ifapi_json_TPM2_PT_PCR_serialize(const TPM2_PT_PCR in, json_object **jso)
             return TSS2_RC_SUCCESS;
         }
     }
-    return_error2(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant: %"PRIx32, in);
+    return_error2(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant: %" PRIx32, in);
 }
 
 /** Serialize value of type TPM2_HANDLE to json.
@@ -871,11 +869,10 @@ ifapi_json_TPM2_PT_PCR_serialize(const TPM2_PT_PCR in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPM2_HANDLE.
  */
 TSS2_RC
-ifapi_json_TPM2_HANDLE_serialize(const TPM2_HANDLE in, json_object **jso)
-{
-    *jso = json_object_new_int((int32_t) in);
+ifapi_json_TPM2_HANDLE_serialize(const TPM2_HANDLE in, json_object **jso) {
+    *jso = json_object_new_int((int32_t)in);
     if (*jso == NULL) {
-        LOG_ERROR("Bad value %"PRIx32 "", in);
+        LOG_ERROR("Bad value %" PRIx32 "", in);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;
@@ -891,9 +888,11 @@ ifapi_json_TPM2_HANDLE_serialize(const TPM2_HANDLE in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMA_ALGORITHM.
  */
 TSS2_RC
-ifapi_json_TPMA_ALGORITHM_serialize(const TPMA_ALGORITHM in, json_object **jso)
-{
-    static const struct { TPMA_ALGORITHM in; char *name; } tab[] = {
+ifapi_json_TPMA_ALGORITHM_serialize(const TPMA_ALGORITHM in, json_object **jso) {
+    static const struct {
+        TPMA_ALGORITHM in;
+        char          *name;
+    } tab[] = {
         { TPMA_ALGORITHM_ASYMMETRIC, "asymmetric" },
         { TPMA_ALGORITHM_SYMMETRIC, "symmetric" },
         { TPMA_ALGORITHM_HASH, "hash" },
@@ -904,7 +903,7 @@ ifapi_json_TPMA_ALGORITHM_serialize(const TPMA_ALGORITHM in, json_object **jso)
     };
 
     UINT32 input;
-    input = (UINT32) in;
+    input = (UINT32)in;
     json_object *jso_bit;
     if (*jso == NULL) {
         *jso = json_object_new_object();
@@ -935,9 +934,11 @@ ifapi_json_TPMA_ALGORITHM_serialize(const TPMA_ALGORITHM in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMA_OBJECT.
  */
 TSS2_RC
-ifapi_json_TPMA_OBJECT_serialize(const TPMA_OBJECT in, json_object **jso)
-{
-    static const struct { TPMA_OBJECT in; char *name; } tab[] = {
+ifapi_json_TPMA_OBJECT_serialize(const TPMA_OBJECT in, json_object **jso) {
+    static const struct {
+        TPMA_OBJECT in;
+        char       *name;
+    } tab[] = {
         { TPMA_OBJECT_FIXEDTPM, "fixedTPM" },
         { TPMA_OBJECT_STCLEAR, "stClear" },
         { TPMA_OBJECT_FIXEDPARENT, "fixedParent" },
@@ -951,7 +952,7 @@ ifapi_json_TPMA_OBJECT_serialize(const TPMA_OBJECT in, json_object **jso)
         { TPMA_OBJECT_SIGN_ENCRYPT, "sign" },
     };
     UINT32 input;
-    input = (UINT32) in;
+    input = (UINT32)in;
     json_object *jso_bit;
     if (*jso == NULL) {
         *jso = json_object_new_object();
@@ -982,18 +983,18 @@ ifapi_json_TPMA_OBJECT_serialize(const TPMA_OBJECT in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMA_LOCALITY.
  */
 TSS2_RC
-ifapi_json_TPMA_LOCALITY_serialize(const TPMA_LOCALITY in, json_object **jso)
-{
-    static const struct { TPMA_LOCALITY in; char *name; } tab[] = {
-        { TPMA_LOCALITY_TPM2_LOC_ZERO, "ZERO" },
-        { TPMA_LOCALITY_TPM2_LOC_ONE, "ONE" },
-        { TPMA_LOCALITY_TPM2_LOC_TWO, "TWO" },
-        { TPMA_LOCALITY_TPM2_LOC_THREE, "THREE" },
+ifapi_json_TPMA_LOCALITY_serialize(const TPMA_LOCALITY in, json_object **jso) {
+    static const struct {
+        TPMA_LOCALITY in;
+        char         *name;
+    } tab[] = {
+        { TPMA_LOCALITY_TPM2_LOC_ZERO, "ZERO" }, { TPMA_LOCALITY_TPM2_LOC_ONE, "ONE" },
+        { TPMA_LOCALITY_TPM2_LOC_TWO, "TWO" },   { TPMA_LOCALITY_TPM2_LOC_THREE, "THREE" },
         { TPMA_LOCALITY_TPM2_LOC_FOUR, "FOUR" },
     };
 
     UINT8 input;
-    input = (UINT8) in;
+    input = (UINT8)in;
     json_object *jso_bit;
     json_object *jso_bit_idx;
     if (*jso == NULL) {
@@ -1011,8 +1012,7 @@ ifapi_json_TPMA_LOCALITY_serialize(const TPMA_LOCALITY in, json_object **jso)
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
-    jso_bit_idx = json_object_new_int64((TPMA_LOCALITY_EXTENDED_MASK & input) >>
-                                         5);
+    jso_bit_idx = json_object_new_int64((TPMA_LOCALITY_EXTENDED_MASK & input) >> 5);
     return_if_null(jso_bit_idx, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     if (json_object_object_add(*jso, "Extended", jso_bit_idx)) {
@@ -1033,9 +1033,11 @@ ifapi_json_TPMA_LOCALITY_serialize(const TPMA_LOCALITY in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMA_CC.
  */
 TSS2_RC
-ifapi_json_TPMA_CC_serialize(const TPMA_CC in, json_object **jso)
-{
-    static const struct { TPMA_CC in; char *name; } tab[] = {
+ifapi_json_TPMA_CC_serialize(const TPMA_CC in, json_object **jso) {
+    static const struct {
+        TPMA_CC in;
+        char   *name;
+    } tab[] = {
         { TPMA_CC_NV, "nv" },
         { TPMA_CC_EXTENSIVE, "extensive" },
         { TPMA_CC_FLUSHED, "flushed" },
@@ -1043,7 +1045,7 @@ ifapi_json_TPMA_CC_serialize(const TPMA_CC in, json_object **jso)
         { TPMA_CC_V, "V" },
     };
     TPM2_CC input;
-    input = (TPM2_CC) in;
+    input = (TPM2_CC)in;
     json_object *jso_bit;
     json_object *jso_bit_idx;
     if (*jso == NULL) {
@@ -1096,14 +1098,16 @@ ifapi_json_TPMA_CC_serialize(const TPMA_CC in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMA_ACT.
  */
 TSS2_RC
-ifapi_json_TPMA_ACT_serialize(const TPMA_ACT in, json_object **jso)
-{
-    static const struct {TPMA_ACT in; char *name; } tab[] = {
-        {TPMA_ACT_SIGNALED, "signaled"},
-        {TPMA_ACT_PRESERVESIGNALED, "preserveSignaled"},
+ifapi_json_TPMA_ACT_serialize(const TPMA_ACT in, json_object **jso) {
+    static const struct {
+        TPMA_ACT in;
+        char    *name;
+    } tab[] = {
+        { TPMA_ACT_SIGNALED, "signaled" },
+        { TPMA_ACT_PRESERVESIGNALED, "preserveSignaled" },
     };
     UINT32 input;
-    input = (UINT32) in;
+    input = (UINT32)in;
     json_object *jso_bit;
 
     if (*jso == NULL) {
@@ -1134,8 +1138,7 @@ ifapi_json_TPMA_ACT_serialize(const TPMA_ACT in, json_object **jso)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_YES_NO_serialize(const TPMI_YES_NO in, json_object **jso)
-{
+ifapi_json_TPMI_YES_NO_serialize(const TPMI_YES_NO in, json_object **jso) {
     if (in == YES) {
         *jso = json_object_new_string("YES");
     } else if (in == NO) {
@@ -1156,10 +1159,11 @@ ifapi_json_TPMI_YES_NO_serialize(const TPMI_YES_NO in, json_object **jso)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_RH_HIERARCHY_serialize(const TPMI_RH_HIERARCHY in,
-                                       json_object **jso)
-{
-    static const struct { TPMI_RH_HIERARCHY in; char *name; } tab[] = {
+ifapi_json_TPMI_RH_HIERARCHY_serialize(const TPMI_RH_HIERARCHY in, json_object **jso) {
+    static const struct {
+        TPMI_RH_HIERARCHY in;
+        char             *name;
+    } tab[] = {
         { TPM2_RH_OWNER, "OWNER" },
         { TPM2_RH_PLATFORM, "PLATFORM" },
         { TPM2_RH_ENDORSEMENT, "ENDORSEMENT" },
@@ -1186,9 +1190,7 @@ ifapi_json_TPMI_RH_HIERARCHY_serialize(const TPMI_RH_HIERARCHY in,
  *
  */
 TSS2_RC
-ifapi_json_TPMI_RH_NV_INDEX_serialize(const TPMI_RH_NV_INDEX in,
-                                      json_object **jso)
-{
+ifapi_json_TPMI_RH_NV_INDEX_serialize(const TPMI_RH_NV_INDEX in, json_object **jso) {
     if (in >= TPM2_NV_INDEX_FIRST && in <= TPM2_NV_INDEX_LAST) {
         *jso = json_object_new_int64(in);
     } else {
@@ -1208,10 +1210,9 @@ ifapi_json_TPMI_RH_NV_INDEX_serialize(const TPMI_RH_NV_INDEX in,
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_HASH_serialize(const TPMI_ALG_HASH in, json_object **jso)
-{
+ifapi_json_TPMI_ALG_HASH_serialize(const TPMI_ALG_HASH in, json_object **jso) {
     CHECK_IN_LIST(TPMI_ALG_HASH, in, TPM2_ALG_SHA1, TPM2_ALG_SHA256, TPM2_ALG_SHA384,
-                      TPM2_ALG_SHA512, TPM2_ALG_SM3_256, TPM2_ALG_NULL);
+                  TPM2_ALG_SHA512, TPM2_ALG_SM3_256, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -1224,10 +1225,9 @@ ifapi_json_TPMI_ALG_HASH_serialize(const TPMI_ALG_HASH in, json_object **jso)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(const TPMI_ALG_SYM_OBJECT in,
-        json_object **jso)
-{
-    CHECK_IN_LIST(TPMI_ALG_SYM_OBJECT, in, TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_SM4, TPM2_ALG_NULL);
+ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(const TPMI_ALG_SYM_OBJECT in, json_object **jso) {
+    CHECK_IN_LIST(TPMI_ALG_SYM_OBJECT, in, TPM2_ALG_AES, TPM2_ALG_CAMELLIA, TPM2_ALG_SM4,
+                  TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -1240,11 +1240,9 @@ ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(const TPMI_ALG_SYM_OBJECT in,
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_SYM_MODE_serialize(const TPMI_ALG_SYM_MODE in,
-                                       json_object **jso)
-{
-    CHECK_IN_LIST(TPMI_ALG_SYM_MODE, in, TPM2_ALG_CTR, TPM2_ALG_OFB,
-        TPM2_ALG_CBC, TPM2_ALG_CFB, TPM2_ALG_ECB, TPM2_ALG_NULL);
+ifapi_json_TPMI_ALG_SYM_MODE_serialize(const TPMI_ALG_SYM_MODE in, json_object **jso) {
+    CHECK_IN_LIST(TPMI_ALG_SYM_MODE, in, TPM2_ALG_CTR, TPM2_ALG_OFB, TPM2_ALG_CBC, TPM2_ALG_CFB,
+                  TPM2_ALG_ECB, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -1257,11 +1255,9 @@ ifapi_json_TPMI_ALG_SYM_MODE_serialize(const TPMI_ALG_SYM_MODE in,
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_CIPHER_MODE_serialize(const TPMI_ALG_CIPHER_MODE in,
-                                          json_object **jso)
-{
-    CHECK_IN_LIST(TPMI_ALG_CIPHER_MODE, in, TPM2_ALG_CTR, TPM2_ALG_OFB,
-        TPM2_ALG_CBC, TPM2_ALG_CFB, TPM2_ALG_ECB, TPM2_ALG_NULL);
+ifapi_json_TPMI_ALG_CIPHER_MODE_serialize(const TPMI_ALG_CIPHER_MODE in, json_object **jso) {
+    CHECK_IN_LIST(TPMI_ALG_CIPHER_MODE, in, TPM2_ALG_CTR, TPM2_ALG_OFB, TPM2_ALG_CBC, TPM2_ALG_CFB,
+                  TPM2_ALG_ECB, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -1274,10 +1270,9 @@ ifapi_json_TPMI_ALG_CIPHER_MODE_serialize(const TPMI_ALG_CIPHER_MODE in,
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_KDF_serialize(const TPMI_ALG_KDF in, json_object **jso)
-{
-    CHECK_IN_LIST(TPMI_ALG_KDF, in, TPM2_ALG_MGF1, TPM2_ALG_KDF1_SP800_56A,
-        TPM2_ALG_KDF1_SP800_108, TPM2_ALG_NULL);
+ifapi_json_TPMI_ALG_KDF_serialize(const TPMI_ALG_KDF in, json_object **jso) {
+    CHECK_IN_LIST(TPMI_ALG_KDF, in, TPM2_ALG_MGF1, TPM2_ALG_KDF1_SP800_56A, TPM2_ALG_KDF1_SP800_108,
+                  TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -1290,12 +1285,9 @@ ifapi_json_TPMI_ALG_KDF_serialize(const TPMI_ALG_KDF in, json_object **jso)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_SIG_SCHEME_serialize(const TPMI_ALG_SIG_SCHEME in,
-        json_object **jso)
-{
-    CHECK_IN_LIST(TPMI_ALG_SIG_SCHEME, in, TPM2_ALG_RSASSA, TPM2_ALG_RSAPSS,
-        TPM2_ALG_ECDSA, TPM2_ALG_ECDAA, TPM2_ALG_SM2, TPM2_ALG_ECSCHNORR,
-        TPM2_ALG_HMAC, TPM2_ALG_NULL);
+ifapi_json_TPMI_ALG_SIG_SCHEME_serialize(const TPMI_ALG_SIG_SCHEME in, json_object **jso) {
+    CHECK_IN_LIST(TPMI_ALG_SIG_SCHEME, in, TPM2_ALG_RSASSA, TPM2_ALG_RSAPSS, TPM2_ALG_ECDSA,
+                  TPM2_ALG_ECDAA, TPM2_ALG_SM2, TPM2_ALG_ECSCHNORR, TPM2_ALG_HMAC, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -1310,10 +1302,8 @@ ifapi_json_TPMI_ALG_SIG_SCHEME_serialize(const TPMI_ALG_SIG_SCHEME in,
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMU_HA.
  */
 TSS2_RC
-ifapi_json_TPMU_HA_serialize(const TPMU_HA *in, UINT32 selector,
-                             json_object **jso)
-{
-    size_t size;
+ifapi_json_TPMU_HA_serialize(const TPMU_HA *in, UINT32 selector, json_object **jso) {
+    size_t         size;
     const uint8_t *buffer;
 
     switch (selector) {
@@ -1338,7 +1328,7 @@ ifapi_json_TPMU_HA_serialize(const TPMU_HA *in, UINT32 selector,
         buffer = &in->sm3_256[0];
         break;
     default:
-        LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
         return TSS2_FAPI_RC_BAD_VALUE;
     };
     char hex_string[(size) * 2 + 1];
@@ -1361,11 +1351,10 @@ ifapi_json_TPMU_HA_serialize(const TPMU_HA *in, UINT32 selector,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_HA_serialize(const TPMT_HA *in, json_object **jso)
-{
+ifapi_json_TPMT_HA_serialize(const TPMT_HA *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -1398,21 +1387,20 @@ ifapi_json_TPMT_HA_serialize(const TPMT_HA *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_DIGEST_serialize(const TPM2B_DIGEST *in, json_object **jso)
-{
+ifapi_json_TPM2B_DIGEST_serialize(const TPM2B_DIGEST *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (in->size > sizeof(TPMU_HA)) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = sizeof(TPMU_HA))",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = sizeof(TPMU_HA))",
                   (size_t)in->size, (size_t)sizeof(TPMU_HA));
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    char hex_string[((size_t)in->size)*2+1];
+    char hex_string[((size_t)in->size) * 2 + 1];
 
-    for (size_t i = 0, off = 0; i < in->size; i++, off+=2)
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
         sprintf(&hex_string[off], "%02x", in->buffer[i]);
-    hex_string[(in->size)*2] = '\0';
-    *jso = json_object_new_string (hex_string);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
@@ -1428,21 +1416,20 @@ ifapi_json_TPM2B_DIGEST_serialize(const TPM2B_DIGEST *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_DATA_serialize(const TPM2B_DATA *in, json_object **jso)
-{
+ifapi_json_TPM2B_DATA_serialize(const TPM2B_DATA *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (in->size > sizeof(TPMU_HA)) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = sizeof(TPMT_HA))",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = sizeof(TPMT_HA))",
                   (size_t)in->size, (size_t)sizeof(TPMT_HA));
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    char hex_string[sizeof(TPMT_HA)*2+1];
+    char hex_string[sizeof(TPMT_HA) * 2 + 1];
 
-    for (size_t i = 0, off = 0; i < in->size; i++, off+=2)
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
         sprintf(&hex_string[off], "%02x", in->buffer[i]);
-    hex_string[(in->size)*2] = '\0';
-    *jso = json_object_new_string (hex_string);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
@@ -1458,8 +1445,7 @@ ifapi_json_TPM2B_DATA_serialize(const TPM2B_DATA *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_NONCE_serialize(const TPM2B_NONCE *in, json_object **jso)
-{
+ifapi_json_TPM2B_NONCE_serialize(const TPM2B_NONCE *in, json_object **jso) {
     return ifapi_json_TPM2B_DIGEST_serialize(in, jso);
 }
 
@@ -1473,8 +1459,7 @@ ifapi_json_TPM2B_NONCE_serialize(const TPM2B_NONCE *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_OPERAND_serialize(const TPM2B_OPERAND *in, json_object **jso)
-{
+ifapi_json_TPM2B_OPERAND_serialize(const TPM2B_OPERAND *in, json_object **jso) {
     return ifapi_json_TPM2B_DIGEST_serialize(in, jso);
 }
 
@@ -1488,21 +1473,20 @@ ifapi_json_TPM2B_OPERAND_serialize(const TPM2B_OPERAND *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_EVENT_serialize(const TPM2B_EVENT *in, json_object **jso)
-{
+ifapi_json_TPM2B_EVENT_serialize(const TPM2B_EVENT *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (in->size > 1024) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = 1024)",
-                  (size_t)in->size, (size_t)1024);
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = 1024)", (size_t)in->size,
+                  (size_t)1024);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    char hex_string[((size_t)in->size)*2+1];
+    char hex_string[((size_t)in->size) * 2 + 1];
 
-    for (size_t i = 0, off = 0; i < in->size; i++, off+=2)
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
         sprintf(&hex_string[off], "%02x", in->buffer[i]);
-    hex_string[(in->size)*2] = '\0';
-    *jso = json_object_new_string (hex_string);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
@@ -1518,21 +1502,21 @@ ifapi_json_TPM2B_EVENT_serialize(const TPM2B_EVENT *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_MAX_NV_BUFFER_serialize(const TPM2B_MAX_NV_BUFFER *in, json_object **jso)
-{
+ifapi_json_TPM2B_MAX_NV_BUFFER_serialize(const TPM2B_MAX_NV_BUFFER *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (in->size > TPM2_MAX_NV_BUFFER_SIZE) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_NV_BUFFER_SIZE)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR
+                  " = TPM2_MAX_NV_BUFFER_SIZE)",
                   (size_t)in->size, (size_t)TPM2_MAX_NV_BUFFER_SIZE);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    char hex_string[((size_t)in->size)*2+1];
+    char hex_string[((size_t)in->size) * 2 + 1];
 
-    for (size_t i = 0, off = 0; i < in->size; i++, off+=2)
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
         sprintf(&hex_string[off], "%02x", in->buffer[i]);
-    hex_string[(in->size)*2] = '\0';
-    *jso = json_object_new_string (hex_string);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
@@ -1548,21 +1532,20 @@ ifapi_json_TPM2B_MAX_NV_BUFFER_serialize(const TPM2B_MAX_NV_BUFFER *in, json_obj
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_NAME_serialize(const TPM2B_NAME *in, json_object **jso)
-{
+ifapi_json_TPM2B_NAME_serialize(const TPM2B_NAME *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (in->size > sizeof(TPMU_NAME)) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = sizeof(TPMU_NAME))",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = sizeof(TPMU_NAME))",
                   (size_t)in->size, (size_t)sizeof(TPMU_NAME));
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    char hex_string[((size_t)in->size)*2+1];
+    char hex_string[((size_t)in->size) * 2 + 1];
 
-    for (size_t i = 0, off = 0; i < in->size; i++, off+=2)
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
         sprintf(&hex_string[off], "%02x", in->name[i]);
-    hex_string[(in->size)*2] = '\0';
-    *jso = json_object_new_string (hex_string);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
@@ -1578,16 +1561,15 @@ ifapi_json_TPM2B_NAME_serialize(const TPM2B_NAME *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_TK_CREATION_serialize(const TPMT_TK_CREATION *in, json_object **jso)
-{
+ifapi_json_TPMT_TK_CREATION_serialize(const TPMT_TK_CREATION *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     if (in != NULL && in->tag != TPM2_ST_CREATION) {
-        LOG_ERROR("BAD VALUE %"PRIuPTR" != %"PRIuPTR,(size_t)in->tag,(size_t)TPM2_ST_CREATION);
+        LOG_ERROR("BAD VALUE %" PRIuPTR " != %" PRIuPTR, (size_t)in->tag, (size_t)TPM2_ST_CREATION);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     jso2 = NULL;
@@ -1624,22 +1606,20 @@ ifapi_json_TPMT_TK_CREATION_serialize(const TPMT_TK_CREATION *in, json_object **
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_ALG_PROPERTY_serialize(const TPMS_ALG_PROPERTY *in, json_object **jso)
-{
+ifapi_json_TPMS_ALG_PROPERTY_serialize(const TPMS_ALG_PROPERTY *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
 
-    if ((in->alg == TPM2_ALG_SHA3_256 ||
-         in->alg == TPM2_ALG_SHA3_384 ||
-         in->alg == TPM2_ALG_SHA3_512)) {
+    if ((in->alg == TPM2_ALG_SHA3_256 || in->alg == TPM2_ALG_SHA3_384
+         || in->alg == TPM2_ALG_SHA3_512)) {
         LOG_WARNING("SHA3 hash algs are not supported by TSS");
         return TSS2_RC_SUCCESS;
     }
 
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPM2_ALG_ID_serialize(in->alg, &jso2);
     return_if_error(r, "Serialize TPM2_ALG_ID");
@@ -1667,14 +1647,13 @@ ifapi_json_TPMS_ALG_PROPERTY_serialize(const TPMS_ALG_PROPERTY *in, json_object 
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_TAGGED_PROPERTY_serialize(const TPMS_TAGGED_PROPERTY *in, json_object **jso)
-{
+ifapi_json_TPMS_TAGGED_PROPERTY_serialize(const TPMS_TAGGED_PROPERTY *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPM2_PT_serialize(in->property, &jso2);
     return_if_error(r, "Serialize TPM2_PT");
@@ -1702,22 +1681,21 @@ ifapi_json_TPMS_TAGGED_PROPERTY_serialize(const TPMS_TAGGED_PROPERTY *in, json_o
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_CC_serialize(const TPML_CC *in, json_object **jso)
-{
+ifapi_json_TPML_CC_serialize(const TPML_CC *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_MAX_CAP_CC) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_CAP_CC)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_MAX_CAP_CC)",
                   (size_t)in->count, (size_t)TPM2_MAX_CAP_CC);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
-        r = ifapi_json_TPM2_CC_serialize (in->commandCodes[i], &jso2);
+        r = ifapi_json_TPM2_CC_serialize(in->commandCodes[i], &jso2);
         return_if_error(r, "Serialize TPM2_CC");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -1737,22 +1715,21 @@ ifapi_json_TPML_CC_serialize(const TPML_CC *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_CCA_serialize(const TPML_CCA *in, json_object **jso)
-{
+ifapi_json_TPML_CCA_serialize(const TPML_CCA *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_MAX_CAP_CC) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_CAP_CC)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_MAX_CAP_CC)",
                   (size_t)in->count, (size_t)TPM2_MAX_CAP_CC);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
-        r = ifapi_json_TPMA_CC_serialize (in->commandAttributes[i], &jso2);
+        r = ifapi_json_TPMA_CC_serialize(in->commandAttributes[i], &jso2);
         return_if_error(r, "Serialize TPMA_CC");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -1772,22 +1749,21 @@ ifapi_json_TPML_CCA_serialize(const TPML_CCA *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_HANDLE_serialize(const TPML_HANDLE *in, json_object **jso)
-{
+ifapi_json_TPML_HANDLE_serialize(const TPML_HANDLE *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_MAX_CAP_HANDLES) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_CAP_HANDLES)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_MAX_CAP_HANDLES)",
                   (size_t)in->count, (size_t)TPM2_MAX_CAP_HANDLES);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
-        r = ifapi_json_TPM2_HANDLE_serialize (in->handle[i], &jso2);
+        r = ifapi_json_TPM2_HANDLE_serialize(in->handle[i], &jso2);
         return_if_error(r, "Serialize TPM2_HANDLE");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -1807,22 +1783,21 @@ ifapi_json_TPML_HANDLE_serialize(const TPML_HANDLE *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_DIGEST_VALUES_serialize(const TPML_DIGEST_VALUES *in, json_object **jso)
-{
+ifapi_json_TPML_DIGEST_VALUES_serialize(const TPML_DIGEST_VALUES *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_NUM_PCR_BANKS) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_NUM_PCR_BANKS)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_NUM_PCR_BANKS)",
                   (size_t)in->count, (size_t)TPM2_NUM_PCR_BANKS);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
-        r = ifapi_json_TPMT_HA_serialize (&in->digests[i], &jso2);
+        r = ifapi_json_TPMT_HA_serialize(&in->digests[i], &jso2);
         return_if_error(r, "Serialize TPMT_HA");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -1842,22 +1817,21 @@ ifapi_json_TPML_DIGEST_VALUES_serialize(const TPML_DIGEST_VALUES *in, json_objec
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_PCR_SELECTION_serialize(const TPML_PCR_SELECTION *in, json_object **jso)
-{
+ifapi_json_TPML_PCR_SELECTION_serialize(const TPML_PCR_SELECTION *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_NUM_PCR_BANKS) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_NUM_PCR_BANKS)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_NUM_PCR_BANKS)",
                   (size_t)in->count, (size_t)TPM2_NUM_PCR_BANKS);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
-        r = ifapi_json_TPMS_PCR_SELECTION_serialize (&in->pcrSelections[i], &jso2);
+        r = ifapi_json_TPMS_PCR_SELECTION_serialize(&in->pcrSelections[i], &jso2);
         return_if_error(r, "Serialize TPMS_PCR_SELECTION");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -1877,22 +1851,21 @@ ifapi_json_TPML_PCR_SELECTION_serialize(const TPML_PCR_SELECTION *in, json_objec
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_ALG_PROPERTY_serialize(const TPML_ALG_PROPERTY *in, json_object **jso)
-{
+ifapi_json_TPML_ALG_PROPERTY_serialize(const TPML_ALG_PROPERTY *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_MAX_CAP_ALGS) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_CAP_ALGS)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_MAX_CAP_ALGS)",
                   (size_t)in->count, (size_t)TPM2_MAX_CAP_ALGS);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
-        r = ifapi_json_TPMS_ALG_PROPERTY_serialize (&in->algProperties[i], &jso2);
+        r = ifapi_json_TPMS_ALG_PROPERTY_serialize(&in->algProperties[i], &jso2);
         return_if_error(r, "Serialize TPMS_ALG_PROPERTY");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -1912,22 +1885,23 @@ ifapi_json_TPML_ALG_PROPERTY_serialize(const TPML_ALG_PROPERTY *in, json_object 
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_TAGGED_TPM_PROPERTY_serialize(const TPML_TAGGED_TPM_PROPERTY *in, json_object **jso)
-{
+ifapi_json_TPML_TAGGED_TPM_PROPERTY_serialize(const TPML_TAGGED_TPM_PROPERTY *in,
+                                              json_object                   **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_MAX_TPM_PROPERTIES) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_TPM_PROPERTIES)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR
+                  " = TPM2_MAX_TPM_PROPERTIES)",
                   (size_t)in->count, (size_t)TPM2_MAX_TPM_PROPERTIES);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
-        r = ifapi_json_TPMS_TAGGED_PROPERTY_serialize (&in->tpmProperty[i], &jso2);
+        r = ifapi_json_TPMS_TAGGED_PROPERTY_serialize(&in->tpmProperty[i], &jso2);
         return_if_error(r, "Serialize TPMS_TAGGED_PROPERTY");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -1947,22 +1921,23 @@ ifapi_json_TPML_TAGGED_TPM_PROPERTY_serialize(const TPML_TAGGED_TPM_PROPERTY *in
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(const TPML_TAGGED_PCR_PROPERTY *in, json_object **jso)
-{
+ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(const TPML_TAGGED_PCR_PROPERTY *in,
+                                              json_object                   **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_MAX_PCR_PROPERTIES) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_PCR_PROPERTIES)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR
+                  " = TPM2_MAX_PCR_PROPERTIES)",
                   (size_t)in->count, (size_t)TPM2_MAX_PCR_PROPERTIES);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
-        r = ifapi_json_TPMS_TAGGED_PCR_SELECT_serialize (&in->pcrProperty[i], &jso2);
+        r = ifapi_json_TPMS_TAGGED_PCR_SELECT_serialize(&in->pcrProperty[i], &jso2);
         return_if_error(r, "Serialize TPMS_TAGGED_PCR_SELECT");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -1982,22 +1957,21 @@ ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(const TPML_TAGGED_PCR_PROPERTY *in
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_ECC_CURVE_serialize(const TPML_ECC_CURVE *in, json_object **jso)
-{
+ifapi_json_TPML_ECC_CURVE_serialize(const TPML_ECC_CURVE *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_MAX_ECC_CURVES) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_ECC_CURVES)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_MAX_ECC_CURVES)",
                   (size_t)in->count, (size_t)TPM2_MAX_ECC_CURVES);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
-        r = ifapi_json_TPM2_ECC_CURVE_serialize (in->eccCurves[i], &jso2);
+        r = ifapi_json_TPM2_ECC_CURVE_serialize(in->eccCurves[i], &jso2);
         return_if_error(r, "Serialize TPM2_ECC_CURVE");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -2017,22 +1991,22 @@ ifapi_json_TPML_ECC_CURVE_serialize(const TPML_ECC_CURVE *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_TAGGED_POLICY_serialize(const TPML_TAGGED_POLICY *in, json_object **jso)
-{
+ifapi_json_TPML_TAGGED_POLICY_serialize(const TPML_TAGGED_POLICY *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_MAX_TAGGED_POLICIES) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_TAGGED_POLICIES)",
-            (size_t)in->count, (size_t)TPM2_MAX_TAGGED_POLICIES);
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR
+                  " = TPM2_MAX_TAGGED_POLICIES)",
+                  (size_t)in->count, (size_t)TPM2_MAX_TAGGED_POLICIES);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
-        r = ifapi_json_TPMS_TAGGED_POLICY_serialize (&in->policies[i], &jso2);
+        r = ifapi_json_TPMS_TAGGED_POLICY_serialize(&in->policies[i], &jso2);
         return_if_error(r, "Serialize TPMS_TAGGED_POLICY");
 
         if (json_object_array_add(*jso, jso2)) {
@@ -2052,20 +2026,19 @@ ifapi_json_TPML_TAGGED_POLICY_serialize(const TPML_TAGGED_POLICY *in, json_objec
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPML_ACT_DATA_serialize(const TPML_ACT_DATA *in, json_object **jso)
-{
+ifapi_json_TPML_ACT_DATA_serialize(const TPML_ACT_DATA *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     TSS2_RC r;
     if (in->count > TPM2_MAX_ACT_DATA) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_ACT_DATA)",
-            (size_t)in->count, (size_t)TPM2_MAX_ACT_DATA);
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_MAX_ACT_DATA)",
+                  (size_t)in->count, (size_t)TPM2_MAX_ACT_DATA);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
     *jso = json_object_new_array();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
-    for (size_t i=0; i < in->count; i++) {
+    for (size_t i = 0; i < in->count; i++) {
         json_object *jso2 = NULL;
         r = ifapi_json_TPMS_ACT_DATA_serialize(&in->actData[i], &jso2);
         return_if_error(r, "Serialize TPMS_ACT_DATA");
@@ -2089,34 +2062,35 @@ ifapi_json_TPML_ACT_DATA_serialize(const TPML_ACT_DATA *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_CAPABILITIES_serialize(const TPMU_CAPABILITIES *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_CAPABILITIES_serialize(const TPMU_CAPABILITIES *in,
+                                       UINT32                   selector,
+                                       json_object            **jso) {
     switch (selector) {
-        case TPM2_CAP_ALGS:
-            return ifapi_json_TPML_ALG_PROPERTY_serialize(&in->algorithms, jso);
-        case TPM2_CAP_HANDLES:
-            return ifapi_json_TPML_HANDLE_serialize(&in->handles, jso);
-        case TPM2_CAP_COMMANDS:
-            return ifapi_json_TPML_CCA_serialize(&in->command, jso);
-        case TPM2_CAP_PP_COMMANDS:
-            return ifapi_json_TPML_CC_serialize(&in->ppCommands, jso);
-        case TPM2_CAP_AUDIT_COMMANDS:
-            return ifapi_json_TPML_CC_serialize(&in->auditCommands, jso);
-        case TPM2_CAP_PCRS:
-            return ifapi_json_TPML_PCR_SELECTION_serialize(&in->assignedPCR, jso);
-        case TPM2_CAP_TPM_PROPERTIES:
-            return ifapi_json_TPML_TAGGED_TPM_PROPERTY_serialize(&in->tpmProperties, jso);
-        case TPM2_CAP_PCR_PROPERTIES:
-            return ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(&in->pcrProperties, jso);
-        case TPM2_CAP_ECC_CURVES:
-            return ifapi_json_TPML_ECC_CURVE_serialize(&in->eccCurves, jso);
-        case TPM2_CAP_AUTH_POLICIES:
-            return ifapi_json_TPML_TAGGED_POLICY_serialize(&in->authPolicies, jso);
-        case TPM2_CAP_ACT:
-            return ifapi_json_TPML_ACT_DATA_serialize(&in->actData, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_CAP_ALGS:
+        return ifapi_json_TPML_ALG_PROPERTY_serialize(&in->algorithms, jso);
+    case TPM2_CAP_HANDLES:
+        return ifapi_json_TPML_HANDLE_serialize(&in->handles, jso);
+    case TPM2_CAP_COMMANDS:
+        return ifapi_json_TPML_CCA_serialize(&in->command, jso);
+    case TPM2_CAP_PP_COMMANDS:
+        return ifapi_json_TPML_CC_serialize(&in->ppCommands, jso);
+    case TPM2_CAP_AUDIT_COMMANDS:
+        return ifapi_json_TPML_CC_serialize(&in->auditCommands, jso);
+    case TPM2_CAP_PCRS:
+        return ifapi_json_TPML_PCR_SELECTION_serialize(&in->assignedPCR, jso);
+    case TPM2_CAP_TPM_PROPERTIES:
+        return ifapi_json_TPML_TAGGED_TPM_PROPERTY_serialize(&in->tpmProperties, jso);
+    case TPM2_CAP_PCR_PROPERTIES:
+        return ifapi_json_TPML_TAGGED_PCR_PROPERTY_serialize(&in->pcrProperties, jso);
+    case TPM2_CAP_ECC_CURVES:
+        return ifapi_json_TPML_ECC_CURVE_serialize(&in->eccCurves, jso);
+    case TPM2_CAP_AUTH_POLICIES:
+        return ifapi_json_TPML_TAGGED_POLICY_serialize(&in->authPolicies, jso);
+    case TPM2_CAP_ACT:
+        return ifapi_json_TPML_ACT_DATA_serialize(&in->actData, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -2131,14 +2105,13 @@ ifapi_json_TPMU_CAPABILITIES_serialize(const TPMU_CAPABILITIES *in, UINT32 selec
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_CAPABILITY_DATA_serialize(const TPMS_CAPABILITY_DATA *in, json_object **jso)
-{
+ifapi_json_TPMS_CAPABILITY_DATA_serialize(const TPMS_CAPABILITY_DATA *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPM2_CAP_serialize(in->capability, &jso2);
     return_if_error(r, "Serialize TPM2_CAP");
@@ -2148,7 +2121,7 @@ ifapi_json_TPMS_CAPABILITY_DATA_serialize(const TPMS_CAPABILITY_DATA *in, json_o
     }
     jso2 = NULL;
     r = ifapi_json_TPMU_CAPABILITIES_serialize(&in->data, in->capability, &jso2);
-    return_if_error(r,"Serialize TPMU_CAPABILITIES");
+    return_if_error(r, "Serialize TPMU_CAPABILITIES");
 
     if (json_object_object_add(*jso, "data", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -2166,14 +2139,13 @@ ifapi_json_TPMS_CAPABILITY_DATA_serialize(const TPMS_CAPABILITY_DATA *in, json_o
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_CLOCK_INFO_serialize(const TPMS_CLOCK_INFO *in, json_object **jso)
-{
+ifapi_json_TPMS_CLOCK_INFO_serialize(const TPMS_CLOCK_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_UINT64_serialize(in->clock, &jso2);
     return_if_error(r, "Serialize UINT64");
@@ -2215,14 +2187,13 @@ ifapi_json_TPMS_CLOCK_INFO_serialize(const TPMS_CLOCK_INFO *in, json_object **js
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_TIME_INFO_serialize(const TPMS_TIME_INFO *in, json_object **jso)
-{
+ifapi_json_TPMS_TIME_INFO_serialize(const TPMS_TIME_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_UINT64_serialize(in->time, &jso2);
     return_if_error(r, "Serialize UINT64");
@@ -2250,14 +2221,13 @@ ifapi_json_TPMS_TIME_INFO_serialize(const TPMS_TIME_INFO *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_TIME_ATTEST_INFO_serialize(const TPMS_TIME_ATTEST_INFO *in, json_object **jso)
-{
+ifapi_json_TPMS_TIME_ATTEST_INFO_serialize(const TPMS_TIME_ATTEST_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMS_TIME_INFO_serialize(&in->time, &jso2);
     return_if_error(r, "Serialize TPMS_TIME_INFO");
@@ -2285,14 +2255,13 @@ ifapi_json_TPMS_TIME_ATTEST_INFO_serialize(const TPMS_TIME_ATTEST_INFO *in, json
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_CERTIFY_INFO_serialize(const TPMS_CERTIFY_INFO *in, json_object **jso)
-{
+ifapi_json_TPMS_CERTIFY_INFO_serialize(const TPMS_CERTIFY_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPM2B_NAME_serialize(&in->name, &jso2);
     return_if_error(r, "Serialize TPM2B_NAME");
@@ -2320,14 +2289,13 @@ ifapi_json_TPMS_CERTIFY_INFO_serialize(const TPMS_CERTIFY_INFO *in, json_object 
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_QUOTE_INFO_serialize(const TPMS_QUOTE_INFO *in, json_object **jso)
-{
+ifapi_json_TPMS_QUOTE_INFO_serialize(const TPMS_QUOTE_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPML_PCR_SELECTION_serialize(&in->pcrSelect, &jso2);
     return_if_error(r, "Serialize TPML_PCR_SELECTION");
@@ -2355,14 +2323,13 @@ ifapi_json_TPMS_QUOTE_INFO_serialize(const TPMS_QUOTE_INFO *in, json_object **js
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_COMMAND_AUDIT_INFO_serialize(const TPMS_COMMAND_AUDIT_INFO *in, json_object **jso)
-{
+ifapi_json_TPMS_COMMAND_AUDIT_INFO_serialize(const TPMS_COMMAND_AUDIT_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_UINT64_serialize(in->auditCounter, &jso2);
     return_if_error(r, "Serialize UINT64");
@@ -2404,14 +2371,13 @@ ifapi_json_TPMS_COMMAND_AUDIT_INFO_serialize(const TPMS_COMMAND_AUDIT_INFO *in, 
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SESSION_AUDIT_INFO_serialize(const TPMS_SESSION_AUDIT_INFO *in, json_object **jso)
-{
+ifapi_json_TPMS_SESSION_AUDIT_INFO_serialize(const TPMS_SESSION_AUDIT_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_YES_NO_serialize(in->exclusiveSession, &jso2);
     return_if_error(r, "Serialize TPMI_YES_NO");
@@ -2439,14 +2405,13 @@ ifapi_json_TPMS_SESSION_AUDIT_INFO_serialize(const TPMS_SESSION_AUDIT_INFO *in, 
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_CREATION_INFO_serialize(const TPMS_CREATION_INFO *in, json_object **jso)
-{
+ifapi_json_TPMS_CREATION_INFO_serialize(const TPMS_CREATION_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPM2B_NAME_serialize(&in->objectName, &jso2);
     return_if_error(r, "Serialize TPM2B_NAME");
@@ -2474,14 +2439,13 @@ ifapi_json_TPMS_CREATION_INFO_serialize(const TPMS_CREATION_INFO *in, json_objec
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_NV_CERTIFY_INFO_serialize(const TPMS_NV_CERTIFY_INFO *in, json_object **jso)
-{
+ifapi_json_TPMS_NV_CERTIFY_INFO_serialize(const TPMS_NV_CERTIFY_INFO *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPM2B_NAME_serialize(&in->indexName, &jso2);
     return_if_error(r, "Serialize TPM2B_NAME");
@@ -2515,11 +2479,10 @@ ifapi_json_TPMS_NV_CERTIFY_INFO_serialize(const TPMS_NV_CERTIFY_INFO *in, json_o
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ST_ATTEST_serialize(const TPMI_ST_ATTEST in, json_object **jso)
-{
+ifapi_json_TPMI_ST_ATTEST_serialize(const TPMI_ST_ATTEST in, json_object **jso) {
     CHECK_IN_LIST(TPMI_ALG_HASH, in, TPM2_ST_ATTEST_CERTIFY, TPM2_ST_ATTEST_QUOTE,
-                  TPM2_ST_ATTEST_SESSION_AUDIT, TPM2_ST_ATTEST_COMMAND_AUDIT,
-                  TPM2_ST_ATTEST_TIME, TPM2_ST_ATTEST_CREATION, TPM2_ST_ATTEST_NV);
+                  TPM2_ST_ATTEST_SESSION_AUDIT, TPM2_ST_ATTEST_COMMAND_AUDIT, TPM2_ST_ATTEST_TIME,
+                  TPM2_ST_ATTEST_CREATION, TPM2_ST_ATTEST_NV);
     return ifapi_json_TPM2_ST_serialize(in, jso);
 }
 
@@ -2535,26 +2498,25 @@ ifapi_json_TPMI_ST_ATTEST_serialize(const TPMI_ST_ATTEST in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_ATTEST_serialize(const TPMU_ATTEST *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_ATTEST_serialize(const TPMU_ATTEST *in, UINT32 selector, json_object **jso) {
     switch (selector) {
-        case TPM2_ST_ATTEST_CERTIFY:
-            return ifapi_json_TPMS_CERTIFY_INFO_serialize(&in->certify, jso);
-        case TPM2_ST_ATTEST_CREATION:
-            return ifapi_json_TPMS_CREATION_INFO_serialize(&in->creation, jso);
-        case TPM2_ST_ATTEST_QUOTE:
-            return ifapi_json_TPMS_QUOTE_INFO_serialize(&in->quote, jso);
-        case TPM2_ST_ATTEST_COMMAND_AUDIT:
-            return ifapi_json_TPMS_COMMAND_AUDIT_INFO_serialize(&in->commandAudit, jso);
-        case TPM2_ST_ATTEST_SESSION_AUDIT:
-            return ifapi_json_TPMS_SESSION_AUDIT_INFO_serialize(&in->sessionAudit, jso);
-        case TPM2_ST_ATTEST_TIME:
-            return ifapi_json_TPMS_TIME_ATTEST_INFO_serialize(&in->time, jso);
-        case TPM2_ST_ATTEST_NV:
-            return ifapi_json_TPMS_NV_CERTIFY_INFO_serialize(&in->nv, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_ST_ATTEST_CERTIFY:
+        return ifapi_json_TPMS_CERTIFY_INFO_serialize(&in->certify, jso);
+    case TPM2_ST_ATTEST_CREATION:
+        return ifapi_json_TPMS_CREATION_INFO_serialize(&in->creation, jso);
+    case TPM2_ST_ATTEST_QUOTE:
+        return ifapi_json_TPMS_QUOTE_INFO_serialize(&in->quote, jso);
+    case TPM2_ST_ATTEST_COMMAND_AUDIT:
+        return ifapi_json_TPMS_COMMAND_AUDIT_INFO_serialize(&in->commandAudit, jso);
+    case TPM2_ST_ATTEST_SESSION_AUDIT:
+        return ifapi_json_TPMS_SESSION_AUDIT_INFO_serialize(&in->sessionAudit, jso);
+    case TPM2_ST_ATTEST_TIME:
+        return ifapi_json_TPMS_TIME_ATTEST_INFO_serialize(&in->time, jso);
+    case TPM2_ST_ATTEST_NV:
+        return ifapi_json_TPMS_NV_CERTIFY_INFO_serialize(&in->nv, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -2569,14 +2531,13 @@ ifapi_json_TPMU_ATTEST_serialize(const TPMU_ATTEST *in, UINT32 selector, json_ob
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_ATTEST_serialize(const TPMS_ATTEST *in, json_object **jso)
-{
+ifapi_json_TPMS_ATTEST_serialize(const TPMS_ATTEST *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPM2_GENERATED_serialize(in->magic, &jso2);
     return_if_error(r, "Serialize TPM2_GENERATED");
@@ -2621,7 +2582,7 @@ ifapi_json_TPMS_ATTEST_serialize(const TPMS_ATTEST *in, json_object **jso)
     }
     jso2 = NULL;
     r = ifapi_json_TPMU_ATTEST_serialize(&in->attested, in->type, &jso2);
-    return_if_error(r,"Serialize TPMU_ATTEST");
+    return_if_error(r, "Serialize TPMU_ATTEST");
 
     if (json_object_object_add(*jso, "attested", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -2640,8 +2601,7 @@ ifapi_json_TPMS_ATTEST_serialize(const TPMS_ATTEST *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMI_SM4_KEY_BITS_serialize(const TPMI_SM4_KEY_BITS in, json_object **jso)
-{
+ifapi_json_TPMI_SM4_KEY_BITS_serialize(const TPMI_SM4_KEY_BITS in, json_object **jso) {
     CHECK_IN_LIST(UINT16, in, 128);
     return ifapi_json_UINT16_serialize(in, jso);
 }
@@ -2657,8 +2617,7 @@ ifapi_json_TPMI_SM4_KEY_BITS_serialize(const TPMI_SM4_KEY_BITS in, json_object *
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMI_CAMELLIA_KEY_BITS_serialize(const TPMI_CAMELLIA_KEY_BITS in, json_object **jso)
-{
+ifapi_json_TPMI_CAMELLIA_KEY_BITS_serialize(const TPMI_CAMELLIA_KEY_BITS in, json_object **jso) {
     CHECK_IN_LIST(UINT16, in, 128, 192, 256);
     return ifapi_json_UINT16_serialize(in, jso);
 }
@@ -2674,8 +2633,7 @@ ifapi_json_TPMI_CAMELLIA_KEY_BITS_serialize(const TPMI_CAMELLIA_KEY_BITS in, jso
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMI_AES_KEY_BITS_serialize(const TPMI_AES_KEY_BITS in, json_object **jso)
-{
+ifapi_json_TPMI_AES_KEY_BITS_serialize(const TPMI_AES_KEY_BITS in, json_object **jso) {
     CHECK_IN_LIST(UINT16, in, 128, 192, 256);
     return ifapi_json_UINT16_serialize(in, jso);
 }
@@ -2691,20 +2649,21 @@ ifapi_json_TPMI_AES_KEY_BITS_serialize(const TPMI_AES_KEY_BITS in, json_object *
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_SYM_KEY_BITS_serialize(const TPMU_SYM_KEY_BITS *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_SYM_KEY_BITS_serialize(const TPMU_SYM_KEY_BITS *in,
+                                       UINT32                   selector,
+                                       json_object            **jso) {
     switch (selector) {
-        case TPM2_ALG_AES:
-            return ifapi_json_TPMI_AES_KEY_BITS_serialize(in->aes, jso);
-        case TPM2_ALG_SM4:
-            return ifapi_json_TPMI_SM4_KEY_BITS_serialize(in->sm4, jso);
-        case TPM2_ALG_CAMELLIA:
-            return ifapi_json_TPMI_CAMELLIA_KEY_BITS_serialize(in->camellia, jso);
-        case TPM2_ALG_XOR:
-            return ifapi_json_TPMI_ALG_HASH_serialize(in->exclusiveOr, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_ALG_AES:
+        return ifapi_json_TPMI_AES_KEY_BITS_serialize(in->aes, jso);
+    case TPM2_ALG_SM4:
+        return ifapi_json_TPMI_SM4_KEY_BITS_serialize(in->sm4, jso);
+    case TPM2_ALG_CAMELLIA:
+        return ifapi_json_TPMI_CAMELLIA_KEY_BITS_serialize(in->camellia, jso);
+    case TPM2_ALG_XOR:
+        return ifapi_json_TPMI_ALG_HASH_serialize(in->exclusiveOr, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -2720,16 +2679,15 @@ ifapi_json_TPMU_SYM_KEY_BITS_serialize(const TPMU_SYM_KEY_BITS *in, UINT32 selec
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMU_SYM_MODE.
  */
 TSS2_RC
-ifapi_json_TPMU_SYM_MODE_serialize(const TPMU_SYM_MODE *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_SYM_MODE_serialize(const TPMU_SYM_MODE *in, UINT32 selector, json_object **jso) {
     switch (selector) {
-        case TPM2_ALG_CAMELLIA:
-        case TPM2_ALG_SM4:
-        case TPM2_ALG_AES:
-            return ifapi_json_TPMI_ALG_SYM_MODE_serialize(in->aes, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_ALG_CAMELLIA:
+    case TPM2_ALG_SM4:
+    case TPM2_ALG_AES:
+        return ifapi_json_TPMI_ALG_SYM_MODE_serialize(in->aes, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -2744,14 +2702,13 @@ ifapi_json_TPMU_SYM_MODE_serialize(const TPMU_SYM_MODE *in, UINT32 selector, jso
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(const TPMT_SYM_DEF_OBJECT *in, json_object **jso)
-{
+ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(const TPMT_SYM_DEF_OBJECT *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_SYM_OBJECT_serialize(in->algorithm, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_SYM_OBJECT");
@@ -2762,7 +2719,7 @@ ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(const TPMT_SYM_DEF_OBJECT *in, json_obj
     if (in->algorithm != TPM2_ALG_NULL) {
         json_object *jso3 = NULL;
         r = ifapi_json_TPMU_SYM_KEY_BITS_serialize(&in->keyBits, in->algorithm, &jso3);
-        return_if_error(r,"Serialize TPMU_SYM_KEY_BITS");
+        return_if_error(r, "Serialize TPMU_SYM_KEY_BITS");
 
         if (json_object_object_add(*jso, "keyBits", jso3)) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -2771,7 +2728,7 @@ ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(const TPMT_SYM_DEF_OBJECT *in, json_obj
     if (in->algorithm != TPM2_ALG_NULL) {
         json_object *jso3 = NULL;
         r = ifapi_json_TPMU_SYM_MODE_serialize(&in->mode, in->algorithm, &jso3);
-        return_if_error(r,"Serialize TPMU_SYM_MODE");
+        return_if_error(r, "Serialize TPMU_SYM_MODE");
 
         if (json_object_object_add(*jso, "mode", jso3)) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -2790,14 +2747,13 @@ ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(const TPMT_SYM_DEF_OBJECT *in, json_obj
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SYMCIPHER_PARMS_serialize(const TPMS_SYMCIPHER_PARMS *in, json_object **jso)
-{
+ifapi_json_TPMS_SYMCIPHER_PARMS_serialize(const TPMS_SYMCIPHER_PARMS *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(&in->sym, &jso2);
     return_if_error(r, "Serialize TPMT_SYM_DEF_OBJECT");
@@ -2818,14 +2774,13 @@ ifapi_json_TPMS_SYMCIPHER_PARMS_serialize(const TPMS_SYMCIPHER_PARMS *in, json_o
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SCHEME_HASH_serialize(const TPMS_SCHEME_HASH *in, json_object **jso)
-{
+ifapi_json_TPMS_SCHEME_HASH_serialize(const TPMS_SCHEME_HASH *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_HASH_serialize(in->hashAlg, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_HASH");
@@ -2846,14 +2801,13 @@ ifapi_json_TPMS_SCHEME_HASH_serialize(const TPMS_SCHEME_HASH *in, json_object **
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SCHEME_ECDAA_serialize(const TPMS_SCHEME_ECDAA *in, json_object **jso)
-{
+ifapi_json_TPMS_SCHEME_ECDAA_serialize(const TPMS_SCHEME_ECDAA *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_HASH_serialize(in->hashAlg, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_HASH");
@@ -2880,8 +2834,8 @@ ifapi_json_TPMS_SCHEME_ECDAA_serialize(const TPMS_SCHEME_ECDAA *in, json_object 
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_serialize(const TPMI_ALG_KEYEDHASH_SCHEME in, json_object **jso)
-{
+ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_serialize(const TPMI_ALG_KEYEDHASH_SCHEME in,
+                                               json_object                   **jso) {
     CHECK_IN_LIST(TPMI_ALG_HASH, in, TPM2_ALG_HMAC, TPM2_ALG_XOR, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
@@ -2896,8 +2850,7 @@ ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_serialize(const TPMI_ALG_KEYEDHASH_SCHEME i
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SCHEME_HMAC_serialize(const TPMS_SCHEME_HMAC *in, json_object **jso)
-{
+ifapi_json_TPMS_SCHEME_HMAC_serialize(const TPMS_SCHEME_HMAC *in, json_object **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -2911,14 +2864,13 @@ ifapi_json_TPMS_SCHEME_HMAC_serialize(const TPMS_SCHEME_HMAC *in, json_object **
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SCHEME_XOR_serialize(const TPMS_SCHEME_XOR *in, json_object **jso)
-{
+ifapi_json_TPMS_SCHEME_XOR_serialize(const TPMS_SCHEME_XOR *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_HASH_serialize(in->hashAlg, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_HASH");
@@ -2948,16 +2900,17 @@ ifapi_json_TPMS_SCHEME_XOR_serialize(const TPMS_SCHEME_XOR *in, json_object **js
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_SCHEME_KEYEDHASH_serialize(const TPMU_SCHEME_KEYEDHASH *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_SCHEME_KEYEDHASH_serialize(const TPMU_SCHEME_KEYEDHASH *in,
+                                           UINT32                       selector,
+                                           json_object                **jso) {
     switch (selector) {
-        case TPM2_ALG_HMAC:
-            return ifapi_json_TPMS_SCHEME_HMAC_serialize(&in->hmac, jso);
-        case TPM2_ALG_XOR:
-            return ifapi_json_TPMS_SCHEME_XOR_serialize(&in->exclusiveOr, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_ALG_HMAC:
+        return ifapi_json_TPMS_SCHEME_HMAC_serialize(&in->hmac, jso);
+    case TPM2_ALG_XOR:
+        return ifapi_json_TPMS_SCHEME_XOR_serialize(&in->exclusiveOr, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -2972,14 +2925,13 @@ ifapi_json_TPMU_SCHEME_KEYEDHASH_serialize(const TPMU_SCHEME_KEYEDHASH *in, UINT
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_KEYEDHASH_SCHEME_serialize(const TPMT_KEYEDHASH_SCHEME *in, json_object **jso)
-{
+ifapi_json_TPMT_KEYEDHASH_SCHEME_serialize(const TPMT_KEYEDHASH_SCHEME *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_KEYEDHASH_SCHEME_serialize(in->scheme, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_KEYEDHASH_SCHEME");
@@ -2990,7 +2942,7 @@ ifapi_json_TPMT_KEYEDHASH_SCHEME_serialize(const TPMT_KEYEDHASH_SCHEME *in, json
     if (in->scheme != TPM2_ALG_NULL) {
         json_object *jso3 = NULL;
         r = ifapi_json_TPMU_SCHEME_KEYEDHASH_serialize(&in->details, in->scheme, &jso3);
-        return_if_error(r,"Serialize TPMU_SCHEME_KEYEDHASH");
+        return_if_error(r, "Serialize TPMU_SCHEME_KEYEDHASH");
 
         if (json_object_object_add(*jso, "details", jso3)) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -3009,8 +2961,7 @@ ifapi_json_TPMT_KEYEDHASH_SCHEME_serialize(const TPMT_KEYEDHASH_SCHEME *in, json
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_RSASSA_serialize(const TPMS_SIG_SCHEME_RSASSA *in, json_object **jso)
-{
+ifapi_json_TPMS_SIG_SCHEME_RSASSA_serialize(const TPMS_SIG_SCHEME_RSASSA *in, json_object **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -3024,8 +2975,7 @@ ifapi_json_TPMS_SIG_SCHEME_RSASSA_serialize(const TPMS_SIG_SCHEME_RSASSA *in, js
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_RSAPSS_serialize(const TPMS_SIG_SCHEME_RSAPSS *in, json_object **jso)
-{
+ifapi_json_TPMS_SIG_SCHEME_RSAPSS_serialize(const TPMS_SIG_SCHEME_RSAPSS *in, json_object **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -3039,8 +2989,7 @@ ifapi_json_TPMS_SIG_SCHEME_RSAPSS_serialize(const TPMS_SIG_SCHEME_RSAPSS *in, js
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_ECDSA_serialize(const TPMS_SIG_SCHEME_ECDSA *in, json_object **jso)
-{
+ifapi_json_TPMS_SIG_SCHEME_ECDSA_serialize(const TPMS_SIG_SCHEME_ECDSA *in, json_object **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -3054,8 +3003,7 @@ ifapi_json_TPMS_SIG_SCHEME_ECDSA_serialize(const TPMS_SIG_SCHEME_ECDSA *in, json
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_SM2_serialize(const TPMS_SIG_SCHEME_SM2 *in, json_object **jso)
-{
+ifapi_json_TPMS_SIG_SCHEME_SM2_serialize(const TPMS_SIG_SCHEME_SM2 *in, json_object **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -3069,8 +3017,8 @@ ifapi_json_TPMS_SIG_SCHEME_SM2_serialize(const TPMS_SIG_SCHEME_SM2 *in, json_obj
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(const TPMS_SIG_SCHEME_ECSCHNORR *in, json_object **jso)
-{
+ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(const TPMS_SIG_SCHEME_ECSCHNORR *in,
+                                               json_object                    **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -3084,8 +3032,7 @@ ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(const TPMS_SIG_SCHEME_ECSCHNORR *
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(const TPMS_SIG_SCHEME_ECDAA *in, json_object **jso)
-{
+ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(const TPMS_SIG_SCHEME_ECDAA *in, json_object **jso) {
     return ifapi_json_TPMS_SCHEME_ECDAA_serialize(in, jso);
 }
 
@@ -3101,26 +3048,27 @@ ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(const TPMS_SIG_SCHEME_ECDAA *in, json
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_SIG_SCHEME_serialize(const TPMU_SIG_SCHEME *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_SIG_SCHEME_serialize(const TPMU_SIG_SCHEME *in,
+                                     UINT32                 selector,
+                                     json_object          **jso) {
     switch (selector) {
-        case TPM2_ALG_RSASSA:
-            return ifapi_json_TPMS_SIG_SCHEME_RSASSA_serialize(&in->rsassa, jso);
-        case TPM2_ALG_RSAPSS:
-            return ifapi_json_TPMS_SIG_SCHEME_RSAPSS_serialize(&in->rsapss, jso);
-        case TPM2_ALG_ECDSA:
-            return ifapi_json_TPMS_SIG_SCHEME_ECDSA_serialize(&in->ecdsa, jso);
-        case TPM2_ALG_ECDAA:
-            return ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(&in->ecdaa, jso);
-        case TPM2_ALG_SM2:
-            return ifapi_json_TPMS_SIG_SCHEME_SM2_serialize(&in->sm2, jso);
-        case TPM2_ALG_ECSCHNORR:
-            return ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(&in->ecschnorr, jso);
-        case TPM2_ALG_HMAC:
-            return ifapi_json_TPMS_SCHEME_HMAC_serialize(&in->hmac, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_ALG_RSASSA:
+        return ifapi_json_TPMS_SIG_SCHEME_RSASSA_serialize(&in->rsassa, jso);
+    case TPM2_ALG_RSAPSS:
+        return ifapi_json_TPMS_SIG_SCHEME_RSAPSS_serialize(&in->rsapss, jso);
+    case TPM2_ALG_ECDSA:
+        return ifapi_json_TPMS_SIG_SCHEME_ECDSA_serialize(&in->ecdsa, jso);
+    case TPM2_ALG_ECDAA:
+        return ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(&in->ecdaa, jso);
+    case TPM2_ALG_SM2:
+        return ifapi_json_TPMS_SIG_SCHEME_SM2_serialize(&in->sm2, jso);
+    case TPM2_ALG_ECSCHNORR:
+        return ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(&in->ecschnorr, jso);
+    case TPM2_ALG_HMAC:
+        return ifapi_json_TPMS_SCHEME_HMAC_serialize(&in->hmac, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -3135,14 +3083,13 @@ ifapi_json_TPMU_SIG_SCHEME_serialize(const TPMU_SIG_SCHEME *in, UINT32 selector,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_SIG_SCHEME_serialize(const TPMT_SIG_SCHEME *in, json_object **jso)
-{
+ifapi_json_TPMT_SIG_SCHEME_serialize(const TPMT_SIG_SCHEME *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_SIG_SCHEME_serialize(in->scheme, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_SIG_SCHEME");
@@ -3153,7 +3100,7 @@ ifapi_json_TPMT_SIG_SCHEME_serialize(const TPMT_SIG_SCHEME *in, json_object **js
     if (in->scheme != TPM2_ALG_NULL) {
         json_object *jso3 = NULL;
         r = ifapi_json_TPMU_SIG_SCHEME_serialize(&in->details, in->scheme, &jso3);
-        return_if_error(r,"Serialize TPMU_SIG_SCHEME");
+        return_if_error(r, "Serialize TPMU_SIG_SCHEME");
 
         if (json_object_object_add(*jso, "details", jso3)) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -3172,8 +3119,7 @@ ifapi_json_TPMT_SIG_SCHEME_serialize(const TPMT_SIG_SCHEME *in, json_object **js
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_ENC_SCHEME_OAEP_serialize(const TPMS_ENC_SCHEME_OAEP *in, json_object **jso)
-{
+ifapi_json_TPMS_ENC_SCHEME_OAEP_serialize(const TPMS_ENC_SCHEME_OAEP *in, json_object **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -3186,8 +3132,7 @@ ifapi_json_TPMS_ENC_SCHEME_OAEP_serialize(const TPMS_ENC_SCHEME_OAEP *in, json_o
  * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_ENC_SCHEME_RSAES.
  */
 TSS2_RC
-ifapi_json_TPMS_ENC_SCHEME_RSAES_serialize(const TPMS_ENC_SCHEME_RSAES *in, json_object **jso)
-{
+ifapi_json_TPMS_ENC_SCHEME_RSAES_serialize(const TPMS_ENC_SCHEME_RSAES *in, json_object **jso) {
     return ifapi_json_TPMS_EMPTY_serialize(in, jso);
 }
 
@@ -3201,8 +3146,7 @@ ifapi_json_TPMS_ENC_SCHEME_RSAES_serialize(const TPMS_ENC_SCHEME_RSAES *in, json
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_KEY_SCHEME_ECDH_serialize(const TPMS_KEY_SCHEME_ECDH *in, json_object **jso)
-{
+ifapi_json_TPMS_KEY_SCHEME_ECDH_serialize(const TPMS_KEY_SCHEME_ECDH *in, json_object **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -3216,8 +3160,7 @@ ifapi_json_TPMS_KEY_SCHEME_ECDH_serialize(const TPMS_KEY_SCHEME_ECDH *in, json_o
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SCHEME_MGF1_serialize(const TPMS_SCHEME_MGF1 *in, json_object **jso)
-{
+ifapi_json_TPMS_SCHEME_MGF1_serialize(const TPMS_SCHEME_MGF1 *in, json_object **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -3231,8 +3174,8 @@ ifapi_json_TPMS_SCHEME_MGF1_serialize(const TPMS_SCHEME_MGF1 *in, json_object **
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SCHEME_KDF1_SP800_56A_serialize(const TPMS_SCHEME_KDF1_SP800_56A *in, json_object **jso)
-{
+ifapi_json_TPMS_SCHEME_KDF1_SP800_56A_serialize(const TPMS_SCHEME_KDF1_SP800_56A *in,
+                                                json_object                     **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -3246,8 +3189,8 @@ ifapi_json_TPMS_SCHEME_KDF1_SP800_56A_serialize(const TPMS_SCHEME_KDF1_SP800_56A
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SCHEME_KDF1_SP800_108_serialize(const TPMS_SCHEME_KDF1_SP800_108 *in, json_object **jso)
-{
+ifapi_json_TPMS_SCHEME_KDF1_SP800_108_serialize(const TPMS_SCHEME_KDF1_SP800_108 *in,
+                                                json_object                     **jso) {
     return ifapi_json_TPMS_SCHEME_HASH_serialize(in, jso);
 }
 
@@ -3263,18 +3206,19 @@ ifapi_json_TPMS_SCHEME_KDF1_SP800_108_serialize(const TPMS_SCHEME_KDF1_SP800_108
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_KDF_SCHEME_serialize(const TPMU_KDF_SCHEME *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_KDF_SCHEME_serialize(const TPMU_KDF_SCHEME *in,
+                                     UINT32                 selector,
+                                     json_object          **jso) {
     switch (selector) {
-        case TPM2_ALG_MGF1:
-            return ifapi_json_TPMS_SCHEME_MGF1_serialize(&in->mgf1, jso);
-        case TPM2_ALG_KDF1_SP800_56A:
-            return ifapi_json_TPMS_SCHEME_KDF1_SP800_56A_serialize(&in->kdf1_sp800_56a, jso);
-        case TPM2_ALG_KDF1_SP800_108:
-            return ifapi_json_TPMS_SCHEME_KDF1_SP800_108_serialize(&in->kdf1_sp800_108, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_ALG_MGF1:
+        return ifapi_json_TPMS_SCHEME_MGF1_serialize(&in->mgf1, jso);
+    case TPM2_ALG_KDF1_SP800_56A:
+        return ifapi_json_TPMS_SCHEME_KDF1_SP800_56A_serialize(&in->kdf1_sp800_56a, jso);
+    case TPM2_ALG_KDF1_SP800_108:
+        return ifapi_json_TPMS_SCHEME_KDF1_SP800_108_serialize(&in->kdf1_sp800_108, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -3289,14 +3233,13 @@ ifapi_json_TPMU_KDF_SCHEME_serialize(const TPMU_KDF_SCHEME *in, UINT32 selector,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_KDF_SCHEME_serialize(const TPMT_KDF_SCHEME *in, json_object **jso)
-{
+ifapi_json_TPMT_KDF_SCHEME_serialize(const TPMT_KDF_SCHEME *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_KDF_serialize(in->scheme, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_KDF");
@@ -3307,7 +3250,7 @@ ifapi_json_TPMT_KDF_SCHEME_serialize(const TPMT_KDF_SCHEME *in, json_object **js
     if (in->scheme != TPM2_ALG_NULL) {
         json_object *jso3 = NULL;
         r = ifapi_json_TPMU_KDF_SCHEME_serialize(&in->details, in->scheme, &jso3);
-        return_if_error(r,"Serialize TPMU_KDF_SCHEME");
+        return_if_error(r, "Serialize TPMU_KDF_SCHEME");
 
         if (json_object_object_add(*jso, "details", jso3)) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -3325,11 +3268,10 @@ ifapi_json_TPMT_KDF_SCHEME_serialize(const TPMT_KDF_SCHEME *in, json_object **js
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_ASYM_SCHEME_serialize(const TPMI_ALG_ASYM_SCHEME in, json_object **jso)
-{
+ifapi_json_TPMI_ALG_ASYM_SCHEME_serialize(const TPMI_ALG_ASYM_SCHEME in, json_object **jso) {
     CHECK_IN_LIST(TPMI_ALG_ASYM_SCHEME, in, TPM2_ALG_ECDH, TPM2_ALG_RSASSA, TPM2_ALG_RSAPSS,
-                  TPM2_ALG_ECDSA, TPM2_ALG_ECDAA, TPM2_ALG_SM2, TPM2_ALG_ECSCHNORR,
-                  TPM2_ALG_RSAES, TPM2_ALG_OAEP, TPM2_ALG_NULL);
+                  TPM2_ALG_ECDSA, TPM2_ALG_ECDAA, TPM2_ALG_SM2, TPM2_ALG_ECSCHNORR, TPM2_ALG_RSAES,
+                  TPM2_ALG_OAEP, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -3345,30 +3287,31 @@ ifapi_json_TPMI_ALG_ASYM_SCHEME_serialize(const TPMI_ALG_ASYM_SCHEME in, json_ob
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_ASYM_SCHEME_serialize(const TPMU_ASYM_SCHEME *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_ASYM_SCHEME_serialize(const TPMU_ASYM_SCHEME *in,
+                                      UINT32                  selector,
+                                      json_object           **jso) {
     switch (selector) {
-        case TPM2_ALG_ECDH:
-            return ifapi_json_TPMS_KEY_SCHEME_ECDH_serialize(&in->ecdh, jso);
-        case TPM2_ALG_RSASSA:
-            return ifapi_json_TPMS_SIG_SCHEME_RSASSA_serialize(&in->rsassa, jso);
-        case TPM2_ALG_RSAPSS:
-            return ifapi_json_TPMS_SIG_SCHEME_RSAPSS_serialize(&in->rsapss, jso);
-        case TPM2_ALG_ECDSA:
-            return ifapi_json_TPMS_SIG_SCHEME_ECDSA_serialize(&in->ecdsa, jso);
-        case TPM2_ALG_ECDAA:
-            return ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(&in->ecdaa, jso);
-        case TPM2_ALG_SM2:
-            return ifapi_json_TPMS_SIG_SCHEME_SM2_serialize(&in->sm2, jso);
-        case TPM2_ALG_ECSCHNORR:
-            return ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(&in->ecschnorr, jso);
-        case TPM2_ALG_RSAES:
-            return ifapi_json_TPMS_ENC_SCHEME_RSAES_serialize(&in->rsaes, jso);
-        case TPM2_ALG_OAEP:
-            return ifapi_json_TPMS_ENC_SCHEME_OAEP_serialize(&in->oaep, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_ALG_ECDH:
+        return ifapi_json_TPMS_KEY_SCHEME_ECDH_serialize(&in->ecdh, jso);
+    case TPM2_ALG_RSASSA:
+        return ifapi_json_TPMS_SIG_SCHEME_RSASSA_serialize(&in->rsassa, jso);
+    case TPM2_ALG_RSAPSS:
+        return ifapi_json_TPMS_SIG_SCHEME_RSAPSS_serialize(&in->rsapss, jso);
+    case TPM2_ALG_ECDSA:
+        return ifapi_json_TPMS_SIG_SCHEME_ECDSA_serialize(&in->ecdsa, jso);
+    case TPM2_ALG_ECDAA:
+        return ifapi_json_TPMS_SIG_SCHEME_ECDAA_serialize(&in->ecdaa, jso);
+    case TPM2_ALG_SM2:
+        return ifapi_json_TPMS_SIG_SCHEME_SM2_serialize(&in->sm2, jso);
+    case TPM2_ALG_ECSCHNORR:
+        return ifapi_json_TPMS_SIG_SCHEME_ECSCHNORR_serialize(&in->ecschnorr, jso);
+    case TPM2_ALG_RSAES:
+        return ifapi_json_TPMS_ENC_SCHEME_RSAES_serialize(&in->rsaes, jso);
+    case TPM2_ALG_OAEP:
+        return ifapi_json_TPMS_ENC_SCHEME_OAEP_serialize(&in->oaep, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -3382,8 +3325,7 @@ ifapi_json_TPMU_ASYM_SCHEME_serialize(const TPMU_ASYM_SCHEME *in, UINT32 selecto
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_RSA_SCHEME_serialize(const TPMI_ALG_RSA_SCHEME in, json_object **jso)
-{
+ifapi_json_TPMI_ALG_RSA_SCHEME_serialize(const TPMI_ALG_RSA_SCHEME in, json_object **jso) {
     CHECK_IN_LIST(TPMI_ALG_RSA_SCHEME, in, TPM2_ALG_RSAES, TPM2_ALG_OAEP, TPM2_ALG_RSASSA,
                   TPM2_ALG_RSAPSS, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
@@ -3399,14 +3341,13 @@ ifapi_json_TPMI_ALG_RSA_SCHEME_serialize(const TPMI_ALG_RSA_SCHEME in, json_obje
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_RSA_SCHEME_serialize(const TPMT_RSA_SCHEME *in, json_object **jso)
-{
+ifapi_json_TPMT_RSA_SCHEME_serialize(const TPMT_RSA_SCHEME *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_RSA_SCHEME_serialize(in->scheme, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_RSA_SCHEME");
@@ -3417,7 +3358,7 @@ ifapi_json_TPMT_RSA_SCHEME_serialize(const TPMT_RSA_SCHEME *in, json_object **js
     if (in->scheme != TPM2_ALG_NULL) {
         json_object *jso3 = NULL;
         r = ifapi_json_TPMU_ASYM_SCHEME_serialize(&in->details, in->scheme, &jso3);
-        return_if_error(r,"Serialize TPMU_ASYM_SCHEME");
+        return_if_error(r, "Serialize TPMU_ASYM_SCHEME");
 
         if (json_object_object_add(*jso, "details", jso3)) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -3436,21 +3377,20 @@ ifapi_json_TPMT_RSA_SCHEME_serialize(const TPMT_RSA_SCHEME *in, json_object **js
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_PUBLIC_KEY_RSA_serialize(const TPM2B_PUBLIC_KEY_RSA *in, json_object **jso)
-{
+ifapi_json_TPM2B_PUBLIC_KEY_RSA_serialize(const TPM2B_PUBLIC_KEY_RSA *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (in->size > TPM2_MAX_RSA_KEY_BYTES) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_RSA_KEY_BYTES)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_MAX_RSA_KEY_BYTES)",
                   (size_t)in->size, (size_t)TPM2_MAX_RSA_KEY_BYTES);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    char hex_string[((size_t)in->size)*2+1];
+    char hex_string[((size_t)in->size) * 2 + 1];
 
-    for (size_t i = 0, off = 0; i < in->size; i++, off+=2)
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
         sprintf(&hex_string[off], "%02x", in->buffer[i]);
-    hex_string[(in->size)*2] = '\0';
-    *jso = json_object_new_string (hex_string);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
@@ -3466,8 +3406,7 @@ ifapi_json_TPM2B_PUBLIC_KEY_RSA_serialize(const TPM2B_PUBLIC_KEY_RSA *in, json_o
  *
  */
 TSS2_RC
-ifapi_json_TPMI_RSA_KEY_BITS_serialize(const TPMI_RSA_KEY_BITS in, json_object **jso)
-{
+ifapi_json_TPMI_RSA_KEY_BITS_serialize(const TPMI_RSA_KEY_BITS in, json_object **jso) {
     CHECK_IN_LIST(TPMI_RSA_KEY_BITS, in, 1024, 2048, 3072, 4096);
     return ifapi_json_UINT16_serialize(in, jso);
 }
@@ -3482,21 +3421,20 @@ ifapi_json_TPMI_RSA_KEY_BITS_serialize(const TPMI_RSA_KEY_BITS in, json_object *
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_ECC_PARAMETER_serialize(const TPM2B_ECC_PARAMETER *in, json_object **jso)
-{
+ifapi_json_TPM2B_ECC_PARAMETER_serialize(const TPM2B_ECC_PARAMETER *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (in->size > TPM2_MAX_ECC_KEY_BYTES) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = TPM2_MAX_ECC_KEY_BYTES)",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = TPM2_MAX_ECC_KEY_BYTES)",
                   (size_t)in->size, (size_t)TPM2_MAX_ECC_KEY_BYTES);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    char hex_string[((size_t)in->size)*2+1];
+    char hex_string[((size_t)in->size) * 2 + 1];
 
-    for (size_t i = 0, off = 0; i < in->size; i++, off+=2)
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
         sprintf(&hex_string[off], "%02x", in->buffer[i]);
-    hex_string[(in->size)*2] = '\0';
-    *jso = json_object_new_string (hex_string);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
@@ -3512,14 +3450,13 @@ ifapi_json_TPM2B_ECC_PARAMETER_serialize(const TPM2B_ECC_PARAMETER *in, json_obj
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_ECC_POINT_serialize(const TPMS_ECC_POINT *in, json_object **jso)
-{
+ifapi_json_TPMS_ECC_POINT_serialize(const TPMS_ECC_POINT *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPM2B_ECC_PARAMETER_serialize(&in->x, &jso2);
     return_if_error(r, "Serialize TPM2B_ECC_PARAMETER");
@@ -3546,10 +3483,9 @@ ifapi_json_TPMS_ECC_POINT_serialize(const TPMS_ECC_POINT *in, json_object **jso)
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_ECC_SCHEME_serialize(const TPMI_ALG_ECC_SCHEME in, json_object **jso)
-{
-    CHECK_IN_LIST(TPMI_ALG_ECC_SCHEME, in, TPM2_ALG_ECDSA, TPM2_ALG_ECDAA,
-                  TPM2_ALG_SM2, TPM2_ALG_ECSCHNORR, TPM2_ALG_ECDH, TPM2_ALG_NULL);
+ifapi_json_TPMI_ALG_ECC_SCHEME_serialize(const TPMI_ALG_ECC_SCHEME in, json_object **jso) {
+    CHECK_IN_LIST(TPMI_ALG_ECC_SCHEME, in, TPM2_ALG_ECDSA, TPM2_ALG_ECDAA, TPM2_ALG_SM2,
+                  TPM2_ALG_ECSCHNORR, TPM2_ALG_ECDH, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -3563,8 +3499,7 @@ ifapi_json_TPMI_ALG_ECC_SCHEME_serialize(const TPMI_ALG_ECC_SCHEME in, json_obje
  *
  */
 TSS2_RC
-ifapi_json_TPMI_ECC_CURVE_serialize(const TPMI_ECC_CURVE in, json_object **jso)
-{
+ifapi_json_TPMI_ECC_CURVE_serialize(const TPMI_ECC_CURVE in, json_object **jso) {
     return ifapi_json_TPM2_ECC_CURVE_serialize(in, jso);
 }
 
@@ -3578,14 +3513,13 @@ ifapi_json_TPMI_ECC_CURVE_serialize(const TPMI_ECC_CURVE in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_ECC_SCHEME_serialize(const TPMT_ECC_SCHEME *in, json_object **jso)
-{
+ifapi_json_TPMT_ECC_SCHEME_serialize(const TPMT_ECC_SCHEME *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_ECC_SCHEME_serialize(in->scheme, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_ECC_SCHEME");
@@ -3596,7 +3530,7 @@ ifapi_json_TPMT_ECC_SCHEME_serialize(const TPMT_ECC_SCHEME *in, json_object **js
     if (in->scheme != TPM2_ALG_NULL) {
         json_object *jso3 = NULL;
         r = ifapi_json_TPMU_ASYM_SCHEME_serialize(&in->details, in->scheme, &jso3);
-        return_if_error(r,"Serialize TPMU_ASYM_SCHEME");
+        return_if_error(r, "Serialize TPMU_ASYM_SCHEME");
 
         if (json_object_object_add(*jso, "details", jso3)) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -3615,14 +3549,13 @@ ifapi_json_TPMT_ECC_SCHEME_serialize(const TPMT_ECC_SCHEME *in, json_object **js
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_RSA_serialize(const TPMS_SIGNATURE_RSA *in, json_object **jso)
-{
+ifapi_json_TPMS_SIGNATURE_RSA_serialize(const TPMS_SIGNATURE_RSA *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_HASH_serialize(in->hash, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_HASH");
@@ -3650,8 +3583,7 @@ ifapi_json_TPMS_SIGNATURE_RSA_serialize(const TPMS_SIGNATURE_RSA *in, json_objec
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_RSASSA_serialize(const TPMS_SIGNATURE_RSASSA *in, json_object **jso)
-{
+ifapi_json_TPMS_SIGNATURE_RSASSA_serialize(const TPMS_SIGNATURE_RSASSA *in, json_object **jso) {
     return ifapi_json_TPMS_SIGNATURE_RSA_serialize(in, jso);
 }
 
@@ -3665,8 +3597,7 @@ ifapi_json_TPMS_SIGNATURE_RSASSA_serialize(const TPMS_SIGNATURE_RSASSA *in, json
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_RSAPSS_serialize(const TPMS_SIGNATURE_RSAPSS *in, json_object **jso)
-{
+ifapi_json_TPMS_SIGNATURE_RSAPSS_serialize(const TPMS_SIGNATURE_RSAPSS *in, json_object **jso) {
     return ifapi_json_TPMS_SIGNATURE_RSA_serialize(in, jso);
 }
 
@@ -3680,14 +3611,13 @@ ifapi_json_TPMS_SIGNATURE_RSAPSS_serialize(const TPMS_SIGNATURE_RSAPSS *in, json
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_ECC_serialize(const TPMS_SIGNATURE_ECC *in, json_object **jso)
-{
+ifapi_json_TPMS_SIGNATURE_ECC_serialize(const TPMS_SIGNATURE_ECC *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_HASH_serialize(in->hash, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_HASH");
@@ -3722,8 +3652,7 @@ ifapi_json_TPMS_SIGNATURE_ECC_serialize(const TPMS_SIGNATURE_ECC *in, json_objec
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_ECDSA_serialize(const TPMS_SIGNATURE_ECDSA *in, json_object **jso)
-{
+ifapi_json_TPMS_SIGNATURE_ECDSA_serialize(const TPMS_SIGNATURE_ECDSA *in, json_object **jso) {
     return ifapi_json_TPMS_SIGNATURE_ECC_serialize(in, jso);
 }
 
@@ -3737,8 +3666,7 @@ ifapi_json_TPMS_SIGNATURE_ECDSA_serialize(const TPMS_SIGNATURE_ECDSA *in, json_o
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_ECDAA_serialize(const TPMS_SIGNATURE_ECDAA *in, json_object **jso)
-{
+ifapi_json_TPMS_SIGNATURE_ECDAA_serialize(const TPMS_SIGNATURE_ECDAA *in, json_object **jso) {
     return ifapi_json_TPMS_SIGNATURE_ECC_serialize(in, jso);
 }
 
@@ -3752,8 +3680,7 @@ ifapi_json_TPMS_SIGNATURE_ECDAA_serialize(const TPMS_SIGNATURE_ECDAA *in, json_o
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_SM2_serialize(const TPMS_SIGNATURE_SM2 *in, json_object **jso)
-{
+ifapi_json_TPMS_SIGNATURE_SM2_serialize(const TPMS_SIGNATURE_SM2 *in, json_object **jso) {
     return ifapi_json_TPMS_SIGNATURE_ECC_serialize(in, jso);
 }
 
@@ -3767,8 +3694,8 @@ ifapi_json_TPMS_SIGNATURE_SM2_serialize(const TPMS_SIGNATURE_SM2 *in, json_objec
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_SIGNATURE_ECSCHNORR_serialize(const TPMS_SIGNATURE_ECSCHNORR *in, json_object **jso)
-{
+ifapi_json_TPMS_SIGNATURE_ECSCHNORR_serialize(const TPMS_SIGNATURE_ECSCHNORR *in,
+                                              json_object                   **jso) {
     return ifapi_json_TPMS_SIGNATURE_ECC_serialize(in, jso);
 }
 
@@ -3784,26 +3711,25 @@ ifapi_json_TPMS_SIGNATURE_ECSCHNORR_serialize(const TPMS_SIGNATURE_ECSCHNORR *in
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_SIGNATURE_serialize(const TPMU_SIGNATURE *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_SIGNATURE_serialize(const TPMU_SIGNATURE *in, UINT32 selector, json_object **jso) {
     switch (selector) {
-        case TPM2_ALG_RSASSA:
-            return ifapi_json_TPMS_SIGNATURE_RSASSA_serialize(&in->rsassa, jso);
-        case TPM2_ALG_RSAPSS:
-            return ifapi_json_TPMS_SIGNATURE_RSAPSS_serialize(&in->rsapss, jso);
-        case TPM2_ALG_ECDSA:
-            return ifapi_json_TPMS_SIGNATURE_ECDSA_serialize(&in->ecdsa, jso);
-        case TPM2_ALG_ECDAA:
-            return ifapi_json_TPMS_SIGNATURE_ECDAA_serialize(&in->ecdaa, jso);
-        case TPM2_ALG_SM2:
-            return ifapi_json_TPMS_SIGNATURE_SM2_serialize(&in->sm2, jso);
-        case TPM2_ALG_ECSCHNORR:
-            return ifapi_json_TPMS_SIGNATURE_ECSCHNORR_serialize(&in->ecschnorr, jso);
-        case TPM2_ALG_HMAC:
-            return ifapi_json_TPMT_HA_serialize(&in->hmac, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_ALG_RSASSA:
+        return ifapi_json_TPMS_SIGNATURE_RSASSA_serialize(&in->rsassa, jso);
+    case TPM2_ALG_RSAPSS:
+        return ifapi_json_TPMS_SIGNATURE_RSAPSS_serialize(&in->rsapss, jso);
+    case TPM2_ALG_ECDSA:
+        return ifapi_json_TPMS_SIGNATURE_ECDSA_serialize(&in->ecdsa, jso);
+    case TPM2_ALG_ECDAA:
+        return ifapi_json_TPMS_SIGNATURE_ECDAA_serialize(&in->ecdaa, jso);
+    case TPM2_ALG_SM2:
+        return ifapi_json_TPMS_SIGNATURE_SM2_serialize(&in->sm2, jso);
+    case TPM2_ALG_ECSCHNORR:
+        return ifapi_json_TPMS_SIGNATURE_ECSCHNORR_serialize(&in->ecschnorr, jso);
+    case TPM2_ALG_HMAC:
+        return ifapi_json_TPMT_HA_serialize(&in->hmac, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -3818,14 +3744,13 @@ ifapi_json_TPMU_SIGNATURE_serialize(const TPMU_SIGNATURE *in, UINT32 selector, j
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_SIGNATURE_serialize(const TPMT_SIGNATURE *in, json_object **jso)
-{
+ifapi_json_TPMT_SIGNATURE_serialize(const TPMT_SIGNATURE *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_SIG_SCHEME_serialize(in->sigAlg, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_SIG_SCHEME");
@@ -3836,7 +3761,7 @@ ifapi_json_TPMT_SIGNATURE_serialize(const TPMT_SIGNATURE *in, json_object **jso)
     if (in->sigAlg != TPM2_ALG_NULL) {
         json_object *jso3 = NULL;
         r = ifapi_json_TPMU_SIGNATURE_serialize(&in->signature, in->sigAlg, &jso3);
-        return_if_error(r,"Serialize TPMU_SIGNATURE");
+        return_if_error(r, "Serialize TPMU_SIGNATURE");
 
         if (json_object_object_add(*jso, "signature", jso3)) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -3855,21 +3780,21 @@ ifapi_json_TPMT_SIGNATURE_serialize(const TPMT_SIGNATURE *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_ENCRYPTED_SECRET_serialize(const TPM2B_ENCRYPTED_SECRET *in, json_object **jso)
-{
+ifapi_json_TPM2B_ENCRYPTED_SECRET_serialize(const TPM2B_ENCRYPTED_SECRET *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (in->size > sizeof(TPMU_ENCRYPTED_SECRET)) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = sizeof(TPMU_ENCRYPTED_SECRET))",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR
+                  " = sizeof(TPMU_ENCRYPTED_SECRET))",
                   (size_t)in->size, (size_t)sizeof(TPMU_ENCRYPTED_SECRET));
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    char hex_string[((size_t)in->size)*2+1];
+    char hex_string[((size_t)in->size) * 2 + 1];
 
-    for (size_t i = 0, off = 0; i < in->size; i++, off+=2)
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
         sprintf(&hex_string[off], "%02x", in->secret[i]);
-    hex_string[(in->size)*2] = '\0';
-    *jso = json_object_new_string (hex_string);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
@@ -3884,10 +3809,9 @@ ifapi_json_TPM2B_ENCRYPTED_SECRET_serialize(const TPM2B_ENCRYPTED_SECRET *in, js
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_json_TPMI_ALG_PUBLIC_serialize(const TPMI_ALG_PUBLIC in, json_object **jso)
-{
-    CHECK_IN_LIST(TPMI_ALG_PUBLIC, in, TPM2_ALG_RSA, TPM2_ALG_KEYEDHASH,
-                  TPM2_ALG_ECC, TPM2_ALG_SYMCIPHER, TPM2_ALG_NULL);
+ifapi_json_TPMI_ALG_PUBLIC_serialize(const TPMI_ALG_PUBLIC in, json_object **jso) {
+    CHECK_IN_LIST(TPMI_ALG_PUBLIC, in, TPM2_ALG_RSA, TPM2_ALG_KEYEDHASH, TPM2_ALG_ECC,
+                  TPM2_ALG_SYMCIPHER, TPM2_ALG_NULL);
     return ifapi_json_TPM2_ALG_ID_serialize(in, jso);
 }
 
@@ -3903,20 +3827,19 @@ ifapi_json_TPMI_ALG_PUBLIC_serialize(const TPMI_ALG_PUBLIC in, json_object **jso
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_PUBLIC_ID_serialize(const TPMU_PUBLIC_ID *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_PUBLIC_ID_serialize(const TPMU_PUBLIC_ID *in, UINT32 selector, json_object **jso) {
     switch (selector) {
-        case TPM2_ALG_KEYEDHASH:
-            return ifapi_json_TPM2B_DIGEST_serialize(&in->keyedHash, jso);
-        case TPM2_ALG_SYMCIPHER:
-            return ifapi_json_TPM2B_DIGEST_serialize(&in->sym, jso);
-        case TPM2_ALG_RSA:
-            return ifapi_json_TPM2B_PUBLIC_KEY_RSA_serialize(&in->rsa, jso);
-        case TPM2_ALG_ECC:
-            return ifapi_json_TPMS_ECC_POINT_serialize(&in->ecc, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_ALG_KEYEDHASH:
+        return ifapi_json_TPM2B_DIGEST_serialize(&in->keyedHash, jso);
+    case TPM2_ALG_SYMCIPHER:
+        return ifapi_json_TPM2B_DIGEST_serialize(&in->sym, jso);
+    case TPM2_ALG_RSA:
+        return ifapi_json_TPM2B_PUBLIC_KEY_RSA_serialize(&in->rsa, jso);
+    case TPM2_ALG_ECC:
+        return ifapi_json_TPMS_ECC_POINT_serialize(&in->ecc, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -3931,14 +3854,13 @@ ifapi_json_TPMU_PUBLIC_ID_serialize(const TPMU_PUBLIC_ID *in, UINT32 selector, j
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_KEYEDHASH_PARMS_serialize(const TPMS_KEYEDHASH_PARMS *in, json_object **jso)
-{
+ifapi_json_TPMS_KEYEDHASH_PARMS_serialize(const TPMS_KEYEDHASH_PARMS *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMT_KEYEDHASH_SCHEME_serialize(&in->scheme, &jso2);
     return_if_error(r, "Serialize TPMT_KEYEDHASH_SCHEME");
@@ -3959,14 +3881,13 @@ ifapi_json_TPMS_KEYEDHASH_PARMS_serialize(const TPMS_KEYEDHASH_PARMS *in, json_o
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_RSA_PARMS_serialize(const TPMS_RSA_PARMS *in, json_object **jso)
-{
+ifapi_json_TPMS_RSA_PARMS_serialize(const TPMS_RSA_PARMS *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(&in->symmetric, &jso2);
     return_if_error(r, "Serialize TPMT_SYM_DEF_OBJECT");
@@ -4008,14 +3929,13 @@ ifapi_json_TPMS_RSA_PARMS_serialize(const TPMS_RSA_PARMS *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_ECC_PARMS_serialize(const TPMS_ECC_PARMS *in, json_object **jso)
-{
+ifapi_json_TPMS_ECC_PARMS_serialize(const TPMS_ECC_PARMS *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMT_SYM_DEF_OBJECT_serialize(&in->symmetric, &jso2);
     return_if_error(r, "Serialize TPMT_SYM_DEF_OBJECT");
@@ -4059,20 +3979,21 @@ ifapi_json_TPMS_ECC_PARMS_serialize(const TPMS_ECC_PARMS *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMU_PUBLIC_PARMS_serialize(const TPMU_PUBLIC_PARMS *in, UINT32 selector, json_object **jso)
-{
+ifapi_json_TPMU_PUBLIC_PARMS_serialize(const TPMU_PUBLIC_PARMS *in,
+                                       UINT32                   selector,
+                                       json_object            **jso) {
     switch (selector) {
-        case TPM2_ALG_KEYEDHASH:
-            return ifapi_json_TPMS_KEYEDHASH_PARMS_serialize(&in->keyedHashDetail, jso);
-        case TPM2_ALG_SYMCIPHER:
-            return ifapi_json_TPMS_SYMCIPHER_PARMS_serialize(&in->symDetail, jso);
-        case TPM2_ALG_RSA:
-            return ifapi_json_TPMS_RSA_PARMS_serialize(&in->rsaDetail, jso);
-        case TPM2_ALG_ECC:
-            return ifapi_json_TPMS_ECC_PARMS_serialize(&in->eccDetail, jso);
-        default:
-            LOG_ERROR("\nSelector %"PRIx32 " did not match", selector);
-            return TSS2_FAPI_RC_BAD_VALUE;
+    case TPM2_ALG_KEYEDHASH:
+        return ifapi_json_TPMS_KEYEDHASH_PARMS_serialize(&in->keyedHashDetail, jso);
+    case TPM2_ALG_SYMCIPHER:
+        return ifapi_json_TPMS_SYMCIPHER_PARMS_serialize(&in->symDetail, jso);
+    case TPM2_ALG_RSA:
+        return ifapi_json_TPMS_RSA_PARMS_serialize(&in->rsaDetail, jso);
+    case TPM2_ALG_ECC:
+        return ifapi_json_TPMS_ECC_PARMS_serialize(&in->eccDetail, jso);
+    default:
+        LOG_ERROR("\nSelector %" PRIx32 " did not match", selector);
+        return TSS2_FAPI_RC_BAD_VALUE;
     };
     return TSS2_RC_SUCCESS;
 }
@@ -4087,14 +4008,13 @@ ifapi_json_TPMU_PUBLIC_PARMS_serialize(const TPMU_PUBLIC_PARMS *in, UINT32 selec
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMT_PUBLIC_serialize(const TPMT_PUBLIC *in, json_object **jso)
-{
+ifapi_json_TPMT_PUBLIC_serialize(const TPMT_PUBLIC *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_ALG_PUBLIC_serialize(in->type, &jso2);
     return_if_error(r, "Serialize TPMI_ALG_PUBLIC");
@@ -4125,14 +4045,14 @@ ifapi_json_TPMT_PUBLIC_serialize(const TPMT_PUBLIC *in, json_object **jso)
     }
     jso2 = NULL;
     r = ifapi_json_TPMU_PUBLIC_PARMS_serialize(&in->parameters, in->type, &jso2);
-    return_if_error(r,"Serialize TPMU_PUBLIC_PARMS");
+    return_if_error(r, "Serialize TPMU_PUBLIC_PARMS");
 
     if (json_object_object_add(*jso, "parameters", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
     r = ifapi_json_TPMU_PUBLIC_ID_serialize(&in->unique, in->type, &jso2);
-    return_if_error(r,"Serialize TPMU_PUBLIC_ID");
+    return_if_error(r, "Serialize TPMU_PUBLIC_ID");
 
     if (json_object_object_add(*jso, "unique", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -4150,10 +4070,9 @@ ifapi_json_TPMT_PUBLIC_serialize(const TPMT_PUBLIC *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_PUBLIC_serialize(const TPM2B_PUBLIC *in, json_object **jso)
-{
+ifapi_json_TPM2B_PUBLIC_serialize(const TPM2B_PUBLIC *in, json_object **jso) {
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     json_object *jso2;
@@ -4187,21 +4106,20 @@ ifapi_json_TPM2B_PUBLIC_serialize(const TPM2B_PUBLIC *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_PRIVATE_serialize(const TPM2B_PRIVATE *in, json_object **jso)
-{
+ifapi_json_TPM2B_PRIVATE_serialize(const TPM2B_PRIVATE *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (in->size > sizeof(_PRIVATE)) {
-        LOG_ERROR("Too many bytes for array (%"PRIuPTR" > %"PRIuPTR" = sizeof(_PRIVATE))",
+        LOG_ERROR("Too many bytes for array (%" PRIuPTR " > %" PRIuPTR " = sizeof(_PRIVATE))",
                   (size_t)in->size, (size_t)sizeof(_PRIVATE));
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    char hex_string[((size_t)in->size)*2+1];
+    char hex_string[((size_t)in->size) * 2 + 1];
 
-    for (size_t i = 0, off = 0; i < in->size; i++, off+=2)
+    for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
         sprintf(&hex_string[off], "%02x", in->buffer[i]);
-    hex_string[(in->size)*2] = '\0';
-    *jso = json_object_new_string (hex_string);
+    hex_string[(in->size) * 2] = '\0';
+    *jso = json_object_new_string(hex_string);
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
@@ -4216,15 +4134,14 @@ ifapi_json_TPM2B_PRIVATE_serialize(const TPM2B_PRIVATE *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPM2_NT.
  */
 TSS2_RC
-ifapi_json_TPM2_NT_serialize(const TPM2_NT in, json_object **jso)
-{
-    static const struct { TPM2_NT in; char *name; } tab[] = {
-        { TPM2_NT_ORDINARY, "ORDINARY" },
-        { TPM2_NT_COUNTER, "COUNTER" },
-        { TPM2_NT_BITS, "BITS" },
-        { TPM2_NT_EXTEND, "EXTEND" },
-        { TPM2_NT_PIN_FAIL, "PIN_FAIL" },
-        { TPM2_NT_PIN_PASS, "PIN_PASS" },
+ifapi_json_TPM2_NT_serialize(const TPM2_NT in, json_object **jso) {
+    static const struct {
+        TPM2_NT in;
+        char   *name;
+    } tab[] = {
+        { TPM2_NT_ORDINARY, "ORDINARY" }, { TPM2_NT_COUNTER, "COUNTER" },
+        { TPM2_NT_BITS, "BITS" },         { TPM2_NT_EXTEND, "EXTEND" },
+        { TPM2_NT_PIN_FAIL, "PIN_FAIL" }, { TPM2_NT_PIN_PASS, "PIN_PASS" },
     };
 
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
@@ -4248,9 +4165,11 @@ ifapi_json_TPM2_NT_serialize(const TPM2_NT in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMA_NV.
  */
 TSS2_RC
-ifapi_json_TPMA_NV_serialize(const TPMA_NV in, json_object **jso)
-{
-    struct { TPMA_NV in; char *name; } tab[] = {
+ifapi_json_TPMA_NV_serialize(const TPMA_NV in, json_object **jso) {
+    struct {
+        TPMA_NV in;
+        char   *name;
+    } tab[] = {
         { TPMA_NV_PPWRITE, "PPWRITE" },
         { TPMA_NV_OWNERWRITE, "OWNERWRITE" },
         { TPMA_NV_AUTHWRITE, "AUTHWRITE" },
@@ -4275,7 +4194,7 @@ ifapi_json_TPMA_NV_serialize(const TPMA_NV in, json_object **jso)
     };
 
     UINT32 input;
-    input = (UINT32) in;
+    input = (UINT32)in;
     json_object *jso_bit;
     if (*jso == NULL) {
         *jso = json_object_new_object();
@@ -4294,9 +4213,9 @@ ifapi_json_TPMA_NV_serialize(const TPMA_NV in, json_object **jso)
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
-    TPM2_NT input2 = (TPMA_NV_TPM2_NT_MASK & input)>>4;
+    TPM2_NT      input2 = (TPMA_NV_TPM2_NT_MASK & input) >> 4;
     json_object *jso2 = NULL;
-    TSS2_RC r = ifapi_json_TPM2_NT_serialize(input2, &jso2);
+    TSS2_RC      r = ifapi_json_TPM2_NT_serialize(input2, &jso2);
     return_if_error(r, "Bad value");
 
     if (json_object_object_add(*jso, "TPM2_NT", jso2)) {
@@ -4316,14 +4235,13 @@ ifapi_json_TPMA_NV_serialize(const TPMA_NV in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_NV_PUBLIC_serialize(const TPMS_NV_PUBLIC *in, json_object **jso)
-{
+ifapi_json_TPMS_NV_PUBLIC_serialize(const TPMS_NV_PUBLIC *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPMI_RH_NV_INDEX_serialize(in->nvIndex, &jso2);
     return_if_error(r, "Serialize TPMI_RH_NV_INDEX");
@@ -4372,10 +4290,9 @@ ifapi_json_TPMS_NV_PUBLIC_serialize(const TPMS_NV_PUBLIC *in, json_object **jso)
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_NV_PUBLIC_serialize(const TPM2B_NV_PUBLIC *in, json_object **jso)
-{
+ifapi_json_TPM2B_NV_PUBLIC_serialize(const TPM2B_NV_PUBLIC *in, json_object **jso) {
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     json_object *jso2;
@@ -4409,14 +4326,13 @@ ifapi_json_TPM2B_NV_PUBLIC_serialize(const TPM2B_NV_PUBLIC *in, json_object **js
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPMS_CREATION_DATA_serialize(const TPMS_CREATION_DATA *in, json_object **jso)
-{
+ifapi_json_TPMS_CREATION_DATA_serialize(const TPMS_CREATION_DATA *in, json_object **jso) {
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    TSS2_RC r;
+    TSS2_RC      r;
     json_object *jso2;
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     jso2 = NULL;
     r = ifapi_json_TPML_PCR_SELECTION_serialize(&in->pcrSelect, &jso2);
     return_if_error(r, "Serialize TPML_PCR_SELECTION");
@@ -4479,10 +4395,9 @@ ifapi_json_TPMS_CREATION_DATA_serialize(const TPMS_CREATION_DATA *in, json_objec
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_json_TPM2B_CREATION_DATA_serialize(const TPM2B_CREATION_DATA *in, json_object **jso)
-{
+ifapi_json_TPM2B_CREATION_DATA_serialize(const TPM2B_CREATION_DATA *in, json_object **jso) {
     if (*jso == NULL)
-        *jso = json_object_new_object ();
+        *jso = json_object_new_object();
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     json_object *jso2;

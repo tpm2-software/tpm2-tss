@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, PRIx16, int32_t
-#include <stdlib.h>           // for NULL, calloc
+#include <inttypes.h> // for PRIx32, PRIx16, int32_t
+#include <stdlib.h>   // for NULL, calloc
 
-#include "esys_int.h"         // for ESYS_CONTEXT, _ESYS_STATE_INIT, _ESYS_S...
-#include "esys_iutil.h"       // for iesys_compute_session_value, check_sess...
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_Hash, Esys_...
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST, TPMT_TK_HASHCHECK, TPM2B_...
+#include "esys_int.h"        // for ESYS_CONTEXT, _ESYS_STATE_INIT, _ESYS_S...
+#include "esys_iutil.h"      // for iesys_compute_session_value, check_sess...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, Esys_Hash, Esys_...
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPMT_TK_HASHCHECK, TPM2B_...
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
+#include "util/log.h" // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** One-Call function for TPM2_Hash
  *
@@ -62,21 +62,18 @@
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_Hash(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_MAX_BUFFER *data,
-    TPMI_ALG_HASH hashAlg,
-    ESYS_TR hierarchy,
-    TPM2B_DIGEST **outHash,
-    TPMT_TK_HASHCHECK **validation)
-{
+Esys_Hash(ESYS_CONTEXT           *esysContext,
+          ESYS_TR                 shandle1,
+          ESYS_TR                 shandle2,
+          ESYS_TR                 shandle3,
+          const TPM2B_MAX_BUFFER *data,
+          TPMI_ALG_HASH           hashAlg,
+          ESYS_TR                 hierarchy,
+          TPM2B_DIGEST          **outHash,
+          TPMT_TK_HASHCHECK     **validation) {
     TSS2_RC r;
 
-    r = Esys_Hash_Async(esysContext, shandle1, shandle2, shandle3, data, hashAlg,
-                        hierarchy);
+    r = Esys_Hash_Async(esysContext, shandle1, shandle2, shandle3, data, hashAlg, hierarchy);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -94,8 +91,7 @@ Esys_Hash(
         /* This is just debug information about the reattempt to finish the
            command */
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -134,21 +130,19 @@ Esys_Hash(
  *         the 'encrypt' attribute bit set.
  */
 TSS2_RC
-Esys_Hash_Async(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_MAX_BUFFER *data,
-    TPMI_ALG_HASH hashAlg,
-    ESYS_TR hierarchy)
-{
+Esys_Hash_Async(ESYS_CONTEXT           *esysContext,
+                ESYS_TR                 shandle1,
+                ESYS_TR                 shandle2,
+                ESYS_TR                 shandle3,
+                const TPM2B_MAX_BUFFER *data,
+                TPMI_ALG_HASH           hashAlg,
+                ESYS_TR                 hierarchy) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, data=%p, hashAlg=%04"PRIx16","
-              "hierarchy=%"PRIx32 "",
+    LOG_TRACE("context=%p, data=%p, hashAlg=%04" PRIx16 ","
+              "hierarchy=%" PRIx32 "",
               esysContext, data, hashAlg, hierarchy);
     TSS2L_SYS_AUTH_COMMAND auths;
-    TPMI_RH_HIERARCHY tpm_hierarchy;
+    TPMI_RH_HIERARCHY      tpm_hierarchy;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -186,8 +180,7 @@ Esys_Hash_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT,
-                          "Error in computation of auth values");
+    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
@@ -197,8 +190,7 @@ Esys_Hash_Async(
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Finish (Execute Async)");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
 
@@ -238,14 +230,11 @@ Esys_Hash_Async(
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_Hash_Finish(
-    ESYS_CONTEXT *esysContext,
-    TPM2B_DIGEST **outHash,
-    TPMT_TK_HASHCHECK **validation)
-{
+Esys_Hash_Finish(ESYS_CONTEXT       *esysContext,
+                 TPM2B_DIGEST      **outHash,
+                 TPMT_TK_HASHCHECK **validation) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, outHash=%p, validation=%p",
-              esysContext, outHash, validation);
+    LOG_TRACE("context=%p, outHash=%p, validation=%p", esysContext, outHash, validation);
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -253,8 +242,7 @@ Esys_Hash_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != ESYS_STATE_SENT &&
-        esysContext->state != ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT && esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -285,7 +273,8 @@ Esys_Hash_Finish(
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
-            "resubmission: %" PRIx32, r);
+                  "resubmission: %" PRIx32,
+                  r);
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
@@ -319,18 +308,15 @@ Esys_Hash_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response",
-                        error_cleanup);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response", error_cleanup);
 
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
-    r = Tss2_Sys_Hash_Complete(esysContext->sys,
-                               (outHash != NULL) ? *outHash : NULL,
+    r = Tss2_Sys_Hash_Complete(esysContext->sys, (outHash != NULL) ? *outHash : NULL,
                                (validation != NULL) ? *validation : NULL);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                        "Received error from SAPI unmarshaling" ,
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling",
                         error_cleanup);
 
     esysContext->state = ESYS_STATE_INIT;

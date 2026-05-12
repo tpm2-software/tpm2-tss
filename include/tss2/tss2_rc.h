@@ -21,12 +21,12 @@ TSS2_RC_HANDLER Tss2_RC_SetHandler(uint8_t layer, const char *name, TSS2_RC_HAND
 
 typedef struct TSS2_RC_INFO TSS2_RC_INFO;
 struct TSS2_RC_INFO {
-    UINT8 layer;
-    UINT8 format;
+    UINT8   layer;
+    UINT8   format;
     TSS2_RC error;
-    UINT8 parameter;
-    UINT8 session;
-    UINT8 handle;
+    UINT8   parameter;
+    UINT8   session;
+    UINT8   handle;
 };
 
 TSS2_RC Tss2_RC_DecodeInfo(TSS2_RC, TSS2_RC_INFO *info);

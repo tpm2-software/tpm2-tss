@@ -7,15 +7,15 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
-#include <stdio.h>        // for NULL
-#include <stdlib.h>       // for EXIT_FAILURE, EXIT_SUCCESS
+#include <stdio.h>  // for NULL
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-fapi.h"    // for test_invoke_fapi
-#include "tss2_common.h"  // for TSS2_FAPI_RC_BAD_PATH, TSS2_RC_SUCCESS, TSS...
-#include "tss2_fapi.h"    // for Fapi_CreateKey, Fapi_Delete, Fapi_CreateNv
+#include "test-fapi.h"   // for test_invoke_fapi
+#include "tss2_common.h" // for TSS2_FAPI_RC_BAD_PATH, TSS2_RC_SUCCESS, TSS...
+#include "tss2_fapi.h"   // for Fapi_CreateKey, Fapi_Delete, Fapi_CreateNv
 
 #define LOGMODULE test
-#include "util/log.h"     // for goto_if_error, LOG_ERROR
+#include "util/log.h" // for goto_if_error, LOG_ERROR
 
 #define EVENT_SIZE 10
 
@@ -31,8 +31,7 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_wrong_path(FAPI_CONTEXT *context)
-{
+test_fapi_wrong_path(FAPI_CONTEXT *context) {
     TSS2_RC r;
 
     r = Fapi_Provision(context, NULL, NULL, NULL);
@@ -42,44 +41,44 @@ test_fapi_wrong_path(FAPI_CONTEXT *context)
     r = Fapi_CreateKey(context, "myKey", "sign,noDa", "", NULL);
 
     if (r == TSS2_RC_SUCCESS) {
-        LOG_ERROR( "Wrong key path not detected");
+        LOG_ERROR("Wrong key path not detected");
         goto error;
     }
 
-    if (r !=  TSS2_FAPI_RC_BAD_PATH) {
+    if (r != TSS2_FAPI_RC_BAD_PATH) {
         goto_if_error(r, "Wrong return code", error);
     }
 
     r = Fapi_CreateKey(context, "/HE/SRK/myKey", "sign,noDa", "", NULL);
 
     if (r == TSS2_RC_SUCCESS) {
-        LOG_ERROR( "Wrong key path not detected");
+        LOG_ERROR("Wrong key path not detected");
         goto error;
     }
 
-    if (r !=  TSS2_FAPI_RC_BAD_PATH) {
+    if (r != TSS2_FAPI_RC_BAD_PATH) {
         goto_if_error(r, "Wrong return code", error);
     }
 
     r = Fapi_CreateKey(context, "/HS/EK/Key", "sign,noDa", "", NULL);
 
     if (r == TSS2_RC_SUCCESS) {
-        LOG_ERROR( "Wrong key path not detected");
+        LOG_ERROR("Wrong key path not detected");
         goto error;
     }
 
-    if (r !=  TSS2_FAPI_RC_BAD_PATH) {
+    if (r != TSS2_FAPI_RC_BAD_PATH) {
         goto_if_error(r, "Error Fapi_CreateKey", error);
     }
 
     r = Fapi_CreateNv(context, "myNv", "noda", 10, "", "");
 
     if (r == TSS2_RC_SUCCESS) {
-        LOG_ERROR( "Wrong key path not detected");
+        LOG_ERROR("Wrong key path not detected");
         goto error;
     }
 
-    if (r !=  TSS2_FAPI_RC_BAD_PATH) {
+    if (r != TSS2_FAPI_RC_BAD_PATH) {
         goto_if_error(r, "Error Fapi_CreateNv", error);
     }
 
@@ -111,13 +110,12 @@ test_fapi_wrong_path(FAPI_CONTEXT *context)
 
     return EXIT_SUCCESS;
 
- error:
+error:
     Fapi_Delete(context, "/");
     return EXIT_FAILURE;
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_wrong_path(fapi_context);
 }

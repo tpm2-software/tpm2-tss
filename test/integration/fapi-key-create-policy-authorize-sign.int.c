@@ -8,36 +8,34 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h>          // for bool, false, true
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, fopen, fclose, fileno, fseek, ftell
-#include <stdlib.h>           // for malloc, EXIT_FAILURE, exit, free, EXIT_...
-#include <string.h>           // for strlen, strcmp, strstr
-#include <unistd.h>           // for read
+#include <stdbool.h> // for bool, false, true
+#include <stdint.h>  // for uint8_t
+#include <stdio.h>   // for NULL, fopen, fclose, fileno, fseek, ftell
+#include <stdlib.h>  // for malloc, EXIT_FAILURE, exit, free, EXIT_...
+#include <string.h>  // for strlen, strcmp, strstr
+#include <unistd.h>  // for read
 
-#include "test-fapi.h"        // for ASSERT, cmp_strtokens, pcr_reset, ASSER...
-#include "tss2_common.h"      // for TSS2_FAPI_RC_MEMORY, TSS2_FAPI_RC_GENER...
-#include "tss2_fapi.h"        // for Fapi_List, Fapi_CreateKey, Fapi_Import
-#include "tss2_tpm2_types.h"  // for TPM2B_DIGEST
+#include "test-fapi.h"       // for ASSERT, cmp_strtokens, pcr_reset, ASSER...
+#include "tss2_common.h"     // for TSS2_FAPI_RC_MEMORY, TSS2_FAPI_RC_GENER...
+#include "tss2_fapi.h"       // for Fapi_List, Fapi_CreateKey, Fapi_Import
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, SAFE_FREE, LOG_ERROR
+#include "util/log.h" // for goto_if_error, SAFE_FREE, LOG_ERROR
 
 static bool cb_called = false;
 
 #define OBJECT_PATH "HS/SRK/mySignKey"
-#define USER_DATA "my user data"
+#define USER_DATA   "my user data"
 #define DESCRIPTION "PolicyAuthorize"
 
 static TSS2_RC
-branch_callback(
-    char   const *objectPath,
-    char   const *description MAYBE_UNUSED,
-    char  const **branchNames MAYBE_UNUSED,
-    size_t        numBranches,
-    size_t       *selectedBranch,
-    void         *userData MAYBE_UNUSED)
-{
+branch_callback(char const              *objectPath,
+                char const *description  MAYBE_UNUSED,
+                char const **branchNames MAYBE_UNUSED,
+                size_t                   numBranches,
+                size_t                  *selectedBranch,
+                void *userData           MAYBE_UNUSED) {
     char *profile_path;
 
     ASSERT(description != NULL);
@@ -48,13 +46,13 @@ branch_callback(
         return_error(TSS2_FAPI_RC_BAD_VALUE, "No path.");
     }
 
-    int size = asprintf (&profile_path, "%s/%s", fapi_profile, OBJECT_PATH);
+    int size = asprintf(&profile_path, "%s/%s", fapi_profile, OBJECT_PATH);
     if (size == -1)
         return TSS2_FAPI_RC_MEMORY;
 
     ASSERT(strlen(objectPath) == strlen(profile_path));
     free(profile_path);
-    ASSERT(strlen(userData) == strlen((char*)USER_DATA));
+    ASSERT(strlen(userData) == strlen((char *)USER_DATA));
     ASSERT(strlen(description) == strlen(DESCRIPTION));
 
     if (numBranches != 2) {
@@ -67,8 +65,7 @@ branch_callback(
     else if (!strcmp(branchNames[1], "/policy/pol_name_hash"))
         *selectedBranch = 1;
     else {
-        LOG_ERROR("BranchName not found. Got \"%s\" and \"%s\"",
-                  branchNames[0], branchNames[1]);
+        LOG_ERROR("BranchName not found. Got \"%s\" and \"%s\"", branchNames[0], branchNames[1]);
         return TSS2_FAPI_RC_GENERAL_FAILURE;
     }
 
@@ -76,7 +73,7 @@ branch_callback(
 
     return TSS2_RC_SUCCESS;
 
- error:
+error:
     exit(EXIT_FAILURE);
 }
 
@@ -102,11 +99,10 @@ branch_callback(
  * @retval EXIT_SUCCESS
  */
 int
-test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
-{
+test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context) {
     TSS2_RC r;
-    char *policy_name_hash = "/policy/pol_name_hash";
-    char *policy_file_name_hash = TOP_SOURCEDIR "/test/data/fapi/policy/pol_name_hash.json";
+    char   *policy_name_hash = "/policy/pol_name_hash";
+    char   *policy_file_name_hash = TOP_SOURCEDIR "/test/data/fapi/policy/pol_name_hash.json";
 
     /* This policy cannot succeed, but that's the intention. We authorize it but then choose
        the other policy from branch selection. */
@@ -115,17 +111,17 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     char *policy_name_authorize = "/policy/pol_authorize";
     char *policy_file_authorize = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize.json";
     char *policy_name_authorize_outer = "/policy/pol_authorize_outer";
-    char *policy_file_authorize_outer = TOP_SOURCEDIR
-                                        "/test/data/fapi/policy/pol_authorize_outer.json";
+    char *policy_file_authorize_outer
+        = TOP_SOURCEDIR "/test/data/fapi/policy/pol_authorize_outer.json";
     uint8_t policyRef[] = { 1, 2, 3, 4, 5 };
-    FILE *stream = NULL;
-    char *json_policy = NULL;
-    long policy_size;
+    FILE   *stream = NULL;
+    char   *json_policy = NULL;
+    long    policy_size;
 
     uint8_t *signature = NULL;
-    char *publicKey = NULL;
-    char *certificate = NULL;
-    char *pathList = NULL;
+    char    *publicKey = NULL;
+    char    *certificate = NULL;
+    char    *pathList = NULL;
 
     r = Fapi_List(context, "/", &pathList);
     if (r != TSS2_FAPI_RC_NOT_PROVISIONED) {
@@ -164,9 +160,8 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file_name_hash, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -189,9 +184,8 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file_cphash, "r");
     ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -214,9 +208,8 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file_authorize, "r");
     ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -239,9 +232,8 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     policy_size = ftell(stream);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
-    goto_if_null(json_policy,
-            "Could not allocate memory for the JSON policy",
-            TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
+                 error);
     stream = fopen(policy_file_authorize_outer, "r");
     ret = read(fileno(stream), json_policy, policy_size);
     if (ret != policy_size) {
@@ -255,59 +247,51 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_Import", error);
 
     /* Create keys and use them to authorize the authorize policy */
-    r = Fapi_CreateKey(context, "HS/SRK/myPolicySignKeyOuter", "sign,noDa",
-                       "", NULL);
+    r = Fapi_CreateKey(context, "HS/SRK/myPolicySignKeyOuter", "sign,noDa", "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     /* Create keys and use them to authorize policies */
-    r = Fapi_CreateKey(context, "HS/SRK/myPolicySignKey", "sign,noDa",
-                       "", NULL);
+    r = Fapi_CreateKey(context, "HS/SRK/myPolicySignKey", "sign,noDa", "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     /* Create the actual key */
-    r = Fapi_CreateKey(context, OBJECT_PATH, "sign, noda",
-                       policy_name_authorize_outer, NULL);
+    r = Fapi_CreateKey(context, OBJECT_PATH, "sign, noda", policy_name_authorize_outer, NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     /* Authorize the policies in sequence. */
-    r = Fapi_AuthorizePolicy(context, policy_name_authorize,
-                             "HS/SRK/myPolicySignKeyOuter", NULL, 0);
+    r = Fapi_AuthorizePolicy(context, policy_name_authorize, "HS/SRK/myPolicySignKeyOuter", NULL,
+                             0);
     goto_if_error(r, "Authorize policy", error);
 
-    r = Fapi_AuthorizePolicy(context, policy_name_hash,
-                             "HS/SRK/myPolicySignKey", policyRef, sizeof(policyRef));
+    r = Fapi_AuthorizePolicy(context, policy_name_hash, "HS/SRK/myPolicySignKey", policyRef,
+                             sizeof(policyRef));
     goto_if_error(r, "Authorize policy", error);
 
-    r = Fapi_AuthorizePolicy(context, policy_cphash,
-                             "HS/SRK/myPolicySignKey", policyRef, sizeof(policyRef));
+    r = Fapi_AuthorizePolicy(context, policy_cphash, "HS/SRK/myPolicySignKey", policyRef,
+                             sizeof(policyRef));
     goto_if_error(r, "Authorize policy", error);
 
     /* The policy is authorized twice with idfferent keys in order to test the code that
        stores multiple authorizations inside the policy statements. */
-    r = Fapi_CreateKey(context, "HS/SRK/myPolicySignKey2", "sign,noDa",
-                       "", NULL);
+    r = Fapi_CreateKey(context, "HS/SRK/myPolicySignKey2", "sign,noDa", "", NULL);
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
-    r = Fapi_SetCertificate(context, OBJECT_PATH, "-----BEGIN "\
-        "CERTIFICATE-----[...]-----END CERTIFICATE-----");
+    r = Fapi_SetCertificate(context, OBJECT_PATH,
+                            "-----BEGIN "
+                            "CERTIFICATE-----[...]-----END CERTIFICATE-----");
     goto_if_error(r, "Error Fapi_CreateKey", error);
 
     /* Use the key */
     size_t signatureSize = 0;
 
-    TPM2B_DIGEST digest = {
-        .size = 32,
-        .buffer = {
-            0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x31, 0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f,
-            0x41, 0x42
-        }
-    };
+    TPM2B_DIGEST digest
+        = { .size = 32,
+            .buffer = { 0x67, 0x68, 0x03, 0x3e, 0x21, 0x64, 0x68, 0x24, 0x7b, 0xd0, 0x31,
+                        0xa0, 0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x31, 0xa0,
+                        0xa2, 0xd9, 0x87, 0x6d, 0x79, 0x81, 0x8f, 0x8f, 0x41, 0x42 } };
 
-    r = Fapi_Sign(context, OBJECT_PATH, NULL,
-                  &digest.buffer[0], digest.size, &signature, &signatureSize,
-                  &publicKey, &certificate);
+    r = Fapi_Sign(context, OBJECT_PATH, NULL, &digest.buffer[0], digest.size, &signature,
+                  &signatureSize, &publicKey, &certificate);
     goto_if_error(r, "Error Fapi_Sign", error);
     ASSERT(signature != NULL);
     ASSERT(publicKey != NULL);
@@ -321,13 +305,13 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_List", error);
     ASSERT(pathList != NULL);
     LOG_INFO("Pathlist: %s", pathList);
-    char *check_pathList1 =
-        "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE "/LOCKOUT:/"
-        FAPI_PROFILE "/HE/EK:/" FAPI_PROFILE "/HE:/" FAPI_PROFILE "/HN:/policy/pol_name_hash:"
-        "/policy/pol_cphash:/policy/pol_authorize_outer:/policy/pol_authorize:/" FAPI_PROFILE
-        "/HS/SRK/myPolicySignKey2:/" FAPI_PROFILE "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE
-        "/HS/SRK/mySignKey:/" FAPI_PROFILE "/HS/SRK/myPolicySignKeyOuter"
-        ":/nv/Endorsement_Certificate/1c00002:/nv/Endorsement_Certificate/1c0000a";
+    char *check_pathList1
+        = "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE "/LOCKOUT:/" FAPI_PROFILE
+          "/HE/EK:/" FAPI_PROFILE "/HE:/" FAPI_PROFILE "/HN:/policy/pol_name_hash:"
+          "/policy/pol_cphash:/policy/pol_authorize_outer:/policy/pol_authorize:/" FAPI_PROFILE
+          "/HS/SRK/myPolicySignKey2:/" FAPI_PROFILE "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE
+          "/HS/SRK/mySignKey:/" FAPI_PROFILE "/HS/SRK/myPolicySignKeyOuter"
+          ":/nv/Endorsement_Certificate/1c00002:/nv/Endorsement_Certificate/1c0000a";
     ASSERT(cmp_strtokens(pathList, check_pathList1, ":"));
 
     SAFE_FREE(pathList);
@@ -337,10 +321,10 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_List", error);
     ASSERT(pathList != NULL);
     LOG_INFO("Pathlist: %s", pathList);
-    char *check_pathList2 =
-        "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS/SRK/myPolicySignKey2:/" FAPI_PROFILE
-        "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE "/HS/SRK/mySignKey:/" FAPI_PROFILE
-        "/HS/SRK/myPolicySignKeyOuter";
+    char *check_pathList2
+        = "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS/SRK/myPolicySignKey2:/" FAPI_PROFILE
+          "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE "/HS/SRK/mySignKey:/" FAPI_PROFILE
+          "/HS/SRK/myPolicySignKeyOuter";
     ASSERT(cmp_strtokens(pathList, check_pathList2, ":"));
     SAFE_FREE(pathList);
 
@@ -349,10 +333,10 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     goto_if_error(r, "Error Fapi_List", error);
     ASSERT(pathList != NULL);
     LOG_INFO("Pathlist: %s", pathList);
-    char *check_pathList3 =
-        "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE"/HS/SRK/myPolicySignKey2:/"
-        FAPI_PROFILE "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE "/HS/SRK/mySignKey:/" FAPI_PROFILE
-        "/HS/SRK/myPolicySignKeyOuter";
+    char *check_pathList3
+        = "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE
+          "/HS/SRK/myPolicySignKey2:/" FAPI_PROFILE "/HS/SRK/myPolicySignKey:/" FAPI_PROFILE
+          "/HS/SRK/mySignKey:/" FAPI_PROFILE "/HS/SRK/myPolicySignKeyOuter";
     ASSERT(cmp_strtokens(pathList, check_pathList3, ":"));
     SAFE_FREE(pathList);
 
@@ -372,8 +356,8 @@ test_fapi_key_create_policy_authorize_sign(FAPI_CONTEXT *context)
     ASSERT(pathList != NULL);
     ASSERT(strlen(pathList) > ASSERT_SIZE);
     LOG_INFO("Pathlist: %s", pathList);
-    char *check_pathList4 =
-        "/policy/pol_name_hash:/policy/pol_cphash:/policy/pol_authorize_outer:/policy/pol_authorize";
+    char *check_pathList4 = "/policy/pol_name_hash:/policy/pol_cphash:/policy/pol_authorize_outer:/"
+                            "policy/pol_authorize";
     ASSERT(cmp_strtokens(pathList, check_pathList4, ":"));
     SAFE_FREE(pathList);
 
@@ -404,7 +388,6 @@ error:
 }
 
 int
-test_invoke_fapi(FAPI_CONTEXT *fapi_context)
-{
+test_invoke_fapi(FAPI_CONTEXT *fapi_context) {
     return test_fapi_key_create_policy_authorize_sign(fapi_context);
 }

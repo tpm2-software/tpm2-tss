@@ -8,19 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for calloc, free, NULL
-#include <uthash.h>           // for UT_hash_handle, HASH_FIND_INT, HASH_ADD...
+#include <stdlib.h> // for calloc, free, NULL
+#include <uthash.h> // for UT_hash_handle, HASH_FIND_INT, HASH_ADD...
 
-#include "session-util.h"     // for ENTITY, AddEntity, DeleteEntity, GetEntity
-#include "sys-util.h"         // for CopySizedByteBuffer
-#include "tss2_tpm2_types.h"  // for TPM2_HANDLE, TPM2B_AUTH
-#include "util/tpm2b.h"       // for TPM2B
+#include "session-util.h"    // for ENTITY, AddEntity, DeleteEntity, GetEntity
+#include "sys-util.h"        // for CopySizedByteBuffer
+#include "tss2_tpm2_types.h" // for TPM2_HANDLE, TPM2B_AUTH
+#include "util/tpm2b.h"      // for TPM2B
 
 static ENTITY *entities = NULL;
 
 int
-AddEntity(TPM2_HANDLE handle, TPM2B_AUTH *auth)
-{
+AddEntity(TPM2_HANDLE handle, TPM2B_AUTH *auth) {
     ENTITY *e;
 
     HASH_FIND_INT(entities, &handle, e);
@@ -38,8 +37,7 @@ AddEntity(TPM2_HANDLE handle, TPM2B_AUTH *auth)
 }
 
 void
-DeleteEntity(TPM2_HANDLE handle)
-{
+DeleteEntity(TPM2_HANDLE handle) {
     ENTITY *e;
 
     HASH_FIND_INT(entities, &handle, e);
@@ -51,8 +49,7 @@ DeleteEntity(TPM2_HANDLE handle)
 }
 
 int
-GetEntityAuth(TPM2_HANDLE handle, TPM2B_AUTH *auth)
-{
+GetEntityAuth(TPM2_HANDLE handle, TPM2B_AUTH *auth) {
     ENTITY *e;
 
     HASH_FIND_INT(entities, &handle, e);
@@ -64,8 +61,7 @@ GetEntityAuth(TPM2_HANDLE handle, TPM2B_AUTH *auth)
 }
 
 ENTITY *
-GetEntity(TPM2_HANDLE handle)
-{
+GetEntity(TPM2_HANDLE handle) {
     ENTITY *e;
 
     HASH_FIND_INT(entities, &handle, e);

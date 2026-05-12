@@ -8,22 +8,21 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <string.h>           // for memcpy, size_t
+#include <string.h> // for memcpy, size_t
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for TSS2_RC, UINT32, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_mu.h"          // for Tss2_MU_UINT32_Marshal, Tss2_MU_TPMS_CA...
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPMS_CAPABILITY_DATA, TPM2B_MAX_CAP_BUFFER
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for TSS2_RC, UINT32, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_UINT32_Marshal, Tss2_MU_TPMS_CA...
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPMS_CAPABILITY_DATA, TPM2B_MAX_CAP_BUFFER
 
-TSS2_RC Tss2_Sys_GetCapability_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPM2_CAP capability,
-    UINT32 property,
-    UINT32 propertyCount)
-{
+TSS2_RC
+Tss2_Sys_GetCapability_Prepare(TSS2_SYS_CONTEXT *sysContext,
+                               TPM2_CAP          capability,
+                               UINT32            property,
+                               UINT32            propertyCount) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -32,21 +31,15 @@ TSS2_RC Tss2_Sys_GetCapability_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(capability, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(capability, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(property, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(property, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(propertyCount, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(propertyCount, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
@@ -57,14 +50,13 @@ TSS2_RC Tss2_Sys_GetCapability_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_GetCapability_Complete(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_YES_NO *moreData,
-    TPMS_CAPABILITY_DATA *capabilityData)
-{
+TSS2_RC
+Tss2_Sys_GetCapability_Complete(TSS2_SYS_CONTEXT     *sysContext,
+                                TPMI_YES_NO          *moreData,
+                                TPMS_CAPABILITY_DATA *capabilityData) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
-    TPM2_CAP cap;
+    TSS2_RC                rval;
+    TPM2_CAP               cap;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -73,10 +65,7 @@ TSS2_RC Tss2_Sys_GetCapability_Complete(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT8_Unmarshal(ctx->cmdBuffer,
-                                   ctx->maxCmdSize,
-                                   &ctx->nextData,
-                                   moreData);
+    rval = Tss2_MU_UINT8_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, moreData);
     if (rval)
         return rval;
 
@@ -84,18 +73,13 @@ TSS2_RC Tss2_Sys_GetCapability_Complete(
        if this is a standard cap, just unmarshal it.
        if this is a vendor cap, we fill a tpm2b inside the struct buffer.*/
     size_t next_data_vendor = ctx->nextData;
-    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &next_data_vendor,
-                                  &cap);
+    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &next_data_vendor, &cap);
     if (rval)
         return rval;
 
     if (cap != TPM2_CAP_VENDOR_PROPERTY)
-        return Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(ctx->cmdBuffer,
-                                                      ctx->maxCmdSize,
-                                                      &ctx->nextData,
-                                                      capabilityData);
+        return Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize,
+                                                      &ctx->nextData, capabilityData);
 
     /*
      * Size the capabilityData is the end of response we can copy the remainder
@@ -118,30 +102,26 @@ TSS2_RC Tss2_Sys_GetCapability_Complete(
         capabilityData->capability = cap;
 
         capabilityData->data.vendor.size = left;
-        memcpy(&capabilityData->data.vendor.buffer[0],
-               &ctx->cmdBuffer[ctx->nextData],
-               left);
+        memcpy(&capabilityData->data.vendor.buffer[0], &ctx->cmdBuffer[ctx->nextData], left);
     }
     ctx->nextData += left;
 
     return TSS2_RC_SUCCESS;
 }
 
-TSS2_RC Tss2_Sys_GetCapability(
-    TSS2_SYS_CONTEXT *sysContext,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    TPM2_CAP capability,
-    UINT32 property,
-    UINT32 propertyCount,
-    TPMI_YES_NO *moreData,
-    TPMS_CAPABILITY_DATA *capabilityData,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_GetCapability(TSS2_SYS_CONTEXT             *sysContext,
+                       TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                       TPM2_CAP                      capability,
+                       UINT32                        property,
+                       UINT32                        propertyCount,
+                       TPMI_YES_NO                  *moreData,
+                       TPMS_CAPABILITY_DATA         *capabilityData,
+                       TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
-    rval = Tss2_Sys_GetCapability_Prepare(sysContext, capability, property,
-                                          propertyCount);
+    rval = Tss2_Sys_GetCapability_Prepare(sysContext, capability, property, propertyCount);
     if (rval)
         return rval;
 

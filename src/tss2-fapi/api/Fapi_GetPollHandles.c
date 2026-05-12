@@ -8,17 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>        // for size_t
+#include <stdlib.h> // for size_t
 
-#include "fapi_int.h"      // for FAPI_CONTEXT, _FAPI_STATE_INIT
-#include "ifapi_io.h"      // for ifapi_io_poll_handles
-#include "ifapi_macros.h"  // for check_not_null
-#include "tss2_common.h"   // for TSS2_FAPI_RC_NO_HANDLE, TSS2_RC, TSS2_FAPI...
-#include "tss2_esys.h"     // for Esys_GetPollHandles
-#include "tss2_fapi.h"     // for FAPI_CONTEXT, FAPI_POLL_HANDLE, Fapi_GetPo...
+#include "fapi_int.h"     // for FAPI_CONTEXT, _FAPI_STATE_INIT
+#include "ifapi_io.h"     // for ifapi_io_poll_handles
+#include "ifapi_macros.h" // for check_not_null
+#include "tss2_common.h"  // for TSS2_FAPI_RC_NO_HANDLE, TSS2_RC, TSS2_FAPI...
+#include "tss2_esys.h"    // for Esys_GetPollHandles
+#include "tss2_fapi.h"    // for FAPI_CONTEXT, FAPI_POLL_HANDLE, Fapi_GetPo...
 
 #define LOGMODULE fapi
-#include "util/log.h"      // for LOG_DEBUG, LOG_TRACE, LOG_ERROR, return_if...
+#include "util/log.h" // for LOG_DEBUG, LOG_TRACE, LOG_ERROR, return_if...
 
 /** Retrieve handles for polling
  *
@@ -44,11 +44,7 @@
  *         internal operations or return parameters.
  */
 TSS2_RC
-Fapi_GetPollHandles(
-    FAPI_CONTEXT *context,
-    FAPI_POLL_HANDLE **handles,
-    size_t            *num_handles)
-{
+Fapi_GetPollHandles(FAPI_CONTEXT *context, FAPI_POLL_HANDLE **handles, size_t *num_handles) {
     LOG_TRACE("called for context:%p", context);
 
     TSS2_RC r;
@@ -75,8 +71,7 @@ Fapi_GetPollHandles(
 
     /* Then we check for poll handles from ESYS operations. */
     /* If we are running in none-TPM mode then we are already done trying. */
-    return_if_null(context->esys, "No non-TPM based poll handles found.",
-                   TSS2_FAPI_RC_NO_HANDLE);
+    return_if_null(context->esys, "No non-TPM based poll handles found.", TSS2_FAPI_RC_NO_HANDLE);
 
     /* Retrieve the actual poll handles from ESYS. */
     r = Esys_GetPollHandles(context->esys, handles, num_handles);

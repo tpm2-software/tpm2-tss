@@ -8,17 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "esys_int.h"         // for RSRC_NODE_T
-#include "esys_iutil.h"       // for esys_GetResourceObject
-#include "esys_types.h"       // for IESYS_RESOURCE
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_esys.h"        // for Esys_Free, Esys_FlushContext, ESYS_TR_NONE
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPM2_ALG_NULL, TPM2_ALG_S...
+#include "esys_int.h"        // for RSRC_NODE_T
+#include "esys_iutil.h"      // for esys_GetResourceObject
+#include "esys_types.h"      // for IESYS_RESOURCE
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_esys.h"       // for Esys_Free, Esys_FlushContext, ESYS_TR_NONE
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPM2_ALG_NULL, TPM2_ALG_S...
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_INFO, MAY...
+#include "util/log.h" // for goto_if_error, LOG_ERROR, LOG_INFO, MAY...
 
 /** This test is intended to test Esys_CreatePrimary with hmac verification.
  *
@@ -38,22 +38,19 @@
  */
 
 int
-test_esys_create_primary_hmac(ESYS_CONTEXT * esys_context)
-{
-    TSS2_RC r;
-    ESYS_TR objectHandle = ESYS_TR_NONE;
-    ESYS_TR session = ESYS_TR_NONE;
+test_esys_create_primary_hmac(ESYS_CONTEXT *esys_context) {
+    TSS2_RC      r;
+    ESYS_TR      objectHandle = ESYS_TR_NONE;
+    ESYS_TR      session = ESYS_TR_NONE;
     TPMT_SYM_DEF symmetric = { .algorithm = TPM2_ALG_NULL };
 
-    TPM2B_PUBLIC *outPublic = NULL;
+    TPM2B_PUBLIC        *outPublic = NULL;
     TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_DIGEST        *creationHash = NULL;
+    TPMT_TK_CREATION    *creationTicket = NULL;
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
 
     goto_if_error(r, "Error: During initialization of session", error);
@@ -155,32 +152,25 @@ test_esys_create_primary_hmac(ESYS_CONTEXT * esys_context)
 
     TPM2B_DATA outsideInfo = {
         .size = 0,
-        .buffer = {}
-        ,
+        .buffer = {},
     };
 
     TPML_PCR_SELECTION creationPCR = {
         .count = 0,
     };
 
-    TPM2B_AUTH authValue = {
-        .size = 0,
-        .buffer = {}
-    };
+    TPM2B_AUTH authValue = { .size = 0, .buffer = {} };
 
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
     RSRC_NODE_T *objectHandle_node;
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, session,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitive, &inPublic,
-                           &outsideInfo, &creationPCR, &objectHandle,
-                           &outPublic, &creationData, &creationHash,
-                           &creationTicket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, session, ESYS_TR_NONE, ESYS_TR_NONE,
+                           &inSensitive, &inPublic, &outsideInfo, &creationPCR, &objectHandle,
+                           &outPublic, &creationData, &creationHash, &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
-    r = esys_GetResourceObject(esys_context, objectHandle,
-                               &objectHandle_node);
+    r = esys_GetResourceObject(esys_context, objectHandle, &objectHandle_node);
     goto_if_error(r, "Error Esys GetResourceObject", error);
     ESYS_TR tpmHandle MAYBE_UNUSED = objectHandle_node->rsrc.handle;
     LOG_INFO("Created Primary with TPM handle 0x%08x...", tpmHandle);
@@ -198,7 +188,7 @@ test_esys_create_primary_hmac(ESYS_CONTEXT * esys_context)
     Esys_Free(creationTicket);
     return EXIT_SUCCESS;
 
- error:
+error:
     LOG_ERROR("\nError Code: %x\n", r);
 
     if (session != ESYS_TR_NONE) {
@@ -221,6 +211,6 @@ test_esys_create_primary_hmac(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_create_primary_hmac(esys_context);
 }

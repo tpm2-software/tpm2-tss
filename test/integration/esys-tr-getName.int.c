@@ -4,16 +4,16 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for size_t, EXIT_FAILURE, EXIT_SUCCESS
-#include <string.h>           // for memcmp
+#include <stdlib.h> // for size_t, EXIT_FAILURE, EXIT_SUCCESS
+#include <string.h> // for memcmp
 
-#include "tss2_common.h"      // for BYTE, TSS2_RC
-#include "tss2_esys.h"        // for Esys_Free, Esys_TR_GetName, Esys_TR_Get...
-#include "tss2_mu.h"          // for Tss2_MU_TPM2_HANDLE_Marshal
-#include "tss2_tpm2_types.h"  // for TPM2B_NAME, TPM2_NV_AC_FIRST, TPM2_HANDLE
+#include "tss2_common.h"     // for BYTE, TSS2_RC
+#include "tss2_esys.h"       // for Esys_Free, Esys_TR_GetName, Esys_TR_Get...
+#include "tss2_mu.h"         // for Tss2_MU_TPM2_HANDLE_Marshal
+#include "tss2_tpm2_types.h" // for TPM2B_NAME, TPM2_NV_AC_FIRST, TPM2_HANDLE
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR
+#include "util/log.h" // for goto_if_error, LOG_ERROR
 
 /** This tests the Esys_TR_GetTpmHandle and Esys_TR_GetName functions by
  *  using a dummy AC, ACT handle and validating it against the expected TPM
@@ -29,11 +29,10 @@
  */
 
 int
-test_esys_tr_getName(ESYS_CONTEXT * ectx)
-{
+test_esys_tr_getName(ESYS_CONTEXT *ectx) {
     TSS2_RC r;
 
-    ESYS_TR ac = ESYS_TR_RH_AC(0);
+    ESYS_TR     ac = ESYS_TR_RH_AC(0);
     TPM2_HANDLE tpmHandle = ESYS_TR_NONE;
 
     r = Esys_TR_GetTpmHandle(ectx, ac, &tpmHandle);
@@ -45,22 +44,19 @@ test_esys_tr_getName(ESYS_CONTEXT * ectx)
     }
 
     TPM2B_NAME name1, *name2, act_name1, *act_name2;
-    size_t offset = 0;
+    size_t     offset = 0;
 
-    r = Tss2_MU_TPM2_HANDLE_Marshal(TPM2_NV_AC_FIRST, &name1.name[0],
-                                    sizeof(name1.name), &offset);
+    r = Tss2_MU_TPM2_HANDLE_Marshal(TPM2_NV_AC_FIRST, &name1.name[0], sizeof(name1.name), &offset);
     goto_if_error(r, "Error Marshaling AC name", error);
     name1.size = offset;
 
     /**
      * Test AC handle
-    */
+     */
     r = Esys_TR_GetName(ectx, ac, &name2);
     goto_if_error(r, "GetName for AC Handle failed", error);
 
-    if (name1.size != name2->size ||
-        memcmp(&name1.name[0], &name2->name[0], name1.size) != 0)
-    {
+    if (name1.size != name2->size || memcmp(&name1.name[0], &name2->name[0], name1.size) != 0) {
         Esys_Free(name2);
         LOG_ERROR("Names mismatch between NV_GetPublic and TR_GetName");
         goto error;
@@ -71,18 +67,17 @@ test_esys_tr_getName(ESYS_CONTEXT * ectx)
      */
 
     ESYS_TR act_handle = ESYS_TR_RH_ACT(5);
-    size_t act_offset = 0;
-    r = Tss2_MU_TPM2_HANDLE_Marshal(TPM2_RH_ACT_5, &act_name1.name[0],
-                                    sizeof(act_name1.name), &act_offset);
+    size_t  act_offset = 0;
+    r = Tss2_MU_TPM2_HANDLE_Marshal(TPM2_RH_ACT_5, &act_name1.name[0], sizeof(act_name1.name),
+                                    &act_offset);
     goto_if_error(r, "Error Marshaling ACT name", error);
     act_name1.size = act_offset;
 
     r = Esys_TR_GetName(ectx, act_handle, &act_name2);
     goto_if_error(r, "GetName for ACT Handle failed", error);
 
-    if (act_name1.size != act_name2->size ||
-        memcmp(&act_name1.name[0], &act_name2->name[0], act_name1.size) != 0)
-    {
+    if (act_name1.size != act_name2->size
+        || memcmp(&act_name1.name[0], &act_name2->name[0], act_name1.size) != 0) {
         Esys_Free(act_name2);
         LOG_ERROR("Names mismatch between NV_GetPublic and TR_GetName");
         goto error;
@@ -93,11 +88,11 @@ test_esys_tr_getName(ESYS_CONTEXT * ectx)
 
     return EXIT_SUCCESS;
 
- error:
+error:
     return EXIT_FAILURE;
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_tr_getName(esys_context);
 }

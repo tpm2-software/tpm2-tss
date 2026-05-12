@@ -8,21 +8,20 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include "sysapi_util.h"      // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
-#include "tss2_common.h"      // for UINT32, TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
-#include "tss2_mu.h"          // for Tss2_MU_UINT32_Marshal
-#include "tss2_sys.h"         // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
-#include "tss2_tpm2_types.h"  // for TPMI_RH_LOCKOUT, TPM2_CC_DictionaryAtta...
+#include "sysapi_util.h"     // for _TSS2_SYS_CONTEXT_BLOB, syscontext_cast
+#include "tss2_common.h"     // for UINT32, TSS2_RC, TSS2_SYS_RC_BAD_REFERENCE
+#include "tss2_mu.h"         // for Tss2_MU_UINT32_Marshal
+#include "tss2_sys.h"        // for TSS2_SYS_CONTEXT, TSS2L_SYS_AUTH_COMMAND
+#include "tss2_tpm2_types.h" // for TPMI_RH_LOCKOUT, TPM2_CC_DictionaryAtta...
 
-TSS2_RC Tss2_Sys_DictionaryAttackParameters_Prepare(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_LOCKOUT lockHandle,
-    UINT32 newMaxTries,
-    UINT32 newRecoveryTime,
-    UINT32 lockoutRecovery)
-{
+TSS2_RC
+Tss2_Sys_DictionaryAttackParameters_Prepare(TSS2_SYS_CONTEXT *sysContext,
+                                            TPMI_RH_LOCKOUT   lockHandle,
+                                            UINT32            newMaxTries,
+                                            UINT32            newRecoveryTime,
+                                            UINT32            lockoutRecovery) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
+    TSS2_RC                rval;
 
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -31,26 +30,17 @@ TSS2_RC Tss2_Sys_DictionaryAttackParameters_Prepare(
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Marshal(lockHandle, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(lockHandle, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
-
-    rval = Tss2_MU_UINT32_Marshal(newMaxTries, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(newMaxTries, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
-    rval = Tss2_MU_UINT32_Marshal(newRecoveryTime, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(newRecoveryTime, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
-    rval = Tss2_MU_UINT32_Marshal(lockoutRecovery, ctx->cmdBuffer,
-                                  ctx->maxCmdSize,
-                                  &ctx->nextData);
+    rval = Tss2_MU_UINT32_Marshal(lockoutRecovery, ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData);
     if (rval)
         return rval;
 
@@ -61,9 +51,8 @@ TSS2_RC Tss2_Sys_DictionaryAttackParameters_Prepare(
     return CommonPrepareEpilogue(ctx);
 }
 
-TSS2_RC Tss2_Sys_DictionaryAttackParameters_Complete (
-    TSS2_SYS_CONTEXT *sysContext)
-{
+TSS2_RC
+Tss2_Sys_DictionaryAttackParameters_Complete(TSS2_SYS_CONTEXT *sysContext) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
 
     if (!ctx)
@@ -72,20 +61,18 @@ TSS2_RC Tss2_Sys_DictionaryAttackParameters_Complete (
     return CommonComplete(ctx);
 }
 
-TSS2_RC Tss2_Sys_DictionaryAttackParameters(
-    TSS2_SYS_CONTEXT *sysContext,
-    TPMI_RH_LOCKOUT lockHandle,
-    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
-    UINT32 newMaxTries,
-    UINT32 newRecoveryTime,
-    UINT32 lockoutRecovery,
-    TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray)
-{
+TSS2_RC
+Tss2_Sys_DictionaryAttackParameters(TSS2_SYS_CONTEXT             *sysContext,
+                                    TPMI_RH_LOCKOUT               lockHandle,
+                                    TSS2L_SYS_AUTH_COMMAND const *cmdAuthsArray,
+                                    UINT32                        newMaxTries,
+                                    UINT32                        newRecoveryTime,
+                                    UINT32                        lockoutRecovery,
+                                    TSS2L_SYS_AUTH_RESPONSE      *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
-    TSS2_RC rval;
-    rval = Tss2_Sys_DictionaryAttackParameters_Prepare(sysContext, lockHandle,
-                                                       newMaxTries, newRecoveryTime,
-                                                       lockoutRecovery);
+    TSS2_RC                rval;
+    rval = Tss2_Sys_DictionaryAttackParameters_Prepare(sysContext, lockHandle, newMaxTries,
+                                                       newRecoveryTime, lockoutRecovery);
     if (rval)
         return rval;
 

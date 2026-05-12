@@ -8,35 +8,34 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdint.h>           // for uint8_t
-#include <stdio.h>            // for NULL, size_t
-#include <stdlib.h>           // for exit
+#include <stdint.h> // for uint8_t
+#include <stdio.h>  // for NULL, size_t
+#include <stdlib.h> // for exit
 
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_SYS_RC_BAD_SEQUENCE
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, Tss2_Sys_GetTest...
-#include "tss2_tcti.h"        // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"  // for TPM2B_MAX_BUFFER, TPM2B_NAME, TPM2B_PUBLIC
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_SYS_RC_BAD_SEQUENCE
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, Tss2_Sys_GetTest...
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_MAX_BUFFER, TPM2B_NAME, TPM2B_PUBLIC
 
 #define LOGMODULE test
-#include "sys-util.h"         // for TPM2B_NAMED_INIT, TPM2B_NAME_INIT
-#include "test.h"             // for test_invoke
-#include "util/log.h"         // for LOG_ERROR, LOG_INFO
+#include "sys-util.h" // for TPM2B_NAMED_INIT, TPM2B_NAME_INIT
+#include "test.h"     // for test_invoke
+#include "util/log.h" // for LOG_ERROR, LOG_INFO
 
 /*
  * System API tests including invalid cases
  */
 int
-test_invoke (TSS2_SYS_CONTEXT *sys_context)
-{
-    TPM2B_MAX_BUFFER    outData = TPM2B_NAMED_INIT(TPM2B_MAX_BUFFER, buffer);
-    TPM2B_PUBLIC        outPublic;
-    TPM2B_NAME          name = TPM2B_NAME_INIT;
-    TPM2B_NAME          qualifiedName;
-    TPM2_HANDLE          handle = 0;
-    TPM2_CC              commandCode;
-    size_t              rpBufferUsedSize;
-    const uint8_t      *rpBuffer;
-    TSS2_RC             rc;
+test_invoke(TSS2_SYS_CONTEXT *sys_context) {
+    TPM2B_MAX_BUFFER outData = TPM2B_NAMED_INIT(TPM2B_MAX_BUFFER, buffer);
+    TPM2B_PUBLIC     outPublic;
+    TPM2B_NAME       name = TPM2B_NAME_INIT;
+    TPM2B_NAME       qualifiedName;
+    TPM2_HANDLE      handle = 0;
+    TPM2_CC          commandCode;
+    size_t           rpBufferUsedSize;
+    const uint8_t   *rpBuffer;
+    TSS2_RC          rc;
 
     LOG_INFO("System API test");
     /* Test for bad reference. */

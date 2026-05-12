@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for NULL, EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, UINT32, TSS2_RC, TSS2_...
-#include "tss2_esys.h"        // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
-#include "tss2_tpm2_types.h"  // for TPM2_ALG_SHA256, TPM2_ALG_NULL, TPM2_RC...
+#include "test-esys.h"       // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, UINT32, TSS2_RC, TSS2_...
+#include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_tpm2_types.h" // for TPM2_ALG_SHA256, TPM2_ALG_NULL, TPM2_RC...
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR, LOG_WARNING
+#include "util/log.h" // for goto_if_error, LOG_ERROR, LOG_WARNING
 
 /** This test is intended to test the ESYS audit commands.
  *
@@ -45,26 +45,22 @@
  */
 
 int
-test_esys_audit(ESYS_CONTEXT * esys_context)
-{
+test_esys_audit(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR signHandle = ESYS_TR_NONE;
     ESYS_TR session = ESYS_TR_NONE;
-    int failure_return = EXIT_FAILURE;
+    int     failure_return = EXIT_FAILURE;
 
-    TPM2B_PUBLIC *outPublic = NULL;
-    TPM2B_CREATION_DATA *creationData = NULL;
-    TPM2B_DIGEST *creationHash = NULL;
-    TPMT_TK_CREATION *creationTicket = NULL;
+    TPM2B_PUBLIC         *outPublic = NULL;
+    TPM2B_CREATION_DATA  *creationData = NULL;
+    TPM2B_DIGEST         *creationHash = NULL;
+    TPMT_TK_CREATION     *creationTicket = NULL;
     TPMS_CAPABILITY_DATA *capabilityData = NULL;
-    TPM2B_ATTEST *auditInfo = NULL;
-    TPMT_SIGNATURE *signature = NULL;
+    TPM2B_ATTEST         *auditInfo = NULL;
+    TPMT_SIGNATURE       *signature = NULL;
 
     /* Compute a signing key */
-    TPM2B_AUTH authValuePrimary = {
-        .size = 5,
-        .buffer = {1, 2, 3, 4, 5}
-    };
+    TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
 
     TPM2B_SENSITIVE_CREATE inSensitivePrimary = {
         .size = 0,
@@ -119,14 +115,11 @@ test_esys_audit(ESYS_CONTEXT * esys_context)
             },
         };
 
-    TPM2B_AUTH authValue = {
-                .size = 0,
-                .buffer = {}
-    };
+    TPM2B_AUTH authValue = { .size = 0, .buffer = {} };
 
     TPM2B_DATA outsideInfo = {
-            .size = 0,
-            .buffer = {},
+        .size = 0,
+        .buffer = {},
     };
 
     TPML_PCR_SELECTION creationPCR = {
@@ -136,63 +129,46 @@ test_esys_audit(ESYS_CONTEXT * esys_context)
     r = Esys_TR_SetAuth(esys_context, ESYS_TR_RH_OWNER, &authValue);
     goto_if_error(r, "Error: TR_SetAuth", error);
 
-    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD,
-                           ESYS_TR_NONE, ESYS_TR_NONE, &inSensitivePrimary,
-                           &inPublic, &outsideInfo, &creationPCR,
-                           &signHandle, &outPublic, &creationData,
-                           &creationHash, &creationTicket);
+    r = Esys_CreatePrimary(esys_context, ESYS_TR_RH_OWNER, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                           ESYS_TR_NONE, &inSensitivePrimary, &inPublic, &outsideInfo, &creationPCR,
+                           &signHandle, &outPublic, &creationData, &creationHash, &creationTicket);
     goto_if_error(r, "Error esys create primary", error);
 
     /* Start a audit session */
-    TPMA_SESSION sessionAttributes = TPMA_SESSION_CONTINUESESSION |
-                                     TPMA_SESSION_AUDIT;
-    TPM2_SE sessionType = TPM2_SE_HMAC;
+    TPMA_SESSION  sessionAttributes = TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_AUDIT;
+    TPM2_SE       sessionType = TPM2_SE_HMAC;
     TPMI_ALG_HASH authHash = TPM2_ALG_SHA256;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_NULL };
+    TPMT_SYM_DEF  symmetric = { .algorithm = TPM2_ALG_NULL };
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              NULL,
-                              sessionType, &symmetric, authHash, &session);
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, NULL, sessionType, &symmetric, authHash, &session);
 
     goto_if_error(r, "Error Esys_StartAuthSession", error);
-    r = Esys_TRSess_SetAttributes(esys_context, session, sessionAttributes,
-                                  0xff);
+    r = Esys_TRSess_SetAttributes(esys_context, session, sessionAttributes, 0xff);
     goto_if_error(r, "Error Esys_TRSess_SetAttributes", error);
 
     /* Execute one command to be audited */
-    TPM2_CAP capability = TPM2_CAP_TPM_PROPERTIES;
-    UINT32 property = TPM2_PT_LOCKOUT_COUNTER;
-    UINT32 propertyCount = 1;
+    TPM2_CAP    capability = TPM2_CAP_TPM_PROPERTIES;
+    UINT32      property = TPM2_PT_LOCKOUT_COUNTER;
+    UINT32      propertyCount = 1;
     TPMI_YES_NO moreData;
 
-    r = Esys_GetCapability(esys_context,
-                           session, ESYS_TR_NONE, ESYS_TR_NONE,
-                           capability, property, propertyCount,
-                           &moreData, &capabilityData);
+    r = Esys_GetCapability(esys_context, session, ESYS_TR_NONE, ESYS_TR_NONE, capability, property,
+                           propertyCount, &moreData, &capabilityData);
 
     goto_if_error(r, "Error esys get capability", error);
 
-    ESYS_TR privacyHandle = ESYS_TR_RH_ENDORSEMENT;
-    TPM2B_DATA qualifyingData = {0};
+    ESYS_TR         privacyHandle = ESYS_TR_RH_ENDORSEMENT;
+    TPM2B_DATA      qualifyingData = { 0 };
     TPMT_SIG_SCHEME inScheme = { .scheme = TPM2_ALG_NULL };
 
     /* Test the audit commands */
-    r = Esys_GetCommandAuditDigest(
-        esys_context,
-        privacyHandle,
-        signHandle,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        &qualifyingData,
-        &inScheme,
-        &auditInfo,
-        &signature);
+    r = Esys_GetCommandAuditDigest(esys_context, privacyHandle, signHandle, ESYS_TR_PASSWORD,
+                                   ESYS_TR_PASSWORD, ESYS_TR_NONE, &qualifyingData, &inScheme,
+                                   &auditInfo, &signature);
 
-    if ((r == TPM2_RC_COMMAND_CODE) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
+    if ((r == TPM2_RC_COMMAND_CODE) || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER))
+        || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER))) {
         LOG_WARNING("Command TPM2_GetCommandAuditDigest not supported by TPM.");
         failure_return = EXIT_SKIP;
         goto error;
@@ -203,38 +179,22 @@ test_esys_audit(ESYS_CONTEXT * esys_context)
 
     goto_if_error(r, "Error: GetCommandAuditDigest", error);
 
-    r = Esys_GetSessionAuditDigest(
-        esys_context,
-        privacyHandle,
-        signHandle,
-        session,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        &qualifyingData,
-        &inScheme,
-        &auditInfo,
-        &signature);
+    r = Esys_GetSessionAuditDigest(esys_context, privacyHandle, signHandle, session,
+                                   ESYS_TR_PASSWORD, ESYS_TR_PASSWORD, ESYS_TR_NONE,
+                                   &qualifyingData, &inScheme, &auditInfo, &signature);
     goto_if_error(r, "Error: GetSessionAuditDigest", error);
 
     TPMI_ALG_HASH auditAlg = TPM2_ALG_SHA256;
-    TPML_CC clearList = {0};
-    TPML_CC setList = {0};
+    TPML_CC       clearList = { 0 };
+    TPML_CC       setList = { 0 };
 
-    r = Esys_SetCommandCodeAuditStatus(
-        esys_context,
-        ESYS_TR_RH_PLATFORM,
-        ESYS_TR_PASSWORD,
-        ESYS_TR_NONE,
-        ESYS_TR_NONE,
-        auditAlg,
-        &setList,
-        &clearList);
+    r = Esys_SetCommandCodeAuditStatus(esys_context, ESYS_TR_RH_PLATFORM, ESYS_TR_PASSWORD,
+                                       ESYS_TR_NONE, ESYS_TR_NONE, auditAlg, &setList, &clearList);
 
     if (number_rc(r) == TPM2_RC_BAD_AUTH) {
         /* Platform authorization not possible test will be skipped */
         LOG_WARNING("Platform authorization not possible.");
-        failure_return =  EXIT_SKIP;
+        failure_return = EXIT_SKIP;
         goto error;
     } else if (r == TPM2_RC_COMMAND_CODE) {
         /* Ignore command not supported */
@@ -259,7 +219,7 @@ test_esys_audit(ESYS_CONTEXT * esys_context)
     Esys_Free(signature);
     return EXIT_SUCCESS;
 
- error:
+error:
 
     if (session != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
@@ -283,6 +243,6 @@ test_esys_audit(ESYS_CONTEXT * esys_context)
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_audit(esys_context);
 }

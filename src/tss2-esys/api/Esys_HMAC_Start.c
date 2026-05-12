@@ -8,28 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, PRIx16, int32_t
-#include <string.h>           // for NULL, memset
+#include <inttypes.h> // for PRIx32, PRIx16, int32_t
+#include <string.h>   // for NULL, memset
 
-#include "esys_int.h"         // for ESYS_CONTEXT, RSRC_NODE_T, _ESYS_STATE_...
-#include "esys_iutil.h"       // for iesys_compute_session_value, check_sess...
-#include "esys_types.h"       // for IESYS_RESOURCE
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_TR_Close
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
-#include "tss2_tpm2_types.h"  // for TPM2B_AUTH, TPMI_ALG_HASH, TPM2B_NAME
+#include "esys_int.h"        // for ESYS_CONTEXT, RSRC_NODE_T, _ESYS_STATE_...
+#include "esys_iutil.h"      // for iesys_compute_session_value, check_sess...
+#include "esys_types.h"      // for IESYS_RESOURCE
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, Esys_TR_Close
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h" // for TPM2B_AUTH, TPMI_ALG_HASH, TPM2B_NAME
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_state_if_error, LOG_ERROR, LOG_D...
+#include "util/log.h" // for return_state_if_error, LOG_ERROR, LOG_D...
 
 /** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
-static void store_input_parameters (
-    ESYS_CONTEXT *esysContext,
-    const TPM2B_AUTH *auth)
-{
+static void
+store_input_parameters(ESYS_CONTEXT *esysContext, const TPM2B_AUTH *auth) {
     if (auth == NULL)
         memset(&esysContext->in.HMAC_Start.authData, 0,
-                sizeof(esysContext->in.HMAC_Start.authData));
+               sizeof(esysContext->in.HMAC_Start.authData));
     else
         esysContext->in.HMAC_Start.authData = *auth;
 }
@@ -76,19 +74,17 @@ static void store_input_parameters (
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_HMAC_Start(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR handle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_AUTH *auth,
-    TPMI_ALG_HASH hashAlg, ESYS_TR *sequenceHandle)
-{
+Esys_HMAC_Start(ESYS_CONTEXT     *esysContext,
+                ESYS_TR           handle,
+                ESYS_TR           shandle1,
+                ESYS_TR           shandle2,
+                ESYS_TR           shandle3,
+                const TPM2B_AUTH *auth,
+                TPMI_ALG_HASH     hashAlg,
+                ESYS_TR          *sequenceHandle) {
     TSS2_RC r;
 
-    r = Esys_HMAC_Start_Async(esysContext, handle, shandle1, shandle2, shandle3,
-                              auth, hashAlg);
+    r = Esys_HMAC_Start_Async(esysContext, handle, shandle1, shandle2, shandle3, auth, hashAlg);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -106,8 +102,7 @@ Esys_HMAC_Start(
         /* This is just debug information about the reattempt to finish the
            command */
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -151,21 +146,19 @@ Esys_HMAC_Start(
  *          of the first response parameter.
  */
 TSS2_RC
-Esys_HMAC_Start_Async(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR handle,
-    ESYS_TR shandle1,
-    ESYS_TR shandle2,
-    ESYS_TR shandle3,
-    const TPM2B_AUTH *auth,
-    TPMI_ALG_HASH hashAlg)
-{
+Esys_HMAC_Start_Async(ESYS_CONTEXT     *esysContext,
+                      ESYS_TR           handle,
+                      ESYS_TR           shandle1,
+                      ESYS_TR           shandle2,
+                      ESYS_TR           shandle3,
+                      const TPM2B_AUTH *auth,
+                      TPMI_ALG_HASH     hashAlg) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, handle=%"PRIx32 ", auth=%p,"
-              "hashAlg=%04"PRIx16"",
+    LOG_TRACE("context=%p, handle=%" PRIx32 ", auth=%p,"
+              "hashAlg=%04" PRIx16 "",
               esysContext, handle, auth, hashAlg);
     TSS2L_SYS_AUTH_COMMAND auths;
-    RSRC_NODE_T *handleNode;
+    RSRC_NODE_T           *handleNode;
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -188,16 +181,16 @@ Esys_HMAC_Start_Async(
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_HMAC_Start_Prepare(esysContext->sys,
-                                    (handleNode == NULL) ? TPM2_RH_NULL
-                                     : handleNode->rsrc.handle, auth, hashAlg);
+                                    (handleNode == NULL) ? TPM2_RH_NULL : handleNode->rsrc.handle,
+                                    auth, hashAlg);
     return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
     return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
     if (handleNode != NULL)
-        iesys_compute_session_value(esysContext->session_tab[0],
-                &handleNode->rsrc.name, &handleNode->auth);
+        iesys_compute_session_value(esysContext->session_tab[0], &handleNode->rsrc.name,
+                                    &handleNode->auth);
     else
         iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
 
@@ -206,8 +199,7 @@ Esys_HMAC_Start_Async(
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, handleNode, NULL, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT,
-                          "Error in computation of auth values");
+    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
@@ -217,8 +209,7 @@ Esys_HMAC_Start_Async(
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Finish (Execute Async)");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
 
@@ -254,12 +245,9 @@ Esys_HMAC_Start_Async(
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_HMAC_Start_Finish(
-    ESYS_CONTEXT *esysContext, ESYS_TR *sequenceHandle)
-{
+Esys_HMAC_Start_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *sequenceHandle) {
     TSS2_RC r;
-    LOG_TRACE("context=%p, sequenceHandle=%p",
-              esysContext, sequenceHandle);
+    LOG_TRACE("context=%p, sequenceHandle=%p", esysContext, sequenceHandle);
 
     if (esysContext == NULL) {
         LOG_ERROR("esyscontext is NULL.");
@@ -267,8 +255,7 @@ Esys_HMAC_Start_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != ESYS_STATE_SENT &&
-        esysContext->state != ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT && esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -285,7 +272,6 @@ Esys_HMAC_Start_Finish(
     if (r != TSS2_RC_SUCCESS)
         return r;
 
-
     /*Receive the TPM response and handle resubmissions if necessary. */
     r = Tss2_Sys_ExecuteFinish(esysContext->sys, esysContext->timeout);
     if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
@@ -297,7 +283,8 @@ Esys_HMAC_Start_Finish(
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
-            "resubmission: %" PRIx32, r);
+                  "resubmission: %" PRIx32,
+                  r);
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
@@ -331,19 +318,15 @@ Esys_HMAC_Start_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response",
-                        error_cleanup);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response", error_cleanup);
 
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
-    r = Tss2_Sys_HMAC_Start_Complete(esysContext->sys,
-                                     &sequenceHandleNode->rsrc.handle);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                        "Received error from SAPI unmarshaling" ,
+    r = Tss2_Sys_HMAC_Start_Complete(esysContext->sys, &sequenceHandleNode->rsrc.handle);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling",
                         error_cleanup);
-
 
     /*  The name of a sequence object is an empty buffer */
     sequenceHandleNode->rsrc.name.size = 0;

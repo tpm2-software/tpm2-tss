@@ -8,46 +8,40 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32
+#include <inttypes.h> // for PRIx32
 
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_sys.h"         // for Tss2_Sys_Create, Tss2_Sys_FlushContext
-#include "tss2_tpm2_types.h"  // for TPM2B_PUBLIC, TPMT_PUBLIC, TPM2_ALG_SHA1
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC
+#include "tss2_sys.h"        // for Tss2_Sys_Create, Tss2_Sys_FlushContext
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPMT_PUBLIC, TPM2_ALG_SHA1
 
 #define LOGMODULE test
-#include "sys-util.h"         // for create_primary_rsa_2048_aes_128_cfb
-#include "test.h"             // for test_invoke
-#include "util/log.h"         // for LOG_ERROR, LOG_INFO
+#include "sys-util.h" // for create_primary_rsa_2048_aes_128_cfb
+#include "test.h"     // for test_invoke
+#include "util/log.h" // for LOG_ERROR, LOG_INFO
 
 int
-test_invoke (TSS2_SYS_CONTEXT *sys_context)
-{
-    TSS2_RC                  rc                = TPM2_RC_SUCCESS;
-    TPM2_HANDLE              parent_handle     = 0;
-    TPM2B_SENSITIVE_CREATE  inSensitive       = { 0 };
-    TPM2B_DATA              outsideInfo       = { 0 };
-    TPML_PCR_SELECTION      creationPCR       = { 0 };
+test_invoke(TSS2_SYS_CONTEXT *sys_context) {
+    TSS2_RC                rc = TPM2_RC_SUCCESS;
+    TPM2_HANDLE            parent_handle = 0;
+    TPM2B_SENSITIVE_CREATE inSensitive = { 0 };
+    TPM2B_DATA             outsideInfo = { 0 };
+    TPML_PCR_SELECTION     creationPCR = { 0 };
 
-    TPM2B_PRIVATE       outPrivate             = TPM2B_PRIVATE_INIT;
-    TPM2B_PUBLIC        inPublic               = { 0 };
-    TPM2B_PUBLIC        outPublic              = { 0 };
-    TPM2B_CREATION_DATA creationData           = { 0 };
-    TPM2B_DIGEST        creationHash           = TPM2B_DIGEST_INIT;
-    TPMT_TK_CREATION    creationTicket         = { 0 };
+    TPM2B_PRIVATE       outPrivate = TPM2B_PRIVATE_INIT;
+    TPM2B_PUBLIC        inPublic = { 0 };
+    TPM2B_PUBLIC        outPublic = { 0 };
+    TPM2B_CREATION_DATA creationData = { 0 };
+    TPM2B_DIGEST        creationHash = TPM2B_DIGEST_INIT;
+    TPMT_TK_CREATION    creationTicket = { 0 };
 
     /* session parameters */
     /* command session info */
-    TSS2L_SYS_AUTH_COMMAND  sessions_cmd         = {
-        .auths = {{ .sessionHandle = TPM2_RH_PW }},
-        .count = 1
-    };
+    TSS2L_SYS_AUTH_COMMAND sessions_cmd
+        = { .auths = { { .sessionHandle = TPM2_RH_PW } }, .count = 1 };
     /* response session info */
-    TSS2L_SYS_AUTH_RESPONSE  sessions_rsp         = {
-        .auths = { 0 },
-        .count = 0
-    };
+    TSS2L_SYS_AUTH_RESPONSE sessions_rsp = { .auths = { 0 }, .count = 0 };
 
-    rc = create_primary_rsa_2048_aes_128_cfb (sys_context, &parent_handle);
+    rc = create_primary_rsa_2048_aes_128_cfb(sys_context, &parent_handle);
     if (rc == TSS2_RC_SUCCESS) {
         LOG_INFO("primary created successfully: 0x%" PRIx32, parent_handle);
     } else {
@@ -63,19 +57,10 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
     inPublic.publicArea.parameters.keyedHashDetail.scheme.details.hmac.hashAlg = TPM2_ALG_SHA256;
 
     LOG_INFO("Create keyedhash SHA1 HMAC");
-    rc = TSS2_RETRY_EXP (Tss2_Sys_Create (sys_context,
-                                          parent_handle,
-                                          &sessions_cmd,
-                                          &inSensitive,
-                                          &inPublic,
-                                          &outsideInfo,
-                                          &creationPCR,
-                                          &outPrivate,
-                                          &outPublic,
-                                          &creationData,
-                                          &creationHash,
-                                          &creationTicket,
-                                          &sessions_rsp));
+    rc = TSS2_RETRY_EXP(Tss2_Sys_Create(sys_context, parent_handle, &sessions_cmd, &inSensitive,
+                                        &inPublic, &outsideInfo, &creationPCR, &outPrivate,
+                                        &outPublic, &creationData, &creationHash, &creationTicket,
+                                        &sessions_rsp));
     if (rc == TPM2_RC_SUCCESS) {
         LOG_INFO("success");
     } else {
@@ -85,7 +70,7 @@ test_invoke (TSS2_SYS_CONTEXT *sys_context)
 
     rc = Tss2_Sys_FlushContext(sys_context, parent_handle);
     if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%"PRIx32, rc);
+        LOG_ERROR("Tss2_Sys_FlushContext failed with 0x%" PRIx32, rc);
         return 99; /* fatal error */
     }
 

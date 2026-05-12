@@ -8,15 +8,15 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdlib.h>           // for EXIT_FAILURE, EXIT_SUCCESS
+#include <stdlib.h> // for EXIT_FAILURE, EXIT_SUCCESS
 
-#include "test-esys.h"        // for EXIT_SKIP, test_invoke_esys
-#include "tss2_common.h"      // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_RESMGR_R...
-#include "tss2_esys.h"        // for ESYS_TR_NONE, Esys_FlushContext, Esys_A...
-#include "tss2_tpm2_types.h"  // for TPM2_RC_COMMAND_CODE, TPM2B_NONCE, TPM2...
+#include "test-esys.h"       // for EXIT_SKIP, test_invoke_esys
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_RESMGR_R...
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_FlushContext, Esys_A...
+#include "tss2_tpm2_types.h" // for TPM2_RC_COMMAND_CODE, TPM2B_NONCE, TPM2...
 
 #define LOGMODULE test
-#include "util/log.h"         // for goto_if_error, LOG_ERROR
+#include "util/log.h" // for goto_if_error, LOG_ERROR
 
 /** Test of the ESAPI function Esys_ACT_SetTimeout.
  *
@@ -32,58 +32,47 @@
  * @retval EXIT_SUCCESS
  */
 int
-test_esys_act_set_timeout(ESYS_CONTEXT * esys_context)
-{
-    TSS2_RC r;
-    ESYS_TR session = ESYS_TR_NONE;
-    TPMT_SYM_DEF symmetric = {.algorithm = TPM2_ALG_AES,
-                              .keyBits = {.aes = 128},
-                              .mode = {.aes = TPM2_ALG_CFB}
-    };
-    TPMA_SESSION sessionAttributes = TPMA_SESSION_CONTINUESESSION |
-                                     TPMA_SESSION_AUDIT;
-    TPM2B_NONCE nonceCaller = {
-        .size = 20,
-        .buffer = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                   11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
-	};
+test_esys_act_set_timeout(ESYS_CONTEXT *esys_context) {
+    TSS2_RC      r;
+    ESYS_TR      session = ESYS_TR_NONE;
+    TPMT_SYM_DEF symmetric
+        = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
+    TPMA_SESSION sessionAttributes = TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_AUDIT;
+    TPM2B_NONCE  nonceCaller = { .size = 20, .buffer = { 1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                                                         11, 12, 13, 14, 15, 16, 17, 18, 19, 20 } };
 
-    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE,
-                              ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
-                              &nonceCaller,
-                              TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
+    r = Esys_StartAuthSession(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE,
+                              ESYS_TR_NONE, &nonceCaller, TPM2_SE_HMAC, &symmetric, TPM2_ALG_SHA256,
                               &session);
     goto_if_error(r, "Error: During initialization of session", error);
 
     r = Esys_TRSess_SetAttributes(esys_context, session, sessionAttributes, 0xFF);
     goto_if_error(r, "Error: TRSess_SetAttributes", error);
 
-	ESYS_TR ACT_handle = ESYS_TR_RH_ACT(0); /* pick first Auth timer */
+    ESYS_TR ACT_handle = ESYS_TR_RH_ACT(0); /* pick first Auth timer */
 
-    r = Esys_ACT_SetTimeout(esys_context, ACT_handle,
-                            session, ESYS_TR_NONE, ESYS_TR_NONE, 32);
+    r = Esys_ACT_SetTimeout(esys_context, ACT_handle, session, ESYS_TR_NONE, ESYS_TR_NONE, 32);
     goto_if_error(r, "Error: Clear", error);
 
-	r = Esys_FlushContext(esys_context, session);
+    r = Esys_FlushContext(esys_context, session);
     goto_if_error(r, "Error: FlushContext", error);
     return EXIT_SUCCESS;
 
- error:
+error:
     if (session != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, session) != TSS2_RC_SUCCESS) {
             LOG_ERROR("Cleanup session failed.");
         }
     }
     /* If the TPM doesn't support it return skip */
-    if ((r == TPM2_RC_COMMAND_CODE) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER)) ||
-        (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER)))
+    if ((r == TPM2_RC_COMMAND_CODE) || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_RC_LAYER))
+        || (r == (TPM2_RC_COMMAND_CODE | TSS2_RESMGR_TPM_RC_LAYER)))
         return EXIT_SKIP;
     else
         return EXIT_FAILURE;
 }
 
 int
-test_invoke_esys(ESYS_CONTEXT * esys_context) {
+test_invoke_esys(ESYS_CONTEXT *esys_context) {
     return test_esys_act_set_timeout(esys_context);
 }

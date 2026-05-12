@@ -7,20 +7,20 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
-#include <stdint.h>        // for int32_t
-#include <stdlib.h>        // for NULL, free, calloc, rand, size_t
+#include <stdint.h> // for int32_t
+#include <stdlib.h> // for NULL, free, calloc, rand, size_t
 
-#include "esys_crypto.h"   // for iesys_initialize_crypto_backend
-#include "esys_int.h"      // for ESYS_CONTEXT, _ESYS_ASSERT_NON_NULL
-#include "esys_iutil.h"    // for iesys_DeleteAllResourceObjects, ESYS_TR_MI...
-#include "tss2_common.h"   // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_ESYS_RC_BAD...
-#include "tss2_esys.h"     // for ESYS_CONTEXT, ESYS_CRYPTO_CALLBACKS, ESYS_TR
-#include "tss2_sys.h"      // for Tss2_Sys_GetTctiContext, Tss2_Sys_Finalize
-#include "tss2_tcti.h"     // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_HANDLE
-#include "tss2_tctildr.h"  // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_Initia...
+#include "esys_crypto.h"  // for iesys_initialize_crypto_backend
+#include "esys_int.h"     // for ESYS_CONTEXT, _ESYS_ASSERT_NON_NULL
+#include "esys_iutil.h"   // for iesys_DeleteAllResourceObjects, ESYS_TR_MI...
+#include "tss2_common.h"  // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_ESYS_RC_BAD...
+#include "tss2_esys.h"    // for ESYS_CONTEXT, ESYS_CRYPTO_CALLBACKS, ESYS_TR
+#include "tss2_sys.h"     // for Tss2_Sys_GetTctiContext, Tss2_Sys_Finalize
+#include "tss2_tcti.h"    // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_HANDLE
+#include "tss2_tctildr.h" // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_Initia...
 
 #define LOGMODULE esys
-#include "util/log.h"      // for LOG_ERROR, goto_if_error, return_if_error
+#include "util/log.h" // for LOG_ERROR, goto_if_error, return_if_error
 
 /** Initialize an ESYS_CONTEXT for further use.
  *
@@ -45,11 +45,11 @@
  *         returned to the caller unaltered unless handled internally.
  */
 TSS2_RC
-Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
-                TSS2_ABI_VERSION * abiVersion)
-{
+Esys_Initialize(ESYS_CONTEXT     **esys_context,
+                TSS2_TCTI_CONTEXT *tcti,
+                TSS2_ABI_VERSION  *abiVersion) {
     TSS2_RC r;
-    size_t syssize;
+    size_t  syssize;
 
     ESYS_ASSERT_NON_NULL(esys_context);
     *esys_context = NULL;
@@ -65,12 +65,12 @@ Esys_Initialize(ESYS_CONTEXT ** esys_context, TSS2_TCTI_CONTEXT * tcti,
     /* Allocate memory for the SYS context */
     syssize = Tss2_Sys_GetContextSize(0);
     (*esys_context)->sys = calloc(1, syssize);
-    goto_if_null((*esys_context)->sys, "Error: During malloc.",
-                 TSS2_ESYS_RC_MEMORY, cleanup_return);
+    goto_if_null((*esys_context)->sys, "Error: During malloc.", TSS2_ESYS_RC_MEMORY,
+                 cleanup_return);
 
     /* If no tcti was provided, initialize the default one. */
     if (tcti == NULL) {
-        r = Tss2_TctiLdr_Initialize (NULL, &tcti);
+        r = Tss2_TctiLdr_Initialize(NULL, &tcti);
         goto_if_error(r, "Initialize default tcti.", cleanup_return);
     }
 
@@ -113,9 +113,8 @@ cleanup_return:
  * @param esys_context [in,out] The ESYS_CONTEXT. (will be freed and set to NULL)
  */
 void
-Esys_Finalize(ESYS_CONTEXT ** esys_context)
-{
-    TSS2_RC r;
+Esys_Finalize(ESYS_CONTEXT **esys_context) {
+    TSS2_RC            r;
     TSS2_TCTI_CONTEXT *tctcontext = NULL;
 
     if (esys_context == NULL || *esys_context == NULL) {
@@ -164,8 +163,7 @@ Esys_Finalize(ESYS_CONTEXT ** esys_context)
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if esysContext or tcti is NULL.
  */
 TSS2_RC
-Esys_GetTcti(ESYS_CONTEXT * esys_context, TSS2_TCTI_CONTEXT ** tcti)
-{
+Esys_GetTcti(ESYS_CONTEXT *esys_context, TSS2_TCTI_CONTEXT **tcti) {
     ESYS_ASSERT_NON_NULL(esys_context);
     ESYS_ASSERT_NON_NULL(tcti);
     *tcti = esys_context->tcti_app_param;
@@ -185,10 +183,8 @@ Esys_GetTcti(ESYS_CONTEXT * esys_context, TSS2_TCTI_CONTEXT ** tcti)
  * @retval TSS2_RCs produced by lower layers of the software stack.
  */
 TSS2_RC
-Esys_GetPollHandles(ESYS_CONTEXT * esys_context,
-                    TSS2_TCTI_POLL_HANDLE ** handles, size_t * count)
-{
-    TSS2_RC r;
+Esys_GetPollHandles(ESYS_CONTEXT *esys_context, TSS2_TCTI_POLL_HANDLE **handles, size_t *count) {
+    TSS2_RC            r;
     TSS2_TCTI_CONTEXT *tcti_context;
 
     ESYS_ASSERT_NON_NULL(esys_context);
@@ -221,8 +217,7 @@ Esys_GetPollHandles(ESYS_CONTEXT * esys_context,
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if esysContext is NULL.
  */
 TSS2_RC
-Esys_SetTimeout(ESYS_CONTEXT * esys_context, int32_t timeout)
-{
+Esys_SetTimeout(ESYS_CONTEXT *esys_context, int32_t timeout) {
     ESYS_ASSERT_NON_NULL(esys_context);
     esys_context->timeout = timeout;
     return TSS2_RC_SUCCESS;
@@ -237,8 +232,7 @@ Esys_SetTimeout(ESYS_CONTEXT * esys_context, int32_t timeout)
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if esys_context of sys_context are NULL.
  */
 TSS2_RC
-Esys_GetSysContext(ESYS_CONTEXT *esys_context, TSS2_SYS_CONTEXT **sys_context)
-{
+Esys_GetSysContext(ESYS_CONTEXT *esys_context, TSS2_SYS_CONTEXT **sys_context) {
     if (esys_context == NULL || sys_context == NULL)
         return TSS2_ESYS_RC_BAD_REFERENCE;
 
@@ -268,12 +262,8 @@ Esys_GetSysContext(ESYS_CONTEXT *esys_context, TSS2_SYS_CONTEXT **sys_context)
  * the state back to the original state.
  */
 TSS2_RC
-Esys_SetCryptoCallbacks(
-    ESYS_CONTEXT *esysContext,
-    ESYS_CRYPTO_CALLBACKS *callbacks)
-{
-    LOG_TRACE("context=%p, callbacks=%p",
-              esysContext, callbacks);
+Esys_SetCryptoCallbacks(ESYS_CONTEXT *esysContext, ESYS_CRYPTO_CALLBACKS *callbacks) {
+    LOG_TRACE("context=%p, callbacks=%p", esysContext, callbacks);
 
     /* Check context, sequence correctness and set state to error for now */
     if (esysContext == NULL) {
@@ -285,12 +275,8 @@ Esys_SetCryptoCallbacks(
 }
 
 ESYS_TR
-Esys_GetCryptoCallbacks(
-    ESYS_CONTEXT *esysContext,
-    ESYS_CRYPTO_CALLBACKS *callbacks)
-{
-    LOG_TRACE("context=%p, callbacks=%p",
-              esysContext, callbacks);
+Esys_GetCryptoCallbacks(ESYS_CONTEXT *esysContext, ESYS_CRYPTO_CALLBACKS *callbacks) {
+    LOG_TRACE("context=%p, callbacks=%p", esysContext, callbacks);
 
     if (esysContext == NULL || callbacks == NULL) {
         LOG_ERROR("esyscontext or callbacks is NULL.");

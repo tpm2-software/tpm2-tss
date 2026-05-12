@@ -7,18 +7,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>         // for PRIx32, int32_t
-#include <stdlib.h>           // for NULL, calloc
+#include <inttypes.h> // for PRIx32, int32_t
+#include <stdlib.h>   // for NULL, calloc
 
-#include "esys_int.h"         // for ESYS_CONTEXT, _ESYS_STATE_INIT, _ESYS_S...
-#include "esys_iutil.h"       // for iesys_compute_session_value, iesys_hand...
-#include "tss2_common.h"      // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_BASE_RC_...
-#include "tss2_esys.h"        // for ESYS_CONTEXT, ESYS_TR, Esys_AC_Send
-#include "tss2_sys.h"         // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
-#include "tss2_tpm2_types.h"  // for TPMS_AC_OUTPUT, TPM2B_MAX_BUFFER, TPM2_...
+#include "esys_int.h"        // for ESYS_CONTEXT, _ESYS_STATE_INIT, _ESYS_S...
+#include "esys_iutil.h"      // for iesys_compute_session_value, iesys_hand...
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_BASE_RC_...
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR, Esys_AC_Send
+#include "tss2_sys.h"        // for Tss2_Sys_ExecuteAsync, TSS2L_SYS_AUTH_C...
+#include "tss2_tpm2_types.h" // for TPMS_AC_OUTPUT, TPM2B_MAX_BUFFER, TPM2_...
 
 #define LOGMODULE esys
-#include "util/log.h"         // for return_state_if_error, LOG_DEBUG, LOG_E...
+#include "util/log.h" // for return_state_if_error, LOG_DEBUG, LOG_E...
 
 /** One-Call function for TPM2_AC_Send. Used to send (copy) a loaded object
  * from the TPM to the Attached Component.
@@ -27,10 +27,10 @@
  * @param[in] sendObject handle of the object being sent to ac
  * @param[in] nvAuthHandle the handle indicating the source of the authorization
  *                         value
+ * @param[in] ac handle indicating the attached component
  * @param[in] optionalSession1 First session handle.
  * @param[in] optionalSession2 Second session handle.
  * @param[in] optionalSession3 Third session handle.
- * @param[in] ac handle indicating the attached component
  * @param[in] acDataIn Optional non sensitive information related to the object
  * @param[out] acDataOut May include AC specific data or information about an
  *                       error.
@@ -53,22 +53,20 @@
  *         'encrypt' attribute set and the command does not support encryption
  *          of the first response parameter.
  */
-TSS2_RC Esys_AC_Send(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR sendObject,
-    ESYS_TR nvAuthHandle,
-    ESYS_TR optionalSession1,
-    ESYS_TR optionalSession2,
-    ESYS_TR optionalSession3,
-    ESYS_TR ac,
-    TPM2B_MAX_BUFFER *acDataIn,
-    TPMS_AC_OUTPUT **acDataOut)
-{
+TSS2_RC
+Esys_AC_Send(ESYS_CONTEXT     *esysContext,
+             ESYS_TR           sendObject,
+             ESYS_TR           nvAuthHandle,
+             ESYS_TR           ac,
+             ESYS_TR           optionalSession1,
+             ESYS_TR           optionalSession2,
+             ESYS_TR           optionalSession3,
+             TPM2B_MAX_BUFFER *acDataIn,
+             TPMS_AC_OUTPUT  **acDataOut) {
     TSS2_RC r;
 
-    r = Esys_AC_Send_Async(esysContext, sendObject, nvAuthHandle,
-                           optionalSession1, optionalSession2,
-                           optionalSession3, ac, acDataIn);
+    r = Esys_AC_Send_Async(esysContext, sendObject, nvAuthHandle, optionalSession1,
+                           optionalSession2, optionalSession3, ac, acDataIn);
     return_if_error(r, "Error in async function");
 
     /* Set the timeout to indefinite for now, since we want _Finish to block */
@@ -82,14 +80,12 @@ TSS2_RC Esys_AC_Send(
      * have set the timeout to -1. This occurs for example if the TPM requests
      * a retransmission of the command via TPM2_RC_YIELDED.
      */
-    do
-    {
+    do {
         r = Esys_AC_Send_Finish(esysContext, acDataOut);
         /* This is just debug information about the reattempt to finish the
            command */
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)
-            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32
-                      " => resubmitting command", r);
+            LOG_DEBUG("A layer below returned TRY_AGAIN: %" PRIx32 " => resubmitting command", r);
     } while (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN);
 
     /* Restore the timeout value to the original value */
@@ -109,10 +105,10 @@ TSS2_RC Esys_AC_Send(
  * @param[in] sendObject handle of the object being sent to ac
  * @param[in] nvAuthHandle the handle indicating the source of the authorization
  *                     value
+ * @param[in] ac handle indicating the attached component
  * @param[in] optionalSession1 First session handle.
  * @param[in] optionalSession2 Second session handle.
  * @param[in] optionalSession3 Third session handle.
- * @param[in] ac handle indicating the attached component
  * @param[in] acDataIn Optional non sensitive information related to the object
  * @retval ESYS_RC_SUCCESS if the function call was a success.
  * @retval TSS2_ESYS_RC_BAD_REFERENCE if the esysContext or required input
@@ -133,20 +129,19 @@ TSS2_RC Esys_AC_Send(
  *         'encrypt' attribute set and the command does not support encryption
  *          of the first response parameter.
  */
-TSS2_RC Esys_AC_Send_Async(
-    ESYS_CONTEXT *esysContext,
-    ESYS_TR sendObject,
-    ESYS_TR nvAuthHandle,
-    ESYS_TR optionalSession1,
-    ESYS_TR optionalSession2,
-    ESYS_TR optionalSession3,
-    ESYS_TR ac,
-    TPM2B_MAX_BUFFER *acDataIn)
-{
-    TSS2_RC r;
+TSS2_RC
+Esys_AC_Send_Async(ESYS_CONTEXT     *esysContext,
+                   ESYS_TR           sendObject,
+                   ESYS_TR           nvAuthHandle,
+                   ESYS_TR           optionalSession1,
+                   ESYS_TR           optionalSession2,
+                   ESYS_TR           optionalSession3,
+                   ESYS_TR           ac,
+                   TPM2B_MAX_BUFFER *acDataIn) {
+    TSS2_RC                r;
     TSS2L_SYS_AUTH_COMMAND auths;
-    LOG_TRACE("context=%p, sendObject=%"PRIx32 ", nvAuthHandle1=%"PRIx32 ","
-              "ac=%"PRIx32 ", acDataIn=%p",
+    LOG_TRACE("context=%p, sendObject=%" PRIx32 ", nvAuthHandle1=%" PRIx32 ","
+              "ac=%" PRIx32 ", acDataIn=%p",
               esysContext, sendObject, nvAuthHandle, ac, acDataIn);
 
     /* Check context, sequence correctness and set state to error for now */
@@ -160,43 +155,44 @@ TSS2_RC Esys_AC_Send_Async(
     esysContext->state = ESYS_STATE_INTERNALERROR;
 
     /* Check input parameters */
-    r = check_session_feasibility(optionalSession1, optionalSession2,
-                                  optionalSession3, 0);
+    r = check_session_feasibility(optionalSession1, optionalSession2, optionalSession3, 0);
     return_state_if_error(r, ESYS_STATE_INIT, "Check session usage");
 
     /**
      * Convert inputs here
      *
      */
-    TPMI_RH_AC tpmi_ac;
-    TPMI_DH_OBJECT tpmi_sendObject;
+    TPMI_RH_AC      tpmi_ac;
+    TPMI_DH_OBJECT  tpmi_sendObject;
     TPMI_RH_NV_AUTH tpmi_nvAuthHandle;
-    r = iesys_handle_to_tpm_handle(ac, &tpmi_ac);
+    RSRC_NODE_T    *handleNode;
+    r = esys_GetResourceObject(esysContext, ac, &handleNode);
     if (r != TSS2_RC_SUCCESS)
         return r;
-    r = iesys_handle_to_tpm_handle(sendObject, &tpmi_sendObject);
+    tpmi_ac = handleNode->rsrc.handle;
+    r = esys_GetResourceObject(esysContext, sendObject, &handleNode);
     if (r != TSS2_RC_SUCCESS)
         return r;
-    r = iesys_handle_to_tpm_handle(nvAuthHandle, &tpmi_nvAuthHandle);
+    tpmi_sendObject = handleNode->rsrc.handle;
+    r = esys_GetResourceObject(esysContext, nvAuthHandle, &handleNode);
     if (r != TSS2_RC_SUCCESS)
         return r;
+    tpmi_nvAuthHandle = handleNode->rsrc.handle;
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
-    r = Tss2_Sys_AC_Send_Prepare(esysContext->sys, tpmi_sendObject,
-                                 tpmi_nvAuthHandle, tpmi_ac, acDataIn);
+    r = Tss2_Sys_AC_Send_Prepare(esysContext->sys, tpmi_sendObject, tpmi_nvAuthHandle, tpmi_ac,
+                                 acDataIn);
     return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
 
     /* Calculate the cpHash Values */
-    r = init_session_tab(esysContext, optionalSession1, optionalSession2,
-                         optionalSession3);
-    return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");\
+    r = init_session_tab(esysContext, optionalSession1, optionalSession2, optionalSession3);
+    return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
     iesys_compute_session_value(esysContext->session_tab[0], NULL, NULL);
     iesys_compute_session_value(esysContext->session_tab[1], NULL, NULL);
     iesys_compute_session_value(esysContext->session_tab[2], NULL, NULL);
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, NULL, NULL, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT,
-                          "Error in computation of auth values");
+    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
@@ -206,8 +202,7 @@ TSS2_RC Esys_AC_Send_Async(
 
     /* Trigger execution and finish the async invocation */
     r = Tss2_Sys_ExecuteAsync(esysContext->sys);
-    return_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                          "Finish (Execute Async)");
+    return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
 
@@ -242,9 +237,8 @@ TSS2_RC Esys_AC_Send_Async(
  *         'encrypt' attribute set and the command does not support encryption
  *          of the first response parameter.
  */
-TSS2_RC Esys_AC_Send_Finish(
-    ESYS_CONTEXT *esysContext, TPMS_AC_OUTPUT **acDataOut)
-{
+TSS2_RC
+Esys_AC_Send_Finish(ESYS_CONTEXT *esysContext, TPMS_AC_OUTPUT **acDataOut) {
     TSS2_RC r;
     LOG_TRACE("context=%p, acDataOut=%p", esysContext, acDataOut);
 
@@ -254,8 +248,7 @@ TSS2_RC Esys_AC_Send_Finish(
     }
 
     /* Check for correct sequence and set sequence to irregular for now */
-    if (esysContext->state != ESYS_STATE_SENT &&
-        esysContext->state != ESYS_STATE_RESUBMISSION) {
+    if (esysContext->state != ESYS_STATE_SENT && esysContext->state != ESYS_STATE_RESUBMISSION) {
         LOG_ERROR("Esys called in bad sequence.");
         return TSS2_ESYS_RC_BAD_SEQUENCE;
     }
@@ -281,7 +274,8 @@ TSS2_RC Esys_AC_Send_Finish(
      * TPM response codes. */
     if (r == TPM2_RC_RETRY || r == TPM2_RC_TESTING || r == TPM2_RC_YIELDED) {
         LOG_DEBUG("TPM returned RETRY, TESTING or YIELDED, which triggers a "
-            "resubmission: %" PRIx32, r);
+                  "resubmission: %" PRIx32,
+                  r);
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
@@ -315,17 +309,14 @@ TSS2_RC Esys_AC_Send_Finish(
      * parameter decryption have to be done.
      */
     r = iesys_check_response(esysContext);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response",
-                        error_cleanup);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Error: check response", error_cleanup);
 
     /*
      * After the verification of the response we call the complete function
      * to deliver the result.
      */
-    r = Tss2_Sys_AC_Send_Complete(esysContext->sys, (acDataOut != NULL)
-                                  ? *acDataOut : NULL);
-    goto_state_if_error(r, ESYS_STATE_INTERNALERROR,
-                        "Received error from SAPI unmarshaling" ,
+    r = Tss2_Sys_AC_Send_Complete(esysContext->sys, (acDataOut != NULL) ? *acDataOut : NULL);
+    goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling",
                         error_cleanup);
     esysContext->state = ESYS_STATE_INIT;
 

@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: Copyright (c) 2023-2024 Infineon Technologies AG
+#
+# SPDX-License-Identifier: BSD-2-Clause
+
+---
+
+BasedOnStyle: GNU
+
+IndentWidth: 4
+ColumnLimit: 100
+
+BreakBeforeBraces: Attach
+
+AlignAfterOpenBracket: Align
+AlignConsecutiveDeclarations: true
+BinPackParameters: false
+AllowAllParametersOfDeclarationOnNextLine: false
+
+SpaceBeforeParens: ControlStatementsExceptControlMacros
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: false
+
+Macros:
+- statecase(VAR, STATE)=case 0:{}
+- general_failure(VAR)=default:{}
+- statecasedefault(VAR)=default:{}
+- statecasedefault_error(VAR, r, label)=default:{}
