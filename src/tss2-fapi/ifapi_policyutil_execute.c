@@ -259,6 +259,9 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session) {
     switch (pol_util_ctx->state) {
     statecase(pol_util_ctx->state, POLICY_UTIL_INIT);
         LOG_DEBUG("Util session: %x", pol_util_ctx->policy_session);
+        if (!pol_util_ctx->pol_exec_ctx) {
+            goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid policy stack", error);
+        }
         if (*session == ESYS_TR_NONE || *session == 0) {
             /* Create a new  policy session for the current policy execution */
             hash_alg = pol_util_ctx->pol_exec_ctx->hash_alg;
@@ -285,7 +288,7 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session) {
         if (r) {
             /* Cleanup stack */
             IFAPI_POLICYUTIL_STACK *utl_ctx = pol_util_ctx->prev;
-            while (utl_ctx) {
+            while (utl_ctx && pol_util_ctx->pol_exec_ctx) {
                 if (utl_ctx->pol_exec_ctx->session == pol_util_ctx->pol_exec_ctx->session) {
                     utl_ctx->pol_exec_ctx->session = ESYS_TR_NONE;
                 }
