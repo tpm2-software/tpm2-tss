@@ -853,7 +853,7 @@ ReadBits(struct mpsse_context *mpsse, int size) {
     rdata = InternalRead(mpsse, size);
     EnableBitmode(mpsse, 0);
 
-    if (rdata) {
+    if (rdata && size > 0) {
         /* The last byte in rdata will have all the read bits set or unset as needed. */
         bits = rdata[size - 1];
 
@@ -870,9 +870,8 @@ ReadBits(struct mpsse_context *mpsse, int size) {
              */
             bits = (char)((bits >> (8 - size)) & 0xff);
         }
-
-        free(rdata);
     }
+    free(rdata);
 
     return bits;
 }
