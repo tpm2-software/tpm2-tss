@@ -327,6 +327,7 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name) {
         goto_if_error(r, "Out of memory", error);
 
         free_string_list(node_list);
+        node_list = NULL;
     }
 
     /* Normalize the pathname. '/' at the beginning no '/' at the end. */
@@ -347,7 +348,8 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name) {
 
 error:
     SAFE_FREE(*file_name);
-    free_string_list(node_list);
+    if (node_list)
+        free_string_list(node_list);
     return r;
 }
 /** Expand FAPI path to object path.
