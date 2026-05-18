@@ -308,7 +308,9 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT *esys_context, ESYS_TR *object) {
         iesys_compute_session_value(esys_context->session_tab[1], NULL, NULL);
         iesys_compute_session_value(esys_context->session_tab[2], NULL, NULL);
         r = Esys_TR_FromTPMPublic_Async(
-            esys_context, objectHandleNode->rsrc.handle, esys_context->session_tab[0]->esys_handle,
+            esys_context, objectHandleNode->rsrc.handle,
+            esys_context->session_tab[0] ? esys_context->session_tab[0]->esys_handle
+                                         : ESYS_TR_PASSWORD,
             esys_context->session_tab[1] ? esys_context->session_tab[1]->esys_handle : ESYS_TR_NONE,
             esys_context->session_tab[2] ? esys_context->session_tab[2]->esys_handle
                                          : ESYS_TR_NONE);
