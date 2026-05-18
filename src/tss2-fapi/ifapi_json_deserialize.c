@@ -693,6 +693,8 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out) {
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
+    out->policy = NULL;
+
     if (!ifapi_get_sub_object(jso, "objectType", &jso2)) {
         LOG_ERROR("Field \"objectType\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
