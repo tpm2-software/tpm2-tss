@@ -388,11 +388,11 @@ ifapi_hierarchy_path_p(const char *path) {
     if (strncmp("P_", &path[pos1], 2) == 0) {
         start = strchr(&path[pos1], IFAPI_FILE_DELIM_CHAR);
         if (start) {
-            pos2 = (int)(start - &path[pos1]);
-            if (strncmp("/", &path[pos1 + pos2], 1) == 0)
-                pos2 += 1;
-            if (strncmp("/", &path[pos1 + pos2], 1) == 0)
-                pos2 += 1;
+            pos2 = (size_t)(start - &path[pos1]);
+            if (path[pos1 + pos2] == IFAPI_FILE_DELIM_CHAR)
+                pos2++;
+            if (path[pos1 + pos2] == IFAPI_FILE_DELIM_CHAR)
+                pos2++;
         }
     }
     /* Check whether only hierarchy is specified in path */
