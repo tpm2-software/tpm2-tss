@@ -55,6 +55,7 @@ Esys_TR_Serialize(ESYS_CONTEXT *esys_context,
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
+    return_if_null(esys_object, "Esys object not found", TSS2_ESYS_RC_BAD_VALUE);
 
     r = iesys_MU_IESYS_RESOURCE_Marshal(&esys_object->rsrc, NULL, SIZE_MAX, buffer_size);
     return_if_error(r, "Marshal resource object");
@@ -228,6 +229,7 @@ Esys_TR_FromTPMPublic_Finish(ESYS_CONTEXT *esys_context, ESYS_TR *object) {
 
     r = esys_GetResourceObject(esys_context, objectHandle, &objectHandleNode);
     goto_if_error(r, "get resource", error_cleanup);
+    return_if_null(objectHandleNode, "Esys object not found", TSS2_ESYS_RC_BAD_VALUE);
 
     /* Check whether the object was already initialized. */
     first_call = !objectHandleNode->rsrc.rsrcType;
@@ -466,6 +468,7 @@ Esys_TR_SetAuth(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, TPM2B_AUTH cons
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     if (r != TPM2_RC_SUCCESS)
         return r;
+    return_if_null(esys_object, "Could not get esys object.", TSS2_ESYS_RC_BAD_VALUE);
 
     if (authValue == NULL) {
         esys_object->auth.size = 0;
@@ -520,6 +523,7 @@ Esys_TR_GetName(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, TPM2B_NAME **na
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
+    return_if_null(esys_object, "Esys object not found", TSS2_ESYS_RC_BAD_VALUE);
 
     *name = malloc(sizeof(TPM2B_NAME));
     if (*name == NULL) {
@@ -571,6 +575,7 @@ Esys_TRSess_GetAttributes(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, TPMA_
     ESYS_ASSERT_NON_NULL(esys_context);
     TSS2_RC r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
+    return_if_null(esys_object, "Esys object not found", TSS2_ESYS_RC_BAD_VALUE);
 
     if (esys_object->rsrc.rsrcType != IESYSC_SESSION_RSRC)
         return_error(TSS2_ESYS_RC_BAD_TR, "Object is not a session object");
@@ -637,6 +642,7 @@ Esys_TRSess_GetNonceTPM(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, TPM2B_N
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
+    return_if_null(esys_object, "Object not found", TSS2_ESYS_RC_BAD_VALUE);
 
     *nonceTPM = calloc(1, sizeof(**nonceTPM));
     if (*nonceTPM == NULL) {
@@ -686,6 +692,7 @@ Esys_TR_GetTpmHandle(ESYS_CONTEXT *esys_context, ESYS_TR esys_handle, TPM2_HANDL
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Get resource object");
+    return_if_null(esys_object, "Esys object not found", TSS2_ESYS_RC_BAD_VALUE);
 
     *tpm_handle = esys_object->rsrc.handle;
 
@@ -715,6 +722,7 @@ Esys_TRSess_GetAuthRequired(ESYS_CONTEXT *esys_context,
 
     r = esys_GetResourceObject(esys_context, esys_handle, &esys_object);
     return_if_error(r, "Object not found");
+    return_if_null(esys_object, "Esys object not found", TSS2_ESYS_RC_BAD_VALUE);
 
     if (esys_object->rsrc.rsrcType != IESYSC_SESSION_RSRC) {
         return_if_error(TSS2_ESYS_RC_BAD_TR, "Auth value needed for non-session object requested.");
