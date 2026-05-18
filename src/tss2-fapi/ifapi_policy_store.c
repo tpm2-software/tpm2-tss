@@ -138,6 +138,10 @@ ifapi_policy_store_load_async(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, const ch
 
     LOG_TRACE("Load policy: %s", path);
 
+    if (!path) {
+        return_error(TSS2_FAPI_RC_BAD_REFERENCE, "No reference to path.");
+    }
+
     /* First it will be checked whether the only valid characters occur in the path. */
     if (pstore) {
         r = ifapi_check_valid_path(path);

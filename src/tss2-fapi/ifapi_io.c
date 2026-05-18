@@ -190,6 +190,10 @@ ifapi_io_read_finish(struct IFAPI_IO *io, uint8_t **buffer, size_t *length) {
     else
         ifapi_io_retry = IFAPI_IO_RETRIES;
 
+    if (!io || !io->stream) {
+        return_error(TSS2_FAPI_RC_BAD_REFERENCE, "Bad referenced passed.");
+    }
+
     ssize_t ret = read(fileno(io->stream), &io->char_rbuffer[io->buffer_idx],
                        io->buffer_length - io->buffer_idx);
     if (ret < 0 && (errno == EINTR || errno == EAGAIN))
