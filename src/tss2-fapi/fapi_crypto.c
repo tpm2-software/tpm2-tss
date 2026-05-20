@@ -1200,7 +1200,7 @@ ifapi_kem_hybrid_decrypt(const uint8_t *shared_secret,
     }
 
     *plainText = out;
-    *plainTextSize = (size_t)(outlen + tmplen);
+    *plainTextSize = (size_t)outlen + (size_t)tmplen;
     out = NULL; /* prevent free */
 
 cleanup:
