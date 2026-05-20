@@ -836,7 +836,8 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC        *key,
     const EC_POINT *eph_pub_key = NULL; /* Public part of ephemeral key */
     const BIGNUM   *eph_priv_key = NULL;
 #else
-    BIGNUM *eph_priv_key = NULL;
+    OSSL_LIB_CTX *libctx = NULL;
+    BIGNUM       *eph_priv_key = NULL;
 #endif
     EC_POINT *tpm_pub_key = NULL; /* Public part of TPM key */
     EC_POINT *mul_eph_tpm = NULL;
@@ -883,7 +884,14 @@ iesys_cryptossl_get_ecdh_point(TPM2B_PUBLIC        *key,
     }
 
     /* Create ephemeral key */
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if ((ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL)) == NULL || EVP_PKEY_keygen_init(ctx) <= 0) {
+#else
+    if (!(libctx = OSSL_LIB_CTX_new()))
+        goto_error(r, TSS2_ESYS_RC_MEMORY, "Create libctx for ec key generation", cleanup);
+    if ((ctx = EVP_PKEY_CTX_new_from_name(libctx, "EC", NULL)) == NULL
+        || EVP_PKEY_keygen_init(ctx) <= 0) {
+#endif
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Initialize ec key generation", cleanup);
     }
 
@@ -974,6 +982,7 @@ cleanup:
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     /* Note: free of eph_pub_key already done by free of eph_ec_key */
 #else
+    OSSL_FREE(libctx, OSSL_LIB_CTX);
     OSSL_FREE(eph_priv_key, BN);
 #endif
     OSSL_FREE(bn_x, BN);
