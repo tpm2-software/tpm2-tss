@@ -233,7 +233,7 @@
                                                                                                    \
         if (dest != NULL) {                                                                        \
             dest->size = size;                                                                     \
-            Tss2_MU_##subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->member);      \
+            rc = Tss2_MU_##subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->member); \
             if (rc)                                                                                \
                 return rc;                                                                         \
         } else {                                                                                   \
