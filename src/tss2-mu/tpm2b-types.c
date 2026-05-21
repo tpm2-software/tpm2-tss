@@ -278,7 +278,7 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     if (dest != NULL) { \
         dest->size = size; \
-        Tss2_MU_##subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->member); \
+        rc = Tss2_MU_##subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->member); \
         if (rc) \
             return rc; \
     } else { \
