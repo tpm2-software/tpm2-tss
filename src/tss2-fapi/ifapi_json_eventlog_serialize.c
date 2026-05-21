@@ -547,6 +547,11 @@ bool ifapi_json_TCG_EVENT_HEADER2_cb(
 
     cb_data->skip_event = true;
 
+    if (in->PCRIndex >= TPM2_MAX_PCRS) {
+        LOG_ERROR("PCRIndex out of range: %" PRIu32, in->PCRIndex);
+        return false;
+    }
+
     cb_data->skip_event = !ifapi_pcr_used(in->PCRIndex, cb_data->pcr_list,
                                           cb_data->pcr_list_size);
     if (cb_data->skip_event)
@@ -683,6 +688,11 @@ bool ifapi_json_TCG_EVENT_cb(const TCG_EVENT *in, size_t size, void *data)
     (void)size;
 
     LOG_TRACE("call");
+
+    if (in->pcrIndex >= TPM2_MAX_PCRS) {
+        LOG_ERROR("pcrIndex out of range: %" PRIu32, in->pcrIndex);
+        return false;
+    }
 
     cb_data->skip_event = !ifapi_pcr_used(in->pcrIndex, cb_data->pcr_list,
                                           cb_data->pcr_list_size);
