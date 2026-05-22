@@ -50,6 +50,9 @@ TSS2_RC Tss2_Sys_GetRspAuths(
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         UINT16 tmp;
+        if (offset_tmp + sizeof(UINT16) > ctx->rsp_header.responseSize)
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;
+
         memcpy(&tmp, ctx->cmdBuffer + offset_tmp, sizeof(UINT16));
         offset_tmp += sizeof(UINT16);
         offset_tmp += BE_TO_HOST_16(tmp);
@@ -60,6 +63,9 @@ TSS2_RC Tss2_Sys_GetRspAuths(
         offset_tmp += 1;
 
         if (offset_tmp > ctx->rsp_header.responseSize)
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;
+
+        if (offset_tmp + sizeof(UINT16) > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         memcpy(&tmp, ctx->cmdBuffer + offset_tmp, sizeof(UINT16));
