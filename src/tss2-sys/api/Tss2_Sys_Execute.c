@@ -126,6 +126,12 @@ Tss2_Sys_ExecuteFinish(TSS2_SYS_CONTEXT *sysContext, int32_t timeout) {
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     }
 
+    if (ctx->rsp_header.responseSize > response_size) {
+        LOG_ERROR("Header responseSize %u exceeds %zu bytes received from TCTI",
+                  ctx->rsp_header.responseSize, response_size);
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
+    }
+
     rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
                                     &ctx->rsp_header.responseCode);
     if (rval)
