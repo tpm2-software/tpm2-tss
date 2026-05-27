@@ -569,14 +569,19 @@ ifapi_json_TCG_EVENT_TYPE_deserialize(json_object *jso, IFAPI_EVENT_TYPE *out) {
  */
 static TSS2_RC
 check_out_string(const IFAPI_FIRMWARE_EVENT *in, const char *string) {
-    if (strncmp((const char *)&in->data.buffer[0], string, strlen(string)) != 0) {
+    size_t expected = strlen(string);
+    if (in->data.size < expected) {
+        return_error2(TSS2_FAPI_RC_BAD_VALUE, "Event data size %zu too small for %s", in->data.size,
+                      string);
+    }
+    if (memcmp(&in->data.buffer[0], string, expected) != 0) {
         return_error2(TSS2_FAPI_RC_BAD_VALUE, "Invalid event string. %s expected", string);
     }
-    if (in->data.size == strlen(string)) {
+    if (in->data.size == expected) {
         /* String without NULL terminator */
         return TSS2_RC_SUCCESS;
     }
-    if (in->data.size == strlen(string) + 1 && in->data.buffer[strlen(string)] == '\0') {
+    if (in->data.size == expected + 1 && in->data.buffer[expected] == '\0') {
         /* String with NULL terminator */
         return TSS2_RC_SUCCESS;
     }
