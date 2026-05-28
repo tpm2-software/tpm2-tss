@@ -211,23 +211,41 @@ ifapi_json_byte_deserialize(json_object *jso, UINT32 max, BYTE *out, UINT16 *out
  * @retval true if token represents a number
  * @retval false if token does not represent a number.
  */
+#include <inttypes.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+
 static bool
 get_number(const char *token, int64_t *num) {
-    int itoken = 0;
     int pos = 0;
-    if (!token) {
+    int ret;
+
+    if (token == NULL || num == NULL) {
         return false;
     }
+
     if (strncmp(token, "0x", 2) == 0) {
-        itoken = 2;
-        sscanf(&token[itoken], "%" PRIx64 "%n", num, &pos);
+        uint64_t unum = 0;
+        ret = sscanf(token + 2, "%" SCNx64 "%n", &unum, &pos);
+        if (ret != 1) {
+            return false;
+        }
+        if (unum > INT64_MAX) {
+            return false;
+        }
+        *num = (int64_t)unum;
+        return (size_t)pos == strlen(token + 2);
     } else {
-        sscanf(&token[itoken], "%" PRId64 "%n", num, &pos);
+        int64_t snum = 0;
+
+        ret = sscanf(token, "%" SCNd64 "%n", &snum, &pos);
+        if (ret != 1) {
+            return false;
+        }
+        *num = snum;
+        return (size_t)pos == strlen(token);
     }
-    if ((size_t)pos == strlen(token) - itoken)
-        return true;
-    else
-        return false;
 }
 
 /** Get sub object from a json object.
@@ -367,7 +385,10 @@ ifapi_json_UINT8_ARY_deserialize(json_object *jso, UINT8_ARY *out) {
     return_if_null(out->buffer, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     r = ifapi_hex_to_byte_ary(hex_string, out->size, &out->buffer[0]);
-    return_if_error(r, "Can't convert hex values.");
+    if (r) {
+        SAFE_FREE(out->buffer);
+        return r;
+    }
 
     return TSS2_RC_SUCCESS;
 }
