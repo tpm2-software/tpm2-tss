@@ -8,6 +8,7 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
+#include <errno.h>    // for errno
 #include <inttypes.h> // for int64_t, uint8_t, PRId64
 #include <stdio.h>    // for NULL, size_t, sscanf
 #include <stdlib.h>   // for calloc, malloc
@@ -86,18 +87,27 @@ get_token_start_idx(const char *token) {
  */
 static bool
 get_number(const char *token, int64_t *num) {
-    int itoken = 0;
-    int pos = 0;
-    if (strncmp(token, "0x", 2) == 0) {
-        itoken = 2;
-        sscanf(&token[itoken], "%" PRIx64 "%n", num, &pos);
-    } else {
-        sscanf(&token[itoken], "%" PRId64 "%n", num, &pos);
-    }
-    if ((size_t)pos == strlen(token) - itoken)
-        return true;
-    else
+    if (token == NULL || num == NULL)
         return false;
+
+    char *endptr = NULL;
+    errno = 0;
+
+    if (strncmp(token, "0x", 2) == 0) {
+        uint64_t unum = strtoull(token, &endptr, 16);
+        if (errno != 0 || endptr == token || *endptr != '\0')
+            return false;
+        if (unum > INT64_MAX)
+            return false;
+        *num = (int64_t)unum;
+    } else {
+        int64_t snum = strtoll(token, &endptr, 10);
+        if (errno != 0 || endptr == token || *endptr != '\0')
+            return false;
+        *num = snum;
+    }
+
+    return true;
 }
 
 /** Deserialize a character string.
