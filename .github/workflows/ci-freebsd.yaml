@@ -1,0 +1,66 @@
+# SPDX-FileCopyrightText: 2026 Juergen Repp
+# SPDX-License-Identifier: BSD-2-Clause
+
+name: FreeBSD CI
+
+on:
+  [push, pull_request]
+
+jobs:
+  freebsd-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Test in FreeBSD
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          release: "14.3"
+          prepare: |
+            export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+            export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+            pkg update -f
+            pkg install -y bash
+            pkg install -y gmake
+            pkg install -y coreutils
+            pkg install -y libtool
+            pkg install -y pkgconf
+            pkg install -y autoconf
+            pkg install -y autoconf-archive
+            pkg install -y automake
+            pkg install -y openssl
+            pkg install -y json-c
+            pkg install -y cmocka
+            pkg install -y uthash
+            pkg install -y wget
+            pkg install -y curl
+            pkg install -y git
+            pkg install -y libftdi1
+            pkg install -y swtpm
+            pkg install -y libuuid
+            pkg update -f
+            sync
+
+          run: |
+            export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+            cd /home/runner/work/tpm2-tss/tpm2-tss
+            export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+            export CFLAGS="-I/usr/local/include -I/usr/local/openssl/include"
+            export LDFLAGS="-L/usr/local/lib"
+            export libusb_version="v1.0.26"
+            export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+            git config --global --add safe.directory /home/runner/work/tpm2-tss/tpm2-tss
+            ./bootstrap
+            ./configure --enable-self-generated-certificate \
+                        --enable-unit=yes \
+                        --enable-integration=yes \
+                        --with-crypto=ossl \
+                        --disable-doxygen-doc \
+                        --enable-tcti-swtpm=yes \
+                        --enable-tcti-libtpms=no \
+                        --enable-tcti-mssim=no \
+                        --disable-tcti-spi-ltt2go \
+                        --disable-dependency-tracking
+            gmake -j check || { cat test-suite.log; exit 1; }
