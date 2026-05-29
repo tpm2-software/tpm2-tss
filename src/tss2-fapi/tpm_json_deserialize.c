@@ -9,6 +9,7 @@
 #endif
 
 #include <ctype.h>    // for tolower, isxdigit
+#include <errno.h>    // for errno
 #include <inttypes.h> // for int64_t, uint8_t, PRId64, PRIu32, PRIx64
 #include <stdarg.h>   // for va_arg, va_end, va_list, va_start
 #include <stdio.h>    // for sscanf
@@ -211,41 +212,29 @@ ifapi_json_byte_deserialize(json_object *jso, UINT32 max, BYTE *out, UINT16 *out
  * @retval true if token represents a number
  * @retval false if token does not represent a number.
  */
-#include <inttypes.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
-
 static bool
 get_number(const char *token, int64_t *num) {
-    int pos = 0;
-    int ret;
-
-    if (token == NULL || num == NULL) {
+    if (token == NULL || num == NULL)
         return false;
-    }
+
+    char *endptr = NULL;
+    errno = 0;
 
     if (strncmp(token, "0x", 2) == 0) {
-        uint64_t unum = 0;
-        ret = sscanf(token + 2, "%" SCNx64 "%n", &unum, &pos);
-        if (ret != 1) {
+        uint64_t unum = strtoull(token, &endptr, 16);
+        if (errno != 0 || endptr == token || *endptr != '\0')
             return false;
-        }
-        if (unum > INT64_MAX) {
+        if (unum > INT64_MAX)
             return false;
-        }
         *num = (int64_t)unum;
-        return (size_t)pos == strlen(token + 2);
     } else {
-        int64_t snum = 0;
-
-        ret = sscanf(token, "%" SCNd64 "%n", &snum, &pos);
-        if (ret != 1) {
+        int64_t snum = strtoll(token, &endptr, 10);
+        if (errno != 0 || endptr == token || *endptr != '\0')
             return false;
-        }
         *num = snum;
-        return (size_t)pos == strlen(token);
     }
+
+    return true;
 }
 
 /** Get sub object from a json object.
