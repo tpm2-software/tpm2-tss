@@ -1328,17 +1328,19 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         } else {
             command->hierarchy_policy = NULL;
         }
-        if (command->authValueEh) {
-            context->state = PROVISION_CHANGE_EH_AUTH;
-            /* Save auth value of endorsement hierarchy in context. */
-            memcpy(&command->hierarchy_auth.buffer[0], command->authValueEh,
-                   strlen(command->authValueEh));
-            command->hierarchy_auth.size = strlen(command->authValueEh);
-        } else {
+        if (!command->authValueEh) {
             /* Auth value of lockout hierarchy will not be changed. */
             context->state = PROVISION_EH_CHANGE_POLICY;
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
+        if (strlen(command->authValueEh) > sizeof(TPMU_HA)) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Endorsement hierarchy too long.", error_cleanup);
+        }
+
+        /* Save auth value of endorsement hierarchy in context. */
+        memcpy(&command->hierarchy_auth.buffer[0], command->authValueEh,
+               strlen(command->authValueEh));
+        command->hierarchy_auth.size = strlen(command->authValueEh);
         context->state = PROVISION_CHANGE_EH_AUTH;
         fallthrough;
 
@@ -1394,18 +1396,20 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         } else {
             command->hierarchy_policy = NULL;
         }
-        if (command->authValueSh) {
-            context->state = PROVISION_CHANGE_SH_AUTH;
-            /* Save auth value of owner hierarchy in context. */
-            memcpy(&command->hierarchy_auth.buffer[0], command->authValueSh,
-                   strlen(command->authValueSh));
-            command->hierarchy_auth.size = strlen(command->authValueSh);
-            context->state = PROVISION_CHANGE_SH_AUTH;
-        } else {
+        if (!command->authValueSh) {
             /* Auth value of owner hierarchy will not be changed. */
             context->state = PROVISION_SH_CHANGE_POLICY;
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
+        if (strlen(command->authValueSh) > sizeof(TPMU_HA)) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Storage hierarchy too long.", error_cleanup);
+        }
+
+        /* Save auth value of owner hierarchy in context. */
+        memcpy(&command->hierarchy_auth.buffer[0], command->authValueSh,
+               strlen(command->authValueSh));
+        command->hierarchy_auth.size = strlen(command->authValueSh);
+
         context->state = PROVISION_CHANGE_SH_AUTH;
         fallthrough;
 
