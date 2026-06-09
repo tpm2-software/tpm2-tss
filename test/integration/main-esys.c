@@ -57,5 +57,5 @@ main(int argc, char *argv[]) {
 
     test_esys_teardown(test_esys_ctx);
 
-    return EXIT_SUCCESS;
+    return rc;
 }
