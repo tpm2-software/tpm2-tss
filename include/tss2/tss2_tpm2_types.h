@@ -1080,6 +1080,7 @@ typedef UINT8 TPM2_HT;
 #define TPM2_HT_PERSISTENT                                                                         \
     ((TPM2_HT)0x81) /* Persistent Objects  assigned by the TPM when a loaded transient object is   \
                        made persistent */
+#define TPM2_HT_AC ((TPM2_HT)0x90) /* handle for an Attached Component */
 
 /* Definition of TPM2_HANDLE TPM2_RH Constants <S> */
 typedef TPM2_HANDLE TPM2_RH;
@@ -1167,6 +1168,9 @@ typedef TPM2_HANDLE TPM2_HC;
                                                    */
 #define TPM2_PERMANENT_FIRST ((TPM2_HC)TPM2_RH_FIRST)
 #define TPM2_PERMANENT_LAST  ((TPM2_HC)TPM2_RH_LAST)
+#define TPM2_HR_AC           ((TPM2_HC)(TPM2_HT_AC << TPM2_HR_SHIFT))
+#define TPM2_AC_FIRST        ((TPM2_HC)(TPM2_HR_AC + 0))
+#define TPM2_AC_LAST         ((TPM2_HC)(TPM2_HR_AC + 0x0000FFFF))
 #define TPM2_HR_NV_AC        ((TPM2_HC)((TPM2_HT_NV_INDEX << TPM2_HR_SHIFT) + 0xD00000))
 #define TPM2_NV_AC_FIRST     ((TPM2_HC)(TPM2_HR_NV_AC + 0))
 #define TPM2_NV_AC_LAST      ((TPM2_HC)(TPM2_HR_NV_AC + 0x0000FFFF))
