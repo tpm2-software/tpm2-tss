@@ -279,7 +279,7 @@ iesys_handle_to_tpm_handle(ESYS_TR esys_handle, TPM2_HANDLE *tpm_handle) {
         return TPM2_RC_SUCCESS;
     }
     if (esys_handle >= ESYS_TR_RH_AC_FIRST && esys_handle <= ESYS_TR_RH_AC_LAST) {
-        *tpm_handle = TPM2_NV_AC_FIRST + (esys_handle - ESYS_TR_RH_AC_FIRST);
+        *tpm_handle = TPM2_AC_FIRST + (esys_handle - ESYS_TR_RH_AC_FIRST);
         return TPM2_RC_SUCCESS;
     }
     LOG_ERROR("Error: Esys invalid ESAPI handle (%" PRIx32 ").", esys_handle);
