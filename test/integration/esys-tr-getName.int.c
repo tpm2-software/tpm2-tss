@@ -38,7 +38,7 @@ test_esys_tr_getName(ESYS_CONTEXT *ectx) {
     r = Esys_TR_GetTpmHandle(ectx, ac, &tpmHandle);
     goto_if_error(r, "Error getting TPM Handle from Esys_TR_GetTpmHandle", error);
 
-    if (tpmHandle != TPM2_NV_AC_FIRST) {
+    if (tpmHandle != TPM2_AC_FIRST) {
         LOG_ERROR("Handles mismatch");
         goto error;
     }
@@ -46,7 +46,7 @@ test_esys_tr_getName(ESYS_CONTEXT *ectx) {
     TPM2B_NAME name1, *name2, act_name1, *act_name2;
     size_t     offset = 0;
 
-    r = Tss2_MU_TPM2_HANDLE_Marshal(TPM2_NV_AC_FIRST, &name1.name[0], sizeof(name1.name), &offset);
+    r = Tss2_MU_TPM2_HANDLE_Marshal(TPM2_AC_FIRST, &name1.name[0], sizeof(name1.name), &offset);
     goto_if_error(r, "Error Marshaling AC name", error);
     name1.size = offset;
 
