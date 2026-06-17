@@ -256,6 +256,48 @@ for cortex-m4:
 make
 ```
 
+# Static linking
+
+Building TSS as *static* libraries can be done as follows:
+```
+./bootstrap
+./configure \
+        --enable-static \
+        --enable-nodl \
+        --disable-shared \
+        --disable-fapi \
+        --disable-tcti-cmd \
+        --disable-tcti-i2c-ftdi
+        --disable-tcti-i2c-helper \
+        --disable-tcti-libtpms \
+        --disable-tcti-pcap \
+        --disable-tcti-spi-ftdi \
+        --disable-tcti-spi-helper  \
+        --disable-tcti-spi-lt2go \
+        --disable-tcti-spi-ltt2go \
+        --disable-tcti-spidev
+make
+```
+
+**Hint:** To enable fully static linking of TSS, including the TCTI modules, configure the build with `--enable-static` and `--enable-nodl`.
+
+It is strongly recommended to *disable* any unnecessary TCTI modules, since every enabled module becomes a required dependency of the application and must be linked explicitly. Also, use `--disable-fapi` whenever possible to reduce the number of required dependencies!
+
+The application needs to be linked with the static TSS libraries, *all* enabled TCTI modules as well as the OpenSSL (libcrypto) library:
+```
+gcc \
+        main.c \
+        -static \
+        -o my_program \
+        -ltss2-esys \
+        -ltss2-sys \
+        -ltss2-mu \
+        -ltss2-tcti-device \
+        -ltss2-tcti-mssim \
+        -ltss2-tcti-swtpm \
+        -lcrypto
+```
+
 ## Test operating systems in the CI
 
 * ubuntu-20.04
