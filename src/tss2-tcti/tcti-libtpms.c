@@ -944,6 +944,7 @@ cleanup_dl:
 }
 
 /* public info structure */
+#ifndef NO_DL
 static const TSS2_TCTI_INFO tss2_tcti_libtpms_info = {
     .version = TCTI_VERSION,
     .name = "tcti-libtpms",
@@ -956,3 +957,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_libtpms_info;
 }
+#endif /* NO_DL */

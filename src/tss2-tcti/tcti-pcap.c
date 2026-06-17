@@ -259,6 +259,7 @@ Tss2_Tcti_Pcap_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *co
 }
 
 /* public info structure */
+#ifndef NO_DL
 static const TSS2_TCTI_INFO tss2_tcti_pcap_info = {
     .version = TCTI_VERSION,
     .name = "tcti-pcap",
@@ -271,3 +272,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_pcap_info;
 }
+#endif /* NO_DL */

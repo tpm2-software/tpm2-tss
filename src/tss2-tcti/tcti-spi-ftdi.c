@@ -201,6 +201,8 @@ Tss2_Tcti_Spi_Ftdi_Init(TSS2_TCTI_CONTEXT *tcti_context, size_t *size, const cha
     return Tss2_Tcti_Spi_Helper_Init(tcti_context, size, &tcti_platform);
 }
 
+/* public info structure */
+#ifndef NO_DL
 static const TSS2_TCTI_INFO tss2_tcti_spi_ftdi_info
     = { .version = TCTI_VERSION,
         .name = "tcti-spi-ftdi",
@@ -212,3 +214,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_spi_ftdi_info;
 }
+#endif /* NO_DL */

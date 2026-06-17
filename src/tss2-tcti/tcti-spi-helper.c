@@ -830,6 +830,8 @@ Tss2_Tcti_Spi_Helper_Init(TSS2_TCTI_CONTEXT             *tcti_context,
     return TSS2_RC_SUCCESS;
 }
 
+/* public info structure */
+#ifndef NO_DL
 static const TSS2_TCTI_INFO tss2_tcti_spi_helper_info = {
     .version = TCTI_VERSION,
     .name = "tcti-spi-helper",
@@ -849,3 +851,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_spi_helper_info;
 }
+#endif /* NO_DL */
