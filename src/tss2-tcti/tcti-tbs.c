@@ -290,6 +290,8 @@ Tss2_Tcti_Tbs_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *con
     return TSS2_RC_SUCCESS;
 }
 
+/* public info structure */
+#ifndef NO_DL
 static const TSS2_TCTI_INFO tss2_tcti_tbs_info = {
     .version = TCTI_VERSION,
     .name = "tcti-tbs",
@@ -302,3 +304,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_tbs_info;
 }
+#endif /* NO_DL */

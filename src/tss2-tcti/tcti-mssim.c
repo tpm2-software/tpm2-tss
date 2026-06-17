@@ -603,6 +603,7 @@ fail_out:
 }
 
 /* public info structure */
+#ifndef NO_DL
 static const TSS2_TCTI_INFO tss2_tcti_mssim_info = {
     .version = TCTI_VERSION,
     .name = "tcti-socket",
@@ -615,3 +616,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_mssim_info;
 }
+#endif /* NO_DL */

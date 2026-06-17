@@ -503,6 +503,8 @@ Tss2_Tcti_Device_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *
     return TSS2_RC_SUCCESS;
 }
 
+/* public info structure */
+#ifndef NO_DL
 static const TSS2_TCTI_INFO tss2_tcti_device_info = {
     .version = TCTI_VERSION,
     .name = "tcti-device",
@@ -516,3 +518,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_device_info;
 }
+#endif /* NO_DL */
