@@ -8,10 +8,11 @@
 
 #include <inttypes.h> // for uint8_t, int32_t
 #include <stdbool.h>  // for false
+#include <stdint.h>   // for uintptr_t
 #include <stdlib.h>   // for NULL, size_t, calloc, free, strtol
 #include <string.h>   // for strcmp, strlen
 
-#include "../helper/cmocka_all.h" // for assert_int_equal, assert_true, will_ret...
+#include "../helper/cmocka_all.h" // for assert_int_equal, assert_true, will_return_uint_always
 #include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC, UINT16, TSS2_...
 #include "tss2_esys.h"            // for ESYS_TR_NONE, Esys_Finalize, Esys_Free
 #include "tss2_tcti.h"            // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CANCEL
@@ -40,7 +41,7 @@ vendor_tests tests[] = {
  * to response buffer occurs. This SHOULD be called for tests expecting to use the
  * the tests[] array above before any calls to ESAPI, etc occur.
  */
-#define TEST_MOCK_SETUP will_return_always(tcti_fake_recv, __func__)
+#define TEST_MOCK_SETUP will_return_uint_always(tcti_fake_recv, (uintptr_t) __func__)
 
 static void
 unhex(const char *hexstr, uint8_t *buf, size_t *len) {
@@ -120,8 +121,8 @@ tcti_fake_recv(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, uint8_t *response, 
     UNUSED(tctiContext);
     UNUSED(timeout);
 
-    /* Use size_t to cast 64 bit number to pointer (needed for 32 bit systems) */
-    const char *id = (const char *)(size_t)mock();
+    /* Store pointer value as uintptr_t to avoid deprecated untyped cmocka macros. */
+    const char *id = (const char *)mock_type(uintptr_t);
 
     get_response(id, response, size);
     return TSS2_RC_SUCCESS;

@@ -182,7 +182,7 @@ check_io_read_async(void **state) {
     wrap_fcntl_test = true;
     will_return(__wrap_fopen, MOCK_STREAM);
     will_return(__wrap_fcntl, -1);
-    will_return_always(__wrap_fclose, 0);
+    will_return_int_always(__wrap_fclose, 0);
     errno = EAGAIN;
     io.char_buffer = NULL;
     r = ifapi_io_read_async(&io, "tss_unit_dummyf");
@@ -228,7 +228,7 @@ check_io_read_finish(void **state) {
     wrap_read_test = true;
     will_return(__wrap_read, -1);
     // will_return_always(__wrap_fileno, 1);
-    will_return_always(__wrap_fclose, 0);
+    will_return_int_always(__wrap_fclose, 0);
     io.char_buffer = &io_char_buffer[0];
     io.buffer_length = 10;
     io.stream = MOCK_STREAM;
@@ -270,7 +270,7 @@ check_io_write_async(void **state) {
     uint8_t  buffer[5] = { 1, 2, 3, 4, 5 };
     char    *char_buffer = "dummy";
 
-    will_return_always(__wrap_fclose, 0);
+    will_return_int_always(__wrap_fclose, 0);
     // will_return_always(__wrap_fileno, 1);
 
     memset(&io, 0, sizeof(IFAPI_IO));
@@ -338,7 +338,7 @@ check_io_write_finish(void **state) {
 
     memset(&io, 0, sizeof(IFAPI_IO));
     // will_return_always(__wrap_fileno, 1);
-    will_return_always(__wrap_fclose, 0);
+    will_return_int_always(__wrap_fclose, 0);
 
     wrap_write_test = true;
     io.stream = MOCK_STREAM;
