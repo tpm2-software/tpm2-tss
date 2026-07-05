@@ -17,10 +17,13 @@ jobs:
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
-          release: "14.3"
+          release: "14.4"
           prepare: |
+            export ASSUME_ALWAYS_YES=yes
             export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
             export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+            rm -rf /var/db/pkg/repo-* /var/db/pkg/FreeBSD.meta /var/cache/pkg/*
+            pkg bootstrap -f
             pkg update -f
             pkg install -y bash
             pkg install -y gmake
