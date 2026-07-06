@@ -62,6 +62,10 @@ read_all(const char *path) {
 
     fseek(f, 0L, SEEK_END);
     long fsize = ftell(f);
+    if (fsize < 0) {
+        LOG_ERROR("Could not determine size of file %s.", path);
+        return NULL;
+    }
     fseek(f, 0L, SEEK_SET);
 
     char *buffer = calloc(1, fsize + 1);

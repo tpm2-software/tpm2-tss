@@ -106,6 +106,11 @@ read_file(const char *path) {
     text_size = ftell(stream);
     fclose(stream);
 
+    if (text_size < 0) {
+        LOG_ERROR("Could not determine size of file %s.", path);
+        return NULL;
+    }
+
     content = malloc(text_size + 1);
     if (!content) {
         LOG_ERROR("Could not allocate memory for the JSON policy");
