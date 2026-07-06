@@ -75,7 +75,7 @@ test_fapi_nv_increment(FAPI_CONTEXT *context) {
         goto error;
     }
     fseek(stream, 0L, SEEK_END);
-    policy_size = ftell(stream);
+    check_ftell(policy_size, stream, policy_file, error);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
     goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,

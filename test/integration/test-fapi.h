@@ -127,6 +127,14 @@
         goto label;                                                                                \
     }
 
+#define check_ftell(size, stream, file, label)                                                     \
+    (size) = ftell((stream));                                                                      \
+    if ((size) < 0) {                                                                              \
+        fclose((stream));                                                                          \
+        LOG_ERROR("Could not determine size of file %s.", (file));                                 \
+        goto label;                                                                                \
+    }
+
 #ifndef FAPI_PROFILE
 #define FAPI_PROFILE DEFAULT_TEST_FAPI_PROFILE
 #endif /* FAPI_PROFILE */

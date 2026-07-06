@@ -52,6 +52,10 @@ fapi_ek_certless() {
     fseek(stream, 0L, SEEK_END);
     config_size = ftell(stream);
     fclose(stream);
+    if (config_size < 0) {
+        LOG_ERROR("IO error %s.", fapi_config_file);
+        return false;
+    }
     config = malloc(config_size + 1);
     stream = fopen(fapi_config_file, "r");
     ssize_t ret = read(fileno(stream), config, config_size);
