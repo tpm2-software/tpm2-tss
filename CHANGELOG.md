@@ -3,6 +3,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.2.0-rc1] - 2026-07-08
+### Security
+- Fixes: GHSA-q759-vqg7-8rc5
+- Fixes: GHSA-7638-f8gq-c475
+- Fixes: GHSA-x5j2-26fc-hhc3
+- Fixes: GHSA-p3px-r4mm-jpw5
+- Fixes: GHSA-v2qp-xh5m-44mf
+- Fixes: GHSA-xqrv-v8rj-v8xw
+- Fixes: GHSA-gf8g-2r5c-74c7
+- Fixes: GHSA-6grq-c24j-xcjr
+- Fixes: GHSA-pcpw-8625-jqcp
+- Fixes: GHSA-mj78-pj5v-wvjx
+- Fixes: GHSA-2q5v-c7hv-fvpf
+
+### Fixed
+- tests: Switch to latest cmocka layout
+
 ## [4.2.0-rc0] - 2026-05-12
 ### Changed
 - Changed the project to clang-format which is now mandatory to run before posting PRs.
