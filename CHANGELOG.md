@@ -3,6 +3,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.1.4-rc0] - 2026-07-08
+### Security
+- Fixes: GHSA-q759-vqg7-8rc5
+- Fixes: GHSA-7638-f8gq-c475
+- Fixes: GHSA-p3px-r4mm-jpw5
+- Fixes: GHSA-x5j2-26fc-hhc3
+- Fixes: GHSA-gf8g-2r5c-74c7
+- Fixes: GHSA-mj78-pj5v-wvjx
+- Fixes: GHSA-v2qp-xh5m-44mf
+- Fixes: GHSA-2q5v-c7hv-fvpf
+- Fixes: GHSA-pcpw-8625-jqcp
+- Fixes: GHSA-6grq-c24j-xcjr
+
+### Fixes
+- FAPI: fix double free in an error case.
+- FAPI: Fix usage of external PEM keys for PolicyAuthorize
+- FAPI: Fix segfault if Fapi_SetBranchCB is not called
+- FAPI: fix usage after free in policy callback
+- FAPI: Fix nv object authorization for policy authorize nv
+- FAPI: Fix instantiation of policyduplication select
+- FAPI: Fix leak in Fapi_Sign
+
 ## [4.1.3] - 2024-05-17
 ### Fixed
 - Fix name collisions during dlopen() on some linkers
