@@ -1259,14 +1259,13 @@ iesys_gen_auths(ESYS_CONTEXT           *esys_context,
         auths->auths[auths->count].nonce.size = 0;
         auths->auths[auths->count].sessionAttributes = 0;
         if (esys_context->session_type[session_idx] == ESYS_TR_PASSWORD) {
+            auths->auths[auths->count].sessionHandle = TPM2_RH_PW;
             if (esys_context->auth_objects[session_idx] == NULL) {
                 auths->auths[auths->count].hmac.size = 0;
-                auths->count += 1;
             } else {
-                auths->auths[auths->count].sessionHandle = TPM2_RH_PW;
                 auths->auths[auths->count].hmac = esys_context->auth_objects[session_idx]->auth;
-                auths->count += 1;
             }
+            auths->count += 1;
             continue;
         }
         RSRC_NODE_T *session = esys_context->session_tab[session_idx];
