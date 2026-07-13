@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.1.4-rc1] - 2026-07-13
+### Fixes
+- FAPI: Fix get_booleal_from_json
+- ESYS: Fix handling of TPM_RH_NULL handles with sessions
+
 ## [4.1.4-rc0] - 2026-07-08
 ### Security
 - Fixes: GHSA-q759-vqg7-8rc5
