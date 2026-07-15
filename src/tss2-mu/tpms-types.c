@@ -1276,6 +1276,20 @@ TPMS_UNMARSHAL_3(TPMS_SIGNATURE_ECC,
                  signatureS,
                  Tss2_MU_TPM2B_ECC_PARAMETER_Unmarshal)
 
+TPMS_MARSHAL_2(TPMS_SIGNATURE_HASH_MLDSA,
+               hash,
+               VAL,
+               Tss2_MU_UINT16_Marshal,
+               signature,
+               ADDR,
+               Tss2_MU_TPM2B_SIGNATURE_MLDSA_Marshal)
+
+TPMS_UNMARSHAL_2(TPMS_SIGNATURE_HASH_MLDSA,
+                 hash,
+                 Tss2_MU_UINT16_Unmarshal,
+                 signature,
+                 Tss2_MU_TPM2B_SIGNATURE_MLDSA_Unmarshal)
+
 TPMS_MARSHAL_2(TPMS_NV_PIN_COUNTER_PARAMETERS,
                pinCount,
                VAL,
@@ -1577,6 +1591,48 @@ TPMS_UNMARSHAL_4(TPMS_RSA_PARMS,
 TPMS_MARSHAL_1(TPMS_SYMCIPHER_PARMS, sym, ADDR, Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal)
 
 TPMS_UNMARSHAL_1(TPMS_SYMCIPHER_PARMS, sym, Tss2_MU_TPMT_SYM_DEF_OBJECT_Unmarshal)
+
+TPMS_MARSHAL_2(TPMS_MLKEM_PARMS,
+               symmetric,
+               ADDR,
+               Tss2_MU_TPMT_SYM_DEF_OBJECT_Marshal,
+               parameterSet,
+               VAL,
+               Tss2_MU_TPMI_MLKEM_PARMS_Marshal)
+
+TPMS_UNMARSHAL_2(TPMS_MLKEM_PARMS,
+                 symmetric,
+                 Tss2_MU_TPMT_SYM_DEF_OBJECT_Unmarshal,
+                 parameterSet,
+                 Tss2_MU_TPMI_MLKEM_PARMS_Unmarshal)
+
+TPMS_MARSHAL_2(TPMS_MLDSA_PARMS,
+               parameterSet,
+               VAL,
+               Tss2_MU_TPMI_MLDSA_PARMS_Marshal,
+               allowExternalMu,
+               VAL,
+               Tss2_MU_UINT8_Marshal)
+
+TPMS_UNMARSHAL_2(TPMS_MLDSA_PARMS,
+                 parameterSet,
+                 Tss2_MU_TPMI_MLDSA_PARMS_Unmarshal,
+                 allowExternalMu,
+                 Tss2_MU_UINT8_Unmarshal)
+
+TPMS_MARSHAL_2(TPMS_HASH_MLDSA_PARMS,
+               parameterSet,
+               VAL,
+               Tss2_MU_TPMI_MLDSA_PARMS_Marshal,
+               hashAlg,
+               VAL,
+               Tss2_MU_TPMI_ALG_HASH_Marshal)
+
+TPMS_UNMARSHAL_2(TPMS_HASH_MLDSA_PARMS,
+                 parameterSet,
+                 Tss2_MU_TPMI_MLDSA_PARMS_Unmarshal,
+                 hashAlg,
+                 Tss2_MU_TPMI_ALG_HASH_Unmarshal)
 
 TPMS_MARSHAL_0(TPMS_EMPTY);
 
