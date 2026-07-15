@@ -3,29 +3,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.2.0-rc2] - 2026-07-13
-### Fixes
-- FAPI: Fix get_booleal_from_json
-- ESYS: Fix handling of TPM_RH_NULL handles with sessions
-
-## [4.2.0-rc1] - 2026-07-08
+## [4.2.0] - 2026-07-15
 ### Security
-- Fixes: GHSA-q759-vqg7-8rc5
-- Fixes: GHSA-7638-f8gq-c475
-- Fixes: GHSA-x5j2-26fc-hhc3
-- Fixes: GHSA-p3px-r4mm-jpw5
-- Fixes: GHSA-v2qp-xh5m-44mf
-- Fixes: GHSA-xqrv-v8rj-v8xw
-- Fixes: GHSA-gf8g-2r5c-74c7
-- Fixes: GHSA-6grq-c24j-xcjr
-- Fixes: GHSA-pcpw-8625-jqcp
-- Fixes: GHSA-mj78-pj5v-wvjx
-- Fixes: GHSA-2q5v-c7hv-fvpf
+- Fixes: GHSA-q759-vqg7-8rc5 CVE-ID requested
+- Fixes: GHSA-7638-f8gq-c475 CVE-ID requested
+- Fixes: GHSA-x5j2-26fc-hhc3 CVE-ID requested
+- Fixes: GHSA-p3px-r4mm-jpw5 CVE-ID requested
+- Fixes: GHSA-v2qp-xh5m-44mf CVE-ID requested
+- Fixes: GHSA-xqrv-v8rj-v8xw CVE-ID requested
+- Fixes: GHSA-gf8g-2r5c-74c7 CVE-ID requested
+- Fixes: GHSA-6grq-c24j-xcjr CVE-ID requested
+- Fixes: GHSA-pcpw-8625-jqcp CVE-ID requested
+- Fixes: GHSA-mj78-pj5v-wvjx CVE-ID requested
+- Fixes: GHSA-2q5v-c7hv-fvpf CVE-ID requested
 
-### Fixed
-- tests: Switch to latest cmocka layout
-
-## [4.2.0-rc0] - 2026-05-12
 ### Changed
 - Changed the project to clang-format which is now mandatory to run before posting PRs.
   This include the public include files, though no functionality were changed there.
@@ -58,6 +49,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - FAPI: Add proper OOM handling for profile realloc.
 - FAPI: add missing NULL check after malloc in encode_ek_public.
 - FAPI: memset zero is called in the async functions for the command state to ensure the correct cleanup in error cases.
+- tests: Switch to latest cmocka layout
+- FAPI: Fix get_booleal_from_json
+- ESYS: Fix handling of TPM_RH_NULL handles with sessions
 
 ### Added
 - Add clang-format to CI
