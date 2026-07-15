@@ -3,12 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.1.4-rc1] - 2026-07-13
-### Fixes
-- FAPI: Fix get_booleal_from_json
-- ESYS: Fix handling of TPM_RH_NULL handles with sessions
-
-## [4.1.4-rc0] - 2026-07-08
+## [4.1.4] - 2026-07-15
 ### Security
 - Fixes: GHSA-q759-vqg7-8rc5
 - Fixes: GHSA-7638-f8gq-c475
@@ -29,6 +24,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - FAPI: Fix nv object authorization for policy authorize nv
 - FAPI: Fix instantiation of policyduplication select
 - FAPI: Fix leak in Fapi_Sign
+- FAPI: Fix get_booleal_from_json
+- ESYS: Fix handling of TPM_RH_NULL handles with sessions
 
 ## [4.1.3] - 2024-05-17
 ### Fixed
