@@ -21,6 +21,7 @@
 #include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_FAPI_RC_MEMORY, TSS...
 #include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
 #include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Encrypt, Fapi_Encryp...
+#include "tss2_mu.h"         // for mashaling the result of ECC encryption.
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h" // for TPM2B_PUBLIC_KEY_RSA, TPM2B_PUBLIC, TPM...
 
@@ -29,6 +30,45 @@
 #include "util/log.h"    // for LOG_TRACE, SAFE_FREE, goto_if_error
 
 #define IV_SIZE 16
+
+static TPM2_RC
+marshal_ecc_crypt_result(TPM2B_ECC_POINT  *c1,
+                         TPM2B_MAX_BUFFER *c2,
+                         TPM2B_DIGEST     *c3,
+                         uint8_t         **crypt_buf,
+                         size_t           *crypt_buf_size) {
+    TSS2_RC rc;
+    size_t  pos = 0;
+    size_t  offset = 0;
+    size_t  size_crypt_buf = c1->size + c2->size + c3->size + 3 * (sizeof(UINT16));
+
+    *crypt_buf = calloc(1, size_crypt_buf);
+
+    return_if_null(*crypt_buf, "Out of Memory", TSS2_FAPI_RC_MEMORY);
+
+    rc = Tss2_MU_TPM2B_ECC_POINT_Marshal(c1, &(*crypt_buf)[pos], size_crypt_buf, &offset);
+    goto_if_error(rc, "Error Marshal Point", error);
+
+    pos += offset;
+    offset = 0;
+
+    rc = Tss2_MU_TPM2B_MAX_BUFFER_Marshal(c2, &(*crypt_buf)[pos], size_crypt_buf, &offset);
+    goto_if_error(rc, "Marshal Max Digest", error);
+
+    pos += offset;
+    offset = 0;
+
+    rc = Tss2_MU_TPM2B_DIGEST_Marshal(c3, &(*crypt_buf)[pos], size_crypt_buf, &offset);
+    goto_if_error(rc, "Marshal Digest", error);
+
+    *crypt_buf_size = pos + offset;
+
+    return rc;
+
+error:
+    SAFE_FREE(*crypt_buf);
+    return rc;
+}
 
 /** One-Call function for Fapi_Encrypt
  *
@@ -341,8 +381,23 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
 
             context->state = DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION;
         } else if (public->publicArea.type == TPM2_ALG_ECC) {
-            goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED, "ECC Encryption not yet supported",
-                       error_cleanup);
+            TPM2B_MAX_BUFFER *ecc_message = (TPM2B_MAX_BUFFER *)&context->aux_data;
+            ecc_message->size = context->cmd.Data_EncryptDecrypt.in_dataSize;
+            memcpy(&ecc_message->buffer[0], context->cmd.Data_EncryptDecrypt.in_data,
+                   context->cmd.Data_EncryptDecrypt.in_dataSize);
+
+            r = Esys_TRSess_SetAttributes(context->esys, context->session1,
+                                          TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_DECRYPT,
+                                          0xff);
+            goto_if_error_reset_state(r, "Set session attributes.", error_cleanup);
+
+            r = Esys_ECC_Encrypt_Async(context->esys, context->cmd.Data_EncryptDecrypt.key_handle,
+                                       context->session1, ESYS_TR_NONE, ESYS_TR_NONE, ecc_message,
+                                       &command->profile->ecc_crypt_scheme);
+            goto_if_error(r, "Error esys ecc encrypt", error_cleanup);
+
+            context->state = DATA_ENCRYPT_WAIT_FOR_ECC_ENCRYPTION;
+            return TSS2_FAPI_RC_TRY_AGAIN;
         } else {
             goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED, "Unsupported algorithm (%" PRIu16 ")",
                        error_cleanup, public->publicArea.type);
@@ -368,8 +423,11 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
 
         memcpy(command->cipherText, &tpmCipherText->buffer[0], tpmCipherText->size);
         SAFE_FREE(tpmCipherText);
+        fallthrough;
 
-        /* Flush the key from the TPM. */
+    statecase(context->state, DATA_ENCRYPT_PREPARE_FLUSH)
+
+    /* Flush the key from the TPM. */
         if (strncmp(command->keyPath, "/ext", 4) == 0
             || !command->key_object->misc.key.persistent_handle) {
             r = Esys_FlushContext_Async(context->esys, command->key_handle);
@@ -416,6 +474,27 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
         if (cipherTextSize)
             *cipherTextSize = command->cipherTextSize;
         break;
+
+    statecase(context->state, DATA_ENCRYPT_WAIT_FOR_ECC_ENCRYPTION);
+        TPM2B_ECC_POINT  *c1 = NULL;
+        TPM2B_MAX_BUFFER *c2 = NULL;
+        TPM2B_DIGEST     *c3 = NULL;
+
+        r = Esys_ECC_Encrypt_Finish(context->esys, &c1, &c2, &c3);
+        return_try_again(r);
+        if (r == 0x00000084) {
+            LOG_ERROR("The data to be encrypted might be too large.");
+        }
+        goto_if_error_reset_state(r, "ECC encryption.", error_cleanup);
+
+        r = marshal_ecc_crypt_result(c1, c2, c3, &command->cipherText, &command->cipherTextSize);
+        goto_if_error_reset_state(r, "Marshaling c1 c2 c3..", error_cleanup);
+
+        SAFE_FREE(c1);
+        SAFE_FREE(c2);
+        SAFE_FREE(c3);
+        context->state = DATA_ENCRYPT_PREPARE_FLUSH;
+        return TSS2_FAPI_RC_TRY_AGAIN;
 
     statecasedefault(context->state);
     }

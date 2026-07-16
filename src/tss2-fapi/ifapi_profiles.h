@@ -25,6 +25,7 @@ typedef struct IFAPI_PROFILE {
     TPMT_SIG_SCHEME      ecc_signing_scheme; /**< Signing scheme for the ECC key. */
     TPMT_SIG_SCHEME      rsa_signing_scheme; /**< Signing scheme for the RSA key. */
     TPMT_RSA_DECRYPT     rsa_decrypt_scheme; /**< Decrypt scheme for the RSA key. */
+    TPMT_KDF_SCHEME      ecc_crypt_scheme;   /**< Scheme for the ECC encryption. */
     TPMI_ALG_CIPHER_MODE sym_mode;           /**< Mode for symmectric encryption. */
     TPMT_SYM_DEF_OBJECT  sym_parameters;     /**< Parameters for symmectric encryption. */
     UINT16               sym_block_size;     /**< Block size for symmectric encryption. */
