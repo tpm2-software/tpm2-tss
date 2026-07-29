@@ -30,6 +30,8 @@
  *  - Esys_FlushContext() (M)
  *  - Esys_CreatePrimary() (M)
  *  - Esys_Create() (M)
+ *  - Esys_Load() (M)
+ *  - Esys_TRSess_SetAttributes() (M)
  *
  * Used compiler defines: TEST_ECC
  *
@@ -42,6 +44,7 @@ int
 test_esys_create_policy_auth(ESYS_CONTEXT *esys_context) {
     TSS2_RC r;
     ESYS_TR primaryHandle = ESYS_TR_NONE;
+    ESYS_TR loadedHandle = ESYS_TR_NONE;
     ESYS_TR trialHandle = ESYS_TR_NONE;
     ESYS_TR policyHandle = ESYS_TR_NONE;
 
@@ -70,6 +73,7 @@ test_esys_create_policy_auth(ESYS_CONTEXT *esys_context) {
     goto_if_error(r, "Error esys policy get digest", error);
 
     r = Esys_FlushContext(esys_context, trialHandle);
+    trialHandle = ESYS_TR_NONE;
     goto_if_error(r, "Error esys flush context", error);
 
     TPM2B_AUTH authValuePrimary = { .size = 5, .buffer = { 1, 2, 3, 4, 5 } };
@@ -187,6 +191,10 @@ test_esys_create_policy_auth(ESYS_CONTEXT *esys_context) {
                                TPM2_CC_Create);
     goto_if_error(r, "Error esys policy command code", error);
 
+    r = Esys_TRSess_SetAttributes(esys_context, policyHandle,
+                                  TPMA_SESSION_CONTINUESESSION | TPMA_SESSION_ENCRYPT, 0xff);
+    goto_if_error(r, "Error setting policy session attributes", error);
+
     TPM2B_SENSITIVE_CREATE inSensitive2
         = { .size = 0,
             .sensitive = { .userAuth = { .size = 0, .buffer = { 0 } },
@@ -244,6 +252,14 @@ test_esys_create_policy_auth(ESYS_CONTEXT *esys_context) {
 
     LOG_INFO("\nSecond key created.");
 
+    r = Esys_Load(esys_context, primaryHandle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
+                  outPrivate2, outPublic2, &loadedHandle);
+    goto_if_error(r, "Error loading second key", error);
+
+    r = Esys_FlushContext(esys_context, loadedHandle);
+    loadedHandle = ESYS_TR_NONE;
+    goto_if_error(r, "Error flushing second key", error);
+
     r = Esys_FlushContext(esys_context, policyHandle);
     policyHandle = ESYS_TR_NONE;
     goto_if_error(r, "Error during FlushContext", error);
@@ -259,6 +275,12 @@ test_esys_create_policy_auth(ESYS_CONTEXT *esys_context) {
     return EXIT_SUCCESS;
 
 error:
+
+    if (loadedHandle != ESYS_TR_NONE) {
+        if (Esys_FlushContext(esys_context, loadedHandle) != TSS2_RC_SUCCESS) {
+            LOG_ERROR("Cleanup loadedHandle failed.");
+        }
+    }
 
     if (trialHandle != ESYS_TR_NONE) {
         if (Esys_FlushContext(esys_context, trialHandle) != TSS2_RC_SUCCESS) {
