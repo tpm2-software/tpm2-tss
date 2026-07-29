@@ -193,7 +193,7 @@
 #define TPM2B_UNMARSHAL_SUBTYPE(type, subtype, member)                                             \
     TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, size_t *offset, \
                                        type *dest) {                                               \
-        size_t  local_offset = 0;                                                                  \
+        size_t  local_offset = 0, local_buffer_size = 0;                                           \
         UINT16  size = 0;                                                                          \
         TSS2_RC rc;                                                                                \
                                                                                                    \
@@ -233,11 +233,16 @@
                                                                                                    \
         if (dest != NULL) {                                                                        \
             dest->size = size;                                                                     \
-            rc = Tss2_MU_##subtype##_Unmarshal(buffer, buffer_size, &local_offset, &dest->member); \
-            if (rc)                                                                                \
-                return rc;                                                                         \
-        } else {                                                                                   \
-            local_offset += size;                                                                  \
+        }                                                                                          \
+        local_buffer_size = local_offset + size;                                                   \
+        rc = Tss2_MU_##subtype##_Unmarshal(buffer, local_buffer_size, &local_offset,               \
+                                           dest ? &dest->member : NULL);                           \
+        if (rc)                                                                                    \
+            return rc;                                                                             \
+        if (local_offset != local_buffer_size) {                                                   \
+            LOG_DEBUG("Unmarshaled object size %zu does not match TPM2B size field %u",            \
+                      local_offset - (local_buffer_size - size), size);                            \
+            return TSS2_MU_RC_INSUFFICIENT_BUFFER;                                                 \
         }                                                                                          \
                                                                                                    \
         if (offset != NULL) {                                                                      \
