@@ -816,13 +816,15 @@ iesys_check_rp_hmacs(ESYS_CONTEXT *esys_context, TSS2L_SYS_AUTH_RESPONSE *rspAut
             continue;
 
         IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
+        rsrc_session->nonceTPM = rspAuths->auths[i].nonce;
+        rsrc_session->sessionAttributes = rspAuths->auths[i].sessionAttributes;
         if (rsrc_session->type_policy_session == POLICY_PASSWORD
             || (rsrc_session->sessionType == TPM2_SE_POLICY
                 && rsrc_session->type_policy_session != POLICY_AUTH
                 && rsrc_session->sizeHmacValue == 0)) {
-            /* A policy password session has no auth value */
+            /* These policy sessions have no response HMAC. */
             if (rspAuths->auths[i].hmac.size != 0) {
-                LOG_ERROR("PolicyPassword session's HMAC must be 0-length.");
+                LOG_ERROR("Policy session's HMAC must be 0-length.");
                 return TSS2_ESYS_RC_RSP_AUTH_FAILED;
             }
             continue;
@@ -835,8 +837,6 @@ iesys_check_rp_hmacs(ESYS_CONTEXT *esys_context, TSS2L_SYS_AUTH_RESPONSE *rspAut
 
         TPM2B_AUTH rp_hmac;
         rp_hmac.size = sizeof(TPMU_HA);
-        rsrc_session->nonceTPM = rspAuths->auths[i].nonce;
-        rsrc_session->sessionAttributes = rspAuths->auths[i].sessionAttributes;
         r = iesys_crypto_authHmac(
             &esys_context->crypto_backend, rsrc_session->authHash, &rsrc_session->sessionValue[0],
             rsrc_session->sizeHmacValue, &rp_digest[0], rp_digest_size, &rsrc_session->nonceTPM,
