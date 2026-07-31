@@ -1626,6 +1626,9 @@ compute_policy_list(IFAPI_POLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *element
             /* TPM policy or is restricted to 8 elements */
             const char *branch_names[8] = { 0 };
 
+            if (branches->count > 8)
+                return_error2(TSS2_FAPI_RC_AUTHORIZATION_FAILED, "Invalid branch count.");
+
             for (j = 0; j < branches->count; j++)
                 branch_names[j] = branches->authorizations[j].name;
 
