@@ -1021,12 +1021,18 @@ get_rsa_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
     return_if_null(rsaKey, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     keySize = RSA_size(rsaKey);
+    if (keySize > TPM2_MAX_RSA_KEY_BYTES) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Key size too large", cleanup);
+    }
     keyBits = keySize * 8;
     RSA_get0_key(rsaKey, &n, &e, NULL);
 #else
     BIGNUM *e = NULL, *n = NULL;
 
     keyBits = EVP_PKEY_get_bits(publicKey);
+    if (keyBits == 0 || keyBits > TPM2_MAX_RSA_KEY_BYTES * 8) {
+        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Key size too large", cleanup);
+    }
     keySize = (keyBits + 7) / 8;
     if (!EVP_PKEY_get_bn_param(publicKey, OSSL_PKEY_PARAM_RSA_N, &n)
         || !EVP_PKEY_get_bn_param(publicKey, OSSL_PKEY_PARAM_RSA_E, &e)) {
