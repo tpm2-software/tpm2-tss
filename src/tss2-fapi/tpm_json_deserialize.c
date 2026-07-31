@@ -332,7 +332,7 @@ get_boolean_from_json(json_object *jso, TPMI_YES_NO *value) {
  *         the function.
  */
 TSS2_RC
-ifapi_json_pcr_selection_deserialize(json_object *jso, UINT8 *sizeofSelect, BYTE pcrSelect[]) {
+ifapi_json_pcr_selection_deserialize(json_object *jso, UINT8 *sizeofSelect, BYTE pcrSelect[TPM2_PCR_SELECT_MAX]) {
     LOG_TRACE("call");
     TSS2_RC   r;
     size_t    i;
@@ -348,6 +348,8 @@ ifapi_json_pcr_selection_deserialize(json_object *jso, UINT8 *sizeofSelect, BYTE
         r = get_number_from_json(json_object_array_get_idx(jso, i), &n);
         return_if_error(r, "Bad PCR value");
         n_byte = n / 8;
+        if (n_byte < 0 || n_byte >= TPM2_PCR_SELECT_MAX)
+            return_error(TSS2_FAPI_RC_BAD_VALUE, "Bad PCR index");
         pcrSelect[n_byte] |= ((BYTE)1) << (n % 8);
         if (n_byte > *sizeofSelect)
             *sizeofSelect = n_byte;
