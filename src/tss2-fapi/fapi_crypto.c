@@ -834,12 +834,16 @@ ifapi_der_sig_to_tpm(
             tpmSignature->sigAlg = TPM2_ALG_RSAPSS;
             tpmSignature->signature.rsapss.hash = hashAlgorithm;
             tpmSignature->signature.rsapss.sig.size = signatureSize;
+            if (signatureSize > sizeof(tpmSignature->signature.rsapss.sig.buffer))
+                return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid signature size.");
             memcpy(&tpmSignature->signature.rsapss.sig.buffer[0], signature,
                     signatureSize);
         } else if (tpmPublic->parameters.rsaDetail.scheme.scheme == TPM2_ALG_RSASSA) {
             tpmSignature->sigAlg = TPM2_ALG_RSASSA;
             tpmSignature->signature.rsassa.hash = hashAlgorithm;
             tpmSignature->signature.rsassa.sig.size = signatureSize;
+            if (signatureSize > sizeof(tpmSignature->signature.rsapss.sig.buffer))
+                return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid signature size.");
             memcpy(&tpmSignature->signature.rsassa.sig.buffer[0], signature,
                     signatureSize);
         } else {
