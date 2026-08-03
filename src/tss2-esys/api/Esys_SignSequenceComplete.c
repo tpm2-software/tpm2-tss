@@ -22,6 +22,12 @@
 #define LOGMODULE esys
 #include "util/log.h" // for return_state_if_error, LOG_ERROR, LOG_D...
 
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
+static void
+store_input_parameters(ESYS_CONTEXT *esysContext, ESYS_TR sequenceHandle) {
+    esysContext->in.SequenceComplete.sequenceHandle = sequenceHandle;
+}
+
 /** One-Call function for TPM2_SignSequenceComplete
  *
  * This function invokes the TPM2_SignSequenceComplete command in a one-call
@@ -129,6 +135,7 @@ Esys_SignSequenceComplete_Async(ESYS_CONTEXT           *esysContext,
     /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 1);
     return_state_if_error(r, ESYS_STATE_INIT, "Check session usage");
+    store_input_parameters(esysContext, sequenceHandle);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, sequenceHandle, &sequenceHandleNode);
@@ -277,6 +284,10 @@ Esys_SignSequenceComplete_Finish(ESYS_CONTEXT *esysContext, TPMT_SIGNATURE **sig
                                                (signature != NULL) ? *signature : NULL);
     goto_state_if_error(r, ESYS_STATE_INTERNALERROR, "Received error from SAPI unmarshaling",
                         error_cleanup);
+
+    /* The ESYS_TR sequence object has to be invalidated */
+    r = Esys_TR_Close(esysContext, &esysContext->in.SequenceComplete.sequenceHandle);
+    goto_if_error(r, "invalidate object", error_cleanup);
 
     esysContext->state = ESYS_STATE_INIT;
     return TSS2_RC_SUCCESS;
