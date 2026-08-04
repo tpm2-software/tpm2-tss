@@ -661,6 +661,11 @@ tcti_i2c_helper_receive(TSS2_TCTI_CONTEXT *tcti_context,
         return TSS2_RC_SUCCESS;
     }
 
+    if (tcti_common->header.size <= TCTI_I2C_HELPER_RESP_HEADER_SIZE + 1) {
+        LOG_ERROR("TPM response too short (%" PRIu32 " bytes)", tcti_common->header.size);
+        return TSS2_TCTI_RC_MALFORMED_RESPONSE;
+    }
+
     /* Check if response fits in buffer and update response size */
     if (tcti_common->header.size > *response_size) {
         LOG_ERROR("TPM response too long (%" PRIu32 " bytes)", tcti_common->header.size);
