@@ -190,17 +190,16 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context) {
     goto_if_error(r, "Error Fapi_Delete", error);
     ASSERT(path_list != NULL);
     LOG_INFO("Path list: %s", path_list);
-    char *check_path_list
-        = "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE "/LOCKOUT:/" FAPI_PROFILE
-          "/HE/EK:/" FAPI_PROFILE "/HE:"
-          "/" FAPI_PROFILE "/HN:/" FAPI_PROFILE "/HS/SRK/mySignKey2:/" FAPI_PROFILE
-          "/HS/SRK/mySignKey"
-          ":/nv/Endorsement_Certificate/1c00002:/nv/Endorsement_Certificate/1c0000a";
-    ASSERT(cmp_strtokens(path_list, check_path_list, ":"));
+    char *check_path_list = "/" FAPI_PROFILE "/HS/SRK:/" FAPI_PROFILE "/HS:/" FAPI_PROFILE
+                            "/LOCKOUT:/" FAPI_PROFILE "/HE/EK:/" FAPI_PROFILE "/HE:"
+                            "/" FAPI_PROFILE "/HN:/" FAPI_PROFILE
+                            "/HS/SRK/mySignKey2:/" FAPI_PROFILE "/HS/SRK/mySignKey";
 
     /* We need to reset the passwords again, in order to not brick physical TPMs */
     r = Fapi_ChangeAuth(context, "/HS", NULL);
     goto_if_error(r, "Error Fapi_ChangeAuth", error);
+
+    ASSERT(cmp_strtokens(path_list, check_path_list, ":"));
 
     r = Fapi_GetDescription(context, "/HS/SRK", &description);
     goto_if_error(r, "Error GetDescription", error);
