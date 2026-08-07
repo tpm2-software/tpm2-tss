@@ -22,6 +22,16 @@
 #define LOGMODULE esys
 #include "util/log.h" // for return_state_if_error, LOG_ERROR, LOG_D...
 
+/** Store command parameters inside the ESYS_CONTEXT for use during _Finish */
+static void
+store_input_parameters(ESYS_CONTEXT *esysContext, const TPM2B_AUTH *auth) {
+    if (auth == NULL)
+        memset(&esysContext->in.SignSequenceStart.authData, 0,
+               sizeof(esysContext->in.SignSequenceStart.authData));
+    else
+        esysContext->in.SignSequenceStart.authData = *auth;
+}
+
 /** One-Call function for TPM2_SignSequenceStart
  *
  * This function invokes the TPM2_SignSequenceStart command in a one-call
@@ -128,6 +138,7 @@ Esys_SignSequenceStart_Async(ESYS_CONTEXT              *esysContext,
     /* Check input parameters */
     r = check_session_feasibility(shandle1, shandle2, shandle3, 0);
     return_state_if_error(r, ESYS_STATE_INIT, "Check session usage");
+    store_input_parameters(esysContext, auth);
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, keyHandle, &keyHandleNode);
@@ -274,6 +285,7 @@ Esys_SignSequenceStart_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *sequenceHandle
 
     /* Store the auth value parameter in the object meta data */
     sequenceHandleNode->rsrc.name.size = 0;
+    sequenceHandleNode->auth = esysContext->in.SignSequenceStart.authData;
     esysContext->state = ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
