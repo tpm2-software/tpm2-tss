@@ -28,10 +28,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss2-tcti-tbs", "src\tss2-t
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss2-tctildr", "src\tss2-tcti\tss2-tctildr.vcxproj", "{40EC0A14-E90F-450F-B250-2071B05ED099}"
-	ProjectSection(ProjectDependencies) = postProject
-		{6BA6146F-8B38-49A2-A156-769E0F2CC302} = {6BA6146F-8B38-49A2-A156-769E0F2CC302}
-		{89B6B774-2886-48CF-B1D0-534AC449E0FD} = {89B6B774-2886-48CF-B1D0-534AC449E0FD}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss2-rc", "src\tss2-rc\tss2-rc.vcxproj", "{0674A684-8945-4EDB-858F-1A2ECDEFFDC1}"
 EndProject
