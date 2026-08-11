@@ -26,7 +26,7 @@ SPDX-FileCopyrightText = "2019-2022 Fraunhofer SIT sponsored by Infineon"
 SPDX-License-Identifier = "BSD-2-Clause"
 
 [[annotations]]
-path = "dist/sysusers.d/tpm2-tss.conf"
+path = ["dist/sysusers.d/tpm2-tss.conf.fully-locked", "dist/sysusers.d/tpm2-tss.conf.not-fully-locked"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2020 Jonas Witschel"
 SPDX-License-Identifier = "BSD-2-Clause"

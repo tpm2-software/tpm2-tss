@@ -655,6 +655,14 @@ AS_IF([test "x$enable_integration" = "xyes" && test "x$enable_self_generated_cer
 # Check for systemd helper tools used by make install
 AC_CHECK_PROG(systemd_sysusers, systemd-sysusers, yes)
 AM_CONDITIONAL([SYSD_SYSUSERS], [test "x$systemd_sysusers" = "xyes" && test "x$sysusersdir" != "xno"])
+
+systemd_sysusers_fully_locked=no
+AS_IF([test "x$systemd_sysusers" = "xyes"],
+      [PKG_CHECK_MODULES([LIBSYSTEMD], [libsystemd >= 257],
+                         [systemd_sysusers_fully_locked=yes],
+                         [systemd_sysusers_fully_locked=no])])
+AM_CONDITIONAL([SYSD_SYSUSERS_FULLY_LOCKED], [test "x$systemd_sysusers_fully_locked" = "xyes"])
+
 AC_CHECK_PROG(systemd_tmpfiles, systemd-tmpfiles, yes)
 AM_CONDITIONAL([SYSD_TMPFILES], [test "x$systemd_tmpfiles" = "xyes" && test "x$tmpfilesdir" != "xno"])
 
