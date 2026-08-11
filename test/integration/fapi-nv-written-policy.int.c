@@ -97,6 +97,16 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context) {
     r = Fapi_SetAppData(context, nvPathOrdinary, appDataIn, APP_DATA_SIZE);
     goto_if_error(r, "Error Fapi_SetAppData", error);
 
+    r = Fapi_GetAppData(context, nvPathOrdinary, NULL, NULL);
+    goto_if_error(r, "Error Fapi_GetAppData", error);
+
+    const char *nvPathNonExist = "/nv/whatever";
+    r = Fapi_GetAppData(context, nvPathNonExist, NULL, NULL);
+    if (r != TSS2_FAPI_RC_PATH_NOT_FOUND) {
+        LOG_ERROR(TPM2_ERROR_FORMAT " Error Fapi_GetAppData", TPM2_ERROR_TEXT(r));
+        goto error;
+    }
+
     r = Fapi_GetAppData(context, nvPathOrdinary, &appDataOut, &appDataOutSize);
     goto_if_error(r, "Error Fapi_GetAppData", error);
     ASSERT(appDataOut != NULL);
