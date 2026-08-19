@@ -12,7 +12,7 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     strategy:
       matrix:
-        docker_image: [fedora-44-dev, centos-stream10-dev, opensuse-leap-dev, ubuntu-26.04-dev, alpine-3.24-dev, arch-linux-dev ]
+        docker_image: [fedora-44-dev, centos-stream10-dev, opensuse-leap-dev, ubuntu-26.04-dev, alpine-3.24-dev, arch-linux-dev, nixos-26.05-dev ]
         compiler: [gcc, clang]
     steps:
       - name: Check out repository
