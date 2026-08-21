@@ -14,7 +14,7 @@ source $DOCKER_BUILD_DIR/.ci/download-deps.sh
 
 get_deps "$WORKSPACE"
 
-export LD_LIBRARY_PATH=/usr/local/lib/
+export LD_LIBRARY_PATH="/usr/local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 # Change to the build dir
 echo "echo changing to $DOCKER_BUILD_DIR"
