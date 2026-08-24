@@ -694,7 +694,13 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC *pub_tpm_key,
     }
 #endif /* OPENSSL_VERSION_NUMBER < 0x30000000L */
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (!(ctx = EVP_PKEY_CTX_new(evp_rsa_key, NULL))) {
+#else
+    /* this is nessecary from OpenSSL 3.0.0 to avoid using the TPM2 provider using
+     * OpenSSL in a circular dependency */
+    if (!(ctx = EVP_PKEY_CTX_new_from_pkey(libctx, evp_rsa_key, NULL))) {
+#endif
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not create evp context.", cleanup);
     }
 
