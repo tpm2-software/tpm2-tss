@@ -394,9 +394,17 @@ iesys_cryptossl_hmac_start(ESYS_CRYPTO_CONTEXT_BLOB **context,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Failed to create HMAC key", cleanup);
     }
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (1
         != EVP_DigestSignInit(mycontext->hash.ossl_context, NULL, mycontext->hash.ossl_hash_alg,
                               NULL, hkey)) {
+#else
+    /* this is nessecary from OpenSSL 3.0.0 to avoid using the TPM2 provider using
+     * OpenSSL in a circular dependency */
+    if (1
+        != EVP_DigestSignInit_ex(mycontext->hash.ossl_context, NULL, get_ossl_hash_md(hashAlg),
+                                 mycontext->hash.ossl_libctx, NULL, hkey, NULL)) {
+#endif
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "DigestSignInit", cleanup);
     }
 
