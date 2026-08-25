@@ -24,7 +24,7 @@ Tss2_Sys_HashSequenceStart_Prepare(TSS2_SYS_CONTEXT *sysContext,
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (IsAlgorithmWeak(hashAlg, 0))
+    if (IsAlgorithmDeprecated(hashAlg, 0))
         return TSS2_SYS_RC_BAD_VALUE;
 
     rval = CommonPreparePrologue(ctx, TPM2_CC_HashSequenceStart);
