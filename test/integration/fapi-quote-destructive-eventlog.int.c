@@ -937,7 +937,7 @@ test_fapi_quote_destructive(FAPI_CONTEXT *context) {
     size_t   signatureSize = 0;
     uint32_t pcrList[13] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 16 };
 
-#ifdef WORDS_BIGENDIAN
+#if defined(WORDS_BIGENDIAN) || !defined(ENABLE_DEPRECATED_CRYPTO)
     return EXIT_SKIP;
 #endif
 

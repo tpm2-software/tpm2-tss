@@ -296,7 +296,7 @@ test_StartAuthSession(void **state) {
     TPM2_SE      sessionType = TPM2_SE_HMAC;
     TPMT_SYM_DEF symmetric
         = { .algorithm = TPM2_ALG_AES, .keyBits = { .aes = 128 }, .mode = { .aes = TPM2_ALG_CFB } };
-    TPMI_ALG_HASH authHash = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH authHash = TPM2_ALG_SHA256;
     ESYS_TR       sessionHandle_handle;
 
     r = Esys_StartAuthSession(esys_context, tpmKey_handle, bind_handle, ESYS_TR_NONE, ESYS_TR_NONE,
@@ -677,7 +677,7 @@ test_Hash(void **state) {
     Esys_GetTcti(esys_context, &tcti);
 
     TPM2B_MAX_BUFFER   data = DUMMY_2B_DATA(.buffer);
-    TPMI_ALG_HASH      hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH      hashAlg = TPM2_ALG_SHA256;
     ESYS_TR            hierarchy = ESYS_TR_RH_OWNER;
     TPM2B_DIGEST      *outHash;
     TPMT_TK_HASHCHECK *validation;
@@ -696,7 +696,7 @@ test_HMAC(void **state) {
 
     ESYS_TR          handle_handle = DUMMY_TR_HANDLE_KEY;
     TPM2B_MAX_BUFFER buffer = DUMMY_2B_DATA(.buffer);
-    TPMI_ALG_HASH    hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH    hashAlg = TPM2_ALG_SHA256;
     TPM2B_DIGEST    *outHMAC;
     r = Esys_HMAC(esys_context, handle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                   &buffer, hashAlg, &outHMAC);
@@ -713,7 +713,7 @@ test_MAC(void **state) {
 
     ESYS_TR             handle_handle = DUMMY_TR_HANDLE_KEY;
     TPM2B_MAX_BUFFER    buffer = DUMMY_2B_DATA(.buffer);
-    TPMI_ALG_MAC_SCHEME hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_MAC_SCHEME hashAlg = TPM2_ALG_SHA256;
     TPM2B_DIGEST       *outMAC;
     r = Esys_MAC(esys_context, handle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE, &buffer,
                  hashAlg, &outMAC);
@@ -758,7 +758,7 @@ test_HMAC_Start(void **state) {
 
     ESYS_TR       handle_handle = DUMMY_TR_HANDLE_KEY;
     TPM2B_AUTH    auth = DUMMY_2B_DATA(.buffer);
-    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA256;
     ESYS_TR       sequenceHandle_handle;
     r = Esys_HMAC_Start(esys_context, handle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                         &auth, hashAlg, &sequenceHandle_handle);
@@ -775,7 +775,7 @@ test_MAC_Start(void **state) {
 
     ESYS_TR             handle_handle = DUMMY_TR_HANDLE_KEY;
     TPM2B_AUTH          auth = DUMMY_2B_DATA(.buffer);
-    TPMI_ALG_MAC_SCHEME hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_MAC_SCHEME hashAlg = TPM2_ALG_SHA256;
     ESYS_TR             sequenceHandle_handle;
     r = Esys_MAC_Start(esys_context, handle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE, ESYS_TR_NONE,
                        &auth, hashAlg, &sequenceHandle_handle);
@@ -791,7 +791,7 @@ test_HashSequenceStart(void **state) {
     Esys_GetTcti(esys_context, &tcti);
 
     TPM2B_AUTH    auth = DUMMY_2B_DATA(.buffer);
-    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA256;
     ESYS_TR       sequenceHandle_handle;
     r = Esys_HashSequenceStart(esys_context, ESYS_TR_NONE, ESYS_TR_NONE, ESYS_TR_NONE, &auth,
                                hashAlg, &sequenceHandle_handle);
@@ -1053,7 +1053,7 @@ test_SetCommandCodeAuditStatus(void **state) {
     Esys_GetTcti(esys_context, &tcti);
 
     ESYS_TR       auth_handle = DUMMY_TR_HANDLE_HIERARCHY_PLATFORM;
-    TPMI_ALG_HASH auditAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH auditAlg = TPM2_ALG_SHA256;
     TPML_CC       setList = { 0 };
     TPML_CC       clearList = { 0 };
     r = Esys_SetCommandCodeAuditStatus(esys_context, auth_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
@@ -1139,7 +1139,7 @@ test_PCR_SetAuthPolicy(void **state) {
 
     ESYS_TR       authHandle_handle = DUMMY_TR_HANDLE_HIERARCHY_PLATFORM;
     TPM2B_DIGEST  authPolicy = DUMMY_2B_DATA(.buffer);
-    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA256;
     TPMI_DH_PCR   pcrNum = 0;
     r = Esys_PCR_SetAuthPolicy(esys_context, authHandle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
                                ESYS_TR_NONE, &authPolicy, hashAlg, pcrNum);
@@ -1555,7 +1555,7 @@ test_SetPrimaryPolicy(void **state) {
 
     ESYS_TR       authHandle_handle = DUMMY_TR_HANDLE_HIERARCHY_PLATFORM;
     TPM2B_DIGEST  authPolicy = DUMMY_2B_DATA(.buffer);
-    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA1;
+    TPMI_ALG_HASH hashAlg = TPM2_ALG_SHA256;
     r = Esys_SetPrimaryPolicy(esys_context, authHandle_handle, ESYS_TR_PASSWORD, ESYS_TR_NONE,
                               ESYS_TR_NONE, &authPolicy, hashAlg);
 
@@ -1896,7 +1896,7 @@ test_NV_DefineSpace(void **state) {
         .size = 0,
         .nvPublic = {
                      .nvIndex = TPM2_NV_INDEX_FIRST,
-                     .nameAlg = TPM2_ALG_SHA1,
+                     .nameAlg = TPM2_ALG_SHA256,
                      .attributes = (TPMA_NV_PPWRITE |
                                     TPMA_NV_AUTHWRITE |
                                     1 << TPMA_NV_TPM2_NT_SHIFT |

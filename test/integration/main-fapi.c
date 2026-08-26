@@ -911,7 +911,7 @@ nv_write(TSS2_SYS_CONTEXT *sys_context, TPMI_RH_NV_INDEX nvIndex, X509 *cert) {
     TPM2B_AUTH nv_auth = { 0 };
     TPM2B_NV_PUBLIC public_info = {
         .nvPublic = {
-            .nameAlg = TPM2_ALG_SHA1,
+            .nameAlg = TPM2_ALG_SHA256,
             .attributes = TPMA_NV_PPWRITE | TPMA_NV_AUTHREAD | TPMA_NV_OWNERREAD |
                 TPMA_NV_PLATFORMCREATE | TPMA_NV_NO_DA,
             .dataSize = 0,

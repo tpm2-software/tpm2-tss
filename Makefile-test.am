@@ -1908,6 +1908,7 @@ test_integration_esys_pcr_basic_int_LDADD   = $(TESTS_LDADD)
 test_integration_esys_pcr_basic_int_LDFLAGS = $(TESTS_LDFLAGS)
 test_integration_esys_pcr_basic_int_SOURCES = \
     test/integration/esys-pcr-basic.int.c \
+    src/tss2-sys/sysapi_util.c \
     test/integration/main-esys.c test/integration/test-esys.h
 
 test_integration_esys_pcr_auth_value_int_CFLAGS  = $(TESTS_CFLAGS)
