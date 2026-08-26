@@ -244,7 +244,7 @@ for cortex-m4:
         --disable-tcti-libtpms \
         --disable-tcti-mssim \
         --disable-tcti-pcap \
-        --disable-tcti-spi-lt2go \
+        --disable-tcti-spi-ltt2go \
         --disable-tcti-spi-ftdi \
         --disable-tcti-swtpm \
         --disable-doxygen-doc \
@@ -273,7 +273,7 @@ Building TSS as *static* libraries can be done as follows:
         --disable-tcti-pcap \
         --disable-tcti-spi-ftdi \
         --disable-tcti-spi-helper  \
-        --disable-tcti-spi-lt2go \
+        --disable-tcti-spi-ltt2go \
         --disable-tcti-spi-ltt2go \
         --disable-tcti-spidev
 make
