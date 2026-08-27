@@ -27,7 +27,8 @@
 #include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_RC_S...
 #include <fcntl.h>        // for open
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
+#include "util-io/io.h" // for TEMP_RETRY
+#include "util/log.h"   // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
 
 /** Determine if a sub file in directory is also a directory
  *
@@ -739,7 +740,7 @@ ifapi_io_poll(IFAPI_IO *io) {
         fds.events = io->pollevents;
         fds.fd = fileno(io->stream);
         LOG_TRACE("Waiting for fd %i with event %i", fds.fd, fds.events);
-        rc = poll(&fds, 1, -1);
+        TEMP_RETRY(rc, poll(&fds, 1, -1));
         if (rc < 0) {
             LOG_ERROR("Poll failed with %d", errno);
             return TSS2_FAPI_RC_IO_ERROR;
