@@ -28,8 +28,9 @@
 #include "ifapi_helpers.h"
 #include "ifapi_macros.h"
 #define LOGMODULE fapi
-#include "util/log.h"
 #include "util/aux_util.h"
+#include "util-io/io.h" // for TEMP_RETRY
+#include "util/log.h"   // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
 
 /** Start reading a file's complete content into memory in an asynchronous way.
  *
@@ -714,7 +715,7 @@ ifapi_io_poll(IFAPI_IO * io) {
         fds.events = io->pollevents;
         fds.fd = fileno(io->stream);
         LOG_TRACE("Waiting for fd %i with event %i", fds.fd, fds.events);
-        rc = poll(&fds, 1, -1);
+        TEMP_RETRY(rc, poll(&fds, 1, -1));
         if (rc < 0) {
             LOG_ERROR("Poll failed with %d", errno);
             return TSS2_FAPI_RC_IO_ERROR;
