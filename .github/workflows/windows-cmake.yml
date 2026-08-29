@@ -1,0 +1,87 @@
+# SPDX-FileCopyrightText: 2026 Ahmed Samy
+# SPDX-License-Identifier: BSD-2-Clause
+
+name: Windows CMake Build
+
+on:
+  push:
+    branches: [ "master", "cmake" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  USERNAME: 'tpm2-software'
+  FEED_URL: https://nuget.pkg.github.com/tpm2-software/index.json
+  VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/tpm2-software/index.json,readwrite"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build:
+    name: ${{ matrix.arch }} ${{ matrix.config }} (${{ matrix.link }})
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [Debug, Release]
+        link: [static, shared]
+        arch: [x64, x86]
+
+    env:
+      VCPKG_DEFAULT_HOST_TRIPLET: x64-windows-static
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.arch }}-windows${{ matrix.link == 'static' && '-static' || '' }}
+      VCPKG_BUILD_TYPE: ${{ matrix.config == 'Debug' && 'debug' || 'release' }}
+      VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/cmake/triplets
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          submodules: 'recursive'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: ${{ matrix.arch }}
+
+      - name: Setup MSVC dev environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@v9
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Run vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgConfigurationJsonGlob: 'vcpkg-configuration.json'
+          doNotCache: false
+
+      - name: Add NuGet sources
+        shell: pwsh
+        run: |
+          .$(vcpkg fetch nuget) `
+            sources add `
+            -Source "${{ env.FEED_URL }}" `
+            -StorePasswordInClearText `
+            -Name GitHubPackages `
+            -UserName "${{ env.USERNAME }}" `
+            -Password "${{ secrets.GITHUB_TOKEN }}"
+          .$(vcpkg fetch nuget) `
+            setapikey "${{ secrets.GITHUB_TOKEN }}" `
+            -Source "${{ env.FEED_URL }}"
+
+      - name: Build
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: 'clang'
+          configurePresetAdditionalArgs: "['-DBUILD_SHARED_LIBS=${{ matrix.link == 'shared' && 'ON' || 'OFF' }}']"
+          buildPreset: clang-${{ matrix.config == 'Debug' && 'debug' || 'release' }}
