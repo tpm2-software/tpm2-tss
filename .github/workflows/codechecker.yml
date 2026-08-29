@@ -1,0 +1,74 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 Infineon Technologies AG
+#
+# SPDX-License-Identifier: BSD-2-Clause
+
+name: CodeChecker Analysis
+on:
+  [push, pull_request]
+jobs:
+  codechecker-analysis:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/tpm2-software/ubuntu-24.04
+    steps:
+    - name: "Check out repository"
+      uses: actions/checkout@v4
+      with:
+          fetch-depth: 0
+
+    - name: Trust workspace for bootstrap
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+    - name: Generate compile_commands.json
+      run: |
+        ./bootstrap
+        mkdir build
+        cd build
+        ../configure \
+          --enable-debug=yes \
+          --enable-unit \
+          --enable-integration \
+          --with-integrationtcti=swtpm \
+          --enable-self-generated-certificate \
+          --with-crypto=ossl
+         make -j compile_commands.json
+
+    - name: Fix action paths for codechecker-analysis-action
+      run: |
+        mkdir -p /home/runner/work
+        ln -s /__w/_actions /home/runner/work/_actions
+
+    - name: Apply workarounds for LLVM installation in codechecker-analysis-action
+      run: |
+        apt-get update
+        apt-get install -y clang clang-tidy software-properties-common sudo
+        # Rename binaries so we can register them with update-alternatives
+        mv /usr/bin/clang /usr/bin/clang-distro
+        mv /usr/bin/clang-tidy /usr/bin/clang-tidy-distro
+        # Register them so get-llvm.sh's update-alternatives --query calls don't fail
+        update-alternatives --install /usr/bin/clang clang /usr/bin/clang-distro 100
+        update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-distro 100
+
+    - name: Set analyzers exclusively to Clang Static Analyzer
+      run: |
+        cat > /tmp/codechecker.json <<EOF
+        {
+          "analyze": ["--analyzers", "clangsa"]
+        }
+        EOF
+
+    - uses: whisperity/codechecker-analysis-action@v1
+      id: codechecker
+      with:
+        logfile: ${{ github.workspace }}/build/compile_commands.json
+        ctu: true
+        config: /tmp/codechecker.json
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: "CodeChecker Bug Reports"
+        path: ${{ steps.codechecker.outputs.result-html-dir }}
+
+    - name: "Break build on warnings"
+      if: ${{ steps.codechecker.outputs.warnings == 'true' }}
+      run: exit 1
