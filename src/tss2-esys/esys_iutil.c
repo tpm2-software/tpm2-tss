@@ -825,6 +825,14 @@ iesys_check_rp_hmacs(ESYS_CONTEXT *esys_context, TSS2L_SYS_AUTH_RESPONSE *rspAut
                 LOG_ERROR("PolicyPassword session's HMAC must be 0-length.");
                 return TSS2_ESYS_RC_RSP_AUTH_FAILED;
             }
+            /* Even though the HMAC check is skipped, nonceTPM and the
+               session attributes must still be updated from the response.
+               iesys_decrypt_param() derives the parameter decryption key
+               from rsrc_session->nonceTPM via KDFa; leaving it stale here
+               corrupts decrypted response parameters for any session with
+               parameter encryption enabled. */
+            rsrc_session->nonceTPM = rspAuths->auths[i].nonce;
+            rsrc_session->sessionAttributes = rspAuths->auths[i].sessionAttributes;
             continue;
         }
 
