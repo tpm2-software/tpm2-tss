@@ -120,6 +120,7 @@ ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
 
     if (fstat(fileno(io->stream), &statbuf) == -1) {
         fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("Execute fstat for \"%s\".", filename);
         return TSS2_FAPI_RC_IO_ERROR;
     }
@@ -127,6 +128,7 @@ ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
     /* Check whether file is a directory. */
     if (S_ISDIR(statbuf.st_mode)) {
         fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("\"%s\" is a directory.", filename);
         return TSS2_FAPI_RC_IO_ERROR;
     }
@@ -138,6 +140,7 @@ ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
     if (fcntl(fileno(io->stream), F_SETLK, &flock) == -1) {
         LOG_ERROR("File \"%s\" could not be locked: %s", filename, strerror(errno));
         fclose(io->stream);
+        io->stream = NULL;
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
@@ -154,11 +157,15 @@ ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
     int flags = fcntl(fileno(io->stream), F_GETFL, 0);
     if (flags == -1) {
         SAFE_FREE(io->char_rbuffer);
+        fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("fcntl failed with %d", errno);
         return TSS2_FAPI_RC_IO_ERROR;
     }
     if (fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK) == -1) {
         SAFE_FREE(io->char_rbuffer);
+        fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("fcntl failed with %d", errno);
         return TSS2_FAPI_RC_IO_ERROR;
     }
