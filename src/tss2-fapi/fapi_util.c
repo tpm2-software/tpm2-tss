@@ -600,6 +600,14 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
                     context->cmd.Provision.public_templ.public.publicArea.unique.ecc.y.size = 32;
                 }
             }
+        } else if (context->cmd.Provision.public_templ.public.publicArea.type == TPM2_ALG_MLKEM) {
+            /* ML-KEM EK: set unique field size for endorsement key */
+            if (pkey->nonce.size) {
+                memcpy(context->cmd.Provision.public_templ.public.publicArea.unique.mlkem.buffer,
+                       &pkey->nonce.buffer[0], pkey->nonce.size);
+            } else if (!context->cmd.Provision.public_templ.unique_zero) {
+                context->cmd.Provision.public_templ.public.publicArea.unique.mlkem.size = 0;
+            }
         }
         policy = context->profiles.default_profile.ek_policy;
     } else if (ktype == TSS2_SRK) {
@@ -759,6 +767,11 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
 
         if (pkey->public.publicArea.type == TPM2_ALG_RSA)
             pkey->signing_scheme = context->profiles.default_profile.rsa_signing_scheme;
+        else if (pkey->public.publicArea.type == TPM2_ALG_MLDSA
+                 || pkey->public.publicArea.type == TPM2_ALG_HASH_MLDSA)
+            pkey->signing_scheme = context->profiles.default_profile.mldsa_signing_scheme;
+        else if (pkey->public.publicArea.type == TPM2_ALG_MLKEM)
+            pkey->signing_scheme.scheme = TPM2_ALG_NULL;
         else
             pkey->signing_scheme = context->profiles.default_profile.ecc_signing_scheme;
         context->createPrimary.pkey_object.public.handle = primaryHandle;
@@ -973,6 +986,12 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle) {
                         public.publicArea.unique.ecc.x.size = 32;
                         public.publicArea.unique.ecc.y.size = 32;
                     }
+                } else if (public.publicArea.type == TPM2_ALG_MLKEM) {
+                    if (pkey->nonce.size) {
+                        memcpy(public.publicArea.unique.mlkem.buffer, &pkey->nonce.buffer[0],
+                               pkey->nonce.size);
+                    }
+                    public.publicArea.unique.mlkem.size = 0;
                 }
             }
         }
@@ -1491,14 +1510,33 @@ ifapi_merge_profile_into_nv_template(FAPI_CONTEXT *context, IFAPI_NV_TEMPLATE *t
 TSS2_RC
 ifapi_merge_profile_into_template(const IFAPI_PROFILE *profile, IFAPI_KEY_TEMPLATE *template) {
     /* Merge profile parameters */
-    template->public.publicArea.type = profile->type;
+    TPM2_ALG_ID effectiveType = profile->type;
     template->public.publicArea.nameAlg = profile->nameAlg;
-    if (profile->type == TPM2_ALG_RSA) {
+
+    /* For PQC signing profiles (ML-DSA / Hash-ML-DSA), storage keys
+       (restricted + decrypt) must use ML-KEM instead. */
+    if ((profile->type == TPM2_ALG_MLDSA || profile->type == TPM2_ALG_HASH_MLDSA)
+        && (template->public.publicArea.objectAttributes & TPMA_OBJECT_RESTRICTED)
+        && (template->public.publicArea.objectAttributes & TPMA_OBJECT_DECRYPT)) {
+        effectiveType = TPM2_ALG_MLKEM;
+    }
+
+    template->public.publicArea.type = effectiveType;
+    if (effectiveType == TPM2_ALG_RSA) {
         template->public.publicArea.parameters.rsaDetail.keyBits = profile->keyBits;
         template->public.publicArea.parameters.rsaDetail.exponent = profile->exponent;
-    } else if (profile->type == TPM2_ALG_ECC) {
+    } else if (effectiveType == TPM2_ALG_ECC) {
         template->public.publicArea.parameters.eccDetail.curveID = profile->curveID;
         template->public.publicArea.parameters.eccDetail.kdf.scheme = TPM2_ALG_NULL;
+    } else if (effectiveType == TPM2_ALG_MLDSA) {
+        template->public.publicArea.parameters.mldsaDetail.parameterSet
+            = profile->mldsaParameterSet;
+    } else if (effectiveType == TPM2_ALG_HASH_MLDSA) {
+        template->public.publicArea.parameters.hash_mldsaDetail.parameterSet
+            = profile->mldsaParameterSet;
+    } else if (effectiveType == TPM2_ALG_MLKEM) {
+        template->public.publicArea.parameters.mlkemDetail.parameterSet
+            = profile->mlkemParameterSet;
     }
 
     /* Set remaining parameters depending on key type */
@@ -1508,7 +1546,7 @@ ifapi_merge_profile_into_template(const IFAPI_PROFILE *profile, IFAPI_KEY_TEMPLA
         } else {
             template->public.publicArea.parameters.asymDetail.symmetric.algorithm = TPM2_ALG_NULL;
         }
-        if (profile->type == TPM2_ALG_RSA) {
+        if (effectiveType == TPM2_ALG_RSA) {
             if (template->unique_ecc_set) {
                 return_error(TSS2_FAPI_RC_BAD_VALUE, "ECC unique was set for an RSA key.");
             }
@@ -1523,7 +1561,7 @@ ifapi_merge_profile_into_template(const IFAPI_PROFILE *profile, IFAPI_KEY_TEMPLA
             } else {
                 template->public.publicArea.parameters.rsaDetail.scheme.scheme = TPM2_ALG_NULL;
             }
-        } else if (profile->type == TPM2_ALG_ECC) {
+        } else if (effectiveType == TPM2_ALG_ECC) {
             if (template->unique_rsa_set) {
                 return_error(TSS2_FAPI_RC_BAD_VALUE, "RSA unique was set for an ECC key.");
             }
@@ -1539,13 +1577,37 @@ ifapi_merge_profile_into_template(const IFAPI_PROFILE *profile, IFAPI_KEY_TEMPLA
             } else {
                 template->public.publicArea.parameters.eccDetail.scheme.scheme = TPM2_ALG_NULL;
             }
+        } else if (effectiveType == TPM2_ALG_MLDSA || effectiveType == TPM2_ALG_HASH_MLDSA) {
+            /* ML-DSA signing key: set signing scheme from profile */
+            if (template->public.publicArea.objectAttributes & TPMA_OBJECT_SIGN_ENCRYPT) {
+                template->public.publicArea.parameters.asymDetail.scheme.scheme
+                    = profile->mldsa_signing_scheme.scheme;
+                memcpy(&template->public.publicArea.parameters.asymDetail.scheme.details,
+                       &profile->mldsa_signing_scheme.details, sizeof(TPMU_ASYM_SCHEME));
+            } else {
+                template->public.publicArea.parameters.asymDetail.scheme.scheme = TPM2_ALG_NULL;
+            }
+        } else if (effectiveType == TPM2_ALG_MLKEM) {
+            /* ML-KEM decryption key: symmetric is set above for restricted decrypt.
+               TPMS_MLKEM_PARMS has no scheme field — do NOT write asymDetail.scheme
+               as it would clobber mlkemDetail.parameterSet at the same union offset. */
+            template->public.publicArea.parameters.mlkemDetail.parameterSet
+                = profile->mlkemParameterSet;
         } else {
             template->public.publicArea.parameters.asymDetail.scheme.scheme = TPM2_ALG_NULL;
         }
     } else {
         /* Non restricted key */
-        template->public.publicArea.parameters.asymDetail.symmetric.algorithm = TPM2_ALG_NULL;
-        template->public.publicArea.parameters.asymDetail.scheme.scheme = TPM2_ALG_NULL;
+        if (effectiveType == TPM2_ALG_MLDSA || effectiveType == TPM2_ALG_HASH_MLDSA) {
+            /* ML-DSA/Hash-ML-DSA have no symmetric or scheme fields —
+               parameterSet was already set above, nothing else to do. */
+        } else if (effectiveType == TPM2_ALG_MLKEM) {
+            /* Unrestricted ML-KEM: symmetric=NULL, no scheme field */
+            template->public.publicArea.parameters.mlkemDetail.symmetric.algorithm = TPM2_ALG_NULL;
+        } else {
+            template->public.publicArea.parameters.asymDetail.symmetric.algorithm = TPM2_ALG_NULL;
+            template->public.publicArea.parameters.asymDetail.scheme.scheme = TPM2_ALG_NULL;
+        }
     }
     return TSS2_RC_SUCCESS;
 }
@@ -3488,6 +3550,9 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
 
         if (object->misc.key.public.publicArea.type == TPM2_ALG_RSA)
             object->misc.key.signing_scheme = context->cmd.Key_Create.profile->rsa_signing_scheme;
+        else if (object->misc.key.public.publicArea.type == TPM2_ALG_MLDSA
+                 || object->misc.key.public.publicArea.type == TPM2_ALG_HASH_MLDSA)
+            object->misc.key.signing_scheme = context->cmd.Key_Create.profile->mldsa_signing_scheme;
         else
             object->misc.key.signing_scheme = context->cmd.Key_Create.profile->ecc_signing_scheme;
 
@@ -3705,12 +3770,23 @@ ifapi_get_sig_scheme(FAPI_CONTEXT    *context,
             context->Key_Sign.scheme.scheme = TPM2_ALG_RSAPSS;
             context->Key_Sign.scheme.details.rsapss.hashAlg = hash_alg;
         }
+        if (strcasecmp("MLDSA", padding) == 0 || strcasecmp("HASH_MLDSA", padding) == 0) {
+            /* ML-DSA/Hash-ML-DSA: TPM requires scheme=NULL (signing is
+               fully determined by the key type and parameters). */
+            context->Key_Sign.scheme.scheme = TPM2_ALG_NULL;
+        }
         *sig_scheme = context->Key_Sign.scheme;
         return TSS2_RC_SUCCESS;
     } else {
         /* Use scheme defined for object */
-        *sig_scheme = object->misc.key.signing_scheme;
-        sig_scheme->details.any.hashAlg = hash_alg;
+        if (object->misc.key.public.publicArea.type == TPM2_ALG_MLDSA
+            || object->misc.key.public.publicArea.type == TPM2_ALG_HASH_MLDSA) {
+            /* ML-DSA/Hash-ML-DSA: TPM requires inScheme.scheme = NULL */
+            sig_scheme->scheme = TPM2_ALG_NULL;
+        } else {
+            *sig_scheme = object->misc.key.signing_scheme;
+            sig_scheme->details.any.hashAlg = hash_alg;
+        }
         return TSS2_RC_SUCCESS;
     }
 }
@@ -4707,6 +4783,9 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
 
         if (object->misc.key.public.publicArea.type == TPM2_ALG_RSA)
             object->misc.key.signing_scheme = context->cmd.Key_Create.profile->rsa_signing_scheme;
+        else if (object->misc.key.public.publicArea.type == TPM2_ALG_MLDSA
+                 || object->misc.key.public.publicArea.type == TPM2_ALG_HASH_MLDSA)
+            object->misc.key.signing_scheme = context->cmd.Key_Create.profile->mldsa_signing_scheme;
         else
             object->misc.key.signing_scheme = context->cmd.Key_Create.profile->ecc_signing_scheme;
         fallthrough;

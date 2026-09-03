@@ -13,9 +13,10 @@
 #include <string.h>   // for strcmp, strerror, memcmp
 #include <unistd.h>   // for getpid
 
-#include "tcti-cmd-test.h" // for getcap_command, getcap_good_resp
-#include "tcti-common.h"   // for tpm_header_t, TPM_HEADER_SIZE, header_unm...
-#include "tss2_common.h"   // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tcti-cmd-test.h"   // for getcap_command, getcap_good_resp
+#include "tcti-common.h"     // for tpm_header_t, TPM_HEADER_SIZE, header_unm...
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_tpm2_types.h" // for TPM2_MAX_COMMAND_SIZE
 
 #define LOGMODULE test
 #include "util/log.h" // for LOG_ERROR, LOG_DEBUG, LOGBLOB_DEBUG
@@ -141,7 +142,7 @@ main(int argc, char *argv[]) {
 
     while (!quit) {
 
-        uint8_t buf[4096];
+        uint8_t buf[TPM2_MAX_COMMAND_SIZE];
 
         LOG_DEBUG("PID (%d): Child waiting on TPM command", getpid());
 
