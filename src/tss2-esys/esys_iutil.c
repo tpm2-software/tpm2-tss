@@ -3,6 +3,7 @@
  * Copyright 2017-2018, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  ******************************************************************************/
+#include "util/aux_util.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
@@ -13,10 +14,11 @@
 #include "esys_crypto.h" // for iesys_crypto_hash_get_digest_size, iesys_cr...
 #include "esys_int.h"    // for RSRC_NODE_T, ESYS_CONTEXT, _ESYS_STATE_INIT
 #include "esys_iutil.h"
-#include "esys_mu.h"    // for FALSE
-#include "esys_types.h" // for IESYS_SESSION, IESYS_RESOURCE, IESYS_RSRC_U...
-#include "tss2_esys.h"  // for ESYS_CONTEXT, ESYS_TR, ESYS_TR_NONE, ESYS_C...
-#include "tss2_mu.h"    // for Tss2_MU_TPMI_ALG_HASH_Marshal, Tss2_MU_TPM2...
+#include "esys_mu.h"       // for FALSE
+#include "esys_types.h"    // for IESYS_SESSION, IESYS_RESOURCE, IESYS_RSRC_U...
+#include "tss2_esys.h"     // for ESYS_CONTEXT, ESYS_TR, ESYS_TR_NONE, ESYS_C...
+#include "tss2_mu.h"       // for Tss2_MU_TPMI_ALG_HASH_Marshal, Tss2_MU_TPM2...
+#include "util/aux_util.h" // for secure_mem_zero
 
 #define LOGMODULE esys
 #include "util/log.h" // for return_if_error, LOG_ERROR, LOG_TRACE, goto...
@@ -135,6 +137,7 @@ iesys_DeleteAllResourceObjects(ESYS_CONTEXT *esys_context) {
     RSRC_NODE_T *next_node_rsrc;
     for (node_rsrc = esys_context->rsrc_list; node_rsrc != NULL; node_rsrc = next_node_rsrc) {
         next_node_rsrc = node_rsrc->next;
+        secure_mem_zero(node_rsrc, sizeof(RSRC_NODE_T));
         free(node_rsrc);
     }
     esys_context->rsrc_list = NULL;

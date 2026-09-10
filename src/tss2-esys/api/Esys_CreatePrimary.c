@@ -204,23 +204,23 @@ Esys_CreatePrimary_Async(ESYS_CONTEXT                 *esysContext,
         r = iesys_adapt_auth_value(&esysContext->crypto_backend,
                                    &esysContext->in.CreatePrimary.inSensitive->sensitive.userAuth,
                                    inPublic->publicArea.nameAlg);
-        return_state_if_error(r, ESYS_STATE_INIT, "Adapt auth value.");
+        goto_state_if_error(r, ESYS_STATE_INIT, "Adapt auth value.", error_cleanup);
     }
 
     /* Retrieve the metadata objects for provided handles */
     r = esys_GetResourceObject(esysContext, primaryHandle, &primaryHandleNode);
-    return_state_if_error(r, ESYS_STATE_INIT, "primaryHandle unknown.");
+    goto_state_if_error(r, ESYS_STATE_INIT, "primaryHandle unknown.", error_cleanup);
 
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_CreatePrimary_Prepare(
         esysContext->sys,
         (primaryHandleNode == NULL) ? TPM2_RH_NULL : primaryHandleNode->rsrc.handle,
         esysContext->in.CreatePrimary.inSensitive, inPublic, outsideInfo, creationPCR);
-    return_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.");
+    goto_state_if_error(r, ESYS_STATE_INIT, "SAPI Prepare returned error.", error_cleanup);
 
     /* Calculate the cpHash Values */
     r = init_session_tab(esysContext, shandle1, shandle2, shandle3);
-    return_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources");
+    goto_state_if_error(r, ESYS_STATE_INIT, "Initialize session resources", error_cleanup);
     if (primaryHandleNode != NULL)
         iesys_compute_session_value(esysContext->session_tab[0], &primaryHandleNode->rsrc.name,
                                     &primaryHandleNode->auth);
@@ -232,12 +232,12 @@ Esys_CreatePrimary_Async(ESYS_CONTEXT                 *esysContext,
 
     /* Generate the auth values and set them in the SAPI command buffer */
     r = iesys_gen_auths(esysContext, primaryHandleNode, NULL, NULL, &auths);
-    return_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values");
+    goto_state_if_error(r, ESYS_STATE_INIT, "Error in computation of auth values", error_cleanup);
 
     esysContext->authsCount = auths.count;
     if (auths.count > 0) {
         r = Tss2_Sys_SetCmdAuths(esysContext->sys, &auths);
-        return_state_if_error(r, ESYS_STATE_INIT, "SAPI error on SetCmdAuths");
+        goto_state_if_error(r, ESYS_STATE_INIT, "SAPI error on SetCmdAuths", error_cleanup);
     }
 
     /* Trigger execution and finish the async invocation */
@@ -245,6 +245,12 @@ Esys_CreatePrimary_Async(ESYS_CONTEXT                 *esysContext,
     return_state_if_error(r, ESYS_STATE_INTERNALERROR, "Finish (Execute Async)");
 
     esysContext->state = ESYS_STATE_SENT;
+
+    return r;
+
+error_cleanup:
+    secure_mem_zero((void *)&esysContext->in.CreatePrimary.inSensitiveData,
+                    sizeof(TPM2B_SENSITIVE_CREATE));
 
     return r;
 }
@@ -368,7 +374,7 @@ Esys_CreatePrimary_Finish(ESYS_CONTEXT         *esysContext,
         if (esysContext->submissionCount++ >= ESYS_MAX_SUBMISSIONS) {
             LOG_WARNING("Maximum number of (re)submissions has been reached.");
             esysContext->state = ESYS_STATE_INIT;
-            goto error_cleanup;
+            goto cleanup;
         }
         esysContext->state = ESYS_STATE_RESUBMISSION;
         r = Tss2_Sys_ExecuteAsync(esysContext->sys);
@@ -376,11 +382,11 @@ Esys_CreatePrimary_Finish(ESYS_CONTEXT         *esysContext,
             LOG_WARNING("Error attempting to resubmit");
             /* We do not set esysContext->state here but inherit the most recent
              * state of the _async function. */
-            goto error_cleanup;
+            goto cleanup;
         }
         r = TSS2_ESYS_RC_TRY_AGAIN;
         LOG_DEBUG("Resubmission initiated and returning RC_TRY_AGAIN.");
-        goto error_cleanup;
+        goto cleanup;
     }
     /* The following is the "regular error" handling. */
     if (iesys_tpm_error(r)) {
@@ -426,11 +432,16 @@ Esys_CreatePrimary_Finish(ESYS_CONTEXT         *esysContext,
     else
         SAFE_FREE(loutPublic);
 
+    secure_mem_zero((void *)&esysContext->in.CreatePrimary.inSensitiveData,
+                    sizeof(TPM2B_SENSITIVE_CREATE));
     esysContext->state = ESYS_STATE_INIT;
 
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
+    secure_mem_zero((void *)&esysContext->in.CreatePrimary.inSensitiveData,
+                    sizeof(TPM2B_SENSITIVE_CREATE));
+cleanup:
     Esys_TR_Close(esysContext, objectHandle);
     SAFE_FREE(loutPublic);
     if (creationData != NULL)
