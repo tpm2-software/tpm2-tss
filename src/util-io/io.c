@@ -20,8 +20,9 @@
 #else
 #include <netdb.h> // for addrinfo, freeaddrinfo, gai_strerror, getadd...
 #endif
-#include <netinet/in.h> // for IPPROTO_TCP, sockaddr_in, sockaddr_in6
-#include <poll.h>       // for pollfd, poll, POLLIN
+#include <netinet/in.h>  // for IPPROTO_TCP, sockaddr_in, sockaddr_in6
+#include <netinet/tcp.h> // for TCP_NODELAY
+#include <poll.h>        // for pollfd, poll, POLLIN
 #ifndef __ZEPHYR__
 #include <sys/un.h> // for sockaddr_un
 #endif
@@ -182,6 +183,15 @@ socket_close(SOCKET *socket) {
     return TSS2_RC_SUCCESS;
 }
 
+static TSS2_RC
+socket_set_nodelay(SOCKET sock) {
+    int flag = 1;
+    if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag)) < 0) {
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
+    return TSS2_RC_SUCCESS;
+}
+
 TSS2_RC
 socket_connect(const char *hostname, uint16_t port, int control, SOCKET *sock) {
     static const struct addrinfo hints
@@ -257,6 +267,10 @@ socket_connect(const char *hostname, uint16_t port, int control, SOCKET *sock) {
 #endif
 
         return TSS2_TCTI_RC_IO_ERROR;
+    }
+
+    if (socket_set_nodelay(*sock) != TSS2_RC_SUCCESS) {
+        LOG_WARNING("Failed to set the TCP_NODELAY option for socket.");
     }
 
     return TSS2_RC_SUCCESS;
