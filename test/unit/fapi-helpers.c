@@ -302,6 +302,20 @@ check_get_profile_sig_scheme(void **stat) {
     hash_alg = sig_scheme.details.ecdsa.hashAlg;
     assert_true(hash_alg == TPM2_ALG_SHA1);
 
+    TPMT_SIG_SCHEME mldsa_scheme
+        = { .scheme = TPM2_ALG_MLDSA, .details.any.hashAlg = TPM2_ALG_NULL };
+    profile.mldsa_signing_scheme = mldsa_scheme;
+
+    tpm_public.type = TPM2_ALG_MLDSA;
+    r = ifapi_get_profile_sig_scheme(&profile, &tpm_public, &sig_scheme);
+    assert_int_equal(r, TSS2_RC_SUCCESS);
+    assert_true(sig_scheme.scheme == TPM2_ALG_MLDSA);
+
+    tpm_public.type = TPM2_ALG_HASH_MLDSA;
+    r = ifapi_get_profile_sig_scheme(&profile, &tpm_public, &sig_scheme);
+    assert_int_equal(r, TSS2_RC_SUCCESS);
+    assert_true(sig_scheme.scheme == TPM2_ALG_MLDSA);
+
     tpm_public.type = TPM2_ALG_NULL;
     r = ifapi_get_profile_sig_scheme(&profile, &tpm_public, &sig_scheme);
     assert_int_equal(r, TSS2_FAPI_RC_BAD_VALUE);
