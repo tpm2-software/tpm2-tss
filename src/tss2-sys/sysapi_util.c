@@ -303,13 +303,13 @@ GetNumResponseHandles(TPM2_CC commandCode) {
     return GetNumHandles(commandCode, 0);
 }
 
-#ifdef DISABLE_WEAK_CRYPTO
+#ifndef ENABLE_DEPRECATED_CRYPTO
 bool
-IsAlgorithmWeak(TPM2_ALG_ID algorithm, TPM2_KEY_SIZE key_size) {
+IsAlgorithmDeprecated(TPM2_ALG_ID algorithm, TPM2_KEY_SIZE key_size) {
     switch (algorithm) {
     case TPM2_ALG_RSA:
         if (key_size < 2048) {
-            LOG_ERROR("Error: weak algorithm");
+            LOG_ERROR("Error: deprecated algorithm");
             return true;
         }
         break;
@@ -318,12 +318,12 @@ IsAlgorithmWeak(TPM2_ALG_ID algorithm, TPM2_KEY_SIZE key_size) {
     case TPM2_ALG_CAMELLIA:
     case TPM2_ALG_SYMCIPHER:
         if (key_size < 128) {
-            LOG_ERROR("Error: weak algorithm");
+            LOG_ERROR("Error: deprecated algorithm");
             return true;
         }
         break;
     case TPM2_ALG_SHA1:
-        LOG_ERROR("Error: weak algorithm");
+        LOG_ERROR("Error: deprecated algorithm");
         return true;
         break;
     }
@@ -337,28 +337,28 @@ ValidatePublicTemplate(const TPM2B_PUBLIC *pub) {
 
     switch (tmpl->type) {
     case TPM2_ALG_RSA:
-        if (IsAlgorithmWeak(tmpl->type, tmpl->parameters.rsaDetail.keyBits)
-            || IsAlgorithmWeak(tmpl->parameters.rsaDetail.symmetric.algorithm,
-                               tmpl->parameters.rsaDetail.symmetric.keyBits.sym))
+        if (IsAlgorithmDeprecated(tmpl->type, tmpl->parameters.rsaDetail.keyBits)
+            || IsAlgorithmDeprecated(tmpl->parameters.rsaDetail.symmetric.algorithm,
+                                     tmpl->parameters.rsaDetail.symmetric.keyBits.sym))
             return TSS2_SYS_RC_BAD_VALUE;
         break;
     case TPM2_ALG_ECC:
-        if (IsAlgorithmWeak(tmpl->parameters.eccDetail.symmetric.algorithm,
-                            tmpl->parameters.eccDetail.symmetric.keyBits.sym))
+        if (IsAlgorithmDeprecated(tmpl->parameters.eccDetail.symmetric.algorithm,
+                                  tmpl->parameters.eccDetail.symmetric.keyBits.sym))
             return TSS2_SYS_RC_BAD_VALUE;
         break;
     case TPM2_ALG_AES:
     case TPM2_ALG_SM4:
     case TPM2_ALG_CAMELLIA:
     case TPM2_ALG_SYMCIPHER:
-        if (IsAlgorithmWeak(tmpl->type, tmpl->parameters.symDetail.sym.keyBits.sym))
+        if (IsAlgorithmDeprecated(tmpl->type, tmpl->parameters.symDetail.sym.keyBits.sym))
             return TSS2_SYS_RC_BAD_VALUE;
         break;
     default:
-        if (IsAlgorithmWeak(tmpl->type, 0))
+        if (IsAlgorithmDeprecated(tmpl->type, 0))
             return TSS2_SYS_RC_BAD_VALUE;
 
-        if (IsAlgorithmWeak(tmpl->nameAlg, 0))
+        if (IsAlgorithmDeprecated(tmpl->nameAlg, 0))
             return TSS2_SYS_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;
@@ -368,7 +368,7 @@ TSS2_RC
 ValidateNV_Public(const TPM2B_NV_PUBLIC *nv_public_info) {
     const TPMS_NV_PUBLIC *nv_public = &nv_public_info->nvPublic;
 
-    if (IsAlgorithmWeak(nv_public->nameAlg, 0))
+    if (IsAlgorithmDeprecated(nv_public->nameAlg, 0))
         return TSS2_SYS_RC_BAD_VALUE;
 
     return TSS2_RC_SUCCESS;
@@ -382,7 +382,7 @@ ValidateTPML_PCR_SELECTION(const TPML_PCR_SELECTION *pcr_selection) {
     for (i = 0; i < pcr_selection->count; i++) {
         const TPMS_PCR_SELECTION *selection = &pcr_selection->pcrSelections[i];
 
-        if (IsAlgorithmWeak(selection->hash, 0))
+        if (IsAlgorithmDeprecated(selection->hash, 0))
             return TSS2_SYS_RC_BAD_VALUE;
     }
 

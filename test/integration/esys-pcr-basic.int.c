@@ -10,6 +10,7 @@
 
 #include <stdlib.h> // for NULL, EXIT_FAILURE, EXIT_SUCCESS
 
+#include "sysapi_util.h"     // for IsAlgorithmDeprecated
 #include "test-esys.h"       // for EXIT_SKIP, test_invoke_esys
 #include "tss2_common.h"     // for UINT32, TSS2_RC
 #include "tss2_esys.h"       // for Esys_Free, ESYS_TR_NONE, Esys_PCR_Allocate
@@ -106,8 +107,17 @@ test_esys_pcr_basic(ESYS_CONTEXT *esys_context) {
 
     goto_if_error(r, "Error: PCR_Allocate", error);
 
+    TPML_PCR_SELECTION restorePcrSelection = { .count = 0 };
+    for (UINT32 i = 0; i < savedPCRs->data.assignedPCR.count; i++) {
+        if (IsAlgorithmDeprecated(savedPCRs->data.assignedPCR.pcrSelections[i].hash, 0))
+            continue;
+        restorePcrSelection.pcrSelections[restorePcrSelection.count]
+            = savedPCRs->data.assignedPCR.pcrSelections[i];
+        restorePcrSelection.count++;
+    }
+
     r = Esys_PCR_Allocate(esys_context, ESYS_TR_RH_PLATFORM, ESYS_TR_PASSWORD, ESYS_TR_NONE,
-                          ESYS_TR_NONE, &savedPCRs->data.assignedPCR, &allocationSuccess, &maxPCR,
+                          ESYS_TR_NONE, &restorePcrSelection, &allocationSuccess, &maxPCR,
                           &sizeNeeded, &sizeAvailable);
 
     goto_if_error(r, "Error: PCR_Allocate", error);
