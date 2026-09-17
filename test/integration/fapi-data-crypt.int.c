@@ -205,6 +205,9 @@ test_fapi_data_crypt(FAPI_CONTEXT *context) {
     size_t   cipherTextSize;
     char    *export_data = NULL;
 
+    if (strncmp("P_RSA", fapi_profile, 5) != 0)
+        return EXIT_SKIP;
+
     r = Fapi_Provision(context, NULL, NULL, NULL);
     goto_if_error(r, "Error Fapi_Provision", error);
 
