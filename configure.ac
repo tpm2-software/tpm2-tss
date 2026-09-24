@@ -75,6 +75,7 @@ AC_ARG_WITH([runstatedir],
             [runstatedir="$withval"])
 AS_IF([test -z "$runstatedir"], [runstatedir="${localstatedir}/run"])
 AC_SUBST([runstatedir])
+AC_DEFINE_UNQUOTED([LOCALSTATEDIR], ["$localstatedir"], [Local state dir])
 
 AX_RECURSIVE_EVAL([$sysconfdir], [SYSCONFDIR])
 AC_DEFINE_UNQUOTED([SYSCONFDIR], ["$SYSCONFDIR"], [System config dir])
