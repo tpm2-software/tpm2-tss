@@ -2567,15 +2567,20 @@ struct TPMS_RSA_PARMS {
                   algorithm key size and mode. if the key is not a restricted decryption key
                   this field shall be set to TPM2_ALG_NULL. */
     TPMT_RSA_SCHEME
-    scheme; /* scheme. scheme shall before an unrestricted signing key either TPM2_ALG_RSAPSS
-               TPM2_ALG_RSASSA or TPM2_ALG_NULLfor a restricted signing key either
-               TPM2_ALG_RSAPSS or TPM2_ALG_RSASSA for an unrestricted decryption key
-               TPM2_ALG_RSAES TPM2_ALG_OAEP or TPM2_ALG_NULL unless the object also has the sign
-               attribute for a restricted decryption key TPM2_ALG_NULL. NOTE When both sign and
-               decrypt are SET restricted shall be CLEAR and scheme shall be TPM2_ALG_NULL. */
-    TPMI_RSA_KEY_BITS keyBits; /* number of bits in the public modulus */
-    UINT32 exponent; /* the public exponent A prime number greater than 2. When zero indicates that
-                        the exponent is the default of 216 + 1 */
+    scheme; /* scheme. scheme shall be:
+               - for an unrestricted signing key either TPM2_ALG_RSAPSS, TPM2_ALG_RSASSA or
+                 TPM2_ALG_NULL;
+               - for a restricted signing key either TPM2_ALG_RSAPSS or TPM2_ALG_RSASSA;
+               - for an unrestricted decryption key TPM2_ALG_RSAES, TPM2_ALG_OAEP or
+                 TPM2_ALG_NULL, unless the object also has the sign attribute;
+               - for a restricted decryption key TPM2_ALG_NULL.
+               NOTE When both sign and decrypt are SET restricted shall be CLEAR and scheme
+               shall be TPM2_ALG_NULL. */
+    TPMI_RSA_KEY_BITS
+    keyBits; /* number of bits in the public modulus */
+    UINT32
+    exponent; /* the public exponent A prime number greater than 2. When zero indicates that
+                 the exponent is the default of 216 + 1 */
 };
 
 /* Definition of ECC TPMS_ECC_PARMS Structure */
