@@ -23,6 +23,9 @@
 #ifdef TEST_ESYS
 #include "tss2_esys.h" // for Esys_Finalize, Esys_GetSysContext, Esys...
 #endif
+#ifdef TEST_FUZZING
+#include "tss2_tcti_fuzzing.h" // for Tss2_Tcti_Fuzzing_Init
+#endif
 #define LOGMODULE test
 #include "test-common.h"
 #include "util/log.h" // for LOG_ERROR, LOG_DEBUG, LOGBLOB_ERROR
@@ -301,12 +304,26 @@ dumpstate(TSS2_SYS_CONTEXT *sys_ctx, tpm_state *state_first, bool compare) {
     return EXIT_SUCCESS;
 }
 
+/* Finalize the TCTI context created by test_sys_setup(). */
+static void
+test_sys_tcti_finalize(TSS2_TCTI_CONTEXT **tcti_ctx) {
+#ifdef TEST_FUZZING
+    Tss2_Tcti_Finalize(*tcti_ctx);
+    free(*tcti_ctx);
+    *tcti_ctx = NULL;
+#else
+    Tss2_TctiLdr_Finalize(tcti_ctx);
+#endif /* TEST_FUZZING */
+}
+
 int
 test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx) {
     TSS2_RC          rc;
     TSS2_ABI_VERSION abi_version = TEST_ABI_VERSION;
     size_t           size;
-    char            *name_conf;
+#ifndef TEST_FUZZING
+    char *name_conf;
+#endif
 
     size = sizeof(TSS2_TEST_SYS_CONTEXT);
     *test_ctx = malloc(size);
@@ -315,6 +332,24 @@ test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx) {
         goto fail;
     }
 
+#ifdef TEST_FUZZING
+    /* Fuzz targets are linked with the fuzzing TCTI: use it directly. */
+    rc = Tss2_Tcti_Fuzzing_Init(NULL, &size, NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Failed to get the fuzzing TCTI context size: 0x%" PRIx32, rc);
+        goto cleanup_test_ctx;
+    }
+    (*test_ctx)->tcti_ctx = calloc(1, size);
+    if ((*test_ctx)->tcti_ctx == NULL) {
+        LOG_ERROR("Failed to allocate 0x%zx bytes for the fuzzing TCTI context", size);
+        goto cleanup_test_ctx;
+    }
+    rc = Tss2_Tcti_Fuzzing_Init((*test_ctx)->tcti_ctx, &size, NULL);
+    if (rc != TSS2_RC_SUCCESS) {
+        LOG_ERROR("Failed to initialize the fuzzing TCTI: 0x%" PRIx32, rc);
+        goto cleanup_tcti_ctx;
+    }
+#else
     name_conf = getenv(ENV_TCTI); // TODO arg, then env?
     if (!name_conf) {
         LOG_ERROR("TCTI module not specified. Use environment variable: " ENV_TCTI);
@@ -326,6 +361,7 @@ test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx) {
         LOG_ERROR("Error loading TCTI: %s", name_conf);
         goto cleanup_test_ctx;
     }
+#endif /* TEST_FUZZING */
 
     size = Tss2_Sys_GetContextSize(0);
     (*test_ctx)->sys_ctx = malloc(size);
@@ -362,7 +398,7 @@ cleanup_sys_mem:
     free((*test_ctx)->sys_ctx);
 
 cleanup_tcti_ctx:
-    Tss2_TctiLdr_Finalize(&(*test_ctx)->tcti_ctx);
+    test_sys_tcti_finalize(&(*test_ctx)->tcti_ctx);
 
 cleanup_test_ctx:
     free(*test_ctx);
@@ -433,7 +469,7 @@ test_sys_teardown(TSS2_TEST_SYS_CONTEXT *test_ctx) {
         free(test_ctx->tpm_state);
         Tss2_Sys_Finalize(test_ctx->sys_ctx);
         free(test_ctx->sys_ctx);
-        Tss2_TctiLdr_Finalize(&test_ctx->tcti_ctx);
+        test_sys_tcti_finalize(&test_ctx->tcti_ctx);
         free(test_ctx);
     }
 }
