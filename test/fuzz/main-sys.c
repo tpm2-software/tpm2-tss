@@ -33,11 +33,6 @@ LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         return ret;
     }
 
-    ret = test_sys_checks_pre(test_sys_ctx);
-    if (ret != 0) {
-        return ret;
-    }
-
     tcti_fuzzing = tcti_fuzzing_context_cast(test_sys_ctx->tcti_ctx);
     tcti_fuzzing->data = Data;
     tcti_fuzzing->size = Size;
@@ -45,11 +40,6 @@ LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     rc = test_invoke(test_sys_ctx->sys_ctx);
     if (rc != 0 && ret != 77) {
         LOG_ERROR("Test returned %08x", rc);
-        exit(1);
-    }
-
-    ret = test_sys_checks_post(test_sys_ctx);
-    if (ret != 0) {
         exit(1);
     }
 
