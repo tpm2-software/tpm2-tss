@@ -31,7 +31,9 @@ LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     test_fuzz_size = Size;
     ret = test_sys_setup(&test_sys_ctx);
     if (ret != 0) {
-        return ret;
+        /* Most inputs are not a valid TPM2_Startup response. libFuzzer only
+         * allows 0 and -1, and -1 would keep these inputs out of the corpus. */
+        return 0;
     }
 
     rc = test_invoke(test_sys_ctx->sys_ctx);
