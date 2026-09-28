@@ -23,19 +23,16 @@
 
 int
 LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-    TSS2_TEST_SYS_CONTEXT     *test_sys_ctx;
-    TSS2_TCTI_FUZZING_CONTEXT *tcti_fuzzing = NULL;
-    TSS2_RC                    rc;
-    int                        ret;
+    TSS2_TEST_SYS_CONTEXT *test_sys_ctx;
+    TSS2_RC                rc;
+    int                    ret;
 
+    test_fuzz_data = Data;
+    test_fuzz_size = Size;
     ret = test_sys_setup(&test_sys_ctx);
     if (ret != 0) {
         return ret;
     }
-
-    tcti_fuzzing = tcti_fuzzing_context_cast(test_sys_ctx->tcti_ctx);
-    tcti_fuzzing->data = Data;
-    tcti_fuzzing->size = Size;
 
     rc = test_invoke(test_sys_ctx->sys_ctx);
     if (rc != 0 && ret != 77) {

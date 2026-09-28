@@ -24,6 +24,7 @@
 #include "tss2_esys.h" // for Esys_Finalize, Esys_GetSysContext, Esys...
 #endif
 #ifdef TEST_FUZZING
+#include "tcti-fuzzing.h"      // for tcti_fuzzing_context_cast
 #include "tss2_tcti_fuzzing.h" // for Tss2_Tcti_Fuzzing_Init
 #endif
 #define LOGMODULE test
@@ -304,6 +305,11 @@ dumpstate(TSS2_SYS_CONTEXT *sys_ctx, tpm_state *state_first, bool compare) {
     return EXIT_SUCCESS;
 }
 
+#ifdef TEST_FUZZING
+const uint8_t *test_fuzz_data;
+size_t         test_fuzz_size;
+#endif /* TEST_FUZZING */
+
 /* Finalize the TCTI context created by test_sys_setup(). */
 static void
 test_sys_tcti_finalize(TSS2_TCTI_CONTEXT **tcti_ctx) {
@@ -349,6 +355,8 @@ test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx) {
         LOG_ERROR("Failed to initialize the fuzzing TCTI: 0x%" PRIx32, rc);
         goto cleanup_tcti_ctx;
     }
+    tcti_fuzzing_context_cast((*test_ctx)->tcti_ctx)->data = test_fuzz_data;
+    tcti_fuzzing_context_cast((*test_ctx)->tcti_ctx)->size = test_fuzz_size;
 #else
     name_conf = getenv(ENV_TCTI); // TODO arg, then env?
     if (!name_conf) {
