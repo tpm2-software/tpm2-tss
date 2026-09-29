@@ -899,6 +899,9 @@ ifapi_get_ima_eventname(IFAPI_IMA_EVENT *ima_event, char **name) {
     if (i >= n) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant.");
     }
+    if (ima_event->template_value.size == 0 || ima_event->template_value.buffer == NULL) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Empty template value.");
+    }
     template.event_size = ima_event->template_value.size;
     template.event_buffer = &ima_event->template_value.buffer[0];
     r = convert_ima_event_buffer(&template, NULL, name);
