@@ -275,6 +275,9 @@ digest_with_hash_name_cb(UINT8       *digest,
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid IMA binary format.");
         }
     }
+    if (template->event_size - *offset < (size_t)digest_size) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid IMA binary format.");
+    }
     LOGBLOB_TRACE(&buffer[*offset], digest_size, "IMA data_hash");
 
     if (jso && zero_digest(digest, template->hash_size)
