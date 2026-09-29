@@ -365,11 +365,19 @@ static TSS2_RC eventname_ng_json_cb(UINT8 *digest, UINT8 *buffer,
 static TSS2_RC eventname_cb(UINT8 *digest, UINT8 *buffer,
                             size_t *offset, json_object *jso,
                             IFAPI_IMA_TEMPLATE *template) {
-    size_t size;
+    const char *nul;
+    size_t      size;
     UNUSED(digest);
     UNUSED(jso);
 
-    size = strlen((const char *)&buffer[*offset]); // TODO check
+    if (template->event_size <= *offset) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Event name out of bounds.");
+    }
+    nul = memchr(&buffer[*offset], '\0', template->event_size - *offset);
+    if (nul == NULL) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Event name not terminated.");
+    }
+    size = (size_t)(nul - (const char *)&buffer[*offset]);
     if (size > TCG_EVENT_NAME_LEN_MAX + 1) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Too long event name.");
     }
