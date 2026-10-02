@@ -655,6 +655,10 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC *pub_tpm_key,
     const RAND_METHOD *rand_save = RAND_get_rand_method();
 
     RAND_set_rand_method(RAND_OpenSSL());
+#elif OPENSSL_VERSION_NUMBER < 0x40000000L
+    RSA          *rsa_key = NULL;
+    EVP_MD       *hashAlg = NULL;
+    OSSL_LIB_CTX *libctx = NULL;
 #else
     OSSL_LIB_CTX   *libctx = NULL;
     EVP_MD         *hashAlg = NULL;
@@ -662,9 +666,12 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC *pub_tpm_key,
     OSSL_PARAM_BLD *build = NULL;
 #endif
 
-    TSS2_RC       r = TSS2_RC_SUCCESS;
-    EVP_PKEY     *evp_rsa_key = NULL;
-    EVP_PKEY_CTX *genctx = NULL, *ctx = NULL;
+    TSS2_RC   r = TSS2_RC_SUCCESS;
+    EVP_PKEY *evp_rsa_key = NULL;
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
+    EVP_PKEY_CTX *genctx = NULL;
+#endif
+    EVP_PKEY_CTX *ctx = NULL;
     BIGNUM       *bne = NULL, *n = NULL;
     int           padding;
     char         *label_copy = NULL;
@@ -709,7 +716,11 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC *pub_tpm_key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not create rsa n.", cleanup);
     }
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x40000000L
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     if (!(rsa_key = RSA_new())) {
         goto_error(r, TSS2_ESYS_RC_MEMORY, "Could not allocate RSA key", cleanup);
     }
@@ -737,7 +748,10 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC *pub_tpm_key,
     }
     /* ownership got transferred */
     rsa_key = NULL;
-#else  /* OPENSSL_VERSION_NUMBER < 0x30000000L */
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#pragma GCC diagnostic pop
+#endif
+#else  /* OPENSSL_VERSION_NUMBER < 0x40000000L */
     if ((build = OSSL_PARAM_BLD_new()) == NULL
         || !OSSL_PARAM_BLD_push_BN(build, OSSL_PKEY_PARAM_RSA_N, n)
         || !OSSL_PARAM_BLD_push_uint32(build, OSSL_PKEY_PARAM_RSA_E, exp)
@@ -750,7 +764,7 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC *pub_tpm_key,
         || EVP_PKEY_fromdata(genctx, &evp_rsa_key, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Could not create rsa key.", cleanup);
     }
-#endif /* OPENSSL_VERSION_NUMBER < 0x30000000L */
+#endif /* OPENSSL_VERSION_NUMBER < 0x40000000L */
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (!(ctx = EVP_PKEY_CTX_new(evp_rsa_key, NULL))) {
@@ -801,17 +815,30 @@ iesys_cryptossl_pk_encrypt(TPM2B_PUBLIC *pub_tpm_key,
     r = TSS2_RC_SUCCESS;
 
 cleanup:
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
     OSSL_FREE(genctx, EVP_PKEY_CTX);
+#endif
     OSSL_FREE(ctx, EVP_PKEY_CTX);
     OSSL_FREE(evp_rsa_key, EVP_PKEY);
     OSSL_FREE(bne, BN);
     OSSL_FREE(n, BN);
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
+#if OPENSSL_VERSION_NUMBER < 0x40000000L
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     OSSL_FREE(rsa_key, RSA);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#pragma GCC diagnostic pop
+#endif
+#endif /* OPENSSL_VERSION_NUMBER < 0x40000000L */
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
     RAND_set_rand_method(rand_save);
 #else
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
     OSSL_FREE(params, OSSL_PARAM);
     OSSL_FREE(build, OSSL_PARAM_BLD);
+#endif
     OSSL_FREE(hashAlg, EVP_MD);
     OSSL_FREE(libctx, OSSL_LIB_CTX);
 #endif
