@@ -25,6 +25,7 @@
 #include "tss2_common.h"          // for TSS2_RC, BYTE, TSS2_RC_SUCCESS
 #include "tss2_esys.h"            // for Esys_SetTimeout
 #include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_AuthorizePolicy
+#include "tss2_helpers.h"         // for ifapi_cleanup_policy
 #include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
 

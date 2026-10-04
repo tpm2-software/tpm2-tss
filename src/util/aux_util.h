@@ -87,6 +87,14 @@ extern "C" {
         goto label;                                                                                \
     }
 
+ #define goto_if_null2(p, msg, r, ec, label, ...)                                                   \
+    if ((p) == NULL) {                                                                             \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(ec), ##__VA_ARGS__);                  \
+        r = (ec);                                                                                  \
+        goto label;                                                                                \
+    }
+
+
 #define goto_if_error(r, msg, label)                                                               \
     if ((r) != TSS2_RC_SUCCESS) {                                                                  \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r));                               \
@@ -117,6 +125,19 @@ extern "C" {
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r));                               \
         (r_max) = r;                                                                               \
     }
+
+#define strdup_check(dest, str, r, label)                                                          \
+    if (str) {                                                                                     \
+        (dest) = strdup(str);                                                                      \
+        if (!(dest)) {                                                                             \
+            (r) = TSS2_FAPI_RC_MEMORY;                                                             \
+            LOG_ERROR("Out of memory.");                                                           \
+            goto label;                                                                            \
+        }                                                                                          \
+    } else {                                                                                       \
+        (dest) = NULL;                                                                             \
+    }
+
 
 #define rc_layer(r)  ((r) & TSS2_RC_LAYER_MASK)
 #define base_rc(r)   ((r) & ~TSS2_RC_LAYER_MASK)

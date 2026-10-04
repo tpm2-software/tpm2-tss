@@ -15,10 +15,10 @@
 
 #include "fapi_int.h" // for IFAPI_FILE_DELIM, DEFAULT_LOG_DIR
 #include "ifapi_config.h"
-#include "ifapi_helpers.h"          // for ifapi_asprintf
 #include "ifapi_json_deserialize.h" // for ifapi_json_char_deserialize
 #include "ifapi_macros.h"           // for return_try_again
 #include "tpm_json_deserialize.h"   // for ifapi_get_sub_object, ifapi_json...
+#include "tss2_helpers.h"           // for ifapi_asprintf
 
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, SAFE_FREE, retu...

@@ -14,9 +14,11 @@
 
 #include "../helper/cmocka_all.h" // for assert_int_equal, assert_true, cmocka_u...
 #include "fapi_crypto.h"          // for ifapi_get_profile_sig_scheme, IFAPI_CRY...
-#include "ifapi_helpers.h"        // for ifapi_get_name, ifapi_TPMT_PUBLIC_cmp
+#include "ifapi_helpers.h"        // for ifapi_get_name, ipolicy_TPMT_PUBLIC_cmp
 #include "ifapi_profiles.h"       // for IFAPI_PROFILE
+#include "ipolicy_helpers.h"      // for ipolicy_TPMT_PUBLIC_cmp
 #include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_helpers.h"         // for ifapi_get_name
 #include "tss2_tpm2_types.h"      // for TPMT_PUBLIC, TPMT_SIG_SCHEME, TPM2_ALG_...
 
 #define LOGMODULE tests
@@ -175,7 +177,7 @@ check_check_nv_index(void **state) {
 static void
 check_cmp_TPMU_PUBLIC_ID2(TPMT_PUBLIC *pid1, TPMT_PUBLIC *pid2, bool exp_r) {
     bool r;
-    r = ifapi_TPMT_PUBLIC_cmp(pid1, pid2);
+    r = ipolicy_TPMT_PUBLIC_cmp(pid1, pid2);
     if (exp_r)
         assert_true(r);
     else

@@ -17,6 +17,7 @@
 #include "ifapi_helpers.h" // for ifapi_get_name, ifapi_free_node_list
 #include "ifapi_macros.h"  // for return_error2, return_try_again
 #include "ifapi_policy_instantiate.h"
+#include "tss2_helpers.h"    // for ifapi_free_node_list
 #include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
 
 #define LOGMODULE fapi
