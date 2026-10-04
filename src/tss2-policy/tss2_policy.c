@@ -13,7 +13,6 @@
 
 #include "fapi_crypto.h"                   // for ifapi_hash_get_digest_size
 #include "fapi_int.h"                      // for IFAPI_POLICY_EXEC_CTX
-#include "ifapi_helpers.h"                 // for ifapi_cleanup_policy
 #include "ifapi_io.h"                      // for ifapi_io_poll, IFAPI_IO
 #include "ifapi_policy.h"                  // for ifapi_calculate_tree_ex
 #include "ifapi_policy_execute.h"          // for IFAPI_POLICY_EXEC_CTX
@@ -24,6 +23,7 @@
 #include "tpm_json_deserialize.h"          // for ifapi_parse_json
 #include "tss2_common.h"                   // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_esys.h"                     // for ESYS_CONTEXT, ESYS_TR
+#include "tss2_helpers.h"                  // for ifapi_cleanup_policy
 #include "tss2_policy.h"                   // for TSS2_POLICY_CTX, TSS2_POL...
 #include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMT_HA
 
