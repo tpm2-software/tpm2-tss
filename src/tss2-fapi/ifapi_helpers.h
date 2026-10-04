@@ -47,29 +47,15 @@ bool ifapi_null_primary_p(const char *path);
 
 bool ifapi_hierarchy_path_p(const char *path);
 
-bool ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2);
-
-void ifapi_init_hierarchy_object(IFAPI_OBJECT *hierarchy, ESYS_TR esys_handle);
-
-TSS2_RC
-ifapi_set_name_hierarchy_object(IFAPI_OBJECT *hierarchy);
-
 char *get_description(IFAPI_OBJECT *object);
 
 size_t ifapi_path_length(NODE_STR_T *node);
-
-void ifapi_free_object_list(NODE_OBJECT_T *node);
-
-void ifapi_free_node_list(NODE_OBJECT_T *node);
 
 TSS2_RC
 ifapi_path_string(char **dest, const char *supdir, NODE_STR_T *node, char *name);
 
 TSS2_RC
 ifapi_path_string_n(char **dest, const char *supdir, NODE_STR_T *node, char *name, size_t n);
-
-TSS2_RC
-ifapi_asprintf(char **str, const char *fmt, ...);
 
 NODE_STR_T *split_string(const char *string, char *delimiter);
 
@@ -79,15 +65,7 @@ bool add_string_to_list(NODE_STR_T *str_list, char *string);
 
 void free_string_list(NODE_STR_T *node);
 
-void ifapi_cleanup_policy(TPMS_POLICY *policy);
-
 TPMS_POLICY *ifapi_copy_policy(const TPMS_POLICY *from_policy);
-
-TSS2_RC
-ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name);
-
-TSS2_RC
-ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name);
 
 TSS2_RC
 ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal);
@@ -111,12 +89,6 @@ TSS2_RC
 ifapi_get_quote_info(char const      *quoteInfo,
                      TPM2B_ATTEST    *tpm_quoted,
                      FAPI_QUOTE_INFO *fapi_quote_ingo);
-
-TSS2_RC
-push_object_to_list(void *object, NODE_OBJECT_T **object_list);
-
-TSS2_RC
-append_object_to_list(void *object, NODE_OBJECT_T **object_list);
 
 bool object_with_auth(IFAPI_OBJECT *object);
 
@@ -144,15 +116,7 @@ ifapi_calculate_pcrs(json_object              *jso_event_list,
 
 TSS2_RC ifapi_calculate_pcr_digest(json_object *jso_event_list, const FAPI_QUOTE_INFO *quote_info);
 
-TSS2_RC
-ifapi_compute_policy_digest(TPML_PCRVALUES     *pcrs,
-                            TPML_PCR_SELECTION *pcr_selection,
-                            TPMI_ALG_HASH       hash_alg,
-                            TPM2B_DIGEST       *pcr_digest);
-
 bool ifapi_cmp_public_key(TPM2B_PUBLIC *key1, TPM2B_PUBLIC *key2);
-
-void ifapi_check_json_object_fields(json_object *jso, char **field_tab, size_t size_of_tab);
 
 TSS2_RC
 ifapi_extend_pcr(TPMI_ALG_HASH alg, uint8_t *pcr, const uint8_t *digest, size_t alg_size);

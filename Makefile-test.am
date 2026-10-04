@@ -6,6 +6,7 @@
 
 TESTS_CFLAGS = $(AM_CFLAGS) $(CRYPTO_CFLAGS) -I$(srcdir)/include -I$(srcdir)/src/tss2-mu \
     -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys -I$(srcdir)/src/tss2-fapi \
+    -I$(srcdir)/src/tss2-fapi-policy \
     -I$(srcdir)/test/data -Wno-unused-parameter -Wno-missing-field-initializers \
     -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 TESTS_LDADD = $(check_LTLIBRARIES) $(lib_LTLIBRARIES) \
@@ -901,6 +902,7 @@ test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi/ifapi_eventlog.c \
                               src/tss2-fapi/ifapi_keystore.c  \
                               src/tss2-fapi/ifapi_io.c \
+                              src/tss2-fapi-policy/tss2_helpers.c \
                               test/helper/cmocka_all.h
 
 test_unit_fapi_helpers_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -923,6 +925,8 @@ test_unit_fapi_helpers_SOURCES = test/unit/fapi-helpers.c \
                                  src/tss2-fapi/ifapi_helpers.c \
                                  src/tss2-fapi/ifapi_keystore.c  \
                                  src/tss2-fapi/ifapi_io.c \
+                                 src/tss2-fapi-policy/tss2_helpers.c \
+                                 src/tss2-fapi/ipolicy_helpers.c \
                                  test/helper/cmocka_all.h
 
 test_unit_fapi_io_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -955,6 +959,7 @@ test_unit_fapi_io_SOURCES = test/unit/fapi-io.c \
                             src/tss2-fapi/ifapi_helpers.c \
                             src/tss2-fapi/ifapi_keystore.c  \
                             src/tss2-fapi/ifapi_io.c \
+                            src/tss2-fapi-policy/tss2_helpers.c \
                             test/helper/cmocka_all.h
 
 test_unit_fapi_profiles_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -977,6 +982,7 @@ test_unit_fapi_profiles_SOURCES = test/unit/fapi-profiles.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c \
+                                  src/tss2-fapi-policy/tss2_helpers.c \
                                   test/helper/cmocka_all.h
 
 test_unit_fapi_config_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -999,6 +1005,7 @@ test_unit_fapi_config_SOURCES = test/unit/fapi-config.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c \
+                                  src/tss2-fapi-policy/tss2_helpers.c \
                                   test/helper/cmocka_all.h
 
 test_unit_fapi_get_web_cert_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -1022,6 +1029,7 @@ test_unit_fapi_get_web_cert_SOURCES = test/unit/fapi-get-web-cert.c \
                                        src/tss2-fapi/ifapi_helpers.c \
                                        src/tss2-fapi/ifapi_keystore.c  \
                                        src/tss2-fapi/ifapi_io.c \
+                                       src/tss2-fapi-policy/tss2_helpers.c \
                                        test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_eventlog_DEPENDENCIES = $(FAPI_TEST_BINS)
@@ -1044,6 +1052,7 @@ test_unit_fapi_eventlog_SOURCES = test/unit/fapi-eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c \
+                                  src/tss2-fapi-policy/tss2_helpers.c \
                                   test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_ima_eventlog_DEPENDENCIES = $(FAPI_TEST_BINS)
@@ -1066,6 +1075,7 @@ test_unit_fapi_ima_eventlog_SOURCES = test/unit/fapi-ima-eventlog.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c \
+                                  src/tss2-fapi-policy/tss2_helpers.c \
                                   test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_check_ima_log_DEPENDENCIES = $(FAPI_TEST_BINS)
@@ -1088,6 +1098,8 @@ test_unit_fapi_check_ima_log_SOURCES = test/unit/fapi-check-ima-log.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c \
+                                  src/tss2-fapi-policy/tss2_helpers.c \
+                                  src/tss2-fapi/ipolicy_helpers.c \
                                   test/helper/cmocka_all.h
 
 test_unit_fapi_ima_fuzzing_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -1110,6 +1122,7 @@ test_unit_fapi_ima_fuzzing_SOURCES = test/unit/fapi-ima-fuzzing.c \
                          src/tss2-fapi/ifapi_eventlog_system.c\
                          src/tss2-fapi/ifapi_keystore.c  \
                          src/tss2-fapi/ifapi_io.c \
+                         src/tss2-fapi-policy/tss2_helpers.c \
                          test/helper/cmocka_all.h
 
 noinst_PROGRAMS += test/unit/fapi-ima-fuzzing
@@ -1134,6 +1147,7 @@ test_unit_fapi_system_fuzzing_SOURCES = test/unit/fapi-system-fuzzing.c \
                           src/tss2-fapi/ifapi_helpers.c\
                           src/tss2-fapi/ifapi_keystore.c  \
                           src/tss2-fapi/ifapi_io.c \
+                          src/tss2-fapi-policy/tss2_helpers.c \
                           test/helper/cmocka_all.h
 
 noinst_PROGRAMS += test/unit/fapi-system-fuzzing
