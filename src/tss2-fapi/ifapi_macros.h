@@ -8,18 +8,6 @@
 
 #include <string.h> // IWYU pragma: keep
 
-#define strdup_check(dest, str, r, label)                                                          \
-    if (str) {                                                                                     \
-        (dest) = strdup(str);                                                                      \
-        if (!(dest)) {                                                                             \
-            (r) = TSS2_FAPI_RC_MEMORY;                                                             \
-            LOG_ERROR("Out of memory.");                                                           \
-            goto label;                                                                            \
-        }                                                                                          \
-    } else {                                                                                       \
-        (dest) = NULL;                                                                             \
-    }
-
 #define calloc_check(dest, size, r, label)                                                         \
     {                                                                                              \
         (dest) = callock(size, 1);                                                                 \
@@ -28,13 +16,6 @@
             LOG_ERROR("Out of memory.");                                                           \
             goto label;                                                                            \
         }                                                                                          \
-    }
-
-#define goto_if_null2(p, msg, r, ec, label, ...)                                                   \
-    if ((p) == NULL) {                                                                             \
-        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(ec), ##__VA_ARGS__);                  \
-        r = (ec);                                                                                  \
-        goto label;                                                                                \
     }
 
 #define goto_if_error2(r, msg, label, ...)                                                         \

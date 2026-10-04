@@ -29,6 +29,7 @@
 #include "tss2_common.h"             // for TSS2_FAPI_RC_TRY_AGAIN, BYTE, TSS2_RC
 #include "tss2_esys.h"               // for ESYS_TR_NONE, Esys_GetCapability_Async
 #include "tss2_fapi.h"               // for FAPI_CONTEXT, Fapi_Provision, Fapi_P...
+#include "tss2_helpers.h"            // for ifapi_asprintfg ...
 #include "tss2_mu.h"                 // for Tss2_MU_TPMT_PUBLIC_Unmarshal
 #include "tss2_policy.h"             // for TSS2_OBJECT
 #include "tss2_tcti.h"               // for TSS2_TCTI_TIMEOUT_BLOCK

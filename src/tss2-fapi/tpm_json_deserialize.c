@@ -17,10 +17,11 @@
 #include <string.h>   // for memset, strlen, strncmp
 #include <strings.h>  // for strcasecmp, strncasecmp
 
-#include "ifapi_helpers.h" // for ifapi_check_json_object_fields
-#include "ifapi_macros.h"  // for return_if_error2, return_error2
-#include "linkhash.h"      // for lh_entry
+#include "ifapi_macros.h" // for return_if_error2, return_error2
+#include "linkhash.h"     // for lh_entry
 #include "tpm_json_deserialize.h"
+#include "tss2_fapi.h"    // for ifapi_check_json_object_fields
+#include "tss2_helpers.h" // for ifapi_check_json_object_fields ...
 
 #define LOGMODULE fapijson
 #include "util/log.h" // for LOG_ERROR, LOG_TRACE, return_if_error
