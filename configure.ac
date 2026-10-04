@@ -120,6 +120,15 @@ AM_CONDITIONAL(ESYS, test "x$enable_esys" = "xyes")
 
 AC_CHECK_FUNC([strndup],[],[AC_MSG_ERROR([strndup function not found])])
 AC_CHECK_FUNCS([reallocarray])
+
+AC_ARG_ENABLE([policy],
+            [AS_HELP_STRING([--disable-policy],
+                            [build the tss2-policy library (default is yes)])],
+            [enable_policy=$enableval],
+            [enable_policy=yes])
+
+AM_CONDITIONAL(POLICY, test "x$enable_policy" = "xyes")
+
 AC_ARG_ENABLE([fapi],
             [AS_HELP_STRING([--enable-fapi],
                             [build the fapi layer (default is yes)])],
@@ -128,6 +137,9 @@ AC_ARG_ENABLE([fapi],
 
 AM_CONDITIONAL(FAPI, test "x$enable_fapi" = "xyes")
 
+AS_IF([test "x$enable_fapi" = "xyes" && test "x$enable_policy" != "xyes"], [
+    AC_MSG_ERROR([FAPI requires POLICY support])
+])
 
 AC_ARG_ENABLE([fapi-async-tests],
     AS_HELP_STRING([--enable-fapi-async-tests],
@@ -137,14 +149,6 @@ AS_IF([test "x$enable_fapi_async_tests" = "xyes"],
     [AC_DEFINE([TEST_FAPI_ASYNC], [1], [FAPI forced async spinning])])
 AS_IF([test "x$enable_fapi_async_tests" = "xyes"],
     [AC_MSG_WARN("FAPI compiled with asynchronous spinning testing. NOT FOR PRODUCTION!")])
-
-AC_ARG_ENABLE([policy],
-            [AS_HELP_STRING([--disable-policy],
-                            [build the tss2-policy library (default is yes)])],
-            [enable_policy=$enableval],
-            [enable_policy=yes])
-
-AM_CONDITIONAL(POLICY, test "x$enable_policy" = "xyes")
 
 AC_ARG_WITH([crypto],
             [AS_HELP_STRING([--with-crypto={ossl,mbed,none}],

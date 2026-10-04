@@ -26,6 +26,7 @@
 #include "tss2_common.h"          // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
 #include "tss2_esys.h"            // for Esys_SetTimeout, ESYS_TR, Esys_NV_...
 #include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_NvExtend, Fapi_...
+#include "tss2_helpers.h"         // for ifapi_init_hierachy_object'
 #include "tss2_policy.h"          // for TSS2_OBJECT
 #include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"      // for TPM2B_MAX_NV_BUFFER, TPM2B_NV_PUBLIC
