@@ -338,7 +338,7 @@ socket_poll(SOCKET sock, int wait_flags, int timeout) {
     if (timeout == 0)
         timeout = 10;
 
-    rc_poll = poll(&fds, nfds, timeout);
+    TEMP_RETRY(rc_poll, poll(&fds, nfds, timeout));
     if (rc_poll < 0) {
         LOG_ERROR("Failed to poll for response from fd %d, got errno %d: %s", sock, errno,
                   strerror(errno));

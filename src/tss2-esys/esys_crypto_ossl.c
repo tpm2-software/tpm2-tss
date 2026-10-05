@@ -111,6 +111,56 @@ iesys_cryptossl_context_free(IESYS_CRYPTOSSL_CONTEXT *ctx) {
 }
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
+static const EVP_CIPHER *
+get_ossl_cipher(TPM2_ALG_ID tpm_sym_alg, UINT16 key_bits, TPM2_ALG_ID tpm_mode) {
+    if (tpm_mode != TPM2_ALG_CFB)
+        return NULL;
+
+    switch (tpm_sym_alg) {
+    case TPM2_ALG_AES:
+        switch (key_bits) {
+        case 128:
+            return EVP_aes_128_cfb();
+        case 192:
+            return EVP_aes_192_cfb();
+        case 256:
+            return EVP_aes_256_cfb();
+        default:
+            return NULL;
+        }
+    case TPM2_ALG_SM4:
+        return key_bits == 128 ? EVP_sm4_cfb128() : NULL;
+    default:
+        return NULL;
+    }
+}
+#else
+static const char *
+get_ossl_cipher(TPM2_ALG_ID tpm_sym_alg, UINT16 key_bits, TPM2_ALG_ID tpm_mode) {
+    if (tpm_mode != TPM2_ALG_CFB)
+        return NULL;
+
+    switch (tpm_sym_alg) {
+    case TPM2_ALG_AES:
+        switch (key_bits) {
+        case 128:
+            return "AES-128-CFB";
+        case 192:
+            return "AES-192-CFB";
+        case 256:
+            return "AES-256-CFB";
+        default:
+            return NULL;
+        }
+    case TPM2_ALG_SM4:
+        return key_bits == 128 ? "SM4-CFB" : NULL;
+    default:
+        return NULL;
+    }
+}
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 static const EVP_MD *
 get_ossl_hash_md(TPM2_ALG_ID hashAlg) {
     switch (hashAlg) {
@@ -1020,6 +1070,9 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t          *key,
     const EVP_CIPHER *cipher_alg = NULL;
     EVP_CIPHER_CTX   *ctx = NULL;
     int               cipher_len;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_LIB_CTX *libctx = NULL;
+#endif
 
     if (key == NULL || buffer == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Bad reference");
@@ -1027,13 +1080,16 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t          *key,
 
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES input");
 
-    if (key_bits == 128 && tpm_mode == TPM2_ALG_CFB)
-        cipher_alg = EVP_aes_128_cfb();
-    else if (key_bits == 192 && tpm_mode == TPM2_ALG_CFB)
-        cipher_alg = EVP_aes_192_cfb();
-    else if (key_bits == 256 && tpm_mode == TPM2_ALG_CFB)
-        cipher_alg = EVP_aes_256_cfb();
-    else {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    if (!(cipher_alg = get_ossl_cipher(tpm_sym_alg, key_bits, tpm_mode))) {
+#else
+    if (!(libctx = OSSL_LIB_CTX_new())) {
+        goto_error(r, TSS2_ESYS_RC_MEMORY, "Create OpenSSL library context", cleanup);
+    }
+
+    if (!(cipher_alg
+          = EVP_CIPHER_fetch(libctx, get_ossl_cipher(tpm_sym_alg, key_bits, tpm_mode), NULL))) {
+#endif
         goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
                    "AES algorithm not implemented or illegal mode (CFB expected).", cleanup);
     }
@@ -1062,9 +1118,11 @@ iesys_cryptossl_sym_aes_encrypt(uint8_t          *key,
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES output");
 
 cleanup:
-
     OSSL_FREE(ctx, EVP_CIPHER_CTX);
-
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_FREE(cipher_alg, EVP_CIPHER);
+    OSSL_FREE(libctx, OSSL_LIB_CTX);
+#endif
     return r;
 }
 
@@ -1098,6 +1156,9 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t          *key,
     const EVP_CIPHER *cipher_alg = NULL;
     EVP_CIPHER_CTX   *ctx = NULL;
     int               cipher_len = 0;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_LIB_CTX *libctx = NULL;
+#endif
 
     if (key == NULL || buffer == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Bad reference");
@@ -1107,14 +1168,16 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t          *key,
         goto_error(r, TSS2_ESYS_RC_BAD_VALUE, "AES encrypt called with wrong algorithm.", cleanup);
     }
 
-    if (key_bits == 128 && tpm_mode == TPM2_ALG_CFB)
-        cipher_alg = EVP_aes_128_cfb();
-    else if (key_bits == 192 && tpm_mode == TPM2_ALG_CFB)
-        cipher_alg = EVP_aes_192_cfb();
-    else if (key_bits == 256 && tpm_mode == TPM2_ALG_CFB)
-        cipher_alg = EVP_aes_256_cfb();
-    else {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    if (!(cipher_alg = get_ossl_cipher(tpm_sym_alg, key_bits, tpm_mode))) {
+#else
+    if (!(libctx = OSSL_LIB_CTX_new())) {
+        goto_error(r, TSS2_ESYS_RC_MEMORY, "Create OpenSSL library context", cleanup);
+    }
 
+    if (!(cipher_alg
+          = EVP_CIPHER_fetch(libctx, get_ossl_cipher(tpm_sym_alg, key_bits, tpm_mode), NULL))) {
+#endif
         goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED, "AES algorithm not implemented.", cleanup);
     }
 
@@ -1140,8 +1203,11 @@ iesys_cryptossl_sym_aes_decrypt(uint8_t          *key,
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS AES output");
 
 cleanup:
-
     OSSL_FREE(ctx, EVP_CIPHER_CTX);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_FREE(cipher_alg, EVP_CIPHER);
+    OSSL_FREE(libctx, OSSL_LIB_CTX);
+#endif
     return r;
 }
 
@@ -1176,6 +1242,9 @@ iesys_cryptossl_sym_sm4_encrypt(uint8_t          *key,
     const EVP_CIPHER *cipher_alg = NULL;
     EVP_CIPHER_CTX   *ctx = NULL;
     int               cipher_len;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_LIB_CTX *libctx = NULL;
+#endif
 
     if (key == NULL || buffer == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Bad reference");
@@ -1183,15 +1252,22 @@ iesys_cryptossl_sym_sm4_encrypt(uint8_t          *key,
 
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS SM4 input");
 
-    if (key_bits == 128 && tpm_mode == TPM2_ALG_CFB)
-        cipher_alg = EVP_sm4_cfb128();
-    else {
-        goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
-                   "SM4 algorithm not implemented or illegal mode (CFB expected).", cleanup);
-    }
-
     if (tpm_sym_alg != TPM2_ALG_SM4) {
         goto_error(r, TSS2_ESYS_RC_BAD_VALUE, "SM4 encrypt called with wrong algorithm.", cleanup);
+    }
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    if (!(cipher_alg = get_ossl_cipher(tpm_sym_alg, key_bits, tpm_mode))) {
+#else
+    if (!(libctx = OSSL_LIB_CTX_new())) {
+        goto_error(r, TSS2_ESYS_RC_MEMORY, "Create OpenSSL library context", cleanup);
+    }
+
+    if (!(cipher_alg
+          = EVP_CIPHER_fetch(libctx, get_ossl_cipher(tpm_sym_alg, key_bits, tpm_mode), NULL))) {
+#endif
+        goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
+                   "SM4 algorithm not implemented or illegal mode (CFB expected).", cleanup);
     }
 
     /* Create and initialize the context */
@@ -1214,9 +1290,11 @@ iesys_cryptossl_sym_sm4_encrypt(uint8_t          *key,
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS SM4 output");
 
 cleanup:
-
     OSSL_FREE(ctx, EVP_CIPHER_CTX);
-
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_FREE(cipher_alg, EVP_CIPHER);
+    OSSL_FREE(libctx, OSSL_LIB_CTX);
+#endif
     return r;
 }
 
@@ -1250,6 +1328,9 @@ iesys_cryptossl_sym_sm4_decrypt(uint8_t          *key,
     const EVP_CIPHER *cipher_alg = NULL;
     EVP_CIPHER_CTX   *ctx = NULL;
     int               cipher_len = 0;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_LIB_CTX *libctx = NULL;
+#endif
 
     if (key == NULL || buffer == NULL) {
         return_error(TSS2_ESYS_RC_BAD_REFERENCE, "Bad reference");
@@ -1259,9 +1340,16 @@ iesys_cryptossl_sym_sm4_decrypt(uint8_t          *key,
         goto_error(r, TSS2_ESYS_RC_BAD_VALUE, "SM4 decrypt called with wrong algorithm.", cleanup);
     }
 
-    if (key_bits == 128 && tpm_mode == TPM2_ALG_CFB)
-        cipher_alg = EVP_sm4_cfb128();
-    else {
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    if (!(cipher_alg = get_ossl_cipher(tpm_sym_alg, key_bits, tpm_mode))) {
+#else
+    if (!(libctx = OSSL_LIB_CTX_new())) {
+        goto_error(r, TSS2_ESYS_RC_MEMORY, "Create OpenSSL library context", cleanup);
+    }
+
+    if (!(cipher_alg
+          = EVP_CIPHER_fetch(libctx, get_ossl_cipher(tpm_sym_alg, key_bits, tpm_mode), NULL))) {
+#endif
         goto_error(r, TSS2_ESYS_RC_BAD_VALUE,
                    "SM4 algorithm not implemented or illegal mode (CFB expected).", cleanup);
     }
@@ -1288,8 +1376,11 @@ iesys_cryptossl_sym_sm4_decrypt(uint8_t          *key,
     LOGBLOB_TRACE(buffer, buffer_size, "IESYS SM4 output");
 
 cleanup:
-
     OSSL_FREE(ctx, EVP_CIPHER_CTX);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_FREE(cipher_alg, EVP_CIPHER);
+    OSSL_FREE(libctx, OSSL_LIB_CTX);
+#endif
     return r;
 }
 #endif
