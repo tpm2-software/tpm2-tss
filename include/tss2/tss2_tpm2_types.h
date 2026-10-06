@@ -703,6 +703,8 @@ typedef UINT16 TPM2_ST;
 #define TPM2_ST_AUTH_SECRET      ((TPM2_ST)0x8023) /* tag for a ticket type */
 #define TPM2_ST_HASHCHECK        ((TPM2_ST)0x8024) /* tag for a ticket type */
 #define TPM2_ST_AUTH_SIGNED      ((TPM2_ST)0x8025) /* tag for a ticket type */
+#define TPM2_ST_MESSAGE_VERIFIED ((TPM2_ST)0x8026) /* tag for a TPMT_TK_VERIFIED produced by TPM2_VerifySequenceComplete() */
+#define TPM2_ST_DIGEST_VERIFIED  ((TPM2_ST)0x8027) /* tag for a TPMT_TK_VERIFIED produced by TPM2_VerifyDigestSignature() */
 #define TPM2_ST_FU_MANIFEST                                                                        \
     ((TPM2_ST)0x8029) /* tag for a structure describing a Field Upgrade Policy */
 
