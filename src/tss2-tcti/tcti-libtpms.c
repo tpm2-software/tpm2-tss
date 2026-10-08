@@ -24,6 +24,7 @@
 #include "tcti-libtpms.h"
 #include "tss2_common.h"       // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_R...
 #include "tss2_tcti.h"         // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
+#define TPM_HAVE_TPM2_DECLARATIONS // avoid a typedef-redefinition in libtpms/tpm_library.h
 #include "tss2_tcti_libtpms.h" // for Tss2_Tcti_Libtpms_Init, Tss2_Tcti_Lib...
 #include "tss2_tpm2_types.h"   // for TPM2_RC_SUCCESS
 #include "util/aux_util.h"     // for MAYBE_UNUSED, ARRAY_LEN
@@ -893,7 +894,8 @@ Tss2_Tcti_Libtpms_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char 
         // mremap() on FreeBSD is a stub returning -1/ENOMEM
         // this could be fixed with a munmap()/mmap() workaround
         LOG_ERROR("Libtpms state files are not supported on FreeBSD. Try an empty conf string.");
-        return TSS2_TCTI_RC_BAD_VALUE;
+        rc = TSS2_TCTI_RC_BAD_VALUE;
+        goto cleanup_dl;
 #else
         tcti_libtpms->state_path = strdup(conf);
         if (tcti_libtpms->state_path == NULL) {
