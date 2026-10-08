@@ -36,6 +36,13 @@ typedef struct {
     tpm_state         *tpm_state;
 } TSS2_TEST_SYS_CONTEXT;
 
+#ifdef TEST_FUZZING
+/* Fuzz targets set these before test_sys_setup(). The fuzzing TCTI answers
+ * every command with this data, including TPM2_Startup in test_sys_setup(). */
+extern const uint8_t *test_fuzz_data;
+extern size_t         test_fuzz_size;
+#endif /* TEST_FUZZING */
+
 int  test_sys_setup(TSS2_TEST_SYS_CONTEXT **test_ctx);
 int  test_sys_checks_pre(TSS2_TEST_SYS_CONTEXT *test_ctx);
 int  test_sys_checks_post(TSS2_TEST_SYS_CONTEXT *test_ctx);
