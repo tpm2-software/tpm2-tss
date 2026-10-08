@@ -8,13 +8,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>          // for uint16_t, uint8_t
+#include <inttypes.h> // for uint16_t, uint8_t
+#ifdef __FreeBSD__
+#include <libusb.h> // for libusb_device_handle, libusb_...
+#else
 #include <libusb-1.0/libusb.h> // for libusb_device_handle, libusb_...
-#include <stdbool.h>           // for false
-#include <stdio.h>             // for NULL, size_t
-#include <stdlib.h>            // for free, malloc, calloc
-#include <string.h>            // for memcmp, memcpy
-#include <sys/select.h>        // for fd_set, timeval
+#endif
+#include <stdbool.h>    // for false
+#include <stdio.h>      // for NULL, size_t
+#include <stdlib.h>     // for free, malloc, calloc
+#include <string.h>     // for memcmp, memcpy
+#include <sys/select.h> // for fd_set, timeval
 
 #include "../helper/cmocka_all.h"      // for assert_int_equal, assert_ptr_...
 #include "tss2-tcti/tcti-spi-helper.h" // for TSS2_TCTI_SPI_HELPER_CONTEXT
