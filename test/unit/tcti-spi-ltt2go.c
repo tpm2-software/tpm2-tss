@@ -380,11 +380,19 @@ __wrap_libusb_strerror(int errcode) {
  * Mock function libusb_dev_mem_alloc.
  */
 unsigned char *
+#ifdef __FreeBSD__
+__wrap_libusb_dev_mem_alloc(libusb_device_handle *dev_handle) {
+#else
 __wrap_libusb_dev_mem_alloc(libusb_device_handle *dev_handle, size_t length) {
+#endif
     assert_ptr_equal(dev_handle, device_handle);
 
+#ifdef __FreeBSD__
+    device_mem_alloc_length = 4 + 64;
+#else
     device_mem_alloc_length = length;
-    device_mem_alloc = malloc(length);
+#endif
+    device_mem_alloc = malloc(device_mem_alloc_length);
 
     return device_mem_alloc;
 }
