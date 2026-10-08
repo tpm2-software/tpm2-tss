@@ -8,10 +8,12 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <dlfcn.h>             // for dlerror, dlsym, dlclose, dlopen, RTLD...
-#include <errno.h>             // for errno
-#include <fcntl.h>             // for open, posix_fallocate, O_CREAT, O_RDWR
-#include <inttypes.h>          // for uint32_t, PRIx32, PRIu32, PRIxPTR
+#include <dlfcn.h>                 // for dlerror, dlsym, dlclose, dlopen, RTLD...
+#include <errno.h>                 // for errno
+#include <fcntl.h>                 // for open, posix_fallocate, O_CREAT, O_RDWR
+#include <inttypes.h>              // for uint32_t, PRIx32, PRIu32, PRIxPTR
+#define TPM_HAVE_TPM2_DECLARATIONS // avoid a typedef-redefinition in libtpms/tpm_library.h
+typedef uint32_t TPM_MODIFIER_INDICATOR;
 #include <libtpms/tpm_error.h> // for TPM_SUCCESS, TPM_FAIL, TPM_RETRY
 #include <libtpms/tpm_nvfilename.h> // for TPM_PERMANENT_ALL_NAME, TPM_SAVESTATE_NAME, TPM_VOLATILESTATE_NAME
 #include <netinet/in.h>             // for htonl, ntohl
@@ -893,7 +895,8 @@ Tss2_Tcti_Libtpms_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char 
         // mremap() on FreeBSD is a stub returning -1/ENOMEM
         // this could be fixed with a munmap()/mmap() workaround
         LOG_ERROR("Libtpms state files are not supported on FreeBSD. Try an empty conf string.");
-        return TSS2_TCTI_RC_BAD_VALUE;
+        rc = TSS2_TCTI_RC_BAD_VALUE;
+        goto cleanup_dl;
 #else
         tcti_libtpms->state_path = strdup(conf);
         if (tcti_libtpms->state_path == NULL) {
