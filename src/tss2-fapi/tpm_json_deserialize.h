@@ -320,6 +320,9 @@ TSS2_RC
 ifapi_json_TPMT_ECC_SCHEME_deserialize(json_object *jso, TPMT_ECC_SCHEME *out);
 
 TSS2_RC
+ifapi_json_TPMS_SCHEME_KDF2_deserialize(json_object *jso, TPMS_SCHEME_KDF2 *out);
+
+TSS2_RC
 ifapi_json_TPMS_SIGNATURE_RSA_deserialize(json_object *jso, TPMS_SIGNATURE_RSA *out);
 
 TSS2_RC
