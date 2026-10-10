@@ -11,7 +11,6 @@
 #include <inttypes.h> // for uint8_t, PRIu16
 #include <stddef.h>   // for NULL, size_t
 
-#include "fapi_crypto.h"          // for ifapi_crypto_hash_abort, ifapi_cry...
 #include "fapi_int.h"             // for IFAPI_Fapi_AuthorizePolicy, FAPI_C...
 #include "fapi_util.h"            // for ifapi_cleanup_session, ifapi_key_sign
 #include "ifapi_helpers.h"        // for ifapi_cleanup_policy
@@ -23,8 +22,10 @@
 #include "ifapi_policy_store.h"   // for ifapi_policy_store_store_async
 #include "ifapi_policy_types.h"   // for TPMS_POLICYAUTHORIZATION, TPMS_POLICY
 #include "tss2_common.h"          // for TSS2_RC, BYTE, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"          // for ifapi_crypto_hash_abort, ifapi_cry...
 #include "tss2_esys.h"            // for Esys_SetTimeout
 #include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_AuthorizePolicy
+#include "tss2_helpers.h"         // for ifapi_cleanup_policy
 #include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
 
