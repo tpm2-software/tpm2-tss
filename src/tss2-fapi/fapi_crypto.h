@@ -49,27 +49,12 @@ ifapi_verify_signature_quote(const IFAPI_OBJECT    *keyObject,
                              size_t                 digestSize,
                              const TPMT_SIG_SCHEME *signatureScheme);
 
-typedef struct IFAPI_CRYPTO_CONTEXT IFAPI_CRYPTO_CONTEXT_BLOB;
-
-TSS2_RC
-ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context, TPM2_ALG_ID hashAlgorithm);
-
-TSS2_RC
-ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context, const uint8_t *buffer, size_t size);
-
-TSS2_RC
-ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context, uint8_t *digest, size_t *digestSize);
-
-void ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context);
-
 TSS2_RC
 ifapi_cert_to_pem(const uint8_t *certBuffer,
                   size_t         certBufferSize,
                   char         **pemCert,
                   TPM2_ALG_ID   *certAlgorithmId,
                   TPM2B_PUBLIC  *tpmPublic);
-
-size_t ifapi_hash_get_digest_size(TPM2_ALG_ID hashAlgorithm);
 
 TSS2_RC
 ifapi_get_tpm2b_public_from_pem(const char *pemKey, TPM2B_PUBLIC *tpmPublic);

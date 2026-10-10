@@ -13,7 +13,6 @@
 #include <stdbool.h>  // for false, true
 #include <string.h>   // for memset, size_t, NULL
 
-#include "fapi_crypto.h"                 // for ifapi_hash_get_digest_size
 #include "fapi_int.h"                    // for IFAPI_ExportPolicy, FAPI_CO...
 #include "fapi_util.h"                   // for ifapi_session_init
 #include "ifapi_helpers.h"               // for ifapi_path_type_p ...
@@ -26,6 +25,7 @@
 #include "ifapi_policy_types.h"          // for TPMS_POLICY
 #include "ifapi_profiles.h"              // for IFAPI_PROFILES, IFAPI_PROFILE
 #include "tss2_common.h"                 // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"                 // for ifapi_hash_get_digest_size
 #include "tss2_esys.h"                   // for Esys_SetTimeout
 #include "tss2_fapi.h"                   // for FAPI_CONTEXT, Fapi_ExportPo...
 #include "tss2_helpers.h"                // for ifapi_cleanup_policy
