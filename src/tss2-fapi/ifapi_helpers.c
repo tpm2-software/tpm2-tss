@@ -28,6 +28,7 @@
 #include "ifapi_policy.h"           // for ifapi_compute_policy_digest
 #include "linkhash.h"               // for lh_entry
 #include "tpm_json_deserialize.h"   // for ifapi_parse_json
+#include "tss2_crypto.h"            // for hash functions
 #include "tss2_helpers.h"           // for free_string_list
 #include "tss2_mu.h"                // for Tss2_MU_TPMI_ALG_HASH_Marshal
 

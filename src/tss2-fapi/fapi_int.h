@@ -104,20 +104,6 @@ typedef struct {
     memcpy(dest_buffer, (src), (src_size));                                                        \
     (dest_size) = src_size
 
-#define HASH_UPDATE(CONTEXT, TYPE, OBJECT, R, LABEL)                                               \
-    {                                                                                              \
-        uint8_t buffer[sizeof(TYPE)];                                                              \
-        size_t  offset = 0;                                                                        \
-        (R) = Tss2_MU_##TYPE##_Marshal(OBJECT, &buffer[0], sizeof(TYPE), &offset);                 \
-        goto_if_error(R, "Marshal for hash update", LABEL);                                        \
-        (R) = ifapi_crypto_hash_update(CONTEXT, (const uint8_t *)&buffer[0], offset);              \
-        goto_if_error(R, "crypto hash update", LABEL);                                             \
-    }
-
-#define HASH_UPDATE_BUFFER(CONTEXT, BUFFER, SIZE, R, LABEL)                                        \
-    R = ifapi_crypto_hash_update(CONTEXT, (const uint8_t *)(BUFFER), SIZE);                        \
-    goto_if_error(R, "crypto hash update", LABEL);
-
 #define FAPI_SYNC(r, msg, label, ...)                                                              \
     if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)                                                      \
         return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
