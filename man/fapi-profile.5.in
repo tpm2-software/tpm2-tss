@@ -266,9 +266,12 @@ legacy: noDa: 0, unique key size set to zero.
 .RS 0
 .nf
 \f(CW
-In some cases, an SRK may already exist on the platform and can be reused by FAPI.
-This includes dual-boot setups and SRK initialization performed by systemd.
-The follwing script determines which FAPI profiles are appropriate for an existing SRK key.
+In some cases, a persistent SRK may already exist on the platform and
+can be reused by FAPI.  This includes dual-boot setups and SRK
+initialization performed by systemd.  Alternatively, FAPI can use a
+transient SRK, although this is not recommended.  The following script
+determines which FAPI profiles are compatible with an existing
+persistent SRK.
 .PP
 .RS 0
 .nf
