@@ -11,6 +11,8 @@ The FAPI parameters which can be adjusted via the configuration file are:
 * system_pcrs: The PCR registers which are used by the system.
 * log_dir: The directory for the event log.
 * ek_cert_less: A switch to disable certificate verification (optional).
+* ignore_lockout: A switch to disable the setting of parameters in the lockout hierarchy.
+  (optional)
 * ek_fingerprint: The fingerprint of the endorsement key (optional).
 * firmware_log_file: The binary bios measuerments.
 * ima_log_file: The binary IMA measuerments (Integrity Measurement Architecture).
