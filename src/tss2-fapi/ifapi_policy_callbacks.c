@@ -13,7 +13,6 @@
 #include <stdlib.h>   // for size_t, NULL, calloc, malloc
 #include <string.h>   // for memset, memcmp, memcpy, strcmp
 
-#include "fapi_crypto.h"   // for ifapi_get_tpm2b_public_from_pem
 #include "fapi_types.h"    // for UINT8_ARY
 #include "fapi_util.h"     // for ifapi_get_object_path, ifapi_a...
 #include "ifapi_helpers.h" // for ipolicy_TPMT_PUBLIC_cmp, ifapi_c...
@@ -24,6 +23,7 @@
 #include "ifapi_policyutil_execute.h" // for IFAPI_POLICYUTIL_STACK, ifapi_...
 #include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
 #include "ipolicy_helpers.h"          // for ipolicy_TPMT_PUBLIC_cmp
+#include "tss2_crypto.h"              // for ifapi_get_tpm2b_public_from_pem
 #include "tss2_fapi.h"                // for FAPI_CONTEXT
 #include "tss2_helpers.h"             // for ifapi_cleanup_policy ...
 #include "tss2_mu.h"                  // for Tss2_MU_TPMT_HA_Unmarshal

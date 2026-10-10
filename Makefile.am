@@ -659,7 +659,9 @@ lib_fapi_policy_internal = libtss2-fapi-policy-internal.la
 
 libtss2_fapi_policy_internal_la_SOURCES = \
     src/tss2-fapi-policy/tss2_helpers.c \
-    src/tss2-fapi-policy/tss2_helpers.h
+    src/tss2-fapi-policy/tss2_helpers.h \
+    src/tss2-fapi-policy/tss2_crypto.c \
+    src/tss2-fapi-policy/tss2_crypto.h
 
 libtss2_fapi_policy_internal_la_CFLAGS = \
     $(AM_CFLAGS) \
@@ -673,7 +675,8 @@ libtss2_fapi_policy_internal_la_CFLAGS = \
 noinst_HEADERS = \
     src/tss2-fapi-policy/fapi_types.h \
     src/tss2-fapi-policy/ifapi_policy_types.h \
-    src/tss2-fapi-policy/tss2_helpers.h
+    src/tss2-fapi-policy/tss2_helpers.h \
+    src/tss2-fapi-policy/tss2_crypto.h
 
 libtss2_policy = src/tss2-policy/libtss2-policy.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_policy.h

@@ -13,7 +13,6 @@
 #include <string.h>  // for memcpy, strcmp, memset, strlen
 #include <strings.h> // for strcasecmp
 
-#include "fapi_crypto.h" // for ifapi_get_hash_alg_for_size
 #include "fapi_util.h"
 #include "ifapi_config.h"             // for IFAPI_CONFIG
 #include "ifapi_helpers.h"            // for ifapi_path_l...
@@ -22,6 +21,7 @@
 #include "ifapi_macros.h"             // for statecase, fallthrough, goto_i...
 #include "ifapi_policy.h"             // for ifapi_calculate_tree
 #include "ifapi_policyutil_execute.h" // for ifapi_policyutil_execute, ifap...
+#include "tss2_crypto.h"              // for ifapi_get_hash_alg_for_size
 #include "tss2_helpers.h"             // for free_string_list
 #include "tss2_policy.h"              // for TSS2_OBJECT
 #include "util/aux_util.h"            // for goto_error

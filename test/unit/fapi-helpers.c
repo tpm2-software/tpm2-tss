@@ -18,6 +18,7 @@
 #include "ifapi_profiles.h"       // for IFAPI_PROFILE
 #include "ipolicy_helpers.h"      // for ipolicy_TPMT_PUBLIC_cmp
 #include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_crypto.h"          // for hash functions
 #include "tss2_helpers.h"         // for ifapi_get_name
 #include "tss2_tpm2_types.h"      // for TPMT_PUBLIC, TPMT_SIG_SCHEME, TPM2_ALG_...
 

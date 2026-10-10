@@ -18,9 +18,9 @@
 #include <strings.h>     // for strcasecmp, strncasecmp
 #include <sys/stat.h>    // for mkdir, mode_t
 
-#include "fapi_crypto.h"
 #include "fapi_types.h"
 #include "ifapi_policy_types.h" // for TPMS_POLICY ....
+#include "tss2_crypto.h"        // for ifapi_hash_get_digest_size ...
 #include "tss2_helpers.h"
 #include "tss2_mu.h" // for Tss2_MU_TPMS_NV_PUBLIC_Marshal
 #include "tss2_policy.h"
