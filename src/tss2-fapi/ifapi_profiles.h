@@ -10,7 +10,7 @@
 #include <stddef.h> // for size_t
 
 #include "ifapi_io.h"           // for IFAPI_IO
-#include "ifapi_policy_types.h" // for TPMS_POLICY
+#include "ifapi_policy_types.h" // for struct TPMS_POLICY
 #include "tss2_common.h"        // for UINT32, TSS2_RC, UINT16
 #include "tss2_tpm2_types.h"    // for TPMT_SIG_SCHEME, TPMI_ALG_CIPHER_MODE
 
@@ -34,11 +34,11 @@ typedef struct IFAPI_PROFILE {
     UINT32               exponent;
     TPMI_ECC_CURVE       curveID;
     TPMT_SYM_DEF         session_symmetric;
-    TPMS_POLICY         *eh_policy;
-    TPMS_POLICY         *sh_policy;
-    TPMS_POLICY         *ek_policy;
-    TPMS_POLICY         *srk_policy;
-    TPMS_POLICY         *lockout_policy;
+    struct TPMS_POLICY  *eh_policy;
+    struct TPMS_POLICY  *sh_policy;
+    struct TPMS_POLICY  *ek_policy;
+    struct TPMS_POLICY  *srk_policy;
+    struct TPMS_POLICY  *lockout_policy;
     UINT32               newMaxTries;
     UINT32               newRecoveryTime;
     UINT32               lockoutRecovery;

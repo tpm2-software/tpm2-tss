@@ -221,6 +221,38 @@ cleanup:
     return r;
 }
 
+/** Finish loading FAPI policy string from policy store.
+ *
+ *
+ * This function needs to be called repeatedly until it does not return TSS2_FAPI_RC_TRY_AGAIN.
+ *
+ * @param[in] pstore The policy context with the policy directory.
+ * @param[in,out] io The input/output context being used for file I/O.
+ * @param[out] policy The json policy string
+ * @retval TSS2_RC_SUCCESS After successfully loading the object.
+ * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet complete.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
+TSS2_RC
+ifapi_policy_store_read_json_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, uint8_t **policy) {
+    TSS2_RC r;
+    /* ptore parameter is used to be prepared if transmission of state information
+       between async and finish will be necessary in future extensions. */
+    UNUSED(pstore);
+
+    r = ifapi_io_read_finish(io, policy, NULL);
+    return_try_again(r);
+    return_if_error(r, "keystore read_finish failed");
+
+    LOG_TRACE("Return %x", r);
+    return r;
+}
+
 /**  Start writing FAPI object to the key store.
  *
  * The relative path will be expanded, if the default policy directory (/policy)

@@ -270,7 +270,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
     /* Helpful alias pointers */
     IFAPI_Fapi_AuthorizePolicy *command = &context->cmd.Policy_AuthorizeNewPolicy;
     TPMS_POLICYAUTHORIZATION   *authorization = &command->authorization;
-    TPMS_POLICY                *policy = &context->policy.policy;
+    TPMS_POLICY               **policy = &command->policy;
     TPMT_SIGNATURE             *signature;
     IFAPI_OBJECT              **keyObject = &context->Key_Sign.key_object;
 
@@ -307,7 +307,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
         r = ifapi_crypto_hash_start(&cryptoContext, hashAlg);
         goto_if_error(r, "crypto hash start", cleanup);
 
-        HASH_UPDATE_BUFFER(cryptoContext, &policy->policyDigests.digests[digestIdx].digest,
+        HASH_UPDATE_BUFFER(cryptoContext, &(*policy)->policyDigests.digests[digestIdx].digest,
                            hashSize, r, cleanup);
         if (command->policyRef.size > 0) {
             HASH_UPDATE_BUFFER(cryptoContext, &command->policyRef.buffer[0],
@@ -339,15 +339,16 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
         ifapi_cleanup_ifapi_object(*keyObject);
 
         /* Extend the authorization to the policy stored. */
-        ifapi_extend_authorization(policy, authorization);
-        goto_if_null(policy->policyAuthorizations, "Out of memory", TSS2_FAPI_RC_MEMORY, cleanup);
+        ifapi_extend_authorization(*policy, authorization);
+        goto_if_null((*policy)->policyAuthorizations, "Out of memory", TSS2_FAPI_RC_MEMORY,
+                     cleanup);
 
         fallthrough;
 
     statecase(context->state, AUTHORIZE_NEW_WRITE_POLICY_PREPARE);
         /* Store the newly authorized policy in the policy store. */
         r = ifapi_policy_store_store_async(&context->pstore, &context->io, command->policyPath,
-                                           policy);
+                                           *policy);
         goto_if_error_reset_state(r, "Could not open: %s", cleanup, command->policyPath);
 
         fallthrough;
@@ -374,7 +375,8 @@ cleanup:
     if (cryptoContext)
         ifapi_crypto_hash_abort(&cryptoContext);
     ifapi_session_clean(context);
-    ifapi_cleanup_policy(policy);
+    ifapi_cleanup_policy(*policy);
+    SAFE_FREE(*policy);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);

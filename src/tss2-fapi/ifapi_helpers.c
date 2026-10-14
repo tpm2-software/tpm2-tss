@@ -825,7 +825,6 @@ object_with_auth(IFAPI_OBJECT *object) {
     }
 }
 
-
 /** Check whether a nv or key object has a certain name.
  *
  * @param[in] object The object (has to be checked whether it's a key).

@@ -13,7 +13,7 @@
 #include "fapi_int.h"           // for IFAPI_KEY_TEMPLATE, TSS2_KEY_TYPE
 #include "fapi_types.h"         // for NODE_OBJECT_T
 #include "ifapi_keystore.h"     // for IFAPI_OBJECT
-#include "ifapi_policy_types.h" // for TPMS_POLICY
+#include "ifapi_policy_types.h" // for struct TPMS_POLICY
 #include "ifapi_profiles.h"     // for IFAPI_PROFILE
 #include "tss2_common.h"        // for TSS2_RC, UINT32
 #include "tss2_esys.h"          // for ESYS_TR, ESYS_CONTEXT
@@ -163,10 +163,10 @@ ifapi_change_auth_hierarchy(FAPI_CONTEXT *context,
                             TPM2B_AUTH   *newAuthValue);
 
 TSS2_RC
-ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
-                              ESYS_TR       handle,
-                              IFAPI_OBJECT *hierarchy_object,
-                              TPMS_POLICY  *policy);
+ifapi_change_policy_hierarchy(FAPI_CONTEXT       *context,
+                              ESYS_TR             handle,
+                              IFAPI_OBJECT       *hierarchy_object,
+                              struct TPMS_POLICY *policy);
 
 IFAPI_OBJECT
 *ifapi_allocate_object(FAPI_CONTEXT *context);
