@@ -19,7 +19,7 @@
 #include "ifapi_keystore.h"           // for IFAPI_OBJECT, IFAPI_IO_STATE
 #include "ifapi_policy_instantiate.h" // for IFAPI_POLICY_EVAL_INST_CTX
 #include "ifapi_policy_store.h"       // for IFAPI_POLICY_STORE
-#include "ifapi_policy_types.h"       // for TPMS_POLICY, TPMS_POLICYAUTHOR...
+#include "ifapi_policy_types.h"       // for struct TPMS_POLICY, TPMS_POLICYAUTHOR...
 #include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
 #include "tss2_common.h"              // for UINT32, UINT16, BYTE, TSS2_BAS...
 #include "tss2_esys.h"                // for ESYS_TR, ESYS_TR_NONE, ESYS_CO...
@@ -156,7 +156,7 @@ enum IFAPI_INSTANTIATE_POLICIES_STATE {
 typedef struct {
     enum IFAPI_INSTANTIATE_POLICIES_STATE state;
     size_t                                pol_idx;
-    TPMS_POLICY                          *policies[5];
+    struct TPMS_POLICY                   *policies[5];
 } IFAPI_POLICIES;
 
 #define IFAPI_MAX_CAP_INFO 17
@@ -257,6 +257,7 @@ typedef struct {
     TPML_DIGEST_VALUES       digests;       /**< Digest for the event data of an extend */
     bool skip_policy_computation;           /**< switch whether policy needs to be computed */
     enum IFAPI_CHECK_NV_STATE nv_check;     /**< state for checking existing nv indexes */
+    struct TPMS_POLICY       *policy;       /**< The policy used for policy calculation */
     TPMS_CAPABILITY_DATA     *capability;   /* TPM capability data to check nv index */
 } IFAPI_NV_Cmds;
 
@@ -546,27 +547,29 @@ typedef struct {
     const char              *signingKeyPath; /**< Key for policy signing */
     TPM2B_DIGEST             policyRef;
     TPMS_POLICYAUTHORIZATION authorization;
+    struct TPMS_POLICY      *policy; /**< The calculated policy */
 } IFAPI_Fapi_AuthorizePolicy;
 
 /** The data structure holding internal state of Fapi_WriteAuthorizeNv.
  */
 typedef struct {
-    const char    *policyPath; /**< Policy with Policy to be authorized */
-    TPMI_ALG_HASH *hash_alg;   /**< The hash alg used for digest computation */
-    size_t         hash_size;  /**< The digest size */
-    size_t         digest_idx; /**< The index of the digest in the policy */
+    const char         *policyPath; /**< Policy with Policy to be authorized */
+    TPMI_ALG_HASH      *hash_alg;   /**< The hash alg used for digest computation */
+    size_t              hash_size;  /**< The digest size */
+    size_t              digest_idx; /**< The index of the digest in the policy */
+    struct TPMS_POLICY *policy;     /**< The calculated policy */
 } IFAPI_api_WriteAuthorizeNv;
 
 /** The data structure holding internal state of Provisioning.
  */
 typedef struct {
-    IFAPI_OBJECT       hierarchy_lockout;       /**< The lockout hierarchy */
-    IFAPI_OBJECT       hierarchy_hs;            /**< The storage hierarchy */
-    IFAPI_OBJECT       hierarchy_he;            /**< The endorsement hierarchy */
-    IFAPI_OBJECT       hierarchy_hn;            /**< The null hierarchy */
-    IFAPI_OBJECT      *hierarchy;               /**< The current hierarchy */
-    TPMS_POLICY       *hierarchy_policy;        /**< Policy of the current used hierarchy. */
-    IFAPI_KEY_TEMPLATE public_templ;            /**< The basic template for the keys public data */
+    IFAPI_OBJECT        hierarchy_lockout;      /**< The lockout hierarchy */
+    IFAPI_OBJECT        hierarchy_hs;           /**< The storage hierarchy */
+    IFAPI_OBJECT        hierarchy_he;           /**< The endorsement hierarchy */
+    IFAPI_OBJECT        hierarchy_hn;           /**< The null hierarchy */
+    IFAPI_OBJECT       *hierarchy;              /**< The current hierarchy */
+    struct TPMS_POLICY *hierarchy_policy;       /**< Policy of the current used hierarchy. */
+    IFAPI_KEY_TEMPLATE  public_templ;           /**< The basic template for the keys public data */
     TPM2B_PUBLIC public;                        /**< The public info of the created primary */
     char                 **pathlist;            /**< The array with all keystore objects */
     size_t                 numPaths;            /**< Size of array with all keystore objects */
@@ -660,14 +663,11 @@ enum FAPI_CREATE_SESSION_STATE { CREATE_SESSION_INIT = 0, CREATE_SESSION, WAIT_F
  */
 typedef struct {
     enum IFAPI_STATE_POLICY state;
-    struct TPMS_POLICY      policy;
+    struct TPMS_POLICY     *policy;
     size_t                  digest_idx;
     size_t                  hash_size;
     char                  **pathlist; /**< The array of all objects  in the search path */
     TPMI_ALG_HASH           hash_alg;
-    IFAPI_POLICY_EXEC_CTX *policy_stack; /**< The stack used for storing current policy information.
-                                           e.g. for retry the current index of policy elements hash
-                                           to be stored. */
     IFAPI_POLICYUTIL_STACK *util_current_policy;
     IFAPI_POLICYUTIL_STACK *policyutil_stack;
     /**< The stack used for storing current policy information.
@@ -677,7 +677,8 @@ typedef struct {
                           The value will also be stored in the policy stack */
     enum FAPI_CREATE_SESSION_STATE create_session_state;
     char                          *path;
-    IFAPI_POLICY_EVAL_INST_CTX     eval_ctx;
+    IFAPI_POLICY_EVAL_INST_CTX     eval_ctx; // TODO delete
+    TSS2_POLICY_CTX               *tss2_policy_ctx;
 } IFAPI_POLICY_CTX;
 
 /** The states for the IFAPI's policy loading */
@@ -729,15 +730,17 @@ typedef struct {
 /** The data structure holding internal state of export policy.
  */
 typedef struct {
-    char const *path;             /**< Path of the object with the policy to be
-                                       exported */
-    IFAPI_OBJECT  object;         /**< Object corresponding to path */
-    TPMS_POLICY   policy;         /**< Policy from store be exported */
-    TPMI_ALG_HASH hashAlg;        /**< Index of profile used for digest computation. */
-    size_t        profile_idx;    /**< hashAlg used for policy digest computation. */
-    bool          compute_policy; /**< Switch whether computation of the
-                                       policy for the default name hash alg
-                                       is needed. */
+    char const *path;                   /**< Path of the object with the policy to be
+                                             exported */
+    IFAPI_OBJECT        object;         /**< Object corresponding to path */
+    struct TPMS_POLICY *policy;         /**< Policy from store be exported */
+    TPMI_ALG_HASH       hashAlg;        /**< Index of profile used for digest computation. */
+    size_t              profile_idx;    /**< hashAlg used for policy digest computation. */
+    bool                compute_policy; /**< Switch whether computation of the
+                                             policy for the default name hash alg
+                                             is needed. */
+    uint8_t *policy_string;             /**< The Policy from policy */
+
 } IFAPI_ExportPolicy;
 
 /** The data structure holding internal state of import key.
@@ -1176,8 +1179,8 @@ enum FAPI_STATE {
     POLICY_EXPORT_READ_OBJECT_FINISH,
     POLICY_EXPORT_READ_POLICY,
     POLICY_EXPORT_READ_POLICY_FINISH,
-    POLICY_EXPORT_CHECK_DIGEST,
-    POLICY_EXPORT_COMPUTE_POLICY_DIGEST,
+    POLICY_EXPORT_PREPARE_CALCULATE_POLICY,
+    POLICY_EXPORT_CALCULATE_POLICY,
 
     VERIFY_QUOTE_READ,
 

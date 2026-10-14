@@ -107,6 +107,6 @@ TSS2_RC
 ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso, TPML_POLICYELEMENTS **out);
 
 TSS2_RC
-ifapi_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY *out);
+ifapi_json_TPMS_POLICY_deserialize(json_object *jso, struct TPMS_POLICY *out);
 
 #endif /* IFAPI_POLICY_JSON_DESERIALIZE_H */
