@@ -882,7 +882,8 @@ EXTRA_DIST +=  \
     test/data/fapi/eventlog/binary_measurements_hcrtm.b64
 
 src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_esys) \
-    $(libutil) $(libtss2_tctildr) $(lib_fapi_policy_internal) $(lib_policy_internal)
+    $(libutil) $(libtss2_tctildr) $(lib_fapi_policy_internal) $(lib_policy_internal) \
+    $(libtss2_policy)
 
 src_tss2_fapi_libtss2_fapi_la_SOURCES = $(TSS2_FAPI_SRC)
 src_tss2_fapi_libtss2_fapi_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-fapi \

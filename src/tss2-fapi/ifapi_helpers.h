@@ -15,7 +15,7 @@
 #include "fapi_types.h"         // for NODE_STR_T, NODE_OBJECT_T
 #include "ifapi_eventlog.h"     // for FAPI_QUOTE_INFO
 #include "ifapi_keystore.h"     // for IFAPI_OBJECT
-#include "ifapi_policy_types.h" // for TPMS_POLICY, TPMT_POLICYELEMENT
+#include "ifapi_policy_types.h" // for struct TPMS_POLICY, TPMT_POLICYELEMENT
 #include "tss2_common.h"        // for TSS2_RC
 #include "tss2_esys.h"          // for ESYS_TR
 #include "tss2_policy.h"        // for TPML_PCRVALUES, TSS2_POLICY_PCR_SELE...
@@ -66,6 +66,8 @@ NODE_STR_T *init_string_list(const char *string);
 bool add_string_to_list(NODE_STR_T *str_list, char *string);
 
 void free_string_list(NODE_STR_T *node);
+
+struct TPMS_POLICY *ifapi_copy_policy(const struct TPMS_POLICY *from_policy);
 
 TSS2_RC
 ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal);

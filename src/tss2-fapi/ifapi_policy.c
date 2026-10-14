@@ -73,13 +73,11 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
                         IFAPI_POLICY_STORE *pstore,
                         IFAPI_IO           *io,
                         const char         *policyPath,
-                        TPMS_POLICY        *policy,
+                        TPMS_POLICY       **policy,
                         TPMI_ALG_HASH       hash_alg,
                         size_t             *digest_idx,
                         size_t             *hash_size) {
-    size_t  i;
     TSS2_RC r = TSS2_RC_SUCCESS;
-    bool    already_computed = false;
 
     if (context->state == POLICY_INIT && !policyPath)
         /* Skip policy reading */
@@ -87,6 +85,8 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
 
     switch (context->state) {
     statecase(context->state, POLICY_INIT);
+        *policy = calloc(1, sizeof(TPMS_POLICY));
+        goto_if_null2(*policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_READ);
@@ -99,7 +99,7 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
         fallthrough;
 
     statecase(context->state, POLICY_READ_FINISH);
-        r = ifapi_policy_store_load_finish(pstore, io, policy);
+        r = ifapi_policy_store_load_finish(pstore, io, *policy);
         return_try_again(r);
         if (r) {
             LOG_ERROR("read_finish failed");
@@ -109,43 +109,22 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
         fallthrough;
 
     statecase(context->state, POLICY_INSTANTIATE_PREPARE);
-        r = ifapi_policyeval_instantiate_async(&context->eval_ctx, policy);
+        r = Tss2_PolicySetPolicy(*policy, hash_alg, &context->tss2_policy_ctx);
+        goto_if_error(r, "Instantiate policy.", cleanup);
+
+        r = Tss2_PolicySetCalcCallbacks(context->tss2_policy_ctx, &context->eval_ctx.callbacks);
+        goto_if_error(r, "Set policy calc callbacks.", cleanup);
+
+        r = Tss2_PolicyCalculate_Async(context->tss2_policy_ctx);
         goto_if_error(r, "Instantiate policy.", cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_INSTANTIATE);
-        r = ifapi_policyeval_instantiate_finish(&context->eval_ctx);
+        r = Tss2_PolicyCalculate_Finish(context->tss2_policy_ctx);
         FAPI_SYNC(r, "Instantiate policy.", cleanup);
-        ifapi_free_node_list(context->eval_ctx.policy_elements);
-        context->eval_ctx.policy_elements = NULL;
 
-        if (!(*hash_size = ifapi_hash_get_digest_size(hash_alg))) {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
-                       cleanup, hash_alg);
-        }
-
-        for (i = 0; i < policy->policyDigests.count; i++) {
-            if (policy->policyDigests.digests[i].hashAlg == hash_alg) {
-                /* Digest already computed */
-                *digest_idx = i;
-                already_computed = true;
-            }
-        }
-        if (already_computed)
-            break;
-
-        if (i >= TPM2_NUM_PCR_BANKS) {
-            goto_if_error(TSS2_FAPI_RC_BAD_VALUE, "Table overflow", cleanup);
-        }
-        *digest_idx = i;
-        policy->policyDigests.count += 1;
-        policy->policyDigests.digests[i].hashAlg = hash_alg;
-
-        memset(&policy->policyDigests.digests[*digest_idx].digest, 0, sizeof(TPMU_HA));
-
-        r = ifapi_calculate_policy(policy->policy, &policy->policyDigests, hash_alg, *hash_size,
-                                   *digest_idx);
-        goto_if_error(r, "Compute policy.", cleanup);
+        r = Tss2_PolicyGetDigestIdx(context->tss2_policy_ctx, digest_idx, hash_size);
+        goto_if_error(r, "Copy policy.", cleanup);
 
         break;
     statecasedefault(context->state);
@@ -153,6 +132,7 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
 cleanup:
     ifapi_free_node_list(context->eval_ctx.policy_elements);
     context->eval_ctx.policy_elements = NULL;
+    Tss2_PolicyFinalize(&context->tss2_policy_ctx);
     context->state = POLICY_INIT;
     return r;
 }

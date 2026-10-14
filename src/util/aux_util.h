@@ -73,6 +73,12 @@ extern "C" {
         return r;                                                                                  \
     }
 
+#define return_error2(r, msg, ...)                                                                 \
+    {                                                                                              \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        return (r);                                                                                \
+    }
+
 #define goto_state_if_error(r, s, msg, label)                                                      \
     if ((r) != TSS2_RC_SUCCESS) {                                                                  \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r));                               \
@@ -87,13 +93,12 @@ extern "C" {
         goto label;                                                                                \
     }
 
- #define goto_if_null2(p, msg, r, ec, label, ...)                                                   \
+#define goto_if_null2(p, msg, r, ec, label, ...)                                                   \
     if ((p) == NULL) {                                                                             \
         LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(ec), ##__VA_ARGS__);                  \
         r = (ec);                                                                                  \
         goto label;                                                                                \
     }
-
 
 #define goto_if_error(r, msg, label)                                                               \
     if ((r) != TSS2_RC_SUCCESS) {                                                                  \
@@ -137,7 +142,6 @@ extern "C" {
     } else {                                                                                       \
         (dest) = NULL;                                                                             \
     }
-
 
 #define rc_layer(r)  ((r) & TSS2_RC_LAYER_MASK)
 #define base_rc(r)   ((r) & ~TSS2_RC_LAYER_MASK)

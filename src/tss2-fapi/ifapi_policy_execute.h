@@ -13,19 +13,19 @@
 #include "fapi_int.h"           // for IFAPI_POLICY_EXEC_CTX
 #include "fapi_types.h"         // for NODE_OBJECT_T
 #include "ifapi_keystore.h"     // for IFAPI_OBJECT
-#include "ifapi_policy_types.h" // for TPMS_POLICY, TPMS_POLICYAUTHORIZATION
+#include "ifapi_policy_types.h" // for struct TPMS_POLICY, TPMS_POLICYAUTHORIZATION
 #include "tss2_common.h"        // for TSS2_RC
 #include "tss2_esys.h"          // for ESYS_TR, ESYS_CONTEXT
 #include "tss2_policy.h"        // for TSS2_POLICY_EXEC_CALLBACKS
 #include "tss2_tpm2_types.h"    // for TPMI_ALG_HASH, TPM2B_DIGEST, TPM2B_NAME
 
 TSS2_RC
-ifapi_extend_authorization(TPMS_POLICY *policy, TPMS_POLICYAUTHORIZATION *authorization);
+ifapi_extend_authorization(struct TPMS_POLICY *policy, TPMS_POLICYAUTHORIZATION *authorization);
 
-typedef TSS2_RC (*Policy_Compare_Object)(TPMS_POLICY *policy,
-                                         void        *object1,
-                                         void        *object2,
-                                         bool        *found);
+typedef TSS2_RC (*Policy_Compare_Object)(struct TPMS_POLICY *policy,
+                                         void               *object1,
+                                         void               *object2,
+                                         bool               *found);
 
 /** List of policies which fulfill a certain predicate.
  *
@@ -33,7 +33,7 @@ typedef TSS2_RC (*Policy_Compare_Object)(TPMS_POLICY *policy,
  */
 struct POLICY_LIST {
     const char         *path;   /**< The path of the policy object */
-    TPMS_POLICY         policy; /**< The policy object */
+    struct TPMS_POLICY  policy; /**< The policy object */
     struct POLICY_LIST *next;   /**< Pointer to next element */
 };
 
@@ -43,7 +43,7 @@ struct POLICY_LIST {
  */
 struct policy_object_node {
     const char                *path;   /**< The path of the policy object */
-    TPMS_POLICY                policy; /**< The policy object */
+    struct TPMS_POLICY         policy; /**< The policy object */
     struct policy_object_node *next;   /**< Pointer to next element */
 };
 
@@ -72,7 +72,7 @@ struct IFAPI_POLICY_EXEC_CTX {
     IFAPI_POLICY_EXEC_CTX *next;        /**< Pointer to next policy */
     IFAPI_POLICY_EXEC_CTX *prev;        /**< Pointer to previous policy */
     ESYS_TR                session;     /**< The current policy session */
-    TPMS_POLICY           *policy;
+    struct TPMS_POLICY    *policy;
     ESYS_TR                policySessionSav; /**< Backup policy session */
     ESYS_TR               *enc_session;      /**< ession used for encryption if policy is used */
 
@@ -102,7 +102,7 @@ struct IFAPI_POLICY_EXEC_CTX {
 TSS2_RC
 ifapi_policyeval_execute_prepare(IFAPI_POLICY_EXEC_CTX *pol_ctx,
                                  TPMI_ALG_HASH          hash_alg,
-                                 TPMS_POLICY           *policy);
+                                 struct TPMS_POLICY    *policy);
 
 TSS2_RC
 ifapi_policyeval_execute(ESYS_CONTEXT          *esys_ctx,

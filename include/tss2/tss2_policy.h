@@ -182,6 +182,12 @@ TSS2_RC
 Tss2_PolicyCalculate(TSS2_POLICY_CTX *policy_ctx);
 
 TSS2_RC
+Tss2_PolicyCalculate_Async(TSS2_POLICY_CTX *policy_ctx);
+
+TSS2_RC
+Tss2_PolicyCalculate_Finish(TSS2_POLICY_CTX *policy_ctx);
+
+TSS2_RC
 Tss2_PolicyGetCalculatedJSON(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *size);
 
 TSS2_RC
@@ -189,5 +195,16 @@ Tss2_PolicyGetDescription(TSS2_POLICY_CTX *policy_ctx, char *description, size_t
 
 TSS2_RC
 Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest);
+
+typedef struct TPMS_POLICY TPMS_POLICY;
+
+TSS2_RC
+Tss2_PolicySetPolicy(TPMS_POLICY *policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX **policy_ctx);
+
+TSS2_RC
+Tss2_PolicyGetDigestIdx(TSS2_POLICY_CTX *policy_ctx, size_t *digest_idx, size_t *hash_size);
+
+TSS2_RC
+Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg);
 
 #endif /* INCLUDE_TSS2_TSS2_POLICY_H_ */

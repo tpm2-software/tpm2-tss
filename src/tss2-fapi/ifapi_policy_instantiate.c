@@ -215,6 +215,7 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
 
                 break;
             }
+            // TODO Chek path needed
             CHECK_TEMPLATE_PATH(pol_element->element.PolicySigned.keyPath, "PolicySigned");
             CHECK_CALLBACK(context->callbacks.cbpublic, "cbpublic");
 

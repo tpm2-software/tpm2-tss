@@ -615,7 +615,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
         return_if_null(policy, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
         r = ifapi_calculate_tree(context, NULL, /**< no path needed */
-                                 policy, context->profiles.default_profile.nameAlg,
+                                 &policy, context->profiles.default_profile.nameAlg,
                                  &context->cmd.Provision.digest_idx,
                                  &context->cmd.Provision.hash_size);
         if (r) {
@@ -3376,23 +3376,17 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
 
     case KEY_CREATE_CALCULATE_POLICY:
         if (context->cmd.Key_Create.state == KEY_CREATE_CALCULATE_POLICY) {
-            r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath,
-                                     &context->policy.policy,
+            r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath, &object->policy,
                                      context->cmd.Key_Create.public_templ.public.publicArea.nameAlg,
                                      &context->policy.digest_idx, &context->policy.hash_size);
             return_try_again(r);
             goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
                            context->cmd.Key_Create.policyPath);
 
-            /* Store the calculated policy in the key object */
-            object->policy = calloc(1, sizeof(TPMS_POLICY));
-            return_if_null(object->policy, "Out of memory", TSS2_FAPI_RC_MEMORY);
-            *(object->policy) = context->policy.policy;
-
             context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.size
                 = context->policy.hash_size;
             memcpy(&context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.buffer[0],
-                   &context->policy.policy.policyDigests.digests[context->policy.digest_idx].digest,
+                   &object->policy->policyDigests.digests[context->policy.digest_idx].digest,
                    context->policy.hash_size);
         }
         r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
@@ -3887,7 +3881,7 @@ ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
 
             /* Calculate the policy digest which will be used as hierarchy policy. */
             r = ifapi_calculate_tree(context, NULL, /**< no path needed */
-                                     policy, context->profiles.default_profile.nameAlg,
+                                     &policy, context->profiles.default_profile.nameAlg,
                                      &context->cmd.Provision.digest_idx,
                                      &context->cmd.Provision.hash_size);
             goto_if_error(r, "Policy calculation", error);
@@ -4602,23 +4596,17 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     /* FALLTHRU */
     case KEY_CREATE_PRIMARY_CALCULATE_POLICY:
         if (context->cmd.Key_Create.state == KEY_CREATE_PRIMARY_CALCULATE_POLICY) {
-            r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath,
-                                     &context->policy.policy,
+            r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath, &object->policy,
                                      context->cmd.Key_Create.public_templ.public.publicArea.nameAlg,
                                      &context->policy.digest_idx, &context->policy.hash_size);
             return_try_again(r);
             goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
                            context->cmd.Key_Create.policyPath);
 
-            /* Store the calculated policy in the key object */
-            object->policy = calloc(1, sizeof(TPMS_POLICY));
-            return_if_null(object->policy, "Out of memory", TSS2_FAPI_RC_MEMORY);
-            *(object->policy) = context->policy.policy;
-
             context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.size
                 = context->policy.hash_size;
             memcpy(&context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.buffer[0],
-                   &context->policy.policy.policyDigests.digests[context->policy.digest_idx].digest,
+                   &object->policy->policyDigests.digests[context->policy.digest_idx].digest,
                    context->policy.hash_size);
         }
 
