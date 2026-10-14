@@ -5,10 +5,15 @@
         Tss2_PolicySetCalcCallbacks;
         Tss2_PolicySetExecCallbacks;
         Tss2_PolicyCalculate;
+        Tss2_PolicyCalculate_Async;
+        Tss2_PolicyCalculate_Finish;
         Tss2_PolicyExecute;
         Tss2_PolicyGetCalculatedJSON;
         Tss2_PolicyGetCalculatedDigest;
         Tss2_PolicyGetDescription;
+        Tss2_PolicyGetDigestIdx;
+        Tss2_PolicySetPolicy;
+        Tss2_PolicySetHashAlg;
     local:
         *;
 };

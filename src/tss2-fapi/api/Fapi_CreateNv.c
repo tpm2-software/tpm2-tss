@@ -293,7 +293,6 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
     TPM2B_NV_PUBLIC *publicInfo = &miscNv->public;
     TPM2B_NV_PUBLIC *existing_nv_public = NULL;
     TPM2B_DIGEST    *authPolicy = &(miscNv->public.nvPublic.authPolicy);
-    TPMS_POLICY     *policy = &(context->policy.policy);
     TPMS_POLICY    **nvCmdPolicy = &nvCmd->nv_object.policy;
     ESYS_TR          auth_session;
     bool             nv_exists;
@@ -344,7 +343,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_CREATE_CALCULATE_POLICY)
         if (!nvCmd->skip_policy_computation) {
             /* Calculate the policy as read for the keystore. */
-            r = ifapi_calculate_tree(context, miscNv->policyInstance, policy,
+            r = ifapi_calculate_tree(context, miscNv->policyInstance, nvCmdPolicy,
                                      miscNv->public.nvPublic.nameAlg, &context->policy.digest_idx,
                                      &context->policy.hash_size);
             return_try_again(r);
@@ -352,14 +351,9 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
             goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
                            context->cmd.Key_Create.policyPath);
 
-            /* Store the calculated policy in the NV object */
-            *nvCmdPolicy = calloc(1, sizeof(TPMS_POLICY));
-            goto_if_null(*nvCmdPolicy, "Out of memory,", TSS2_FAPI_RC_MEMORY, error_cleanup);
-            **(nvCmdPolicy) = *policy;
-
             authPolicy->size = context->policy.hash_size;
             memcpy(&authPolicy->buffer[0],
-                   &policy->policyDigests.digests[context->policy.digest_idx].digest,
+                   &(*nvCmdPolicy)->policyDigests.digests[context->policy.digest_idx].digest,
                    context->policy.hash_size);
             LOGBLOB_TRACE(&authPolicy->buffer[0], context->policy.hash_size, "Create Key Policy");
         }
@@ -529,6 +523,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     SAFE_FREE(miscNv->policyInstance);
+    SAFE_FREE(*nvCmdPolicy);
     SAFE_FREE(nvCmd->nvPath);
     ifapi_session_clean(context);
     SAFE_FREE(existing_nv_public);

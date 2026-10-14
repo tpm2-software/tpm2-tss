@@ -39,7 +39,7 @@ void cleanup_policy_element(TPMT_POLICYELEMENT *policy);
 
 void cleanup_policy_elements(TPML_POLICYELEMENTS *policy);
 
-void ifapi_cleanup_policy(TPMS_POLICY *policy);
+void ifapi_cleanup_policy(struct TPMS_POLICY *policy);
 
 TSS2_RC
 ifapi_compute_policy_digest(TPML_PCRVALUES     *pcrs,
@@ -64,6 +64,6 @@ ifapi_set_name_hierarchy_object(IFAPI_OBJECT *hierarchy);
 
 void ifapi_init_hierarchy_object(IFAPI_OBJECT *hierarchy, ESYS_TR esys_handle);
 
-TPMS_POLICY *ifapi_copy_policy(const TPMS_POLICY *from_policy);
+struct TPMS_POLICY *ifapi_copy_policy(const struct TPMS_POLICY *from_policy);
 
 #endif /* TSS2_HELPERS_H */
