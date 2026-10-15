@@ -188,10 +188,29 @@ AS_IF([test "x$enable_esys" = xyes],
            AC_CHECK_HEADER(mbedtls/md.h, [], [AC_MSG_ERROR([Missing required mbedTLS library])])
            AC_DEFINE([MBED], [1], [mbedTLS cryptographic backend])
            TSS2_ESYS_CFLAGS_CRYPTO="$LIBMBED_CFLAGS"
-           TSS2_ESYS_LDFLAGS_CRYPTO="-lmbedcrypto"
+           # Mbed TLS 4.x moved the crypto code to TF-PSA-Crypto (libtfpsacrypto)
+           # and needs its own backend. Only compile, so that it works when
+           # cross-compiling.
+           AC_MSG_CHECKING([for Mbed TLS 4.x])
+           AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <mbedtls/version.h>
+                                                #if MBEDTLS_VERSION_MAJOR < 4
+                                                #error Mbed TLS < 4.x
+                                                #endif]])],
+                             [with_mbed4=yes
+                              mbed_crypto_libs="tfpsacrypto mbedcrypto"],
+                             [with_mbed4=no
+                              mbed_crypto_libs="mbedcrypto"])
+           AC_MSG_RESULT([$with_mbed4])
+           save_LIBS="$LIBS"
+           AC_SEARCH_LIBS([mbedtls_md_info_from_type], [$mbed_crypto_libs],
+                          [AS_IF([test "x$ac_cv_search_mbedtls_md_info_from_type" != "xnone required"],
+                                 [TSS2_ESYS_LDFLAGS_CRYPTO="$ac_cv_search_mbedtls_md_info_from_type"])],
+                          [AC_MSG_ERROR([Missing required mbedTLS library])])
+           LIBS="$save_LIBS"
        ], [test "x$with_crypto" = xnone], [
            AC_MSG_NOTICE([No crypto backend selected! Users must set crypto functions!])
        ], [AC_MSG_ERROR([Bad value for --with-crypto $with_crypto])])])
+AM_CONDITIONAL(ESYS_MBED4, test "x$with_mbed4" = "xyes")
 AC_SUBST([TSS2_ESYS_CFLAGS_CRYPTO])
 AC_SUBST([TSS2_ESYS_LDFLAGS_CRYPTO])
 
