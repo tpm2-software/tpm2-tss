@@ -54,7 +54,7 @@ TSS2_RC Tss2_Sys_IncrementalSelfTest_Complete(
         return rval;
 
     return Tss2_MU_TPML_ALG_Unmarshal(ctx->cmdBuffer,
-                                      ctx->maxCmdSize,
+                                      ctx->rsp_header.responseSize,
                                       &ctx->nextData, toDoList);
 }
 

@@ -65,14 +65,14 @@ TSS2_RC Tss2_Sys_FieldUpgradeData_Complete(
         return rval;
 
     rval = Tss2_MU_TPMT_HA_Unmarshal(ctx->cmdBuffer,
-                                     ctx->maxCmdSize,
+                                     ctx->rsp_header.responseSize,
                                      &ctx->nextData,
                                      nextDigest);
     if (rval)
         return rval;
 
     return Tss2_MU_TPMT_HA_Unmarshal(ctx->cmdBuffer,
-                                     ctx->maxCmdSize,
+                                     ctx->rsp_header.responseSize,
                                      &ctx->nextData,
                                      firstDigest);
 }

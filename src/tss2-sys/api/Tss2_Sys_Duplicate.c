@@ -88,21 +88,21 @@ TSS2_RC Tss2_Sys_Duplicate_Complete(
         return rval;
 
     rval = Tss2_MU_TPM2B_DATA_Unmarshal(ctx->cmdBuffer,
-                                        ctx->maxCmdSize,
+                                        ctx->rsp_header.responseSize,
                                         &ctx->nextData,
                                         encryptionKeyOut);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer,
-                                           ctx->maxCmdSize,
+                                           ctx->rsp_header.responseSize,
                                            &ctx->nextData,
                                            duplicate);
     if (rval)
         return rval;
 
     return Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(ctx->cmdBuffer,
-                                                    ctx->maxCmdSize,
+                                                    ctx->rsp_header.responseSize,
                                                     &ctx->nextData,
                                                     outSymSeed);
 }

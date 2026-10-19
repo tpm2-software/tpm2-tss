@@ -88,14 +88,14 @@ TSS2_RC Tss2_Sys_MakeCredential_Complete(
         return rval;
 
     rval = Tss2_MU_TPM2B_ID_OBJECT_Unmarshal(ctx->cmdBuffer,
-                                             ctx->maxCmdSize,
+                                             ctx->rsp_header.responseSize,
                                              &ctx->nextData,
                                              credentialBlob);
     if (rval)
         return rval;
 
     return Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(ctx->cmdBuffer,
-                                                    ctx->maxCmdSize,
+                                                    ctx->rsp_header.responseSize,
                                                     &ctx->nextData,
                                                     secret);
 }

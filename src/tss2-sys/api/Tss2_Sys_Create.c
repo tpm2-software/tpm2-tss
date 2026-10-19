@@ -125,35 +125,35 @@ TSS2_RC Tss2_Sys_Create_Complete(
         return rval;
 
     rval = Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer,
-                                           ctx->maxCmdSize,
+                                           ctx->rsp_header.responseSize,
                                            &ctx->nextData,
                                            outPrivate);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPM2B_PUBLIC_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
+                                          ctx->rsp_header.responseSize,
                                           &ctx->nextData,
                                           outPublic);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPM2B_CREATION_DATA_Unmarshal(ctx->cmdBuffer,
-                                                 ctx->maxCmdSize,
+                                                 ctx->rsp_header.responseSize,
                                                  &ctx->nextData,
                                                  creationData);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
+                                          ctx->rsp_header.responseSize,
                                           &ctx->nextData,
                                           creationHash);
     if (rval)
         return rval;
 
     return Tss2_MU_TPMT_TK_CREATION_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
+                                          ctx->rsp_header.responseSize,
                                           &ctx->nextData,
                                           creationTicket);
 }

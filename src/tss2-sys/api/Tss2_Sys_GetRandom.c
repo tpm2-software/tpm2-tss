@@ -53,7 +53,7 @@ TSS2_RC Tss2_Sys_GetRandom_Complete(
         return rval;
 
     return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
+                                          ctx->rsp_header.responseSize,
                                           &ctx->nextData, randomBytes);
 }
 

@@ -25,10 +25,12 @@
 #define TCTI_FAKE_MAGIC 0x46414b4500000000ULL        /* 'FAKE\0' */
 #define TCTI_FAKE_VERSION 0x1
 
-const uint8_t yielded_response[] = {
+const uint8_t successful_response[] = {
     0x80, 0x01,                 /* TPM_ST_NO_SESSION */
-    0x00, 0x00, 0x00, 0x0A,     /* Response Size 10 */
-    0x00, 0x00, 0x00, 0x00      /* TPM_RC_YIELDED */
+    0x00, 0x00, 0x00, 0x12,     /* Response Size 18 */
+    0x00, 0x00, 0x00, 0x00,    /* TPM_RC_SUCCESS */
+    0x00, 0x00, 0x00, 0x00,    /* TPMS_AC_OUTPUT tag */
+    0x00, 0x00, 0x00, 0x00      /* TPMS_AC_OUTPUT data */
 };
 
 typedef struct {
@@ -73,9 +75,9 @@ tcti_fake_ac_send_receive (
     UNUSED(tctiContext);
     UNUSED(timeout);
 
-    *response_size = sizeof(yielded_response);
+    *response_size = sizeof(successful_response);
     if (response_buffer != NULL)
-        memcpy(response_buffer, &yielded_response[0], sizeof(yielded_response));
+        memcpy(response_buffer, &successful_response[0], sizeof(successful_response));
 
     return TSS2_RC_SUCCESS;
 }

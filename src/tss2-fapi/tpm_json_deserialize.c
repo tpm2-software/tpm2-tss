@@ -302,7 +302,7 @@ get_boolean_from_json(json_object *jso, TPMI_YES_NO *value)
 TSS2_RC
 ifapi_json_pcr_selection_deserialize(
     json_object *jso,
-    UINT8 *sizeofSelect,
+    UINT8       *sizeofSelect,
     BYTE pcrSelect[TPM2_PCR_SELECT_MAX])
 {
     LOG_TRACE("call");

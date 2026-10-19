@@ -94,7 +94,7 @@ TSS2_RC Tss2_Sys_RSA_Encrypt_Complete(
         return rval;
 
     return Tss2_MU_TPM2B_PUBLIC_KEY_RSA_Unmarshal(ctx->cmdBuffer,
-                                                  ctx->maxCmdSize,
+                                                  ctx->rsp_header.responseSize,
                                                   &ctx->nextData, outData);
 }
 

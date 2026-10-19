@@ -106,14 +106,14 @@ TSS2_RC Tss2_Sys_EncryptDecrypt2_Complete (
         return rval;
 
     rval = Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal (ctx->cmdBuffer,
-                                               ctx->maxCmdSize,
+                                               ctx->rsp_header.responseSize,
                                                &ctx->nextData,
                                                outData);
     if (rval)
         return rval;
 
     return Tss2_MU_TPM2B_IV_Unmarshal (ctx->cmdBuffer,
-                                       ctx->maxCmdSize,
+                                       ctx->rsp_header.responseSize,
                                        &ctx->nextData,
                                        ivOut);
 }

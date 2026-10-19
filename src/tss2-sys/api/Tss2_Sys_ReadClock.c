@@ -47,7 +47,7 @@ TSS2_RC Tss2_Sys_ReadClock_Complete(
         return rval;
 
     return Tss2_MU_TPMS_TIME_INFO_Unmarshal(ctx->cmdBuffer,
-                                            ctx->maxCmdSize,
+                                            ctx->rsp_header.responseSize,
                                             &ctx->nextData,
                                             currentTime);
 }

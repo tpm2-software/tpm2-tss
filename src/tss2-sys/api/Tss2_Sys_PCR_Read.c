@@ -57,21 +57,21 @@ TSS2_RC Tss2_Sys_PCR_Read_Complete(
         return rval;
 
     rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
-                                    ctx->maxCmdSize,
+                                    ctx->rsp_header.responseSize,
                                     &ctx->nextData,
                                     pcrUpdateCounter);
     if (rval)
         return rval;
 
     rval = Tss2_MU_TPML_PCR_SELECTION_Unmarshal(ctx->cmdBuffer,
-                                                ctx->maxCmdSize,
+                                                ctx->rsp_header.responseSize,
                                                 &ctx->nextData,
                                                 pcrSelectionOut);
     if (rval)
         return rval;
 
     return Tss2_MU_TPML_DIGEST_Unmarshal(ctx->cmdBuffer,
-                                         ctx->maxCmdSize,
+                                         ctx->rsp_header.responseSize,
                                          &ctx->nextData, pcrValues);
 }
 

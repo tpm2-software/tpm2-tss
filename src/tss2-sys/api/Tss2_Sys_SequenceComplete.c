@@ -79,13 +79,13 @@ TSS2_RC Tss2_Sys_SequenceComplete_Complete(
         return rval;
 
     rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
+                                          ctx->rsp_header.responseSize,
                                           &ctx->nextData, result);
     if (rval)
         return rval;
 
     return Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal(ctx->cmdBuffer,
-                                               ctx->maxCmdSize,
+                                               ctx->rsp_header.responseSize,
                                                &ctx->nextData, validation);
 }
 

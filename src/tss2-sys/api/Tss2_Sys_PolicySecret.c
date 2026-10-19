@@ -110,13 +110,13 @@ TSS2_RC Tss2_Sys_PolicySecret_Complete(
         return rval;
 
     rval = Tss2_MU_TPM2B_TIMEOUT_Unmarshal(ctx->cmdBuffer,
-                                           ctx->maxCmdSize,
+                                           ctx->rsp_header.responseSize,
                                            &ctx->nextData, timeout);
     if (rval)
         return rval;
 
     return Tss2_MU_TPMT_TK_AUTH_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
+                                          ctx->rsp_header.responseSize,
                                           &ctx->nextData, policyTicket);
 }
 

@@ -90,13 +90,13 @@ TSS2_RC Tss2_Sys_Quote_Complete(
         return rval;
 
     rval = Tss2_MU_TPM2B_ATTEST_Unmarshal(ctx->cmdBuffer,
-                                          ctx->maxCmdSize,
+                                          ctx->rsp_header.responseSize,
                                           &ctx->nextData, quoted);
     if (rval)
         return rval;
 
     return Tss2_MU_TPMT_SIGNATURE_Unmarshal(ctx->cmdBuffer,
-                                            ctx->maxCmdSize,
+                                            ctx->rsp_header.responseSize,
                                             &ctx->nextData, signature);
 }
 

@@ -55,14 +55,14 @@ TSS2_RC Tss2_Sys_NV_ReadPublic_Complete(
         return rval;
 
     rval = Tss2_MU_TPM2B_NV_PUBLIC_Unmarshal(ctx->cmdBuffer,
-                                             ctx->maxCmdSize,
+                                             ctx->rsp_header.responseSize,
                                              &ctx->nextData,
                                              nvPublic);
     if (rval)
         return rval;
 
     return Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer,
-                                        ctx->maxCmdSize,
+                                        ctx->rsp_header.responseSize,
                                         &ctx->nextData,
                                         nvName);
 }

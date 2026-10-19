@@ -70,7 +70,7 @@ TSS2_RC Tss2_Sys_HashSequenceStart_Complete(
         return TSS2_SYS_RC_BAD_REFERENCE;
 
     rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
-                                    ctx->maxCmdSize,
+                                    ctx->rsp_header.responseSize,
                                     &ctx->nextData,
                                     sequenceHandle);
     if (rval)

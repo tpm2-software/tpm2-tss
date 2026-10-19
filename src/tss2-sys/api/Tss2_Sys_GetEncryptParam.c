@@ -49,8 +49,7 @@ TSS2_RC Tss2_Sys_GetEncryptParam(
     *encryptParamBuffer = offset + sizeof(UINT16);
     offset_size += sizeof(UINT16);
 
-    if (*encryptParamSize
-	> (size_t)ctx->rsp_header.responseSize - offset_size)
+    if (*encryptParamSize > (size_t)ctx->rsp_header.responseSize - offset_size)
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
     return TSS2_RC_SUCCESS;

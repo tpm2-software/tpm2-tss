@@ -77,7 +77,7 @@ TSS2_RC Tss2_Sys_ObjectChangeAuth_Complete(
         return rval;
 
     return Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer,
-                                           ctx->maxCmdSize,
+                                           ctx->rsp_header.responseSize,
                                            &ctx->nextData,
                                            outPrivate);
 }

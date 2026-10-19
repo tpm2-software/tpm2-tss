@@ -54,7 +54,7 @@ TSS2_RC Tss2_Sys_ECC_Parameters_Complete(
         return rval;
 
     return Tss2_MU_TPMS_ALGORITHM_DETAIL_ECC_Unmarshal(ctx->cmdBuffer,
-                                                       ctx->maxCmdSize,
+                                                       ctx->rsp_header.responseSize,
                                                        &ctx->nextData,
                                                        parameters);
 }

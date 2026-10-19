@@ -126,7 +126,7 @@ TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
     ctx->nextData = (UINT8 *)ctx->rspParamsSize - ctx->cmdBuffer;
 
     rval = Tss2_MU_TPM2_ST_Unmarshal(ctx->cmdBuffer,
-                                    ctx->maxCmdSize,
+                                    rspSize,
                                     &next, &tag);
     if (rval)
         return rval;
@@ -134,7 +134,7 @@ TSS2_RC CommonComplete(_TSS2_SYS_CONTEXT_BLOB *ctx)
     /* Skipping over response params size field */
     if (tag == TPM2_ST_SESSIONS)
         rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer,
-                                        ctx->maxCmdSize,
+                                        rspSize,
                                         &ctx->nextData,
                                         NULL);
 

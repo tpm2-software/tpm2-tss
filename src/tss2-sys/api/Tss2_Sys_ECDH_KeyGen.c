@@ -55,14 +55,14 @@ TSS2_RC Tss2_Sys_ECDH_KeyGen_Complete(
         return rval;
 
     rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer,
-                                             ctx->maxCmdSize,
+                                             ctx->rsp_header.responseSize,
                                              &ctx->nextData,
                                              zPoint);
     if (rval)
         return rval;
 
     return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer,
-                                             ctx->maxCmdSize,
+                                             ctx->rsp_header.responseSize,
                                              &ctx->nextData,
                                              pubPoint);
 }

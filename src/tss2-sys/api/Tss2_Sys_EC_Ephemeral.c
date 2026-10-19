@@ -54,13 +54,13 @@ TSS2_RC Tss2_Sys_EC_Ephemeral_Complete(
     if (rval)
         return rval;
     rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer,
-                                             ctx->maxCmdSize,
+                                             ctx->rsp_header.responseSize,
                                              &ctx->nextData, Q);
     if (rval)
         return rval;
 
     return Tss2_MU_UINT16_Unmarshal(ctx->cmdBuffer,
-                                    ctx->maxCmdSize,
+                                    ctx->rsp_header.responseSize,
                                     &ctx->nextData, counter);
 }
 

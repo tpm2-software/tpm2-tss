@@ -78,7 +78,7 @@ TSS2_RC Tss2_Sys_VerifySignature_Complete(
         return rval;
 
     return Tss2_MU_TPMT_TK_VERIFIED_Unmarshal(ctx->cmdBuffer,
-                                              ctx->maxCmdSize,
+                                              ctx->rsp_header.responseSize,
                                               &ctx->nextData, validation);
 }
 
