@@ -498,6 +498,13 @@ TSS2_RC tcti_cmd_receive (TSS2_TCTI_CONTEXT *tctiContext, size_t *response_size,
         return TSS2_RC_SUCCESS;
     }
 
+    if (*response_size < TPM_HEADER_SIZE) {
+        LOG_ERROR("Response buffer is smaller than TPM_HEADER_SIZE,"
+                  " got %zu expected at least %zu",
+                  *response_size, TPM_HEADER_SIZE);
+        return TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
+    }
+
     /* block until we have a header or the child closes the pipe */
     size_t size = tcti_cmd_fread (response_buffer, 1, TPM_HEADER_SIZE, tcti_cmd->source);
     rc = tcti_cmd_ferror (tcti_cmd->source);
@@ -528,6 +535,12 @@ TSS2_RC tcti_cmd_receive (TSS2_TCTI_CONTEXT *tctiContext, size_t *response_size,
                 " got %" PRIu32 " expected greater than or equal to %zu",
                 tcti_common->header.size, TPM_HEADER_SIZE);
         rc = TSS2_TCTI_RC_MALFORMED_RESPONSE;
+        goto out;
+    }
+
+    if (tcti_common->header.size > *response_size) {
+        LOG_ERROR("TPM response too long (%" PRIu32 " bytes)", tcti_common->header.size);
+        rc = TSS2_TCTI_RC_INSUFFICIENT_BUFFER;
         goto out;
     }
 
