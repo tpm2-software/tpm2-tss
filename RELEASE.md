@@ -88,7 +88,7 @@ Additionally they must:
 Release candidates and proper releases should be announced on the 01.org TPM2 mailing list:
   - [https://lore.kernel.org/tpm2/](https://lore.kernel.org/tpm2/)
   - To subscribe write an email to [tpm2+subscribe@lists.linux.dev](tpm2+subscribe@lists.linux.dev) see also [here](https://subspace.kernel.org/subscribing.html)
-  - The old list https://lists.linuxfoundation.org/mailman/listinfo/tpm2 was decomissioned by Linux
+  - The old list https://lists.linuxfoundation.org/mailman/listinfo/tpm2 was decommissioned by Linux
 
 This announcement should be accompanied by a link to the release page on Github as well as a link to the CHANGELOG.md accompanying the release.
 
