@@ -30,7 +30,7 @@ Instructions to build and install tpm2-tss are available in the [INSTALL](INSTAL
 If you're looking to discuss the source code in this project or get some questions answered you should join the TPM2 mailing list:
   - [https://lore.kernel.org/tpm2/](https://lore.kernel.org/tpm2/)
   - To subscribe write an email to [tpm2+subscribe@lists.linux.dev](tpm2+subscribe@lists.linux.dev) see also [here](https://subspace.kernel.org/subscribing.html)
-  - The old list https://lists.linuxfoundation.org/mailman/listinfo/tpm2 was decomissioned by Linux
+  - The old list https://lists.linuxfoundation.org/mailman/listinfo/tpm2 was decommissioned by Linux
 
 We also have an IRC channel set up on [FreeNode](https://freenode.net/) called \#tpm2.0-tss.
 You can also try Gitter [![Gitter](https://badges.gitter.im/tpm2-software/community.svg)](https://gitter.im/tpm2-software/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -56,7 +56,7 @@ There are two implementations that enable building and running this code on Linu
 Issues building or running the simulator should be reported to respective project.
 
 ### Software TPM
-The Software TPM is an open-source TPM emulator with different front-end interfaces such as socket and character device. Its code is hosted [on GitHub](https://github.com/stefanberger/swtpm) and building is faciliated by the GNU Autotools.
+The Software TPM is an open-source TPM emulator with different front-end interfaces such as socket and character device. Its code is hosted [on GitHub](https://github.com/stefanberger/swtpm) and building is facilitated by the GNU Autotools.
 The TCTI module for using this simulator is called _swtpm_.
 
 Since tpm2-tss v3.0 swtpm is the default simulator used by this project.
@@ -112,7 +112,7 @@ one needs to set this flag as follows:
 ```
   $ ./configure --with-devicetests="mandatory,optional"
 ```
-Tht default value for the flag is "mandatory"
+The default value for the flag is "mandatory"
 Any combination of the three is valid.
 The two flags are only valid when the integration tests are enabled with
 --enable-integration flag.
@@ -128,7 +128,7 @@ TPM device:
   $ sudo make check -j 1
 ```
 
-Note: The tests can not be run in paralel.
+Note: The tests can not be run in parallel.
 
 ### Running valgrind check
 The unit and integration tests can be run under the valgrind tool, which
