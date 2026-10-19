@@ -128,8 +128,10 @@ get_ossl_cipher(TPM2_ALG_ID tpm_sym_alg, UINT16 key_bits, TPM2_ALG_ID tpm_mode) 
         default:
             return NULL;
         }
+#if HAVE_EVP_SM4_CFB && !defined(OPENSSL_NO_SM4)
     case TPM2_ALG_SM4:
         return key_bits == 128 ? EVP_sm4_cfb128() : NULL;
+#endif
     default:
         return NULL;
     }
