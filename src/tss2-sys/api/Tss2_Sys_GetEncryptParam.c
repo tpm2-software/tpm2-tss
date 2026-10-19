@@ -23,6 +23,7 @@ Tss2_Sys_GetEncryptParam(TSS2_SYS_CONTEXT *sysContext,
                          const uint8_t   **encryptParamBuffer) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     uint8_t               *offset;
+    size_t                 offset_size;
 
     if (!encryptParamSize || !encryptParamBuffer || !ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
@@ -40,12 +41,17 @@ Tss2_Sys_GetEncryptParam(TSS2_SYS_CONTEXT *sysContext,
      * and a pointer to its buffer area. */
     offset = ctx->cmdBuffer + sizeof(TPM20_Header_Out)
              + ctx->numResponseHandles * sizeof(TPM2_HANDLE) + sizeof(TPM2_PARAMETER_SIZE);
+    offset_size = offset - ctx->cmdBuffer;
+    if ((size_t)ctx->rsp_header.responseSize < offset_size
+        || (size_t)ctx->rsp_header.responseSize - offset_size < sizeof(UINT16))
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
     *encryptParamSize = BE_TO_HOST_16(*((UINT16 *)offset));
     *encryptParamBuffer = offset + sizeof(UINT16);
+    offset_size += sizeof(UINT16);
 
     if (*encryptParamSize
-        > (size_t)ctx->rsp_header.responseSize - (*encryptParamBuffer - ctx->cmdBuffer))
+        > (size_t)ctx->rsp_header.responseSize - offset_size)
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
     return TSS2_RC_SUCCESS;
