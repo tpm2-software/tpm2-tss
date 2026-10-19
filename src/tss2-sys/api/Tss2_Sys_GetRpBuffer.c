@@ -50,6 +50,8 @@ TSS2_RC Tss2_Sys_GetRpBuffer(
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
     } else {
         /* If no session is used the remainder is the rpArea */
+        if (offset > ctx->rsp_header.responseSize)
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;
         *rpBuffer = ctx->cmdBuffer + offset;
         *rpBufferUsedSize = ctx->rsp_header.responseSize - offset;
     }
