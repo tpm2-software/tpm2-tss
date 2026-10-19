@@ -22,7 +22,7 @@ TSS2_RC
 Tss2_Sys_GetRspAuths(TSS2_SYS_CONTEXT *sysContext, TSS2L_SYS_AUTH_RESPONSE *rspAuthsArray) {
     TSS2_SYS_CONTEXT_BLOB *ctx = syscontext_cast(sysContext);
     TSS2_RC                rval = TSS2_RC_SUCCESS;
-    size_t                 offset = 0, offset_tmp;
+    size_t                 offset, offset_tmp;
     unsigned               i = 0;
     UINT32                 rspParamsSize;
 
@@ -36,44 +36,52 @@ Tss2_Sys_GetRspAuths(TSS2_SYS_CONTEXT *sysContext, TSS2L_SYS_AUTH_RESPONSE *rspA
     if (TPM2_ST_SESSIONS != ctx->rsp_header.tag)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    offset += sizeof(TPM20_Header_Out);
+    offset = sizeof(TPM20_Header_Out);
+    if (offset > ctx->rsp_header.responseSize)
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
+    if (ctx->numResponseHandles
+        > (ctx->rsp_header.responseSize - offset) / sizeof(TPM2_HANDLE))
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
     offset += ctx->numResponseHandles * sizeof(TPM2_HANDLE);
+    if (ctx->rsp_header.responseSize - offset < sizeof(UINT32))
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
     memcpy(&rspParamsSize, ctx->rspParamsSize, sizeof(rspParamsSize));
-    offset += BE_TO_HOST_32(rspParamsSize);
+    rspParamsSize = BE_TO_HOST_32(rspParamsSize);
+    if (rspParamsSize > ctx->rsp_header.responseSize - offset - sizeof(UINT32))
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
+    offset += rspParamsSize;
     offset += sizeof(UINT32);
     offset_tmp = offset;
 
     /* Validate the auth area before copying it */
     for (i = 0; i < ctx->authsCount; i++) {
 
-        if (offset_tmp > ctx->rsp_header.responseSize)
+        if (offset_tmp > ctx->rsp_header.responseSize
+            || ctx->rsp_header.responseSize - offset_tmp < sizeof(UINT16))
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         UINT16 tmp;
-        if (offset_tmp + sizeof(UINT16) > ctx->rsp_header.responseSize)
-            return TSS2_SYS_RC_MALFORMED_RESPONSE;
-
         memcpy(&tmp, ctx->cmdBuffer + offset_tmp, sizeof(UINT16));
         offset_tmp += sizeof(UINT16);
+        if (BE_TO_HOST_16(tmp) > ctx->rsp_header.responseSize - offset_tmp)
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;
         offset_tmp += BE_TO_HOST_16(tmp);
 
         if (offset_tmp > ctx->rsp_header.responseSize)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
+        if (offset_tmp == ctx->rsp_header.responseSize)
+            return TSS2_SYS_RC_MALFORMED_RESPONSE;
         offset_tmp += 1;
 
-        if (offset_tmp > ctx->rsp_header.responseSize)
-            return TSS2_SYS_RC_MALFORMED_RESPONSE;
-
-        if (offset_tmp + sizeof(UINT16) > ctx->rsp_header.responseSize)
+        if (ctx->rsp_header.responseSize - offset_tmp < sizeof(UINT16))
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
 
         memcpy(&tmp, ctx->cmdBuffer + offset_tmp, sizeof(UINT16));
         offset_tmp += sizeof(UINT16);
-        offset_tmp += BE_TO_HOST_16(tmp);
-
-        if (offset_tmp > ctx->rsp_header.responseSize)
+        if (BE_TO_HOST_16(tmp) > ctx->rsp_header.responseSize - offset_tmp)
             return TSS2_SYS_RC_MALFORMED_RESPONSE;
+        offset_tmp += BE_TO_HOST_16(tmp);
 
         if (i + 1 > ctx->authsCount)
             return TSS2_SYS_RC_INVALID_SESSIONS;
