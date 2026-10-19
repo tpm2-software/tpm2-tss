@@ -86,8 +86,8 @@ Tss2_Sys_ECC_Decrypt_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_MAX_BUFFER *pl
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                              plaintText);
+    return Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                              &ctx->nextData, plaintText);
 }
 
 TSS2_RC

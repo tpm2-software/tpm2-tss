@@ -57,8 +57,8 @@ Tss2_Sys_Vendor_TCG_Test_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_DATA *outp
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_DATA_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                        outputData);
+    return Tss2_MU_TPM2B_DATA_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                        &ctx->nextData, outputData);
 }
 
 TSS2_RC

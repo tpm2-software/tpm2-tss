@@ -49,8 +49,8 @@ Tss2_Sys_Unseal_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_SENSITIVE_DATA *out
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_SENSITIVE_DATA_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                                  outData);
+    return Tss2_MU_TPM2B_SENSITIVE_DATA_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                                  &ctx->nextData, outData);
 }
 
 TSS2_RC

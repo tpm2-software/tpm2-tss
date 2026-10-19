@@ -49,7 +49,8 @@ Tss2_Sys_IncrementalSelfTest_Complete(TSS2_SYS_CONTEXT *sysContext, TPML_ALG *to
     if (rval)
         return rval;
 
-    return Tss2_MU_TPML_ALG_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, toDoList);
+    return Tss2_MU_TPML_ALG_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                      toDoList);
 }
 
 TSS2_RC

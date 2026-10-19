@@ -74,12 +74,13 @@ Tss2_Sys_Hash_Complete(TSS2_SYS_CONTEXT  *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, outHash);
+    rval = Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                          &ctx->nextData, outHash);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                               validation);
+    return Tss2_MU_TPMT_TK_HASHCHECK_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                               &ctx->nextData, validation);
 }
 
 TSS2_RC

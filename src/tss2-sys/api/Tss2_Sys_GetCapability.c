@@ -65,7 +65,8 @@ Tss2_Sys_GetCapability_Complete(TSS2_SYS_CONTEXT     *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT8_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, moreData);
+    rval = Tss2_MU_UINT8_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                   moreData);
     if (rval)
         return rval;
 
@@ -73,12 +74,13 @@ Tss2_Sys_GetCapability_Complete(TSS2_SYS_CONTEXT     *sysContext,
        if this is a standard cap, just unmarshal it.
        if this is a vendor cap, we fill a tpm2b inside the struct buffer.*/
     size_t next_data_vendor = ctx->nextData;
-    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &next_data_vendor, &cap);
+    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &next_data_vendor,
+                                    &cap);
     if (rval)
         return rval;
 
     if (cap != TPM2_CAP_VENDOR_PROPERTY)
-        return Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize,
+        return Tss2_MU_TPMS_CAPABILITY_DATA_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
                                                       &ctx->nextData, capabilityData);
 
     /*

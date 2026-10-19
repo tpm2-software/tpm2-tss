@@ -72,7 +72,8 @@ Tss2_Sys_HMAC_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_DIGEST *outHMAC) {
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, outHMAC);
+    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                          &ctx->nextData, outHMAC);
 }
 
 TSS2_RC

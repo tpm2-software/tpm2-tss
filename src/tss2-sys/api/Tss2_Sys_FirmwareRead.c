@@ -49,8 +49,8 @@ Tss2_Sys_FirmwareRead_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_MAX_BUFFER *f
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                              fuData);
+    return Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                              &ctx->nextData, fuData);
 }
 
 TSS2_RC

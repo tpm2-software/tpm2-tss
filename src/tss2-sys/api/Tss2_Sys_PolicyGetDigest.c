@@ -49,8 +49,8 @@ Tss2_Sys_PolicyGetDigest_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_DIGEST *po
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                          policyDigest);
+    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                          &ctx->nextData, policyDigest);
 }
 
 TSS2_RC

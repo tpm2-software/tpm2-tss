@@ -96,13 +96,13 @@ Tss2_Sys_Rewrap_Complete(TSS2_SYS_CONTEXT       *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                           outDuplicate);
+    rval = Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                           &ctx->nextData, outDuplicate);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                                    outSymSeed);
+    return Tss2_MU_TPM2B_ENCRYPTED_SECRET_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                                    &ctx->nextData, outSymSeed);
 }
 
 TSS2_RC

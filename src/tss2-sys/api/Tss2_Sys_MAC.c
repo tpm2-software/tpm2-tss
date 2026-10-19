@@ -72,7 +72,8 @@ Tss2_Sys_MAC_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_DIGEST *outMAC) {
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, outMAC);
+    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                          &ctx->nextData, outMAC);
 }
 
 TSS2_RC
