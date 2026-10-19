@@ -112,8 +112,8 @@ Tss2_Sys_Import_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_PRIVATE *outPrivate
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                           outPrivate);
+    return Tss2_MU_TPM2B_PRIVATE_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                           &ctx->nextData, outPrivate);
 }
 
 TSS2_RC

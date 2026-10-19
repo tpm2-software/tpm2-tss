@@ -45,7 +45,8 @@ Tss2_Sys_ContextLoad_Complete(TSS2_SYS_CONTEXT *sysContext, TPMI_DH_CONTEXT *loa
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, loadedHandle);
+    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                    loadedHandle);
     if (rval)
         return rval;
 

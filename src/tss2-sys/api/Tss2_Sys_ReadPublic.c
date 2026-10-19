@@ -52,17 +52,18 @@ Tss2_Sys_ReadPublic_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_PUBLIC_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                          outPublic);
+    rval = Tss2_MU_TPM2B_PUBLIC_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                          &ctx->nextData, outPublic);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, name);
+    rval = Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                        &ctx->nextData, name);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                        qualifiedName);
+    return Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                        &ctx->nextData, qualifiedName);
 }
 
 TSS2_RC

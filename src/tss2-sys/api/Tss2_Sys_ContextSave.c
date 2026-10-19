@@ -49,7 +49,8 @@ Tss2_Sys_ContextSave_Complete(TSS2_SYS_CONTEXT *sysContext, TPMS_CONTEXT *contex
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMS_CONTEXT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, context);
+    return Tss2_MU_TPMS_CONTEXT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                          &ctx->nextData, context);
 }
 
 TSS2_RC

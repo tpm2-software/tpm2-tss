@@ -48,8 +48,8 @@ Tss2_Sys_GetRandom_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_DIGEST *randomBy
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                          randomBytes);
+    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                          &ctx->nextData, randomBytes);
 }
 
 TSS2_RC

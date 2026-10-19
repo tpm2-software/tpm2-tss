@@ -89,13 +89,13 @@ Tss2_Sys_ZGen_2Phase_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (rval)
         return rval;
 
-    rval
-        = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, outZ1);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                             &ctx->nextData, outZ1);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                             outZ2);
+    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                             &ctx->nextData, outZ2);
 }
 
 TSS2_RC

@@ -80,7 +80,8 @@ Tss2_Sys_LoadExternal_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, objectHandle);
+    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                    objectHandle);
     if (rval)
         return rval;
 
@@ -88,7 +89,8 @@ Tss2_Sys_LoadExternal_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, name);
+    return Tss2_MU_TPM2B_NAME_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                        &ctx->nextData, name);
 }
 
 TSS2_RC
