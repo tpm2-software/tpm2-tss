@@ -39,8 +39,7 @@ Tss2_Sys_GetRspAuths(TSS2_SYS_CONTEXT *sysContext, TSS2L_SYS_AUTH_RESPONSE *rspA
     offset = sizeof(TPM20_Header_Out);
     if (offset > ctx->rsp_header.responseSize)
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
-    if (ctx->numResponseHandles
-        > (ctx->rsp_header.responseSize - offset) / sizeof(TPM2_HANDLE))
+    if (ctx->numResponseHandles > (ctx->rsp_header.responseSize - offset) / sizeof(TPM2_HANDLE))
         return TSS2_SYS_RC_MALFORMED_RESPONSE;
     offset += ctx->numResponseHandles * sizeof(TPM2_HANDLE);
     if (ctx->rsp_header.responseSize - offset < sizeof(UINT32))
@@ -89,8 +88,8 @@ Tss2_Sys_GetRspAuths(TSS2_SYS_CONTEXT *sysContext, TSS2L_SYS_AUTH_RESPONSE *rspA
 
     /* Unmarshal the auth area */
     for (i = 0; i < ctx->authsCount; i++) {
-        rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &offset,
-                                                    &rspAuthsArray->auths[i]);
+        rval = Tss2_MU_TPMS_AUTH_RESPONSE_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                                    &offset, &rspAuthsArray->auths[i]);
         if (rval)
             break;
     }

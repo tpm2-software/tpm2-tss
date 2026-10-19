@@ -47,12 +47,13 @@ Tss2_Sys_GetTestResult_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                              outData);
+    rval = Tss2_MU_TPM2B_MAX_BUFFER_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                              &ctx->nextData, outData);
     if (rval)
         return rval;
 
-    return Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, testResult);
+    return Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                    testResult);
 }
 
 TSS2_RC

@@ -67,8 +67,8 @@ Tss2_Sys_HMAC_Start_Complete(TSS2_SYS_CONTEXT *sysContext, TPMI_DH_OBJECT *seque
     if (!ctx)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    rval
-        = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, sequenceHandle);
+    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                    sequenceHandle);
     if (rval)
         return rval;
 

@@ -92,19 +92,23 @@ Tss2_Sys_Commit_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, K);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                             &ctx->nextData, K);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, L);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                             &ctx->nextData, L);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, E);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                             &ctx->nextData, E);
     if (rval)
         return rval;
 
-    return Tss2_MU_UINT16_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, counter);
+    return Tss2_MU_UINT16_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                    counter);
 }
 
 TSS2_RC

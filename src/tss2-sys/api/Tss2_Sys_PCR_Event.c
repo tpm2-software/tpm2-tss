@@ -63,8 +63,8 @@ Tss2_Sys_PCR_Event_Complete(TSS2_SYS_CONTEXT *sysContext, TPML_DIGEST_VALUES *di
     if (rval)
         return rval;
 
-    return Tss2_MU_TPML_DIGEST_VALUES_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                                digests);
+    return Tss2_MU_TPML_DIGEST_VALUES_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                                &ctx->nextData, digests);
 }
 
 TSS2_RC

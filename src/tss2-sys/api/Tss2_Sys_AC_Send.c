@@ -73,8 +73,8 @@ Tss2_Sys_AC_Send_Complete(TSS2_SYS_CONTEXT *sysContext, TPMS_AC_OUTPUT *acDataOu
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMS_AC_OUTPUT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                            acDataOut);
+    return Tss2_MU_TPMS_AC_OUTPUT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                            &ctx->nextData, acDataOut);
 }
 
 TSS2_RC

@@ -65,8 +65,8 @@ Tss2_Sys_NV_Read_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_MAX_NV_BUFFER *dat
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_MAX_NV_BUFFER_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                                 data);
+    return Tss2_MU_TPM2B_MAX_NV_BUFFER_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                                 &ctx->nextData, data);
 }
 
 TSS2_RC

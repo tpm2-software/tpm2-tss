@@ -62,12 +62,13 @@ Tss2_Sys_AC_GetCapability_Complete(TSS2_SYS_CONTEXT     *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT8_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, moreData);
+    rval = Tss2_MU_UINT8_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                   moreData);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPML_AC_CAPABILITIES_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                                  capabilityData);
+    return Tss2_MU_TPML_AC_CAPABILITIES_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                                  &ctx->nextData, capabilityData);
 }
 
 TSS2_RC

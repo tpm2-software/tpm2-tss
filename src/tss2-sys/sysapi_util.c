@@ -121,13 +121,13 @@ CommonComplete(TSS2_SYS_CONTEXT_BLOB *ctx) {
 
     ctx->nextData = (UINT8 *)ctx->rspParamsSize - ctx->cmdBuffer;
 
-    rval = Tss2_MU_TPM2_ST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &next, &tag);
+    rval = Tss2_MU_TPM2_ST_Unmarshal(ctx->cmdBuffer, rspSize, &next, &tag);
     if (rval)
         return rval;
 
     /* Skipping over response params size field */
     if (tag == TPM2_ST_SESSIONS)
-        rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, NULL);
+        rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, rspSize, &ctx->nextData, NULL);
 
     return rval;
 }

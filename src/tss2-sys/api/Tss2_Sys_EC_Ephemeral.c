@@ -48,11 +48,13 @@ Tss2_Sys_EC_Ephemeral_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_ECC_POINT *Q,
     rval = CommonComplete(ctx);
     if (rval)
         return rval;
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, Q);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                             &ctx->nextData, Q);
     if (rval)
         return rval;
 
-    return Tss2_MU_UINT16_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, counter);
+    return Tss2_MU_UINT16_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                    counter);
 }
 
 TSS2_RC

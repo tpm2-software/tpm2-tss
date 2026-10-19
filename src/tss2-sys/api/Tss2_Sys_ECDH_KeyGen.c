@@ -51,13 +51,13 @@ Tss2_Sys_ECDH_KeyGen_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                             zPoint);
+    rval = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                             &ctx->nextData, zPoint);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                             pubPoint);
+    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                             &ctx->nextData, pubPoint);
 }
 
 TSS2_RC

@@ -68,8 +68,8 @@ Tss2_Sys_EventSequenceComplete_Complete(TSS2_SYS_CONTEXT *sysContext, TPML_DIGES
     if (rval)
         return rval;
 
-    return Tss2_MU_TPML_DIGEST_VALUES_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                                results);
+    return Tss2_MU_TPML_DIGEST_VALUES_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                                &ctx->nextData, results);
 }
 
 TSS2_RC

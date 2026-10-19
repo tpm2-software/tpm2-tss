@@ -59,11 +59,13 @@ Tss2_Sys_FieldUpgradeData_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPMT_HA_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, nextDigest);
+    rval = Tss2_MU_TPMT_HA_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                     nextDigest);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_HA_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, firstDigest);
+    return Tss2_MU_TPMT_HA_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                     firstDigest);
 }
 
 TSS2_RC

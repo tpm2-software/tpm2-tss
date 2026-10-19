@@ -64,20 +64,23 @@ Tss2_Sys_PCR_Allocate_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT8_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
+    rval = Tss2_MU_UINT8_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
                                    allocationSuccess);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, maxPCR);
+    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                    maxPCR);
     if (rval)
         return rval;
 
-    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, sizeNeeded);
+    rval = Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                    sizeNeeded);
     if (rval)
         return rval;
 
-    return Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData, sizeAvailable);
+    return Tss2_MU_UINT32_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize, &ctx->nextData,
+                                    sizeAvailable);
 }
 
 TSS2_RC

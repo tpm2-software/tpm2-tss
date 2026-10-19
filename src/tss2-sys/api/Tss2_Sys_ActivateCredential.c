@@ -82,8 +82,8 @@ Tss2_Sys_ActivateCredential_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_DIGEST 
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                          certInfo);
+    return Tss2_MU_TPM2B_DIGEST_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                          &ctx->nextData, certInfo);
 }
 
 TSS2_RC

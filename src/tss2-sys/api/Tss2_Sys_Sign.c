@@ -76,8 +76,8 @@ Tss2_Sys_Sign_Complete(TSS2_SYS_CONTEXT *sysContext, TPMT_SIGNATURE *signature) 
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_SIGNATURE_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                            signature);
+    return Tss2_MU_TPMT_SIGNATURE_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                            &ctx->nextData, signature);
 }
 
 TSS2_RC

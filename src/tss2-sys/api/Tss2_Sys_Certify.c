@@ -76,13 +76,13 @@ Tss2_Sys_Certify_Complete(TSS2_SYS_CONTEXT *sysContext,
     if (rval)
         return rval;
 
-    rval = Tss2_MU_TPM2B_ATTEST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                          certifyInfo);
+    rval = Tss2_MU_TPM2B_ATTEST_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                          &ctx->nextData, certifyInfo);
     if (rval)
         return rval;
 
-    return Tss2_MU_TPMT_SIGNATURE_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                            signature);
+    return Tss2_MU_TPMT_SIGNATURE_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                            &ctx->nextData, signature);
 }
 
 TSS2_RC

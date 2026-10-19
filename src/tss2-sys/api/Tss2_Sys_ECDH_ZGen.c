@@ -63,8 +63,8 @@ Tss2_Sys_ECDH_ZGen_Complete(TSS2_SYS_CONTEXT *sysContext, TPM2B_ECC_POINT *outPo
     if (rval)
         return rval;
 
-    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &ctx->nextData,
-                                             outPoint);
+    return Tss2_MU_TPM2B_ECC_POINT_Unmarshal(ctx->cmdBuffer, ctx->rsp_header.responseSize,
+                                             &ctx->nextData, outPoint);
 }
 
 TSS2_RC
