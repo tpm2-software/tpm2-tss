@@ -2120,6 +2120,38 @@ error_cleanup:
     return r;
 }
 
+static TSS2_RC
+ifapi_pcr_digest_matches(const IFAPI_PCR_REG *pcrs,
+                         size_t               n_pcrs,
+                         TPMI_ALG_HASH        pcr_digest_hash_alg,
+                         const TPM2B_DIGEST  *quote_digest,
+                         bool                *matches) {
+    TSS2_RC                    r;
+    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
+    TPM2B_DIGEST               pcr_digest;
+    size_t                     i, hash_size;
+
+    *matches = false;
+
+    r = ifapi_crypto_hash_start(&cryptoContext, pcr_digest_hash_alg);
+    goto_if_error(r, "crypto hash start", error_cleanup);
+
+    for (i = 0; i < n_pcrs; i++) {
+        HASH_UPDATE_BUFFER(cryptoContext, &pcrs[i].value.buffer, pcrs[i].value.size, r,
+                           error_cleanup);
+    }
+    r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest.buffer[0], &hash_size);
+    goto_if_error(r, "crypto hash finish", error_cleanup);
+    pcr_digest.size = hash_size;
+
+    *matches = memcmp(&pcr_digest.buffer[0], &quote_digest->buffer[0], pcr_digest.size) == 0;
+
+error_cleanup:
+    if (cryptoContext)
+        ifapi_crypto_hash_abort(&cryptoContext);
+    return r;
+}
+
 /** Compute pcr values from event list and verify quote digest.
  *
  * The event list is used to compute the PCR values corresponding
@@ -2147,14 +2179,17 @@ ifapi_calculate_pcrs(
     IFAPI_PCR_REG *pcrs)
 {
     TSS2_RC r = TSS2_RC_SUCCESS;
-    IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t i, pcr, i_evt, hash_size, n_events = 0;
     size_t n_pcrs = 0;
-    TPM2B_DIGEST pcr_digest;
     json_object *jso;
     IFAPI_EVENT event;
     bool found_hcrtm = false;
     UINT8 locality = 0;
+
+    if (jso_event_list && json_object_get_type(jso_event_list) != json_type_array) {
+        LOG_ERROR("Event list is not a JSON array");
+        return TSS2_FAPI_RC_BAD_VALUE;
+    }
 
     /* Initialize used pcrs */
     for (i = 0; i < pcr_selection->count; i++) {
@@ -2175,6 +2210,16 @@ ifapi_calculate_pcrs(
     /* Compute pcr values based on event list */
     if (jso_event_list) {
         n_events = json_object_array_length(jso_event_list);
+        if (n_events == 0 && quote_digest) {
+            bool matches;
+            r = ifapi_pcr_digest_matches(pcrs, n_pcrs, pcr_digest_hash_alg, quote_digest, &matches);
+            goto_if_error(r, "Compute initial PCR digest", error_cleanup);
+            if (!matches) {
+                r = TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED;
+                goto error_cleanup;
+            }
+        }
+
         for (i_evt = 0; i_evt < n_events; i_evt++) {
             jso = json_object_array_get_idx(jso_event_list, i_evt);
             r = ifapi_json_IFAPI_EVENT_deserialize(jso, &event, DIGEST_CHECK_WARNING);
@@ -2220,22 +2265,13 @@ ifapi_calculate_pcrs(
 
             /* Compute digest for the used pcrs */
             if (quote_digest) {
-                r = ifapi_crypto_hash_start(&cryptoContext, pcr_digest_hash_alg);
-                return_if_error(r, "crypto hash start");
-
-                for (i = 0; i < n_pcrs; i++) {
-                    HASH_UPDATE_BUFFER(cryptoContext, &pcrs[i].value.buffer, pcrs[i].value.size,
-                                       r, error_cleanup);
-                }
-                r = ifapi_crypto_hash_finish(&cryptoContext,
-                                             (uint8_t *) &pcr_digest.buffer[0],
-                                             &hash_size);
-                return_if_error(r, "crypto hash finish");
-                pcr_digest.size = hash_size;
+                bool matches;
+                r = ifapi_pcr_digest_matches(pcrs, n_pcrs, pcr_digest_hash_alg, quote_digest,
+                                             &matches);
+                goto_if_error(r, "Compute PCR digest", error_cleanup);
 
                 /* Compare the digest from the event list with the digest from the attest */
-                if (memcmp(&pcr_digest.buffer[0], &quote_digest->buffer[0],
-                           pcr_digest.size) == 0) {
+                if (matches) {
                     if (i_evt < (n_events - 1)) {
                         /* delete the events added after the quote */
                         if (json_object_array_del_idx(jso_event_list, i_evt + 1,
@@ -2245,8 +2281,6 @@ ifapi_calculate_pcrs(
                         }
                     }
                     break;
-                } else {
-                    ifapi_crypto_hash_abort(&cryptoContext);
                 }
             }
         }
@@ -2257,8 +2291,6 @@ ifapi_calculate_pcrs(
     }
 
 error_cleanup:
-    if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
     if (n_events > 0) {
         ifapi_cleanup_event(&event);
     }
