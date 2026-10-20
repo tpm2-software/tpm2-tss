@@ -1069,6 +1069,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_PREPARE_LOCKOUT_PARAM);
         /* The TPM flag lockoutAuthSet will be checked to decide whether a auth value
            is needed to write the dictionary attack parameters. */
+
+        if (context->config.ek_cert_less == TPM2_YES) {
+            context->state = PROVISION_PREPARE_SRK;
+            return TSS2_FAPI_RC_TRY_AGAIN;
+        }
+
         if (!hierarchy_lockout->misc.hierarchy.authPolicy.size) {
             if (command->auth_state & TPMA_PERMANENT_LOCKOUTAUTHSET) {
                 hierarchy_lockout->misc.hierarchy.with_auth = TPM2_YES;
@@ -1110,7 +1116,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         } else {
             goto_if_error_reset_state(r, "DictionaryAttackParameters_Finish", error_cleanup);
         }
+        fallthrough;
 
+    statecase(context->state, PROVISION_PREPARE_SRK);
         /* Generate template for SRK creation. */
         r = ifapi_set_key_flags(defaultProfile->srk_template,
                                 context->profiles.default_profile.srk_policy ? true : false,
