@@ -9,7 +9,7 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
-    if: "!contains(github.ref, 'coverity_scan')"
+    if: ${{ !contains(github.ref, 'coverity_scan') && (github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss') }}
     strategy:
       matrix:
         docker_image: [fedora-44-dev, centos-stream10-dev, opensuse-leap-dev, ubuntu-26.04-dev, alpine-3.24-dev, arch-linux-dev, nixos-26.05-dev ]
@@ -37,7 +37,7 @@ jobs:
           cat $(find ../ -name test-suite.log) || true
   scanbuild:
     runs-on: ubuntu-latest
-    if: "!contains(github.ref, 'coverity_scan')"
+    if: ${{ !contains(github.ref, 'coverity_scan') && (github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss') }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -61,7 +61,7 @@ jobs:
           cat $(find ../ -name test-suite.log) || true
   test-tcti-config:
     runs-on: ubuntu-latest
-    if: "!contains(github.ref, 'coverity_scan')"
+    if: ${{ !contains(github.ref, 'coverity_scan') && (github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss') }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -84,7 +84,7 @@ jobs:
           cat $(find ../ -name test-suite.log) || true
   test-mbedtls:
     runs-on: ubuntu-latest
-    if: "!contains(github.ref, 'coverity_scan')"
+    if: ${{ !contains(github.ref, 'coverity_scan') && (github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss') }}
     strategy:
       matrix:
         docker_image: [ubuntu-26.04-dev, ubuntu-22.04-mbedtls-3.6]
@@ -111,7 +111,7 @@ jobs:
           cat $(find ../ -name test-suite.log) || true
   test-no-crypto-build:
     runs-on: ubuntu-latest
-    if: "!contains(github.ref, 'coverity_scan')"
+    if: ${{ !contains(github.ref, 'coverity_scan') && (github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss') }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -134,7 +134,7 @@ jobs:
           cat $(find ../ -name test-suite.log) || true
   test-coverage:
     runs-on: ubuntu-latest
-    if: "!contains(github.ref, 'coverity_scan')"
+    if: ${{ !contains(github.ref, 'coverity_scan') && (github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss') }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -151,7 +151,19 @@ jobs:
           ENABLE_COVERAGE: true
           WITH_TCTI: swtpm
           PROJECT_NAME: ${{ github.event.repository.name }}
+      - name: Check Codecov token availability
+        id: codecov-token
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          if [[ -n "$CODECOV_TOKEN" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "CODECOV_TOKEN is unavailable; skipping coverage upload."
+          fi
       - name: Upload Coverage to Codecov
+        if: steps.codecov-token.outputs.available == 'true'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -165,7 +177,7 @@ jobs:
           cat $(find ../ -name test-suite.log) || true
   test-fuzz:
     runs-on: ubuntu-latest
-    if: "!contains(github.ref, 'coverity_scan')"
+    if: ${{ !contains(github.ref, 'coverity_scan') && (github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss') }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -187,7 +199,7 @@ jobs:
           cat $(find ../ -name test-suite.log) || true
   coverity-test:
     runs-on: ubuntu-latest
-    if: contains(github.ref, 'coverity_scan')
+    if: ${{ contains(github.ref, 'coverity_scan') && (github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss') }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
