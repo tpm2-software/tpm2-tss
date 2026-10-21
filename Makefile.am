@@ -608,7 +608,11 @@ if ESYS_OSSL
 TSS2_ESYS_SRC_CRYPTO = src/tss2-esys/esys_crypto_ossl.h src/tss2-esys/esys_crypto_ossl.c
 endif
 if ESYS_MBED
+if ESYS_MBED4
+TSS2_ESYS_SRC_CRYPTO = src/tss2-esys/esys_crypto_mbed.h src/tss2-esys/esys_crypto_mbed4.c
+else
 TSS2_ESYS_SRC_CRYPTO = src/tss2-esys/esys_crypto_mbed.h src/tss2-esys/esys_crypto_mbed.c
+endif
 endif
 
 src_tss2_esys_libtss2_esys_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-esys \
