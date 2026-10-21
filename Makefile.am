@@ -654,15 +654,40 @@ src_tss2_rc_libtss2_rc_la_SOURCES = $(TSS2_RC_SRC)
 
 ### TSS Policy library ###
 if POLICY
+noinst_LTLIBRARIES += libtss2-fapi-policy-internal.la
+lib_fapi_policy_internal = libtss2-fapi-policy-internal.la
+
+libtss2_fapi_policy_internal_la_SOURCES = \
+    src/tss2-fapi-policy/tss2_helpers.c \
+    src/tss2-fapi-policy/tss2_helpers.h \
+    src/tss2-fapi-policy/tss2_crypto.c \
+    src/tss2-fapi-policy/tss2_crypto.h
+
+libtss2_fapi_policy_internal_la_CFLAGS = \
+    $(AM_CFLAGS) \
+    -I$(srcdir)/src/tss2-policy \
+    -I$(srcdir)/src/tss2-fapi \
+    -I$(srcdir)/src/tss2-fapi-policy \
+    $(JSONC_CFLAGS) \
+    $(UUID_CFLAGS) \
+    $(CRYPTO_CFLAGS)
+
+noinst_HEADERS = \
+    src/tss2-fapi-policy/fapi_types.h \
+    src/tss2-fapi-policy/ifapi_policy_types.h \
+    src/tss2-fapi-policy/tss2_helpers.h \
+    src/tss2-fapi-policy/tss2_crypto.h
+
 libtss2_policy = src/tss2-policy/libtss2-policy.la
 tss2_HEADERS += $(srcdir)/include/tss2/tss2_policy.h
 lib_LTLIBRARIES += $(libtss2_policy)
 pkgconfig_DATA += lib/tss2-policy.pc
 
 src_tss2_policy_libtss2_policy_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-policy -I$(srcdir)/src/tss2-fapi \
+    -I$(srcdir)/src/tss2-fapi-policy \
     $(JSONC_CFLAGS) $(UUID_CFLAGS) $(CRYPTO_CFLAGS)
 src_tss2_policy_libtss2_policy_la_LIBADD  = $(libtss2_esys) $(libtss2_mu) $(libutil) $(JSONC_LIBS) $(UUID_LIBS) \
-	$(CRYPTO_LIBS)
+	$(CRYPTO_LIBS) $(lib_fapi_policy_internal) $(lib_policy_internal)
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_policy_libtss2_policy_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/tss2-policy.map
@@ -857,10 +882,13 @@ EXTRA_DIST +=  \
     test/data/fapi/eventlog/binary_measurements_hcrtm.b64
 
 src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_esys) \
-    $(libutil) $(libtss2_tctildr)
+    $(libutil) $(libtss2_tctildr) $(lib_fapi_policy_internal) $(lib_policy_internal)
 
 src_tss2_fapi_libtss2_fapi_la_SOURCES = $(TSS2_FAPI_SRC)
-src_tss2_fapi_libtss2_fapi_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-fapi $(CRYPTO_CFLAGS) $(JSONC_CFLAGS) \
+src_tss2_fapi_libtss2_fapi_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-fapi \
+                                        -I$(srcdir)/src/tss2-policy \
+                                        -I$(srcdir)/src/tss2-fapi-policy \
+                                        $(CRYPTO_CFLAGS) $(JSONC_CFLAGS) \
                                         $(UUID_CFLAGS)
 src_tss2_fapi_libtss2_fapi_la_LDFLAGS = $(AM_LDFLAGS) $(CRYPTO_LIBS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS)
 if HAVE_LD_VERSION_SCRIPT

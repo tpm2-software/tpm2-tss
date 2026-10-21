@@ -12,11 +12,12 @@
 #include <stdlib.h>   // for size_t, NULL, malloc
 #include <string.h>   // for memcpy, memset
 
-#include "fapi_crypto.h"   // for ifapi_crypto_hash_finish, ifapi_crypto_ha...
 #include "ifapi_helpers.h" // for ifapi_nv_get_name, append_object_to_list
 #include "ifapi_macros.h"  // for statecase, fallthrough, try_again_or_error
 #include "ifapi_policy_execute.h"
-#include "tss2_mu.h" // for Tss2_MU_TPMT_PUBLIC_Marshal
+#include "tss2_crypto.h"  // for ifapi_crypto_hash_finish, ifapi_crypto_ha...
+#include "tss2_helpers.h" // for append_object_to_list
+#include "tss2_mu.h"      // for Tss2_MU_TPMT_PUBLIC_Marshal
 
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, LOG_TRACE, goto_if_error

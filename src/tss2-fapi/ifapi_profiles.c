@@ -20,6 +20,7 @@
 #include "ifapi_profiles.h"
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifa...
 #include "tss2_common.h"          // for TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_helpers.h"         // for ifapi_asprintf ...
 
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, LOG_ERROR
