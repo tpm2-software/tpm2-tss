@@ -28,8 +28,9 @@
 #include "ifapi_helpers.h"
 #include "ifapi_macros.h"
 #define LOGMODULE fapi
-#include "util/log.h"
 #include "util/aux_util.h"
+#include "util-io/io.h" // for TEMP_RETRY
+#include "util/log.h"   // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
 
 /** Start reading a file's complete content into memory in an asynchronous way.
  *
@@ -60,6 +61,7 @@ ifapi_io_read_async(
 
     if (fstat(fileno(io->stream), &statbuf) == -1) {
         fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("Execute fstat for \"%s\".", filename);
         return TSS2_FAPI_RC_IO_ERROR;
     }
@@ -67,6 +69,7 @@ ifapi_io_read_async(
     /* Check whether file is a directory. */
     if (S_ISDIR(statbuf.st_mode)) {
         fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("\"%s\" is a directory.", filename);
         return TSS2_FAPI_RC_IO_ERROR;
     }
@@ -79,6 +82,7 @@ ifapi_io_read_async(
         LOG_ERROR("File \"%s\" could not be locked: %s",
                   filename, strerror(errno));
         fclose(io->stream);
+        io->stream = NULL;
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
@@ -111,11 +115,15 @@ ifapi_io_read_async(
     int flags = fcntl(fileno(io->stream), F_GETFL, 0);
     if (flags == -1) {
         SAFE_FREE(io->char_rbuffer);
+        fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("fcntl failed with %d", errno);
         return TSS2_FAPI_RC_IO_ERROR;
     }
     if (fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK) == -1) {
         SAFE_FREE(io->char_rbuffer);
+        fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("fcntl failed with %d", errno);
         return TSS2_FAPI_RC_IO_ERROR;
     }
@@ -707,7 +715,7 @@ ifapi_io_poll(IFAPI_IO * io) {
         fds.events = io->pollevents;
         fds.fd = fileno(io->stream);
         LOG_TRACE("Waiting for fd %i with event %i", fds.fd, fds.events);
-        rc = poll(&fds, 1, -1);
+        TEMP_RETRY(rc, poll(&fds, 1, -1));
         if (rc < 0) {
             LOG_ERROR("Poll failed with %d", errno);
             return TSS2_FAPI_RC_IO_ERROR;

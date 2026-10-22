@@ -292,6 +292,9 @@ digest_with_hash_name_cb(UINT8 *digest, UINT8 *buffer,
             return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid IMA binary format.");
         }
     }
+    if (template->event_size - *offset < (size_t)digest_size) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid IMA binary format.");
+    }
     LOGBLOB_TRACE(&buffer[*offset], digest_size, "IMA data_hash");
 
     if (jso && zero_digest(digest, template->hash_size) &&
@@ -362,11 +365,19 @@ static TSS2_RC eventname_ng_json_cb(UINT8 *digest, UINT8 *buffer,
 static TSS2_RC eventname_cb(UINT8 *digest, UINT8 *buffer,
                             size_t *offset, json_object *jso,
                             IFAPI_IMA_TEMPLATE *template) {
-    size_t size;
+    const char *nul;
+    size_t      size;
     UNUSED(digest);
     UNUSED(jso);
 
-    size = strlen((const char *)&buffer[*offset]); // TODO check
+    if (template->event_size <= *offset) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Event name out of bounds.");
+    }
+    nul = memchr(&buffer[*offset], '\0', template->event_size - *offset);
+    if (nul == NULL) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Event name not terminated.");
+    }
+    size = (size_t)(nul - (const char *)&buffer[*offset]);
     if (size > TCG_EVENT_NAME_LEN_MAX + 1) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Too long event name.");
     }
@@ -943,6 +954,9 @@ ifapi_get_ima_eventname(IFAPI_IMA_EVENT *ima_event, char **name)
     }
     if (i >= n) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant.");
+    }
+    if (ima_event->template_value.size == 0 || ima_event->template_value.buffer == NULL) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Empty template value.");
     }
     template.event_size = ima_event->template_value.size;
     template.event_buffer = &ima_event->template_value.buffer[0];

@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.1.5] - TBD
+### Fixes
+- FAPI: reject eventlog entries with an empty template value
+- FAPI: bound eventlog entry name reads by the template size
+- FAPI: verify the eventlog digest window fits the template buffer
+- FAPI: fix file leak on read error
+- FAPI: fix tests failing with physical TPMs
+- ESYS: fix compilation without SM4 support
+- ESYS: fix OpenSSL 3.X engine context handling for internal crypto
+- MU: bound subtype unmarshalling to the TPM2B size field
+- IO: retry poll calls on EINTR and EAGAIN
+- CI: allow CI runs from different repositories
+- CI: pin Docker images to before the major update
+
 ## [4.1.4] - 2026-07-15
 ### Security
 - Fixes: GHSA-q759-vqg7-8rc5

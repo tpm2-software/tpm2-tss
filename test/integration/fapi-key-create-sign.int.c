@@ -213,6 +213,8 @@ test_fapi_key_create_sign(FAPI_CONTEXT *context)
     r = Fapi_ChangeAuth(context, "/HS", NULL);
     goto_if_error(r, "Error Fapi_ChangeAuth", error);
 
+    ASSERT(cmp_strtokens(path_list, check_path_list, ":"));
+
     r = Fapi_GetDescription(context, "/HS/SRK", &description);
     goto_if_error(r, "Error GetDescription", error);
     if (description) {
