@@ -7,6 +7,7 @@ on:
   [push, pull_request]
 jobs:
   clang-format-checking:
+    if: github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/tpm2-software/ubuntu-24.04

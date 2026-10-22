@@ -290,6 +290,40 @@ tpm2b_unmarshal_success_offset(void **state) {
 }
 
 /*
+ * Test ensures the unmarshaling of a TPM2B subtype is bound by the size prefix.
+ */
+static void
+tpm2b_unmarshal_subtype_exceeds_size(void **state) {
+    TPM2B_ECC_POINT point = { 0 };
+    size_t          offset = 0;
+    uint8_t         buffer[] = { 0x00, 0x08, /* size = 8, real content is 12 */
+                                 0x00, 0x04, 0xef, 0xbe, 0xad, 0xde,   /* x: 2 + 4 = 6 bytes */
+                                 0x00, 0x04, 0x44, 0x33, 0x22, 0x11 }; /* y: 2 + 4 = 6 bytes */
+    TSS2_RC         rc;
+
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(buffer, sizeof(buffer), &offset, &point);
+    assert_int_equal(rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
+}
+
+/*
+ * Test ensures that unmarshaling of a TPM2B type produces an error if the
+ * subtype doesn't consume all of the supplied bytes.
+ */
+static void
+tpm2b_unmarshal_subtype_smaller_than_size(void **state) {
+    TPM2B_ECC_POINT point = { 0 };
+    size_t          offset = 0;
+    uint8_t         buffer[] = { 0x00, 0x10, /* size = 16, real content is 12 */
+                                 0x00, 0x04, 0xef, 0xbe, 0xad, 0xde, /* x: 2 + 4 = 6 bytes */
+                                 0x00, 0x04, 0x44, 0x33, 0x22, 0x11, /* y: 2 + 4 = 6 bytes */
+                                 0x00, 0x00, 0x00, 0x00 };           /* 4 trailing padding bytes */
+    TSS2_RC         rc;
+
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(buffer, sizeof(buffer), &offset, &point);
+    assert_int_equal(rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
+}
+
+/*
  * Test case ensures a NULL buffer parameter produces a BAD_REFERENCE RC.
  */
 void
@@ -354,6 +388,22 @@ tpm2b_unmarshal_dest_null_offset_valid(void **state) {
     rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(buffer, sizeof(buffer), &offset, NULL);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(offset, 24);
+}
+
+/*
+ * Test ensures the unmarshaling of a TPM2B subtype is bound by the size prefix
+ * even when dest is NULL and with a valid offset
+ */
+static void
+tpm2b_unmarshal_subtype_exceeds_size_dest_null_offset_valid(void **state) {
+    size_t  offset = 0;
+    uint8_t buffer[] = { 0x00, 0x08,                           /* size = 8, real content is 12 */
+                         0x00, 0x04, 0xef, 0xbe, 0xad, 0xde,   /* x: 2 + 4 = 6 bytes */
+                         0x00, 0x04, 0x44, 0x33, 0x22, 0x11 }; /* y: 2 + 4 = 6 bytes */
+    TSS2_RC rc;
+
+    rc = Tss2_MU_TPM2B_ECC_POINT_Unmarshal(buffer, sizeof(buffer), &offset, NULL);
+    assert_int_equal(rc, TSS2_MU_RC_INSUFFICIENT_BUFFER);
 }
 
 /*
@@ -460,9 +510,12 @@ main(void) {
             cmocka_unit_test(tpm2b_marshal_buffer_size_lt_data_nad_lt_offset),
             cmocka_unit_test(tpm2b_unmarshal_success),
             cmocka_unit_test(tpm2b_unmarshal_success_offset),
+            cmocka_unit_test(tpm2b_unmarshal_subtype_exceeds_size),
+            cmocka_unit_test(tpm2b_unmarshal_subtype_smaller_than_size),
             cmocka_unit_test(tpm2b_unmarshal_buffer_null),
             cmocka_unit_test(tpm2b_unmarshal_dest_null),
             cmocka_unit_test(tpm2b_unmarshal_dest_null_offset_valid),
+            cmocka_unit_test(tpm2b_unmarshal_subtype_exceeds_size_dest_null_offset_valid),
             cmocka_unit_test(tpm2b_unmarshal_buffer_size_lt_data_nad_lt_offset),
             cmocka_unit_test(tpm2b_public_rsa_marshal_success),
             cmocka_unit_test(tpm2b_public_rsa_unique_size_marshal_success),
