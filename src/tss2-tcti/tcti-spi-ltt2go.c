@@ -315,8 +315,12 @@ create_tcti_spi_ltt2go_platform(TSS2_TCTI_SPI_HELPER_PLATFORM *platform, const c
         goto out_dev_close;
     }
 
+#ifdef __FreeBSD__
+    platform_data->spi_dma_buffer = libusb_dev_mem_alloc(platform_data->dev_handle);
+#else
     platform_data->spi_dma_buffer
         = libusb_dev_mem_alloc(platform_data->dev_handle, SPI_MAX_TRANSFER);
+#endif
     if (!platform_data->spi_dma_buffer) {
         LOG_ERROR("libusb_dev_mem_alloc failed.");
         goto out_release_interface;

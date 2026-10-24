@@ -17,7 +17,6 @@ jobs:
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
-          release: "14.4"
           prepare: |
             export ASSUME_ALWAYS_YES=yes
             export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
@@ -25,24 +24,9 @@ jobs:
             rm -rf /var/db/pkg/repo-* /var/db/pkg/FreeBSD.meta /var/cache/pkg/*
             pkg bootstrap -f
             pkg update -f
-            pkg install -y bash
-            pkg install -y gmake
-            pkg install -y coreutils
-            pkg install -y libtool
-            pkg install -y pkgconf
-            pkg install -y autoconf
-            pkg install -y autoconf-archive
-            pkg install -y automake
-            pkg install -y openssl
-            pkg install -y json-c
-            pkg install -y cmocka
-            pkg install -y uthash
-            pkg install -y wget
-            pkg install -y curl
-            pkg install -y git
-            pkg install -y libftdi1
-            pkg install -y swtpm
-            pkg install -y libuuid
+            pkg install -y autoconf autoconf-archive automake bash cmocka \
+              coreutils curl doxygen git gmake json-c libftdi1 libtool \
+              libtpms libuuid openssl pkgconf swtpm uthash wget
             pkg update -f
             sync
 
@@ -52,18 +36,21 @@ jobs:
             export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
             export CFLAGS="-I/usr/local/include -I/usr/local/openssl/include"
             export LDFLAGS="-L/usr/local/lib"
-            export libusb_version="v1.0.26"
+            export LIBUSB_LIBS="-lusb"
             export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
             git config --global --add safe.directory /home/runner/work/tpm2-tss/tpm2-tss
             ./bootstrap
-            ./configure --enable-self-generated-certificate \
-                        --enable-unit=yes \
-                        --enable-integration=yes \
-                        --with-crypto=ossl \
-                        --disable-doxygen-doc \
-                        --enable-tcti-swtpm=yes \
-                        --enable-tcti-libtpms=no \
-                        --enable-tcti-mssim=no \
-                        --disable-tcti-spi-ltt2go \
-                        --disable-dependency-tracking
-            gmake -j check || { cat test-suite.log; exit 1; }
+            ./configure --disable-dependency-tracking \
+                        --enable-integration \
+                        --enable-self-generated-certificate \
+                        --enable-tcti-libtpms \
+                        --enable-tcti-mssim \
+                        --enable-tcti-spi-ltt2go \
+                        --enable-tcti-swtpm \
+                        --enable-unit \
+                        --with-crypto=ossl
+            gmake -j check || {
+              find . -name test-suite.log -exec sh -c \
+                'echo "===== $1 ====="; cat "$1"' sh {} \;
+              exit 1
+            }
