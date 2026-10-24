@@ -632,12 +632,12 @@ AS_IF([test "x$enable_defaultflags" = "xyes"],
       ADD_LINK_FLAG([-Wl,-z,relro])
       ])
 
-AC_ARG_ENABLE([weakcrypto],
-    [AS_HELP_STRING([--disable-weakcrypto],
-	           [Disable crypto algorithms considered weak])],,
-    [enable_weakcrypto=no])
-AS_IF([test "x$enable_weakcrypto" = "xyes"],
-	[AC_DEFINE([DISABLE_WEAK_CRYPTO],[1],[DISABLE WEAK CRYPTO ALGORITHMS])])
+AC_ARG_ENABLE([deprecated_crypto],
+    [AS_HELP_STRING([--enable-deprecated-crypto],
+	           [Enable crypto algorithms considered deprecated])],,
+    [enable_deprecated_crypto=no])
+AS_IF([test "x$enable_deprecated_crypto" != "xno"],
+	[AC_DEFINE([ENABLE_DEPRECATED_CRYPTO],[1],[enable DEPRECATED CRYPTO ALGORITHMS])])
 
 AC_ARG_ENABLE([self-generated-certificate],
             [AS_HELP_STRING([--enable-self-generated-certificate],
