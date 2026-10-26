@@ -1,0 +1,48 @@
+# TPM2 response tokens for the sys-execute fuzzer.
+# Response header tags.
+st_no_sessions="\x80\x01"
+st_sessions="\x80\x02"
+# RC_SUCCESS and common response codes.
+rc_success="\x00\x00\x00\x00"
+rc_failure="\x00\x00\x01\x01"
+rc_bad_tag="\x00\x00\x01\x1e"
+rc_retry="\x00\x00\x09\x08"
+rc_initialize="\x00\x00\x01\x00"
+rc_session_handling="\x00\x00\x09\x8a"
+# Attestation structure tags (TPM2_ST_ATTEST_*).
+attest_certify="\x80\x17"
+attest_quote="\x80\x18"
+attest_session_audit="\x80\x19"
+attest_command_audit="\x80\x1a"
+attest_time="\x80\x1b"
+attest_creation="\x80\x1c"
+attest_nv="\x80\x1d"
+# Algorithm identifiers (TPM2_ALG_*).
+alg_rsa="\x00\x01"
+alg_sha1="\x00\x04"
+alg_sha256="\x00\x0b"
+alg_sha384="\x00\x0c"
+alg_sha512="\x00\x0d"
+alg_ecc="\x00\x23"
+alg_rsassa="\x00\x14"
+alg_rsapss="\x00\x16"
+alg_ecdsa="\x00\x18"
+alg_sym_aes="\x00\x06"
+# Structure tags for TPMS_* with leading tags.
+tag_null="\x00\x00"
+# Common TPMA_OBJECT attributes value (fixedTPM|fixedParent|sensitiveDataOrigin|userWithAuth|decrypt|sign variants).
+objattr_common="\x00\x03\x00\x72"
+objattr_decrypt="\x00\x06\x00\x72"
+# GetCapability capability values.
+cap_algs="\x00\x00\x00\x00"
+cap_handles="\x00\x00\x00\x01"
+cap_commands="\x00\x00\x00\x02"
+cap_pp_commands="\x00\x00\x00\x03"
+cap_audit_commands="\x00\x00\x00\x04"
+cap_pcrs="\x00\x00\x00\x05"
+cap_tpm_properties="\x00\x00\x00\x06"
+cap_ecc_curves="\x00\x00\x0b\x03"
+# TPMS_CONTEXT / session types and misc.
+hierarchy_owner="\x40\x00\x00\x01"
+hierarchy_endorsement="\x40\x00\x00\x0b"
+hierarchy_platform="\x40\x00\x00\x0c"
