@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.1.5-rc0] - TBD
+## [4.1.5-rc0] - 2026-10-26
 ### Security
 - GHSA-h664-qxhh-gx3w CVE-2026-109545
 - GHSA-2q8j-chww-3pcq CVE-ID requested
