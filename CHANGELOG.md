@@ -3,8 +3,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.1.5] - TBD
+## [4.1.5-rc0] - TBD
+### Security
+- GHSA-h664-qxhh-gx3w CVE-2026-109545
+- GHSA-2q8j-chww-3pcq CVE-ID requested
+- GHSA-5mqr-9575-x89w CVE-ID requested
+- GHSA-rjg6-phr3-3rxw CVE-ID requested
+- GHSA-g73j-fj87-wmqq CVE-ID requested
+- GHSA-v965-wr7f-xw6w CVE-ID requested
+- GHSA-5p93-qmch-h65j CVE-ID requested
+- GHSA-x33j-3x4g-f32j CVE-ID requested
+- GHSA-xvmm-58jj-c6gf CVE-ID requested
+
 ### Fixes
+- TCTI: validate the response header length
+- TCTI: add missing size checks for response buffers
+- FAPI: fix quoting of empty event logs
+- FAPI: check the number of branches for policy lists
+- FAPI: validate key size before extracting the public key
+- FAPI: add a missing bounds check on PCR_Select deserialization
+- FAPI: check buffer size in RSASSA and RSAPSS signature conversion
 - FAPI: reject eventlog entries with an empty template value
 - FAPI: bound eventlog entry name reads by the template size
 - FAPI: verify the eventlog digest window fits the template buffer
@@ -12,6 +30,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - FAPI: fix tests failing with physical TPMs
 - ESYS: fix compilation without SM4 support
 - ESYS: fix OpenSSL 3.X engine context handling for internal crypto
+- SYS: harden the response size checks
+- SYS: validate the length of no-session responses
+- SYS: validate the length of encrypted parameter responses
+- SYS: validate the length of response authorization parameters
+- SYS: use response size instead of buffer size during unmarshalling
 - MU: bound subtype unmarshalling to the TPM2B size field
 - IO: retry poll calls on EINTR and EAGAIN
 - CI: allow CI runs from different repositories
