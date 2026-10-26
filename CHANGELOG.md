@@ -19,16 +19,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## [4.1.4] - 2026-07-15
 ### Security
-- Fixes: GHSA-q759-vqg7-8rc5
-- Fixes: GHSA-7638-f8gq-c475
-- Fixes: GHSA-p3px-r4mm-jpw5
-- Fixes: GHSA-x5j2-26fc-hhc3
-- Fixes: GHSA-gf8g-2r5c-74c7
-- Fixes: GHSA-mj78-pj5v-wvjx
-- Fixes: GHSA-v2qp-xh5m-44mf
-- Fixes: GHSA-2q5v-c7hv-fvpf
-- Fixes: GHSA-pcpw-8625-jqcp
-- Fixes: GHSA-6grq-c24j-xcjr
+- Fixes: GHSA-q759-vqg7-8rc5 CVE-2026-73980
+- Fixes: GHSA-7638-f8gq-c475 CVE-2026-73981
+- Fixes: GHSA-x5j2-26fc-hhc3 CVE-2026-73982
+- Fixes: GHSA-gf8g-2r5c-74c7 CVE-2026-73983
+- Fixes: GHSA-p3px-r4mm-jpw5 CVE-2026-73984
+- Fixes: GHSA-pcpw-8625-jqcp CVE-2026-73985
+- Fixes: GHSA-v2qp-xh5m-44mf CVE-2026-73986
+- Fixes: GHSA-mj78-pj5v-wvjx CVE-2026-73987
+- Fixes: GHSA-2q5v-c7hv-fvpf CVE-2026-73988
+- Fixes: GHSA-6grq-c24j-xcjr CVE-2026-73989
 
 ### Fixes
 - FAPI: fix double free in an error case.
