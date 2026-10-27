@@ -1,0 +1,82 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "default",
+            "description": "Ninja multi-config with vcpkg + Clang/LLVM chainload",
+            "inherits": [
+                "clang"
+            ],
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+                "VCPKG_HOST_TRIPLET": "x64-windows-static"
+            }
+        },
+        {
+            "name": "clang",
+            "description": "Ninja multi-config with vcpkg + Clang/LLVM chainload (triplet driven by env vars)",
+            "inherits": [
+                "base"
+            ],
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "environment": {
+                "VCPKG_DEFAULT_TRIPLET": "$penv{VCPKG_DEFAULT_TRIPLET}",
+                "VCPKG_DEFAULT_HOST_TRIPLET": "$penv{VCPKG_DEFAULT_HOST_TRIPLET}"
+            },
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "$env{VCPKG_DEFAULT_TRIPLET}",
+                "VCPKG_HOST_TRIPLET": "$env{VCPKG_DEFAULT_HOST_TRIPLET}",
+                "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/cmake/triplets",
+                "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/clang.cmake"
+            }
+        },
+        {
+            "name": "clang-x86",
+            "description": "Ninja multi-config with vcpkg + Clang/LLVM chainload",
+            "inherits": [
+                "clang"
+            ],
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "x86-windows-static",
+                "VCPKG_HOST_TRIPLET": "x64-windows-static"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "clang-debug",
+            "configurePreset": "clang",
+            "configuration": "Debug"
+        },
+        {
+            "name": "clang-release",
+            "configurePreset": "clang",
+            "configuration": "Release"
+        },
+        {
+            "name": "clang-x86-debug",
+            "configurePreset": "clang-x86",
+            "configuration": "Debug"
+        },
+        {
+            "name": "clang-x86-release",
+            "configurePreset": "clang-x86",
+            "configuration": "Release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "clang",
+            "configurePreset": "clang"
+        }
+    ]
+}
