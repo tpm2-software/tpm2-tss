@@ -462,6 +462,7 @@ Esys_StartAuthSession_Finish(ESYS_CONTEXT *esysContext, ESYS_TR *sessionHandle) 
                 secret_size, "ATH", &lnonceTPM, esysContext->in.StartAuthSession.nonceCaller,
                 authHash_size * 8, NULL,
                 &sessionHandleNode->rsrc.misc.rsrc_session.sessionKey.buffer[0], FALSE);
+            secure_mem_zero(secret, secret_size);
             free(secret);
             return_if_error(r, "Error in KDFa computation.");
 
