@@ -5,6 +5,7 @@ name: CIFuzz
 on: [pull_request]
 jobs:
   Fuzzing:
+    if: github.repository == 'tpm2-software/tpm2-tss'
     runs-on: ubuntu-latest
     steps:
     - name: Build Fuzzers
