@@ -21,13 +21,13 @@ test_fuzz_tcti_libtss2_tcti_fuzzing_la_SOURCES  = \
 endif # ENABLE_TCTI_FUZZING
 
 if ENABLE_FUZZING
-FUZZ_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration
+FUZZ_CFLAGS = $(TESTS_CFLAGS) -I$(srcdir)/test/integration -DTEST_FUZZING
 FUZZ_CPPFLAGS = $(INCLUDE_DIRS) -I$(srcdir)/test/integration $(LIB_FUZZING_ENGINE)
 
 libtss2_utils_fuzzing = test/fuzz/libfuzz_utils.la
 check_LTLIBRARIES += $(libtss2_utils_fuzzing)
 test_fuzz_libfuzz_utils_la_LDFLAGS = $(TESTS_LDFLAGS)
-test_fuzz_libfuzz_utils_la_LIBADD = $(TESTS_LIBADD)
+test_fuzz_libfuzz_utils_la_LIBADD = $(TESTS_LIBADD) $(libtss2_tcti_fuzzing)
 test_fuzz_libfuzz_utils_la_CFLAGS = $(AM_CFLAGS) $(FUZZ_CFLAGS)
 test_fuzz_libfuzz_utils_la_SOURCES = \
     test/integration/test-common.c test/integration/test-common.h
