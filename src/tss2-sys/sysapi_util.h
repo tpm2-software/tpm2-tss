@@ -6,7 +6,8 @@
 
 #ifndef TSS2_SYSAPI_UTIL_H
 #define TSS2_SYSAPI_UTIL_H
-#include <stddef.h> // for size_t
+#include <stdbool.h> // for bool
+#include <stddef.h>  // for size_t
 
 #include "tss2_common.h"     // for UINT32, TSS2_RC, UINT8, TSS2_RC_SUCCESS
 #include "tss2_sys.h"        // for TSS2L_SYS_AUTH_COMMAND, TSS2L_SYS_AUTH_...
@@ -100,8 +101,8 @@ TSS2_RC CommonPreparePrologue(TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode);
 
 TSS2_RC CommonPrepareEpilogue(TSS2_SYS_CONTEXT_BLOB *ctx);
 
-#ifdef DISABLE_WEAK_CRYPTO
-bool    IsAlgorithmWeak(TPM2_ALG_ID algorith, TPM2_KEY_SIZE key_size);
+#ifndef ENABLE_DEPRECATED_CRYPTO
+bool    IsAlgorithmDeprecated(TPM2_ALG_ID algorith, TPM2_KEY_SIZE key_size);
 TSS2_RC ValidatePublicTemplate(const TPM2B_PUBLIC *pub);
 TSS2_RC ValidateNV_Public(const TPM2B_NV_PUBLIC *nv_public_info);
 TSS2_RC ValidateTPML_PCR_SELECTION(const TPML_PCR_SELECTION *pcr_selection);
@@ -110,7 +111,7 @@ TSS2_RC ValidateTPML_PCR_SELECTION(const TPML_PCR_SELECTION *pcr_selection);
  * static inline is not portable, so make these empty defines to reduce generating functions
  * and thus binary size for them.
  */
-#define IsAlgorithmWeak(...)            TSS2_RC_SUCCESS
+#define IsAlgorithmDeprecated(...)      TSS2_RC_SUCCESS
 #define ValidatePublicTemplate(...)     TSS2_RC_SUCCESS
 #define ValidateNV_Public(...)          TSS2_RC_SUCCESS
 #define ValidateTPML_PCR_SELECTION(...) TSS2_RC_SUCCESS
