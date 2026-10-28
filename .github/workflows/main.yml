@@ -87,7 +87,7 @@ jobs:
     if: "!contains(github.ref, 'coverity_scan')"
     strategy:
       matrix:
-        docker_image: [ubuntu-26.04-dev, ubuntu-22.04-mbedtls-3.6]
+        docker_image: [ubuntu-26.04-dev, ubuntu-22.04-mbedtls-3.6, alpine-3.24-dev]
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
