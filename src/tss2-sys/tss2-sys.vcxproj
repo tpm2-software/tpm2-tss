@@ -83,6 +83,7 @@
     <ClCompile Include="api\Tss2_Sys_ContextSave.c" />
     <ClCompile Include="api\Tss2_Sys_Create.c" />
     <ClCompile Include="api\Tss2_Sys_CreatePrimary.c" />
+    <ClCompile Include="api\Tss2_Sys_Decapsulate.c" />
     <ClCompile Include="api\Tss2_Sys_DictionaryAttackLockReset.c" />
     <ClCompile Include="api\Tss2_Sys_DictionaryAttackParameters.c" />
     <ClCompile Include="api\Tss2_Sys_Duplicate.c" />
@@ -90,6 +91,7 @@
     <ClCompile Include="api\Tss2_Sys_ECDH_KeyGen.c" />
     <ClCompile Include="api\Tss2_Sys_ECDH_ZGen.c" />
     <ClCompile Include="api\Tss2_Sys_EC_Ephemeral.c" />
+    <ClCompile Include="api\Tss2_Sys_Encapsulate.c" />
     <ClCompile Include="api\Tss2_Sys_EncryptDecrypt.c" />
     <ClCompile Include="api\Tss2_Sys_EncryptDecrypt2.c" />
     <ClCompile Include="api\Tss2_Sys_EventSequenceComplete.c" />
@@ -175,12 +177,18 @@
     <ClCompile Include="api\Tss2_Sys_SetPrimaryPolicy.c" />
     <ClCompile Include="api\Tss2_Sys_Shutdown.c" />
     <ClCompile Include="api\Tss2_Sys_Sign.c" />
+    <ClCompile Include="api\Tss2_Sys_SignDigest.c" />
+    <ClCompile Include="api\Tss2_Sys_SignSequenceComplete.c" />
+    <ClCompile Include="api\Tss2_Sys_SignSequenceStart.c" />
     <ClCompile Include="api\Tss2_Sys_StartAuthSession.c" />
     <ClCompile Include="api\Tss2_Sys_Startup.c" />
     <ClCompile Include="api\Tss2_Sys_StirRandom.c" />
     <ClCompile Include="api\Tss2_Sys_TestParms.c" />
     <ClCompile Include="api\Tss2_Sys_Unseal.c" />
     <ClCompile Include="api\Tss2_Sys_Vendor_TCG_Test.c" />
+    <ClCompile Include="api\Tss2_Sys_VerifyDigestSignature.c" />
+    <ClCompile Include="api\Tss2_Sys_VerifySequenceComplete.c" />
+    <ClCompile Include="api\Tss2_Sys_VerifySequenceStart.c" />
     <ClCompile Include="api\Tss2_Sys_VerifySignature.c" />
     <ClCompile Include="api\Tss2_Sys_ZGen_2Phase.c" />
     <ClCompile Include="api\Tss2_Sys_ECC_Encrypt.c" />
