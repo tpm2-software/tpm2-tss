@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.2.1-rc1] - 2026-10-28
+### Fixed
+- FAPI: fix buffer overflow in ifapi_set_auth_primary
+- MAINTAINERS: add Moritz
+
 ## [4.2.1-rc0] - 2026-10-26
 ### Security
 - GHSA-h664-qxhh-gx3w CVE-2026-109545
