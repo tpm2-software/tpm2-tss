@@ -359,6 +359,11 @@ ifapi_set_auth_primary(FAPI_CONTEXT          *context,
         return_if_error(r, "AuthCallback");
         if (auth != NULL) {
             inSensitive->userAuth.size = strlen(auth);
+            if (inSensitive->userAuth.size > sizeof(TPMU_HA)) {
+                SAFE_FREE(auth);
+                return_error2(TSS2_FAPI_RC_BAD_VALUE, "Size of auth value %" PRIu16 " > %zu",
+                              inSensitive->userAuth.size, sizeof(TPMU_HA));
+            }
             memcpy(&inSensitive->userAuth.buffer[0], auth, inSensitive->userAuth.size);
         }
         object->misc.key.auth_primary_set = true;
