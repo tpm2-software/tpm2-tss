@@ -23,20 +23,18 @@ typedef struct {
     void                    *libtpms;
     TPM_RESULT (*TPMLIB_ChooseTPMVersion)(TPMLIB_TPMVersion);
     TPM_RESULT (*TPMLIB_RegisterCallbacks)(struct libtpms_callbacks *);
-    TPM_RESULT (*TPMLIB_GetState)(enum TPMLIB_StateType, unsigned char **, uint32_t *);
     TPM_RESULT (*TPMLIB_MainInit)(void);
     TPM_RESULT(*TPMLIB_Process)
     (unsigned char **, uint32_t *, uint32_t *, unsigned char *, uint32_t);
-    TPM_RESULT (*TPMLIB_SetState)(enum TPMLIB_StateType, const unsigned char *, uint32_t);
     void (*TPMLIB_Terminate)(void);
     TPM_RESULT (*TPM_IO_TpmEstablished_Reset)(void);
-    uint8_t *response_buffer;
-    size_t   response_buffer_len;
-    size_t   response_len;
-    char    *state_path;
-    char    *state_mmap;
-    size_t   state_mmap_len;
-    size_t   state_len;
+    uint8_t       *response_buffer;
+    size_t         response_buffer_len;
+    size_t         response_len;
+    char          *state_path;
+    unsigned char *state_mmap;
+    size_t         state_mmap_len;
+    size_t         state_len;
 } TSS2_TCTI_LIBTPMS_CONTEXT;
 
 #endif /* TCTI_LIBTPMS_H */

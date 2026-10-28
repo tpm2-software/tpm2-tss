@@ -183,8 +183,9 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context) {
         goto error;
     }
 
-    uint8_t digest[20] = { 0xa9, 0x99, 0x3e, 0x36, 0x47, 0x06, 0x81, 0x6a, 0xba, 0x3e,
-                           0x25, 0x71, 0x78, 0x50, 0xc2, 0x6c, 0x9c, 0xd0, 0xd8, 0x9d };
+    uint8_t digest[32] = { 0xa9, 0x99, 0x3e, 0x36, 0x47, 0x06, 0x81, 0x6a, 0xba, 0x3e, 0x25,
+                           0x71, 0x78, 0x50, 0xc2, 0x6c, 0x9c, 0xd0, 0xd8, 0x9d, 0x25, 0x71,
+                           0x78, 0x50, 0xc2, 0x6c, 0x9c, 0xd0, 0xd8, 0x9d, 0xd8, 0x9d };
     uint8_t signature[256];
     size_t  signatureLength = 256;
 
@@ -193,16 +194,16 @@ test_fapi_ext_public_key(FAPI_CONTEXT *context) {
         goto error;
     }
     if (EVP_PKEY_sign_init(ctx) <= 0 || EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) <= 0
-        || EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha1()) <= 0) {
+        || EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0) {
         LOG_ERROR("Test EVP_PKEY_sign_init failed.");
         goto error;
     }
-    if (EVP_PKEY_sign(ctx, signature, &signatureLength, digest, 20) <= 0) {
+    if (EVP_PKEY_sign(ctx, signature, &signatureLength, digest, 32) <= 0) {
         LOG_ERROR("Test EVP_PKEY_sign failed.");
         goto error;
     }
 
-    r = Fapi_VerifySignature(context, "/ext/myExtPubKey", digest, 20, signature, 256);
+    r = Fapi_VerifySignature(context, "/ext/myExtPubKey", digest, 32, signature, 256);
     goto_if_error(r, "Error Fapi_VerifySignature", error);
 
     r = Fapi_SetCertificate(context, "/ext/myExtPubKey", cert);

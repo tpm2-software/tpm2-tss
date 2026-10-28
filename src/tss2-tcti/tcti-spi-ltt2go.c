@@ -369,6 +369,8 @@ Tss2_Tcti_Spi_Ltt2go_Init(TSS2_TCTI_CONTEXT *tcti_context, size_t *size, const c
     return Tss2_Tcti_Spi_Helper_Init(tcti_context, size, &tcti_platform);
 }
 
+/* public info structure */
+#ifndef NO_DL
 static const TSS2_TCTI_INFO tss2_tcti_ltt2go_info
     = { .version = TCTI_VERSION,
         .name = "tcti-spi-ltt2go",
@@ -380,3 +382,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_ltt2go_info;
 }
+#endif /* NO_DL */

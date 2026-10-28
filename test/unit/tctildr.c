@@ -1,5 +1,4 @@
-/*
- * SPDX-License-Identifier: BSD-2-Clause
+/* SPDX-License-Identifier: BSD-2-Clause
  * Copyright 2019, Intel Corporation
  */
 
@@ -51,7 +50,7 @@ void *__real_calloc(size_t nmemb, size_t size);
 void *
 __wrap_calloc(size_t nmemb, size_t size) {
     if (size == TEST_MAGIC_SIZE || size == sizeof(TSS2_TCTILDR_CONTEXT))
-        return mock_type(void *);
+        return mock_ptr_type(void *);
     else
         return __real_calloc(nmemb, size);
 }
@@ -70,8 +69,8 @@ TSS2_RC
 __wrap_tctildr_get_tcti(const char *name, const char *conf, TSS2_TCTI_CONTEXT **tcti, void **data) {
     TSS2_RC rc = mock_type(TSS2_RC);
     if (rc == TSS2_RC_SUCCESS) {
-        *tcti = mock_type(TSS2_TCTI_CONTEXT *);
-        *data = mock_type(void *);
+        *tcti = mock_ptr_type(TSS2_TCTI_CONTEXT *);
+        *data = mock_ptr_type(void *);
     }
     return rc;
 }
@@ -115,7 +114,7 @@ TSS2_TCTI_INFO info = {
 };
 const TSS2_TCTI_INFO *
 local_info(void) {
-    return mock_type(const TSS2_TCTI_INFO *);
+    return mock_ptr_type(const TSS2_TCTI_INFO *);
 }
 void
 tcti_from_info_info_null(void **state) {

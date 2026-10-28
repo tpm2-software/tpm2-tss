@@ -82,6 +82,10 @@ read_policy(FAPI_CONTEXT *context, char *policy_name) {
     fseek(stream, 0L, SEEK_END);
     policy_size = ftell(stream);
     fclose(stream);
+    if (policy_size < 0) {
+        LOG_ERROR("Could not determine size of file %s.", policy_file);
+        return NULL;
+    }
     json_policy = malloc(policy_size + 1);
     stream = fopen(policy_file, "r");
     ssize_t ret = read(fileno(stream), json_policy, policy_size);

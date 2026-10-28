@@ -215,6 +215,28 @@ TSS2_RC Fapi_Sign_Finish(FAPI_CONTEXT *context,
                          char        **publicKey,
                          char        **certificate);
 
+TSS2_RC Fapi_DigestAndSign(FAPI_CONTEXT  *context,
+                           char const    *keyPath,
+                           char const    *padding,
+                           uint8_t const *data,
+                           size_t         dataSize,
+                           uint8_t      **signature,
+                           size_t        *signatureSize,
+                           char         **publicKey,
+                           char         **certificate);
+
+TSS2_RC Fapi_DigestAndSign_Async(FAPI_CONTEXT  *context,
+                                 char const    *keyPath,
+                                 char const    *padding,
+                                 uint8_t const *data,
+                                 size_t         dataSize);
+
+TSS2_RC Fapi_DigestAndSign_Finish(FAPI_CONTEXT *context,
+                                  uint8_t     **signature,
+                                  size_t       *signatureSize,
+                                  char        **publicKey,
+                                  char        **certificate);
+
 TSS2_RC Fapi_VerifySignature(FAPI_CONTEXT  *context,
                              char const    *keyPath,
                              uint8_t const *digest,

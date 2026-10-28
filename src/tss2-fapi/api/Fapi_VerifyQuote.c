@@ -288,6 +288,11 @@ Fapi_VerifyQuote_Finish(FAPI_CONTEXT *context) {
                        "Attest without TPM2 generated value", error_cleanup);
         }
 
+        if (command->fapi_quote_info.attest.type != TPM2_ST_ATTEST_QUOTE) {
+            goto_error(r, TSS2_FAPI_RC_SIGNATURE_VERIFICATION_FAILED,
+                       "Attest is not of type TPM2_ST_ATTEST_QUOTE", error_cleanup);
+        }
+
         /* Verify the signature over the attest2b structure. */
         r = ifapi_verify_signature_quote(&key_object, command->signature, command->signatureSize,
                                          &attest2b.attestationData[0], attest2b.size,

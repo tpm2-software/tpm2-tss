@@ -272,14 +272,19 @@ ifapi_json_TCG_DIGEST2_cb(const TCG_DIGEST2 *in, size_t size, void *data) {
  */
 static TSS2_RC
 check_event_string(const TCG_EVENT2 *in, const char *string) {
-    if (strncmp((const char *)&in->Event[0], string, strlen(string)) != 0) {
+    size_t expected = strlen(string);
+    if (in->EventSize < expected) {
+        return_error2(TSS2_FAPI_RC_BAD_VALUE, "EventSize %u too small for %s", in->EventSize,
+                      string);
+    }
+    if (memcmp(in->Event, string, expected) != 0) {
         return_error2(TSS2_FAPI_RC_BAD_VALUE, "Invalid event string. %s expected", string);
     }
-    if (in->EventSize == strlen(string)) {
+    if (in->EventSize == expected) {
         /* String without NULL terminator */
         return TSS2_RC_SUCCESS;
     }
-    if (in->EventSize == strlen(string) + 1 && in->Event[strlen(string)] == '\0') {
+    if (in->EventSize == expected + 1 && in->Event[expected] == '\0') {
         /* String with NULL terminator */
         return TSS2_RC_SUCCESS;
     }
@@ -556,6 +561,11 @@ ifapi_json_TCG_EVENT_HEADER2_cb(const TCG_EVENT_HEADER2 *in, size_t size, void *
 
     cb_data->skip_event = true;
 
+    if (in->PCRIndex >= TPM2_MAX_PCRS) {
+        LOG_ERROR("PCRIndex out of range: %" PRIu32, in->PCRIndex);
+        return false;
+    }
+
     cb_data->skip_event = !ifapi_pcr_used(in->PCRIndex, cb_data->pcr_list, cb_data->pcr_list_size);
     if (cb_data->skip_event)
         return true;
@@ -690,6 +700,11 @@ ifapi_json_TCG_EVENT_cb(const TCG_EVENT *in, size_t size, void *data) {
     (void)size;
 
     LOG_TRACE("call");
+
+    if (in->pcrIndex >= TPM2_MAX_PCRS) {
+        LOG_ERROR("pcrIndex out of range: %" PRIu32, in->pcrIndex);
+        return false;
+    }
 
     cb_data->skip_event = !ifapi_pcr_used(in->pcrIndex, cb_data->pcr_list, cb_data->pcr_list_size);
 

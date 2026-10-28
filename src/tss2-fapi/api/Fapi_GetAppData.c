@@ -124,6 +124,9 @@ Fapi_GetAppData_Async(FAPI_CONTEXT *context, char const *path) {
     check_not_null(context);
     check_not_null(path);
 
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
+
     /* Reset all context-internal session state information. */
     r = ifapi_session_init(context);
     return_if_error(r, "Initialize GetAppData");

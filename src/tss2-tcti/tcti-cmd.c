@@ -598,6 +598,7 @@ Tss2_Tcti_Cmd_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *con
 }
 
 /* public info structure */
+#ifndef NO_DL
 static const TSS2_TCTI_INFO tss2_tcti_cmd_info = {
     .version = TCTI_VERSION,
     .name = TCTI_CMD_NAME,
@@ -610,3 +611,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_cmd_info;
 }
+#endif /* NO_DL */

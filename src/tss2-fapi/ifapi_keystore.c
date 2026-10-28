@@ -36,6 +36,10 @@
  */
 TSS2_RC
 ifapi_check_valid_path(const char *path) {
+    if (!path) {
+        return_error(TSS2_FAPI_RC_BAD_REFERENCE, "No reference to path");
+    }
+
     for (size_t i = 0; i < strlen(path); i++) {
         if (!(isalnum(path[i]) || path[i] == '_' || path[i] == '-' || path[i] == '/')) {
             LOG_ERROR("Invalid character %c in path %s", path[i], path);
@@ -327,6 +331,7 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name) {
         goto_if_error(r, "Out of memory", error);
 
         free_string_list(node_list);
+        node_list = NULL;
     }
 
     /* Normalize the pathname. '/' at the beginning no '/' at the end. */
@@ -347,7 +352,8 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name) {
 
 error:
     SAFE_FREE(*file_name);
-    free_string_list(node_list);
+    if (node_list)
+        free_string_list(node_list);
     return r;
 }
 /** Expand FAPI path to object path.
@@ -879,6 +885,9 @@ ifapi_keystore_list_all(IFAPI_KEYSTORE *keystore,
     if (*numresults > 0) {
         /* Convert absolute path to relative path */
         for (i = 0; i < *numresults; i++) {
+            if (!(*results)[i]) {
+                return_if_error(TSS2_ESYS_RC_BAD_REFERENCE, "Invalid reference.");
+            }
             full_path_to_fapi_path(keystore, (*results)[i]);
         }
     }
@@ -1406,6 +1415,7 @@ ifapi_copy_ifapi_key(IFAPI_KEY *dest, const IFAPI_KEY *src) {
     dest->with_auth = src->with_auth;
     dest->delete_prohibited = src->delete_prohibited;
     dest->ek_profile = src->ek_profile;
+    dest->auth_primary_set = src->auth_primary_set;
 
     return r;
 
@@ -1521,6 +1531,8 @@ void
 ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE *duplicate) {
     if (duplicate != NULL) {
         SAFE_FREE(duplicate->certificate);
+        ifapi_cleanup_policy(duplicate->policy);
+        SAFE_FREE(duplicate->policy);
     }
 }
 
@@ -1569,7 +1581,12 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
     /* Initialize the object variables for a possible error cleanup */
 
     /* Create the copy */
-    dest->policy = ifapi_copy_policy(src->policy);
+    if (src->policy) {
+        dest->policy = ifapi_copy_policy(src->policy);
+        goto_if_null(dest->policy, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+    } else {
+        dest->policy = NULL;
+    }
     strdup_check(dest->rel_path, src->rel_path, r, error_cleanup);
 
     r = ifapi_copy_ifapi_key(&dest->misc.key, &src->misc.key);
@@ -1618,7 +1635,12 @@ ifapi_copy_ifapi_hierarchy_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
     }
 
     /* Create the copy */
-    dest->policy = ifapi_copy_policy(src->policy);
+    if (src->policy) {
+        dest->policy = ifapi_copy_policy(src->policy);
+        goto_if_null(dest->policy, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+    } else {
+        dest->policy = NULL;
+    }
     strdup_check(dest->rel_path, src->rel_path, r, error_cleanup);
 
     r = ifapi_copy_ifapi_hierarchy(&dest->misc.hierarchy, &src->misc.hierarchy);

@@ -172,24 +172,28 @@ cmp_jso(json_object *jso1, json_object *jso2) {
     }
 }
 
-/* Compare two delimiter separated token lists. */
+/*
+ * Compare two delimiter separated token lists.
+ * Every token from check_string must be found in computed string.
+ */
 bool
-cmp_strtokens(char *string1, char *string2, char *delimiter) {
+cmp_strtokens(char *computed_string, char *check_string, char *delimiter) {
     bool  found = false;
     char *token1 = NULL;
     char *token2 = NULL;
     char *end_token1;
     char *end_token2;
-    char *string2_copy;
+    char *computed_string_copy;
 
-    string1 = strdup(string1);
-    ASSERT(string1);
-    token1 = strtok_r(string1, delimiter, &end_token1);
+    check_string = strdup(check_string);
+    ASSERT(check_string);
+    token1 = strtok_r(check_string, delimiter, &end_token1);
     while (token1 != NULL) {
         found = false;
-        string2_copy = strdup(string2);
-        ASSERT(string2_copy);
-        token2 = strtok_r(string2_copy, delimiter, &end_token2);
+        computed_string_copy = strdup(computed_string);
+        ASSERT(computed_string_copy);
+        token2 = strtok_r(computed_string_copy, delimiter, &end_token2);
+
         while (token2 != NULL) {
             if (strcmp(token1, token2) == 0) {
                 found = true;
@@ -197,17 +201,17 @@ cmp_strtokens(char *string1, char *string2, char *delimiter) {
             }
             token2 = strtok_r(NULL, delimiter, &end_token2);
         }
-        free(string2_copy);
+        free(computed_string_copy);
         if (!found) {
             break;
         }
         token1 = strtok_r(NULL, delimiter, &end_token1);
     }
-    free(string1);
+    free(check_string);
     return found;
 
 error:
-    SAFE_FREE(string1);
+    SAFE_FREE(check_string);
     return false;
 }
 

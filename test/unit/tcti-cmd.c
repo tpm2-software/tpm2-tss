@@ -12,12 +12,13 @@
 #include <stdlib.h> // for calloc, free
 #include <unistd.h> // for fork, pipe
 
-#include "../helper/cmocka_all.h" // for assert_int_equal, will_return_always
+#include "../helper/cmocka_all.h" // for assert_int_equal, mock_type, will_return_int_always
 
 #if defined(__FreeBSD__)
 #include <sys/procctl.h>
 #else
 #endif
+
 #include "tcti-cmd-test.h"         // for getcap_command, getcap_good_resp
 #include "tss2-tcti/tcti-cmd.h"    // for TCTI_CMD_DESCRIPTION, TCTI_CMD_HELP
 #include "tss2-tcti/tcti-common.h" // for TCTI_VERSION
@@ -106,10 +107,10 @@ tcti_cmd_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 
 TSS2_TCTI_CONTEXT *
 test_common_setup(const char *cmd) {
-    will_return_always(tcti_cmd_sigprocmask, 0);
-    will_return_always(tcti_cmd_fdopen, 0);
-    will_return_always(tcti_cmd_fork, 0);
-    will_return_always(tcti_cmd_pipe, 0);
+    will_return_int_always(tcti_cmd_sigprocmask, 0);
+    will_return_int_always(tcti_cmd_fdopen, 0);
+    will_return_int_always(tcti_cmd_fork, 0);
+    will_return_int_always(tcti_cmd_pipe, 0);
 
     size_t  tcti_size = 0;
     TSS2_RC rval = Tss2_Tcti_Cmd_Init(NULL, &tcti_size, cmd);
@@ -126,7 +127,7 @@ test_common_setup(const char *cmd) {
 
 static int
 test_teardown(void **state) {
-    will_return_always(tcti_cmd_sigprocmask, 0);
+    will_return_int_always(tcti_cmd_sigprocmask, 0);
 
     TSS2_TCTI_CONTEXT *tcti_context = state_cast(state);
     if (tcti_context) {
@@ -194,8 +195,8 @@ tcti_cmd_test_fork_fail(void **state) {
     size_t             tcti_size = sizeof(buf);
     TSS2_TCTI_CONTEXT *tcti_context = (TSS2_TCTI_CONTEXT *)buf;
 
-    will_return_always(tcti_cmd_pipe, 0);
-    will_return_always(tcti_cmd_sigprocmask, 0);
+    will_return_int_always(tcti_cmd_pipe, 0);
+    will_return_int_always(tcti_cmd_sigprocmask, 0);
 
     will_return(tcti_cmd_fork, ENOMEM);
 
@@ -209,9 +210,9 @@ tcti_cmd_test_fdopen_1_fail(void **state) {
     size_t             tcti_size = sizeof(buf);
     TSS2_TCTI_CONTEXT *tcti_context = (TSS2_TCTI_CONTEXT *)buf;
 
-    will_return_always(tcti_cmd_pipe, 0);
-    will_return_always(tcti_cmd_fork, 0);
-    will_return_always(tcti_cmd_sigprocmask, 0);
+    will_return_int_always(tcti_cmd_pipe, 0);
+    will_return_int_always(tcti_cmd_fork, 0);
+    will_return_int_always(tcti_cmd_sigprocmask, 0);
 
     will_return(tcti_cmd_fdopen, EINVAL);
 
@@ -225,9 +226,9 @@ tcti_cmd_test_fdopen_2_fail(void **state) {
     size_t             tcti_size = sizeof(buf);
     TSS2_TCTI_CONTEXT *tcti_context = (TSS2_TCTI_CONTEXT *)buf;
 
-    will_return_always(tcti_cmd_pipe, 0);
-    will_return_always(tcti_cmd_fork, 0);
-    will_return_always(tcti_cmd_sigprocmask, 0);
+    will_return_int_always(tcti_cmd_pipe, 0);
+    will_return_int_always(tcti_cmd_fork, 0);
+    will_return_int_always(tcti_cmd_sigprocmask, 0);
 
     /* first fdopen works, second fails */
     will_return(tcti_cmd_fdopen, 0);
@@ -243,7 +244,7 @@ tcti_cmd_test_sigprocmask_1_fail(void **state) {
     size_t             tcti_size = sizeof(buf);
     TSS2_TCTI_CONTEXT *tcti_context = (TSS2_TCTI_CONTEXT *)buf;
 
-    will_return_always(tcti_cmd_pipe, 0);
+    will_return_int_always(tcti_cmd_pipe, 0);
 
     will_return(tcti_cmd_sigprocmask, EINVAL);
 
@@ -253,8 +254,8 @@ tcti_cmd_test_sigprocmask_1_fail(void **state) {
 
 static void
 tcti_cmd_test_good(void **state) {
-    will_return_always(tcti_cmd_fwrite, 0);
-    will_return_always(tcti_cmd_ferror, 0);
+    will_return_int_always(tcti_cmd_fwrite, 0);
+    will_return_int_always(tcti_cmd_ferror, 0);
 
     TSS2_TCTI_CONTEXT *tcti_context = *state = test_common_setup(EXECLP_CMD " good");
     assert_non_null(tcti_context);
@@ -277,8 +278,8 @@ tcti_cmd_test_good(void **state) {
 
 static void
 tcti_cmd_test_malformed_size_smaller(void **state) {
-    will_return_always(tcti_cmd_fwrite, 0);
-    will_return_always(tcti_cmd_ferror, 0);
+    will_return_int_always(tcti_cmd_fwrite, 0);
+    will_return_int_always(tcti_cmd_ferror, 0);
 
     TSS2_TCTI_CONTEXT *tcti_context = *state = test_common_setup(EXECLP_CMD " smaller");
     assert_non_null(tcti_context);
@@ -297,8 +298,8 @@ tcti_cmd_test_malformed_size_smaller(void **state) {
 
 static void
 tcti_cmd_test_malformed_size_bigger(void **state) {
-    will_return_always(tcti_cmd_fwrite, 0);
-    will_return_always(tcti_cmd_ferror, 0);
+    will_return_int_always(tcti_cmd_fwrite, 0);
+    will_return_int_always(tcti_cmd_ferror, 0);
 
     TSS2_TCTI_CONTEXT *tcti_context = *state = test_common_setup(EXECLP_CMD " bigger");
     assert_non_null(tcti_context);
@@ -320,7 +321,7 @@ tcti_cmd_test_malformed_size_bigger(void **state) {
 
 static void
 tcti_cmd_test_transmit_fail(void **state) {
-    will_return_always(tcti_cmd_fwrite, EBADF);
+    will_return_int_always(tcti_cmd_fwrite, EBADF);
 
     TSS2_TCTI_CONTEXT *tcti_context = *state = test_common_setup(EXECLP_CMD " good");
     assert_non_null(tcti_context);

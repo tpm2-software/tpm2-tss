@@ -9,10 +9,17 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <dlfcn.h>  // for dlclose, dlerror, dlsym, dlopen, RTLD...
 #include <limits.h> // for PATH_MAX
 #include <stdio.h>  // for NULL, size_t, snprintf
 #include <string.h> // for memset
+#ifdef _WIN32
+#include <windows.h> // for FreeLibrary, GetProcAddress, LoadLibraryA
+#ifndef PATH_MAX
+#define PATH_MAX MAX_PATH
+#endif
+#else
+#include <dlfcn.h> // for dlclose, dlerror, dlsym, dlopen, RTLD...
+#endif
 
 #include "tctildr-interface.h" // for tctildr_finalize_data, tctildr_get_info
 #include "tctildr.h"           // for tcti_from_info, FMT_LIB_SUFFIX, FMT_L...
@@ -29,6 +36,16 @@ struct {
     char *conf;
     char *description;
 } tctis[] = {
+#ifdef _WIN32
+    {
+        .file = "tss2-tcti-tbs.dll",
+        .description = "Access to Windows TPM Base Services",
+    },
+    {
+        .file = "tss2-tcti-mssim.dll",
+        .description = "Access to TPM simulator using MS protocol",
+    },
+#else
     {
         .file = "libtss2-tcti-default.so",
         .description = "Access libtss2-tcti-default.so",
@@ -60,6 +77,7 @@ struct {
         .file = "libtss2-tcti-mssim.so.0",
         .description = "Access to libtss2-tcti-mssim.so",
     },
+#endif
 };
 
 const TSS2_TCTI_INFO *
@@ -69,11 +87,19 @@ info_from_handle(void *dlhandle) {
     if (dlhandle == NULL)
         return NULL;
 
+#ifdef _WIN32
+    info_func = (TSS2_TCTI_INFO_FUNC)GetProcAddress((HMODULE)dlhandle, TSS2_TCTI_INFO_SYMBOL);
+    if (info_func == NULL) {
+        LOG_ERROR("Failed to get reference to TSS2_TCTI_INFO_SYMBOL: 0x%lx", GetLastError());
+        return NULL;
+    }
+#else
     info_func = dlsym(dlhandle, TSS2_TCTI_INFO_SYMBOL);
     if (info_func == NULL) {
         LOG_ERROR("Failed to get reference to TSS2_TCTI_INFO_SYMBOL: %s", dlerror());
         return NULL;
     }
+#endif
 
     return info_func();
 }
@@ -82,6 +108,14 @@ handle_from_name(const char *file, void **handle) {
     size_t      size = 0;
     char        file_xfrm[PATH_MAX];
     const char *formats[] = {
+#ifdef _WIN32
+        /* tss2-tcti-<name>.dll */
+        "tss2-tcti-%s.dll",
+        /* tss2-<name>.dll */
+        "tss2-%s.dll",
+        /* <name> */
+        "%s",
+#else
         /* <name> */
         "%s",
         /* libtss2-tcti-<name>.so.0 */
@@ -92,6 +126,7 @@ handle_from_name(const char *file, void **handle) {
         FMT_TSS_PREFIX "%s" FMT_LIB_SUFFIX_0,
         /* libtss2-<name>.so */
         FMT_TSS_PREFIX "%s" FMT_LIB_SUFFIX,
+#endif
     };
 
     if (handle == NULL) {
@@ -105,11 +140,19 @@ handle_from_name(const char *file, void **handle) {
             LOG_ERROR("TCTI name truncated in transform.");
             return TSS2_TCTI_RC_BAD_VALUE;
         }
+#ifdef _WIN32
+        *handle = LoadLibraryA(file_xfrm);
+#else
         *handle = dlopen(file_xfrm, RTLD_NOW);
+#endif
         if (*handle != NULL) {
             return TSS2_RC_SUCCESS;
         } else {
+#ifdef _WIN32
+            LOG_DEBUG("Could not load TCTI file \"%s\": 0x%lx", file_xfrm, GetLastError());
+#else
             LOG_DEBUG("Could not load TCTI file \"%s\": %s", file, dlerror());
+#endif
         }
     }
 
@@ -130,17 +173,29 @@ tcti_from_file(const char *file, const char *conf, TSS2_TCTI_CONTEXT **tcti, voi
         return r;
     }
 
+#ifdef _WIN32
+    infof = (TSS2_TCTI_INFO_FUNC)GetProcAddress((HMODULE)handle, TSS2_TCTI_INFO_SYMBOL);
+#else
     infof = (TSS2_TCTI_INFO_FUNC)dlsym(handle, TSS2_TCTI_INFO_SYMBOL);
+#endif
     if (infof == NULL) {
         LOG_ERROR("Info not found in TCTI file: %s", file);
+#ifdef _WIN32
+        FreeLibrary((HMODULE)handle);
+#else
         dlclose(handle);
+#endif
         return TSS2_ESYS_RC_BAD_REFERENCE;
     }
 
     r = tcti_from_info(infof, conf, tcti);
     if (r != TSS2_RC_SUCCESS) {
         LOG_ERROR("Could not initialize TCTI file: %s", file);
+#ifdef _WIN32
+        FreeLibrary((HMODULE)handle);
+#else
         dlclose(handle);
+#endif
         return r;
     }
 
@@ -298,7 +353,11 @@ tctildr_get_tcti(const char *name, const char *conf, TSS2_TCTI_CONTEXT **tcti, v
 void
 tctildr_finalize_data(void **data) {
     if (data != NULL && *data != NULL) {
+#ifdef _WIN32
+        FreeLibrary((HMODULE)*data);
+#else
         dlclose(*data);
+#endif
         *data = NULL;
     }
 }

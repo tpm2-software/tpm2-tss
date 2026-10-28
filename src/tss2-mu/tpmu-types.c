@@ -579,7 +579,11 @@ TPMU_MARSHAL2(TPMU_ATTEST,
               TPM2_ST_ATTEST_NV,
               ADDR,
               nv,
-              Tss2_MU_TPMS_NV_CERTIFY_INFO_Marshal)
+              Tss2_MU_TPMS_NV_CERTIFY_INFO_Marshal,
+              TPM2_ST_ATTEST_NV_DIGEST,
+              ADDR,
+              nvDigest,
+              Tss2_MU_TPMS_NV_DIGEST_CERTIFY_INFO_Marshal)
 TPMU_UNMARSHAL2(TPMU_ATTEST,
                 TPM2_ST_ATTEST_CERTIFY,
                 certify,
@@ -601,7 +605,10 @@ TPMU_UNMARSHAL2(TPMU_ATTEST,
                 Tss2_MU_TPMS_TIME_ATTEST_INFO_Unmarshal,
                 TPM2_ST_ATTEST_NV,
                 nv,
-                Tss2_MU_TPMS_NV_CERTIFY_INFO_Unmarshal)
+                Tss2_MU_TPMS_NV_CERTIFY_INFO_Unmarshal,
+                TPM2_ST_ATTEST_NV_DIGEST,
+                nvDigest,
+                Tss2_MU_TPMS_NV_DIGEST_CERTIFY_INFO_Unmarshal)
 
 TPMU_MARSHAL2(TPMU_SYM_KEY_BITS,
               TPM2_ALG_AES,

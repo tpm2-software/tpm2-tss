@@ -73,7 +73,7 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context) {
         goto error;
     }
     fseek(stream, 0L, SEEK_END);
-    policy_size = ftell(stream);
+    check_ftell(policy_size, stream, policy_file, error);
     fclose(stream);
     json_policy = malloc(policy_size + 1);
     goto_if_null(json_policy, "Could not allocate memory for the JSON policy", TSS2_FAPI_RC_MEMORY,
@@ -96,6 +96,16 @@ test_fapi_nv_written_policy(FAPI_CONTEXT *context) {
 
     r = Fapi_SetAppData(context, nvPathOrdinary, appDataIn, APP_DATA_SIZE);
     goto_if_error(r, "Error Fapi_SetAppData", error);
+
+    r = Fapi_GetAppData(context, nvPathOrdinary, NULL, NULL);
+    goto_if_error(r, "Error Fapi_GetAppData", error);
+
+    const char *nvPathNonExist = "/nv/whatever";
+    r = Fapi_GetAppData(context, nvPathNonExist, NULL, NULL);
+    if (r != TSS2_FAPI_RC_PATH_NOT_FOUND) {
+        LOG_ERROR(TPM2_ERROR_FORMAT " Error Fapi_GetAppData", TPM2_ERROR_TEXT(r));
+        goto error;
+    }
 
     r = Fapi_GetAppData(context, nvPathOrdinary, &appDataOut, &appDataOutSize);
     goto_if_error(r, "Error Fapi_GetAppData", error);

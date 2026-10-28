@@ -169,14 +169,23 @@ Esys_AC_Send_Async(ESYS_CONTEXT     *esysContext,
     r = esys_GetResourceObject(esysContext, ac, &handleNode);
     if (r != TSS2_RC_SUCCESS)
         return r;
+    if (!handleNode) {
+        return_error(TSS2_ESYS_RC_BAD_VALUE, "Could not get ac object.");
+    }
     tpmi_ac = handleNode->rsrc.handle;
     r = esys_GetResourceObject(esysContext, sendObject, &handleNode);
     if (r != TSS2_RC_SUCCESS)
         return r;
+    if (!handleNode) {
+        return_error(TSS2_ESYS_RC_BAD_VALUE, "Could not get send object.");
+    }
     tpmi_sendObject = handleNode->rsrc.handle;
     r = esys_GetResourceObject(esysContext, nvAuthHandle, &handleNode);
     if (r != TSS2_RC_SUCCESS)
         return r;
+    if (!handleNode) {
+        return_error(TSS2_ESYS_RC_BAD_VALUE, "Could not get nvAuthHandle object.");
+    }
     tpmi_nvAuthHandle = handleNode->rsrc.handle;
     /* Initial invocation of SAPI to prepare the command buffer with parameters */
     r = Tss2_Sys_AC_Send_Prepare(esysContext->sys, tpmi_sendObject, tpmi_nvAuthHandle, tpmi_ac,

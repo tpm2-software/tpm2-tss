@@ -372,9 +372,9 @@ ifapi_tpm_ecc_sig_to_der(const TPMT_SIGNATURE *tpmSignature,
 
     /* Initialize the byte buffer for the DER representation */
     *signature = malloc(osslRC);
-    signatureWalking = *signature;
     goto_if_null(*signature, "Out of memory", TSS2_FAPI_RC_MEMORY, cleanup);
 
+    signatureWalking = *signature;
     if (signatureSize != NULL) {
         *signatureSize = osslRC;
     }
@@ -383,6 +383,7 @@ ifapi_tpm_ecc_sig_to_der(const TPMT_SIGNATURE *tpmSignature,
     osslRC = i2d_ECDSA_SIG(ecdsaSignature, &signatureWalking);
     if (!osslRC) {
         free(*signature);
+        *signature = NULL;
         if (signatureSize != NULL) {
             *signatureSize = 0;
         }

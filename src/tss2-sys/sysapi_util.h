@@ -90,7 +90,6 @@ TSS2_RC CopyCommandHeader(TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode);
 UINT32  GetCommandSize(TSS2_SYS_CONTEXT_BLOB *ctx);
 void    InitSysContextFields(TSS2_SYS_CONTEXT_BLOB *ctx);
 void    InitSysContextPtrs(TSS2_SYS_CONTEXT_BLOB *ctx, size_t contextSize);
-TSS2_RC CompleteChecks(TSS2_SYS_CONTEXT_BLOB *ctx);
 TSS2_RC CommonComplete(TSS2_SYS_CONTEXT_BLOB *ctx);
 
 TSS2_RC CommonOneCall(TSS2_SYS_CONTEXT_BLOB        *ctx,

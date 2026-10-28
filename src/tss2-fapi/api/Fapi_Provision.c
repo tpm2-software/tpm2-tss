@@ -23,6 +23,7 @@
 #include "ifapi_io.h"                // for ifapi_io_read_async, ifapi_io_read_f...
 #include "ifapi_keystore.h"          // for IFAPI_OBJECT, IFAPI_OBJECT_UNION
 #include "ifapi_macros.h"            // for statecase, fallthrough, goto_if_erro..
+#include "ifapi_policy.h"            // for ifapi_calculate_tree_ex
 #include "ifapi_profiles.h"          // for IFAPI_PROFILE, IFAPI_PROFILES
 #include "ifapi_verify_cert_chain.h" // for ifapi_verify_cert_chain
 #include "tss2_common.h"             // for TSS2_FAPI_RC_TRY_AGAIN, BYTE, TSS2_RC
@@ -85,6 +86,53 @@ error_cleanup_provisioning(FAPI_CONTEXT *context) {
         if (context->keystore.systemdir && context->config.profile_name)
             ifapi_keystore_remove_directories(&context->keystore, context->config.profile_name);
     }
+}
+
+/** Instanatiate all policies defined in the FAPI profile.
+ *
+ * The five policies which can be defined in the FAPI profile will be
+ * instantiated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ */
+TSS2_RC
+instantiate_policies(FAPI_CONTEXT *context) {
+    TSS2_RC         r = TSS2_RC_SUCCESS;
+    IFAPI_POLICIES *ctx = &context->cmd.Provision.policies;
+    size_t          i;
+    switch (ctx->state) {
+    statecase(ctx->state, POLICIES_INSTANTIATION_INIT);
+        ctx->policies[0] = context->profiles.default_profile.ek_policy;
+        ctx->policies[1] = context->profiles.default_profile.srk_policy;
+        ctx->policies[2] = context->profiles.default_profile.eh_policy;
+        ctx->policies[3] = context->profiles.default_profile.sh_policy;
+        ctx->policies[4] = context->profiles.default_profile.lockout_policy;
+        ctx->pol_idx = 0;
+        fallthrough;
+
+    statecase(ctx->state, POLICIES_INSTANTIATION_WAIT);
+        do {
+            for (i = ctx->pol_idx; i < 5 && !ctx->policies[i]; i++)
+                ;
+            if (i == 5) {
+                return TSS2_RC_SUCCESS;
+            }
+            size_t digest_idx, hash_size;
+            r = ifapi_calculate_tree_ex(&context->policy, NULL, NULL, NULL, ctx->policies[i],
+                                        context->profiles.default_profile.nameAlg, &digest_idx,
+                                        &hash_size);
+            return_try_again(r);
+            return_if_error(r, "Instantiate policy");
+            ctx->pol_idx = i + 1;
+        } while (ctx->pol_idx < 5);
+
+        fallthrough;
+
+    statecasedefault(context->state);
+    }
+    return TSS2_RC_SUCCESS;
 }
 
 /** One-Call function for the initial FAPI provisioning.
@@ -232,6 +280,9 @@ Fapi_Provision_Async(FAPI_CONTEXT *context,
 
     /* Check for NULL parameters */
     check_not_null(context);
+
+    /* Cleanup command context. */
+    memset(&context->cmd, 0, sizeof(IFAPI_CMD_STATE));
 
     /* Helpful alias pointers */
     IFAPI_Provision *command = &context->cmd.Provision;
@@ -444,6 +495,9 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         }
 
     statecase(context->state, PROVISION_INIT);
+        r = instantiate_policies(context);
+        return_try_again(r);
+        goto_if_error(r, "Instantiate policies", error_cleanup);
 
         command->root_crt = NULL;
         /* Check whether hierarchies are stored in the current keystore. */
@@ -1050,7 +1104,12 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         r = Esys_DictionaryAttackParameters_Finish(context->esys);
         return_try_again(r);
 
-        goto_if_error_reset_state(r, "DictionaryAttackParameters_Finish", error_cleanup);
+        if (r == TPM2_RC_LOCKOUT) {
+            LOG_WARNING("Authorization lockout hierarchy failed");
+            LOG_WARNING("Dictionary attack parameters could not be set");
+        } else {
+            goto_if_error_reset_state(r, "DictionaryAttackParameters_Finish", error_cleanup);
+        }
 
         /* Generate template for SRK creation. */
         r = ifapi_set_key_flags(defaultProfile->srk_template,
@@ -1320,17 +1379,19 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         } else {
             command->hierarchy_policy = NULL;
         }
-        if (command->authValueEh) {
-            context->state = PROVISION_CHANGE_EH_AUTH;
-            /* Save auth value of endorsement hierarchy in context. */
-            memcpy(&command->hierarchy_auth.buffer[0], command->authValueEh,
-                   strlen(command->authValueEh));
-            command->hierarchy_auth.size = strlen(command->authValueEh);
-        } else {
+        if (!command->authValueEh) {
             /* Auth value of lockout hierarchy will not be changed. */
             context->state = PROVISION_EH_CHANGE_POLICY;
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
+        if (strlen(command->authValueEh) > sizeof(TPMU_HA)) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Endorsement hierarchy too long.", error_cleanup);
+        }
+
+        /* Save auth value of endorsement hierarchy in context. */
+        memcpy(&command->hierarchy_auth.buffer[0], command->authValueEh,
+               strlen(command->authValueEh));
+        command->hierarchy_auth.size = strlen(command->authValueEh);
         context->state = PROVISION_CHANGE_EH_AUTH;
         fallthrough;
 
@@ -1386,18 +1447,20 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         } else {
             command->hierarchy_policy = NULL;
         }
-        if (command->authValueSh) {
-            context->state = PROVISION_CHANGE_SH_AUTH;
-            /* Save auth value of owner hierarchy in context. */
-            memcpy(&command->hierarchy_auth.buffer[0], command->authValueSh,
-                   strlen(command->authValueSh));
-            command->hierarchy_auth.size = strlen(command->authValueSh);
-            context->state = PROVISION_CHANGE_SH_AUTH;
-        } else {
+        if (!command->authValueSh) {
             /* Auth value of owner hierarchy will not be changed. */
             context->state = PROVISION_SH_CHANGE_POLICY;
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
+        if (strlen(command->authValueSh) > sizeof(TPMU_HA)) {
+            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Storage hierarchy too long.", error_cleanup);
+        }
+
+        /* Save auth value of owner hierarchy in context. */
+        memcpy(&command->hierarchy_auth.buffer[0], command->authValueSh,
+               strlen(command->authValueSh));
+        command->hierarchy_auth.size = strlen(command->authValueSh);
+
         context->state = PROVISION_CHANGE_SH_AUTH;
         fallthrough;
 

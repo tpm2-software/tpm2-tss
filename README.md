@@ -1,11 +1,8 @@
 [![Build Status](https://github.com/tpm2-software/tpm2-tss/workflows/CI/badge.svg)](https://github.com/tpm2-software/tpm2-tss/actions)
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/1bqv1y7rntqiewln?svg=true)](https://ci.appveyor.com/project/williamcroberts/tpm2-tss)
-[![FreeBSD Build status](https://api.cirrus-ci.com/github/tpm2-software/tpm2-tss.svg?branch=master)](https://cirrus-ci.com/github/tpm2-software/tpm2-tss)
 [![Coverity Scan](https://img.shields.io/coverity/scan/3997.svg)](https://scan.coverity.com/projects/tpm2-tss)
 [![Coverage Status](https://codecov.io/gh/tpm2-software/tpm2-tss/branch/master/graph/badge.svg)](https://codecov.io/gh/tpm2-software/tpm2-tss)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2332/badge)](https://bestpractices.coreinfrastructure.org/projects/2332)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/tpm2-software/tpm2-tss.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tpm2-software/tpm2-tss/alerts/)
-[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/tpm2-software/tpm2-tss.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tpm2-software/tpm2-tss/context:cpp)
 [![Documentation Status](https://readthedocs.org/projects/tpm2-tss/badge/?version=latest)](https://tpm2-tss.readthedocs.io/en/latest/?badge=latest)
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/tpm2-tss.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:tpm2-tss)
 [![Gitter](https://badges.gitter.im/tpm2-software/community.svg)](https://gitter.im/tpm2-software/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -33,7 +30,7 @@ Instructions to build and install tpm2-tss are available in the [INSTALL](INSTAL
 If you're looking to discuss the source code in this project or get some questions answered you should join the TPM2 mailing list:
   - [https://lore.kernel.org/tpm2/](https://lore.kernel.org/tpm2/)
   - To subscribe write an email to [tpm2+subscribe@lists.linux.dev](tpm2+subscribe@lists.linux.dev) see also [here](https://subspace.kernel.org/subscribing.html)
-  - The old list https://lists.linuxfoundation.org/mailman/listinfo/tpm2 was decomissioned by Linux
+  - The old list https://lists.linuxfoundation.org/mailman/listinfo/tpm2 was decommissioned by Linux
 
 We also have an IRC channel set up on [FreeNode](https://freenode.net/) called \#tpm2.0-tss.
 You can also try Gitter [![Gitter](https://badges.gitter.im/tpm2-software/community.svg)](https://gitter.im/tpm2-software/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -59,7 +56,7 @@ There are two implementations that enable building and running this code on Linu
 Issues building or running the simulator should be reported to respective project.
 
 ### Software TPM
-The Software TPM is an open-source TPM emulator with different front-end interfaces such as socket and character device. Its code is hosted [on GitHub](https://github.com/stefanberger/swtpm) and building is faciliated by the GNU Autotools.
+The Software TPM is an open-source TPM emulator with different front-end interfaces such as socket and character device. Its code is hosted [on GitHub](https://github.com/stefanberger/swtpm) and building is facilitated by the GNU Autotools.
 The TCTI module for using this simulator is called _swtpm_.
 
 Since tpm2-tss v3.0 swtpm is the default simulator used by this project.
@@ -115,7 +112,7 @@ one needs to set this flag as follows:
 ```
   $ ./configure --with-devicetests="mandatory,optional"
 ```
-Tht default value for the flag is "mandatory"
+The default value for the flag is "mandatory"
 Any combination of the three is valid.
 The two flags are only valid when the integration tests are enabled with
 --enable-integration flag.
@@ -131,7 +128,7 @@ TPM device:
   $ sudo make check -j 1
 ```
 
-Note: The tests can not be run in paralel.
+Note: The tests can not be run in parallel.
 
 ### Running valgrind check
 The unit and integration tests can be run under the valgrind tool, which

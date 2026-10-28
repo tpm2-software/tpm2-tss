@@ -25,9 +25,10 @@
 #include "ifapi_io.h"
 #include "ifapi_macros.h" // for check_not_null, return_error2, check_oom
 #include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_RC_S...
-
+#include <fcntl.h>        // for open
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
+#include "util-io/io.h" // for TEMP_RETRY
+#include "util/log.h"   // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
 
 /** Determine if a sub file in directory is also a directory
  *
@@ -120,6 +121,7 @@ ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
 
     if (fstat(fileno(io->stream), &statbuf) == -1) {
         fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("Execute fstat for \"%s\".", filename);
         return TSS2_FAPI_RC_IO_ERROR;
     }
@@ -127,6 +129,7 @@ ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
     /* Check whether file is a directory. */
     if (S_ISDIR(statbuf.st_mode)) {
         fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("\"%s\" is a directory.", filename);
         return TSS2_FAPI_RC_IO_ERROR;
     }
@@ -138,27 +141,12 @@ ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
     if (fcntl(fileno(io->stream), F_SETLK, &flock) == -1) {
         LOG_ERROR("File \"%s\" could not be locked: %s", filename, strerror(errno));
         fclose(io->stream);
+        io->stream = NULL;
         return TSS2_FAPI_RC_IO_ERROR;
     }
 
-    if (fseek(io->stream, 0L, SEEK_END) == -1) {
-        LOG_ERROR("fseek failed for \"%s\".", filename);
-        fclose(io->stream);
-        return TSS2_FAPI_RC_IO_ERROR;
-    };
-    long length = ftell(io->stream);
-    if (length == -1 || length == LONG_MAX) {
-        LOG_ERROR("ftell failed for \"%s\".", filename);
-        fclose(io->stream);
-        return TSS2_FAPI_RC_IO_ERROR;
-    };
-    fclose(io->stream);
+    long length = statbuf.st_size;
 
-    io->stream = fopen(filename, "rt");
-    if (io->stream == NULL) {
-        LOG_ERROR("Open file \"%s\": %s", filename, strerror(errno));
-        return TSS2_FAPI_RC_IO_ERROR;
-    }
     io->char_rbuffer = malloc(length + 1);
     if (io->char_rbuffer == NULL) {
         fclose(io->stream);
@@ -170,11 +158,15 @@ ifapi_io_read_async(struct IFAPI_IO *io, const char *filename) {
     int flags = fcntl(fileno(io->stream), F_GETFL, 0);
     if (flags == -1) {
         SAFE_FREE(io->char_rbuffer);
+        fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("fcntl failed with %d", errno);
         return TSS2_FAPI_RC_IO_ERROR;
     }
     if (fcntl(fileno(io->stream), F_SETFL, flags | O_NONBLOCK) == -1) {
         SAFE_FREE(io->char_rbuffer);
+        fclose(io->stream);
+        io->stream = NULL;
         LOG_ERROR("fcntl failed with %d", errno);
         return TSS2_FAPI_RC_IO_ERROR;
     }
@@ -205,6 +197,10 @@ ifapi_io_read_finish(struct IFAPI_IO *io, uint8_t **buffer, size_t *length) {
         return TSS2_FAPI_RC_TRY_AGAIN;
     else
         ifapi_io_retry = IFAPI_IO_RETRIES;
+
+    if (!io || !io->stream) {
+        return_error(TSS2_FAPI_RC_BAD_REFERENCE, "Bad referenced passed.");
+    }
 
     ssize_t ret = read(fileno(io->stream), &io->char_rbuffer[io->buffer_idx],
                        io->buffer_length - io->buffer_idx);
@@ -256,6 +252,7 @@ ifapi_io_write_async(struct IFAPI_IO *io,
                      size_t           length) {
     TSS2_RC      r;
     struct flock flock = { 0 };
+    int          fd;
 
     if (io->char_rbuffer) {
         LOG_ERROR("rbuffer still in use; maybe use of old API.");
@@ -271,7 +268,13 @@ ifapi_io_write_async(struct IFAPI_IO *io,
     }
     memcpy(io->char_rbuffer, buffer, length);
 
-    io->stream = fopen(filename, "wt");
+    fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0664);
+    if (fd == -1) {
+        goto_error(r, TSS2_FAPI_RC_IO_ERROR, "Open file \"%s\" for writing: %s", error, filename,
+                   strerror(errno));
+    }
+
+    io->stream = fdopen(fd, "wt");
     if (io->stream == NULL) {
         goto_error(r, TSS2_FAPI_RC_IO_ERROR, "Open file \"%s\" for writing: %s", error, filename,
                    strerror(errno));
@@ -744,7 +747,7 @@ ifapi_io_poll(IFAPI_IO *io) {
         fds.events = io->pollevents;
         fds.fd = fileno(io->stream);
         LOG_TRACE("Waiting for fd %i with event %i", fds.fd, fds.events);
-        rc = poll(&fds, 1, -1);
+        TEMP_RETRY(rc, poll(&fds, 1, -1));
         if (rc < 0) {
             LOG_ERROR("Poll failed with %d", errno);
             return TSS2_FAPI_RC_IO_ERROR;

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 # Copyright (c) 2015 - 2018 Intel Corporation
 # Copyright (c) 2018 Fraunhofer SIT sponsored by Infineon Technologies AG
+# Copyright (c) 2026 Fraunhofer SIT
 # All rights reserved.
 
 -include $(top_srcdir)/git.mk
@@ -715,13 +716,22 @@ fapi-config.json: dist/fapi-config.json.in
 		< "$<" > "$@"
 
 if SYSD_SYSUSERS
-sysusers_DATA = dist/sysusers.d/tpm2-tss.conf
+sysusers_DATA = tpm2-tss.conf
+CLEANFILES += tpm2-tss.conf
 endif
 
 if SYSD_TMPFILES
 tmpfiles_DATA = tpm2-tss-fapi.conf
 CLEANFILES += tpm2-tss-fapi.conf
 endif
+
+if SYSD_SYSUSERS_FULLY_LOCKED
+tpm2-tss.conf: dist/sysusers.d/tpm2-tss.conf.fully-locked
+	$(AM_V_GEN) cp "$<" "$@"
+else
+tpm2-tss.conf: dist/sysusers.d/tpm2-tss.conf.not-fully-locked
+	$(AM_V_GEN) cp "$<" "$@"
+endif # SYSD_SYSUSERS_FULLY_LOCKED
 
 # We have to do this ourselves, in order to get absolute paths
 tpm2-tss-fapi.conf: dist/tmpfiles.d/tpm2-tss-fapi.conf.in
@@ -758,7 +768,8 @@ EXTRA_DIST +=  \
     dist/fapi-profiles/P_ECCP256SHA256-high-range.json \
     dist/fapi-profiles/P_RSA2048SHA256-low-range.json \
     dist/fapi-profiles/P_ECCP256SHA256-low-range.json \
-    dist/sysusers.d/tpm2-tss.conf \
+    dist/sysusers.d/tpm2-tss.conf.fully-locked \
+    dist/sysusers.d/tpm2-tss.conf.not-fully-locked \
     dist/tmpfiles.d/tpm2-tss-fapi.conf.in \
     doc/fapi-config.md \
     doc/fapi-profile.md \
@@ -816,7 +827,9 @@ EXTRA_DIST +=  \
     test/data/fapi/policy/pol_pcr16_read.json \
     test/data/fapi/policy/pol_action.json \
     test/data/fapi/policy/pol_cphash.json \
+    test/data/fapi/policy/pol_or_authorize_nv.json \
     test/data/fapi/policy/pol_or_read_write_secret.json \
+    test/data/fapi/policy/pol_or_or_secret.json \
     test/data/fapi/policy/pol_ek_high_range_sha256.json \
     test/data/fapi/policy/pol_ek_high_range_sha384.json \
     test/data/fapi/P_ECC_sh_eh_policy_sha384.json \

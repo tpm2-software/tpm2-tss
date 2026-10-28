@@ -20,8 +20,9 @@
 #else
 #include <netdb.h> // for addrinfo, freeaddrinfo, gai_strerror, getadd...
 #endif
-#include <netinet/in.h> // for IPPROTO_TCP, sockaddr_in, sockaddr_in6
-#include <poll.h>       // for pollfd, poll, POLLIN
+#include <netinet/in.h>  // for IPPROTO_TCP, sockaddr_in, sockaddr_in6
+#include <netinet/tcp.h> // for TCP_NODELAY
+#include <poll.h>        // for pollfd, poll, POLLIN
 #ifndef __ZEPHYR__
 #include <sys/un.h> // for sockaddr_un
 #endif
@@ -80,6 +81,10 @@ read_all(SOCKET fd, uint8_t *data, size_t size, int timeout) {
             return recvd_total;
         }
         LOGBLOB_DEBUG(&data[recvd_total], recvd, "read %zd bytes from fd %d:", recvd, fd);
+        if ((size_t)recvd > (SIZE_MAX - recvd_total)) {
+            LOG_ERROR("Overflow for written_total");
+            return recvd_total;
+        }
         recvd_total += recvd;
         size -= recvd;
     } while (size > 0);
@@ -102,6 +107,10 @@ write_all(SOCKET fd, const uint8_t *buf, size_t size, int timeout) {
 #endif
         if (written >= 0) {
             LOG_DEBUG("wrote %zd bytes to fd %d", written, fd);
+            if ((size_t)written > (SIZE_MAX - written_total)) {
+                LOG_ERROR("Overflow for written_total");
+                return written_total;
+            }
             written_total += (size_t)written;
         } else {
 #ifdef _WIN32
@@ -171,6 +180,15 @@ socket_close(SOCKET *socket) {
 #endif
     *socket = INVALID_SOCKET;
 
+    return TSS2_RC_SUCCESS;
+}
+
+static TSS2_RC
+socket_set_nodelay(SOCKET sock) {
+    int flag = 1;
+    if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag)) < 0) {
+        return TSS2_TCTI_RC_IO_ERROR;
+    }
     return TSS2_RC_SUCCESS;
 }
 
@@ -249,6 +267,10 @@ socket_connect(const char *hostname, uint16_t port, int control, SOCKET *sock) {
 #endif
 
         return TSS2_TCTI_RC_IO_ERROR;
+    }
+
+    if (socket_set_nodelay(*sock) != TSS2_RC_SUCCESS) {
+        LOG_WARNING("Failed to set the TCP_NODELAY option for socket.");
     }
 
     return TSS2_RC_SUCCESS;
@@ -330,7 +352,7 @@ socket_poll(SOCKET sock, int wait_flags, int timeout) {
     if (timeout == 0)
         timeout = 10;
 
-    rc_poll = poll(&fds, nfds, timeout);
+    TEMP_RETRY(rc_poll, poll(&fds, nfds, timeout));
     if (rc_poll < 0) {
         LOG_ERROR("Failed to poll for response from fd %d, got errno %d: %s", sock, errno,
                   strerror(errno));

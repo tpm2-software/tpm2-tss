@@ -44,5 +44,9 @@ Tss2_Sys_GetEncryptParam(TSS2_SYS_CONTEXT *sysContext,
     *encryptParamSize = BE_TO_HOST_16(*((UINT16 *)offset));
     *encryptParamBuffer = offset + sizeof(UINT16);
 
+    if (*encryptParamSize
+        > (size_t)ctx->rsp_header.responseSize - (*encryptParamBuffer - ctx->cmdBuffer))
+        return TSS2_SYS_RC_MALFORMED_RESPONSE;
+
     return TSS2_RC_SUCCESS;
 }

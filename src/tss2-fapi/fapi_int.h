@@ -161,6 +161,18 @@ enum IFAPI_CHECK_NV_STATE {
     CHECK_NV_WAIT_FOR_READ_PUBLIC
 };
 
+/** The states for the FAPI's policy instantiation*/
+enum IFAPI_INSTANTIATE_POLICIES_STATE {
+    POLICIES_INSTANTIATION_INIT = 0,
+    POLICIES_INSTANTIATION_WAIT
+};
+
+typedef struct {
+    enum IFAPI_INSTANTIATE_POLICIES_STATE state;
+    size_t                                pol_idx;
+    TPMS_POLICY                          *policies[5];
+} IFAPI_POLICIES;
+
 #define IFAPI_MAX_CAP_INFO 17
 
 typedef struct {
@@ -611,6 +623,8 @@ typedef struct {
     bool                   cert_chain_exists;
     uint8_t               *certs;
     size_t                 cert_list_size;
+    IFAPI_POLICIES         policies;
+
 } IFAPI_Provision;
 
 /** The data structure holding internal state of regenerate primary key.
@@ -1046,14 +1060,18 @@ enum FAPI_STATE {
 
     KEY_SIGN_WAIT_FOR_KEY,
     KEY_SIGN_WAIT_FOR_SIGN,
-    KEY_SIGN_COMPUTE_HASH,
-    KEY_SIGN_WAIT_FOR_HASH,
-    KEY_SIGN_WAIT_FOR_HASH_SEQUENCE_INIT,
-    KEY_SIGN_WAIT_FOR_HASH_UPDATE_INIT,
-    KEY_SIGN_WAIT_FOR_HASH_UPDTATE,
-    KEY_SIGN_WAIT_FOR_HASH_COMPLETE_INIT,
-    KEY_SIGN_WAIT_FOR_HASH_COMPLETE,
     KEY_SIGN_CLEANUP,
+
+    KEY_DIGEST_AND_SIGN_WAIT_FOR_KEY,
+    KEY_DIGEST_AND_SIGN_WAIT_FOR_SIGN,
+    KEY_DIGEST_AND_SIGN_COMPUTE_HASH,
+    KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH,
+    KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_SEQUENCE_INIT,
+    KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_UPDATE_INIT,
+    KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_UPDTATE,
+    KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_COMPLETE_INIT,
+    KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_COMPLETE,
+    KEY_DIGEST_AND_SIGN_CLEANUP,
 
     ENTITY_CHANGE_AUTH_WAIT_FOR_SESSION,
     ENTITY_CHANGE_AUTH_WAIT_FOR_KEY,

@@ -54,6 +54,12 @@ read_json(char *file_name) {
     fseek(stream, 0L, SEEK_END);
     file_size = ftell(stream);
     fclose(stream);
+
+    if (file_size < 0) {
+        LOG_ERROR("Could not determine size of file %s.", file);
+        return NULL;
+    }
+
     json_string = malloc(file_size + 1);
     stream = fopen(file, "r");
     ssize_t ret = read(fileno(stream), json_string, file_size);

@@ -16,7 +16,7 @@
 #include <sys/stat.h>   // for mode_t
 #include <time.h>       // for clockid_t, timespec, CLOCK_...
 
-#include "../helper/cmocka_all.h"        // for will_return, assert_int_equal
+#include "../helper/cmocka_all.h"        // for will_return_int, will_return_ptr, assert_int_equal
 #include "tss2-tcti/tcti-common.h"       // for TSS2_TCTI_COMMON_CONTEXT
 #include "tss2-tcti/tcti-pcap-builder.h" // for ENV_PCAP_FILE, pcap_buider_ctx
 #include "tss2-tcti/tcti-pcap.h"         // for TSS2_TCTI_PCAP_CONTEXT, TCT...
@@ -113,7 +113,7 @@ TSS2_RC
 tcti_stub_transmit(TSS2_TCTI_CONTEXT *tcti_ctx, size_t size, const uint8_t *cmd_buf) {
     ssize_t  ret = mock_type(ssize_t);
     size_t   expected_size = mock_type(int);
-    uint8_t *expected_buf = mock_type(uint8_t *);
+    uint8_t *expected_buf = mock_ptr_type(uint8_t *);
 
     assert_int_equal(expected_size, size);
     assert_memory_equal(expected_buf, cmd_buf, size);
@@ -135,7 +135,7 @@ tcti_stub_receive(TSS2_TCTI_CONTEXT *tctiContext,
         return ret;
     }
 
-    buf_in = mock_type(uint8_t *);
+    buf_in = mock_ptr_type(uint8_t *);
     memcpy(response_buffer, buf_in, *response_size);
 
     return ret;
@@ -252,7 +252,7 @@ __wrap_read(int fd, void *buffer, size_t buffer_size) {
 
     if (fd == TCTI_PCAP_FD) {
         ret = mock_type(ssize_t);
-        buf_in = mock_type(uint8_t *);
+        buf_in = mock_ptr_type(uint8_t *);
 
         memcpy(buffer, buf_in, ret);
         return ret;
@@ -283,7 +283,7 @@ __wrap_write(int fd, void *buffer, size_t buffer_size) {
     if (fd == TCTI_PCAP_FD) {
         ret = mock_type(int);
         expected_size = mock_type(int);
-        expected_buffer = mock_type(uint8_t *);
+        expected_buffer = mock_ptr_type(uint8_t *);
 
         fprintf(stderr, "exp: ");
         for (size_t i = 0; i < expected_size; i++)
@@ -343,7 +343,7 @@ tcti_pcap_init_tctildr_fail_test(void **state) {
     TSS2_TCTI_CONTEXT     *tcti = (TSS2_TCTI_CONTEXT *)&tcti_pcap;
     TSS2_RC                rc = TSS2_RC_SUCCESS;
 
-    will_return(Tss2_TctiLdr_Initialize, TSS2_TCTI_RC_MEMORY);
+    will_return_int(Tss2_TctiLdr_Initialize, TSS2_TCTI_RC_MEMORY);
     rc = Tss2_Tcti_Pcap_Init(tcti, &tcti_size, NULL);
     assert_int_equal(rc, TSS2_TCTI_RC_MEMORY);
     assert_int_equal(tcti_pcap.pcap_builder.fd, 0);
@@ -362,13 +362,13 @@ tcti_pcap_init_open_fail_test(void **state) {
     tcti = calloc(1, tcti_size);
     assert_non_null(tcti);
 
-    will_return(__wrap_rand, 0); /* host ip */
-    will_return(__wrap_rand, 0);
-    will_return(__wrap_rand, 0); /* tpm ip */
-    will_return(__wrap_rand, 0);
-    will_return(__wrap_rand, 0); /* host sequence no */
-    will_return(__wrap_rand, 0); /* tpm sequence no */
-    will_return(__wrap_open, -1);
+    will_return_int(__wrap_rand, 0); /* host ip */
+    will_return_int(__wrap_rand, 0);
+    will_return_int(__wrap_rand, 0); /* tpm ip */
+    will_return_int(__wrap_rand, 0);
+    will_return_int(__wrap_rand, 0); /* host sequence no */
+    will_return_int(__wrap_rand, 0); /* tpm sequence no */
+    will_return_int(__wrap_open, -1);
     rc = Tss2_Tcti_Pcap_Init(tcti, &tcti_size, TCTI_STUB_CONF);
     assert_int_equal(rc, TSS2_TCTI_RC_IO_ERROR);
 
@@ -388,17 +388,17 @@ tcti_pcap_init_write_fail_test(void **state) {
     tcti = calloc(1, tcti_size);
     assert_non_null(tcti);
 
-    will_return(__wrap_rand, 0); /* host ip */
-    will_return(__wrap_rand, 0);
-    will_return(__wrap_rand, 0); /* tpm ip */
-    will_return(__wrap_rand, 0);
-    will_return(__wrap_rand, 0); /* host sequence no */
-    will_return(__wrap_rand, 0); /* tpm sequence no */
-    will_return(__wrap_open, TCTI_PCAP_FD);
-    will_return(__wrap_write, -1);
-    will_return(__wrap_write, sizeof(pcap_header));
-    will_return(__wrap_write, pcap_header);
-    will_return(__wrap_close, 0); /* close pcap */
+    will_return_int(__wrap_rand, 0); /* host ip */
+    will_return_int(__wrap_rand, 0);
+    will_return_int(__wrap_rand, 0); /* tpm ip */
+    will_return_int(__wrap_rand, 0);
+    will_return_int(__wrap_rand, 0); /* host sequence no */
+    will_return_int(__wrap_rand, 0); /* tpm sequence no */
+    will_return_int(__wrap_open, TCTI_PCAP_FD);
+    will_return_int(__wrap_write, -1);
+    will_return_int(__wrap_write, sizeof(pcap_header));
+    will_return_ptr(__wrap_write, pcap_header);
+    will_return_int(__wrap_close, 0); /* close pcap */
     rc = Tss2_Tcti_Pcap_Init(tcti, &tcti_size, TCTI_STUB_CONF);
     assert_int_equal(rc, TSS2_TCTI_RC_IO_ERROR);
 
@@ -418,16 +418,16 @@ tcti_pcap_setup(void **state) {
     tcti = calloc(1, tcti_size);
     assert_non_null(tcti);
 
-    will_return(__wrap_rand, TCTI_PCAP_IP_HOST_L); /* host ip */
-    will_return(__wrap_rand, TCTI_PCAP_IP_HOST_H);
-    will_return(__wrap_rand, TCTI_PCAP_IP_TPM_L); /* tpm ip */
-    will_return(__wrap_rand, TCTI_PCAP_IP_TPM_H);
-    will_return(__wrap_rand, TCTI_PCAP_TCP_SEQ_HOST_INT); /* host sequence no */
-    will_return(__wrap_rand, TCTI_PCAP_TCP_SEQ_TPM_INT);  /* tpm sequence no */
-    will_return(__wrap_open, TCTI_PCAP_FD);
-    will_return(__wrap_write, sizeof(pcap_header));
-    will_return(__wrap_write, sizeof(pcap_header));
-    will_return(__wrap_write, pcap_header);
+    will_return_int(__wrap_rand, TCTI_PCAP_IP_HOST_L); /* host ip */
+    will_return_int(__wrap_rand, TCTI_PCAP_IP_HOST_H);
+    will_return_int(__wrap_rand, TCTI_PCAP_IP_TPM_L); /* tpm ip */
+    will_return_int(__wrap_rand, TCTI_PCAP_IP_TPM_H);
+    will_return_int(__wrap_rand, TCTI_PCAP_TCP_SEQ_HOST_INT); /* host sequence no */
+    will_return_int(__wrap_rand, TCTI_PCAP_TCP_SEQ_TPM_INT);  /* tpm sequence no */
+    will_return_int(__wrap_open, TCTI_PCAP_FD);
+    will_return_int(__wrap_write, sizeof(pcap_header));
+    will_return_int(__wrap_write, sizeof(pcap_header));
+    will_return_ptr(__wrap_write, pcap_header);
     ret = Tss2_Tcti_Pcap_Init(tcti, &tcti_size, TCTI_STUB_CONF);
     assert_true(ret == TSS2_RC_SUCCESS);
 
@@ -439,7 +439,7 @@ static int
 tcti_pcap_teardown(void **state) {
     TSS2_TCTI_CONTEXT *tcti = (TSS2_TCTI_CONTEXT *)*state;
 
-    will_return(__wrap_close, EXIT_SUCCESS);
+    will_return_int(__wrap_close, EXIT_SUCCESS);
     Tss2_Tcti_Finalize(tcti);
     free(tcti);
 
@@ -464,28 +464,28 @@ tcti_pcap_receive_test(void **state) {
     assert_int_equal(rc, TSS2_TCTI_RC_BAD_REFERENCE);
 
     /* partial read: give back response_size of 123 */
-    will_return(tcti_stub_receive, TSS2_RC_SUCCESS);
-    will_return(tcti_stub_receive, partial_read_size);
+    will_return_int(tcti_stub_receive, TSS2_RC_SUCCESS);
+    will_return_int(tcti_stub_receive, partial_read_size);
     rc = Tss2_Tcti_Receive(ctx, &response_size, NULL, /* NULL buffer */
                            TSS2_TCTI_TIMEOUT_BLOCK);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(response_size, partial_read_size);
 
     /* underlying read fails */
-    will_return(tcti_stub_receive, TSS2_TCTI_RC_IO_ERROR);
-    will_return(tcti_stub_receive, 0);
-    will_return(tcti_stub_receive, NULL);
+    will_return_int(tcti_stub_receive, TSS2_TCTI_RC_IO_ERROR);
+    will_return_int(tcti_stub_receive, 0);
+    will_return_ptr(tcti_stub_receive, NULL);
     /* receive fails, it will not log to pcap */
     rc = Tss2_Tcti_Receive(ctx, &response_size, response_buffer, TSS2_TCTI_TIMEOUT_BLOCK);
     assert_int_equal(rc, TSS2_TCTI_RC_IO_ERROR);
 
     /* read successfully  */
-    will_return(tcti_stub_receive, TSS2_RC_SUCCESS);
-    will_return(tcti_stub_receive, mock_response_size);
-    will_return(tcti_stub_receive, mock_response_buffer);
-    will_return(__wrap_write, sizeof(pcap_rx_epb_data));
-    will_return(__wrap_write, sizeof(pcap_rx_epb_data));
-    will_return(__wrap_write, pcap_rx_epb_data);
+    will_return_int(tcti_stub_receive, TSS2_RC_SUCCESS);
+    will_return_int(tcti_stub_receive, mock_response_size);
+    will_return_ptr(tcti_stub_receive, mock_response_buffer);
+    will_return_int(__wrap_write, sizeof(pcap_rx_epb_data));
+    will_return_int(__wrap_write, sizeof(pcap_rx_epb_data));
+    will_return_ptr(__wrap_write, pcap_rx_epb_data);
     rc = Tss2_Tcti_Receive(ctx, &response_size, response_buffer, TSS2_TCTI_TIMEOUT_BLOCK);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(response_size, mock_response_size);
@@ -494,12 +494,12 @@ tcti_pcap_receive_test(void **state) {
     /* read successfully, but fail to write to pcap  */
     tcti_common->state = TCTI_STATE_RECEIVE;
     update_tcp_seq(pcap_rx_epb_data, mock_response_size);
-    will_return(tcti_stub_receive, TSS2_RC_SUCCESS);
-    will_return(tcti_stub_receive, mock_response_size);
-    will_return(tcti_stub_receive, mock_response_buffer);
-    will_return(__wrap_write, -1); /* fail to write to pcap */
-    will_return(__wrap_write, sizeof(pcap_rx_epb_data));
-    will_return(__wrap_write, pcap_rx_epb_data);
+    will_return_int(tcti_stub_receive, TSS2_RC_SUCCESS);
+    will_return_int(tcti_stub_receive, mock_response_size);
+    will_return_ptr(tcti_stub_receive, mock_response_buffer);
+    will_return_int(__wrap_write, -1); /* fail to write to pcap */
+    will_return_int(__wrap_write, sizeof(pcap_rx_epb_data));
+    will_return_ptr(__wrap_write, pcap_rx_epb_data);
     rc = Tss2_Tcti_Receive(ctx, &response_size, response_buffer, TSS2_TCTI_TIMEOUT_BLOCK);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
     assert_int_equal(response_size, mock_response_size);
@@ -521,37 +521,37 @@ tcti_pcap_transmit_test(void **state) {
     assert_int_equal(rc, TSS2_TCTI_RC_BAD_REFERENCE);
 
     /* underlying tranmit fails*/
-    will_return(tcti_stub_transmit, TSS2_TCTI_RC_IO_ERROR);
-    will_return(tcti_stub_transmit, mock_transmit_size);   /* assert size */
-    will_return(tcti_stub_transmit, mock_transmit_buffer); /* assert buf */
+    will_return_int(tcti_stub_transmit, TSS2_TCTI_RC_IO_ERROR);
+    will_return_int(tcti_stub_transmit, mock_transmit_size);   /* assert size */
+    will_return_ptr(tcti_stub_transmit, mock_transmit_buffer); /* assert buf */
     /* transmit fails, but it still logs to pcap */
-    will_return(__wrap_write, sizeof(pcap_tx_epb_data));
-    will_return(__wrap_write, sizeof(pcap_tx_epb_data));
-    will_return(__wrap_write, pcap_tx_epb_data);
+    will_return_int(__wrap_write, sizeof(pcap_tx_epb_data));
+    will_return_int(__wrap_write, sizeof(pcap_tx_epb_data));
+    will_return_ptr(__wrap_write, pcap_tx_epb_data);
     rc = Tss2_Tcti_Transmit(ctx, mock_transmit_size,
                             mock_transmit_buffer); /* have tcti_common_transmit_checks fail */
     assert_int_equal(rc, TSS2_TCTI_RC_IO_ERROR);
 
     /* transmit successfully */
     update_tcp_seq(pcap_tx_epb_data, mock_transmit_size);
-    will_return(tcti_stub_transmit, TSS2_RC_SUCCESS);
-    will_return(tcti_stub_transmit, mock_transmit_size);   /* assert size */
-    will_return(tcti_stub_transmit, mock_transmit_buffer); /* assert buf */
-    will_return(__wrap_write, sizeof(pcap_tx_epb_data));
-    will_return(__wrap_write, sizeof(pcap_tx_epb_data));
-    will_return(__wrap_write, pcap_tx_epb_data);
+    will_return_int(tcti_stub_transmit, TSS2_RC_SUCCESS);
+    will_return_int(tcti_stub_transmit, mock_transmit_size);   /* assert size */
+    will_return_ptr(tcti_stub_transmit, mock_transmit_buffer); /* assert buf */
+    will_return_int(__wrap_write, sizeof(pcap_tx_epb_data));
+    will_return_int(__wrap_write, sizeof(pcap_tx_epb_data));
+    will_return_ptr(__wrap_write, pcap_tx_epb_data);
     rc = Tss2_Tcti_Transmit(ctx, mock_transmit_size, mock_transmit_buffer);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
 
     /* transmit successfully, but fail to write to pcap */
     tcti_common->state = TCTI_STATE_TRANSMIT;
     update_tcp_seq(pcap_tx_epb_data, mock_transmit_size);
-    will_return(tcti_stub_transmit, TSS2_RC_SUCCESS);
-    will_return(tcti_stub_transmit, mock_transmit_size);   /* assert size */
-    will_return(tcti_stub_transmit, mock_transmit_buffer); /* assert buf */
-    will_return(__wrap_write, -1);                         /* fail to write to pcap */
-    will_return(__wrap_write, sizeof(pcap_tx_epb_data));
-    will_return(__wrap_write, pcap_tx_epb_data);
+    will_return_int(tcti_stub_transmit, TSS2_RC_SUCCESS);
+    will_return_int(tcti_stub_transmit, mock_transmit_size);   /* assert size */
+    will_return_ptr(tcti_stub_transmit, mock_transmit_buffer); /* assert buf */
+    will_return_int(__wrap_write, -1);                         /* fail to write to pcap */
+    will_return_int(__wrap_write, sizeof(pcap_tx_epb_data));
+    will_return_ptr(__wrap_write, pcap_tx_epb_data);
     rc = Tss2_Tcti_Transmit(ctx, mock_transmit_size, mock_transmit_buffer);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
 }
@@ -569,7 +569,7 @@ tcti_pcap_cancel_test(void **state) {
     assert_int_equal(rc, TSS2_TCTI_RC_BAD_REFERENCE);
 
     /* cancel successfully */
-    will_return(tcti_stub_cancel, TSS2_RC_SUCCESS);
+    will_return_int(tcti_stub_cancel, TSS2_RC_SUCCESS);
     /* cancel will not write to pcap */
     rc = Tss2_Tcti_Cancel(ctx);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
@@ -589,8 +589,8 @@ tcti_pcap_set_locality_test(void **state) {
     assert_int_equal(rc, TSS2_TCTI_RC_BAD_REFERENCE);
 
     /* set_locality successfully */
-    will_return(tcti_stub_set_locality, TSS2_RC_SUCCESS);
-    will_return(tcti_stub_set_locality, mock_locality);
+    will_return_int(tcti_stub_set_locality, TSS2_RC_SUCCESS);
+    will_return_int(tcti_stub_set_locality, mock_locality);
     /* set_locality will not write to pcap */
     rc = Tss2_Tcti_SetLocality(ctx, mock_locality);
     assert_int_equal(rc, TSS2_RC_SUCCESS);
@@ -611,7 +611,7 @@ tcti_pcap_get_poll_handles_test(void **state) {
     assert_int_equal(rc, TSS2_TCTI_RC_BAD_REFERENCE);
 
     /* get_poll_handles successfully */
-    will_return(tcti_stub_get_poll_handles, TSS2_RC_SUCCESS);
+    will_return_int(tcti_stub_get_poll_handles, TSS2_RC_SUCCESS);
     /* get_poll_handles will not write to pcap */
     rc = Tss2_Tcti_GetPollHandles(ctx, handles, &num_handles);
     assert_int_equal(rc, TSS2_RC_SUCCESS);

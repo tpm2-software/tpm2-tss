@@ -9,7 +9,7 @@ jobs:
   clang-format-checking:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/tpm2-software/ubuntu-24.04
+      image: ghcr.io/tpm2-software/ubuntu-24.04-dev
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -25,4 +25,4 @@ jobs:
         if: ${{ failure() }}
         run: |
           echo "Clang format check failed. Please run clang-format on your code or see the diff in the step above."
-          echo "docker run -u $UID -v $PWD:$PWD ghcr.io/tpm2-software/ubuntu-24.04 clang-format -i $(find -name '*.h' -or -name '*.c' | xargs realpath)"
+          echo "docker run -u $UID -v $PWD:$PWD ghcr.io/tpm2-software/ubuntu-24.04-dev clang-format -i $(find -name '*.h' -or -name '*.c' | xargs realpath)"

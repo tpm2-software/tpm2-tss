@@ -113,6 +113,16 @@
         return TSS2_FAPI_RC_BAD_REFERENCE;                                                         \
     }
 
+#define check_in_bounds(X, upper)                                                                  \
+    {                                                                                              \
+        const size_t _size = (X);                                                                  \
+        const size_t _upper = (upper);                                                             \
+        if (_size > _upper) {                                                                      \
+            LOG_ERROR(str(X) " is larger than %zi", _upper);                                       \
+            return TSS2_FAPI_RC_BAD_VALUE;                                                         \
+        }                                                                                          \
+    }
+
 #define check_oom(X)                                                                               \
     if ((X) == NULL) {                                                                             \
         LOG_ERROR("Out of memory");                                                                \

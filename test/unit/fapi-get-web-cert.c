@@ -219,7 +219,7 @@ check_get_intl_cert_sha_error(void **state) {
     unsigned char *cert_buf = NULL;
     size_t         cert_size;
     TSS2_RC        r;
-    will_return_always(__wrap_EVP_DigestUpdate, 0);
+    will_return_int_always(__wrap_EVP_DigestUpdate, 0);
     mock_json_cert = valid_json_cert;
     wrap_EVP_DigestUpdate_test = 1;
     r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_INTC, &cert_buf, &cert_size);
@@ -247,7 +247,7 @@ check_get_amd_cert_sha_error(void **state) {
     unsigned char *cert_buf = NULL;
     size_t         cert_size;
     TSS2_RC        r;
-    will_return_always(__wrap_EVP_DigestUpdate, 0);
+    will_return_int_always(__wrap_EVP_DigestUpdate, 0);
     mock_json_cert = valid_json_cert;
     wrap_EVP_DigestUpdate_test = 1;
     r = ifapi_get_web_ek_certificate(ctx, &eccPublic, VENDOR_AMD, &cert_buf, &cert_size);

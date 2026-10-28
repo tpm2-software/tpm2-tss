@@ -165,7 +165,7 @@ tcti_device_receive(TSS2_TCTI_CONTEXT *tctiContext,
             fds.fd = tcti_dev->fd;
             fds.events = POLLIN;
 
-            rc_poll = poll(&fds, nfds, timeout);
+            TEMP_RETRY(rc_poll, poll(&fds, nfds, timeout));
             if (rc_poll < 0) {
                 LOG_ERROR("Failed to poll for response from fd %d, got errno %d: %s", tcti_dev->fd,
                           errno, strerror(errno));
@@ -225,7 +225,7 @@ tcti_device_receive(TSS2_TCTI_CONTEXT *tctiContext,
     fds.fd = tcti_dev->fd;
     fds.events = POLLIN;
 
-    rc_poll = poll(&fds, nfds, timeout);
+    TEMP_RETRY(rc_poll, poll(&fds, nfds, timeout));
     if (rc_poll < 0) {
         LOG_ERROR("Failed to poll for response from fd %d, got errno %d: %s", tcti_dev->fd, errno,
                   strerror(errno));
@@ -442,7 +442,7 @@ Tss2_Tcti_Device_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *
 
     fds.fd = tcti_dev->fd;
     fds.events = POLLIN;
-    rc_poll = poll(&fds, nfds, 1000); /* Wait 1 sec */
+    TEMP_RETRY(rc_poll, poll(&fds, nfds, 1000)); /* Wait 1 sec */
     if (rc_poll < 0 || rc_poll == 0) {
         LOG_ERROR("Failed to poll for response from fd %d, rc %d, errno %d: %s", tcti_dev->fd,
                   rc_poll, errno, strerror(errno));
@@ -470,7 +470,7 @@ Tss2_Tcti_Device_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *
     fds.fd = tcti_dev->fd;
     fds.events = POLLIN;
     sz = 0;
-    rc_poll = poll(&fds, nfds, 1000); /* Wait 1 sec */
+    TEMP_RETRY(rc_poll, poll(&fds, nfds, 1000)); /* Wait 1 sec */
     if (rc_poll < 0) {
         LOG_DEBUG("Failed to poll for response from fd %d, rc %d, errno %d: %s", tcti_dev->fd,
                   rc_poll, errno, strerror(errno));
@@ -503,6 +503,8 @@ Tss2_Tcti_Device_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *
     return TSS2_RC_SUCCESS;
 }
 
+/* public info structure */
+#ifndef NO_DL
 static const TSS2_TCTI_INFO tss2_tcti_device_info = {
     .version = TCTI_VERSION,
     .name = "tcti-device",
@@ -516,3 +518,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_device_info;
 }
+#endif /* NO_DL */

@@ -629,11 +629,12 @@ typedef UINT16 TPM2_ST;
 #define TPM2_ST_RESERVED3                                                                          \
     ((TPM2_ST)0x801B) /* do not use . NOTE This was previously assigned to TPM2_ST_ATTEST_NV. The  \
                          tag is changed because the structure has changed */
-#define TPM2_ST_CREATION    ((TPM2_ST)0x8021) /* tag for a ticket type */
-#define TPM2_ST_VERIFIED    ((TPM2_ST)0x8022) /* tag for a ticket type */
-#define TPM2_ST_AUTH_SECRET ((TPM2_ST)0x8023) /* tag for a ticket type */
-#define TPM2_ST_HASHCHECK   ((TPM2_ST)0x8024) /* tag for a ticket type */
-#define TPM2_ST_AUTH_SIGNED ((TPM2_ST)0x8025) /* tag for a ticket type */
+#define TPM2_ST_ATTEST_NV_DIGEST ((TPM2_ST)0x801C) /* tag for an attestation structure */
+#define TPM2_ST_CREATION         ((TPM2_ST)0x8021) /* tag for a ticket type */
+#define TPM2_ST_VERIFIED         ((TPM2_ST)0x8022) /* tag for a ticket type */
+#define TPM2_ST_AUTH_SECRET      ((TPM2_ST)0x8023) /* tag for a ticket type */
+#define TPM2_ST_HASHCHECK        ((TPM2_ST)0x8024) /* tag for a ticket type */
+#define TPM2_ST_AUTH_SIGNED      ((TPM2_ST)0x8025) /* tag for a ticket type */
 #define TPM2_ST_FU_MANIFEST                                                                        \
     ((TPM2_ST)0x8029) /* tag for a structure describing a Field Upgrade Policy */
 
@@ -1079,6 +1080,7 @@ typedef UINT8 TPM2_HT;
 #define TPM2_HT_PERSISTENT                                                                         \
     ((TPM2_HT)0x81) /* Persistent Objects  assigned by the TPM when a loaded transient object is   \
                        made persistent */
+#define TPM2_HT_AC ((TPM2_HT)0x90) /* handle for an Attached Component */
 
 /* Definition of TPM2_HANDLE TPM2_RH Constants <S> */
 typedef TPM2_HANDLE TPM2_RH;
@@ -1166,6 +1168,9 @@ typedef TPM2_HANDLE TPM2_HC;
                                                    */
 #define TPM2_PERMANENT_FIRST ((TPM2_HC)TPM2_RH_FIRST)
 #define TPM2_PERMANENT_LAST  ((TPM2_HC)TPM2_RH_LAST)
+#define TPM2_HR_AC           ((TPM2_HC)(TPM2_HT_AC << TPM2_HR_SHIFT))
+#define TPM2_AC_FIRST        ((TPM2_HC)(TPM2_HR_AC + 0))
+#define TPM2_AC_LAST         ((TPM2_HC)(TPM2_HR_AC + 0x0000FFFF))
 #define TPM2_HR_NV_AC        ((TPM2_HC)((TPM2_HT_NV_INDEX << TPM2_HR_SHIFT) + 0xD00000))
 #define TPM2_NV_AC_FIRST     ((TPM2_HC)(TPM2_HR_NV_AC + 0))
 #define TPM2_NV_AC_LAST      ((TPM2_HC)(TPM2_HR_NV_AC + 0x0000FFFF))
@@ -2073,13 +2078,14 @@ typedef TPM2_ST TPMI_ST_ATTEST;
 /* Definition of TPMU_ATTEST Union <OUT> */
 typedef union TPMU_ATTEST TPMU_ATTEST;
 union TPMU_ATTEST {
-    TPMS_CERTIFY_INFO       certify;
-    TPMS_CREATION_INFO      creation;
-    TPMS_QUOTE_INFO         quote;
-    TPMS_COMMAND_AUDIT_INFO commandAudit;
-    TPMS_SESSION_AUDIT_INFO sessionAudit;
-    TPMS_TIME_ATTEST_INFO   time;
-    TPMS_NV_CERTIFY_INFO    nv;
+    TPMS_CERTIFY_INFO           certify;
+    TPMS_CREATION_INFO          creation;
+    TPMS_QUOTE_INFO             quote;
+    TPMS_COMMAND_AUDIT_INFO     commandAudit;
+    TPMS_SESSION_AUDIT_INFO     sessionAudit;
+    TPMS_TIME_ATTEST_INFO       time;
+    TPMS_NV_CERTIFY_INFO        nv;
+    TPMS_NV_DIGEST_CERTIFY_INFO nvDigest;
 };
 
 /* Definition of TPMS_ATTEST Structure <OUT> */

@@ -53,7 +53,9 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
     return r;
 
 error_cleanup:
-    ifapi_free_node_list(*policy_element_list);
+    if (*policy_element_list)
+        ifapi_free_node_list(*policy_element_list);
+    *policy_element_list = NULL;
     return r;
 }
 

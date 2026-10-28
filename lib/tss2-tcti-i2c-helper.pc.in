@@ -7,5 +7,5 @@ Name: tss2-tcti-i2c-helper
 Description: TCTI library for communicating with the TPM over I2C.
 URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
-Cflags: -I${includedir} -I${includedir}/tss
+Cflags: -I${includedir} -I${includedir}/tss2
 Libs: -ltss2-tcti-i2c-helper -L${libdir}

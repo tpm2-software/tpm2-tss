@@ -8,6 +8,7 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
+#include <errno.h>    // for errno
 #include <inttypes.h> // for int64_t, uint8_t, PRId64
 #include <stdio.h>    // for NULL, size_t, sscanf
 #include <stdlib.h>   // for calloc, malloc
@@ -86,18 +87,27 @@ get_token_start_idx(const char *token) {
  */
 static bool
 get_number(const char *token, int64_t *num) {
-    int itoken = 0;
-    int pos = 0;
-    if (strncmp(token, "0x", 2) == 0) {
-        itoken = 2;
-        sscanf(&token[itoken], "%" PRIx64 "%n", num, &pos);
-    } else {
-        sscanf(&token[itoken], "%" PRId64 "%n", num, &pos);
-    }
-    if ((size_t)pos == strlen(token) - itoken)
-        return true;
-    else
+    if (token == NULL || num == NULL)
         return false;
+
+    char *endptr = NULL;
+    errno = 0;
+
+    if (strncmp(token, "0x", 2) == 0) {
+        uint64_t unum = strtoull(token, &endptr, 16);
+        if (errno != 0 || endptr == token || *endptr != '\0')
+            return false;
+        if (unum > INT64_MAX)
+            return false;
+        *num = (int64_t)unum;
+    } else {
+        int64_t snum = strtoll(token, &endptr, 10);
+        if (errno != 0 || endptr == token || *endptr != '\0')
+            return false;
+        *num = snum;
+    }
+
+    return true;
 }
 
 /** Deserialize a character string.
@@ -335,9 +345,8 @@ ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
 
     /* Get structure with public data from binary blob. */
     r = Tss2_MU_TPM2B_PUBLIC_Unmarshal(public_blob.buffer, public_blob.size, &offset, &out->public);
-    goto_if_error(r, "Invalid public data.", error_cleanup);
-
     SAFE_FREE(public_blob.buffer);
+    goto_if_error(r, "Invalid public data.", error_cleanup);
 
     if (!ifapi_get_sub_object(jso, "private", &jso2)) {
         memset(&out->private, 0, sizeof(UINT8_ARY));
@@ -692,6 +701,8 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out) {
     TSS2_RC      r;
     LOG_TRACE("call");
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+
+    out->policy = NULL;
 
     if (!ifapi_get_sub_object(jso, "objectType", &jso2)) {
         LOG_ERROR("Field \"objectType\" not found.");

@@ -142,6 +142,7 @@ Tss2_Tcti_Null_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char *co
 }
 
 /* public info structure */
+#ifndef NO_DL
 const TSS2_TCTI_INFO tss2_tcti_info = {
     .version = TCTI_VERSION,
     .name = "tcti-null",
@@ -154,3 +155,4 @@ const TSS2_TCTI_INFO *
 Tss2_Tcti_Info(void) {
     return &tss2_tcti_info;
 }
+#endif /* NO_DL */

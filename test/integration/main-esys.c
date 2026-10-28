@@ -26,7 +26,7 @@
 int
 main(int argc, char *argv[]) {
     TSS2_TEST_ESYS_CONTEXT *test_esys_ctx;
-    TSS2_RC                 rc;
+    int                     rc;
     int                     ret;
 
     (void)argc;
@@ -57,5 +57,5 @@ main(int argc, char *argv[]) {
 
     test_esys_teardown(test_esys_ctx);
 
-    return EXIT_SUCCESS;
+    return rc;
 }

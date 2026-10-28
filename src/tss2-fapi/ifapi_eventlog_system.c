@@ -270,7 +270,7 @@ parse_sha1_log_event(TCG_EVENT const *event, size_t size, size_t *event_size) {
         LOG_ERROR("insufficient size for SpecID event header");
         return false;
     }
-    if (event->pcrIndex > TPM2_MAX_PCRS) {
+    if (event->pcrIndex >= TPM2_MAX_PCRS) {
         LOG_ERROR("Invalid PCR index");
         return false;
     }
@@ -569,14 +569,19 @@ ifapi_json_TCG_EVENT_TYPE_deserialize(json_object *jso, IFAPI_EVENT_TYPE *out) {
  */
 static TSS2_RC
 check_out_string(const IFAPI_FIRMWARE_EVENT *in, const char *string) {
-    if (strncmp((const char *)&in->data.buffer[0], string, strlen(string)) != 0) {
+    size_t expected = strlen(string);
+    if (in->data.size < expected) {
+        return_error2(TSS2_FAPI_RC_BAD_VALUE, "Event data size %zu too small for %s", in->data.size,
+                      string);
+    }
+    if (memcmp(&in->data.buffer[0], string, expected) != 0) {
         return_error2(TSS2_FAPI_RC_BAD_VALUE, "Invalid event string. %s expected", string);
     }
-    if (in->data.size == strlen(string)) {
+    if (in->data.size == expected) {
         /* String without NULL terminator */
         return TSS2_RC_SUCCESS;
     }
-    if (in->data.size == strlen(string) + 1 && in->data.buffer[strlen(string)] == '\0') {
+    if (in->data.size == expected + 1 && in->data.buffer[expected] == '\0') {
         /* String with NULL terminator */
         return TSS2_RC_SUCCESS;
     }
@@ -694,6 +699,14 @@ parse_eventlog(tpm2_eventlog_context *ctx, BYTE const *eventlog, size_t size) {
     TCG_EVENT_HEADER2 *next;
     TCG_EVENT         *event = (TCG_EVENT *)eventlog;
     bool               ret;
+
+    if (size == 0) {
+        return true;
+    }
+    if (size < sizeof(*event)) {
+        LOG_ERROR("eventlog too small for first TCG_EVENT (%zu < %zu)", size, sizeof(*event));
+        return false;
+    }
 
     if (event->eventType == EV_NO_ACTION) {
         ret = specid_event(event, size, &next);

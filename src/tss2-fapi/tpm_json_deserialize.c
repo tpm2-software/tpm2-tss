@@ -9,6 +9,7 @@
 #endif
 
 #include <ctype.h>    // for tolower, isxdigit
+#include <errno.h>    // for errno
 #include <inttypes.h> // for int64_t, uint8_t, PRId64, PRIu32, PRIx64
 #include <stdarg.h>   // for va_arg, va_end, va_list, va_start
 #include <stdio.h>    // for sscanf
@@ -213,18 +214,27 @@ ifapi_json_byte_deserialize(json_object *jso, UINT32 max, BYTE *out, UINT16 *out
  */
 static bool
 get_number(const char *token, int64_t *num) {
-    int itoken = 0;
-    int pos = 0;
-    if (strncmp(token, "0x", 2) == 0) {
-        itoken = 2;
-        sscanf(&token[itoken], "%" PRIx64 "%n", num, &pos);
-    } else {
-        sscanf(&token[itoken], "%" PRId64 "%n", num, &pos);
-    }
-    if ((size_t)pos == strlen(token) - itoken)
-        return true;
-    else
+    if (token == NULL || num == NULL)
         return false;
+
+    char *endptr = NULL;
+    errno = 0;
+
+    if (strncmp(token, "0x", 2) == 0) {
+        uint64_t unum = strtoull(token, &endptr, 16);
+        if (errno != 0 || endptr == token || *endptr != '\0')
+            return false;
+        if (unum > INT64_MAX)
+            return false;
+        *num = (int64_t)unum;
+    } else {
+        int64_t snum = strtoll(token, &endptr, 10);
+        if (errno != 0 || endptr == token || *endptr != '\0')
+            return false;
+        *num = snum;
+    }
+
+    return true;
 }
 
 /** Get sub object from a json object.
@@ -299,9 +309,9 @@ get_boolean_from_json(json_object *jso, TPMI_YES_NO *value) {
     TSS2_RC r = ifapi_json_TPMI_YES_NO_deserialize(jso, value);
     if (r != TSS2_RC_SUCCESS) {
         const char *token = json_object_get_string(jso);
-        if (strcasecmp(token, "set") != 0 || strcasecmp(token, "on") != 0) {
+        if (strcasecmp(token, "set") == 0 || strcasecmp(token, "on") == 0) {
             *value = 1;
-        } else if (strcasecmp(token, "off") != 0) {
+        } else if (strcasecmp(token, "off") == 0) {
             *value = 0;
         } else {
             return_error(TSS2_FAPI_RC_BAD_VALUE, "No boolean value");
@@ -364,7 +374,10 @@ ifapi_json_UINT8_ARY_deserialize(json_object *jso, UINT8_ARY *out) {
     return_if_null(out->buffer, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     r = ifapi_hex_to_byte_ary(hex_string, out->size, &out->buffer[0]);
-    return_if_error(r, "Can't convert hex values.");
+    if (r) {
+        SAFE_FREE(out->buffer);
+        return r;
+    }
 
     return TSS2_RC_SUCCESS;
 }
@@ -517,6 +530,7 @@ ifapi_json_BYTE_array_deserialize(size_t max, json_object *jso, BYTE *out) {
         size_t size = json_object_array_length(jso);
         if (size > max) {
             LOG_ERROR("Array of BYTE too large (%zu > %zu)", size, max);
+            return TSS2_FAPI_RC_BAD_VALUE;
         }
         for (size_t i = 0; i < size; i++) {
             json_object *jso2 = json_object_array_get_idx(jso, i);

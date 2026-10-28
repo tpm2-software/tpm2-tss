@@ -279,7 +279,7 @@ iesys_handle_to_tpm_handle(ESYS_TR esys_handle, TPM2_HANDLE *tpm_handle) {
         return TPM2_RC_SUCCESS;
     }
     if (esys_handle >= ESYS_TR_RH_AC_FIRST && esys_handle <= ESYS_TR_RH_AC_LAST) {
-        *tpm_handle = TPM2_NV_AC_FIRST + (esys_handle - ESYS_TR_RH_AC_FIRST);
+        *tpm_handle = TPM2_AC_FIRST + (esys_handle - ESYS_TR_RH_AC_FIRST);
         return TPM2_RC_SUCCESS;
     }
     LOG_ERROR("Error: Esys invalid ESAPI handle (%" PRIx32 ").", esys_handle);
@@ -816,10 +816,15 @@ iesys_check_rp_hmacs(ESYS_CONTEXT *esys_context, TSS2L_SYS_AUTH_RESPONSE *rspAut
             continue;
 
         IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
-        if (rsrc_session->type_policy_session == POLICY_PASSWORD) {
-            /* A policy password session has no auth value */
+        rsrc_session->nonceTPM = rspAuths->auths[i].nonce;
+        rsrc_session->sessionAttributes = rspAuths->auths[i].sessionAttributes;
+        if (rsrc_session->type_policy_session == POLICY_PASSWORD
+            || (rsrc_session->sessionType == TPM2_SE_POLICY
+                && rsrc_session->type_policy_session != POLICY_AUTH
+                && rsrc_session->sizeHmacValue == 0)) {
+            /* These policy sessions have no response HMAC. */
             if (rspAuths->auths[i].hmac.size != 0) {
-                LOG_ERROR("PolicyPassword session's HMAC must be 0-length.");
+                LOG_ERROR("Policy session's HMAC must be 0-length.");
                 return TSS2_ESYS_RC_RSP_AUTH_FAILED;
             }
             continue;
@@ -832,8 +837,6 @@ iesys_check_rp_hmacs(ESYS_CONTEXT *esys_context, TSS2L_SYS_AUTH_RESPONSE *rspAut
 
         TPM2B_AUTH rp_hmac;
         rp_hmac.size = sizeof(TPMU_HA);
-        rsrc_session->nonceTPM = rspAuths->auths[i].nonce;
-        rsrc_session->sessionAttributes = rspAuths->auths[i].sessionAttributes;
         r = iesys_crypto_authHmac(
             &esys_context->crypto_backend, rsrc_session->authHash, &rsrc_session->sessionValue[0],
             rsrc_session->sizeHmacValue, &rp_digest[0], rp_digest_size, &rsrc_session->nonceTPM,
@@ -1165,6 +1168,19 @@ iesys_compute_hmac(ESYS_CONTEXT      *esys_context,
 
     if (session != NULL) {
         IESYS_SESSION *rsrc_session = &session->rsrc.misc.rsrc_session;
+
+        /* For pure policy sessions, return an empty authorization HMAC
+           instead of computing a HMAC with a zero length key. */
+        if (rsrc_session->sessionType == TPM2_SE_POLICY
+            && rsrc_session->type_policy_session != POLICY_AUTH
+            && rsrc_session->sizeHmacValue == 0) {
+            auth->hmac.size = 0;
+            auth->sessionHandle = session->rsrc.handle;
+            auth->nonce = rsrc_session->nonceCaller;
+            auth->sessionAttributes = rsrc_session->sessionAttributes;
+            return TSS2_RC_SUCCESS;
+        }
+
         r = iesys_crypto_hash_get_digest_size(rsrc_session->authHash, &authHash_size);
         return_if_error(r, "Initializing auth session");
 
@@ -1243,14 +1259,13 @@ iesys_gen_auths(ESYS_CONTEXT           *esys_context,
         auths->auths[auths->count].nonce.size = 0;
         auths->auths[auths->count].sessionAttributes = 0;
         if (esys_context->session_type[session_idx] == ESYS_TR_PASSWORD) {
+            auths->auths[auths->count].sessionHandle = TPM2_RH_PW;
             if (esys_context->auth_objects[session_idx] == NULL) {
                 auths->auths[auths->count].hmac.size = 0;
-                auths->count += 1;
             } else {
-                auths->auths[auths->count].sessionHandle = TPM2_RH_PW;
                 auths->auths[auths->count].hmac = esys_context->auth_objects[session_idx]->auth;
-                auths->count += 1;
             }
+            auths->count += 1;
             continue;
         }
         RSRC_NODE_T *session = esys_context->session_tab[session_idx];

@@ -1321,6 +1321,13 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \fn Fapi_Sign_Async(FAPI_CONTEXT *context, char const *keyPath, char const *padding, uint8_t const *digest, size_t digestSize)
  \fn Fapi_Sign_Finish(FAPI_CONTEXT *context, uint8_t **signature, size_t *signatureSize, char **publicKey, char **certificate)
  \}
+ \defgroup Fapi_DigestAndSign Fapi_DigestAndSign
+ FAPI functions to invoke Sign either as one-call or in an asynchronous manner.
+ \{
+ \fn Fapi_DigestAndSign(FAPI_CONTEXT *context, char const *keyPath, char const *padding, uint8_t const *data, size_t digestSize, uint8_t **signature, size_t *signatureSize, char **publicKey, char **certificate)
+ \fn Fapi_DigestAndSign_Async(FAPI_CONTEXT *context, char const *keyPath, char const *padding, uint8_t const *data, size_t digestSize)
+ \fn Fapi_DigestAndSign_Finish(FAPI_CONTEXT *context, uint8_t **signature, size_t *signatureSize, char **publicKey, char **certificate)
+ \}
  \defgroup Fapi_VerifySignature Fapi_VerifySignature
  FAPI functions to invoke VerifySignature either as one-call or in an asynchronous manner.
  \{

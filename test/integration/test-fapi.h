@@ -127,6 +127,14 @@
         goto label;                                                                                \
     }
 
+#define check_ftell(size, stream, file, label)                                                     \
+    (size) = ftell((stream));                                                                      \
+    if ((size) < 0) {                                                                              \
+        fclose((stream));                                                                          \
+        LOG_ERROR("Could not determine size of file %s.", (file));                                 \
+        goto label;                                                                                \
+    }
+
 #ifndef FAPI_PROFILE
 #define FAPI_PROFILE DEFAULT_TEST_FAPI_PROFILE
 #endif /* FAPI_PROFILE */
@@ -145,7 +153,7 @@ pcr_bank_sha1_exists(FAPI_CONTEXT *context, bool *exists);
 TSS2_RC
 pcr_reset(FAPI_CONTEXT *context, UINT32 pcr);
 
-bool cmp_strtokens(char *string1, char *string2, char *delimiter);
+bool cmp_strtokens(char *computed_string, char *check_string, char *delimiter);
 
 char *normalize_string(const char *string);
 

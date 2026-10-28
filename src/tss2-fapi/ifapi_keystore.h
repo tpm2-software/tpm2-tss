@@ -50,6 +50,10 @@ typedef struct {
     TPM2B_DIGEST   nonce;                  /**< Nonce used to initialize uniqe data */
     TPMI_YES_NO    unique_init_set;        /**< uniqe_init provided in keystore */
     TPMU_PUBLIC_ID unique_init;            /**< unique in TPM2B_PUBLIC for initialisation */
+    bool           auth_primary_set;       /**< flag whether primary key authentication is set
+                                              to check whether authentication callback is needed
+                                              after the recreation of a primary key. */
+
 } IFAPI_KEY;
 
 /** Type for representing a external public key
@@ -167,7 +171,6 @@ typedef struct IFAPI_OBJECT {
     enum IFAPI_IO_STATE state;
     const char         *rel_path;     /**< The relative path in keystore. */
     bool                auth_changed; /**< flag whether auth value has been changed. */
-
 } IFAPI_OBJECT;
 
 TSS2_RC

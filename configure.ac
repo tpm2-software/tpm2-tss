@@ -56,29 +56,16 @@ AC_SUBST([HOSTOS])
 
 AM_CONDITIONAL(HOSTOS_LINUX, [test x"$HOSTOS" = xLinux])
 
-IMA_MEASUREMENTS="/sys/kernel/security/ima/binary_runtime_measurements"
-
-AS_IF([ test -e "$IMA_MEASUREMENTS"], [imameasurements_std="$IMA_MEASUREMENTS" ],
-      [imameasurements_std="/dev/null" ] )
-AC_SUBST(imameasurements_std)
-
 AC_ARG_WITH([imameasurements],
             [AS_HELP_STRING([--with-imameasurements=<file>],
                             [sets file with the IMA measurements")])],,
-            [with_imameasurements=$imameasurements_std])
+            [with_imameasurements="/sys/kernel/security/ima/binary_runtime_measurements"])
 AC_SUBST(imameasurements, $with_imameasurements)
-
-SYSTEM_MEASUREMENTS="/sys/kernel/security/tpm0/binary_bios_measurements"
-
-AS_IF([test -e "$SYSTEM_MEASUREMENTS"], [sysmeasurements_std="$SYSTEM_MEASUREMENTS" ],
-      [sysmeasurements_std="/dev/null" ] )
-AC_SUBST(sysmeasurements_std)
-
 
 AC_ARG_WITH([sysmeasurements],
             [AS_HELP_STRING([--with-sysmeasurements=<file>],
                             [sets file with the binary bios measurements")])],,
-            [with_sysmeasurements=$sysmeasurements_std])
+            [with_sysmeasurements="/sys/kernel/security/tpm0/binary_bios_measurements"])
 AC_SUBST(sysmeasurements, $with_sysmeasurements)
 
 # runstatedir is only defined in the yet unreleased Autoconf 2.70
@@ -668,6 +655,14 @@ AS_IF([test "x$enable_integration" = "xyes" && test "x$enable_self_generated_cer
 # Check for systemd helper tools used by make install
 AC_CHECK_PROG(systemd_sysusers, systemd-sysusers, yes)
 AM_CONDITIONAL([SYSD_SYSUSERS], [test "x$systemd_sysusers" = "xyes" && test "x$sysusersdir" != "xno"])
+
+systemd_sysusers_fully_locked=no
+AS_IF([test "x$systemd_sysusers" = "xyes"],
+      [PKG_CHECK_MODULES([LIBSYSTEMD], [libsystemd >= 257],
+                         [systemd_sysusers_fully_locked=yes],
+                         [systemd_sysusers_fully_locked=no])])
+AM_CONDITIONAL([SYSD_SYSUSERS_FULLY_LOCKED], [test "x$systemd_sysusers_fully_locked" = "xyes"])
+
 AC_CHECK_PROG(systemd_tmpfiles, systemd-tmpfiles, yes)
 AM_CONDITIONAL([SYSD_TMPFILES], [test "x$systemd_tmpfiles" = "xyes" && test "x$tmpfilesdir" != "xno"])
 

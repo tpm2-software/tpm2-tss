@@ -33,7 +33,7 @@ check_hash_functions(void **state) {
     TSS2_RC                   rc;
     ESYS_CRYPTO_CONTEXT_BLOB *context;
     uint8_t                   buffer[10] = { 0 };
-    TPM2B                     tpm2b;
+    TPM2B                     tpm2b = { 0 };
     size_t                    size = 0;
 
     ESYS_CRYPTO_CALLBACKS crypto_cb = { 0 };
