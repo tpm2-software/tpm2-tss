@@ -56,6 +56,10 @@ typedef struct {
     struct TPMS_POLICY *policy;
 } IFAPI_POLICY_EXEC_CB_CTX;
 
+/* Application hooks used by the Policy engine without accessing FAPI state. */
+bool ifapi_policy_flush_auth(ESYS_TR auth_handle, void *userdata);
+void ifapi_policy_cp_hash(void *userdata);
+
 TSS2_RC
 ifapi_get_key_public(const char *path, TPMT_PUBLIC *public, void *context);
 

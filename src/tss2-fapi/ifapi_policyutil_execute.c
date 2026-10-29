@@ -13,8 +13,6 @@
 
 #include "ifapi_macros.h"           // for statecase, fallthrough, statecas...
 #include "ifapi_policy_callbacks.h" // for IFAPI_POLICY_EXEC_CB_CTX, ifapi_...
-// #include "fapi_policy.h"
-#include "ifapi_policy_execute.h" // for IFAPI_POLICY_EXEC_CTX, ifapi_pol...
 #include "ifapi_policyutil_execute.h"
 #include "ifapi_profiles.h" // for IFAPI_PROFILE, IFAPI_PROFILES
 #include "tss2_policy.h"    // for TSS2_POLICY_EXEC_CALLBACKS
@@ -22,65 +20,77 @@
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, return_error, goto_if...
 
-/** Create a new policy on policy stack.
- *
- * The structures for policy and callback execution are allocated
- * and the callbacks are assigned.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- */
+/** Create a Policy context and keep application callback state in the FAPI frame. */
 static TSS2_RC
-new_policy(FAPI_CONTEXT *context, TPMS_POLICY *policy, IFAPI_POLICYUTIL_STACK **current_policy) {
-    LOG_DEBUG("ADD POLICY");
-    IFAPI_POLICY_EXEC_CTX    *pol_exec_ctx;
-    IFAPI_POLICY_EXEC_CB_CTX *pol_exec_cb_ctx;
+new_policy(FAPI_CONTEXT            *context,
+           TPMS_POLICY             *policy,
+           TPMI_ALG_HASH            hash_alg,
+           IFAPI_POLICYUTIL_STACK **current_policy) {
+    TSS2_RC r;
+
+    /* A NULL cursor with a nonempty stack means the root policy is suspended
+       between retries. Resume it through execute(); do not push a second root
+       or overwrite the pending policy and its session. */
+    if (context->policy.policyutil_stack && !context->policy.util_current_policy) {
+        return_error(
+            TSS2_FAPI_RC_BAD_SEQUENCE,
+            "Root policy execution is pending; resume it instead of preparing a new policy.");
+    }
+
+    TSS2_POLICY_EXEC_CALLBACKS callbacks = {
+        .cbauth = ifapi_policyeval_cbauth,
+        .cbauth_userdata = context,
+        .cbload = ifapi_policyeval_cbload_key,
+        .cbload_userdata = context,
+        .cbpolsel = ifapi_branch_selection,
+        .cbpolsel_userdata = context,
+        .cbsign = ifapi_sign_buffer,
+        .cbsign_userdata = context,
+        .cbauthpol = ifapi_exec_auth_policy,
+        .cbauthpol_userdata = context,
+        .cbauthnv = ifapi_exec_auth_nv_policy,
+        .cbauthnv_userdata = context,
+        .cbdup = ifapi_get_duplicate_name,
+        .cbdup_userdata = context,
+        .cbaction = ifapi_policy_action,
+        .cbaction_userdata = context,
+        .cbflushauth = ifapi_policy_flush_auth,
+        .cbflushauth_userdata = context,
+        .cbcphash = ifapi_policy_cp_hash,
+        .cbcphash_userdata = context,
+    };
 
     *current_policy = calloc(1, sizeof(IFAPI_POLICYUTIL_STACK));
-    if (!*current_policy) {
-        return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
-    }
+    return_if_null(*current_policy, "Out of memory", TSS2_FAPI_RC_MEMORY);
+    (*current_policy)->hash_alg = hash_alg;
+    (*current_policy)->session = ESYS_TR_NONE;
+    (*current_policy)->auth_object = context->current_auth_object;
 
-    pol_exec_ctx = calloc(1, sizeof(IFAPI_POLICY_EXEC_CTX));
-    if (!pol_exec_ctx) {
-        SAFE_FREE(*current_policy);
-        return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
-    }
-    (*current_policy)->pol_exec_ctx = pol_exec_ctx;
-    /* Save address of encryption session to disable encryption if
-       policy cp hash is executed. */
-    pol_exec_ctx->enc_session = &context->session2;
-    pol_exec_ctx->callbacks.cbauth = ifapi_policyeval_cbauth;
-    pol_exec_ctx->callbacks.cbauth_userdata = context;
-    pol_exec_ctx->callbacks.cbload = ifapi_policyeval_cbload_key;
-    pol_exec_ctx->callbacks.cbload_userdata = context;
-    pol_exec_ctx->callbacks.cbpolsel = ifapi_branch_selection;
-    pol_exec_ctx->callbacks.cbpolsel_userdata = context;
-    pol_exec_ctx->callbacks.cbsign = ifapi_sign_buffer;
-    pol_exec_ctx->callbacks.cbsign_userdata = context;
-    pol_exec_ctx->callbacks.cbauthpol = ifapi_exec_auth_policy;
-    pol_exec_ctx->callbacks.cbauthpol_userdata = context;
-    pol_exec_ctx->callbacks.cbauthnv = ifapi_exec_auth_nv_policy;
-    pol_exec_ctx->callbacks.cbauthnv_userdata = context;
-    pol_exec_ctx->callbacks.cbdup = ifapi_get_duplicate_name;
-    pol_exec_ctx->callbacks.cbdup_userdata = context;
-    pol_exec_ctx->callbacks.cbaction = ifapi_policy_action;
-    pol_exec_ctx->callbacks.cbaction_userdata = context;
+    r = Tss2_PolicySetPolicy(policy, hash_alg, &(*current_policy)->pol_exec_ctx);
+    goto_if_error(r, "Create Policy context.", error);
+    r = Tss2_PolicySetExecCallbacks((*current_policy)->pol_exec_ctx, &callbacks);
+    goto_if_error(r, "Set Policy execution callbacks.", error);
 
-    pol_exec_cb_ctx = calloc(1, sizeof(IFAPI_POLICY_EXEC_CB_CTX));
-    if (!pol_exec_cb_ctx) {
-        SAFE_FREE(*current_policy);
-        return_error(TSS2_FAPI_RC_MEMORY, "Out of memory");
-    }
-    pol_exec_ctx->app_data = pol_exec_cb_ctx;
-    pol_exec_ctx->policy = policy;
     if (!context->policy.policyutil_stack) {
         context->policy.policyutil_stack = *current_policy;
-        context->policy.util_current_policy = *current_policy;
     } else {
         context->policy.util_current_policy->next = *current_policy;
         (*current_policy)->prev = context->policy.util_current_policy;
     }
     context->policy.util_current_policy = *current_policy;
     return TSS2_RC_SUCCESS;
+
+error:
+    Tss2_PolicyFinalize(&(*current_policy)->pol_exec_ctx);
+    SAFE_FREE(*current_policy);
+    return r;
+}
+
+/* Preserve FAPI's public error layer while leaving ESYS/TPM/callback layers intact. */
+static TSS2_RC
+policy_to_fapi_rc(TSS2_RC r) {
+    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK)
+                                               : r;
 }
 
 /** Compute a new session which will be uses as policy session.
@@ -139,10 +149,7 @@ clear_current_policy(FAPI_CONTEXT *context) {
     }
     prev_pol = context->policy.util_current_policy->prev;
 
-    if (context->policy.util_current_policy->pol_exec_ctx) {
-        SAFE_FREE(context->policy.util_current_policy->pol_exec_ctx->app_data);
-        SAFE_FREE(context->policy.util_current_policy->pol_exec_ctx);
-    }
+    Tss2_PolicyFinalize(&context->policy.util_current_policy->pol_exec_ctx);
     SAFE_FREE(context->policy.util_current_policy);
 
     if (!prev_pol) {
@@ -185,19 +192,17 @@ ifapi_policyutil_execute_prepare(FAPI_CONTEXT *context,
 
     return_if_null(context, "Bad context.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    r = new_policy(context, policy, &current_policy);
+    r = new_policy(context, policy, hash_alg, &current_policy);
+    r = policy_to_fapi_rc(r);
     return_if_error(r, "Create new policy.");
 
-    current_policy->auth_object = context->current_auth_object;
-    current_policy->pol_exec_ctx->auth_object = &context->current_auth_object->public;
-
-    r = ifapi_policyeval_execute_prepare(current_policy->pol_exec_ctx, hash_alg, policy);
+    r = policy_to_fapi_rc(Tss2_PolicyExecute_Async(current_policy->pol_exec_ctx));
     goto_if_error(r, "Prepare policy execution.", error);
 
     return r;
 
 error:
-    prev_policy = current_policy;
+    prev_policy = current_policy->prev;
     if (context->policy.util_current_policy)
         clear_current_policy(context);
     context->policy.util_current_policy = prev_policy;
@@ -265,7 +270,7 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session) {
         }
         if (*session == ESYS_TR_NONE || *session == 0) {
             /* Create a new  policy session for the current policy execution */
-            hash_alg = pol_util_ctx->pol_exec_ctx->hash_alg;
+            hash_alg = pol_util_ctx->hash_alg;
             r = create_session(context, &pol_util_ctx->policy_session, hash_alg);
             if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
                 context->policy.util_current_policy = pol_util_ctx->prev;
@@ -273,31 +278,47 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session) {
             }
             goto_if_error(r, "Create policy session", error);
 
-            pol_util_ctx->pol_exec_ctx->session = pol_util_ctx->policy_session;
+            pol_util_ctx->session = pol_util_ctx->policy_session;
         } else {
-            pol_util_ctx->pol_exec_ctx->session = *session;
+            pol_util_ctx->session = *session;
         }
         fallthrough;
 
     statecase(pol_util_ctx->state, POLICY_UTIL_EXEC_POLICY);
-        r = ifapi_policyeval_execute(context->esys, pol_util_ctx->pol_exec_ctx, true);
+        {
+            /* The caller's authorization object can alias loadKey.auth_object.
+               Policy callbacks borrow the global load/primary contexts for
+               nested operations; their progress belongs to the FAPI frame.
+               Restore the caller's objects before returning, also on retry. */
+            IFAPI_LoadKey       load_key = context->loadKey;
+            IFAPI_CreatePrimary create_primary = context->createPrimary;
+            IFAPI_OBJECT       *auth_object = context->current_auth_object;
+
+            r = policy_to_fapi_rc(Tss2_PolicyExecute_Finish(pol_util_ctx->pol_exec_ctx,
+                                                            context->esys, pol_util_ctx->session));
+
+            context->loadKey = load_key;
+            context->createPrimary = create_primary;
+            context->current_auth_object = auth_object;
+        }
         if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {
             context->policy.util_current_policy = pol_util_ctx->prev;
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
 
         if (r) {
+            /* FAPI owns session cleanup, including sessions shared by nested policies. */
+            if (pol_util_ctx->session && pol_util_ctx->session != ESYS_TR_NONE)
+                Esys_FlushContext(context->esys, pol_util_ctx->session);
             /* Cleanup stack */
             IFAPI_POLICYUTIL_STACK *utl_ctx = pol_util_ctx->prev;
-            while (utl_ctx && pol_util_ctx->pol_exec_ctx) {
-                if (utl_ctx->pol_exec_ctx->session == pol_util_ctx->pol_exec_ctx->session) {
-                    utl_ctx->pol_exec_ctx->session = ESYS_TR_NONE;
+            while (utl_ctx) {
+                if (utl_ctx->session == pol_util_ctx->session) {
+                    utl_ctx->session = ESYS_TR_NONE;
                 }
                 utl_ctx = utl_ctx->prev;
             }
-            if (pol_util_ctx->pol_exec_ctx) {
-                pol_util_ctx->pol_exec_ctx->session = ESYS_TR_NONE;
-            }
+            pol_util_ctx->session = ESYS_TR_NONE;
         }
         goto_if_error(r, "Execute policy.", error);
 
@@ -305,7 +326,7 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session) {
 
     statecasedefault(pol_util_ctx->state);
     }
-    *session = pol_util_ctx->policy_session;
+    *session = pol_util_ctx->session;
     pol_util_ctx->state = POLICY_UTIL_INIT;
 
     pol_util_ctx = pol_util_ctx->prev;
