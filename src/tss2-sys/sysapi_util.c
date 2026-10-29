@@ -83,8 +83,8 @@ CommonPreparePrologue(TSS2_SYS_CONTEXT_BLOB *ctx, TPM2_CC commandCode) {
 
     ctx->commandCode = commandCode;
     ctx->numResponseHandles = GetNumResponseHandles(commandCode);
-    ctx->rspParamsSize = (UINT32 *)(ctx->cmdBuffer + sizeof(TPM20_Header_Out)
-                                    + (GetNumResponseHandles(commandCode) * sizeof(UINT32)));
+    ctx->rspParamsSize = (ctx->cmdBuffer + sizeof(TPM20_Header_Out)
+                          + (GetNumResponseHandles(commandCode) * sizeof(UINT32)));
 
     numCommandHandles = GetNumCommandHandles(commandCode);
     ctx->cpBuffer = ctx->cmdBuffer + ctx->nextData + (numCommandHandles * sizeof(UINT32));
@@ -119,7 +119,7 @@ CommonComplete(TSS2_SYS_CONTEXT_BLOB *ctx) {
     if (ctx->previousStage != CMD_STAGE_RECEIVE_RESPONSE)
         return TSS2_SYS_RC_BAD_SEQUENCE;
 
-    ctx->nextData = (UINT8 *)ctx->rspParamsSize - ctx->cmdBuffer;
+    ctx->nextData = ctx->rspParamsSize - ctx->cmdBuffer;
 
     rval = Tss2_MU_TPM2_ST_Unmarshal(ctx->cmdBuffer, ctx->maxCmdSize, &next, &tag);
     if (rval)
