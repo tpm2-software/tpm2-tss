@@ -1618,8 +1618,6 @@ compute_policy_list(IFAPI_POLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *element
     TPML_POLICYELEMENTS *or_elements;
     size_t               branch_idx, i, j;
 
-    IFAPI_OBJECT *auth_object = pol_ctx->auth_object;
-
     for (i = 0; i < elements->count; i++) {
         if (elements->elements[i].type == POLICYOR) {
             branches = elements->elements[i].element.PolicyOr.branches;
@@ -1632,7 +1630,7 @@ compute_policy_list(IFAPI_POLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *element
 
             return_if_null(pol_ctx->callbacks.cbpolsel, "Policy Select Callback Not Set",
                            TSS2_FAPI_RC_NULL_CALLBACK);
-            r = pol_ctx->callbacks.cbpolsel(&auth_object->public, branch_names, branches->count,
+            r = pol_ctx->callbacks.cbpolsel(pol_ctx->auth_object, branch_names, branches->count,
                                             &branch_idx, pol_ctx->callbacks.cbpolsel_userdata);
             return_if_error(r, "Select policy branch.");
 

@@ -188,7 +188,8 @@ ifapi_policyutil_execute_prepare(FAPI_CONTEXT *context,
     r = new_policy(context, policy, &current_policy);
     return_if_error(r, "Create new policy.");
 
-    current_policy->pol_exec_ctx->auth_object = context->current_auth_object;
+    current_policy->auth_object = context->current_auth_object;
+    current_policy->pol_exec_ctx->auth_object = &context->current_auth_object->public;
 
     r = ifapi_policyeval_execute_prepare(current_policy->pol_exec_ctx, hash_alg, policy);
     goto_if_error(r, "Prepare policy execution.", error);

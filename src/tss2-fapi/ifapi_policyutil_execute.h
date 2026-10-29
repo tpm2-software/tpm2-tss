@@ -24,8 +24,9 @@ struct IFAPI_POLICYUTIL_STACK {
     ESYS_TR policy_session; /**< The policy session created for the current evaluation  */
     IFAPI_POLICY_EXEC_CTX *pol_exec_ctx; /**< The execution context for the current policy */
     enum IFAPI_STATE_POLICY_UTIL_EXEC state;
-    IFAPI_POLICYUTIL_STACK           *next; /**< Pointer to next policy */
-    IFAPI_POLICYUTIL_STACK           *prev; /**< Pointer to previous policy */
+    IFAPI_POLICYUTIL_STACK           *next;        /**< Pointer to next policy */
+    IFAPI_POLICYUTIL_STACK           *prev;        /**< Pointer to previous policy */
+    IFAPI_OBJECT                     *auth_object; /** object with policy */
 };
 
 TSS2_RC
