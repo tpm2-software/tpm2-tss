@@ -2039,9 +2039,6 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
     IFAPI_POLICY_EXEC_CTX *current_policy)
 \fn TSS2_RC get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg,
                       size_t *idx)
-\fn TSS2_RC ifapi_extend_authorization(
-    TPMS_POLICY *policy,
-    TPMS_POLICYAUTHORIZATION *authorization)
 \fn TSS2_RC ifapi_policyeval_execute(
     ESYS_CONTEXT *esys_ctx,
     IFAPI_POLICY_EXEC_CTX *current_policy)

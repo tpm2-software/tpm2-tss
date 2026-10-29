@@ -70,51 +70,6 @@ compute_or_digest_list(TPML_POLICYBRANCHES *branches,
     return TSS2_RC_SUCCESS;
 }
 
-/** Add a new authorization to a policy.
- *
- * The the signed hash computed from the policy digest and the policyRef together with
- * the public key of the key used for signing will be stored in the policy.
- *
- * @param[in,out] policy The policy to be authorized.
- * @param[in] authorization The structure with the signature, the policyRef and
- *                          the public key.
- *
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_MEMORY If the memory for the authorization list cannot be
- *         allocated.
- */
-TSS2_RC
-ifapi_extend_authorization(TPMS_POLICY *policy, TPMS_POLICYAUTHORIZATION *authorization) {
-    TPML_POLICYAUTHORIZATIONS *save = NULL;
-    size_t                     n = 0;
-    size_t                     i;
-
-    if (policy->policyAuthorizations) {
-        /* Extend old authorizations */
-        n = policy->policyAuthorizations->count;
-        save = policy->policyAuthorizations;
-        policy->policyAuthorizations = malloc((n + 1) * sizeof(TPMS_POLICYAUTHORIZATION)
-                                              + sizeof(TPML_POLICYAUTHORIZATIONS));
-        return_if_null(policy->policyAuthorizations->authorizations, "Out of memory.",
-                       TSS2_FAPI_RC_MEMORY);
-
-        for (i = 0; i < n; i++)
-            policy->policyAuthorizations->authorizations[i] = save->authorizations[i];
-        policy->policyAuthorizations->authorizations[n] = *authorization;
-        policy->policyAuthorizations->count = n + 1;
-        SAFE_FREE(save);
-    } else {
-        /* No old authorizations exits */
-        policy->policyAuthorizations
-            = malloc(sizeof(TPMS_POLICYAUTHORIZATION) + sizeof(TPML_POLICYAUTHORIZATIONS));
-        return_if_null(policy->policyAuthorizations->authorizations, "Out of memory.",
-                       TSS2_FAPI_RC_MEMORY);
-
-        policy->policyAuthorizations->count = 1;
-        policy->policyAuthorizations->authorizations[0] = *authorization;
-    }
-    return TSS2_RC_SUCCESS;
-}
 /** Compute the index for the current digest list and clear the digest.
  *
  * The list entry with the appropriate hash algorithm will be searched.
@@ -842,6 +797,10 @@ execute_policy_secret(ESYS_CONTEXT          *esys_ctx,
                        &current_policy->auth_handle, &current_policy->auth_session,
                        cb->cbauth_userdata);
         return_try_again(r);
+        /* Authorization can fail after the callback has loaded a transient key. */
+        if (cb->cbflushauth)
+            current_policy->flush_handle
+                = cb->cbflushauth(current_policy->auth_handle, cb->cbflushauth_userdata);
         goto_if_error(r, "Authorize object callback.", cleanup);
         fallthrough;
 
@@ -1196,6 +1155,8 @@ execute_policy_cp_hash(ESYS_CONTEXT          *esys_ctx,
         if (current_policy->enc_session) {
             *current_policy->enc_session = ESYS_TR_NONE;
         }
+        if (current_policy->callbacks.cbcphash)
+            current_policy->callbacks.cbcphash(current_policy->callbacks.cbcphash_userdata);
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;

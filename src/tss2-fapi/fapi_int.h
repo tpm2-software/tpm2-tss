@@ -543,11 +543,10 @@ typedef struct {
 /** The data structure holding internal state of Fapi_AuthorizePolicy.
  */
 typedef struct {
-    const char              *policyPath;     /**< Policy with Policy to be authorized */
-    const char              *signingKeyPath; /**< Key for policy signing */
-    TPM2B_DIGEST             policyRef;
-    TPMS_POLICYAUTHORIZATION authorization;
-    struct TPMS_POLICY      *policy; /**< The calculated policy */
+    const char         *policyPath;     /**< Policy with Policy to be authorized */
+    const char         *signingKeyPath; /**< Key for policy signing */
+    TPM2B_DIGEST        policyRef;
+    struct TPMS_POLICY *policy; /**< The calculated policy */
 } IFAPI_Fapi_AuthorizePolicy;
 
 /** The data structure holding internal state of Fapi_WriteAuthorizeNv.

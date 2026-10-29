@@ -18,7 +18,7 @@
 #include "ifapi_helpers.h" // for ipolicy_TPMT_PUBLIC_cmp, ifapi_c...
 #include "ifapi_macros.h"  // for statecase, fallthrough, return...
 #include "ifapi_policy_callbacks.h"
-#include "ifapi_policy_execute.h"     // for IFAPI_POLICY_EXEC_CTX, POLICY_...
+#include "ifapi_policy_execute.h"     // for POLICY_LIST, Policy_Compare_Object
 #include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
 #include "ifapi_policyutil_execute.h" // for IFAPI_POLICYUTIL_STACK, ifapi_...
 #include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
@@ -445,7 +445,7 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
                         void       *userdata) {
     TSS2_RC                   r;
     FAPI_CONTEXT             *fapi_ctx = userdata;
-    IFAPI_POLICY_EXEC_CTX    *current_policy;
+    IFAPI_POLICYUTIL_STACK   *current_policy;
     IFAPI_POLICY_EXEC_CB_CTX *cb_ctx;
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -454,12 +454,12 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
 
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
-        current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.util_current_policy;
     } else {
         /* Start with the bottom of the policy stack */
-        current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.policyutil_stack;
     }
-    cb_ctx = current_policy->app_data;
+    cb_ctx = &current_policy->cb_ctx;
 
     switch (cb_ctx->cb_state) {
     statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT);
@@ -535,10 +535,13 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
         cb_ctx->auth_object_ptr = &cb_ctx->load_ctx.auth_object;
         r = ifapi_load_key(fapi_ctx, ifapi_get_object_path(&cb_ctx->object),
                            &cb_ctx->auth_object_ptr);
-        if (r == TSS2_RC_SUCCESS && !cb_ctx->load_ctx.auth_object.misc.key.persistent_handle) {
-            current_policy->flush_handle = true;
-        }
         cb_ctx->load_ctx = fapi_ctx->loadKey;
+        /* ifapi_load_key returns an address in the borrowed global loadKey.
+           Rebase it before restoring that storage to the caller's object. */
+        cb_ctx->auth_object_ptr = &cb_ctx->load_ctx.auth_object;
+        if (r == TSS2_RC_SUCCESS && !cb_ctx->load_ctx.auth_object.misc.key.persistent_handle) {
+            cb_ctx->flush_handle = true;
+        }
         cb_ctx->create_primary_ctx = fapi_ctx->createPrimary;
         fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
         fapi_ctx->createPrimary = cb_ctx->create_primary_ctx_sav;
@@ -557,8 +560,9 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
         cb_ctx->object = *cb_ctx->auth_object_ptr;
         *auth_handle = cb_ctx->auth_object_ptr->public.handle;
         r = ifapi_authorize_object(fapi_ctx, &cb_ctx->load_ctx.auth_object, authSession);
+        cb_ctx->create_primary_ctx = fapi_ctx->createPrimary;
         fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
-        fapi_ctx->createPrimary = cb_ctx->create_primary_ctx;
+        fapi_ctx->createPrimary = cb_ctx->create_primary_ctx_sav;
         FAPI_SYNC(r, "Fapi authorize object.", cleanup);
         cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
         break;
@@ -572,13 +576,8 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
     else
         *auth_handle = cb_ctx->object.public.handle;
 
-    if (current_policy->policySessionSav != ESYS_TR_NONE)
-        fapi_ctx->policy.session = current_policy->policySessionSav;
-
 cleanup:
     ifapi_cleanup_ifapi_object(&cb_ctx->object);
-    if (current_policy->policySessionSav && current_policy->policySessionSav != ESYS_TR_NONE)
-        fapi_ctx->policy.session = current_policy->policySessionSav;
     return r;
 }
 
@@ -618,7 +617,7 @@ TSS2_RC
 ifapi_policyeval_cbload_key(TPM2B_NAME *name, ESYS_TR *object_handle, void *userdata) {
     TSS2_RC                   r;
     FAPI_CONTEXT             *fapi_ctx = userdata;
-    IFAPI_POLICY_EXEC_CTX    *current_policy;
+    IFAPI_POLICYUTIL_STACK   *current_policy;
     IFAPI_POLICY_EXEC_CB_CTX *cb_ctx;
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -627,12 +626,12 @@ ifapi_policyeval_cbload_key(TPM2B_NAME *name, ESYS_TR *object_handle, void *user
 
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
-        current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.util_current_policy;
     } else {
         /* Start with the bottom of the policy stack */
-        current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.policyutil_stack;
     }
-    cb_ctx = current_policy->app_data;
+    cb_ctx = &current_policy->cb_ctx;
 
     switch (cb_ctx->cb_state) {
     statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT);
@@ -681,10 +680,13 @@ ifapi_policyeval_cbload_key(TPM2B_NAME *name, ESYS_TR *object_handle, void *user
         cb_ctx->auth_object_ptr = &cb_ctx->load_ctx.auth_object;
         r = ifapi_load_key(fapi_ctx, ifapi_get_object_path(&cb_ctx->object),
                            &cb_ctx->auth_object_ptr);
-        if (r == TSS2_RC_SUCCESS && !cb_ctx->load_ctx.auth_object.misc.key.persistent_handle) {
-            current_policy->flush_handle = true;
-        }
         cb_ctx->load_ctx = fapi_ctx->loadKey;
+        /* ifapi_load_key returns an address in the borrowed global loadKey.
+           Rebase it before restoring that storage to the caller's object. */
+        cb_ctx->auth_object_ptr = &cb_ctx->load_ctx.auth_object;
+        if (r == TSS2_RC_SUCCESS && !cb_ctx->load_ctx.auth_object.misc.key.persistent_handle) {
+            cb_ctx->flush_handle = true;
+        }
         cb_ctx->create_primary_ctx = fapi_ctx->createPrimary;
         fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
         fapi_ctx->createPrimary = cb_ctx->create_primary_ctx_sav;
@@ -701,14 +703,25 @@ ifapi_policyeval_cbload_key(TPM2B_NAME *name, ESYS_TR *object_handle, void *user
     statecasedefault(cb_ctx->cb_state);
     }
 
-    if (current_policy->policySessionSav != ESYS_TR_NONE)
-        fapi_ctx->policy.session = current_policy->policySessionSav;
-
 cleanup:
     ifapi_cleanup_ifapi_object(&cb_ctx->object);
-    if (current_policy->policySessionSav && current_policy->policySessionSav != ESYS_TR_NONE)
-        fapi_ctx->policy.session = current_policy->policySessionSav;
     return r;
+}
+
+/* These hooks keep application-owned state outside the Policy context. */
+bool
+ifapi_policy_flush_auth(ESYS_TR auth_handle, void *userdata) {
+    FAPI_CONTEXT           *context = userdata;
+    IFAPI_POLICYUTIL_STACK *frame = context->policy.util_current_policy
+                                        ? context->policy.util_current_policy
+                                        : context->policy.policyutil_stack;
+    return frame && frame->cb_ctx.flush_handle && auth_handle != ESYS_TR_NONE;
+}
+
+void
+ifapi_policy_cp_hash(void *userdata) {
+    FAPI_CONTEXT *context = userdata;
+    context->session2 = ESYS_TR_NONE;
 }
 
 /** Callback for branch selection of policy or.
@@ -738,13 +751,17 @@ ifapi_branch_selection(TSS2_OBJECT *auth_object,
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    /* Determine path of object to be authenticated. */
-    return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
+    IFAPI_POLICYUTIL_STACK *frame = fapi_ctx->policy.util_current_policy
+                                        ? fapi_ctx->policy.util_current_policy
+                                        : fapi_ctx->policy.policyutil_stack;
+    return_if_null(frame, "Policy not initialized.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(frame->auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
+    (void)auth_object;
 
     return_if_null(fapi_ctx->callbacks.branch, "No branch selection callback",
                    TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN);
 
-    object_path = ifapi_get_object_path(TSS2_OBJECT_TO_IFAPI_OBJECT(auth_object));
+    object_path = ifapi_get_object_path(frame->auth_object);
 
     r = fapi_ctx->callbacks.branch(object_path, "PolicyOR", &branch_names[0], branch_count,
                                    branch_idx, fapi_ctx->callbacks.branchData);
@@ -1256,7 +1273,7 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
                        void           *userdata) {
     TSS2_RC                   r;
     FAPI_CONTEXT             *fapi_ctx = userdata;
-    IFAPI_POLICY_EXEC_CTX    *current_policy;
+    IFAPI_POLICYUTIL_STACK   *current_policy;
     IFAPI_POLICY_EXEC_CB_CTX *cb_ctx;
     size_t                    n, i;
     struct POLICY_LIST       *branch;
@@ -1272,16 +1289,15 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
 
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
-        current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.util_current_policy;
     } else {
         /* Start with the bottom of the policy stack */
-        current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.policyutil_stack;
     }
-    cb_ctx = current_policy->app_data;
+    cb_ctx = &current_policy->cb_ctx;
 
     switch (cb_ctx->cb_state) {
     statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT)
-        current_policy->object_handle = ESYS_TR_NONE;
         current_policy->policy_list = NULL;
         fallthrough;
 
@@ -1349,9 +1365,9 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
         }
         /* Prepare policy execution */
         r = ifapi_policyutil_execute_prepare(fapi_ctx, current_policy->hash_alg, cb_ctx->policy);
+        goto_if_error(r, "Prepare policy execution.", cleanup);
         /* Next state will switch from prev context to next context. */
         fapi_ctx->policy.util_current_policy = fapi_ctx->policy.util_current_policy->prev;
-        goto_if_error(r, "Prepare policy execution.", cleanup);
         fallthrough;
 
     statecase(cb_ctx->cb_state, POL_CB_EXECUTE_SUB_POLICY)
@@ -1422,7 +1438,7 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     TSS2_RC                   r;
     TPM2B_MAX_NV_BUFFER      *aux_data;
     FAPI_CONTEXT             *fapi_ctx = userdata;
-    IFAPI_POLICY_EXEC_CTX    *current_policy;
+    IFAPI_POLICYUTIL_STACK   *current_policy;
     IFAPI_POLICY_EXEC_CB_CTX *cb_ctx;
     char                     *nv_path = NULL;
     ESYS_CONTEXT             *esys_ctx;
@@ -1435,14 +1451,14 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
 
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
-        current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.util_current_policy;
         fapi_ctx->current_auth_object = fapi_ctx->policy.util_current_policy->auth_object;
     } else {
         /* Start with the bottom of the policy stack */
-        current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.policyutil_stack;
         fapi_ctx->current_auth_object = fapi_ctx->policy.policyutil_stack->auth_object;
     }
-    cb_ctx = current_policy->app_data;
+    cb_ctx = &current_policy->cb_ctx;
     esys_ctx = fapi_ctx->esys;
 
     if (!(digest_size = ifapi_hash_get_digest_size(hash_alg))) {
@@ -1476,23 +1492,22 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
         r = ifapi_initialize_object(esys_ctx, &cb_ctx->object);
         goto_if_error(r, "Initialize NV object", cleanup);
 
-        current_policy->nv_index = cb_ctx->object.public.handle;
-        get_nv_auth_object(&cb_ctx->object, current_policy->nv_index,
-                           &current_policy->auth_objectNV, &current_policy->auth_handle);
+        cb_ctx->nv_index = cb_ctx->object.public.handle;
+        get_nv_auth_object(&cb_ctx->object, cb_ctx->nv_index, &cb_ctx->auth_object,
+                           &cb_ctx->auth_index);
         fallthrough;
 
     statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_OBJECT)
     /* Authorize the NV object with the corresponding auth object. */
-        r = ifapi_authorize_object(fapi_ctx, &current_policy->auth_objectNV, &cb_ctx->session);
+        r = ifapi_authorize_object(fapi_ctx, &cb_ctx->auth_object, &cb_ctx->session);
         return_try_again(r);
 
         ifapi_cleanup_ifapi_object(&cb_ctx->object);
         goto_if_error(r, "Authorize  object.", cleanup);
 
         /* Prepare the reading of the NV index from TPM. */
-        r = Esys_NV_Read_Async(esys_ctx, current_policy->auth_handle, current_policy->nv_index,
-                               cb_ctx->session, ESYS_TR_NONE, ESYS_TR_NONE,
-                               sizeof(TPMI_ALG_HASH) + digest_size, 0);
+        r = Esys_NV_Read_Async(esys_ctx, cb_ctx->auth_index, cb_ctx->nv_index, cb_ctx->session,
+                               ESYS_TR_NONE, ESYS_TR_NONE, sizeof(TPMI_ALG_HASH) + digest_size, 0);
         goto_if_error(r, "Unmarshal policy", cleanup);
         fallthrough;
 
@@ -1542,6 +1557,7 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     }
 cleanup:
     cleanup_policy_list(current_policy->policy_list);
+    current_policy->policy_list = NULL;
     SAFE_FREE(nv_path);
     return r;
 }
