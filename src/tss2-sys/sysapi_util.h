@@ -45,7 +45,7 @@ typedef struct {
     TPM2_CC commandCode; /* In host endian */
     UINT32  cpBufferUsedSize;
     UINT8  *cpBuffer;
-    UINT32 *rspParamsSize;
+    UINT8  *rspParamsSize;
     UINT8   previousStage;
     UINT8   authsCount;
     UINT8   numResponseHandles;
