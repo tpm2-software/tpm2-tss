@@ -779,7 +779,7 @@ ifapi_policy_action(const char *action, void *userdata) {
     }
 
     /* Determine path of object to be authenticated. */
-    auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+    auth_object = fapi_ctx->policy.util_current_policy->auth_object;
     return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     object_path = ifapi_get_object_path(auth_object);
@@ -824,7 +824,7 @@ ifapi_sign_buffer(char           *key_pem,
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     /* Determine path of object to be authenticated. */
-    auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+    auth_object = fapi_ctx->policy.util_current_policy->auth_object;
     return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     object_path = ifapi_get_object_path(auth_object);
@@ -1313,7 +1313,7 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
             } while (branch);
 
             /* Determine path of object to be authenticated. */
-            auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+            auth_object = fapi_ctx->policy.util_current_policy->auth_object;
             goto_if_null2(auth_object, "No object passed.", r, TSS2_FAPI_RC_BAD_REFERENCE, cleanup);
 
             object_path = ifapi_get_object_path(auth_object);
@@ -1436,13 +1436,11 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
         current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
-        fapi_ctx->current_auth_object
-            = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+        fapi_ctx->current_auth_object = fapi_ctx->policy.util_current_policy->auth_object;
     } else {
         /* Start with the bottom of the policy stack */
         current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
-        fapi_ctx->current_auth_object
-            = fapi_ctx->policy.policyutil_stack->pol_exec_ctx->auth_object;
+        fapi_ctx->current_auth_object = fapi_ctx->policy.policyutil_stack->auth_object;
     }
     cb_ctx = current_policy->app_data;
     esys_ctx = fapi_ctx->esys;
