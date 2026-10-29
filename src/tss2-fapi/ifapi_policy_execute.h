@@ -80,7 +80,7 @@ struct IFAPI_POLICY_EXEC_CTX {
     ESYS_TR             nv_index;
     ESYS_TR             auth_handle;
     IFAPI_OBJECT        auth_objectNV; /**< Object used for NV authentication */
-    IFAPI_OBJECT       *auth_object;   /**< Object to be authorized */
+    TSS2_OBJECT        *auth_object;   /**< Object to be authorized */
     ESYS_TR             auth_session;
     TPMI_ALG_HASH       hash_alg;
     void               *app_data;        /**< Application data  for policy execution callbacks */
