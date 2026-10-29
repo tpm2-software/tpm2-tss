@@ -19,9 +19,6 @@
 #include "tss2_policy.h"        // for TSS2_POLICY_EXEC_CALLBACKS
 #include "tss2_tpm2_types.h"    // for TPMI_ALG_HASH, TPM2B_DIGEST, TPM2B_NAME
 
-TSS2_RC
-ifapi_extend_authorization(struct TPMS_POLICY *policy, TPMS_POLICYAUTHORIZATION *authorization);
-
 typedef TSS2_RC (*Policy_Compare_Object)(struct TPMS_POLICY *policy,
                                          void               *object1,
                                          void               *object2,

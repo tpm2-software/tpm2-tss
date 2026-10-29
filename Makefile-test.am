@@ -171,6 +171,7 @@ TESTS_CFLAGS +=  -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 TESTS_UNIT += \
     test/unit/fapi-json \
     test/unit/fapi-helpers \
+    test/unit/fapi-policyutil \
     test/unit/fapi-io \
     test/unit/fapi-profiles \
     test/unit/fapi-config \
@@ -905,6 +906,15 @@ test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi/ifapi_io.c \
                               src/tss2-fapi-policy/tss2_helpers.c \
                               test/helper/cmocka_all.h
+
+# Test the execution adapter without the unused preparation/callback machinery.
+test_unit_fapi_policyutil_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS) -ffunction-sections
+test_unit_fapi_policyutil_LDADD = $(CMOCKA_LIBS) $(libtss2_esys)
+test_unit_fapi_policyutil_LDFLAGS = -Wl,--gc-sections \
+    -Wl,--wrap=Tss2_PolicyExecute_Finish -Wl,--wrap=Tss2_PolicyFinalize \
+    -Wl,--wrap=Esys_FlushContext
+test_unit_fapi_policyutil_SOURCES = test/unit/fapi-policyutil.c \
+    src/tss2-fapi/ifapi_policyutil_execute.c src/util/log.c test/helper/cmocka_all.h
 
 test_unit_fapi_helpers_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_helpers_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)

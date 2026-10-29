@@ -707,7 +707,6 @@ src_tss2_policy_libtss2_policy_la_SOURCES = $(TSS2_POLICY_SRC) \
     src/tss2-fapi/ifapi_json_eventlog_serialize.c \
     src/tss2-fapi/ifapi_policy.c \
     src/tss2-fapi/ifapi_policy_calculate.c \
-    src/tss2-fapi/ifapi_policy_execute.c \
     src/tss2-fapi/ifapi_policy_instantiate.c  \
     src/tss2-fapi/ifapi_policy_json_deserialize.c \
     src/tss2-fapi/ifapi_policy_json_serialize.c \
@@ -885,7 +884,9 @@ src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_e
     $(libutil) $(libtss2_tctildr) $(lib_fapi_policy_internal) $(lib_policy_internal) \
     $(libtss2_policy)
 
-src_tss2_fapi_libtss2_fapi_la_SOURCES = $(TSS2_FAPI_SRC)
+# Legacy internal callers still need the engine in FAPI until they use the public API.
+src_tss2_fapi_libtss2_fapi_la_SOURCES = $(TSS2_FAPI_SRC) \
+    src/tss2-policy/ifapi_policy_execute.c
 src_tss2_fapi_libtss2_fapi_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-fapi \
                                         -I$(srcdir)/src/tss2-policy \
                                         -I$(srcdir)/src/tss2-fapi-policy \

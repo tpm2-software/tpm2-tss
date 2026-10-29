@@ -659,6 +659,8 @@ copy_policy(TPMS_POLICY *dest, const TPMS_POLICY *src) {
     dest->policy = copy_policy_elements(src->policy);
     goto_if_null2(dest->policy, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
 
+    dest->policyDigests = src->policyDigests;
+
     return r;
 error_cleanup:
     ifapi_cleanup_policy(dest);

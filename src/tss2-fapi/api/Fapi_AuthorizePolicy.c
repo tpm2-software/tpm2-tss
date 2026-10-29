@@ -11,23 +11,23 @@
 #include <inttypes.h> // for uint8_t, PRIu16
 #include <stddef.h>   // for NULL, size_t
 
-#include "fapi_int.h"             // for IFAPI_Fapi_AuthorizePolicy, FAPI_C...
-#include "fapi_util.h"            // for ifapi_cleanup_session, ifapi_key_sign
-#include "ifapi_helpers.h"        // for ifapi_cleanup_policy
-#include "ifapi_io.h"             // for ifapi_io_poll
-#include "ifapi_keystore.h"       // for ifapi_cleanup_ifapi_object, IFAPI_...
-#include "ifapi_macros.h"         // for check_not_null, statecase, fallthr...
-#include "ifapi_policy.h"         // for ifapi_calculate_tree
-#include "ifapi_policy_execute.h" // for ifapi_extend_authorization
-#include "ifapi_policy_store.h"   // for ifapi_policy_store_store_async
-#include "ifapi_policy_types.h"   // for TPMS_POLICYAUTHORIZATION, TPMS_POLICY
-#include "tss2_common.h"          // for TSS2_RC, BYTE, TSS2_RC_SUCCESS
-#include "tss2_crypto.h"          // for ifapi_crypto_hash_abort, ifapi_cry...
-#include "tss2_esys.h"            // for Esys_SetTimeout
-#include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_AuthorizePolicy
-#include "tss2_helpers.h"         // for ifapi_cleanup_policy
-#include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
+#include "fapi_int.h"           // for IFAPI_Fapi_AuthorizePolicy, FAPI_C...
+#include "fapi_util.h"          // for ifapi_cleanup_session, ifapi_key_sign
+#include "ifapi_helpers.h"      // for ifapi_cleanup_policy
+#include "ifapi_io.h"           // for ifapi_io_poll
+#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_...
+#include "ifapi_macros.h"       // for check_not_null, statecase, fallthr...
+#include "ifapi_policy.h"       // for ifapi_calculate_tree
+#include "ifapi_policy_store.h" // for ifapi_policy_store_store_async
+#include "ifapi_policy_types.h" // for TPMS_POLICY
+#include "tss2_common.h"        // for TSS2_RC, BYTE, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"        // for ifapi_crypto_hash_abort, ifapi_cry...
+#include "tss2_esys.h"          // for Esys_SetTimeout
+#include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_AuthorizePolicy
+#include "tss2_helpers.h"       // for ifapi_cleanup_policy
+#include "tss2_policy.h"        // for Tss2_PolicyAuthorizePolicy
+#include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"    // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
 
 #define LOGMODULE fapi
 #include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
@@ -269,7 +269,6 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
 
     /* Helpful alias pointers */
     IFAPI_Fapi_AuthorizePolicy *command = &context->cmd.Policy_AuthorizeNewPolicy;
-    TPMS_POLICYAUTHORIZATION   *authorization = &command->authorization;
     TPMS_POLICY               **policy = &command->policy;
     TPMT_SIGNATURE             *signature;
     IFAPI_OBJECT              **keyObject = &context->Key_Sign.key_object;
@@ -330,18 +329,14 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
 
         SAFE_FREE(publicKey);
 
-        /* Store the signature results and cleanup remainters. */
-        authorization->signature = *signature;
-        authorization->policyRef = command->policyRef;
-        strdup_check(authorization->type, "tpm", r, cleanup);
-        authorization->key = (*keyObject)->misc.key.public.publicArea;
+        /* Policy owns the authorization representation and copies the signing results. */
+        r = Tss2_PolicyAuthorizePolicy(*policy, signature, command->policyRef,
+                                       &(*keyObject)->misc.key.public.publicArea);
         SAFE_FREE(signature);
+        if (r)
+            r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+        goto_if_error(r, "Add policy authorization.", cleanup);
         ifapi_cleanup_ifapi_object(*keyObject);
-
-        /* Extend the authorization to the policy stored. */
-        ifapi_extend_authorization(*policy, authorization);
-        goto_if_null((*policy)->policyAuthorizations, "Out of memory", TSS2_FAPI_RC_MEMORY,
-                     cleanup);
 
         fallthrough;
 
