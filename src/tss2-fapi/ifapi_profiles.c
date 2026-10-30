@@ -303,6 +303,9 @@ ifapi_profiles_finalize(IFAPI_PROFILES *profiles) {
 
         ifapi_cleanup_policy(profile->sh_policy);
         SAFE_FREE(profile->sh_policy);
+
+        ifapi_cleanup_policy(profile->lockout_policy);
+        SAFE_FREE(profile->lockout_policy);
     }
     SAFE_FREE(profiles->profiles);
 
