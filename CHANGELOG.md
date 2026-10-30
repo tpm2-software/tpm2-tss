@@ -3,12 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.2.1-rc1] - 2026-10-28
-### Fixed
-- FAPI: fix buffer overflow in ifapi_set_auth_primary
-- MAINTAINERS: add Moritz
-
-## [4.2.1-rc0] - 2026-10-26
+## [4.2.1] - 2026-10-30
 ### Security
 - GHSA-h664-qxhh-gx3w CVE-2026-109545
 - GHSA-2q8j-chww-3pcq CVE-ID requested
@@ -21,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - GHSA-xvmm-58jj-c6gf CVE-ID requested
 
 ### Fixed
+- MAINTAINERS: add Moritz
 - TEST: use SHA-256 in EVP signing integration test
 - TCTI: validate the response header length
 - TCTI: add missing size checks for response buffers
@@ -36,6 +32,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - FAPI: fix tests failing with physical TPMs
 - ESYS: fix compilation without SM4 support
 - ESYS: fix OpenSSL 3.X engine context handling for internal crypto
+- FAPI: fix buffer overflow in ifapi_set_auth_primary
 - SYS: harden the response size checks
 - SYS: validate the length of no-session responses
 - SYS: validate the length of encrypted parameter responses
