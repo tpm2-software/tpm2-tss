@@ -3,12 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.1.5-rc1] - 2026-10-28
-### Fixed
-- FAPI: fix buffer overflow in ifapi_set_auth_primary
-- MAINTAINERS: add Moritz
-
-## [4.1.5-rc0] - 2026-10-26
+## [4.1.5] - 2026-10-30
 ### Security
 - GHSA-h664-qxhh-gx3w CVE-2026-109545
 - GHSA-2q8j-chww-3pcq CVE-ID requested
@@ -21,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - GHSA-xvmm-58jj-c6gf CVE-ID requested
 
 ### Fixes
+- MAINTAINERS: add Moritz
 - TCTI: validate the response header length
 - TCTI: add missing size checks for response buffers
 - FAPI: fix quoting of empty event logs
@@ -33,6 +29,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - FAPI: verify the eventlog digest window fits the template buffer
 - FAPI: fix file leak on read error
 - FAPI: fix tests failing with physical TPMs
+- FAPI: fix buffer overflow in ifapi_set_auth_primary
 - ESYS: fix compilation without SM4 support
 - ESYS: fix OpenSSL 3.X engine context handling for internal crypto
 - SYS: harden the response size checks
