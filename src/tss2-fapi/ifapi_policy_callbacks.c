@@ -13,17 +13,19 @@
 #include <stdlib.h>   // for size_t, NULL, calloc, malloc
 #include <string.h>   // for memset, memcmp, memcpy, strcmp
 
-#include "fapi_crypto.h"   // for ifapi_get_tpm2b_public_from_pem
 #include "fapi_types.h"    // for UINT8_ARY
 #include "fapi_util.h"     // for ifapi_get_object_path, ifapi_a...
-#include "ifapi_helpers.h" // for ifapi_TPMT_PUBLIC_cmp, ifapi_c...
+#include "ifapi_helpers.h" // for ipolicy_TPMT_PUBLIC_cmp, ifapi_c...
 #include "ifapi_macros.h"  // for statecase, fallthrough, return...
 #include "ifapi_policy_callbacks.h"
 #include "ifapi_policy_execute.h"     // for IFAPI_POLICY_EXEC_CTX, POLICY_...
 #include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
 #include "ifapi_policyutil_execute.h" // for IFAPI_POLICYUTIL_STACK, ifapi_...
 #include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "ipolicy_helpers.h"          // for ipolicy_TPMT_PUBLIC_cmp
+#include "tss2_crypto.h"              // for ifapi_get_tpm2b_public_from_pem
 #include "tss2_fapi.h"                // for FAPI_CONTEXT
+#include "tss2_helpers.h"             // for ifapi_cleanup_policy ...
 #include "tss2_mu.h"                  // for Tss2_MU_TPMT_HA_Unmarshal
 
 #define LOGMODULE fapi
@@ -777,7 +779,7 @@ ifapi_policy_action(const char *action, void *userdata) {
     }
 
     /* Determine path of object to be authenticated. */
-    auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+    auth_object = fapi_ctx->policy.util_current_policy->auth_object;
     return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     object_path = ifapi_get_object_path(auth_object);
@@ -822,7 +824,7 @@ ifapi_sign_buffer(char           *key_pem,
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     /* Determine path of object to be authenticated. */
-    auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+    auth_object = fapi_ctx->policy.util_current_policy->auth_object;
     return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     object_path = ifapi_get_object_path(auth_object);
@@ -897,14 +899,14 @@ equal_policy_authorization(TPMS_POLICY *policy,
                 pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
 
                 /* Check public information if key and policyRef */
-                if (ifapi_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)
+                if (ipolicy_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)
                     && cmp_policy_ref(policyRef, &authorizations->authorizations[i].policyRef)) {
                     *equal = true;
                     return TSS2_RC_SUCCESS;
                 }
             } else
                 /* Check public information if key and policyRef */
-                if (ifapi_TPMT_PUBLIC_cmp(public, &authorizations->authorizations[i].key)
+                if (ipolicy_TPMT_PUBLIC_cmp(public, &authorizations->authorizations[i].key)
                     && cmp_policy_ref(policyRef, &authorizations->authorizations[i].policyRef)) {
                     *equal = true;
                     return TSS2_RC_SUCCESS;
@@ -1167,7 +1169,7 @@ get_policy_signature(TPMS_POLICY *policy, TPMT_PUBLIC *public, TPMT_SIGNATURE *s
             }
             pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
 
-            if (ifapi_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)) {
+            if (ipolicy_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)) {
                 r = ifapi_der_sig_to_tpm(&pem_public.publicArea,
                                          authorizations->authorizations[i].pemSignature.buffer,
                                          authorizations->authorizations[i].pemSignature.size,
@@ -1177,8 +1179,8 @@ get_policy_signature(TPMS_POLICY *policy, TPMT_PUBLIC *public, TPMT_SIGNATURE *s
 
                 return TSS2_RC_SUCCESS;
             }
-        } else if (ifapi_TPMT_PUBLIC_cmp(public,
-                                         &policy->policyAuthorizations->authorizations[i].key)) {
+        } else if (ipolicy_TPMT_PUBLIC_cmp(public,
+                                           &policy->policyAuthorizations->authorizations[i].key)) {
             /* The public info was already stored in the policy. */
             *signature = policy->policyAuthorizations->authorizations[i].signature;
             return TSS2_RC_SUCCESS;
@@ -1311,7 +1313,7 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
             } while (branch);
 
             /* Determine path of object to be authenticated. */
-            auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+            auth_object = fapi_ctx->policy.util_current_policy->auth_object;
             goto_if_null2(auth_object, "No object passed.", r, TSS2_FAPI_RC_BAD_REFERENCE, cleanup);
 
             object_path = ifapi_get_object_path(auth_object);
@@ -1434,13 +1436,11 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
         current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
-        fapi_ctx->current_auth_object
-            = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+        fapi_ctx->current_auth_object = fapi_ctx->policy.util_current_policy->auth_object;
     } else {
         /* Start with the bottom of the policy stack */
         current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
-        fapi_ctx->current_auth_object
-            = fapi_ctx->policy.policyutil_stack->pol_exec_ctx->auth_object;
+        fapi_ctx->current_auth_object = fapi_ctx->policy.policyutil_stack->auth_object;
     }
     cb_ctx = current_policy->app_data;
     esys_ctx = fapi_ctx->esys;

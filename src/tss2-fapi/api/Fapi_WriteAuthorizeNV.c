@@ -12,7 +12,6 @@
 
 #include "fapi_int.h"           // for FAPI_CONTEXT, IFAPI_NV_Cmds, IFAPI_a...
 #include "fapi_util.h"          // for ifapi_cleanup_session, ifapi_esys_se...
-#include "ifapi_helpers.h"      // for ifapi_cleanup_policy
 #include "ifapi_io.h"           // for ifapi_io_poll
 #include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_OB...
 #include "ifapi_macros.h"       // for statecase, check_not_null, fallthrough
@@ -22,6 +21,7 @@
 #include "tss2_common.h"        // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_WriteAuthorizeNv
+#include "tss2_helpers.h"       // for ifapi_cleanup_policy
 #include "tss2_mu.h"            // for Tss2_MU_TPMI_ALG_HASH_Marshal
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPMI_ALG_HASH, TPM2B_NV_PUBLIC, TPMS...
@@ -237,7 +237,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     IFAPI_NV_Cmds              *nvCmd = &context->nv_cmd;
     IFAPI_OBJECT               *object = &nvCmd->nv_object;
     TPMI_ALG_HASH               hashAlg;
-    TPMS_POLICY                *policy = &context->policy.policy;
+    TPMS_POLICY               **policy = &nvCmd->policy;
 
     switch (context->state) {
     statecase(context->state, WRITE_AUTHORIZE_NV_READ_NV)
@@ -284,7 +284,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
                                           &nvCmd->nv_buffer[0], maxNvSize, &offset);
         goto_if_error_reset_state(r, "FAPI marshal hash alg", error_cleanup);
 
-        void *currentDigest = &policy->policyDigests.digests[command->digest_idx].digest;
+        void *currentDigest = &(*policy)->policyDigests.digests[command->digest_idx].digest;
         memcpy(&nvCmd->nv_buffer[offset], currentDigest, command->hash_size);
 
         /* Store these data in the context to be used for re-entry on nv_write. */
@@ -317,7 +317,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_POLICY_PREPARE)
         r = ifapi_policy_store_store_async(&context->pstore, &context->io, command->policyPath,
-                                           policy);
+                                           *policy);
         goto_if_error_reset_state(r, "Could not open: %s", error_cleanup, command->policyPath);
         fallthrough;
 
@@ -344,7 +344,8 @@ error_cleanup:
     SAFE_FREE(nvCmd->nvPath);
     SAFE_FREE(nvCmd->nv_buffer);
     ifapi_session_clean(context);
-    ifapi_cleanup_policy(policy);
+    ifapi_cleanup_policy(*policy);
+    SAFE_FREE(*policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

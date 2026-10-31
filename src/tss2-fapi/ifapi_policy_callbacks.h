@@ -11,7 +11,7 @@
 
 #include "fapi_int.h"           // for IFAPI_CreatePrimary, IFAPI_LoadKey
 #include "ifapi_keystore.h"     // for IFAPI_OBJECT
-#include "ifapi_policy_types.h" // for TPMS_POLICY
+#include "ifapi_policy_types.h" // for struct TPMS_POLICY
 #include "tss2_common.h"        // for TSS2_RC
 #include "tss2_esys.h"          // for ESYS_TR
 #include "tss2_policy.h"        // for TSS2_OBJECT, TSS2_POLICY_PCR_SELECTION
@@ -53,7 +53,7 @@ typedef struct {
     IFAPI_NV_Cmds       nv_cmd_state_sav; /**< backup for state of fapi nv commands */
     TPM2B_DIGEST        policy_digest;
     ESYS_TR             session;
-    TPMS_POLICY        *policy;
+    struct TPMS_POLICY *policy;
 } IFAPI_POLICY_EXEC_CB_CTX;
 
 TSS2_RC

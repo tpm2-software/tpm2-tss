@@ -13,10 +13,9 @@
 #include <stdbool.h>  // for false, true
 #include <string.h>   // for memset, size_t, NULL
 
-#include "fapi_crypto.h"                 // for ifapi_hash_get_digest_size
 #include "fapi_int.h"                    // for IFAPI_ExportPolicy, FAPI_CO...
 #include "fapi_util.h"                   // for ifapi_session_init
-#include "ifapi_helpers.h"               // for ifapi_cleanup_policy, ifapi...
+#include "ifapi_helpers.h"               // for ifapi_path_type_p ...
 #include "ifapi_io.h"                    // for ifapi_io_poll
 #include "ifapi_keystore.h"              // for ifapi_cleanup_ifapi_object
 #include "ifapi_macros.h"                // for check_not_null, statecase
@@ -26,8 +25,10 @@
 #include "ifapi_policy_types.h"          // for TPMS_POLICY
 #include "ifapi_profiles.h"              // for IFAPI_PROFILES, IFAPI_PROFILE
 #include "tss2_common.h"                 // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"                 // for ifapi_hash_get_digest_size
 #include "tss2_esys.h"                   // for Esys_SetTimeout
 #include "tss2_fapi.h"                   // for FAPI_CONTEXT, Fapi_ExportPo...
+#include "tss2_helpers.h"                // for ifapi_cleanup_policy
 #include "tss2_tcti.h"                   // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"             // for TPML_DIGEST_VALUES, TPMT_HA
 
@@ -164,7 +165,6 @@ Fapi_ExportPolicy_Async(FAPI_CONTEXT *context, char const *path) {
     /* Copy parameters to context for use during _Finish. */
     strdup_check(command->path, path, r, error_cleanup);
     memset(&command->object, 0, sizeof(IFAPI_OBJECT));
-    memset(&command->policy, 0, sizeof(TPMS_POLICY));
 
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;
@@ -208,7 +208,6 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
 
     json_object *jso = NULL;
     TSS2_RC      r = TSS2_RC_SUCCESS;
-    size_t       hashSize, digestIdx, i;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -224,57 +223,57 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
         /* Load the policy to be exported from the policy store. */
         r = ifapi_policy_store_load_async(&context->pstore, &context->io, command->path);
         goto_if_error2(r, "Can't open: %s", error_cleanup, command->path);
+
+        command->policy = calloc(1, sizeof(TPMS_POLICY));
+        goto_if_null2(command->policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_EXPORT_READ_POLICY_FINISH);
-        r = ifapi_policy_store_load_finish(&context->pstore, &context->io, &command->policy);
+        r = ifapi_policy_store_load_finish(&context->pstore, &context->io, command->policy);
         return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         /* Start with digest computation from default profile. */
         command->hashAlg = context->profiles.default_profile.nameAlg;
         command->profile_idx = 0;
+
+        r = Tss2_PolicySetPolicy(command->policy, command->hashAlg,
+                                 &context->policy.tss2_policy_ctx);
+        goto_if_error(r, "Instantiate policy.", error_cleanup);
+
+        r = Tss2_PolicySetCalcCallbacks(context->policy.tss2_policy_ctx,
+                                        &context->policy.eval_ctx.callbacks);
+        goto_if_error(r, "Set policy calc callbacks.", error_cleanup);
         fallthrough;
 
-    statecase(context->state, POLICY_EXPORT_CHECK_DIGEST);
-        /* Check whether a policy digest was computed for the default name hash alg. */
-        command->compute_policy = true;
-        for (i = 0; i < command->policy.policyDigests.count; i++) {
-            if (command->policy.policyDigests.digests[i].hashAlg == command->hashAlg) {
-                command->compute_policy = false;
-                break;
-            }
-        }
+    statecase(context->state, POLICY_EXPORT_PREPARE_CALCULATE_POLICY);
+        r = Tss2_PolicyCalculate_Async(context->policy.tss2_policy_ctx);
+        goto_if_error(r, "Instantiate policy.", error_cleanup);
         fallthrough;
 
-    statecase(context->state, POLICY_EXPORT_COMPUTE_POLICY_DIGEST);
-        if (command->compute_policy) {
-            /* Compute policy digest for the current hash alg */
-            if (!(hashSize = ifapi_hash_get_digest_size(command->hashAlg))) {
-                goto_error(r, TSS2_FAPI_RC_NOT_IMPLEMENTED,
-                           "Unsupported hash algorithm (%" PRIu16 ")", error_cleanup,
-                           command->hashAlg);
-            }
-            r = ifapi_calculate_tree(context, NULL, &command->policy, command->hashAlg, &digestIdx,
-                                     &hashSize);
-            return_try_again(r);
-        }
+    statecase(context->state, POLICY_EXPORT_CALCULATE_POLICY);
+        r = Tss2_PolicyCalculate_Finish(context->policy.tss2_policy_ctx);
+        FAPI_SYNC(r, "Instantiate policy.", error_cleanup);
 
         if (r) {
             /* The computation of the policy digest was not possible. */
             LOG_WARNING("The computation of the policy digest was not possible.");
-        } else {
-            /* Loop for all hash algs in current profiles. */
-            if (command->profile_idx < context->profiles.num_profiles) {
-                command->hashAlg = context->profiles.profiles[command->profile_idx].profile.nameAlg;
-                command->profile_idx++;
-                context->state = POLICY_EXPORT_CHECK_DIGEST;
-                return TSS2_FAPI_RC_TRY_AGAIN;
-            }
+        }
+        /* Loop for all hash algs in current profiles. */
+        if (command->profile_idx < context->profiles.num_profiles) {
+            r = Tss2_PolicySetHashAlg(
+                context->policy.tss2_policy_ctx,
+                context->profiles.profiles[command->profile_idx].profile.nameAlg);
+            goto_if_error(r, "Set policy hashalg", error_cleanup);
+            command->profile_idx++;
+            context->state = POLICY_EXPORT_PREPARE_CALCULATE_POLICY;
+            return TSS2_FAPI_RC_TRY_AGAIN;
         }
 
+        Tss2_PolicyFinalize(&context->policy.tss2_policy_ctx);
+
         /* Serialize the policy to JSON. */
-        r = ifapi_json_TPMS_POLICY_serialize(&command->policy, &jso);
+        r = ifapi_json_TPMS_POLICY_serialize(command->policy, &jso);
         goto_if_error(r, "Serialize policy", error_cleanup);
 
         /* Duplicate the JSON string to be returned to the caller. */
@@ -317,7 +316,8 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
     if (jso)
         json_object_put(jso);
     ifapi_cleanup_ifapi_object(&command->object);
-    ifapi_cleanup_policy(&command->policy);
+    ifapi_cleanup_policy(command->policy);
+    SAFE_FREE(command->policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
@@ -331,7 +331,8 @@ error_cleanup:
         ifapi_cleanup_ifapi_object(&command->object);
     if (jso)
         json_object_put(jso);
-    ifapi_cleanup_policy(&command->policy);
+    ifapi_cleanup_policy(command->policy);
+    SAFE_FREE(command->policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

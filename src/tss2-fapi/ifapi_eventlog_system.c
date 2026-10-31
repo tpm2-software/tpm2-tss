@@ -17,11 +17,11 @@
 #include <uchar.h>     // for char16_t
 
 #include "efi_event.h"      // for TCG_EVENT, TCG_EVENT2, TCG_EVENT_H...
-#include "fapi_crypto.h"    // for ifapi_hash_get_digest_size
 #include "ifapi_eventlog.h" // for IFAPI_EVENT_TYPE
 #include "ifapi_eventlog_system.h"
 #include "ifapi_macros.h"         // for check_oom, return_error2
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifapi_json_U...
+#include "tss2_crypto.h"          // for ifapi_hash_get_digest_size
 #include "tss2_tpm2_types.h"      // for TPM2_MAX_PCRS, TPMI_ALG_HASH
 
 #define LOGMODULE fapi

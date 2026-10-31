@@ -18,7 +18,6 @@
 #include <wchar.h>     // for mbstate_t
 
 #include "efi_event.h"             // for TCG_EVENT2, TCG_SPECID_EVENT, UEF...
-#include "fapi_crypto.h"           // for ifapi_hash_get_digest_size
 #include "ifapi_eventlog.h"        // for CONTENT, CONTENT_TYPE
 #include "ifapi_eventlog_system.h" // for parse_eventlog, tpm2_eventlog_con...
 #include "ifapi_json_eventlog_serialize.h"
@@ -26,6 +25,7 @@
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object
 #include "tpm_json_serialize.h"   // for ifapi_json_TPM2_ALG_ID_serialize
 #include "tss2_common.h"          // for TSS2_RC, TSS2_FAPI_RC_GENERAL_FAI...
+#include "tss2_crypto.h"          // for ifapi_hash_get_digest_size
 #include "tss2_tpm2_types.h"      // for TPM2_ALG_SHA1, TPM2_MAX_PCRS
 
 #define LOGMODULE fapifirmware
