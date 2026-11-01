@@ -172,7 +172,7 @@ TPMS_PCR_UNMARSHAL(
                                                                                                    \
         LOG_DEBUG("Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR                \
                   " at index 0x%zx",                                                               \
-                  (uintptr_t) & src, (uintptr_t)buffer, *offset);                                  \
+                  (uintptr_t) & src, (uintptr_t)buffer, offset ? *offset : 0xffff);                \
                                                                                                    \
         return TSS2_RC_SUCCESS;                                                                    \
     }
@@ -192,7 +192,7 @@ TPMS_PCR_UNMARSHAL(
                                                                                                    \
         LOG_DEBUG("Unmarshaling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR               \
                   " at index 0x%zx",                                                               \
-                  (uintptr_t)dest, (uintptr_t)buffer, *offset);                                    \
+                  (uintptr_t)dest, (uintptr_t)buffer, offset ? *offset : 0xffff);                  \
                                                                                                    \
         return TSS2_RC_SUCCESS;                                                                    \
     }
