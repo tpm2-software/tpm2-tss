@@ -183,7 +183,8 @@ TSS2_RC Tss2_MU_##type##_Marshal(type const *src, \
 \
     LOG_DEBUG( \
          "Marshalling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)&src,  (uintptr_t)buffer, offset ? \
+         *offset : 0xffff); \
 \
     return TSS2_RC_SUCCESS; \
 }
@@ -203,7 +204,8 @@ TSS2_RC Tss2_MU_##type##_Unmarshal(uint8_t const buffer[], size_t buffer_size, \
 \
     LOG_DEBUG( \
          "Unmarshaling " #type " from 0x%" PRIxPTR " to buffer 0x%" PRIxPTR \
-         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, *offset); \
+         " at index 0x%zx", (uintptr_t)dest,  (uintptr_t)buffer, offset ? \
+         *offset : 0xffff); \
 \
     return TSS2_RC_SUCCESS; \
 }

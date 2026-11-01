@@ -273,6 +273,24 @@ tpms_unmarshal_buffer_null_offset_null(void **state)
 }
 
 /*
+ * TPMS_EMPTY has no fields, so marshalling and unmarshalling succeed
+ * without touching the buffer, and like the other types they accept
+ * a NULL offset.
+ */
+static void
+tpms_empty_offset_null(void **state) {
+    TPMS_EMPTY empty = { 0 };
+    uint8_t    buffer[1] = { 0 };
+    TSS2_RC    rc;
+
+    rc = Tss2_MU_TPMS_EMPTY_Marshal(&empty, buffer, sizeof(buffer), NULL);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+
+    rc = Tss2_MU_TPMS_EMPTY_Unmarshal(buffer, sizeof(buffer), NULL, &empty);
+    assert_int_equal(rc, TSS2_RC_SUCCESS);
+}
+
+/*
  * Test case ensures the offset is updated when dest is NULL
  * and offset is valid
  */
@@ -388,6 +406,7 @@ int main(void) {
         cmocka_unit_test (tpms_unmarshal_success),
         cmocka_unit_test (tpms_unmarshal_dest_null_buff_null),
         cmocka_unit_test (tpms_unmarshal_buffer_null_offset_null),
+        cmocka_unit_test (tpms_empty_offset_null),
         cmocka_unit_test (tpms_unmarshal_dest_null_offset_valid),
         cmocka_unit_test (tpms_unmarshal_buffer_size_lt_data_nad_lt_offset),
         cmocka_unit_test (tpms_capability_data_intel_ptt_marshal_unmarshal)
