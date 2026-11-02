@@ -658,6 +658,10 @@ noinst_LTLIBRARIES += libtss2-fapi-policy-internal.la
 lib_fapi_policy_internal = libtss2-fapi-policy-internal.la
 
 libtss2_fapi_policy_internal_la_SOURCES = \
+    src/tss2-fapi-policy/tpm_json_deserialize.c \
+    src/tss2-fapi-policy/tpm_json_deserialize.h \
+    src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
+    src/tss2-fapi-policy/ifapi_policy_json_deserialize.h \
     src/tss2-fapi-policy/tss2_helpers.c \
     src/tss2-fapi-policy/tss2_helpers.h \
     src/tss2-fapi-policy/tss2_crypto.c \
@@ -702,13 +706,11 @@ src_tss2_policy_libtss2_policy_la_SOURCES = $(TSS2_POLICY_SRC) \
     src/tss2-fapi/ifapi_io.c \
     src/tss2-fapi/ifapi_json_deserialize.c \
     src/tss2-fapi/ifapi_json_serialize.c \
-    src/tss2-fapi/tpm_json_deserialize.c \
     src/tss2-fapi/tpm_json_serialize.c \
     src/tss2-fapi/ifapi_json_eventlog_serialize.c \
     src/tss2-fapi/ifapi_policy.c \
     src/tss2-fapi/ifapi_policy_calculate.c \
     src/tss2-fapi/ifapi_policy_instantiate.c  \
-    src/tss2-fapi/ifapi_policy_json_deserialize.c \
     src/tss2-fapi/ifapi_policy_json_serialize.c \
     src/tss2-fapi/ifapi_keystore.c \
     src/tss2-fapi/ifapi_policy_store.c
