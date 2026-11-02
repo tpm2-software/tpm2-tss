@@ -14,11 +14,11 @@
 #include "ifapi_policy_callbacks.h"   // for ifapi_get_key_public, ifapi_ge...
 #include "ifapi_policy_instantiate.h" // for IFAPI_POLICY_EVAL_INST_CTX
 #include "ifapi_policy_store.h"       // for IFAPI_POLICY_STORE
-#include "ifapi_policy_types.h"       // for struct TPMS_POLICY
 #include "tss2_common.h"              // for TSS2_RC
 #include "tss2_esys.h"                // for ESYS_CONTEXT
 #include "tss2_fapi.h"                // for FAPI_CONTEXT
 #include "tss2_policy.h"              // for TSS2_POLICY_CALC_CALLBACKS
+#include "tss2_policy_types.h"        // for struct TPMS_POLICY
 #include "tss2_tpm2_types.h"          // for TPMI_ALG_HASH, TPM2B_DIGEST
 
 TSS2_RC

@@ -10,14 +10,14 @@
 #include <stddef.h>  // for size_t
 #include <stdint.h>  // for uint8_t
 
-#include "fapi_int.h"           // for IFAPI_POLICY_EXEC_CTX
-#include "fapi_types.h"         // for NODE_OBJECT_T
-#include "ifapi_keystore.h"     // for IFAPI_OBJECT
-#include "ifapi_policy_types.h" // for struct TPMS_POLICY, TPMS_POLICYAUTHORIZATION
-#include "tss2_common.h"        // for TSS2_RC
-#include "tss2_esys.h"          // for ESYS_TR, ESYS_CONTEXT
-#include "tss2_policy.h"        // for TSS2_POLICY_EXEC_CALLBACKS
-#include "tss2_tpm2_types.h"    // for TPMI_ALG_HASH, TPM2B_DIGEST, TPM2B_NAME
+#include "fapi_int.h"          // for IFAPI_POLICY_EXEC_CTX
+#include "fapi_types.h"        // for NODE_OBJECT_T
+#include "ifapi_keystore.h"    // for IFAPI_OBJECT
+#include "tss2_common.h"       // for TSS2_RC
+#include "tss2_esys.h"         // for ESYS_TR, ESYS_CONTEXT
+#include "tss2_policy.h"       // for TSS2_POLICY_EXEC_CALLBACKS
+#include "tss2_policy_types.h" // for struct TPMS_POLICY, TPMS_POLICYAUTHORIZATION
+#include "tss2_tpm2_types.h"   // for TPMI_ALG_HASH, TPM2B_DIGEST, TPM2B_NAME
 
 typedef TSS2_RC (*Policy_Compare_Object)(struct TPMS_POLICY *policy,
                                          void               *object1,

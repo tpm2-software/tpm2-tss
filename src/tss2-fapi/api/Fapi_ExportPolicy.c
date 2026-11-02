@@ -22,13 +22,13 @@
 #include "ifapi_policy.h"                // for ifapi_calculate_tree
 #include "ifapi_policy_json_serialize.h" // for ifapi_json_TPMS_POLICY_seri...
 #include "ifapi_policy_store.h"          // for ifapi_policy_store_load_async
-#include "ifapi_policy_types.h"          // for TPMS_POLICY
 #include "ifapi_profiles.h"              // for IFAPI_PROFILES, IFAPI_PROFILE
 #include "tss2_common.h"                 // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"                 // for ifapi_hash_get_digest_size
 #include "tss2_esys.h"                   // for Esys_SetTimeout
 #include "tss2_fapi.h"                   // for FAPI_CONTEXT, Fapi_ExportPo...
 #include "tss2_helpers.h"                // for ifapi_cleanup_policy
+#include "tss2_policy_types.h"           // for TPMS_POLICY
 #include "tss2_tcti.h"                   // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"             // for TPML_DIGEST_VALUES, TPMT_HA
 

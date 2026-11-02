@@ -8,9 +8,9 @@
 
 #include <json.h> // for json_object
 
-#include "ifapi_policy_types.h" // for TPMI_POLICYTYPE, TPML_POLICYAUTHORIZ...
-#include "tss2_common.h"        // for TSS2_RC, UINT32
-#include "tss2_policy.h"        // for TPML_PCRVALUES, TPMS_PCRVALUE
+#include "tss2_common.h"       // for TSS2_RC, UINT32
+#include "tss2_policy.h"       // for TPML_PCRVALUES, TPMS_PCRVALUE
+#include "tss2_policy_types.h" // for TPMI_POLICYTYPE, TPML_POLICYAUTHORIZ...
 
 TSS2_RC
 ifapi_json_TPMI_POLICYTYPE_deserialize(json_object *jso, TPMI_POLICYTYPE *out);
