@@ -402,6 +402,14 @@ tcti_swtpm_receive(TSS2_TCTI_CONTEXT *tctiContext,
         LOG_DEBUG("response size: %" PRIu32, tcti_common->header.size);
     }
 
+    if (tcti_common->header.size < TPM_HEADER_SIZE) {
+        LOG_ERROR("Header response size is less than TPM_HEADER_SIZE,"
+                  " got %" PRIu32 " expected greater than or equal to %zu",
+                  tcti_common->header.size, TPM_HEADER_SIZE);
+        rc = TSS2_TCTI_RC_MALFORMED_RESPONSE;
+        goto out;
+    }
+
     if (response_buffer == NULL) {
         *response_size = tcti_common->header.size;
         return TSS2_RC_SUCCESS;
