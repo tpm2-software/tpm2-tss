@@ -240,9 +240,18 @@ ifapi_policyeval_instantiate_finish(
 
             break;
 
-        case POLICYNAMEHASH:
+        case POLICYNAMEHASH: {
+            size_t count = pol_element->element.PolicyNameHash.count;
+
+            if (count == 0) {
+                return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyNameHash requires at least one name.");
+            }
+            if (count > 3) {
+                return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyNameHash count out of bounds.");
+            }
+
             /* Set index of last name to be computed. */
-            i_last = pol_element->element.PolicyNameHash.count - 1;
+            i_last = count - 1;
             if (pol_element->element.PolicyNameHash.objectNames[i_last].size) {
                 CHECK_CALLBACK(context->callbacks.cbname, "cbname");
             }
@@ -250,6 +259,10 @@ ifapi_policyeval_instantiate_finish(
             while (!pol_element->element.PolicyNameHash.objectNames[i_last].size) {
                 /* Not all object names have been computed or were initialized */
                 size_t i = pol_element->element.PolicyNameHash.i;
+                if (i >= count) {
+                    return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyNameHash index out of bounds.");
+                }
+
                 r = context->callbacks.cbname(pol_element->element.PolicyNameHash.namePaths[i],
                                               &pol_element->element.PolicyNameHash.objectNames[i],
                                               context->callbacks.cbname_userdata);
@@ -259,6 +272,7 @@ ifapi_policyeval_instantiate_finish(
                 SAFE_FREE(pol_element->element.PolicyNameHash.namePaths[i]);
             }
             break;
+        }
 
         case POLICYSECRET:
             if (pol_element->element.PolicySecret.objectName.size) {
