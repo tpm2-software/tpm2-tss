@@ -894,9 +894,9 @@ test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi/ifapi_ima_eventlog.c \
                               src/tss2-fapi/ifapi_eventlog_system.c \
                               src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                              src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                              src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                               src/tss2-fapi/ifapi_policy_json_serialize.c \
-                              src/tss2-fapi/tpm_json_deserialize.c \
+                              src/tss2-fapi-policy/tpm_json_deserialize.c \
                               src/tss2-fapi/tpm_json_serialize.c \
                               src/tss2-fapi/ifapi_helpers.c \
                               src/tss2-fapi-policy/tss2_crypto.c \
@@ -927,9 +927,9 @@ test_unit_fapi_helpers_SOURCES = test/unit/fapi-helpers.c \
                                  src/tss2-fapi/ifapi_ima_eventlog.c \
                                  src/tss2-fapi/ifapi_eventlog_system.c \
                                  src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                                 src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                 src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                 src/tss2-fapi/tpm_json_deserialize.c \
+                                 src/tss2-fapi-policy/tpm_json_deserialize.c \
                                  src/tss2-fapi/tpm_json_serialize.c \
                                  src/tss2-fapi/fapi_crypto.c \
                                  src/tss2-fapi-policy/tss2_crypto.c \
@@ -962,9 +962,9 @@ test_unit_fapi_io_SOURCES = test/unit/fapi-io.c \
                             src/tss2-fapi/ifapi_ima_eventlog.c \
                             src/tss2-fapi/ifapi_eventlog_system.c \
                             src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                            src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                            src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                             src/tss2-fapi/ifapi_policy_json_serialize.c \
-                            src/tss2-fapi/tpm_json_deserialize.c \
+                            src/tss2-fapi-policy/tpm_json_deserialize.c \
                             src/tss2-fapi/tpm_json_serialize.c \
                             src/tss2-fapi/fapi_crypto.c \
                             src/tss2-fapi-policy/tss2_crypto.c \
@@ -986,9 +986,9 @@ test_unit_fapi_profiles_SOURCES = test/unit/fapi-profiles.c \
                                   src/tss2-fapi/ifapi_ima_eventlog.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c \
                                   src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                  src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                                   src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                  src/tss2-fapi/tpm_json_deserialize.c \
+                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
                                   src/tss2-fapi/tpm_json_serialize.c \
                                   src/tss2-fapi/fapi_crypto.c \
                                   src/tss2-fapi-policy/tss2_crypto.c \
@@ -1010,9 +1010,9 @@ test_unit_fapi_config_SOURCES = test/unit/fapi-config.c \
                                   src/tss2-fapi/ifapi_ima_eventlog.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c \
                                   src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                  src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                                   src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                  src/tss2-fapi/tpm_json_deserialize.c \
+                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
                                   src/tss2-fapi/tpm_json_serialize.c \
                                   src/tss2-fapi/fapi_crypto.c \
                                   src/tss2-fapi-policy/tss2_crypto.c \
@@ -1035,9 +1035,9 @@ test_unit_fapi_get_web_cert_SOURCES = test/unit/fapi-get-web-cert.c \
                                        src/tss2-fapi/ifapi_ima_eventlog.c \
                                        src/tss2-fapi/ifapi_eventlog_system.c \
                                        src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                                       src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                       src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                                        src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                       src/tss2-fapi/tpm_json_deserialize.c \
+                                       src/tss2-fapi-policy/tpm_json_deserialize.c \
                                        src/tss2-fapi/tpm_json_serialize.c \
                                        src/tss2-fapi/fapi_crypto.c \
                                        src/tss2-fapi-policy/tss2_crypto.c \
@@ -1059,9 +1059,9 @@ test_unit_fapi_eventlog_SOURCES = test/unit/fapi-eventlog.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                  src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                                   src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                  src/tss2-fapi/tpm_json_deserialize.c \
+                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
                                   src/tss2-fapi/tpm_json_serialize.c \
                                   src/tss2-fapi/fapi_crypto.c \
                                   src/tss2-fapi-policy/tss2_crypto.c \
@@ -1081,9 +1081,9 @@ test_unit_fapi_ima_eventlog_SOURCES = test/unit/fapi-ima-eventlog.c \
                                   src/tss2-fapi/ifapi_ima_eventlog.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                  src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                                   src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                  src/tss2-fapi/tpm_json_deserialize.c \
+                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
                                   src/tss2-fapi/tpm_json_serialize.c \
                                   src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                   src/tss2-fapi/fapi_crypto.c \
@@ -1105,9 +1105,9 @@ test_unit_fapi_check_ima_log_SOURCES = test/unit/fapi-check-ima-log.c \
                                   src/tss2-fapi/ifapi_ima_eventlog.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                                  src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                                   src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                  src/tss2-fapi/tpm_json_deserialize.c \
+                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
                                   src/tss2-fapi/tpm_json_serialize.c \
                                   src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                   src/tss2-fapi/fapi_crypto.c \
@@ -1130,9 +1130,9 @@ test_unit_fapi_ima_fuzzing_SOURCES = test/unit/fapi-ima-fuzzing.c \
                          src/tss2-fapi/ifapi_ima_eventlog.c \
                          src/tss2-fapi/ifapi_json_deserialize.c \
                          src/tss2-fapi/ifapi_json_serialize.c \
-                         src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                         src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                          src/tss2-fapi/ifapi_policy_json_serialize.c \
-                         src/tss2-fapi/tpm_json_deserialize.c \
+                         src/tss2-fapi-policy/tpm_json_deserialize.c \
                          src/tss2-fapi/tpm_json_serialize.c \
                          src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                          src/tss2-fapi/fapi_crypto.c \
@@ -1158,9 +1158,9 @@ test_unit_fapi_system_fuzzing_SOURCES = test/unit/fapi-system-fuzzing.c \
                           src/tss2-fapi/ifapi_eventlog_system.c \
                           src/tss2-fapi/ifapi_json_deserialize.c \
                           src/tss2-fapi/ifapi_json_serialize.c \
-                          src/tss2-fapi/ifapi_policy_json_deserialize.c \
+                          src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                           src/tss2-fapi/ifapi_policy_json_serialize.c \
-                          src/tss2-fapi/tpm_json_deserialize.c \
+                          src/tss2-fapi-policy/tpm_json_deserialize.c \
                           src/tss2-fapi/tpm_json_serialize.c \
                           src/tss2-fapi/fapi_crypto.c \
                           src/tss2-fapi-policy/tss2_crypto.c \

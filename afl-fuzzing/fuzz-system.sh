@@ -25,9 +25,9 @@ afl-clang-fast -flto -o fapi-system-fuzzing \
                src/tss2-fapi/ifapi_eventlog_system.c \
                src/tss2-fapi/ifapi_json_deserialize.c \
                src/tss2-fapi/ifapi_json_serialize.c \
-               src/tss2-fapi/ifapi_policy_json_deserialize.c \
+               src/tss2-fapi-policy/ifapi_policy_json_deserialize.c \
                src/tss2-fapi/ifapi_policy_json_serialize.c \
-               src/tss2-fapi/tpm_json_deserialize.c \
+               src/tss2-fapi-policy/tpm_json_deserialize.c \
                src/tss2-fapi/tpm_json_serialize.c \
                src/tss2-fapi/fapi_crypto.c \
                src/tss2-fapi/ifapi_eventlog.c \
@@ -38,7 +38,7 @@ afl-clang-fast -flto -o fapi-system-fuzzing \
                -DHAVE_CONFIG_H -I${srcdir} -I${srcdir}/include \
                -I${srcdir}/src -I${srcdir}/include \
                -I${srcdir}/include/tss2   -I${srcdir}/src/util -I${srcdir}/src/tss2-mu \
-               -I${srcdir}/src/tss2-sys -I${srcdir}/src/tss2-esys -I${srcdir}/src/tss2-fapi \
+               -I${srcdir}/src/tss2-sys -I${srcdir}/src/tss2-esys -I${srcdir}/src/tss2-fapi-policy -I${srcdir}/src/tss2-fapi \
                -I${srcdir}/test/data -Wno-unused-parameter -Wno-missing-field-initializers \
                -ljson-c -lcrypto -luuid
 
