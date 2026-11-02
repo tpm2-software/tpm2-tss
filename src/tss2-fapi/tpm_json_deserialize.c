@@ -347,6 +347,10 @@ ifapi_json_pcr_selection_deserialize(json_object *jso, UINT8 *sizeofSelect, BYTE
     for (i = 0; i < (size_t)json_object_array_length(jso); i++) {
         r = get_number_from_json(json_object_array_get_idx(jso, i), &n);
         return_if_error(r, "Bad PCR value");
+        if (n < 0 || n >= TPM2_MAX_PCRS) {
+            return_error(TSS2_FAPI_RC_BAD_VALUE, "PCR index out of range.");
+        }
+
         n_byte = n / 8;
         pcrSelect[n_byte] |= ((BYTE)1) << (n % 8);
         if (n_byte > *sizeofSelect)
