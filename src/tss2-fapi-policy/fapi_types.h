@@ -10,12 +10,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-/** The data structure representing an unit8_t array.
- */
-typedef struct {
-    size_t   size;
-    uint8_t *buffer;
-} UINT8_ARY;
+#include "tss2_policy_types.h"
+
+/* Internal compatibility name for the shared byte-buffer representation. */
+typedef TSS2_POLICY_BUFFER UINT8_ARY;
 
 /** The data structure storing a linked list of strings.
  *

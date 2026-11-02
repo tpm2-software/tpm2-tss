@@ -22,9 +22,9 @@
 #include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
 #include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
 #include "ifapi_policy_store.h"
-#include "ifapi_policy_types.h"   // for TPMS_POLICY
 #include "tpm_json_deserialize.h" // for ifapi_parse_json
 #include "tss2_helpers.h"         // for ifapi_asprintf ....
+#include "tss2_policy_types.h"    // for TPMS_POLICY
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, return_if_error

@@ -16,9 +16,9 @@
 
 #include "fapi_crypto.h"
 #include "fapi_types.h"
-#include "ifapi_policy_types.h"
 #include "tss2_helpers.h"
 #include "tss2_policy.h"
+#include "tss2_policy_types.h"
 
 #define TSS2_FILE_DELIM_CHAR '/'
 

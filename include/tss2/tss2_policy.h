@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "tss2_esys.h"
+#include "tss2_policy_types.h"
 #include "tss2_tpm2_types.h"
 
 #define TSS2_POLICY_RC_LAYER TSS2_RC_LAYER(13)
@@ -33,23 +34,6 @@ typedef struct TSS2_POLICY_CTX TSS2_POLICY_CTX;
 typedef struct TSS2_OBJECT TSS2_OBJECT;
 struct TSS2_OBJECT {
     ESYS_TR handle; /**< Handle used by ESAPI */
-};
-
-/** Policy type TPMS_PCRVALUE
- */
-typedef struct TPMS_PCRVALUE TPMS_PCRVALUE;
-struct TPMS_PCRVALUE {
-    UINT32      pcr;     /**< None */
-    TPM2_ALG_ID hashAlg; /**< None */
-    TPMU_HA     digest;  /**< None */
-};
-
-/** Policy type TPML_PCRVALUES
- */
-typedef struct TPML_PCRVALUES TPML_PCRVALUES;
-struct TPML_PCRVALUES {
-    UINT32        count;  /**< None */
-    TPMS_PCRVALUE pcrs[]; /**< Array of pcr values */
 };
 
 typedef TSS2_RC (*TSS2_POLICY_CB_PUBLIC)(const char *path,
@@ -216,8 +200,6 @@ Tss2_PolicyGetDescription(TSS2_POLICY_CTX *policy_ctx, char *description, size_t
 
 TSS2_RC
 Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest);
-
-typedef struct TPMS_POLICY TPMS_POLICY;
 
 TSS2_RC
 Tss2_PolicySetPolicy(TPMS_POLICY *policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX **policy_ctx);

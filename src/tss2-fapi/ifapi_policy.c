@@ -21,12 +21,12 @@
 #include "ifapi_policy_execute.h"     // for ifapi_policyeval_execute, ifap...
 #include "ifapi_policy_instantiate.h" // for IFAPI_POLICY_EVAL_INST_CTX
 #include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
-#include "ifapi_policy_types.h"       // for TPMS_POLICY
 #include "tss2_common.h"              // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
 #include "tss2_crypto.h"              // for ifapi_hash_get_digest_size
 #include "tss2_esys.h"                // for ESYS_CONTEXT
 #include "tss2_helpers.h"             // for free_node_list
 #include "tss2_helpers.h"             // for ifapi_free_node_list
+#include "tss2_policy_types.h"        // for TPMS_POLICY
 #include "tss2_tpm2_types.h"          // for TPMT_HA, TPML_DIGEST_VALUES
 
 #define LOGMODULE fapi

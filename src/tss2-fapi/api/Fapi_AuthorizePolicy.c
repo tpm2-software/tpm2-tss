@@ -19,13 +19,13 @@
 #include "ifapi_macros.h"       // for check_not_null, statecase, fallthr...
 #include "ifapi_policy.h"       // for ifapi_calculate_tree
 #include "ifapi_policy_store.h" // for ifapi_policy_store_store_async
-#include "ifapi_policy_types.h" // for TPMS_POLICY
 #include "tss2_common.h"        // for TSS2_RC, BYTE, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"        // for ifapi_crypto_hash_abort, ifapi_cry...
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_AuthorizePolicy
 #include "tss2_helpers.h"       // for ifapi_cleanup_policy
 #include "tss2_policy.h"        // for Tss2_PolicyAuthorizePolicy
+#include "tss2_policy_types.h"  // for TPMS_POLICY
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
 
