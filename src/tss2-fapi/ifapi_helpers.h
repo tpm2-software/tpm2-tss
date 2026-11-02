@@ -11,15 +11,15 @@
 #include <stddef.h>  // for size_t
 #include <stdint.h>  // for uint8_t
 
-#include "fapi_int.h"           // for IFAPI_KEY_TEMPLATE, IFAPI_NV_TEMPLATE
-#include "fapi_types.h"         // for NODE_STR_T, NODE_OBJECT_T
-#include "ifapi_eventlog.h"     // for FAPI_QUOTE_INFO
-#include "ifapi_keystore.h"     // for IFAPI_OBJECT
-#include "ifapi_policy_types.h" // for struct TPMS_POLICY, TPMT_POLICYELEMENT
-#include "tss2_common.h"        // for TSS2_RC
-#include "tss2_esys.h"          // for ESYS_TR
-#include "tss2_policy.h"        // for TPML_PCRVALUES, TSS2_POLICY_PCR_SELE...
-#include "tss2_tpm2_types.h"    // for TPML_PCR_SELECTION, TPM2_HANDLE, TPM...
+#include "fapi_int.h"          // for IFAPI_KEY_TEMPLATE, IFAPI_NV_TEMPLATE
+#include "fapi_types.h"        // for NODE_STR_T, NODE_OBJECT_T
+#include "ifapi_eventlog.h"    // for FAPI_QUOTE_INFO
+#include "ifapi_keystore.h"    // for IFAPI_OBJECT
+#include "tss2_common.h"       // for TSS2_RC
+#include "tss2_esys.h"         // for ESYS_TR
+#include "tss2_policy.h"       // for TPML_PCRVALUES, TSS2_POLICY_PCR_SELE...
+#include "tss2_policy_types.h" // for struct TPMS_POLICY, TPMT_POLICYELEMENT
+#include "tss2_tpm2_types.h"   // for TPML_PCR_SELECTION, TPM2_HANDLE, TPM...
 
 /** Type for representing a external public key
  */

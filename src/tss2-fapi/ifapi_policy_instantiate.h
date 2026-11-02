@@ -6,10 +6,10 @@
 #ifndef FAPI_POLICY_INSTANTIATE_H
 #define FAPI_POLICY_INSTANTIATE_H
 
-#include "fapi_types.h"         // for NODE_OBJECT_T
-#include "ifapi_policy_types.h" // for struct TPMS_POLICY
-#include "tss2_common.h"        // for TSS2_RC
-#include "tss2_policy.h"        // for TSS2_POLICY_CALC_CALLBACKS
+#include "fapi_types.h"        // for NODE_OBJECT_T
+#include "tss2_common.h"       // for TSS2_RC
+#include "tss2_policy.h"       // for TSS2_POLICY_CALC_CALLBACKS
+#include "tss2_policy_types.h" // for struct TPMS_POLICY
 // #include "fapi_int.h"
 // #include "fapi_policy.h"
 // #include "ifapi_keystore.h"

@@ -11,8 +11,8 @@
 #include <stddef.h>  // for size_t
 #include <stdint.h>  // for uint8_t
 
-#include "ifapi_policy_types.h" // for TPMT_PUBLIC
-#include "tss2_common.h"        // for TSS2_RC
+#include "tss2_common.h"       // for TSS2_RC
+#include "tss2_policy_types.h" // for TPMT_PUBLIC
 
 bool ipolicy_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2);
 

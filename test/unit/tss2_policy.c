@@ -15,9 +15,9 @@
 #include <string.h> // for memcpy, memset
 
 #include "../helper/cmocka_all.h" // for assert_int_equal, assert_s...
-#include "ifapi_policy_types.h"   // for borrowed policy construction
 #include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC
 #include "tss2_policy.h"          // for TSS2_POLICY_PCR_SELECTION
+#include "tss2_policy_types.h"    // for borrowed policy construction
 #include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPMS_PCR_SEL...
 
 #define LOGMODULE test

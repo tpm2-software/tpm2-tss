@@ -9,10 +9,10 @@
 
 #include <stddef.h> // for size_t
 
-#include "ifapi_io.h"           // for IFAPI_IO
-#include "ifapi_policy_types.h" // for struct TPMS_POLICY
-#include "tss2_common.h"        // for UINT32, TSS2_RC, UINT16
-#include "tss2_tpm2_types.h"    // for TPMT_SIG_SCHEME, TPMI_ALG_CIPHER_MODE
+#include "ifapi_io.h"          // for IFAPI_IO
+#include "tss2_common.h"       // for UINT32, TSS2_RC, UINT16
+#include "tss2_policy_types.h" // for struct TPMS_POLICY
+#include "tss2_tpm2_types.h"   // for TPMT_SIG_SCHEME, TPMI_ALG_CIPHER_MODE
 
 /** Internal structure for FAPI profiles
  */

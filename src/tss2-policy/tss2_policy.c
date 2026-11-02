@@ -18,13 +18,13 @@
 #include "ifapi_policy_instantiate.h"      // for IFAPI_POLICY_EVAL_INST_CTX
 #include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
 #include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
-#include "ifapi_policy_types.h"            // for TPMS_POLICY
 #include "tpm_json_deserialize.h"          // for ifapi_parse_json
 #include "tss2_common.h"                   // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"                   // for ifapi_hash_get_digest_size
 #include "tss2_esys.h"                     // for ESYS_CONTEXT, ESYS_TR
 #include "tss2_helpers.h"                  // for ifapi_cleanup_policy
 #include "tss2_policy.h"                   // for TSS2_POLICY_CTX, TSS2_POL...
+#include "tss2_policy_types.h"             // for TPMS_POLICY
 #include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMT_HA
 
 #include "ifapi_macros.h"
