@@ -3,8 +3,8 @@
  * Copyright 2018-2019, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  *******************************************************************************/
-#ifndef FAPI_POLICY_EXECUTE_H
-#define FAPI_POLICY_EXECUTE_H
+#ifndef IPOLICY_EXECUTE_H
+#define IPOLICY_EXECUTE_H
 
 #include <stdbool.h> // for bool
 #include <stddef.h>  // for size_t
@@ -106,4 +106,4 @@ ifapi_policyeval_execute(ESYS_CONTEXT          *esys_ctx,
                          IFAPI_POLICY_EXEC_CTX *current_policy,
                          bool                   do_flush);
 
-#endif /* FAPI_POLICY_EXECUTE_H */
+#endif /* IPOLICY_EXECUTE_H */
