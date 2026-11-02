@@ -52,4 +52,13 @@ test_fuzz_tcti_spi_helper_fuzz_test_LDADD          = $(FUZZLDADD)
 nodist_test_fuzz_tcti_spi_helper_fuzz_test_SOURCES = test/fuzz/tcti-spi-helper-fuzz-test.c
 
 include Makefile-fuzz-generated.am
+
+# Hand-written sys-execute fuzz target: drives Tss2_Sys_Execute against
+# the fuzzing TCTI (fuzz data parsed as TPM2 response) and then runs a
+# selection of *_Complete response parsers over the fuzzed response.
+noinst_PROGRAMS += test/fuzz/sys-execute.fuzz
+fuzz_PROGRAMS += test/fuzz/sys-execute.fuzz
+test_fuzz_sys_execute_fuzz_CFLAGS  = $(FUZZ_CFLAGS)
+test_fuzz_sys_execute_fuzz_LDADD   = $(FUZZLDADD)
+test_fuzz_sys_execute_fuzz_SOURCES = test/fuzz/main-sys-execute.c
 endif # ENABLE_FUZZING
