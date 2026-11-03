@@ -30,14 +30,14 @@ typedef struct {
     struct TPMS_POLICY                  *policy; /**< The policy to be instantiated */
     NODE_OBJECT_T             *policy_elements;  /** The policy elements to be instantiated */
     TSS2_POLICY_CALC_CALLBACKS callbacks;
-} IFAPI_POLICY_EVAL_INST_CTX;
+} IPOLICY_EVAL_INST_CTX;
 
 TSS2_RC
 ifapi_policyeval_instantiate_async(
-    IFAPI_POLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
-    struct TPMS_POLICY         *policy);         /* in */
+    IPOLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
+    struct TPMS_POLICY    *policy);    /* in */
 TSS2_RC
 
-ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context);
+ifapi_policyeval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context);
 
 #endif /* IPOLICY_INSTANTIATE_H */

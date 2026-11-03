@@ -17,7 +17,7 @@
 #include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
 #include "ipolicy_calculate.h"             // for IPOLICY_EXEC_CTX
 #include "ipolicy_execute.h"               // for IPOLICY_EXEC_CTX
-#include "ipolicy_instantiate.h"           // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ipolicy_instantiate.h"           // for IPOLICY_EVAL_INST_CTX
 #include "tpm_json_deserialize.h"          // for ifapi_parse_json
 #include "tss2_common.h"                   // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"                   // for ifapi_hash_get_digest_size
@@ -49,7 +49,7 @@ struct TSS2_POLICY_CTX {
     TPM2B_DIGEST               digest;
     TPM2_ALG_ID                hash_alg;
     TSS2_POLICY_CALC_CALLBACKS calc_callbacks;
-    IFAPI_POLICY_EVAL_INST_CTX eval_ctx;
+    IPOLICY_EVAL_INST_CTX      eval_ctx;
     IPOLICY_EXEC_CTX           exec_ctx;
     ESYS_CONTEXT              *exec_esys;
     bool                       executing;
@@ -92,11 +92,11 @@ is_try_again(TSS2_RC rc) {
 #define CALL_FAPI(fn) fapi_to_policy_rc(fn)
 
 TSS2_RC
-ipolicy_calculate_tree_ex(IFAPI_POLICY_EVAL_INST_CTX *context,
-                          TPMS_POLICY                *policy,
-                          TPMI_ALG_HASH               hash_alg,
-                          size_t                     *digest_idx,
-                          size_t                     *hash_size) {
+ipolicy_calculate_tree_ex(IPOLICY_EVAL_INST_CTX *context,
+                          TPMS_POLICY           *policy,
+                          TPMI_ALG_HASH          hash_alg,
+                          size_t                *digest_idx,
+                          size_t                *hash_size) {
     size_t  i;
     TSS2_RC r = TSS2_RC_SUCCESS;
     bool    already_computed = false;
