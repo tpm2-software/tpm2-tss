@@ -11,7 +11,7 @@
 #include <inttypes.h> // for uint8_t, PRIu16
 #include <string.h>   // for memset, memcpy
 
-#include "ipolicy_calculate.h" // for ifapi_calculate_policy
+#include "ipolicy_calculate.h" // for ipolicy_calculate_policy
 #include "tss2_common.h"       // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
 #include "tss2_crypto.h"       // for ifapi_crypto_hash_finish, ifapi_cryp...
 #include "tss2_helpers.h"      // for ifapi_nv_get_namexs
@@ -113,10 +113,10 @@ log_policy_digest(TPML_DIGEST_VALUES *dest MAYBE_UNUSED,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_compute_policy_pcr(TPMS_POLICYPCR     *policy,
-                         TPML_DIGEST_VALUES *current_digest,
-                         TPMI_ALG_HASH       current_hash_alg) {
+static TSS2_RC
+compute_policy_pcr(TPMS_POLICYPCR     *policy,
+                   TPML_DIGEST_VALUES *current_digest,
+                   TPMI_ALG_HASH       current_hash_alg) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     TPML_PCR_SELECTION         pcr_selection;
@@ -245,10 +245,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_signed(TPMS_POLICYSIGNED  *policy,
-                              TPML_DIGEST_VALUES *current_digest,
-                              TPMI_ALG_HASH       current_hash_alg) {
+static TSS2_RC
+calculate_policy_signed(TPMS_POLICYSIGNED  *policy,
+                        TPML_DIGEST_VALUES *current_digest,
+                        TPMI_ALG_HASH       current_hash_alg) {
     TSS2_RC r = TSS2_RC_SUCCESS;
     size_t  digest_idx;
     size_t  hash_size;
@@ -289,10 +289,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
-TSS2_RC
-ifapi_calculate_policy_authorize_nv(TPMS_POLICYAUTHORIZENV *policy,
-                                    TPML_DIGEST_VALUES     *current_digest,
-                                    TPMI_ALG_HASH           current_hash_alg) {
+static TSS2_RC
+calculate_policy_authorize_nv(TPMS_POLICYAUTHORIZENV *policy,
+                              TPML_DIGEST_VALUES     *current_digest,
+                              TPMI_ALG_HASH           current_hash_alg) {
     TSS2_RC    r = TSS2_RC_SUCCESS;
     size_t     digest_idx;
     size_t     hash_size;
@@ -340,10 +340,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_duplicate(TPMS_POLICYDUPLICATIONSELECT *policy,
-                                 TPML_DIGEST_VALUES           *current_digest,
-                                 TPMI_ALG_HASH                 current_hash_alg) {
+static TSS2_RC
+calculate_policy_duplicate(TPMS_POLICYDUPLICATIONSELECT *policy,
+                           TPML_DIGEST_VALUES           *current_digest,
+                           TPMI_ALG_HASH                 current_hash_alg) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t                     digest_idx;
@@ -408,10 +408,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_authorize(TPMS_POLICYAUTHORIZE *policy,
-                                 TPML_DIGEST_VALUES   *current_digest,
-                                 TPMI_ALG_HASH         current_hash_alg) {
+static TSS2_RC
+calculate_policy_authorize(TPMS_POLICYAUTHORIZE *policy,
+                           TPML_DIGEST_VALUES   *current_digest,
+                           TPMI_ALG_HASH         current_hash_alg) {
     TSS2_RC r = TSS2_RC_SUCCESS;
     size_t  digest_idx;
     size_t  hash_size;
@@ -456,10 +456,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_secret(TPMS_POLICYSECRET  *policy,
-                              TPML_DIGEST_VALUES *current_digest,
-                              TPMI_ALG_HASH       current_hash_alg) {
+static TSS2_RC
+calculate_policy_secret(TPMS_POLICYSECRET  *policy,
+                        TPML_DIGEST_VALUES *current_digest,
+                        TPMI_ALG_HASH       current_hash_alg) {
     TSS2_RC r = TSS2_RC_SUCCESS;
     size_t  digest_idx;
     size_t  hash_size;
@@ -503,10 +503,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_counter_timer(TPMS_POLICYCOUNTERTIMER *policy,
-                                     TPML_DIGEST_VALUES      *current_digest,
-                                     TPMI_ALG_HASH            current_hash_alg) {
+static TSS2_RC
+calculate_policy_counter_timer(TPMS_POLICYCOUNTERTIMER *policy,
+                               TPML_DIGEST_VALUES      *current_digest,
+                               TPMI_ALG_HASH            current_hash_alg) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t                     digest_idx;
@@ -572,11 +572,11 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_simple_policy(TPM2_CC             command_code1,
-                              TPM2_CC             command_code2,
-                              TPML_DIGEST_VALUES *current_digest,
-                              TPMI_ALG_HASH       current_hash_alg) {
+static TSS2_RC
+calculate_simple_policy(TPM2_CC             command_code1,
+                        TPM2_CC             command_code2,
+                        TPML_DIGEST_VALUES *current_digest,
+                        TPMI_ALG_HASH       current_hash_alg) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t                     digest_idx;
@@ -616,7 +616,7 @@ cleanup:
 
 /** Update policy with command code policy physical presence.
  *
- * The policy will be updated with the function ifapi_calculate_simple_policy()
+ * The policy will be updated with the function calculate_simple_policy()
  *
  * @param[in] policy The policy physical presence.
  * @param[in,out] current_digest The digest list which has to be updated.
@@ -629,15 +629,15 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_physical_presence(TPML_DIGEST_VALUES *current_digest,
-                                         TPMI_ALG_HASH       current_hash_alg) {
+static TSS2_RC
+calculate_policy_physical_presence(TPML_DIGEST_VALUES *current_digest,
+                                   TPMI_ALG_HASH       current_hash_alg) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_DEBUG("call");
 
-    r = ifapi_calculate_simple_policy(TPM2_CC_PolicyPhysicalPresence, 0, current_digest,
-                                      current_hash_alg);
+    r = calculate_simple_policy(TPM2_CC_PolicyPhysicalPresence, 0, current_digest,
+                                current_hash_alg);
     return_if_error(r, "Calculate policy for command code.");
 
     return r;
@@ -645,7 +645,7 @@ ifapi_calculate_policy_physical_presence(TPML_DIGEST_VALUES *current_digest,
 
 /** Update policy with command code of policy auth value.
  *
- * The policy will be updated with the function ifapi_calculate_simple_policy()
+ * The policy will be updated with the function calculate_simple_policy()
  *
  * @param[in,out] current_digest The digest list which has to be updated.
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
@@ -657,14 +657,13 @@ ifapi_calculate_policy_physical_presence(TPML_DIGEST_VALUES *current_digest,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_auth_value(TPML_DIGEST_VALUES *current_digest,
-                                  TPMI_ALG_HASH       current_hash_alg) {
+static TSS2_RC
+calculate_policy_auth_value(TPML_DIGEST_VALUES *current_digest, TPMI_ALG_HASH current_hash_alg) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_DEBUG("call");
 
-    r = ifapi_calculate_simple_policy(TPM2_CC_PolicyAuthValue, 0, current_digest, current_hash_alg);
+    r = calculate_simple_policy(TPM2_CC_PolicyAuthValue, 0, current_digest, current_hash_alg);
     return_if_error(r, "Calculate policy auth value.");
 
     return r;
@@ -672,7 +671,7 @@ ifapi_calculate_policy_auth_value(TPML_DIGEST_VALUES *current_digest,
 
 /** Update policy with the command code of policy password.
  *
- * The policy will be updated with the function ifapi_calculate_simple_policy()
+ * The policy will be updated with the function calculate_simple_policy()
  *
  * @param[in,out] current_digest The digest list which has to be updated.
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
@@ -684,14 +683,13 @@ ifapi_calculate_policy_auth_value(TPML_DIGEST_VALUES *current_digest,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_password(TPML_DIGEST_VALUES *current_digest,
-                                TPMI_ALG_HASH       current_hash_alg) {
+static TSS2_RC
+calculate_policy_password(TPML_DIGEST_VALUES *current_digest, TPMI_ALG_HASH current_hash_alg) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_DEBUG("call");
 
-    r = ifapi_calculate_simple_policy(TPM2_CC_PolicyAuthValue, 0, current_digest, current_hash_alg);
+    r = calculate_simple_policy(TPM2_CC_PolicyAuthValue, 0, current_digest, current_hash_alg);
     return_if_error(r, "Calculate policy password.");
 
     return r;
@@ -701,7 +699,7 @@ ifapi_calculate_policy_password(TPML_DIGEST_VALUES *current_digest,
  *
  * For the update two command codes will be used. The command code of
  * policy command code and the passed command code.
- * The policy will be updated with the function ifapi_calculate_simple_policy()
+ * The policy will be updated with the function calculate_simple_policy()
  *
  * @param[in] policy The policy command code with the second command code.
  * @param[in,out] current_digest The digest list which has to be updated.
@@ -714,16 +712,16 @@ ifapi_calculate_policy_password(TPML_DIGEST_VALUES *current_digest,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_command_code(TPMS_POLICYCOMMANDCODE *policy,
-                                    TPML_DIGEST_VALUES     *current_digest,
-                                    TPMI_ALG_HASH           current_hash_alg) {
+static TSS2_RC
+calculate_policy_command_code(TPMS_POLICYCOMMANDCODE *policy,
+                              TPML_DIGEST_VALUES     *current_digest,
+                              TPMI_ALG_HASH           current_hash_alg) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_DEBUG("call");
 
-    r = ifapi_calculate_simple_policy(TPM2_CC_PolicyCommandCode, policy->code, current_digest,
-                                      current_hash_alg);
+    r = calculate_simple_policy(TPM2_CC_PolicyCommandCode, policy->code, current_digest,
+                                current_hash_alg);
     return_if_error(r, "Calculate policy for command code.");
 
     return r;
@@ -743,11 +741,11 @@ ifapi_calculate_policy_command_code(TPMS_POLICYCOMMANDCODE *policy,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_digest_hash(TPM2B_DIGEST       *digest,
-                                   TPML_DIGEST_VALUES *current_digest,
-                                   TPMI_ALG_HASH       current_hash_alg,
-                                   TPM2_CC             command_code) {
+static TSS2_RC
+calculate_policy_digest_hash(TPM2B_DIGEST       *digest,
+                             TPML_DIGEST_VALUES *current_digest,
+                             TPMI_ALG_HASH       current_hash_alg,
+                             TPM2_CC             command_code) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t                     digest_idx;
@@ -783,7 +781,7 @@ cleanup:
 /** Compute policy bound to a specific set of TPM entities.
  *
  * The policy digest will be updated with the function
- * ifapi_calculate_policy_digest_hash() which will add the hash of the
+ * calculate_policy_digest_hash() which will add the hash of the
  * entity name list.
  *
  * @param[in] policy The policy with the list of entity names.
@@ -797,10 +795,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_name_hash(TPMS_POLICYNAMEHASH *policy,
-                                 TPML_DIGEST_VALUES  *current_digest,
-                                 TPMI_ALG_HASH        current_hash_alg) {
+static TSS2_RC
+calculate_policy_name_hash(TPMS_POLICYNAMEHASH *policy,
+                           TPML_DIGEST_VALUES  *current_digest,
+                           TPMI_ALG_HASH        current_hash_alg) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t                     hash_size;
@@ -830,8 +828,8 @@ ifapi_calculate_policy_name_hash(TPMS_POLICYNAMEHASH *policy,
 
     /* Update the policy with the computed hash value of the name list and
        the command code. */
-    r = ifapi_calculate_policy_digest_hash(&policy->nameHash, current_digest, current_hash_alg,
-                                           TPM2_CC_PolicyNameHash);
+    r = calculate_policy_digest_hash(&policy->nameHash, current_digest, current_hash_alg,
+                                     TPM2_CC_PolicyNameHash);
     goto_if_error(r, "Calculate digest hash for policy", cleanup);
 
 cleanup:
@@ -843,7 +841,7 @@ cleanup:
 /** Compute policy bound to a specific command and command parameters.
  *
  * The cp hash value and the command code will be updated by the
- * function ifapi_calculate_policy_digest_hash().
+ * function calculate_policy_digest_hash().
  *
  * @param[in] policy The policy with the cp hash value.
  * @param[in,out] current_digest The digest list which has to be updated.
@@ -856,16 +854,16 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_cp_hash(TPMS_POLICYCPHASH  *policy,
-                               TPML_DIGEST_VALUES *current_digest,
-                               TPMI_ALG_HASH       current_hash_alg) {
+static TSS2_RC
+calculate_policy_cp_hash(TPMS_POLICYCPHASH  *policy,
+                         TPML_DIGEST_VALUES *current_digest,
+                         TPMI_ALG_HASH       current_hash_alg) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_DEBUG("call");
 
-    r = ifapi_calculate_policy_digest_hash(&policy->cpHash, current_digest, current_hash_alg,
-                                           TPM2_CC_PolicyCpHash);
+    r = calculate_policy_digest_hash(&policy->cpHash, current_digest, current_hash_alg,
+                                     TPM2_CC_PolicyCpHash);
     return_if_error(r, "Calculate digest hash for policy");
 
     return r;
@@ -884,10 +882,10 @@ ifapi_calculate_policy_cp_hash(TPMS_POLICYCPHASH  *policy,
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_locality(TPMS_POLICYLOCALITY *policy,
-                                TPML_DIGEST_VALUES  *current_digest,
-                                TPMI_ALG_HASH        current_hash_alg) {
+static TSS2_RC
+calculate_policy_locality(TPMS_POLICYLOCALITY *policy,
+                          TPML_DIGEST_VALUES  *current_digest,
+                          TPMI_ALG_HASH        current_hash_alg) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t                     digest_idx;
@@ -936,10 +934,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_nv_written(TPMS_POLICYNVWRITTEN *policy,
-                                  TPML_DIGEST_VALUES   *current_digest,
-                                  TPMI_ALG_HASH         current_hash_alg) {
+static TSS2_RC
+calculate_policy_nv_written(TPMS_POLICYNVWRITTEN *policy,
+                            TPML_DIGEST_VALUES   *current_digest,
+                            TPMI_ALG_HASH         current_hash_alg) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t                     digest_idx;
@@ -990,10 +988,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
-TSS2_RC
-ifapi_calculate_policy_nv(TPMS_POLICYNV      *policy,
-                          TPML_DIGEST_VALUES *current_digest,
-                          TPMI_ALG_HASH       current_hash_alg) {
+static TSS2_RC
+calculate_policy_nv(TPMS_POLICYNV      *policy,
+                    TPML_DIGEST_VALUES *current_digest,
+                    TPMI_ALG_HASH       current_hash_alg) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     TPM2B_NAME                 nv_name;
@@ -1069,12 +1067,12 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_calculate_policy_or(TPMS_POLICYOR      *policyOr,
-                          TPML_DIGEST_VALUES *current_digest,
-                          TPMI_ALG_HASH       hash_alg,
-                          size_t              hash_size,
-                          size_t              digest_idx) {
+static TSS2_RC
+calculate_policy_or(TPMS_POLICYOR      *policyOr,
+                    TPML_DIGEST_VALUES *current_digest,
+                    TPMI_ALG_HASH       hash_alg,
+                    size_t              hash_size,
+                    size_t              digest_idx) {
     size_t                     i;
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
@@ -1084,9 +1082,9 @@ ifapi_calculate_policy_or(TPMS_POLICYOR      *policyOr,
         copy_policy_digest(&policyOr->branches->authorizations[i].policyDigests, current_digest,
                            digest_idx, hash_size, "Copy or digest");
 
-        r = ifapi_calculate_policy(policyOr->branches->authorizations[i].policy,
-                                   &policyOr->branches->authorizations[i].policyDigests, hash_alg,
-                                   hash_size, digest_idx);
+        r = ipolicy_calculate_policy(policyOr->branches->authorizations[i].policy,
+                                     &policyOr->branches->authorizations[i].policyDigests, hash_alg,
+                                     hash_size, digest_idx);
         log_policy_digest(&policyOr->branches->authorizations[i].policyDigests, digest_idx,
                           hash_size, "Branch digest");
 
@@ -1150,10 +1148,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
-TSS2_RC
-ifapi_calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
-                                TPML_DIGEST_VALUES  *current_digest,
-                                TPMI_ALG_HASH        current_hash_alg)
+static TSS2_RC
+calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
+                          TPML_DIGEST_VALUES  *current_digest,
+                          TPMI_ALG_HASH        current_hash_alg)
 
 {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
@@ -1235,11 +1233,11 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_calculate_policy(TPML_POLICYELEMENTS *policy,
-                       TPML_DIGEST_VALUES  *policyDigests,
-                       TPMI_ALG_HASH        hash_alg,
-                       size_t               hash_size,
-                       size_t               digest_idx) {
+ipolicy_calculate_policy(TPML_POLICYELEMENTS *policy,
+                         TPML_DIGEST_VALUES  *policyDigests,
+                         TPMI_ALG_HASH        hash_alg,
+                         size_t               hash_size,
+                         size_t               digest_idx) {
     size_t  i;
     TSS2_RC r = TSS2_RC_SUCCESS;
 
@@ -1251,112 +1249,109 @@ ifapi_calculate_policy(TPML_POLICYELEMENTS *policy,
         switch (policy->elements[i].type) {
 
         case POLICYPCR:
-            r = ifapi_compute_policy_pcr(&policy->elements[i].element.PolicyPCR,
-                                         &policy->elements[i].policyDigests, hash_alg);
+            r = compute_policy_pcr(&policy->elements[i].element.PolicyPCR,
+                                   &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy pcr");
             break;
 
         case POLICYSIGNED:
-            r = ifapi_calculate_policy_signed(&policy->elements[i].element.PolicySigned,
-                                              &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_signed(&policy->elements[i].element.PolicySigned,
+                                        &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy nv");
 
             break;
 
         case POLICYDUPLICATIONSELECT:
-            r = ifapi_calculate_policy_duplicate(
-                &policy->elements[i].element.PolicyDuplicationSelect,
-                &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_duplicate(&policy->elements[i].element.PolicyDuplicationSelect,
+                                           &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy duplication select");
 
             break;
 
         case POLICYAUTHORIZENV:
-            r = ifapi_calculate_policy_authorize_nv(&policy->elements[i].element.PolicyAuthorizeNv,
-                                                    &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_authorize_nv(&policy->elements[i].element.PolicyAuthorizeNv,
+                                              &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy authorizeg");
 
             break;
 
         case POLICYAUTHORIZE:
-            r = ifapi_calculate_policy_authorize(&policy->elements[i].element.PolicyAuthorize,
-                                                 &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_authorize(&policy->elements[i].element.PolicyAuthorize,
+                                           &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy authorizeg");
 
             break;
 
         case POLICYSECRET:
-            r = ifapi_calculate_policy_secret(&policy->elements[i].element.PolicySecret,
-                                              &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_secret(&policy->elements[i].element.PolicySecret,
+                                        &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy nv");
 
             break;
 
         case POLICYOR:
-            r = ifapi_calculate_policy_or(&policy->elements[i].element.PolicyOr,
-                                          &policy->elements[i].policyDigests, hash_alg, hash_size,
-                                          digest_idx);
+            r = calculate_policy_or(&policy->elements[i].element.PolicyOr,
+                                    &policy->elements[i].policyDigests, hash_alg, hash_size,
+                                    digest_idx);
             return_if_error(r, "Compute policy or");
 
             break;
 
         case POLICYNV:
-            r = ifapi_calculate_policy_nv(&policy->elements[i].element.PolicyNV,
-                                          &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_nv(&policy->elements[i].element.PolicyNV,
+                                    &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy nv");
 
             break;
 
         case POLICYNVWRITTEN:
-            r = ifapi_calculate_policy_nv_written(&policy->elements[i].element.PolicyNvWritten,
-                                                  &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_nv_written(&policy->elements[i].element.PolicyNvWritten,
+                                            &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy nv written");
             break;
 
         case POLICYCOUNTERTIMER:
-            r = ifapi_calculate_policy_counter_timer(
-                &policy->elements[i].element.PolicyCounterTimer, &policy->elements[i].policyDigests,
-                hash_alg);
+            r = calculate_policy_counter_timer(&policy->elements[i].element.PolicyCounterTimer,
+                                               &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy counter timer");
             break;
 
         case POLICYPHYSICALPRESENCE:
-            r = ifapi_calculate_policy_physical_presence(&policy->elements[i].policyDigests,
-                                                         hash_alg);
+            r = calculate_policy_physical_presence(&policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy physical presence");
             break;
 
         case POLICYAUTHVALUE:
-            r = ifapi_calculate_policy_auth_value(&policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_auth_value(&policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy auth value");
             break;
 
         case POLICYPASSWORD:
-            r = ifapi_calculate_policy_password(&policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_password(&policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy password");
             break;
 
         case POLICYCOMMANDCODE:
-            r = ifapi_calculate_policy_command_code(&policy->elements[i].element.PolicyCommandCode,
-                                                    &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_command_code(&policy->elements[i].element.PolicyCommandCode,
+                                              &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy physical presence");
             break;
 
         case POLICYNAMEHASH:
-            r = ifapi_calculate_policy_name_hash(&policy->elements[i].element.PolicyNameHash,
-                                                 &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_name_hash(&policy->elements[i].element.PolicyNameHash,
+                                           &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy  name hash");
             break;
 
         case POLICYCPHASH:
-            r = ifapi_calculate_policy_cp_hash(&policy->elements[i].element.PolicyCpHash,
-                                               &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_cp_hash(&policy->elements[i].element.PolicyCpHash,
+                                         &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy cp hash");
             break;
 
         case POLICYLOCALITY:
-            r = ifapi_calculate_policy_locality(&policy->elements[i].element.PolicyLocality,
-                                                &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_locality(&policy->elements[i].element.PolicyLocality,
+                                          &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy locality");
             break;
 
@@ -1365,8 +1360,8 @@ ifapi_calculate_policy(TPML_POLICYELEMENTS *policy,
             break;
 
         case POLICYTEMPLATE:
-            r = ifapi_calculate_policy_template(&policy->elements[i].element.PolicyTemplate,
-                                                &policy->elements[i].policyDigests, hash_alg);
+            r = calculate_policy_template(&policy->elements[i].element.PolicyTemplate,
+                                          &policy->elements[i].policyDigests, hash_alg);
             return_if_error(r, "Compute policy template");
 
             break;
