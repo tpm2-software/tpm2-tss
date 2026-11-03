@@ -11,10 +11,7 @@
 #include <inttypes.h> // for uint8_t, PRIu16
 #include <string.h>   // for memset, memcpy
 
-#include "fapi_int.h"               // for HASH_UPDATE_BUFFER, HASH_UPDATE
-#include "ifapi_helpers.h"          // for ifapi_nv_get_name
-#include "ifapi_policy.h"           // for get_policy_digest_idx, ifapi_compute...
-#include "ifapi_policy_calculate.h" // for ifapi_calculate_policy
+#include "ipolicy_calculate.h" // for ifapi_calculate_policy
 #include "tss2_common.h"            // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
 #include "tss2_crypto.h"            // for ifapi_crypto_hash_finish, ifapi_cryp...
 #include "tss2_helpers.h"           // for ifapi_nv_get_namexs
@@ -24,6 +21,40 @@
 
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, LOG_DEBUG, goto_if_...
+
+/** Compute the index for the current digest list and clear the digest.
+ *
+ * The list entry with the appropriate hash algorithm will be searched.
+ * The found digest will be set to zero.
+ *
+ * @param[in,out] digest_values The list of policy digests and corresponding
+ *                hash algorithms.
+ * @param[in] hashAlg The hash algorithm to be searched.
+ * @param[out] idx The index of the found digest.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE If no appropriate digest was found in
+ *         the digest list.
+ */
+static TSS2_RC
+get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg, size_t *idx) {
+    size_t i;
+    for (i = 0; i < digest_values->count; i++) {
+        /* Check whether current hashAlg is appropriate. */
+        if (digest_values->digests[i].hashAlg == hashAlg) {
+            *idx = i;
+            return TSS2_RC_SUCCESS;
+        }
+    }
+
+    if (i >= TPM2_NUM_PCR_BANKS) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Table overflow");
+    }
+    digest_values->digests[i].hashAlg = hashAlg;
+    memset(&digest_values->digests[i].digest, 0, sizeof(TPMU_HA));
+    *idx = i;
+    digest_values->count += 1;
+    return TSS2_RC_SUCCESS;
+}
 
 /** Copy policy digest.
  *

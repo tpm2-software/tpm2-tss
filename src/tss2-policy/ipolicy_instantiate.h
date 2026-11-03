@@ -3,8 +3,8 @@
  * Copyright 2018-2019, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  *******************************************************************************/
-#ifndef FAPI_POLICY_INSTANTIATE_H
-#define FAPI_POLICY_INSTANTIATE_H
+#ifndef IPOLICY_INSTANTIATE_H
+#define IPOLICY_INSTANTIATE_H
 
 #include "fapi_types.h"        // for NODE_OBJECT_T
 #include "tss2_common.h"       // for TSS2_RC
@@ -40,4 +40,4 @@ TSS2_RC
 
 ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context);
 
-#endif /* FAPI_POLICY_INSTANTIATE_H */
+#endif /* IPOLICY_INSTANTIATE_H */

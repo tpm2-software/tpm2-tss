@@ -42,7 +42,7 @@ afl-clang-fast -flto -o fapi-ima-fuzzing test/unit/fapi-ima-fuzzing.c \
                -I${srcdir}/include -I${srcdir}/include/tss2 \
                -I${srcdir}/src/util -I${srcdir}/src/tss2-mu \
                -I${srcdir}/src/tss2-sys -I${srcdir}/src/tss2-esys \
-               -I${srcdir}/src/tss2-fapi-policy -I${srcdir}/src/tss2-fapi \
+               -I${srcdir}/src/tss2-policy -I${srcdir}/src/tss2-fapi-policy -I${srcdir}/src/tss2-fapi \
                -I${srcdir}/test/data \
                -Wno-unused-parameter -Wno-missing-field-initializers \
                -lcrypto -ljson-c

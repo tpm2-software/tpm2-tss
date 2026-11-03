@@ -70,40 +70,6 @@ compute_or_digest_list(TPML_POLICYBRANCHES *branches,
     return TSS2_RC_SUCCESS;
 }
 
-/** Compute the index for the current digest list and clear the digest.
- *
- * The list entry with the appropriate hash algorithm will be searched.
- * The found digest will be set to zero.
- *
- * @param[in,out] digest_values The list of policy digests and corresponding
- *                hash algorithms.
- * @param[in] hashAlg The hash algorithm to be searched.
- * @param[out] idx The index of the found digest.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE If no appropriate digest was found in
- *         the digest list.
- */
-TSS2_RC
-get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg, size_t *idx) {
-    size_t i;
-    for (i = 0; i < digest_values->count; i++) {
-        /* Check whether current hashAlg is appropriate. */
-        if (digest_values->digests[i].hashAlg == hashAlg) {
-            *idx = i;
-            return TSS2_RC_SUCCESS;
-        }
-    }
-
-    if (i >= TPM2_NUM_PCR_BANKS) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Table overflow");
-    }
-    digest_values->digests[i].hashAlg = hashAlg;
-    memset(&digest_values->digests[i].digest, 0, sizeof(TPMU_HA));
-    *idx = i;
-    digest_values->count += 1;
-    return TSS2_RC_SUCCESS;
-}
-
 /** Execute policy PCR.
  *
  * This command is used to cause conditional gating of a policy based on PCR.

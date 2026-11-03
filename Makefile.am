@@ -709,8 +709,6 @@ src_tss2_policy_libtss2_policy_la_SOURCES = $(TSS2_POLICY_SRC) \
     src/tss2-fapi/tpm_json_serialize.c \
     src/tss2-fapi/ifapi_json_eventlog_serialize.c \
     src/tss2-fapi/ifapi_policy.c \
-    src/tss2-fapi/ifapi_policy_calculate.c \
-    src/tss2-fapi/ifapi_policy_instantiate.c  \
     src/tss2-fapi/ifapi_policy_json_serialize.c \
     src/tss2-fapi/ifapi_keystore.c \
     src/tss2-fapi/ifapi_policy_store.c
