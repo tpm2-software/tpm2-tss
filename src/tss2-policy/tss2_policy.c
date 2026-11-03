@@ -137,8 +137,8 @@ ipolicy_calculate_tree_ex(IFAPI_POLICY_EVAL_INST_CTX *context,
 
         memset(&policy->policyDigests.digests[*digest_idx].digest, 0, sizeof(TPMU_HA));
 
-        r = ifapi_calculate_policy(policy->policy, &policy->policyDigests, hash_alg, *hash_size,
-                                   *digest_idx);
+        r = ipolicy_calculate_policy(policy->policy, &policy->policyDigests, hash_alg, *hash_size,
+                                     *digest_idx);
         goto_if_error(r, "Compute policy.", cleanup);
 
         break;
