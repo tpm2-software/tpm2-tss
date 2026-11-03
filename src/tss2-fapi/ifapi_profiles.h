@@ -17,22 +17,25 @@
 /** Internal structure for FAPI profiles
  */
 typedef struct IFAPI_PROFILE {
-    TPMI_ALG_PUBLIC      type;               /**< The algorithm used for key creation */
-    char                *srk_template;       /**< SRK template */
-    char                *ek_template;        /**< EK template */
-    char                *srk_description;    /**< SRK description */
-    char                *ek_description;     /**< EK description */
-    TPMT_SIG_SCHEME      ecc_signing_scheme; /**< Signing scheme for the ECC key. */
-    TPMT_SIG_SCHEME      rsa_signing_scheme; /**< Signing scheme for the RSA key. */
-    TPMT_RSA_DECRYPT     rsa_decrypt_scheme; /**< Decrypt scheme for the RSA key. */
-    TPMI_ALG_CIPHER_MODE sym_mode;           /**< Mode for symmectric encryption. */
-    TPMT_SYM_DEF_OBJECT  sym_parameters;     /**< Parameters for symmectric encryption. */
-    UINT16               sym_block_size;     /**< Block size for symmectric encryption. */
-    TPML_PCR_SELECTION   pcr_selection;      /**< Parameters for symmectric encryption. */
+    TPMI_ALG_PUBLIC      type;                 /**< The algorithm used for key creation */
+    char                *srk_template;         /**< SRK template */
+    char                *ek_template;          /**< EK template */
+    char                *srk_description;      /**< SRK description */
+    char                *ek_description;       /**< EK description */
+    TPMT_SIG_SCHEME      ecc_signing_scheme;   /**< Signing scheme for the ECC key. */
+    TPMT_SIG_SCHEME      rsa_signing_scheme;   /**< Signing scheme for the RSA key. */
+    TPMT_SIG_SCHEME      mldsa_signing_scheme; /**< Signing scheme for the ML-DSA key. */
+    TPMT_RSA_DECRYPT     rsa_decrypt_scheme;   /**< Decrypt scheme for the RSA key. */
+    TPMI_ALG_CIPHER_MODE sym_mode;             /**< Mode for symmectric encryption. */
+    TPMT_SYM_DEF_OBJECT  sym_parameters;       /**< Parameters for symmectric encryption. */
+    UINT16               sym_block_size;       /**< Block size for symmectric encryption. */
+    TPML_PCR_SELECTION   pcr_selection;        /**< Parameters for symmectric encryption. */
     TPMI_ALG_HASH        nameAlg;
     TPMI_RSA_KEY_BITS    keyBits;
     UINT32               exponent;
     TPMI_ECC_CURVE       curveID;
+    TPMI_MLDSA_PARMS     mldsaParameterSet; /**< ML-DSA parameter set (44, 65, 87). */
+    TPMI_MLKEM_PARMS     mlkemParameterSet; /**< ML-KEM parameter set (512, 768, 1024). */
     TPMT_SYM_DEF         session_symmetric;
     TPMS_POLICY         *eh_policy;
     TPMS_POLICY         *sh_policy;

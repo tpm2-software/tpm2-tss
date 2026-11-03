@@ -22,22 +22,23 @@
 #elif defined(MBED)
 #include "esys_crypto_mbed.h"
 #else
-#define iesys_crypto_aes_decrypt_internal    NULL;
-#define iesys_crypto_aes_encrypt_internal    NULL;
-#define iesys_crypto_sm4_decrypt_internal    NULL;
-#define iesys_crypto_sm4_encrypt_internal    NULL;
-#define iesys_crypto_get_ecdh_point_internal NULL;
-#define iesys_crypto_hash_abort_internal     NULL;
-#define iesys_crypto_hash_finish_internal    NULL;
-#define iesys_crypto_hash_start_internal     NULL;
-#define iesys_crypto_hash_update_internal    NULL;
-#define iesys_crypto_hmac_abort_internal     NULL;
-#define iesys_crypto_hmac_finish_internal    NULL;
-#define iesys_crypto_hmac_start_internal     NULL;
-#define iesys_crypto_hmac_update_internal    NULL;
-#define iesys_crypto_init_internal           NULL;
-#define iesys_crypto_get_random2b_internal   NULL;
-#define iesys_crypto_rsa_pk_encrypt_internal NULL;
+#define iesys_crypto_aes_decrypt_internal       NULL;
+#define iesys_crypto_aes_encrypt_internal       NULL;
+#define iesys_crypto_sm4_decrypt_internal       NULL;
+#define iesys_crypto_sm4_encrypt_internal       NULL;
+#define iesys_crypto_get_ecdh_point_internal    NULL;
+#define iesys_crypto_hash_abort_internal        NULL;
+#define iesys_crypto_hash_finish_internal       NULL;
+#define iesys_crypto_hash_start_internal        NULL;
+#define iesys_crypto_hash_update_internal       NULL;
+#define iesys_crypto_hmac_abort_internal        NULL;
+#define iesys_crypto_hmac_finish_internal       NULL;
+#define iesys_crypto_hmac_start_internal        NULL;
+#define iesys_crypto_hmac_update_internal       NULL;
+#define iesys_crypto_init_internal              NULL;
+#define iesys_crypto_get_random2b_internal      NULL;
+#define iesys_crypto_rsa_pk_encrypt_internal    NULL;
+#define iesys_crypto_mlkem_encapsulate_internal NULL;
 #endif
 
 #ifdef __cplusplus
@@ -76,7 +77,7 @@ TSS2_RC iesys_crypto_hmac_finish2b(ESYS_CRYPTO_CALLBACKS     *crypto_cb,
 
 TSS2_RC iesys_crypto_hmac_update2b(ESYS_CRYPTO_CALLBACKS    *crypto_cb,
                                    ESYS_CRYPTO_CONTEXT_BLOB *context,
-                                   TPM2B                    *tpm2b);
+                                   const TPM2B              *tpm2b);
 
 TSS2_RC iesys_crypto_hash_update2b(ESYS_CRYPTO_CALLBACKS    *crypto_cb,
                                    ESYS_CRYPTO_CONTEXT_BLOB *context,
@@ -90,6 +91,15 @@ TSS2_RC iesys_crypto_rsa_pk_encrypt(ESYS_CRYPTO_CALLBACKS *crypto_cb,
                                     BYTE                  *out_buffer,
                                     size_t                *out_size,
                                     const char            *label);
+
+TSS2_RC iesys_crypto_mlkem_encapsulate(ESYS_CRYPTO_CALLBACKS *crypto_cb,
+                                       TPM2B_PUBLIC          *pub_tpm_key,
+                                       size_t                 max_out_ciphertext,
+                                       BYTE                  *ciphertext,
+                                       size_t                *ciphertext_size,
+                                       size_t                 max_out_shared_secret,
+                                       BYTE                  *shared_secret,
+                                       size_t                *shared_secret_size);
 
 TSS2_RC iesys_crypto_hash_start(ESYS_CRYPTO_CALLBACKS     *crypto_cb,
                                 ESYS_CRYPTO_CONTEXT_BLOB **context,
@@ -193,8 +203,8 @@ TSS2_RC iesys_crypto_KDFaHmac(ESYS_CRYPTO_CALLBACKS *crypto_cb,
                               size_t                 hmacKeySize,
                               uint32_t               counter,
                               const char            *label,
-                              TPM2B_NONCE           *contextU,
-                              TPM2B_NONCE           *contextV,
+                              const TPM2B           *contextU,
+                              const TPM2B           *contextV,
                               uint32_t               bitlength,
                               uint8_t               *hmac,
                               size_t                *hmacSize);
@@ -204,8 +214,8 @@ TSS2_RC iesys_crypto_KDFa(ESYS_CRYPTO_CALLBACKS *crypto_cb,
                           uint8_t               *hmacKey,
                           size_t                 hmacKeySize,
                           const char            *label,
-                          TPM2B_NONCE           *contextU,
-                          TPM2B_NONCE           *contextV,
+                          const TPM2B           *contextU,
+                          const TPM2B           *contextV,
                           uint32_t               bitLength,
                           uint32_t              *counterInOut,
                           BYTE                  *outKey,
@@ -215,8 +225,8 @@ TSS2_RC iesys_xor_parameter_obfuscation(ESYS_CRYPTO_CALLBACKS *cryto_cb,
                                         TPM2_ALG_ID            hash_alg,
                                         uint8_t               *key,
                                         size_t                 key_size,
-                                        TPM2B_NONCE           *contextU,
-                                        TPM2B_NONCE           *contextV,
+                                        const TPM2B           *contextU,
+                                        const TPM2B           *contextV,
                                         BYTE                  *data,
                                         size_t                 data_size);
 

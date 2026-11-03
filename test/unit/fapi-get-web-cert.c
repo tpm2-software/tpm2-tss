@@ -107,6 +107,52 @@ TPM2B_PUBLIC rsaPublic = {
         },
     };
 
+TPM2B_PUBLIC mldsaPublic = {
+    .size = 0,
+    .publicArea = {
+        .type = TPM2_ALG_MLDSA,
+        .nameAlg = TPM2_ALG_SHA256,
+        .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
+                             TPMA_OBJECT_RESTRICTED |
+                             TPMA_OBJECT_SIGN_ENCRYPT |
+                             TPMA_OBJECT_FIXEDTPM |
+                             TPMA_OBJECT_FIXEDPARENT |
+                             TPMA_OBJECT_SENSITIVEDATAORIGIN),
+        .authPolicy = {
+            .size = 0,
+        },
+        .parameters.mldsaDetail = {
+            .parameterSet = 0x0002, /* ML-DSA-65 */
+        },
+        .unique.mldsa = {
+            .size = 4, .buffer = { 1, 2, 3, 4 },
+        },
+    },
+};
+
+TPM2B_PUBLIC mlkemPublic = {
+    .size = 0,
+    .publicArea = {
+        .type = TPM2_ALG_MLKEM,
+        .nameAlg = TPM2_ALG_SHA256,
+        .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
+                             TPMA_OBJECT_RESTRICTED |
+                             TPMA_OBJECT_DECRYPT |
+                             TPMA_OBJECT_FIXEDTPM |
+                             TPMA_OBJECT_FIXEDPARENT |
+                             TPMA_OBJECT_SENSITIVEDATAORIGIN),
+        .authPolicy = {
+            .size = 0,
+        },
+        .parameters.mlkemDetail = {
+            .parameterSet = 0x0002, /* ML-KEM-768 */
+        },
+        .unique.mlkem = {
+            .size = 4, .buffer = { 5, 6, 7, 8 },
+        },
+    },
+};
+
 /*
  * Wrapper function for reading the certificate buffer.
  */
@@ -170,6 +216,14 @@ check_get_intl_cert_ok(void **state) {
     r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_INTC, &cert_buf, &cert_size);
     SAFE_FREE(cert_buf);
     assert_int_equal(r, TSS2_RC_SUCCESS);
+
+    r = ifapi_get_web_ek_certificate(ctx, &mldsaPublic, VENDOR_INTC, &cert_buf, &cert_size);
+    SAFE_FREE(cert_buf);
+    assert_int_equal(r, TSS2_RC_SUCCESS);
+
+    r = ifapi_get_web_ek_certificate(ctx, &mlkemPublic, VENDOR_INTC, &cert_buf, &cert_size);
+    SAFE_FREE(cert_buf);
+    assert_int_equal(r, TSS2_RC_SUCCESS);
 }
 
 /*
@@ -188,6 +242,14 @@ check_get_amd_cert_ok(void **state) {
     SAFE_FREE(cert_buf);
 
     r = ifapi_get_web_ek_certificate(ctx, &rsaPublic, VENDOR_AMD, &cert_buf, &cert_size);
+    SAFE_FREE(cert_buf);
+    assert_int_equal(r, TSS2_RC_SUCCESS);
+
+    r = ifapi_get_web_ek_certificate(ctx, &mldsaPublic, VENDOR_AMD, &cert_buf, &cert_size);
+    SAFE_FREE(cert_buf);
+    assert_int_equal(r, TSS2_RC_SUCCESS);
+
+    r = ifapi_get_web_ek_certificate(ctx, &mlkemPublic, VENDOR_AMD, &cert_buf, &cert_size);
     SAFE_FREE(cert_buf);
     assert_int_equal(r, TSS2_RC_SUCCESS);
 }
