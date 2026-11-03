@@ -12,22 +12,22 @@
 #include <stdbool.h>  // for bool, false, true
 #include <string.h>   // for memset
 
-#include "fapi_int.h"                 // for IFAPI_POLICY_CTX, POLICY_INIT
-#include "ifapi_helpers.h"            // for ifapi_free_node_list
-#include "ifapi_io.h"                 // for IFAPI_IO
-#include "ifapi_macros.h"             // for statecase, fallthrough, return...
-#include "ifapi_policy.h"             // for ifapi_calculate_tree_ex, ifapi...
+#include "fapi_int.h"            // for IFAPI_POLICY_CTX, POLICY_INIT
+#include "ifapi_helpers.h"       // for ifapi_free_node_list
+#include "ifapi_io.h"            // for IFAPI_IO
+#include "ifapi_macros.h"        // for statecase, fallthrough, return...
+#include "ifapi_policy.h"        // for ifapi_calculate_tree_ex, ifapi...
+#include "ifapi_policy_store.h"  // for ifapi_policy_store_load_async
 #include "ipolicy_calculate.h"   // for ifapi_calculate_policy
 #include "ipolicy_execute.h"     // for ifapi_policyeval_execute, ifap...
 #include "ipolicy_instantiate.h" // for IFAPI_POLICY_EVAL_INST_CTX
-#include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
-#include "tss2_common.h"              // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_crypto.h"              // for ifapi_hash_get_digest_size
-#include "tss2_esys.h"                // for ESYS_CONTEXT
-#include "tss2_helpers.h"             // for free_node_list
-#include "tss2_helpers.h"             // for ifapi_free_node_list
-#include "tss2_policy_types.h"        // for TPMS_POLICY
-#include "tss2_tpm2_types.h"          // for TPMT_HA, TPML_DIGEST_VALUES
+#include "tss2_common.h"         // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_crypto.h"         // for ifapi_hash_get_digest_size
+#include "tss2_esys.h"           // for ESYS_CONTEXT
+#include "tss2_helpers.h"        // for free_node_list
+#include "tss2_helpers.h"        // for ifapi_free_node_list
+#include "tss2_policy_types.h"   // for TPMS_POLICY
+#include "tss2_tpm2_types.h"     // for TPMT_HA, TPML_DIGEST_VALUES
 
 #define LOGMODULE fapi
 #include "util/log.h" // for goto_if_error, goto_error

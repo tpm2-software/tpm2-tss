@@ -13,11 +13,11 @@
 
 #include "fapi_int.h"                      // for IFAPI_POLICY_EXEC_CTX
 #include "ifapi_policy.h"                  // for ifapi_calculate_tree_ex
-#include "ipolicy_calculate.h"        // for IFAPI_POLICY_EXEC_CTX
-#include "ipolicy_execute.h"          // for IFAPI_POLICY_EXEC_CTX
-#include "ipolicy_instantiate.h"      // for IFAPI_POLICY_EVAL_INST_CTX
 #include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
 #include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
+#include "ipolicy_calculate.h"             // for IFAPI_POLICY_EXEC_CTX
+#include "ipolicy_execute.h"               // for IFAPI_POLICY_EXEC_CTX
+#include "ipolicy_instantiate.h"           // for IFAPI_POLICY_EVAL_INST_CTX
 #include "tpm_json_deserialize.h"          // for ifapi_parse_json
 #include "tss2_common.h"                   // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"                   // for ifapi_hash_get_digest_size
@@ -27,7 +27,7 @@
 #include "tss2_policy_types.h"             // for TPMS_POLICY
 #include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMT_HA
 
-#include "ifapi_macros.h"
+#include "util/aux_util.h"
 
 #define LOGMODULE "policy"
 #include "util/log.h" // for LOG_ERROR, str, LOG_TRACE
