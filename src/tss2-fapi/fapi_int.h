@@ -12,20 +12,20 @@
 #include <stdio.h>   // for size_t, NULL
 #include <unistd.h>  // for R_OK, W_OK
 
-#include "fapi_types.h"               // for NODE_STR_T, NODE_OBJECT_T, UIN...
-#include "ifapi_config.h"             // for IFAPI_CONFIG
-#include "ifapi_eventlog.h"           // for IFAPI_EVENT, FAPI_QUOTE_INFO
-#include "ifapi_io.h"                 // for IFAPI_IO
-#include "ifapi_keystore.h"           // for IFAPI_OBJECT, IFAPI_IO_STATE
+#include "fapi_types.h"          // for NODE_STR_T, NODE_OBJECT_T, UIN...
+#include "ifapi_config.h"        // for IFAPI_CONFIG
+#include "ifapi_eventlog.h"      // for IFAPI_EVENT, FAPI_QUOTE_INFO
+#include "ifapi_io.h"            // for IFAPI_IO
+#include "ifapi_keystore.h"      // for IFAPI_OBJECT, IFAPI_IO_STATE
+#include "ifapi_policy_store.h"  // for IFAPI_POLICY_STORE
+#include "ifapi_profiles.h"      // for IFAPI_PROFILE, IFAPI_PROFILES
 #include "ipolicy_instantiate.h" // for IFAPI_POLICY_EVAL_INST_CTX
-#include "ifapi_policy_store.h"       // for IFAPI_POLICY_STORE
-#include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
-#include "tss2_common.h"              // for UINT32, UINT16, BYTE, TSS2_BAS...
-#include "tss2_esys.h"                // for ESYS_TR, ESYS_TR_NONE, ESYS_CO...
-#include "tss2_fapi.h"                // for Fapi_CB_Auth, Fapi_CB_Branch
-#include "tss2_policy_types.h"        // for struct TPMS_POLICY, TPMS_POLICYAUTHOR...
-#include "tss2_tpm2_types.h"          // for TPM2_HANDLE, TPMS_CAPABILITY_DATA
-#include "util/aux_util.h"            // for goto_if_error, TPM2_ERROR_FORMAT
+#include "tss2_common.h"         // for UINT32, UINT16, BYTE, TSS2_BAS...
+#include "tss2_esys.h"           // for ESYS_TR, ESYS_TR_NONE, ESYS_CO...
+#include "tss2_fapi.h"           // for Fapi_CB_Auth, Fapi_CB_Branch
+#include "tss2_policy_types.h"   // for struct TPMS_POLICY, TPMS_POLICYAUTHOR...
+#include "tss2_tpm2_types.h"     // for TPM2_HANDLE, TPMS_CAPABILITY_DATA
+#include "util/aux_util.h"       // for goto_if_error, TPM2_ERROR_FORMAT
 
 #define DEFAULT_LOG_DIR       "/run/tpm2_tss"
 #define IFAPI_PCR_LOG_FILE    "pcr.log"

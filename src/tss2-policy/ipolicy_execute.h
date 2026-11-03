@@ -62,15 +62,15 @@ struct IFAPI_POLICY_EXEC_CTX {
     enum IFAPI_STATE_POLICY_EXCECUTE state;
     /**< The execution state of the current
          policy command */
-    TPML_DIGEST            digest_list; /** The digest list of policy or */
-    ESYS_TR                session;     /**< The current policy session */
-    struct TPMS_POLICY    *policy;
-    ESYS_TR               *enc_session;      /**< ession used for encryption if policy is used */
+    TPML_DIGEST         digest_list; /** The digest list of policy or */
+    ESYS_TR             session;     /**< The current policy session */
+    struct TPMS_POLICY *policy;
+    ESYS_TR            *enc_session; /**< ession used for encryption if policy is used */
 
     ESYS_TR             object_handle;
     ESYS_TR             nv_index;
     ESYS_TR             auth_handle;
-    TSS2_OBJECT        *auth_object;   /**< Object to be authorized */
+    TSS2_OBJECT        *auth_object; /**< Object to be authorized */
     ESYS_TR             auth_session;
     TPMI_ALG_HASH       hash_alg;
     void               *app_data;        /**< Application data  for policy execution callbacks */

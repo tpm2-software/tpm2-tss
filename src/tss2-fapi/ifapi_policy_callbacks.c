@@ -18,10 +18,10 @@
 #include "ifapi_helpers.h" // for ipolicy_TPMT_PUBLIC_cmp, ifapi_c...
 #include "ifapi_macros.h"  // for statecase, fallthrough, return...
 #include "ifapi_policy_callbacks.h"
-#include "ipolicy_execute.h"     // for POLICY_LIST, Policy_Compare_Object
 #include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
 #include "ifapi_policyutil_execute.h" // for IFAPI_POLICYUTIL_STACK, ifapi_...
 #include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "ipolicy_execute.h"          // for POLICY_LIST, Policy_Compare_Object
 #include "ipolicy_helpers.h"          // for ipolicy_TPMT_PUBLIC_cmp
 #include "tss2_crypto.h"              // for ifapi_get_tpm2b_public_from_pem
 #include "tss2_fapi.h"                // for FAPI_CONTEXT
