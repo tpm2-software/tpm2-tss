@@ -21,7 +21,6 @@
 #include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
 #include "ifapi_policyutil_execute.h" // for IFAPI_POLICYUTIL_STACK, ifapi_...
 #include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
-#include "ipolicy_execute.h"          // for POLICY_LIST, Policy_Compare_Object
 #include "tss2_crypto.h"              // for ifapi_get_tpm2b_public_from_pem
 #include "tss2_fapi.h"                // for FAPI_CONTEXT
 #include "tss2_helpers.h"             // for ifapi_cleanup_policy ...

@@ -16,31 +16,6 @@
 #include "tss2_policy_types.h" // for struct TPMS_POLICY, TPMS_POLICYAUTHORIZATION
 #include "tss2_tpm2_types.h"   // for TPMI_ALG_HASH, TPM2B_DIGEST, TPM2B_NAME
 
-typedef TSS2_RC (*Policy_Compare_Object)(struct TPMS_POLICY *policy,
-                                         void               *object1,
-                                         void               *object2,
-                                         bool               *found);
-
-/** List of policies which fulfill a certain predicate.
- *
- * The elements are stored in a linked list.
- */
-struct POLICY_LIST {
-    const char         *path;   /**< The path of the policy object */
-    struct TPMS_POLICY  policy; /**< The policy object */
-    struct POLICY_LIST *next;   /**< Pointer to next element */
-};
-
-/** List of policies which fulfill a certain predicate.
- *
- * The elements are stored in a linked list.
- */
-struct policy_object_node {
-    const char                *path;   /**< The path of the policy object */
-    struct TPMS_POLICY         policy; /**< The policy object */
-    struct policy_object_node *next;   /**< Pointer to next element */
-};
-
 /** The states for policy execution */
 enum IPOLICY_STATE_EXCECUTE {
     POLICY_EXECUTE_INIT = 0,
@@ -67,21 +42,19 @@ struct IPOLICY_EXEC_CTX {
     struct TPMS_POLICY *policy;
     ESYS_TR            *enc_session; /**< ession used for encryption if policy is used */
 
-    ESYS_TR             object_handle;
-    ESYS_TR             nv_index;
-    ESYS_TR             auth_handle;
-    TSS2_OBJECT        *auth_object; /**< Object to be authorized */
-    ESYS_TR             auth_session;
-    TPMI_ALG_HASH       hash_alg;
-    void               *app_data;        /**< Application data  for policy execution callbacks */
-    NODE_OBJECT_T      *policy_elements; /**< The policy elements to be executed */
-    TPM2B_DIGEST       *nonceTPM;
-    uint8_t            *buffer;
-    size_t              buffer_size;
-    TPM2B_NAME          name;
-    char               *pem_key; /**< Pem key recreated during policy execution */
-    struct POLICY_LIST *policy_list;
-    /**< List of policies for authorization selection */
+    ESYS_TR                    object_handle;
+    ESYS_TR                    nv_index;
+    ESYS_TR                    auth_handle;
+    TSS2_OBJECT               *auth_object; /**< Object to be authorized */
+    ESYS_TR                    auth_session;
+    TPMI_ALG_HASH              hash_alg;
+    void                      *app_data; /**< Application data  for policy execution callbacks */
+    NODE_OBJECT_T             *policy_elements; /**< The policy elements to be executed */
+    TPM2B_DIGEST              *nonceTPM;
+    uint8_t                   *buffer;
+    size_t                     buffer_size;
+    TPM2B_NAME                 name;
+    char                      *pem_key;      /**< Pem key recreated during policy execution */
     bool                       flush_handle; /**< Handle to be flushed after policy execution */
     TSS2_POLICY_EXEC_CALLBACKS callbacks;
     /**< callbacks used for execution of sub
