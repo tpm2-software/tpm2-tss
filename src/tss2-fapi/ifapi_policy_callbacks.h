@@ -17,6 +17,31 @@
 #include "tss2_policy_types.h" // for struct TPMS_POLICY
 #include "tss2_tpm2_types.h"   // for TPM2B_NAME, TPMI_ALG_HASH, TPM2B_DIGEST
 
+typedef TSS2_RC (*Policy_Compare_Object)(struct TPMS_POLICY *policy,
+                                         void               *object1,
+                                         void               *object2,
+                                         bool               *found);
+
+/** List of policies which fulfill a certain predicate.
+ *
+ * The elements are stored in a linked list.
+ */
+struct POLICY_LIST {
+    const char         *path;   /**< The path of the policy object */
+    struct TPMS_POLICY  policy; /**< The policy object */
+    struct POLICY_LIST *next;   /**< Pointer to next element */
+};
+
+/** List of policies which fulfill a certain predicate.
+ *
+ * The elements are stored in a linked list.
+ */
+struct policy_object_node {
+    const char                *path;   /**< The path of the policy object */
+    struct TPMS_POLICY         policy; /**< The policy object */
+    struct policy_object_node *next;   /**< Pointer to next element */
+};
+
 /** The states for policy execution callbacks */
 enum IFAPI_STATE_POL_CB_EXCECUTE {
     POL_CB_EXECUTE_INIT = 0,
