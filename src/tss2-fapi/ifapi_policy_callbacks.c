@@ -15,14 +15,13 @@
 
 #include "fapi_types.h"    // for UINT8_ARY
 #include "fapi_util.h"     // for ifapi_get_object_path, ifapi_a...
-#include "ifapi_helpers.h" // for ipolicy_TPMT_PUBLIC_cmp, ifapi_c...
+#include "ifapi_helpers.h" // for ifapi_TPMT_PUBLIC_cmp, ifapi_c...
 #include "ifapi_macros.h"  // for statecase, fallthrough, return...
 #include "ifapi_policy_callbacks.h"
 #include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
 #include "ifapi_policyutil_execute.h" // for IFAPI_POLICYUTIL_STACK, ifapi_...
 #include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
 #include "ipolicy_execute.h"          // for POLICY_LIST, Policy_Compare_Object
-#include "ipolicy_helpers.h"          // for ipolicy_TPMT_PUBLIC_cmp
 #include "tss2_crypto.h"              // for ifapi_get_tpm2b_public_from_pem
 #include "tss2_fapi.h"                // for FAPI_CONTEXT
 #include "tss2_helpers.h"             // for ifapi_cleanup_policy ...
@@ -916,14 +915,14 @@ equal_policy_authorization(TPMS_POLICY *policy,
                 pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
 
                 /* Check public information if key and policyRef */
-                if (ipolicy_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)
+                if (ifapi_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)
                     && cmp_policy_ref(policyRef, &authorizations->authorizations[i].policyRef)) {
                     *equal = true;
                     return TSS2_RC_SUCCESS;
                 }
             } else
                 /* Check public information if key and policyRef */
-                if (ipolicy_TPMT_PUBLIC_cmp(public, &authorizations->authorizations[i].key)
+                if (ifapi_TPMT_PUBLIC_cmp(public, &authorizations->authorizations[i].key)
                     && cmp_policy_ref(policyRef, &authorizations->authorizations[i].policyRef)) {
                     *equal = true;
                     return TSS2_RC_SUCCESS;
@@ -1186,7 +1185,7 @@ get_policy_signature(TPMS_POLICY *policy, TPMT_PUBLIC *public, TPMT_SIGNATURE *s
             }
             pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
 
-            if (ipolicy_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)) {
+            if (ifapi_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)) {
                 r = ifapi_der_sig_to_tpm(&pem_public.publicArea,
                                          authorizations->authorizations[i].pemSignature.buffer,
                                          authorizations->authorizations[i].pemSignature.size,
@@ -1196,8 +1195,8 @@ get_policy_signature(TPMS_POLICY *policy, TPMT_PUBLIC *public, TPMT_SIGNATURE *s
 
                 return TSS2_RC_SUCCESS;
             }
-        } else if (ipolicy_TPMT_PUBLIC_cmp(public,
-                                           &policy->policyAuthorizations->authorizations[i].key)) {
+        } else if (ifapi_TPMT_PUBLIC_cmp(public,
+                                         &policy->policyAuthorizations->authorizations[i].key)) {
             /* The public info was already stored in the policy. */
             *signature = policy->policyAuthorizations->authorizations[i].signature;
             return TSS2_RC_SUCCESS;
