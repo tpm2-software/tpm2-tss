@@ -95,10 +95,10 @@ compute_or_digest_list(TPML_POLICYBRANCHES *branches,
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
-execute_policy_pcr(ESYS_CONTEXT          *esys_ctx,
-                   TPMS_POLICYPCR        *policy,
-                   TPMI_ALG_HASH          current_hash_alg,
-                   IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_pcr(ESYS_CONTEXT     *esys_ctx,
+                   TPMS_POLICYPCR   *policy,
+                   TPMI_ALG_HASH     current_hash_alg,
+                   IPOLICY_EXEC_CTX *current_policy) {
     TSS2_RC            r = TSS2_RC_SUCCESS;
     TPML_PCR_SELECTION pcr_selection;
     TPM2B_DIGEST       pcr_digest;
@@ -154,7 +154,7 @@ execute_policy_pcr(ESYS_CONTEXT          *esys_ctx,
 static TSS2_RC
 execute_policy_duplicate(ESYS_CONTEXT                 *esys_ctx,
                          TPMS_POLICYDUPLICATIONSELECT *policy,
-                         IFAPI_POLICY_EXEC_CTX        *current_policy) {
+                         IPOLICY_EXEC_CTX             *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -226,9 +226,7 @@ execute_policy_duplicate(ESYS_CONTEXT                 *esys_ctx,
  *         was not successful.
  */
 static TSS2_RC
-execute_policy_nv(ESYS_CONTEXT          *esys_ctx,
-                  TPMS_POLICYNV         *policy,
-                  IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_nv(ESYS_CONTEXT *esys_ctx, TPMS_POLICYNV *policy, IPOLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -300,9 +298,9 @@ execute_policy_nv(ESYS_CONTEXT          *esys_ctx,
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
-execute_policy_signed(ESYS_CONTEXT          *esys_ctx,
-                      TPMS_POLICYSIGNED     *policy,
-                      IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
+                      TPMS_POLICYSIGNED *policy,
+                      IPOLICY_EXEC_CTX  *current_policy) {
     TSS2_RC                     r = TSS2_RC_SUCCESS;
     size_t                      offset = 0;
     size_t                      signature_size;
@@ -499,10 +497,10 @@ cleanup:
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 static TSS2_RC
-execute_policy_authorize(ESYS_CONTEXT          *esys_ctx,
-                         TPMS_POLICYAUTHORIZE  *policy,
-                         TPMI_ALG_HASH          hash_alg,
-                         IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
+                         TPMS_POLICYAUTHORIZE *policy,
+                         TPMI_ALG_HASH         hash_alg,
+                         IPOLICY_EXEC_CTX     *current_policy) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     TPM2B_PUBLIC               public2b;
     TPM2B_DIGEST               aHash;
@@ -657,7 +655,7 @@ static TSS2_RC
 execute_policy_authorize_nv(ESYS_CONTEXT           *esys_ctx,
                             TPMS_POLICYAUTHORIZENV *policy,
                             TPMI_ALG_HASH           hash_alg,
-                            IFAPI_POLICY_EXEC_CTX  *current_policy) {
+                            IPOLICY_EXEC_CTX       *current_policy) {
     TSS2_RC                     r = TSS2_RC_SUCCESS;
     TSS2_POLICY_EXEC_CALLBACKS *cb;
 
@@ -747,9 +745,9 @@ cleanup:
  *         was not successful.
  */
 static TSS2_RC
-execute_policy_secret(ESYS_CONTEXT          *esys_ctx,
-                      TPMS_POLICYSECRET     *policy,
-                      IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_secret(ESYS_CONTEXT      *esys_ctx,
+                      TPMS_POLICYSECRET *policy,
+                      IPOLICY_EXEC_CTX  *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_DEBUG("call");
@@ -840,7 +838,7 @@ cleanup:
 static TSS2_RC
 execute_policy_counter_timer(ESYS_CONTEXT            *esys_ctx,
                              TPMS_POLICYCOUNTERTIMER *policy,
-                             IFAPI_POLICY_EXEC_CTX   *current_policy) {
+                             IPOLICY_EXEC_CTX        *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -881,7 +879,7 @@ execute_policy_counter_timer(ESYS_CONTEXT            *esys_ctx,
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_physical_presence(ESYS_CONTEXT *esys_ctx, IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_physical_presence(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -923,7 +921,7 @@ execute_policy_physical_presence(ESYS_CONTEXT *esys_ctx, IFAPI_POLICY_EXEC_CTX *
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_auth_value(ESYS_CONTEXT *esys_ctx, IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_auth_value(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -966,7 +964,7 @@ execute_policy_auth_value(ESYS_CONTEXT *esys_ctx, IFAPI_POLICY_EXEC_CTX *current
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_password(ESYS_CONTEXT *esys_ctx, IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_password(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -1009,7 +1007,7 @@ execute_policy_password(ESYS_CONTEXT *esys_ctx, IFAPI_POLICY_EXEC_CTX *current_p
 static TSS2_RC
 execute_policy_command_code(ESYS_CONTEXT           *esys_ctx,
                             TPMS_POLICYCOMMANDCODE *policy,
-                            IFAPI_POLICY_EXEC_CTX  *current_policy) {
+                            IPOLICY_EXEC_CTX       *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -1052,9 +1050,9 @@ execute_policy_command_code(ESYS_CONTEXT           *esys_ctx,
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_name_hash(ESYS_CONTEXT          *esys_ctx,
-                         TPMS_POLICYNAMEHASH   *policy,
-                         IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_name_hash(ESYS_CONTEXT        *esys_ctx,
+                         TPMS_POLICYNAMEHASH *policy,
+                         IPOLICY_EXEC_CTX    *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -1095,9 +1093,9 @@ execute_policy_name_hash(ESYS_CONTEXT          *esys_ctx,
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_cp_hash(ESYS_CONTEXT          *esys_ctx,
-                       TPMS_POLICYCPHASH     *policy,
-                       IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_cp_hash(ESYS_CONTEXT      *esys_ctx,
+                       TPMS_POLICYCPHASH *policy,
+                       IPOLICY_EXEC_CTX  *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -1147,9 +1145,9 @@ execute_policy_cp_hash(ESYS_CONTEXT          *esys_ctx,
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_locality(ESYS_CONTEXT          *esys_ctx,
-                        TPMS_POLICYLOCALITY   *policy,
-                        IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_locality(ESYS_CONTEXT        *esys_ctx,
+                        TPMS_POLICYLOCALITY *policy,
+                        IPOLICY_EXEC_CTX    *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -1192,9 +1190,9 @@ execute_policy_locality(ESYS_CONTEXT          *esys_ctx,
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_nv_written(ESYS_CONTEXT          *esys_ctx,
-                          TPMS_POLICYNVWRITTEN  *policy,
-                          IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_nv_written(ESYS_CONTEXT         *esys_ctx,
+                          TPMS_POLICYNVWRITTEN *policy,
+                          IPOLICY_EXEC_CTX     *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -1239,10 +1237,10 @@ execute_policy_nv_written(ESYS_CONTEXT          *esys_ctx,
  *         the function.
  */
 static TSS2_RC
-execute_policy_or(ESYS_CONTEXT          *esys_ctx,
-                  TPMS_POLICYOR         *policy,
-                  TPMI_ALG_HASH          current_hash_alg,
-                  IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_or(ESYS_CONTEXT     *esys_ctx,
+                  TPMS_POLICYOR    *policy,
+                  TPMI_ALG_HASH     current_hash_alg,
+                  IPOLICY_EXEC_CTX *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -1296,9 +1294,9 @@ execute_policy_or(ESYS_CONTEXT          *esys_ctx,
  *         is not set.
  */
 static TSS2_RC
-execute_policy_action(ESYS_CONTEXT          *esys_ctx,
-                      TPMS_POLICYACTION     *policy,
-                      IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_action(ESYS_CONTEXT      *esys_ctx,
+                      TPMS_POLICYACTION *policy,
+                      IPOLICY_EXEC_CTX  *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
     UNUSED(esys_ctx);
     LOG_TRACE("call");
@@ -1334,9 +1332,9 @@ execute_policy_action(ESYS_CONTEXT          *esys_ctx,
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
-execute_policy_template(ESYS_CONTEXT          *esys_ctx,
-                        TPMS_POLICYTEMPLATE   *policy,
-                        IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_template(ESYS_CONTEXT        *esys_ctx,
+                        TPMS_POLICYTEMPLATE *policy,
+                        IPOLICY_EXEC_CTX    *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -1426,10 +1424,10 @@ cleanup:
  *         was not successful.
  */
 static TSS2_RC
-execute_policy_element(ESYS_CONTEXT          *esys_ctx,
-                       TPMT_POLICYELEMENT    *policy,
-                       TPMI_ALG_HASH          hash_alg,
-                       IFAPI_POLICY_EXEC_CTX *current_policy) {
+execute_policy_element(ESYS_CONTEXT       *esys_ctx,
+                       TPMT_POLICYELEMENT *policy,
+                       TPMI_ALG_HASH       hash_alg,
+                       IPOLICY_EXEC_CTX   *current_policy) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     LOG_TRACE("call");
@@ -1539,7 +1537,7 @@ error:
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 static TSS2_RC
-compute_policy_list(IFAPI_POLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *elements) {
+compute_policy_list(IPOLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *elements) {
     TSS2_RC              r = TSS2_RC_SUCCESS;
     TPML_POLICYBRANCHES *branches;
     TPML_POLICYELEMENTS *or_elements;
@@ -1596,9 +1594,9 @@ compute_policy_list(IFAPI_POLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *element
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 TSS2_RC
-ifapi_policyeval_execute_prepare(IFAPI_POLICY_EXEC_CTX *pol_ctx,
-                                 TPMI_ALG_HASH          hash_alg,
-                                 TPMS_POLICY           *policy) {
+ifapi_policyeval_execute_prepare(IPOLICY_EXEC_CTX *pol_ctx,
+                                 TPMI_ALG_HASH     hash_alg,
+                                 TPMS_POLICY      *policy) {
     TSS2_RC r;
 
     pol_ctx->policy = policy;
@@ -1641,9 +1639,7 @@ ifapi_policyeval_execute_prepare(IFAPI_POLICY_EXEC_CTX *pol_ctx,
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-ifapi_policyeval_execute(ESYS_CONTEXT          *esys_ctx,
-                         IFAPI_POLICY_EXEC_CTX *current_policy,
-                         bool                   do_flush)
+ifapi_policyeval_execute(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy, bool do_flush)
 
 {
     TSS2_RC        r = TSS2_RC_SUCCESS;

@@ -42,7 +42,7 @@ struct policy_object_node {
 };
 
 /** The states for policy execution */
-enum IFAPI_STATE_POLICY_EXCECUTE {
+enum IPOLICY_STATE_EXCECUTE {
     POLICY_EXECUTE_INIT = 0,
     POLICY_EXECUTE_FINISH,
     POLICY_EXECUTE_CALLBACK,
@@ -58,8 +58,8 @@ enum IFAPI_STATE_POLICY_EXCECUTE {
 typedef struct IFAPI_POLICY_CALLBACK_CTX IFAPI_POLICY_CALLBACK_CTX;
 
 /** The context of the policy execution */
-struct IFAPI_POLICY_EXEC_CTX {
-    enum IFAPI_STATE_POLICY_EXCECUTE state;
+struct IPOLICY_EXEC_CTX {
+    enum IPOLICY_STATE_EXCECUTE state;
     /**< The execution state of the current
          policy command */
     TPML_DIGEST         digest_list; /** The digest list of policy or */
@@ -90,13 +90,11 @@ struct IFAPI_POLICY_EXEC_CTX {
 };
 
 TSS2_RC
-ifapi_policyeval_execute_prepare(IFAPI_POLICY_EXEC_CTX *pol_ctx,
-                                 TPMI_ALG_HASH          hash_alg,
-                                 struct TPMS_POLICY    *policy);
+ifapi_policyeval_execute_prepare(IPOLICY_EXEC_CTX   *pol_ctx,
+                                 TPMI_ALG_HASH       hash_alg,
+                                 struct TPMS_POLICY *policy);
 
 TSS2_RC
-ifapi_policyeval_execute(ESYS_CONTEXT          *esys_ctx,
-                         IFAPI_POLICY_EXEC_CTX *current_policy,
-                         bool                   do_flush);
+ifapi_policyeval_execute(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy, bool do_flush);
 
 #endif /* IPOLICY_EXECUTE_H */

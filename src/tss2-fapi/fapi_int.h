@@ -652,7 +652,7 @@ enum IFAPI_STATE_POLICY {
     POLICY_FLUSH
 };
 
-typedef struct IFAPI_POLICY_EXEC_CTX  IFAPI_POLICY_EXEC_CTX;
+typedef struct IPOLICY_EXEC_CTX       IPOLICY_EXEC_CTX;
 typedef struct IFAPI_POLICYUTIL_STACK IFAPI_POLICYUTIL_STACK;
 
 /** The states for session creation */
