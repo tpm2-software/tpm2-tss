@@ -11,12 +11,12 @@
 #include <stdlib.h>   // for NULL, free, size_t, calloc
 #include <string.h>   // for memcpy, memset, strlen
 
-#include "fapi_int.h"                      // for IFAPI_POLICY_EXEC_CTX
+#include "fapi_int.h"                      // for IPOLICY_EXEC_CTX
 #include "ifapi_policy.h"                  // for ifapi_calculate_tree_ex
 #include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
 #include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
-#include "ipolicy_calculate.h"             // for IFAPI_POLICY_EXEC_CTX
-#include "ipolicy_execute.h"               // for IFAPI_POLICY_EXEC_CTX
+#include "ipolicy_calculate.h"             // for IPOLICY_EXEC_CTX
+#include "ipolicy_execute.h"               // for IPOLICY_EXEC_CTX
 #include "ipolicy_instantiate.h"           // for IFAPI_POLICY_EVAL_INST_CTX
 #include "tpm_json_deserialize.h"          // for ifapi_parse_json
 #include "tss2_common.h"                   // for TSS2_RC, TSS2_RC_SUCCESS
@@ -50,7 +50,7 @@ struct TSS2_POLICY_CTX {
     TPM2_ALG_ID                hash_alg;
     TSS2_POLICY_CALC_CALLBACKS calc_callbacks;
     IFAPI_POLICY_EVAL_INST_CTX eval_ctx;
-    IFAPI_POLICY_EXEC_CTX      exec_ctx;
+    IPOLICY_EXEC_CTX           exec_ctx;
     ESYS_CONTEXT              *exec_esys;
     bool                       executing;
     TPMS_POLICY                policy;
