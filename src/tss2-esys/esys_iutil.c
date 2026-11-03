@@ -682,7 +682,7 @@ iesys_decrypt_param(ESYS_CONTEXT *esys_context) {
     r = Tss2_Sys_GetEncryptParam(esys_context->sys, &p2BSize, &ciphertext);
     return_if_error(r, "Getting encrypt param");
 
-    UINT8 plaintext[p2BSize];
+    UINT8 plaintext[p2BSize > 0 ? p2BSize : 1];
     memcpy(&plaintext[0], ciphertext, p2BSize);
 
     if (symDef->algorithm == TPM2_ALG_AES) {
