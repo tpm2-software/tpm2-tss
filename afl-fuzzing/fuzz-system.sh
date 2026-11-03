@@ -38,7 +38,7 @@ afl-clang-fast -flto -o fapi-system-fuzzing \
                -DHAVE_CONFIG_H -I${srcdir} -I${srcdir}/include \
                -I${srcdir}/src -I${srcdir}/include \
                -I${srcdir}/include/tss2   -I${srcdir}/src/util -I${srcdir}/src/tss2-mu \
-               -I${srcdir}/src/tss2-sys -I${srcdir}/src/tss2-esys -I${srcdir}/src/tss2-fapi-policy -I${srcdir}/src/tss2-fapi \
+               -I${srcdir}/src/tss2-sys -I${srcdir}/src/tss2-esys -I${srcdir}/src/tss2-policy -I${srcdir}/src/tss2-fapi-policy -I${srcdir}/src/tss2-fapi \
                -I${srcdir}/test/data -Wno-unused-parameter -Wno-missing-field-initializers \
                -ljson-c -lcrypto -luuid
 

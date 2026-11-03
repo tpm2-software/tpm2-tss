@@ -13,9 +13,9 @@
 
 #include "fapi_int.h"                      // for IFAPI_POLICY_EXEC_CTX
 #include "ifapi_policy.h"                  // for ifapi_calculate_tree_ex
-#include "ifapi_policy_calculate.h"        // for IFAPI_POLICY_EXEC_CTX
+#include "ipolicy_calculate.h"        // for IFAPI_POLICY_EXEC_CTX
 #include "ipolicy_execute.h"          // for IFAPI_POLICY_EXEC_CTX
-#include "ifapi_policy_instantiate.h"      // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ipolicy_instantiate.h"      // for IFAPI_POLICY_EVAL_INST_CTX
 #include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
 #include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
 #include "tpm_json_deserialize.h"          // for ifapi_parse_json

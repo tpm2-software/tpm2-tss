@@ -10,9 +10,6 @@
 #include <stddef.h>  // for size_t
 #include <stdint.h>  // for uint8_t
 
-#include "fapi_int.h"          // for IFAPI_POLICY_EXEC_CTX
-#include "fapi_types.h"        // for NODE_OBJECT_T
-#include "ifapi_keystore.h"    // for IFAPI_OBJECT
 #include "tss2_common.h"       // for TSS2_RC
 #include "tss2_esys.h"         // for ESYS_TR, ESYS_CONTEXT
 #include "tss2_policy.h"       // for TSS2_POLICY_EXEC_CALLBACKS
@@ -66,17 +63,13 @@ struct IFAPI_POLICY_EXEC_CTX {
     /**< The execution state of the current
          policy command */
     TPML_DIGEST            digest_list; /** The digest list of policy or */
-    IFAPI_POLICY_EXEC_CTX *next;        /**< Pointer to next policy */
-    IFAPI_POLICY_EXEC_CTX *prev;        /**< Pointer to previous policy */
     ESYS_TR                session;     /**< The current policy session */
     struct TPMS_POLICY    *policy;
-    ESYS_TR                policySessionSav; /**< Backup policy session */
     ESYS_TR               *enc_session;      /**< ession used for encryption if policy is used */
 
     ESYS_TR             object_handle;
     ESYS_TR             nv_index;
     ESYS_TR             auth_handle;
-    IFAPI_OBJECT        auth_objectNV; /**< Object used for NV authentication */
     TSS2_OBJECT        *auth_object;   /**< Object to be authorized */
     ESYS_TR             auth_session;
     TPMI_ALG_HASH       hash_alg;

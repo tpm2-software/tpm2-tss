@@ -6,7 +6,7 @@
 
 TESTS_CFLAGS = $(AM_CFLAGS) $(CRYPTO_CFLAGS) -I$(srcdir)/include -I$(srcdir)/src/tss2-mu \
     -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys -I$(srcdir)/src/tss2-fapi \
-    -I$(srcdir)/src/tss2-fapi-policy \
+    -I$(srcdir)/src/tss2-policy -I$(srcdir)/src/tss2-fapi-policy \
     -I$(srcdir)/test/data -Wno-unused-parameter -Wno-missing-field-initializers \
     -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 TESTS_LDADD = $(check_LTLIBRARIES) $(lib_LTLIBRARIES) \
