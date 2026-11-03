@@ -29,7 +29,7 @@ ifapi_compute_policy_digest(TPML_PCRVALUES     *pcrs,
 static inline void
 ifapi_policy_ctx_init(FAPI_CONTEXT *context) {
 
-    TSS2_POLICY_CALC_CALLBACKS *callbacks = &context->policy.eval_ctx.callbacks;
+    TSS2_POLICY_CALC_CALLBACKS *callbacks = &context->policy.calc_callbacks;
     callbacks->cbname = ifapi_get_object_name;
     callbacks->cbname_userdata = context;
     callbacks->cbpublic = ifapi_get_key_public;
