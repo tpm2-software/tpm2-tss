@@ -12,10 +12,10 @@
 #include <stdlib.h> // for size_t, NULL
 #include <string.h> // for strlen
 
-#include "ifapi_macros.h"  // for return_error2, return_try_again
 #include "ipolicy_instantiate.h"
 #include "tss2_helpers.h"    // for ifapi_free_node_list
 #include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
+#include "util/aux_util.h"   // for return_error2, return_try_again
 
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, SAFE_FREE, goto_if_error
@@ -118,7 +118,7 @@ ifapi_policyeval_instantiate_async(
 
     /* Compute list of all policy elements which have to be instantiated */
     if (context->policy_elements) {
-        //ifapi_free_object_list(context->policy_elements);
+        // ifapi_free_object_list(context->policy_elements);
         context->policy_elements = NULL;
     }
     r = get_policy_elements(policy->policy, &context->policy_elements);
