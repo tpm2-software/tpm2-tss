@@ -13,10 +13,10 @@
 #include "tss2_tpm2_types.h"   // for TPMI_ALG_HASH, TPML_DIGEST_VALUES
 
 TSS2_RC
-ifapi_calculate_policy(TPML_POLICYELEMENTS *policy,
-                       TPML_DIGEST_VALUES  *policyDigests,
-                       TPMI_ALG_HASH        hash_alg,
-                       size_t               hash_size,
-                       size_t               digest_idx);
+ipolicy_calculate_policy(TPML_POLICYELEMENTS *policy,
+                         TPML_DIGEST_VALUES  *policyDigests,
+                         TPMI_ALG_HASH        hash_alg,
+                         size_t               hash_size,
+                         size_t               digest_idx);
 
 #endif /* IPOLICY_CALCULATE_H */
