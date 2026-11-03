@@ -30,8 +30,6 @@ enum IPOLICY_STATE_EXCECUTE {
     POLICY_EXEC_ESYS
 };
 
-typedef struct IFAPI_POLICY_CALLBACK_CTX IFAPI_POLICY_CALLBACK_CTX;
-
 /** The context of the policy execution */
 struct IPOLICY_EXEC_CTX {
     enum IPOLICY_STATE_EXCECUTE state;

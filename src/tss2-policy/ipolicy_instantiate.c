@@ -112,8 +112,8 @@ error_cleanup:
  */
 TSS2_RC
 ifapi_policyeval_instantiate_async(
-    IFAPI_POLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
-    TPMS_POLICY                *policy /* in */) {
+    IPOLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
+    TPMS_POLICY           *policy /* in */) {
     TSS2_RC r;
 
     /* Compute list of all policy elements which have to be instantiated */
@@ -222,7 +222,7 @@ set_pem_key_param(const char      *keyPEM,
  *         or contains illegal characters.
  */
 TSS2_RC
-ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
+ifapi_policyeval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
     TSS2_RC        r = TSS2_RC_SUCCESS;
     NODE_OBJECT_T *first_in_pol_list;
     size_t         i_last;

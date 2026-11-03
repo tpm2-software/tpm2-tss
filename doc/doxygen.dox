@@ -1729,11 +1729,11 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
  \{
 \fn static TSS2_RC get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list)
 \fn TSS2_RC ifapi_policyeval_instantiate_async(
-    IFAPI_POLICY_EVAL_INST_CTX *context,
+    IPOLICY_EVAL_INST_CTX *context,
     TPMS_POLICY *policy,
     ifapi_policyeval_INST_CB *callbacks)
 \fn TSS2_RC ifapi_policyeval_instantiate_finish(
-    IFAPI_POLICY_EVAL_INST_CTX *context)
+    IPOLICY_EVAL_INST_CTX *context)
  \}
 */
 

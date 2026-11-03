@@ -108,7 +108,7 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
         r = Tss2_PolicySetPolicy(*policy, hash_alg, &context->tss2_policy_ctx);
         goto_if_error(r, "Instantiate policy.", cleanup);
 
-        r = Tss2_PolicySetCalcCallbacks(context->tss2_policy_ctx, &context->eval_ctx.callbacks);
+        r = Tss2_PolicySetCalcCallbacks(context->tss2_policy_ctx, &context->calc_callbacks);
         goto_if_error(r, "Set policy calc callbacks.", cleanup);
 
         r = Tss2_PolicyCalculate_Async(context->tss2_policy_ctx);
@@ -126,8 +126,6 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
     statecasedefault(context->state);
     }
 cleanup:
-    ifapi_free_node_list(context->eval_ctx.policy_elements);
-    context->eval_ctx.policy_elements = NULL;
     Tss2_PolicyFinalize(&context->tss2_policy_ctx);
     context->state = POLICY_INIT;
     return r;

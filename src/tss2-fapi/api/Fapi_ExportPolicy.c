@@ -242,7 +242,7 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
         goto_if_error(r, "Instantiate policy.", error_cleanup);
 
         r = Tss2_PolicySetCalcCallbacks(context->policy.tss2_policy_ctx,
-                                        &context->policy.eval_ctx.callbacks);
+                                        &context->policy.calc_callbacks);
         goto_if_error(r, "Set policy calc callbacks.", error_cleanup);
         fallthrough;
 
