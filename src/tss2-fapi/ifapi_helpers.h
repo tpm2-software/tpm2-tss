@@ -123,10 +123,6 @@ bool ifapi_cmp_public_key(TPM2B_PUBLIC *key1, TPM2B_PUBLIC *key2);
 TSS2_RC
 ifapi_extend_pcr(TPMI_ALG_HASH alg, uint8_t *pcr, const uint8_t *digest, size_t alg_size);
 
-TSS2_RC ifapi_pcr_selection_to_pcrvalues(TPML_PCR_SELECTION *pcr_selection,
-                                         TPML_DIGEST        *pcr_digests,
-                                         TPML_PCRVALUES    **out);
-
 void ifapi_helper_init_policy_pcr_selections(TSS2_POLICY_PCR_SELECTION *s,
                                              TPMT_POLICYELEMENT        *pol_element);
 

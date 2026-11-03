@@ -17,7 +17,7 @@
 #include "ifapi_eventlog.h"           // for IFAPI_EVENT, FAPI_QUOTE_INFO
 #include "ifapi_io.h"                 // for IFAPI_IO
 #include "ifapi_keystore.h"           // for IFAPI_OBJECT, IFAPI_IO_STATE
-#include "ifapi_policy_instantiate.h" // for IFAPI_POLICY_EVAL_INST_CTX
+#include "ipolicy_instantiate.h" // for IFAPI_POLICY_EVAL_INST_CTX
 #include "ifapi_policy_store.h"       // for IFAPI_POLICY_STORE
 #include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
 #include "tss2_common.h"              // for UINT32, UINT16, BYTE, TSS2_BAS...
