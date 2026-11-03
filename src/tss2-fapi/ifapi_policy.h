@@ -53,13 +53,14 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX    *policyContext,
 
 TSS2_RC
 ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
-                      IFAPI_POLICY_EXEC_CTX      *context,
-                      IFAPI_POLICY_EVAL_INST_CTX *eval_ctx,
+                      TSS2_POLICY_CTX           **policy_ctx,
+                      TSS2_POLICY_EXEC_CALLBACKS *callbacks,
                       IFAPI_POLICY_STORE         *pstore,
                       IFAPI_IO                   *io,
                       const char                 *policyPath,
                       struct TPMS_POLICY         *policy,
                       ESYS_CONTEXT               *esys_ctx,
+                      ESYS_TR                     session,
                       TPMI_ALG_HASH               hash_alg,
                       bool                        do_flush);
 
