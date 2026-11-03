@@ -8,9 +8,9 @@
 
 #include <json.h> // for json_object
 
-#include "ifapi_policy_types.h" // for TPMI_POLICYTYPE, TPML_POLICYAUTHORIZ...
-#include "tss2_common.h"        // for TSS2_RC, UINT32
-#include "tss2_policy.h"        // for TPML_PCRVALUES, TPMS_PCRVALUE
+#include "tss2_common.h"       // for TSS2_RC, UINT32
+#include "tss2_policy.h"       // for TPML_PCRVALUES, TPMS_PCRVALUE
+#include "tss2_policy_types.h" // for TPMI_POLICYTYPE, TPML_POLICYAUTHORIZ...
 
 TSS2_RC
 ifapi_json_TPMI_POLICYTYPE_serialize(const TPMI_POLICYTYPE in, json_object **jso);
@@ -109,6 +109,6 @@ TSS2_RC
 ifapi_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in, json_object **jso);
 
 TSS2_RC
-ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *in, json_object **jso);
+ifapi_json_TPMS_POLICY_serialize(const struct TPMS_POLICY *in, json_object **jso);
 
 #endif /* IFAPI_POLICY_JSON_SERIALIZE_H */

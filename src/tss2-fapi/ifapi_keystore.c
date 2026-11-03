@@ -22,6 +22,7 @@
 #include "ifapi_keystore.h"
 #include "ifapi_macros.h"         // for goto_if_error2, strdup_check
 #include "tpm_json_deserialize.h" // for ifapi_parse_json
+#include "tss2_helpers.h"         // for free_string_list, ifapi_asprintf
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, goto_if_error, LOG_ERROR

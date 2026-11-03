@@ -16,10 +16,10 @@
 #include "ifapi_io.h"             // for ifapi_io_poll
 #include "ifapi_json_serialize.h" // for ifapi_json_IFAPI_INFO_serialize
 #include "ifapi_macros.h"         // for check_not_null, return_if_error_re...
-#include "ifapi_policy_types.h"   // for TPMI_POLICYTYPE
 #include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, UINT32
 #include "tss2_esys.h"            // for Esys_SetTimeout
 #include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_GetInfo, Fapi_G...
+#include "tss2_policy_types.h"    // for TPMI_POLICYTYPE
 #include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"      // for TPM2_CAP_HANDLES, TPM2_MAX_CAP_HAN...
 

@@ -3,14 +3,44 @@
  * Copyright 2018-2019, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  ******************************************************************************/
-#ifndef IFAPI_POLICY_TYPES_H
-#define IFAPI_POLICY_TYPES_H
+#ifndef INCLUDE_TSS2_TSS2_POLICY_TYPES_H_
+#define INCLUDE_TSS2_TSS2_POLICY_TYPES_H_
 
+#include <stddef.h> // for size_t
 #include <stdint.h> // for uint8_t
 
-#include "fapi_types.h"      // for UINT8_ARY
 #include "tss2_common.h"     // for UINT32, INT32, UINT16
 #include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPM2B_NAME, TPM2B_NONCE
+
+/** Public policy data model shared by Policy callers and the Policy library.
+ * Pointer members are not reference-counted. Follow the ownership contract of
+ * each API when passing a policy; in particular, Tss2_PolicySetPolicy borrows it.
+ */
+
+/** Variable-length byte buffer used by policy authorizations. */
+typedef struct {
+    size_t   size;
+    uint8_t *buffer;
+} TSS2_POLICY_BUFFER;
+
+/** Policy type TPMS_PCRVALUE
+ */
+typedef struct TPMS_PCRVALUE TPMS_PCRVALUE;
+struct TPMS_PCRVALUE {
+    UINT32      pcr;     /**< None */
+    TPM2_ALG_ID hashAlg; /**< None */
+    TPMU_HA     digest;  /**< None */
+};
+
+/** Policy type TPML_PCRVALUES
+ */
+typedef struct TPML_PCRVALUES TPML_PCRVALUES;
+struct TPML_PCRVALUES {
+    UINT32        count;  /**< None */
+    TPMS_PCRVALUE pcrs[]; /**< Array of pcr values */
+};
+
+typedef struct TPMS_POLICY TPMS_POLICY;
 
 struct TPML_POLICYELEMENTS;
 
@@ -131,17 +161,15 @@ typedef struct {
 /** Policy type TPMS_POLICYAUTHORIZATION
  */
 typedef struct {
-    char           *type;      /**< tpm */
-    TPMT_PUBLIC     key;       /**< Selector of the algorithm used for the signature and the pub */
-    TPM2B_NONCE     policyRef; /**< None */
-    TPMT_SIGNATURE  signature; /**< None */
-    TPMI_ALG_HASH   hashAlg;
-    UINT8_ARY       pemSignature;
-    char           *keyPEM;
-    TPMT_RSA_SCHEME rsaScheme;
+    char              *type; /**< tpm */
+    TPMT_PUBLIC        key;  /**< Selector of the algorithm used for the signature and the pub */
+    TPM2B_NONCE        policyRef; /**< None */
+    TPMT_SIGNATURE     signature; /**< None */
+    TPMI_ALG_HASH      hashAlg;
+    TSS2_POLICY_BUFFER pemSignature;
+    char              *keyPEM;
+    TPMT_RSA_SCHEME    rsaScheme;
 } TPMS_POLICYAUTHORIZATION;
-
-typedef struct policy_object_node POLICY_OBJECT;
 
 /** Policy type TPMS_POLICYAUTHORIZE
  */
@@ -276,13 +304,13 @@ struct TPML_POLICYELEMENTS {
     TPMT_POLICYELEMENT elements[]; /**< Array of policy elements */
 };
 
-/** Policy type TPMS_POLICY
+/** Policy type struct TPMS_POLICY
  */
-typedef struct TPMS_POLICY {
+struct TPMS_POLICY {
     char                             *description;          /**< O */
     TPML_DIGEST_VALUES                policyDigests;        /**< O */
     struct TPML_POLICYAUTHORIZATIONS *policyAuthorizations; /**< O */
     struct TPML_POLICYELEMENTS       *policy;               /**< X */
-} TPMS_POLICY;
+};
 
-#endif /* IFAPI_POLICY_TYPES_H */
+#endif /* INCLUDE_TSS2_TSS2_POLICY_TYPES_H_ */

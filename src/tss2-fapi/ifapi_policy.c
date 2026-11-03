@@ -12,20 +12,18 @@
 #include <stdbool.h>  // for bool, false, true
 #include <string.h>   // for memset
 
-#include "fapi_crypto.h"              // for ifapi_hash_get_digest_size
-#include "fapi_int.h"                 // for IFAPI_POLICY_CTX, POLICY_INIT
-#include "ifapi_helpers.h"            // for ifapi_free_node_list
-#include "ifapi_io.h"                 // for IFAPI_IO
-#include "ifapi_macros.h"             // for statecase, fallthrough, return...
-#include "ifapi_policy.h"             // for ifapi_calculate_tree_ex, ifapi...
-#include "ifapi_policy_calculate.h"   // for ifapi_calculate_policy
-#include "ifapi_policy_execute.h"     // for ifapi_policyeval_execute, ifap...
-#include "ifapi_policy_instantiate.h" // for IFAPI_POLICY_EVAL_INST_CTX
-#include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
-#include "ifapi_policy_types.h"       // for TPMS_POLICY
-#include "tss2_common.h"              // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_esys.h"                // for ESYS_CONTEXT
-#include "tss2_tpm2_types.h"          // for TPMT_HA, TPML_DIGEST_VALUES
+#include "fapi_int.h"           // for IFAPI_POLICY_CTX, POLICY_INIT
+#include "ifapi_helpers.h"      // for ifapi_free_node_list
+#include "ifapi_io.h"           // for IFAPI_IO
+#include "ifapi_macros.h"       // for statecase, fallthrough, return...
+#include "ifapi_policy_store.h" // for ifapi_policy_store_load_async
+#include "tss2_common.h"        // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_crypto.h"        // for ifapi_hash_get_digest_size
+#include "tss2_esys.h"          // for ESYS_CONTEXT
+#include "tss2_helpers.h"       // for free_node_list
+#include "tss2_helpers.h"       // for ifapi_free_node_list
+#include "tss2_policy_types.h"  // for TPMS_POLICY
+#include "tss2_tpm2_types.h"    // for TPMT_HA, TPML_DIGEST_VALUES
 
 #define LOGMODULE fapi
 #include "util/log.h" // for goto_if_error, goto_error
@@ -71,13 +69,11 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
                         IFAPI_POLICY_STORE *pstore,
                         IFAPI_IO           *io,
                         const char         *policyPath,
-                        TPMS_POLICY        *policy,
+                        TPMS_POLICY       **policy,
                         TPMI_ALG_HASH       hash_alg,
                         size_t             *digest_idx,
                         size_t             *hash_size) {
-    size_t  i;
     TSS2_RC r = TSS2_RC_SUCCESS;
-    bool    already_computed = false;
 
     if (context->state == POLICY_INIT && !policyPath)
         /* Skip policy reading */
@@ -85,6 +81,8 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
 
     switch (context->state) {
     statecase(context->state, POLICY_INIT);
+        *policy = calloc(1, sizeof(TPMS_POLICY));
+        goto_if_null2(*policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_READ);
@@ -97,7 +95,7 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
         fallthrough;
 
     statecase(context->state, POLICY_READ_FINISH);
-        r = ifapi_policy_store_load_finish(pstore, io, policy);
+        r = ifapi_policy_store_load_finish(pstore, io, *policy);
         return_try_again(r);
         if (r) {
             LOG_ERROR("read_finish failed");
@@ -107,50 +105,28 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
         fallthrough;
 
     statecase(context->state, POLICY_INSTANTIATE_PREPARE);
-        r = ifapi_policyeval_instantiate_async(&context->eval_ctx, policy);
+        r = Tss2_PolicySetPolicy(*policy, hash_alg, &context->tss2_policy_ctx);
+        goto_if_error(r, "Instantiate policy.", cleanup);
+
+        r = Tss2_PolicySetCalcCallbacks(context->tss2_policy_ctx, &context->calc_callbacks);
+        goto_if_error(r, "Set policy calc callbacks.", cleanup);
+
+        r = Tss2_PolicyCalculate_Async(context->tss2_policy_ctx);
         goto_if_error(r, "Instantiate policy.", cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_INSTANTIATE);
-        r = ifapi_policyeval_instantiate_finish(&context->eval_ctx);
+        r = Tss2_PolicyCalculate_Finish(context->tss2_policy_ctx);
         FAPI_SYNC(r, "Instantiate policy.", cleanup);
-        ifapi_free_node_list(context->eval_ctx.policy_elements);
-        context->eval_ctx.policy_elements = NULL;
 
-        if (!(*hash_size = ifapi_hash_get_digest_size(hash_alg))) {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
-                       cleanup, hash_alg);
-        }
-
-        for (i = 0; i < policy->policyDigests.count; i++) {
-            if (policy->policyDigests.digests[i].hashAlg == hash_alg) {
-                /* Digest already computed */
-                *digest_idx = i;
-                already_computed = true;
-            }
-        }
-        if (already_computed)
-            break;
-
-        if (i >= TPM2_NUM_PCR_BANKS) {
-            goto_if_error(TSS2_FAPI_RC_BAD_VALUE, "Table overflow", cleanup);
-        }
-        *digest_idx = i;
-        policy->policyDigests.count += 1;
-        policy->policyDigests.digests[i].hashAlg = hash_alg;
-
-        memset(&policy->policyDigests.digests[*digest_idx].digest, 0, sizeof(TPMU_HA));
-
-        r = ifapi_calculate_policy(policy->policy, &policy->policyDigests, hash_alg, *hash_size,
-                                   *digest_idx);
-        goto_if_error(r, "Compute policy.", cleanup);
+        r = Tss2_PolicyGetDigestIdx(context->tss2_policy_ctx, digest_idx, hash_size);
+        goto_if_error(r, "Copy policy.", cleanup);
 
         break;
     statecasedefault(context->state);
     }
 cleanup:
-    ifapi_free_node_list(context->eval_ctx.policy_elements);
-    context->eval_ctx.policy_elements = NULL;
+    Tss2_PolicyFinalize(&context->tss2_policy_ctx);
     context->state = POLICY_INIT;
     return r;
 }
@@ -158,8 +134,9 @@ cleanup:
 /** Execute a policy tree
  *
  * @param state: The policy state.
- * @param context: The policy execution context.
- * @param eval_ctx The policy evaluation context.
+ * @param policy_ctx: Caller-owned context slot, initially NULL; retained on TRY_AGAIN.
+ * @param callbacks: Execution callbacks and application data.
+ *     Callback data and policy must remain valid until execution ends.
  * @param pstore: The policy store, may be NULL and then policy path
  *      is treated as a regular path.
  * @param io: The FAPI IO Context used for async IO.
@@ -167,6 +144,7 @@ cleanup:
  *   or relative path to a policy file.
  * @param policy: Policy structure.
  * @param esys_ctx: The ESAPI context used to execute policy commands on.
+ * @param session: Caller-owned policy session; must remain the same on retries.
  * @param hash_alg: The hash alg for policy computations.
  * @param do_flush: True to flush the policy session on error, false to not flush.
  *
@@ -187,16 +165,22 @@ cleanup:
  */
 TSS2_RC
 ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
-                      IFAPI_POLICY_EXEC_CTX      *context,
-                      IFAPI_POLICY_EVAL_INST_CTX *eval_ctx,
+                      TSS2_POLICY_CTX           **policy_ctx,
+                      TSS2_POLICY_EXEC_CALLBACKS *callbacks,
                       IFAPI_POLICY_STORE         *pstore,
                       IFAPI_IO                   *io,
                       const char                 *policyPath,
                       TPMS_POLICY                *policy,
                       ESYS_CONTEXT               *esys_ctx,
+                      ESYS_TR                     session,
                       TPMI_ALG_HASH               hash_alg,
                       bool                        do_flush) {
     TSS2_RC r = TSS2_RC_SUCCESS;
+
+    if (!state || !policy_ctx || !policy || !esys_ctx)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    if (*state == POLICY_INIT && *policy_ctx)
+        return TSS2_FAPI_RC_BAD_SEQUENCE;
 
     if (*state == POLICY_INIT && !policyPath) {
         /* Skip policy reading */
@@ -227,12 +211,18 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
         fallthrough;
 
     statecase(*state, POLICY_EXECUTE_PREPARE);
-        /* No mention of return try again in doc string */
-        r = ifapi_policyeval_execute_prepare(context, hash_alg, policy);
+        if (!*policy_ctx) {
+            r = Tss2_PolicySetPolicy(policy, hash_alg, policy_ctx);
+            goto_if_error(r, "Set execution policy.", cleanup);
+            r = Tss2_PolicySetExecCallbacks(*policy_ctx, callbacks);
+            goto_if_error(r, "Set execution callbacks.", cleanup);
+        }
+        r = Tss2_PolicyExecute_Async(*policy_ctx);
+        return_try_again(r);
         goto_if_error(r, "execute policy prepare.", cleanup);
         fallthrough;
     statecase(*state, POLICY_EXECUTE);
-        r = ifapi_policyeval_execute(esys_ctx, context, do_flush);
+        r = Tss2_PolicyExecute_Finish(*policy_ctx, esys_ctx, session);
         return_try_again(r);
         goto_if_error(r, "execute policy.", cleanup);
 
@@ -241,8 +231,12 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
     }
 
 cleanup:
-    ifapi_free_node_list(eval_ctx->policy_elements);
-    eval_ctx->policy_elements = NULL;
+    /* Policy execution borrows the session; FAPI retains cleanup ownership. */
+    if (r && *state == POLICY_EXECUTE && do_flush && session && session != ESYS_TR_NONE)
+        Esys_FlushContext(esys_ctx, session);
+    Tss2_PolicyFinalize(policy_ctx);
+    if (rc_layer(r) == TSS2_POLICY_RC_LAYER)
+        r = TSS2_FEATURE_RC_LAYER | base_rc(r);
     *state = POLICY_INIT;
     return r;
 }

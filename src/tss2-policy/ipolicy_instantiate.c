@@ -12,15 +12,55 @@
 #include <stdlib.h> // for size_t, NULL
 #include <string.h> // for strlen
 
-#include "fapi_crypto.h" // for ifapi_get_signature_algorithm_from_pem
-// #include "fapi_policy.h"
-#include "ifapi_helpers.h" // for ifapi_get_name, ifapi_free_node_list
-#include "ifapi_macros.h"  // for return_error2, return_try_again
-#include "ifapi_policy_instantiate.h"
+#include "ipolicy_instantiate.h"
+#include "tss2_helpers.h"    // for ifapi_free_node_list
 #include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
+#include "util/aux_util.h"   // for return_error2, return_try_again
 
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, SAFE_FREE, goto_if_error
+
+static TSS2_RC
+ifapi_pcr_selection_to_pcrvalues(TPML_PCR_SELECTION *pcr_selection,
+                                 TPML_DIGEST        *pcr_digests,
+                                 TPML_PCRVALUES    **out) {
+
+    /* Count pcrs */
+    UINT32 i = 0, pcr = 0, n_pcrs = 0, i_pcr = 0;
+    for (i = 0; i < pcr_selection->count; i++) {
+        for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
+            uint8_t byte_idx = pcr / 8;
+            uint8_t flag = ((uint8_t)1) << (pcr % 8);
+            /* Check whether PCR is used. */
+            if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx])
+                n_pcrs += 1;
+        }
+    }
+
+    TPML_PCRVALUES *pcr_values = calloc(1, sizeof(TPML_PCRVALUES) + n_pcrs * sizeof(TPMS_PCRVALUE));
+    return_if_null(pcr_values, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    /* Initialize digest list with pcr values from TPM */
+    i_pcr = 0;
+    pcr_values->count = pcr_digests->count;
+    for (i = 0; i < pcr_selection->count; i++) {
+        for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
+            uint8_t byte_idx = pcr / 8;
+            uint8_t flag = ((uint8_t)1) << (pcr % 8);
+            /* Check whether PCR is used. */
+            if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
+                pcr_values->pcrs[i_pcr].pcr = pcr;
+                pcr_values->pcrs[i_pcr].hashAlg = pcr_selection->pcrSelections[i].hash;
+                memcpy(&pcr_values->pcrs[i_pcr].digest, &pcr_digests->digests[i_pcr].buffer[0],
+                       pcr_digests->digests[i_pcr].size);
+                i_pcr += 1;
+            }
+        }
+    }
+
+    *out = pcr_values;
+
+    return TSS2_RC_SUCCESS;
+}
 
 static TSS2_RC get_policy_elements(TPML_POLICYELEMENTS *policy,
                                    NODE_OBJECT_T      **policy_element_list);
@@ -72,13 +112,13 @@ error_cleanup:
  */
 TSS2_RC
 ifapi_policyeval_instantiate_async(
-    IFAPI_POLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
-    TPMS_POLICY                *policy /* in */) {
+    IPOLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
+    TPMS_POLICY           *policy /* in */) {
     TSS2_RC r;
 
     /* Compute list of all policy elements which have to be instantiated */
     if (context->policy_elements) {
-        ifapi_free_object_list(context->policy_elements);
+        // ifapi_free_object_list(context->policy_elements);
         context->policy_elements = NULL;
     }
     r = get_policy_elements(policy->policy, &context->policy_elements);
@@ -182,7 +222,7 @@ set_pem_key_param(const char      *keyPEM,
  *         or contains illegal characters.
  */
 TSS2_RC
-ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
+ifapi_policyeval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
     TSS2_RC        r = TSS2_RC_SUCCESS;
     NODE_OBJECT_T *first_in_pol_list;
     size_t         i_last;
@@ -214,6 +254,7 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
 
                 break;
             }
+            // TODO Chek path needed
             CHECK_TEMPLATE_PATH(pol_element->element.PolicySigned.keyPath, "PolicySigned");
             CHECK_CALLBACK(context->callbacks.cbpublic, "cbpublic");
 
