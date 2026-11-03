@@ -126,4 +126,7 @@ ifapi_extend_pcr(TPMI_ALG_HASH alg, uint8_t *pcr, const uint8_t *digest, size_t 
 void ifapi_helper_init_policy_pcr_selections(TSS2_POLICY_PCR_SELECTION *s,
                                              TPMT_POLICYELEMENT        *pol_element);
 
+/* Compare the type and unique public identifier of two TPM public areas. */
+bool ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2);
+
 #endif /* IFAPI_HELPERS_H */

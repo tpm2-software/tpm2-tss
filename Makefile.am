@@ -886,8 +886,7 @@ src_tss2_fapi_libtss2_fapi_la_LIBADD  = $(libtss2_sys) $(libtss2_mu) $(libtss2_e
 
 # Legacy internal callers still need the engine in FAPI until they use the public API.
 src_tss2_fapi_libtss2_fapi_la_SOURCES = $(TSS2_FAPI_SRC) \
-    src/tss2-policy/ipolicy_execute.c \
-    src/tss2-policy/ipolicy_helpers.c
+    src/tss2-policy/ipolicy_execute.c
 src_tss2_fapi_libtss2_fapi_la_CFLAGS  = $(AM_CFLAGS) -I$(srcdir)/src/tss2-fapi \
                                         -I$(srcdir)/src/tss2-policy \
                                         -I$(srcdir)/src/tss2-fapi-policy \
