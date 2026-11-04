@@ -647,16 +647,7 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC        *key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "ECDH gen failed", cleanup);
     }
 
-    /* Write affine coordinates of ephemeral pub key to TPM point Q
-     *
-     * Note
-     * mpi_write_bin prepends numbers with 0 if they are smaller as
-     * TPM2_MAX_ECC_KEY_BYTES. This is for big-endian mathematicaly
-     * correct but breaks the interface if we want to set bignum.size
-     * to anything but TPM2_MAX_ECC_KEY_BYTES. The easiest fix is
-     * to shrink out_size to mpi_size.
-     */
-
+    /* Write affine coordinates of ephemeral pub key to TPM point Q */
     Q->x.size = mbedtls_mpi_size(&ecp_Q.MBEDTLS_ACCESS(X));
     if (Q->x.size > TPM2_MAX_ECC_KEY_BYTES) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Write Q.x does not fit into byte buffer",
@@ -704,15 +695,16 @@ iesys_cryptmbed_get_ecdh_point(TPM2B_PUBLIC        *key,
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "ECDH compute shared failed", cleanup);
     }
 
-    /* Write shared secret to TPM ECC param Z */
-    Z->size = mbedtls_mpi_size(&ecp_z);
-    if (Z->size > TPM2_MAX_ECC_KEY_BYTES) {
-        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Write Q.y does not fit into byte buffer",
+    /* KDFe uses the fixed-width field element, including any leading zeroes. */
+    size_t z_size = mbedtls_mpi_size(&ecp_group.MBEDTLS_ACCESS(P));
+    if (z_size > sizeof(Z->buffer)) {
+        goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Write Z does not fit into byte buffer",
                    cleanup);
     }
-    if (mbedtls_mpi_write_binary(&ecp_z, &Z->buffer[0], Z->size) != 0) {
+    if (mbedtls_mpi_write_binary(&ecp_z, Z->buffer, z_size) != 0) {
         goto_error(r, TSS2_ESYS_RC_GENERAL_FAILURE, "Write Z to byte buffer failed", cleanup);
     }
+    Z->size = z_size;
 
     /* Write the public ephemeral key in TPM format to out buffer */
     size_t offset = 0;
