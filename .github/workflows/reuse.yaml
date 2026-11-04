@@ -6,6 +6,7 @@ on: [push, pull_request]
 
 jobs:
   test:
+    if: github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

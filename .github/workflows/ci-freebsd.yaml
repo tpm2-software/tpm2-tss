@@ -8,6 +8,7 @@ on:
 
 jobs:
   freebsd-test:
+    if: github.event_name != 'push' || github.repository == 'tpm2-software/tpm2-tss'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -48,13 +49,13 @@ jobs:
 
           run: |
             export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
-            cd /home/runner/work/tpm2-tss/tpm2-tss
+            cd "$GITHUB_WORKSPACE"
             export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
             export CFLAGS="-I/usr/local/include -I/usr/local/openssl/include"
             export LDFLAGS="-L/usr/local/lib"
             export libusb_version="v1.0.26"
             export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
-            git config --global --add safe.directory /home/runner/work/tpm2-tss/tpm2-tss
+            git config --global --add safe.directory "$GITHUB_WORKSPACE"
             ./bootstrap
             ./configure --enable-self-generated-certificate \
                         --enable-unit=yes \
