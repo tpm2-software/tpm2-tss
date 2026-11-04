@@ -11,6 +11,10 @@
             "hashAlg":"sha256"
         },
     },
+    "ecc_crypt_scheme": {
+        "scheme": "kdf2",
+        "details": { "hashAlg": "sha256"}
+    },
     "sym_mode":"cfb",
     "sym_parameters": {
         "algorithm":"aes",
