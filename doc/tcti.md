@@ -354,6 +354,23 @@ flowchart TD
     style port2322 stroke-dasharray: 3, 3
 ```
 
+On Unix-like systems, the same channels can use Unix domain sockets instead
+of TCP ports:
+
+```mermaid
+flowchart TD
+    invis[ ] -->|"conf=&quotswtpm:path=/run/swtpm/tpm.sock&quot"| tctildr(tctildr)
+    tctildr -->|"conf=&quotpath=/run/swtpm/tpm.sock&quot"| tcti_swtpm(tcti-swtpm)
+    tcti_swtpm <-.->|TPM commands/responses| tpm_socket{{"/run/swtpm/tpm.sock"}}
+    tcti_swtpm <-.->|control channel| ctrl_socket{{"/run/swtpm/tpm.sock.ctrl"}}
+    tpm_socket -.- tpm{{"swtpm (TPM simulator)"}}
+    ctrl_socket -.- tpm
+    style invis fill:#FFFFFF00, stroke:#FFFFFF00;
+    style tpm stroke-dasharray: 3, 3
+    style tpm_socket stroke-dasharray: 3, 3
+    style ctrl_socket stroke-dasharray: 3, 3
+```
+
 #### Parameters
 
 **`conf`**
@@ -361,6 +378,11 @@ flowchart TD
 * `host=<host>,port=<port>`, e.g., `host=192.168.178.123,port=5000`
 * `host=<host>`, e.g., `host=192.168.178.123`
 * `port=<port>`, e.g. `port=5000`
+* `path=<path>` for a Unix domain socket, e.g., `path=/run/swtpm/tpm.sock`
+
+Use either `host`/`port` for TCP sockets or `path` for a Unix domain socket.
+With `path`, the TPM socket uses the given path and the control channel uses
+that path with `.ctrl` appended (for example, `/run/swtpm/tpm.sock.ctrl`).
 
 Where:
 
@@ -397,6 +419,23 @@ flowchart TD
     style port2322 stroke-dasharray: 3, 3
 ```
 
+On Unix-like systems, the same channels can use Unix domain sockets instead
+of TCP ports:
+
+```mermaid
+flowchart TD
+    invis[ ] -->|"conf=&quotmssim:path=/run/mssim/tpm.sock&quot"| tctildr(tctildr)
+    tctildr -->|"conf=&quotpath=/run/mssim/tpm.sock&quot"| tcti_mssim(tcti-mssim)
+    tcti_mssim <-.->|TPM commands/responses| tpm_socket{{"/run/mssim/tpm.sock"}}
+    tcti_mssim <-.->|platform commands| ctrl_socket{{"/run/mssim/tpm.sock.ctrl"}}
+    tpm_socket -.- tpm{{"mssim (TPM simulator)"}}
+    ctrl_socket -.- tpm
+    style invis fill:#FFFFFF00, stroke:#FFFFFF00;
+    style tpm stroke-dasharray: 3, 3
+    style tpm_socket stroke-dasharray: 3, 3
+    style ctrl_socket stroke-dasharray: 3, 3
+```
+
 #### Parameters
 
 **`conf`**
@@ -404,6 +443,12 @@ flowchart TD
 * `host=<host>,port=<port>`, e.g., `host=192.168.178.123,port=5000`
 * `host=<host>`, e.g., `host=192.168.178.123`
 * `port=<port>`, e.g. `port=5000`
+* `path=<path>` for a Unix domain socket, e.g., `path=/run/mssim/tpm.sock`
+
+Use either `host`/`port` for TCP sockets or `path` for a Unix domain socket.
+With `path`, the TPM socket uses the given path and the platform command socket
+uses that path with `.ctrl` appended (for example,
+`/run/mssim/tpm.sock.ctrl`).
 
 Where:
 
