@@ -219,4 +219,16 @@ Tss2_PolicyAuthorizePolicy(TPMS_POLICY          *policy,
                            TPM2B_DIGEST          policyRef,
                            const TPMT_PUBLIC    *key);
 
+/* Find an authorization by key type/unique ID and policy reference.
+ * NULL policy_ref means an empty reference; NULL signature requests a match only.
+ * No match returns SUCCESS with found=false and leaves signature unchanged.
+ * Matching PEM signatures are converted to TPM format when requested.
+ */
+TSS2_RC
+Tss2_PolicyGetAuthorization(const TPMS_POLICY *policy,
+                            const TPMT_PUBLIC *key,
+                            const TPM2B_NONCE *policy_ref,
+                            bool              *found,
+                            TPMT_SIGNATURE    *signature);
+
 #endif /* INCLUDE_TSS2_TSS2_POLICY_H_ */
