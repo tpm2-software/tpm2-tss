@@ -14,7 +14,7 @@
 #include "tss2_common.h"       // for TSS2_RC
 #include "tss2_esys.h"         // for ESYS_TR
 #include "tss2_policy.h"       // for TSS2_OBJECT, TSS2_POLICY_PCR_SELECTION
-#include "tss2_policy_types.h" // for struct TPMS_POLICY
+#include "ipolicy_types.h" // for struct TPMS_POLICY
 #include "tss2_tpm2_types.h"   // for TPM2B_NAME, TPMI_ALG_HASH, TPM2B_DIGEST
 
 typedef TSS2_RC (*Policy_Compare_Object)(struct TPMS_POLICY *policy,

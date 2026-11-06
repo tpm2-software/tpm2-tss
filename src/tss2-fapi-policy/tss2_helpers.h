@@ -18,7 +18,7 @@
 #include "fapi_types.h"
 #include "tss2_helpers.h"
 #include "tss2_policy.h"
-#include "tss2_policy_types.h"
+#include "ipolicy_types.h"
 
 #define TSS2_FILE_DELIM_CHAR '/'
 

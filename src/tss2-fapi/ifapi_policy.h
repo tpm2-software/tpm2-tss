@@ -17,7 +17,6 @@
 #include "tss2_esys.h"              // for ESYS_CONTEXT
 #include "tss2_fapi.h"              // for FAPI_CONTEXT
 #include "tss2_policy.h"            // for TSS2_POLICY_CALC_CALLBACKS
-#include "tss2_policy_types.h"      // for struct TPMS_POLICY
 #include "tss2_tpm2_types.h"        // for TPMI_ALG_HASH, TPM2B_DIGEST
 
 TSS2_RC

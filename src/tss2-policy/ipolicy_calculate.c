@@ -16,7 +16,7 @@
 #include "tss2_crypto.h"       // for ifapi_crypto_hash_finish, ifapi_cryp...
 #include "tss2_helpers.h"      // for ifapi_nv_get_namexs
 #include "tss2_mu.h"           // for Tss2_MU_TPM2_CC_Marshal, Tss2_MU_UIN...
-#include "tss2_policy_types.h" // for TPMT_POLICYELEMENT, TPML_POLICYELEMENTS
+#include "ipolicy_types.h" // for TPMT_POLICYELEMENT, TPML_POLICYELEMENTS
 #include "tss2_tpm2_types.h"   // for TPMT_HA, TPML_DIGEST_VALUES, TPM2_CC
 
 #define LOGMODULE fapi
