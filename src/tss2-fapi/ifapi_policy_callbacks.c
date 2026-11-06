@@ -856,26 +856,6 @@ ifapi_sign_buffer(char           *key_pem,
     return TSS2_RC_SUCCESS;
 }
 
-static bool
-cmp_policy_ref(TPM2B_NONCE *ref1, TPM2B_NONCE *ref2) {
-    if ((!ref1 || !ref1->size) && (!ref2 || !ref2->size)) {
-        return true;
-    }
-    if (!ref1 || !ref1->size || !ref2 || !ref2->size) {
-        return false;
-    }
-
-    if (ref1->size != ref2->size) {
-        return false;
-    }
-
-    if (memcmp(&ref1->buffer[0], &ref2->buffer[0], ref1->size) != 0) {
-        return false;
-    }
-
-    return true;
-}
-
 /**  Check whether public data of key is assigned to policy.
  *
  * It will be checked whether policy was authorized by abort key with public
@@ -891,44 +871,8 @@ equal_policy_authorization(TPMS_POLICY *policy,
                            void        *publicVoid,
                            void        *policyRefVoid,
                            bool        *equal) {
-    TPMT_PUBLIC *public = publicVoid;
-    TPM2B_NONCE               *policyRef = policyRefVoid;
-    size_t                     i;
-    TPML_POLICYAUTHORIZATIONS *authorizations = policy->policyAuthorizations;
-    TSS2_RC                    r;
-    TPM2B_PUBLIC               pem_public;
-
-    *equal = false;
-    if (authorizations) {
-        for (i = 0; i < authorizations->count; i++) {
-            if (strcmp(authorizations->authorizations[i].type, "pem") == 0) {
-                /* The public info has to be computed from the PEM key */
-                r = ifapi_get_tpm2b_public_from_pem(authorizations->authorizations[i].keyPEM,
-                                                    &pem_public);
-                return_if_error(r, "Invalid PEM key.");
-
-                if (pem_public.publicArea.type == TPM2_ALG_RSA) {
-                    pem_public.publicArea.parameters.rsaDetail.scheme
-                        = authorizations->authorizations[i].rsaScheme;
-                }
-                pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
-
-                /* Check public information if key and policyRef */
-                if (ifapi_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)
-                    && cmp_policy_ref(policyRef, &authorizations->authorizations[i].policyRef)) {
-                    *equal = true;
-                    return TSS2_RC_SUCCESS;
-                }
-            } else
-                /* Check public information if key and policyRef */
-                if (ifapi_TPMT_PUBLIC_cmp(public, &authorizations->authorizations[i].key)
-                    && cmp_policy_ref(policyRef, &authorizations->authorizations[i].policyRef)) {
-                    *equal = true;
-                    return TSS2_RC_SUCCESS;
-                }
-        }
-    }
-    return TSS2_RC_SUCCESS;
+    TSS2_RC r = Tss2_PolicyGetAuthorization(policy, publicVoid, policyRefVoid, equal, NULL);
+    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
 }
 
 /** Check whether policy digest can be found in policy.
@@ -1141,68 +1085,12 @@ cleanup:
  */
 static TSS2_RC
 get_policy_digest(TPMS_POLICY *policy, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST *digest) {
-    size_t i;
-
-    if (!(digest->size = ifapi_hash_get_digest_size(hashAlg))) {
-        return_error2(TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", hashAlg);
-    }
-
-    for (i = 0; i < policy->policyDigests.count; i++) {
-        if (policy->policyDigests.digests[i].hashAlg == hashAlg) {
-            memcpy(&digest->buffer[0], &policy->policyDigests.digests[i].digest, digest->size);
-            return TSS2_RC_SUCCESS;
-        }
-    }
-    return TSS2_FAPI_RC_GENERAL_FAILURE;
-}
-
-/** Get policy authorization for a certain public key
- *
- * @param[in]  policy The policy with the authorization.
- * @param[in]  public The public data of the key.
- * @param[out] signature The signature found in the authorization list.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- */
-static TSS2_RC
-get_policy_signature(TPMS_POLICY *policy, TPMT_PUBLIC *public, TPMT_SIGNATURE *signature) {
-    TSS2_RC                    r;
-    size_t                     i;
-    TPM2B_PUBLIC               pem_public;
-    TPML_POLICYAUTHORIZATIONS *authorizations = policy->policyAuthorizations;
-
-    for (i = 0; i < policy->policyAuthorizations->count; i++) {
-        if (strcmp(authorizations->authorizations[i].type, "pem") == 0) {
-            /* The public info has to be computed from the PEM key */
-            r = ifapi_get_tpm2b_public_from_pem(authorizations->authorizations[i].keyPEM,
-                                                &pem_public);
-            return_if_error(r, "Invalid PEM key.");
-
-            if (pem_public.publicArea.type == TPM2_ALG_RSA) {
-                pem_public.publicArea.parameters.rsaDetail.scheme
-                    = authorizations->authorizations[i].rsaScheme;
-            }
-            pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
-
-            if (ifapi_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)) {
-                r = ifapi_der_sig_to_tpm(&pem_public.publicArea,
-                                         authorizations->authorizations[i].pemSignature.buffer,
-                                         authorizations->authorizations[i].pemSignature.size,
-                                         authorizations->authorizations[i].hashAlg, signature);
-
-                return_if_error(r, "Invalid signature.");
-
-                return TSS2_RC_SUCCESS;
-            }
-        } else if (ifapi_TPMT_PUBLIC_cmp(public,
-                                         &policy->policyAuthorizations->authorizations[i].key)) {
-            /* The public info was already stored in the policy. */
-            *signature = policy->policyAuthorizations->authorizations[i].signature;
-            return TSS2_RC_SUCCESS;
-        }
-    }
-    /* Appropriate authorization should always exist */
-    return TSS2_FAPI_RC_GENERAL_FAILURE;
+    TSS2_POLICY_CTX *ctx = NULL;
+    TSS2_RC          r = Tss2_PolicySetPolicy(policy, hashAlg, &ctx);
+    if (r == TSS2_RC_SUCCESS)
+        r = Tss2_PolicyGetCalculatedDigest(ctx, digest);
+    Tss2_PolicyFinalize(&ctx);
+    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
 }
 
 /** Cleanup a linked list of policies.
@@ -1378,8 +1266,14 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
 
         goto_if_error(r, "Execute policy.", cleanup);
 
-        r = get_policy_signature(cb_ctx->policy, key_public, signature);
+        bool found;
+        r = Tss2_PolicyGetAuthorization(cb_ctx->policy, key_public, policyRef, &found, signature);
+        if (rc_layer(r) == TSS2_POLICY_RC_LAYER)
+            r = TSS2_FEATURE_RC_LAYER | base_rc(r);
         goto_if_error(r, "Get authorization", cleanup);
+        if (!found) {
+            goto_error(r, TSS2_FAPI_RC_POLICY_UNKNOWN, "Authorization not found.", cleanup);
+        }
 
         r = get_policy_digest(cb_ctx->policy, hash_alg, digest);
         goto_if_error(r, "Get authorization", cleanup);
