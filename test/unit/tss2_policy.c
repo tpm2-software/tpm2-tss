@@ -469,6 +469,64 @@ test_policy_authorization(void **state) {
     free(policy.policyAuthorizations);
 }
 
+static void
+test_policy_get_authorization(void **state) {
+    UNUSED(state);
+    TPMS_POLICY policy = { 0 };
+    TPMT_PUBLIC key = { .type = TPM2_ALG_RSA };
+    key.unique.rsa.size = 1;
+    key.unique.rsa.buffer[0] = 0x42;
+    TPMT_SIGNATURE signature = { .sigAlg = TPM2_ALG_RSASSA };
+    signature.signature.rsassa.sig.size = 1;
+    TPM2B_NONCE    ref = { .size = 1, .buffer = { 1 } };
+    bool           found = true;
+    TPMT_SIGNATURE result = { .sigAlg = TPM2_ALG_NULL };
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, &result), 0);
+    assert_false(found);
+    assert_int_equal(result.sigAlg, TPM2_ALG_NULL);
+    /* Two authorizations for the same key must be distinguished by policyRef. */
+    for (unsigned i = 0; i < 2; ++i) {
+        ref.buffer[0] = i + 1;
+        signature.signature.rsassa.sig.buffer[0] = 0x80 + i;
+        assert_int_equal(Tss2_PolicyAuthorizePolicy(&policy, &signature, ref, &key), 0);
+    }
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, &result), 0);
+    assert_true(found);
+    assert_int_equal(result.signature.rsassa.sig.buffer[0], 0x81);
+    ref.buffer[0] = 1;
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, NULL), 0);
+    assert_true(found);
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, &result), 0);
+    assert_int_equal(result.signature.rsassa.sig.buffer[0], 0x80);
+    ref.buffer[0] = 3;
+    result.sigAlg = TPM2_ALG_NULL;
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, &result), 0);
+    assert_false(found);
+    assert_int_equal(result.sigAlg, TPM2_ALG_NULL);
+    ref.buffer[0] = 1;
+    key.unique.rsa.buffer[0]++;
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, NULL), 0);
+    assert_false(found);
+    key.unique.rsa.buffer[0]--;
+    TPM2B_NONCE empty = { 0 };
+    assert_int_equal(Tss2_PolicyAuthorizePolicy(&policy, &signature, empty, &key), 0);
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, NULL, &found, NULL), 0);
+    assert_true(found);
+    assert_int_equal(Tss2_PolicyGetAuthorization(NULL, &key, &ref, &found, NULL),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_false(found);
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, NULL, &ref, &found, NULL),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, NULL, NULL),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
+    ref.size = sizeof(ref.buffer) + 1;
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, NULL),
+                     TSS2_POLICY_RC_BAD_VALUE);
+    for (size_t i = 0; i < policy.policyAuthorizations->count; ++i)
+        free(policy.policyAuthorizations->authorizations[i].type);
+    free(policy.policyAuthorizations);
+}
+
 int
 main(int argc, char *argv[]) {
     UNUSED(argc);
@@ -479,7 +537,8 @@ main(int argc, char *argv[]) {
                                         cmocka_unit_test(test_policy_set_policy_execute),
                                         cmocka_unit_test(test_cached_policy_digest_metadata),
                                         cmocka_unit_test(test_policy_calculation_retry),
-                                        cmocka_unit_test(test_policy_authorization) };
+                                        cmocka_unit_test(test_policy_authorization),
+                                        cmocka_unit_test(test_policy_get_authorization) };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -17,3 +17,4 @@ EXPORTS
     Tss2_PolicySetPolicy
     Tss2_PolicySetHashAlg
     Tss2_PolicyAuthorizePolicy
+    Tss2_PolicyGetAuthorization
