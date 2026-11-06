@@ -12,7 +12,6 @@
 #include "tss2_esys.h"              // for ESYS_TR
 #include "tss2_fapi.h"              // for FAPI_CONTEXT
 #include "tss2_policy.h"            // for TSS2_POLICY_CTX
-#include "tss2_policy_types.h"      // for struct TPMS_POLICY
 #include "tss2_tpm2_types.h"        // for TPMI_ALG_HASH
 
 /** The states for the FAPI's policy util execution */

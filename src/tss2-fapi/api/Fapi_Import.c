@@ -32,7 +32,6 @@
 #include "tss2_helpers.h"                  // for ifapi_asnprintf ...
 #include "tss2_mu.h"                       // for Tss2_MU_TPMT_SENSITIVE_Ma...
 #include "tss2_policy.h"                   // for TSS2_OBJECT
-#include "tss2_policy_types.h"             // for TPMS_POLICY
 #include "tss2_tcti.h"                     // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"               // for TPM2B_PRIVATE, TPM2B_PUBLIC
 

@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "tss2_policy_types.h"
+#include "tss2_policy.h"
 
 /* Internal compatibility name for the shared byte-buffer representation. */
 typedef TSS2_POLICY_BUFFER UINT8_ARY;

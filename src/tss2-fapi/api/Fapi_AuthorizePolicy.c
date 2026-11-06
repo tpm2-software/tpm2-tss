@@ -25,7 +25,6 @@
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_AuthorizePolicy
 #include "tss2_helpers.h"       // for ifapi_cleanup_policy
 #include "tss2_policy.h"        // for Tss2_PolicyAuthorizePolicy
-#include "tss2_policy_types.h"  // for TPMS_POLICY
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
 

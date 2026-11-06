@@ -22,7 +22,7 @@
 #include "tss2_esys.h"          // for ESYS_CONTEXT
 #include "tss2_helpers.h"       // for free_node_list
 #include "tss2_helpers.h"       // for ifapi_free_node_list
-#include "tss2_policy_types.h"  // for TPMS_POLICY
+#include "ipolicy_types.h"  // for TPMS_POLICY
 #include "tss2_tpm2_types.h"    // for TPMT_HA, TPML_DIGEST_VALUES
 
 #define LOGMODULE fapi

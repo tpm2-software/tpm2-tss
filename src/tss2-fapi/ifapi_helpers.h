@@ -18,7 +18,6 @@
 #include "tss2_common.h"       // for TSS2_RC
 #include "tss2_esys.h"         // for ESYS_TR
 #include "tss2_policy.h"       // for TPML_PCRVALUES, TSS2_POLICY_PCR_SELE...
-#include "tss2_policy_types.h" // for struct TPMS_POLICY, TPMT_POLICYELEMENT
 #include "tss2_tpm2_types.h"   // for TPML_PCR_SELECTION, TPM2_HANDLE, TPM...
 
 /** Type for representing a external public key

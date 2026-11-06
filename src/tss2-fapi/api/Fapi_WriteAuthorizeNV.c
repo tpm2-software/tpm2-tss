@@ -22,7 +22,6 @@
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_WriteAuthorizeNv
 #include "tss2_helpers.h"       // for ifapi_cleanup_policy
 #include "tss2_mu.h"            // for Tss2_MU_TPMI_ALG_HASH_Marshal
-#include "tss2_policy_types.h"  // for TPMS_POLICY
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPMI_ALG_HASH, TPM2B_NV_PUBLIC, TPMS...
 

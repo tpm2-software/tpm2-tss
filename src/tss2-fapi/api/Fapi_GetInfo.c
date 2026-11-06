@@ -19,7 +19,6 @@
 #include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, UINT32
 #include "tss2_esys.h"            // for Esys_SetTimeout
 #include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_GetInfo, Fapi_G...
-#include "tss2_policy_types.h"    // for TPMI_POLICYTYPE
 #include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"      // for TPM2_CAP_HANDLES, TPM2_MAX_CAP_HAN...
 

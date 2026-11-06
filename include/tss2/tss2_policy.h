@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "tss2_esys.h"
-#include "tss2_policy_types.h"
+
 #include "tss2_tpm2_types.h"
 
 #define TSS2_POLICY_RC_LAYER TSS2_RC_LAYER(13)
@@ -28,6 +28,31 @@
 #define TSS2_POLICY_RC_BAD_SEQUENCE     ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_BAD_SEQUENCE))
 #define TSS2_POLICY_RC_TRY_AGAIN        ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_TRY_AGAIN))
 #define TSS2_POLICY_RC_NULL_CALLBACK    ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_CALLBACK_NULL))
+
+/** Variable-length byte buffer used by policy authorizations. */
+typedef struct {
+    size_t   size;
+    uint8_t *buffer;
+} TSS2_POLICY_BUFFER;
+
+/** Policy type TPMS_PCRVALUE
+ */
+typedef struct TPMS_PCRVALUE TPMS_PCRVALUE;
+struct TPMS_PCRVALUE {
+    UINT32      pcr;     /**< None */
+    TPM2_ALG_ID hashAlg; /**< None */
+    TPMU_HA     digest;  /**< None */
+};
+
+/** Policy type TPML_PCRVALUES
+ */
+typedef struct TPML_PCRVALUES TPML_PCRVALUES;
+struct TPML_PCRVALUES {
+    UINT32        count;  /**< None */
+    TPMS_PCRVALUE pcrs[]; /**< Array of pcr values */
+};
+
+typedef struct TPMS_POLICY TPMS_POLICY;
 
 typedef struct TSS2_POLICY_CTX TSS2_POLICY_CTX;
 

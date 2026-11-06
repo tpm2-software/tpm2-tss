@@ -19,6 +19,8 @@
 #include "tss2_mu.h"       // for Tss2_MU_TPMT_PUBLIC_Marshal
 #include "util/aux_util.h" // for statecase, fallthrough, try_again_or_error
 
+#include "ipolicy_types.h" // for policy element definitions
+
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, LOG_TRACE, goto_if_error
 

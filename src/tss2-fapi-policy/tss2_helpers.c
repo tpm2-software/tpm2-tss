@@ -23,7 +23,7 @@
 #include "tss2_helpers.h"
 #include "tss2_mu.h" // for Tss2_MU_TPMS_NV_PUBLIC_Marshal
 #include "tss2_policy.h"
-#include "tss2_policy_types.h" // for TPMS_POLICY ....
+#include "ipolicy_types.h" // for TPMS_POLICY ....
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, goto_error, LOG_ERROR
