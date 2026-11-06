@@ -3,8 +3,8 @@
  * Copyright 2018-2019, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  ******************************************************************************/
-#ifndef INCLUDE_TSS2_TSS2_POLICY_TYPES_H_
-#define INCLUDE_TSS2_TSS2_POLICY_TYPES_H_
+#ifndef IPOLICY_TYPES_H
+#define IPOLICY_TYPES_H
 
 #include <stddef.h> // for size_t
 #include <stdint.h> // for uint8_t
@@ -12,35 +12,10 @@
 #include "tss2_common.h"     // for UINT32, INT32, UINT16
 #include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPM2B_NAME, TPM2B_NONCE
 
-/** Public policy data model shared by Policy callers and the Policy library.
- * Pointer members are not reference-counted. Follow the ownership contract of
- * each API when passing a policy; in particular, Tss2_PolicySetPolicy borrows it.
+/* Internal Policy data model. FAPI migration code still includes this header
+ * until its direct field access and serialization use the public Policy API.
  */
-
-/** Variable-length byte buffer used by policy authorizations. */
-typedef struct {
-    size_t   size;
-    uint8_t *buffer;
-} TSS2_POLICY_BUFFER;
-
-/** Policy type TPMS_PCRVALUE
- */
-typedef struct TPMS_PCRVALUE TPMS_PCRVALUE;
-struct TPMS_PCRVALUE {
-    UINT32      pcr;     /**< None */
-    TPM2_ALG_ID hashAlg; /**< None */
-    TPMU_HA     digest;  /**< None */
-};
-
-/** Policy type TPML_PCRVALUES
- */
-typedef struct TPML_PCRVALUES TPML_PCRVALUES;
-struct TPML_PCRVALUES {
-    UINT32        count;  /**< None */
-    TPMS_PCRVALUE pcrs[]; /**< Array of pcr values */
-};
-
-typedef struct TPMS_POLICY TPMS_POLICY;
+#include "tss2_policy.h"
 
 struct TPML_POLICYELEMENTS;
 
@@ -313,4 +288,4 @@ struct TPMS_POLICY {
     struct TPML_POLICYELEMENTS       *policy;               /**< X */
 };
 
-#endif /* INCLUDE_TSS2_TSS2_POLICY_TYPES_H_ */
+#endif /* IPOLICY_TYPES_H */

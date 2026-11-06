@@ -17,6 +17,8 @@
 #include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
 #include "util/aux_util.h"   // for return_error2, return_try_again
 
+#include "ipolicy_types.h" // for policy element definitions
+
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, SAFE_FREE, goto_if_error
 

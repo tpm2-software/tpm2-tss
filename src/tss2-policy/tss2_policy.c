@@ -25,7 +25,7 @@
 #include "tss2_esys.h"                     // for ESYS_CONTEXT, ESYS_TR
 #include "tss2_helpers.h"                  // for ifapi_cleanup_policy
 #include "tss2_policy.h"                   // for TSS2_POLICY_CTX, TSS2_POL...
-#include "tss2_policy_types.h"             // for TPMS_POLICY
+#include "ipolicy_types.h"             // for TPMS_POLICY
 #include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMT_HA
 
 #include "util/aux_util.h"

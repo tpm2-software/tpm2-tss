@@ -682,8 +682,7 @@ noinst_HEADERS = \
     src/tss2-fapi-policy/tss2_crypto.h
 
 libtss2_policy = src/tss2-policy/libtss2-policy.la
-tss2_HEADERS += $(srcdir)/include/tss2/tss2_policy.h \
-    $(srcdir)/include/tss2/tss2_policy_types.h
+tss2_HEADERS += $(srcdir)/include/tss2/tss2_policy.h
 lib_LTLIBRARIES += $(libtss2_policy)
 pkgconfig_DATA += lib/tss2-policy.pc
 
