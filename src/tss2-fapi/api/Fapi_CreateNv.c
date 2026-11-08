@@ -293,6 +293,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
     TPM2B_NV_PUBLIC *existing_nv_public = NULL;
     TPM2B_DIGEST    *authPolicy = &(miscNv->public.nvPublic.authPolicy);
     TPMS_POLICY    **nvCmdPolicy = &nvCmd->nv_object.policy;
+    TPM2B_DIGEST     digest;
     ESYS_TR          auth_session;
     bool             nv_exists;
 
@@ -343,18 +344,14 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
         if (!nvCmd->skip_policy_computation) {
             /* Calculate the policy as read for the keystore. */
             r = ifapi_calculate_tree(context, miscNv->policyInstance, nvCmdPolicy,
-                                     miscNv->public.nvPublic.nameAlg, &context->policy.digest_idx,
-                                     &context->policy.hash_size);
+                                     miscNv->public.nvPublic.nameAlg, &digest);
             return_try_again(r);
 
             goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
                            context->cmd.Key_Create.policyPath);
 
-            authPolicy->size = context->policy.hash_size;
-            memcpy(&authPolicy->buffer[0],
-                   &(*nvCmdPolicy)->policyDigests.digests[context->policy.digest_idx].digest,
-                   context->policy.hash_size);
-            LOGBLOB_TRACE(&authPolicy->buffer[0], context->policy.hash_size, "Create Key Policy");
+            *authPolicy = digest;
+            LOGBLOB_TRACE(&authPolicy->buffer[0], digest.size, "Create Key Policy");
         }
         fallthrough;
 

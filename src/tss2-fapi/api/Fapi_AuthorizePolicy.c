@@ -259,7 +259,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
     TPMI_ALG_HASH              hashAlg;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t                     hashSize;
-    size_t                     digestIdx;
+    TPM2B_DIGEST               digest;
     TPM2B_DIGEST               aHash;
     char                      *publicKey = NULL;
 
@@ -296,8 +296,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
         }
 
         /* Calculate the policy digest of the policy to be authorized. */
-        r = ifapi_calculate_tree(context, command->policyPath, policy, hashAlg, &digestIdx,
-                                 &hashSize);
+        r = ifapi_calculate_tree(context, command->policyPath, policy, hashAlg, &digest);
         return_try_again(r);
         goto_if_error(r, "Fapi calculate tree.", cleanup);
 
@@ -305,8 +304,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
         r = ifapi_crypto_hash_start(&cryptoContext, hashAlg);
         goto_if_error(r, "crypto hash start", cleanup);
 
-        HASH_UPDATE_BUFFER(cryptoContext, &(*policy)->policyDigests.digests[digestIdx].digest,
-                           hashSize, r, cleanup);
+        HASH_UPDATE_BUFFER(cryptoContext, digest.buffer, digest.size, r, cleanup);
         if (command->policyRef.size > 0) {
             HASH_UPDATE_BUFFER(cryptoContext, &command->policyRef.buffer[0],
                                command->policyRef.size, r, cleanup);

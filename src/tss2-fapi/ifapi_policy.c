@@ -38,10 +38,7 @@
  * @param[in]     policyPath The policy path for policy store.
  * @param[in,out] policy The result of policy deserialization.
  * @param[in]     hash_alg The used hash alg for policy digest computations.
- * @param[out]    digest_idx The index of the current digest. The policy digest can be
- *                computed for several hash algorithms the digets index is a reverence
- *                to the current digest values.
- * @param[out]    hash_size The size of the current policy digest.
+ * @param[out]    digest The calculated policy digest.
  *
  * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
@@ -71,8 +68,7 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
                         const char         *policyPath,
                         TPMS_POLICY       **policy,
                         TPMI_ALG_HASH       hash_alg,
-                        size_t             *digest_idx,
-                        size_t             *hash_size) {
+                        TPM2B_DIGEST       *digest) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     if (context->state == POLICY_INIT && !policyPath)
@@ -115,7 +111,7 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
         r = Tss2_PolicyCalculate_Finish(context->tss2_policy_ctx);
         FAPI_SYNC(r, "Instantiate policy.", cleanup);
 
-        r = Tss2_PolicyGetDigestIdx(context->tss2_policy_ctx, digest_idx, hash_size);
+        r = Tss2_PolicyGetCalculatedDigest(context->tss2_policy_ctx, digest);
         goto_if_error(r, "Copy policy.", cleanup);
 
         break;
