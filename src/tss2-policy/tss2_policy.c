@@ -19,13 +19,13 @@
 #include "ipolicy_calculate.h"             // for IPOLICY_EXEC_CTX
 #include "ipolicy_execute.h"               // for IPOLICY_EXEC_CTX
 #include "ipolicy_instantiate.h"           // for IPOLICY_EVAL_INST_CTX
+#include "ipolicy_types.h"                 // for TPMS_POLICY
 #include "tpm_json_deserialize.h"          // for ifapi_parse_json
 #include "tss2_common.h"                   // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"                   // for ifapi_hash_get_digest_size
 #include "tss2_esys.h"                     // for ESYS_CONTEXT, ESYS_TR
 #include "tss2_helpers.h"                  // for ifapi_cleanup_policy
 #include "tss2_policy.h"                   // for TSS2_POLICY_CTX, TSS2_POL...
-#include "ipolicy_types.h"             // for TPMS_POLICY
 #include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMT_HA
 
 #include "util/aux_util.h"
@@ -54,7 +54,6 @@ struct TSS2_POLICY_CTX {
     IPOLICY_EXEC_CTX           exec_ctx;
     ESYS_CONTEXT              *exec_esys;
     bool                       executing;
-    TPMS_POLICY                policy;
     TPMS_POLICY               *policy_ptr;
     bool                       policy_caller_allocated;
     size_t                     digest_idx;
@@ -201,6 +200,11 @@ check_policy_is_calculated(TPMS_POLICY     *policy,
     return TSS2_RC_SUCCESS;
 }
 
+TPMS_POLICY *
+Tss2_InitTpmsPolicy(void) {
+    return calloc(1, sizeof(TPMS_POLICY));
+}
+
 /**
  * Initialize a policy context with a policy and default hash algorithm.
  *
@@ -277,7 +281,7 @@ Tss2_PolicyInit(const char *json_policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX *
     policy_check_not_null(json_policy);
     policy_check_not_null(policy_ctx);
 
-    TPMS_POLICY  tmp_policy = { 0 };
+    TPMS_POLICY *tmp_policy = NULL;
     json_object *jso;
     TSS2_RC      r;
 
@@ -286,10 +290,8 @@ Tss2_PolicyInit(const char *json_policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX *
                  cleanup);
 
     (*policy_ctx)->policy_caller_allocated = false;
-    (*policy_ctx)->policy_ptr = &(*policy_ctx)->policy;
     (*policy_ctx)->hash_alg = hash_alg;
     (*policy_ctx)->exec_ctx.hash_alg = hash_alg;
-    (*policy_ctx)->exec_ctx.policy = (*policy_ctx)->policy_ptr;
 
     jso = ifapi_parse_json(json_policy);
     goto_if_null(jso, "Policy could not be parsed.", TSS2_POLICY_RC_BAD_VALUE, cleanup);
@@ -298,10 +300,12 @@ Tss2_PolicyInit(const char *json_policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX *
     json_object_put(jso);
     goto_if_error(r, "Deserialize policy", cleanup);
 
-    r = check_policy_is_calculated(&tmp_policy, hash_alg, *policy_ctx);
+    r = check_policy_is_calculated(tmp_policy, hash_alg, *policy_ctx);
     goto_if_error(r, "Check policy is calculated", cleanup);
 
-    (*policy_ctx)->policy = tmp_policy;
+    (*policy_ctx)->policy_ptr = tmp_policy;
+    (*policy_ctx)->exec_ctx.policy = tmp_policy;
+    tmp_policy = NULL;
     (*policy_ctx)->hash_alg = hash_alg;
 
     return TSS2_RC_SUCCESS;
@@ -787,7 +791,7 @@ Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy_ctx) {
     SAFE_FREE(p->exec_ctx.buffer);
     SAFE_FREE(p->exec_ctx.pem_key);
     if (!p->policy_caller_allocated) {
-        ifapi_cleanup_policy(&p->policy);
+        ifapi_cleanup_policy(&p->policy_ptr);
     }
     free(p->calculated.json.string);
     free(p);

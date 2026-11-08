@@ -369,8 +369,7 @@ cleanup:
     if (cryptoContext)
         ifapi_crypto_hash_abort(&cryptoContext);
     ifapi_session_clean(context);
-    ifapi_cleanup_policy(*policy);
-    SAFE_FREE(*policy);
+    ifapi_cleanup_policy(policy);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);

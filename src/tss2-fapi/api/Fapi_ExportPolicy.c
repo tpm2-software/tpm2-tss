@@ -223,12 +223,10 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
         r = ifapi_policy_store_load_async(&context->pstore, &context->io, command->path);
         goto_if_error2(r, "Can't open: %s", error_cleanup, command->path);
 
-        command->policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(command->policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_EXPORT_READ_POLICY_FINISH);
-        r = ifapi_policy_store_load_finish(&context->pstore, &context->io, command->policy);
+        r = ifapi_policy_store_load_finish(&context->pstore, &context->io, &command->policy);
         return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
@@ -315,8 +313,7 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
     if (jso)
         json_object_put(jso);
     ifapi_cleanup_ifapi_object(&command->object);
-    ifapi_cleanup_policy(command->policy);
-    SAFE_FREE(command->policy);
+    ifapi_cleanup_policy(&command->policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
@@ -330,8 +327,7 @@ error_cleanup:
         ifapi_cleanup_ifapi_object(&command->object);
     if (jso)
         json_object_put(jso);
-    ifapi_cleanup_policy(command->policy);
-    SAFE_FREE(command->policy);
+    ifapi_cleanup_policy(&command->policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

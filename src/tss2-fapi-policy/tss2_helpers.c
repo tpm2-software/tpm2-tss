@@ -19,11 +19,11 @@
 #include <sys/stat.h>    // for mkdir, mode_t
 
 #include "fapi_types.h"
-#include "tss2_crypto.h" // for ifapi_hash_get_digest_size ...
+#include "ipolicy_types.h" // for TPMS_POLICY ....
+#include "tss2_crypto.h"   // for ifapi_hash_get_digest_size ...
 #include "tss2_helpers.h"
 #include "tss2_mu.h" // for Tss2_MU_TPMS_NV_PUBLIC_Marshal
 #include "tss2_policy.h"
-#include "ipolicy_types.h" // for TPMS_POLICY ....
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, goto_error, LOG_ERROR
@@ -211,6 +211,8 @@ cleanup_policy_elements(TPML_POLICYELEMENTS *policy) {
             if (policy->elements[i].type == POLICYOR) {
                 /* Policy with sub policies */
                 TPML_POLICYBRANCHES *branches = policy->elements[i].element.PolicyOr.branches;
+                if (!branches)
+                    continue;
                 for (j = 0; j < branches->count; j++) {
                     SAFE_FREE(branches->authorizations[j].name);
                     SAFE_FREE(branches->authorizations[j].description);
@@ -227,18 +229,20 @@ cleanup_policy_elements(TPML_POLICYELEMENTS *policy) {
 
 /** Free memory allocated during deserialization of policy.
  *
- * The object will not be freed (might be declared on the stack).
+ * The policy and its contents are freed and the caller's pointer is set to NULL.
  *
- * @param[in] policy The policy to be cleaned up.
+ * @param[in,out] policy_ptr The pointer to the policy to be freed.
  *
  */
 void
-ifapi_cleanup_policy(TPMS_POLICY *policy) {
-    if (policy) {
+ifapi_cleanup_policy(TPMS_POLICY **policy_ptr) {
+    if (policy_ptr && *policy_ptr) {
+        TPMS_POLICY *policy = *policy_ptr;
         SAFE_FREE(policy->description);
         if (policy->policyAuthorizations) {
             for (size_t i = 0; i < policy->policyAuthorizations->count; i++) {
-                if (strcmp(policy->policyAuthorizations->authorizations[i].type, "pem") == 0) {
+                if (policy->policyAuthorizations->authorizations[i].type
+                    && strcmp(policy->policyAuthorizations->authorizations[i].type, "pem") == 0) {
                     SAFE_FREE(policy->policyAuthorizations->authorizations[i].keyPEM);
                     SAFE_FREE(policy->policyAuthorizations->authorizations[i].pemSignature.buffer);
                 }
@@ -247,6 +251,7 @@ ifapi_cleanup_policy(TPMS_POLICY *policy) {
         }
         SAFE_FREE(policy->policyAuthorizations);
         cleanup_policy_elements(policy->policy);
+        SAFE_FREE(*policy_ptr);
     }
 }
 
@@ -663,7 +668,6 @@ copy_policy(TPMS_POLICY *dest, const TPMS_POLICY *src) {
 
     return r;
 error_cleanup:
-    ifapi_cleanup_policy(dest);
     return r;
 }
 
@@ -864,7 +868,7 @@ ifapi_copy_policy(const TPMS_POLICY *from_policy) {
     to_policy->description = NULL;
     TSS2_RC r = copy_policy(to_policy, from_policy);
     if (r != TSS2_RC_SUCCESS) {
-        SAFE_FREE(to_policy);
+        ifapi_cleanup_policy(&to_policy);
         return NULL;
     } else {
         return to_policy;

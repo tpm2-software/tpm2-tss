@@ -18,11 +18,11 @@
 #include "ifapi_helpers.h"                 // for ifapi_check_json_object_fields
 #include "ifapi_json_deserialize.h"        // for ifapi_json_char_deserialize, GET...
 #include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMI_POLICYTYP...
+#include "ipolicy_types.h"                 // for TPMS_POLICYSIGNED, TPMU_POLICYEL...
 #include "tpm_json_deserialize.h"          // for ifapi_get_sub_object, ifapi_json...
 #include "tss2_common.h"                   // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
 #include "tss2_helpers.h"                  // for ifapi_check_json_object_fields ...
 #include "tss2_policy.h"                   // for TPMS_PCRVALUE, TPML_PCRVALUES
-#include "ipolicy_types.h"             // for TPMS_POLICYSIGNED, TPMU_POLICYEL...
 #include "tss2_tpm2_types.h"               // for TPM2B_NAME, TPMT_RSA_SCHEME, TPM...
 
 #define LOGMODULE fapijson
@@ -1533,8 +1533,8 @@ static char *field_TPMS_POLICY_tab[] = { "description",
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
-TSS2_RC
-ifapi_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY *out) {
+static TSS2_RC
+deserialize_policy(json_object *jso, TPMS_POLICY *out) {
     json_object *jso2;
     TSS2_RC      r;
     LOG_TRACE("call");
@@ -1568,5 +1568,29 @@ ifapi_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY *out) {
     r = ifapi_json_TPML_POLICYELEMENTS_deserialize(jso2, &out->policy);
     return_if_error(r, "Bad value for field \"policy\".");
     LOG_TRACE("true");
+    return TSS2_RC_SUCCESS;
+}
+
+/** Allocate and deserialize a policy. The caller owns the successful result.
+ * The output slot must not own an existing policy. Errors leave *out NULL.
+ */
+TSS2_RC
+ifapi_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY **out) {
+    if (!out)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    *out = NULL;
+    if (!jso)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    if (json_object_get_type(jso) != json_type_object)
+        return TSS2_FAPI_RC_BAD_VALUE;
+    TPMS_POLICY *policy = calloc(1, sizeof(*policy));
+    if (!policy)
+        return TSS2_FAPI_RC_MEMORY;
+    TSS2_RC r = deserialize_policy(jso, policy);
+    if (r) {
+        ifapi_cleanup_policy(&policy);
+        return r;
+    }
+    *out = policy;
     return TSS2_RC_SUCCESS;
 }

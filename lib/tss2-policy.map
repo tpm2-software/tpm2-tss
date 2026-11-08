@@ -1,6 +1,7 @@
 {
     global:
         Tss2_PolicyInit;
+        Tss2_InitTpmsPolicy;
         Tss2_PolicyFinalize;
         Tss2_PolicySetCalcCallbacks;
         Tss2_PolicySetExecCallbacks;

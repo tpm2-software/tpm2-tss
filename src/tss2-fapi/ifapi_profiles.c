@@ -296,14 +296,11 @@ ifapi_profiles_finalize(IFAPI_PROFILES *profiles) {
         SAFE_FREE(profile->srk_description);
         SAFE_FREE(profile->ek_description);
 
-        ifapi_cleanup_policy(profile->eh_policy);
-        SAFE_FREE(profile->eh_policy);
+        ifapi_cleanup_policy(&profile->eh_policy);
 
-        ifapi_cleanup_policy(profile->ek_policy);
-        SAFE_FREE(profile->ek_policy);
+        ifapi_cleanup_policy(&profile->ek_policy);
 
-        ifapi_cleanup_policy(profile->sh_policy);
-        SAFE_FREE(profile->sh_policy);
+        ifapi_cleanup_policy(&profile->sh_policy);
     }
     SAFE_FREE(profiles->profiles);
 
@@ -455,42 +452,27 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
     }
 
     if (ifapi_get_sub_object(jso, "eh_policy", &jso2)) {
-        out->eh_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->eh_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->eh_policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->eh_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     }
 
     if (ifapi_get_sub_object(jso, "sh_policy", &jso2)) {
-        out->sh_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->sh_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->sh_policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->sh_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     }
 
     if (ifapi_get_sub_object(jso, "ek_policy", &jso2)) {
-        out->ek_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->ek_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->ek_policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->ek_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     }
 
     if (ifapi_get_sub_object(jso, "srk_policy", &jso2)) {
-        out->srk_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->srk_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->srk_policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->srk_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     }
 
     if (ifapi_get_sub_object(jso, "lockout_policy", &jso2)) {
-        out->lockout_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->lockout_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->lockout_policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->lockout_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     }
 

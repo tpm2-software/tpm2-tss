@@ -17,12 +17,12 @@
 #include "ifapi_io.h"           // for IFAPI_IO
 #include "ifapi_macros.h"       // for statecase, fallthrough, return...
 #include "ifapi_policy_store.h" // for ifapi_policy_store_load_async
+#include "ipolicy_types.h"      // for TPMS_POLICY
 #include "tss2_common.h"        // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
 #include "tss2_crypto.h"        // for ifapi_hash_get_digest_size
 #include "tss2_esys.h"          // for ESYS_CONTEXT
 #include "tss2_helpers.h"       // for free_node_list
 #include "tss2_helpers.h"       // for ifapi_free_node_list
-#include "ipolicy_types.h"  // for TPMS_POLICY
 #include "tss2_tpm2_types.h"    // for TPMT_HA, TPML_DIGEST_VALUES
 
 #define LOGMODULE fapi
@@ -81,25 +81,21 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
 
     switch (context->state) {
     statecase(context->state, POLICY_INIT);
-        *policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(*policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_READ);
         r = ifapi_policy_store_load_async(pstore, io, policyPath);
         if (r) {
             LOG_ERROR("Can't open: %s", policyPath);
-            memset(policy, 0, sizeof(TPMS_POLICY));
             goto cleanup;
         }
         fallthrough;
 
     statecase(context->state, POLICY_READ_FINISH);
-        r = ifapi_policy_store_load_finish(pstore, io, *policy);
+        r = ifapi_policy_store_load_finish(pstore, io, policy);
         return_try_again(r);
         if (r) {
             LOG_ERROR("read_finish failed");
-            memset(policy, 0, sizeof(TPMS_POLICY));
             goto cleanup;
         }
         fallthrough;
@@ -170,7 +166,7 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
                       IFAPI_POLICY_STORE         *pstore,
                       IFAPI_IO                   *io,
                       const char                 *policyPath,
-                      TPMS_POLICY                *policy,
+                      TPMS_POLICY               **policy,
                       ESYS_CONTEXT               *esys_ctx,
                       ESYS_TR                     session,
                       TPMI_ALG_HASH               hash_alg,
@@ -195,7 +191,6 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
         r = ifapi_policy_store_load_async(pstore, io, policyPath);
         if (r) {
             LOG_ERROR("Can't open: %s", policyPath);
-            memset(policy, 0, sizeof(TPMS_POLICY));
             goto cleanup;
         }
         fallthrough;
@@ -205,14 +200,13 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
         return_try_again(r);
         if (r) {
             LOG_ERROR("read_finish failed");
-            memset(policy, 0, sizeof(TPMS_POLICY));
             goto cleanup;
         }
         fallthrough;
 
     statecase(*state, POLICY_EXECUTE_PREPARE);
         if (!*policy_ctx) {
-            r = Tss2_PolicySetPolicy(policy, hash_alg, policy_ctx);
+            r = Tss2_PolicySetPolicy(*policy, hash_alg, policy_ctx);
             goto_if_error(r, "Set execution policy.", cleanup);
             r = Tss2_PolicySetExecCallbacks(*policy_ctx, callbacks);
             goto_if_error(r, "Set execution callbacks.", cleanup);

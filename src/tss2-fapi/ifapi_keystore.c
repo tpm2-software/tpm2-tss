@@ -1532,8 +1532,7 @@ void
 ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE *duplicate) {
     if (duplicate != NULL) {
         SAFE_FREE(duplicate->certificate);
-        ifapi_cleanup_policy(duplicate->policy);
-        SAFE_FREE(duplicate->policy);
+        ifapi_cleanup_policy(&duplicate->policy);
     }
 }
 
@@ -1681,9 +1680,8 @@ ifapi_cleanup_ifapi_object(IFAPI_OBJECT *object) {
             } else if (object->objectType == IFAPI_HIERARCHY_OBJ) {
                 ifapi_cleanup_ifapi_hierarchy(&object->misc.hierarchy);
             }
-            ifapi_cleanup_policy(object->policy);
+            ifapi_cleanup_policy(&object->policy);
             SAFE_FREE(object->rel_path);
-            SAFE_FREE(object->policy);
             object->objectType = IFAPI_OBJ_NONE;
         }
     }

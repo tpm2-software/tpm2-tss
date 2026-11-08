@@ -25,9 +25,9 @@ TSS2_RC
 ifapi_policy_store_load_async(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, const char *path);
 
 TSS2_RC
-ifapi_policy_store_load_finish(IFAPI_POLICY_STORE *pstore,
-                               IFAPI_IO           *io,
-                               struct TPMS_POLICY *policy);
+ifapi_policy_store_load_finish(IFAPI_POLICY_STORE  *pstore,
+                               IFAPI_IO            *io,
+                               struct TPMS_POLICY **policy);
 
 TSS2_RC
 ifapi_policy_store_read_json_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, uint8_t **policy);
