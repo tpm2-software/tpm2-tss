@@ -2494,7 +2494,7 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn TSS2_RC ifapi_policy_store_load_finish(
     IFAPI_POLICY_STORE *pstore,
     IFAPI_IO *io,
-    TPMS_POLICY *policy)
+    TPMS_POLICY **policy)
 \fn TSS2_RC ifapi_policy_store_store_async(
     IFAPI_POLICY_STORE *pstore,
     IFAPI_IO *io,
@@ -3139,7 +3139,7 @@ and are marked according to the PC Client Profile Revision 01.03 v22:
 \fn TSS2_RC ifapi_json_TPMS_POLICYTEMPLATE_deserialize(json_object *jso,
         TPMS_POLICYTEMPLATE *out)
 \fn TSS2_RC ifapi_json_TPMS_POLICY_deserialize(json_object *jso,
-        TPMS_POLICY *out)
+        TPMS_POLICY **out)
 \fn TSS2_RC ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso,
         TPMT_POLICYELEMENT *out)
 \fn TSS2_RC ifapi_json_TPMU_POLICYELEMENT_deserialize(

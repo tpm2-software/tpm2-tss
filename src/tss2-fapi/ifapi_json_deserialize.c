@@ -22,12 +22,12 @@
 #include "ifapi_ima_eventlog.h"    // for IFAPI_IMA_EVENT, ifapi_ge...
 #include "ifapi_json_deserialize.h"
 #include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
+#include "ipolicy_types.h"                 // for TPMS_POLICY
 #include "tpm_json_deserialize.h"          // for ifapi_get_sub_object, ifa...
 #include "tss2_crypto.h"                   // for ifapi_crypto_hash_abort
 #include "tss2_esys.h"                     // for ESYS_TR_RH_OWNER
 #include "tss2_helpers.h"                  // for ifapi_check_json_object_f...
 #include "tss2_mu.h"                       // for Tss2_MU_TPM2B_PRIVATE_Unm...
-#include "ipolicy_types.h"             // for TPMS_POLICY
 #include "tss2_tpm2_types.h"               // for TPMT_HA, TPM2_NO, TPML_DI...
 
 #define LOGMODULE fapijson
@@ -644,10 +644,7 @@ ifapi_json_IFAPI_DUPLICATE_deserialize(json_object *jso, IFAPI_DUPLICATE *out) {
     return_if_error(r, "Bad value for field \"public_parent\".");
 
     if (ifapi_get_sub_object(jso, "policy", &jso2)) {
-        out->policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->policy);
         goto_if_error(r, "Deserialize policy.", error_cleanup);
     } else {
         out->policy = NULL;
@@ -757,10 +754,7 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out) {
     }
 
     if (ifapi_get_sub_object(jso, "policy", &jso2)) {
-        out->policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     } else {
         out->policy = NULL;

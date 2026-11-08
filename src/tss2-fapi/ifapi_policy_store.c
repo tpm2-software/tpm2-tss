@@ -192,7 +192,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_policy_store_load_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, TPMS_POLICY *policy) {
+ifapi_policy_store_load_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, TPMS_POLICY **policy) {
     TSS2_RC      r;
     json_object *jso = NULL;
     uint8_t     *buffer = NULL;

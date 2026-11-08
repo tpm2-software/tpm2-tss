@@ -8,9 +8,9 @@
 
 #include <json.h> // for json_object
 
-#include "tss2_common.h"       // for TSS2_RC, UINT32
-#include "tss2_policy.h"       // for TPML_PCRVALUES, TPMS_PCRVALUE
 #include "ipolicy_types.h" // for TPMI_POLICYTYPE, TPML_POLICYAUTHORIZ...
+#include "tss2_common.h"   // for TSS2_RC, UINT32
+#include "tss2_policy.h"   // for TPML_PCRVALUES, TPMS_PCRVALUE
 
 TSS2_RC
 ifapi_json_TPMI_POLICYTYPE_deserialize(json_object *jso, TPMI_POLICYTYPE *out);
@@ -106,7 +106,8 @@ ifapi_json_TPMT_POLICYELEMENT_deserialize(json_object *jso, TPMT_POLICYELEMENT *
 TSS2_RC
 ifapi_json_TPML_POLICYELEMENTS_deserialize(json_object *jso, TPML_POLICYELEMENTS **out);
 
+/* Allocates the result; on error *out is NULL. The caller owns the policy. */
 TSS2_RC
-ifapi_json_TPMS_POLICY_deserialize(json_object *jso, struct TPMS_POLICY *out);
+ifapi_json_TPMS_POLICY_deserialize(json_object *jso, struct TPMS_POLICY **out);
 
 #endif /* IFAPI_POLICY_JSON_DESERIALIZE_H */
