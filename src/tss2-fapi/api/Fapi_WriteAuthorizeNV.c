@@ -261,8 +261,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, WRITE_AUTHORIZE_NV_CALCULATE_POLICY)
     /* Calculate the policy digest for the referenced policy. */
         hashAlg = object->misc.nv.public.nvPublic.nameAlg;
-        r = ifapi_calculate_tree(context, command->policyPath, policy, hashAlg,
-                                 &command->digest_idx, &command->hash_size);
+        r = ifapi_calculate_tree(context, command->policyPath, policy, hashAlg, &command->digest);
         if (r != TSS2_RC_SUCCESS) {
             ifapi_cleanup_ifapi_object(object);
         }
@@ -283,11 +282,10 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
                                           &nvCmd->nv_buffer[0], maxNvSize, &offset);
         goto_if_error_reset_state(r, "FAPI marshal hash alg", error_cleanup);
 
-        void *currentDigest = &(*policy)->policyDigests.digests[command->digest_idx].digest;
-        memcpy(&nvCmd->nv_buffer[offset], currentDigest, command->hash_size);
+        memcpy(&nvCmd->nv_buffer[offset], command->digest.buffer, command->digest.size);
 
         /* Store these data in the context to be used for re-entry on nv_write. */
-        nvCmd->numBytes = command->hash_size + sizeof(TPMI_ALG_HASH);
+        nvCmd->numBytes = command->digest.size + sizeof(TPMI_ALG_HASH);
         fallthrough;
 
     statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_NV_RAM)

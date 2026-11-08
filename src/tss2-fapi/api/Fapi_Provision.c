@@ -120,10 +120,9 @@ instantiate_policies(FAPI_CONTEXT *context) {
             if (i == 5) {
                 return TSS2_RC_SUCCESS;
             }
-            size_t digest_idx, hash_size;
+            TPM2B_DIGEST digest;
             r = ifapi_calculate_tree_ex(&context->policy, NULL, NULL, NULL, &ctx->policies[i],
-                                        context->profiles.default_profile.nameAlg, &digest_idx,
-                                        &hash_size);
+                                        context->profiles.default_profile.nameAlg, &digest);
             return_try_again(r);
             return_if_error(r, "Instantiate policy");
             ctx->pol_idx = i + 1;

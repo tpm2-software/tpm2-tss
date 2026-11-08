@@ -554,8 +554,7 @@ typedef struct {
 typedef struct {
     const char         *policyPath; /**< Policy with Policy to be authorized */
     TPMI_ALG_HASH      *hash_alg;   /**< The hash alg used for digest computation */
-    size_t              hash_size;  /**< The digest size */
-    size_t              digest_idx; /**< The index of the digest in the policy */
+    TPM2B_DIGEST        digest;     /**< The calculated policy digest */
     struct TPMS_POLICY *policy;     /**< The calculated policy */
 } IFAPI_api_WriteAuthorizeNv;
 
@@ -714,16 +713,15 @@ enum FAPI_STATE_LOAD_KEY {
 /** The data structure holding internal state of export key.
  */
 typedef struct {
-    char const        *pathOfKeyToDuplicate; /**< The relative path of the key to be exported */
-    char const        *pathToPublicKeyOfNewParent; /**<  The relative path of the new parent */
-    TPM2B_PUBLIC       public_parent;              /**< The public key of the new parent */
-    IFAPI_OBJECT      *key_object;  /**< The IPAPI object of the key to be duplicated */
-    IFAPI_OBJECT       export_tree; /**< The complete tree to be exported */
-    IFAPI_OBJECT       pub_key;     /**< The public part of the new parent */
-    IFAPI_OBJECT       dup_key;     /**< The key to be duplicated or exported  */
-    struct TPMS_POLICY policy;
-    ESYS_TR            handle_ext_key;
-    char              *exportedData;
+    char const   *pathOfKeyToDuplicate;       /**< The relative path of the key to be exported */
+    char const   *pathToPublicKeyOfNewParent; /**<  The relative path of the new parent */
+    TPM2B_PUBLIC  public_parent;              /**< The public key of the new parent */
+    IFAPI_OBJECT *key_object;                 /**< The IPAPI object of the key to be duplicated */
+    IFAPI_OBJECT  export_tree;                /**< The complete tree to be exported */
+    IFAPI_OBJECT  pub_key;                    /**< The public part of the new parent */
+    IFAPI_OBJECT  dup_key;                    /**< The key to be duplicated or exported  */
+    ESYS_TR       handle_ext_key;
+    char         *exportedData;
 } IFAPI_ExportKey;
 
 /** The data structure holding internal state of export policy.

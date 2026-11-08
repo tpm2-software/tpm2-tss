@@ -32,16 +32,6 @@ struct POLICY_LIST {
     struct POLICY_LIST *next;   /**< Pointer to next element */
 };
 
-/** List of policies which fulfill a certain predicate.
- *
- * The elements are stored in a linked list.
- */
-struct policy_object_node {
-    const char                *path;   /**< The path of the policy object */
-    struct TPMS_POLICY         policy; /**< The policy object */
-    struct policy_object_node *next;   /**< Pointer to next element */
-};
-
 /** The states for policy execution callbacks */
 enum IFAPI_STATE_POL_CB_EXCECUTE {
     POL_CB_EXECUTE_INIT = 0,
