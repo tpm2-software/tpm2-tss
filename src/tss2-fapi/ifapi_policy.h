@@ -46,8 +46,7 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX    *policyContext,
                         const char          *policyPath,
                         struct TPMS_POLICY **policy,
                         TPMI_ALG_HASH        hash_alg,
-                        size_t              *digest_idx,
-                        size_t              *hash_size);
+                        TPM2B_DIGEST        *digest);
 
 TSS2_RC
 ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
@@ -67,11 +66,10 @@ ifapi_calculate_tree(FAPI_CONTEXT        *context,
                      const char          *policyPath,
                      struct TPMS_POLICY **policy,
                      TPMI_ALG_HASH        hash_alg,
-                     size_t              *digest_idx,
-                     size_t              *hash_size) {
+                     TPM2B_DIGEST        *digest) {
 
     return ifapi_calculate_tree_ex(&context->policy, &context->pstore, &context->io, policyPath,
-                                   policy, hash_alg, digest_idx, hash_size);
+                                   policy, hash_alg, digest);
 }
 
 #endif /* IFAPI_POLICY_H */

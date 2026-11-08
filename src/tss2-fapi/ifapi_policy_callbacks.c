@@ -875,6 +875,26 @@ equal_policy_authorization(TPMS_POLICY *policy,
     return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
 }
 
+/** Get policy digest for a certain hash alg.
+ *
+ * @param[in]  policy The policy with the digest list.
+ * @param[in]  hashAlg The hash algorithm used for the digest computation.
+ * @param[out] digest The digest matching hashAlg.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ */
+static TSS2_RC
+get_policy_digest(TPMS_POLICY *policy, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST *digest) {
+    TSS2_POLICY_CTX *ctx = NULL;
+    TSS2_RC          r = Tss2_PolicySetPolicy(policy, hashAlg, &ctx);
+    if (r == TSS2_RC_SUCCESS)
+        r = Tss2_PolicyGetCalculatedDigest(ctx, digest);
+    Tss2_PolicyFinalize(&ctx);
+    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
+}
+
 /** Check whether policy digest can be found in policy.
  *
  * It will be tested whether the policy has been instatiated with the
@@ -887,28 +907,19 @@ equal_policy_authorization(TPMS_POLICY *policy,
  */
 static TSS2_RC
 compare_policy_digest(TPMS_POLICY *policy, void *authPolicyVoid, void *nameAlgVoid, bool *equal) {
-    TPM2B_DIGEST       *authPolicy = authPolicyVoid;
-    TPMI_ALG_HASH      *hash_alg_ptr = nameAlgVoid;
-    TPMI_ALG_HASH       hash_alg = *hash_alg_ptr;
-    size_t              i;
-    TPML_DIGEST_VALUES *digest_values;
+    const TPM2B_DIGEST  *auth_policy = authPolicyVoid;
+    const TPMI_ALG_HASH *hash_alg = nameAlgVoid;
+    TPM2B_DIGEST         digest;
+    TSS2_RC              r;
 
     *equal = false;
+    r = get_policy_digest(policy, *hash_alg, &digest);
+    if (r == (TSS2_FEATURE_RC_LAYER | base_rc(TSS2_POLICY_RC_POLICY_NOT_CALCULATED)))
+        return TSS2_RC_SUCCESS;
+    return_if_error(r, "Get policy digest.");
 
-    digest_values = &policy->policyDigests;
-
-    if (digest_values) {
-        for (i = 0; i < digest_values->count; i++) {
-            if (digest_values->digests[i].hashAlg == hash_alg) {
-                if (memcmp(&digest_values->digests[i].digest, &authPolicy->buffer[0],
-                           authPolicy->size)
-                    != 0)
-                    continue;
-                *equal = true;
-                return TSS2_RC_SUCCESS;
-            }
-        }
-    }
+    *equal = digest.size == auth_policy->size
+             && memcmp(digest.buffer, auth_policy->buffer, digest.size) == 0;
     return TSS2_RC_SUCCESS;
 }
 
@@ -1072,26 +1083,6 @@ cleanup:
     SAFE_FREE(context->fsearch.pathlist);
     context->fsearch.state = FSEARCH_INIT;
     return r;
-}
-
-/** Get policy digest for a certain hash alg.
- *
- * @param[in]  policy The policy with the digest list.
- * @param[in]  hashAlg The hash algorithm used for the digest computation.
- * @param[out] digest The digest matching hashAlg.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
- *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- */
-static TSS2_RC
-get_policy_digest(TPMS_POLICY *policy, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST *digest) {
-    TSS2_POLICY_CTX *ctx = NULL;
-    TSS2_RC          r = Tss2_PolicySetPolicy(policy, hashAlg, &ctx);
-    if (r == TSS2_RC_SUCCESS)
-        r = Tss2_PolicyGetCalculatedDigest(ctx, digest);
-    Tss2_PolicyFinalize(&ctx);
-    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
 }
 
 /** Cleanup a linked list of policies.
