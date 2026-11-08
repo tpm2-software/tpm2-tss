@@ -15,9 +15,9 @@
 #include <string.h> // for memcpy, memset
 
 #include "../helper/cmocka_all.h" // for assert_int_equal, assert_s...
+#include "ipolicy_types.h"        // for borrowed policy construction
 #include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC
 #include "tss2_policy.h"          // for TSS2_POLICY_PCR_SELECTION
-#include "ipolicy_types.h"    // for borrowed policy construction
 #include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPMS_PCR_SEL...
 
 #define LOGMODULE test
@@ -527,6 +527,19 @@ test_policy_get_authorization(void **state) {
     free(policy.policyAuthorizations);
 }
 
+static void
+test_init_tpms_policy(void **state) {
+    UNUSED(state);
+    TPMS_POLICY *policy = Tss2_InitTpmsPolicy();
+    assert_non_null(policy);
+    assert_null(policy->description);
+    assert_int_equal(policy->policyDigests.count, 0);
+    assert_null(policy->policyAuthorizations);
+    assert_null(policy->policy);
+    /* No nested allocations exist in a newly initialized policy. */
+    free(policy);
+}
+
 int
 main(int argc, char *argv[]) {
     UNUSED(argc);
@@ -538,7 +551,8 @@ main(int argc, char *argv[]) {
                                         cmocka_unit_test(test_cached_policy_digest_metadata),
                                         cmocka_unit_test(test_policy_calculation_retry),
                                         cmocka_unit_test(test_policy_authorization),
-                                        cmocka_unit_test(test_policy_get_authorization) };
+                                        cmocka_unit_test(test_policy_get_authorization),
+                                        cmocka_unit_test(test_init_tpms_policy) };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

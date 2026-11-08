@@ -949,7 +949,7 @@ search_policy(FAPI_CONTEXT         *context,
               struct POLICY_LIST  **policy_found) {
     TSS2_RC             r = TSS2_RC_SUCCESS;
     char               *path;
-    TPMS_POLICY         policy = { 0 };
+    TPMS_POLICY        *policy = NULL;
     bool                found;
     struct POLICY_LIST *policy_object = NULL;
     struct POLICY_LIST *second;
@@ -1002,7 +1002,7 @@ search_policy(FAPI_CONTEXT         *context,
         goto_if_error(r, "read_finish failed", cleanup);
 
         /* Call the passed compare function. */
-        r = compare(&policy, object1, object2, &found);
+        r = compare(policy, object1, object2, &found);
         if (found) {
             LOG_DEBUG("compare true  %s", context->fsearch.pathlist[context->fsearch.path_idx]);
         } else {
@@ -1025,10 +1025,11 @@ search_policy(FAPI_CONTEXT         *context,
         }
         /* Extend linked list.*/
         policy_object = calloc(1, sizeof(struct POLICY_LIST));
-        return_if_null(policy_object, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        goto_if_null2(policy_object, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
         strdup_check(policy_object->path, context->fsearch.current_path, r, cleanup);
         policy_object->policy = policy;
+        policy = NULL;
         if (*policy_found != NULL) {
             second = *policy_found;
             policy_object->next = second;
@@ -1233,7 +1234,7 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
             branch = current_policy->policy_list;
             do {
                 if (n == branch_idx) {
-                    cb_ctx->policy = &branch->policy;
+                    cb_ctx->policy = branch->policy;
                     policy_set = true;
                     break;
                 }
@@ -1243,7 +1244,7 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
 
         } else {
             /* Only one policy found. */
-            cb_ctx->policy = &current_policy->policy_list->policy;
+            cb_ctx->policy = current_policy->policy_list->policy;
             policy_set = true;
         }
         if (!policy_set) {
@@ -1428,7 +1429,7 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
         }
         /* Prepare policy execution */
         r = ifapi_policyutil_execute_prepare(fapi_ctx, current_policy->hash_alg,
-                                             &current_policy->policy_list->policy);
+                                             current_policy->policy_list->policy);
         return_if_error(r, "Prepare policy execution.");
 
         /* Next state will switch from prev context to next context. */

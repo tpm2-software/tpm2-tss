@@ -150,7 +150,7 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
     json_object *jso = NULL;
     json_object *jso2;
     size_t       pos = 0;
-    TPMS_POLICY  policy = { 0 };
+    TPMS_POLICY *policy = NULL;
     TPMA_OBJECT *attributes;
 
     /* Check for NULL parameters */
@@ -286,7 +286,7 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
             goto_if_error_reset_state(r, "Check overwrite %s", cleanup_error, command->out_path);
 
             r = ifapi_policy_store_store_async(&context->pstore, &context->io, command->out_path,
-                                               &policy);
+                                               policy);
             goto_if_error_reset_state(r, "Could not open: %s", cleanup_error, command->out_path);
 
             ifapi_cleanup_policy(&policy);
@@ -714,8 +714,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     /* Cleanup policy for key objects.*/
     if (newObject->objectType == IFAPI_KEY_OBJ) {
         if (newObject->policy)
-            ifapi_cleanup_policy(newObject->policy);
-        SAFE_FREE(newObject->policy);
+            ifapi_cleanup_policy(&newObject->policy);
     }
     SAFE_FREE(command->parent_path);
     ifapi_cleanup_ifapi_object(&command->object);

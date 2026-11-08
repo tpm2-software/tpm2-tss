@@ -633,7 +633,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
             if (context->cmd.Provision.public_templ.public.publicArea.authPolicy.size
                     != context->cmd.Provision.hash_size
                 || memcmp(
-                       &policy->policyDigests.digests[context->policy.digest_idx].digest,
+                       &policy->policyDigests.digests[context->cmd.Provision.digest_idx].digest,
                        &context->cmd.Provision.public_templ.public.publicArea.authPolicy.buffer[0],
                        context->cmd.Provision.hash_size)
                        != 0) {
@@ -3902,9 +3902,7 @@ ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
         } else {
             /* No policy will be used for this hierarchy. */
             context->cmd.Provision.policy_digest.size = 0;
-            ifapi_cleanup_policy(hierarchy_object->policy);
-            SAFE_FREE(hierarchy_object->policy);
-            hierarchy_object->policy = NULL;
+            ifapi_cleanup_policy(&hierarchy_object->policy);
             hierarchy_object->misc.hierarchy.with_auth = TPM2_NO;
             hierarchy_object->misc.hierarchy.authPolicy.size = 0;
         }

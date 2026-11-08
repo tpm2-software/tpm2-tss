@@ -16,9 +16,9 @@
 
 #include "fapi_crypto.h"
 #include "fapi_types.h"
+#include "ipolicy_types.h"
 #include "tss2_helpers.h"
 #include "tss2_policy.h"
-#include "ipolicy_types.h"
 
 #define TSS2_FILE_DELIM_CHAR '/'
 
@@ -39,7 +39,7 @@ void cleanup_policy_element(TPMT_POLICYELEMENT *policy);
 
 void cleanup_policy_elements(TPML_POLICYELEMENTS *policy);
 
-void ifapi_cleanup_policy(struct TPMS_POLICY *policy);
+void ifapi_cleanup_policy(struct TPMS_POLICY **policy);
 
 TSS2_RC
 ifapi_compute_policy_digest(TPML_PCRVALUES     *pcrs,
