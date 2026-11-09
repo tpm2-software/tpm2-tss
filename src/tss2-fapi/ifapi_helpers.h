@@ -66,8 +66,6 @@ bool add_string_to_list(NODE_STR_T *str_list, char *string);
 
 void free_string_list(NODE_STR_T *node);
 
-struct TPMS_POLICY *ifapi_copy_policy(const struct TPMS_POLICY *from_policy);
-
 TSS2_RC
 ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal);
 
@@ -121,9 +119,6 @@ bool ifapi_cmp_public_key(TPM2B_PUBLIC *key1, TPM2B_PUBLIC *key2);
 
 TSS2_RC
 ifapi_extend_pcr(TPMI_ALG_HASH alg, uint8_t *pcr, const uint8_t *digest, size_t alg_size);
-
-void ifapi_helper_init_policy_pcr_selections(TSS2_POLICY_PCR_SELECTION *s,
-                                             TPMT_POLICYELEMENT        *pol_element);
 
 /* Compare the type and unique public identifier of two TPM public areas. */
 bool ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2);

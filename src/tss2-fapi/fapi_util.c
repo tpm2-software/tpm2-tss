@@ -617,8 +617,10 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
 
     if (policy) {
         /* Duplicate policy to prevent profile policy from cleanup. */
-        policy = ifapi_copy_policy(policy);
-        return_if_null(policy, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        r = Tss2_PolicyCopy(policy, &policy);
+        if (r)
+            r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+        return_if_error(r, "Copy policy.");
 
         r = ifapi_calculate_tree(context, NULL, /**< no path needed */
                                  &policy, context->profiles.default_profile.nameAlg, &digest);
