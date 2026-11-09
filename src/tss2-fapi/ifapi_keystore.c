@@ -1583,8 +1583,10 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
 
     /* Create the copy */
     if (src->policy) {
-        dest->policy = ifapi_copy_policy(src->policy);
-        goto_if_null(dest->policy, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+        r = Tss2_PolicyCopy(src->policy, &dest->policy);
+        if (r)
+            r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+        goto_if_error(r, "Copy policy.", error_cleanup);
     } else {
         dest->policy = NULL;
     }
@@ -1637,8 +1639,10 @@ ifapi_copy_ifapi_hierarchy_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
 
     /* Create the copy */
     if (src->policy) {
-        dest->policy = ifapi_copy_policy(src->policy);
-        goto_if_null(dest->policy, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+        r = Tss2_PolicyCopy(src->policy, &dest->policy);
+        if (r)
+            r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+        goto_if_error(r, "Copy policy.", error_cleanup);
     } else {
         dest->policy = NULL;
     }

@@ -18,15 +18,16 @@
 #include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
 #include "ipolicy_calculate.h"             // for IPOLICY_EXEC_CTX
 #include "ipolicy_execute.h"               // for IPOLICY_EXEC_CTX
-#include "ipolicy_instantiate.h"           // for IPOLICY_EVAL_INST_CTX
-#include "ipolicy_types.h"                 // for TPMS_POLICY
-#include "tpm_json_deserialize.h"          // for ifapi_parse_json
-#include "tss2_common.h"                   // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_crypto.h"                   // for ifapi_hash_get_digest_size
-#include "tss2_esys.h"                     // for ESYS_CONTEXT, ESYS_TR
-#include "tss2_helpers.h"                  // for internal helpers
-#include "tss2_policy.h"                   // for TSS2_POLICY_CTX, TSS2_POL...
-#include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMT_HA
+#include "ipolicy_helpers.h"
+#include "ipolicy_instantiate.h"  // for IPOLICY_EVAL_INST_CTX
+#include "ipolicy_types.h"        // for TPMS_POLICY
+#include "tpm_json_deserialize.h" // for ifapi_parse_json
+#include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"          // for ifapi_hash_get_digest_size
+#include "tss2_esys.h"            // for ESYS_CONTEXT, ESYS_TR
+#include "tss2_helpers.h"         // for internal helpers
+#include "tss2_policy.h"          // for TSS2_POLICY_CTX, TSS2_POL...
+#include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPMT_HA
 
 #include "util/aux_util.h"
 
@@ -198,39 +199,6 @@ check_policy_is_calculated(TPMS_POLICY     *policy,
         policy_ctx->is_calculated = true;
     }
     return TSS2_RC_SUCCESS;
-}
-
-TPMS_POLICY *
-Tss2_InitTpmsPolicy(void) {
-    return calloc(1, sizeof(TPMS_POLICY));
-}
-
-/** Free memory allocated during deserialization of policy.
- *
- * The policy and its contents are freed and the caller's pointer is set to NULL.
- *
- * @param[in,out] policy_ptr The pointer to the policy to be freed.
- *
- */
-void
-Tss2_PolicyCleanup(TPMS_POLICY **policy_ptr) {
-    if (policy_ptr && *policy_ptr) {
-        TPMS_POLICY *policy = *policy_ptr;
-        SAFE_FREE(policy->description);
-        if (policy->policyAuthorizations) {
-            for (size_t i = 0; i < policy->policyAuthorizations->count; i++) {
-                if (policy->policyAuthorizations->authorizations[i].type
-                    && strcmp(policy->policyAuthorizations->authorizations[i].type, "pem") == 0) {
-                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].keyPEM);
-                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].pemSignature.buffer);
-                }
-                SAFE_FREE(policy->policyAuthorizations->authorizations[i].type);
-            }
-        }
-        SAFE_FREE(policy->policyAuthorizations);
-        cleanup_policy_elements(policy->policy);
-        SAFE_FREE(*policy_ptr);
-    }
 }
 
 /**
