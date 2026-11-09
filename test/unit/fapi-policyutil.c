@@ -5,6 +5,7 @@
 #endif
 
 #include "../helper/cmocka_all.h"
+#include "ipolicy_types.h" // for test policy fixtures
 #include "ifapi_policyutil_execute.h"
 #include <stdlib.h>
 

@@ -31,7 +31,8 @@ push_object_to_list(void *object, NODE_OBJECT_T **object_list);
 TSS2_RC
 ifapi_asprintf(char **str, const char *fmt, ...);
 
-void ifapi_check_json_object_fields(json_object *jso, char **field_tab, size_t size_of_tab);
+void ifapi_check_json_object_fields(json_object *jso, char **field_tab,
+                                    size_t size_of_tab);
 
 void ifapi_free_node_list(NODE_OBJECT_T *node);
 
