@@ -9,7 +9,6 @@
 #endif
 
 #include <inttypes.h> // for PRIu16
-#include <json.h>     // for json_object_to_json_string_ext
 #include <stdbool.h>  // for false, true
 #include <string.h>   // for memset, size_t, NULL
 
@@ -20,7 +19,6 @@
 #include "ifapi_keystore.h"              // for ifapi_cleanup_ifapi_object
 #include "ifapi_macros.h"                // for check_not_null, statecase
 #include "ifapi_policy.h"                // for ifapi_calculate_tree
-#include "ifapi_policy_json_serialize.h" // for ifapi_json_TPMS_POLICY_seri...
 #include "ifapi_policy_store.h"          // for ifapi_policy_store_load_async
 #include "ifapi_profiles.h"              // for IFAPI_PROFILES, IFAPI_PROFILE
 #include "tss2_common.h"                 // for TSS2_RC, TSS2_RC_SUCCESS
@@ -206,7 +204,6 @@ TSS2_RC
 Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
     LOG_TRACE("called for context:%p", context);
 
-    json_object *jso = NULL;
     TSS2_RC      r = TSS2_RC_SUCCESS;
 
     /* Check for NULL parameters */
@@ -271,12 +268,10 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
         Tss2_PolicyFinalize(&context->policy.tss2_policy_ctx);
 
         /* Serialize the policy to JSON. */
-        r = ifapi_json_TPMS_POLICY_serialize(command->policy, &jso);
+        r = Tss2_PolicyJsonSerialize(command->policy, jsonPolicy);
+        if (r)
+            r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
         goto_if_error(r, "Serialize policy", error_cleanup);
-
-        /* Duplicate the JSON string to be returned to the caller. */
-        strdup_check(*jsonPolicy, json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY), r,
-                     error_cleanup);
 
         break;
 
@@ -298,12 +293,10 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
                       error_cleanup);
 
         /* Serialize the policy to JSON. */
-        r = ifapi_json_TPMS_POLICY_serialize(context->cmd.ExportPolicy.object.policy, &jso);
+        r = Tss2_PolicyJsonSerialize(context->cmd.ExportPolicy.object.policy, jsonPolicy);
+        if (r)
+            r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
         goto_if_error(r, "Serialize policy", error_cleanup);
-
-        /* Duplicate the JSON string to be returned to the caller. */
-        strdup_check(*jsonPolicy, json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY), r,
-                     error_cleanup);
         break;
 
     statecasedefault(context->state);
@@ -311,8 +304,6 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
 
     /* Cleanup any intermediate results and state stored in the context. */
     context->state = FAPI_STATE_INIT;
-    if (jso)
-        json_object_put(jso);
     ifapi_cleanup_ifapi_object(&command->object);
     Tss2_PolicyCleanup(&command->policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
@@ -326,8 +317,6 @@ error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
     if (command->object.objectType)
         ifapi_cleanup_ifapi_object(&command->object);
-    if (jso)
-        json_object_put(jso);
     Tss2_PolicyCleanup(&command->policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);

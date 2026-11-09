@@ -19,8 +19,8 @@
 #include "ifapi_io.h"                      // for ifapi_io_path_exists, IFA...
 #include "ifapi_keystore.h"                // for ifapi_check_valid_path
 #include "ifapi_macros.h"                  // for goto_if_error2, return_tr...
-#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
-#include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
+#include "ifapi_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
 #include "ifapi_policy_store.h"
 #include "tpm_json_deserialize.h" // for ifapi_parse_json
 #include "tss2_helpers.h"         // for ifapi_asprintf ....
@@ -275,7 +275,6 @@ ifapi_policy_store_store_async(IFAPI_POLICY_STORE *pstore,
                                const TPMS_POLICY  *policy) {
     TSS2_RC      r;
     char        *jso_string = NULL;
-    json_object *jso = NULL;
     char        *abs_path = NULL;
 
     LOG_TRACE("Store policy: %s", path);
@@ -289,11 +288,10 @@ ifapi_policy_store_store_async(IFAPI_POLICY_STORE *pstore,
     goto_if_error2(r, "Path %s could not be created.", cleanup, path);
 
     /* Generate JSON string to be written to store */
-    r = ifapi_json_TPMS_POLICY_serialize(policy, &jso);
+    r = Tss2_PolicyJsonSerialize(policy, &jso_string);
+    if (r)
+        r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
     goto_if_error2(r, "Policy %s could not be serialized.", cleanup, path);
-
-    jso_string = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
-    goto_if_null2(jso_string, "Converting json to string", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
     /* Start writing the json string to disk */
     r = ifapi_io_write_async(io, abs_path, (uint8_t *)jso_string, strlen(jso_string));
@@ -301,8 +299,6 @@ ifapi_policy_store_store_async(IFAPI_POLICY_STORE *pstore,
     goto_if_error(r, "write_async failed", cleanup);
 
 cleanup:
-    if (jso)
-        json_object_put(jso);
     SAFE_FREE(abs_path);
     return r;
 }

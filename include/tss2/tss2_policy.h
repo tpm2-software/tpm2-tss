@@ -237,6 +237,18 @@ TPMS_POLICY *Tss2_InitTpmsPolicy(void);
  */
 void Tss2_PolicyCleanup(TPMS_POLICY **policy);
 
+/* Parse a policy document. The caller owns *policy and releases it with
+ * Tss2_PolicyCleanup. On failure, *policy is NULL; the output slot must not
+ * own an existing policy. No TPM or Policy context is required.
+ */
+TSS2_RC Tss2_PolicyJsonDeserialize(const char *json, TPMS_POLICY **policy);
+
+/* Serialize the current policy, including any digests and authorizations.
+ * The caller releases *json with free(). On failure, *json is NULL.
+ * The output slot must not own an existing string.
+ */
+TSS2_RC Tss2_PolicyJsonSerialize(const TPMS_POLICY *policy, char **json);
+
 /* Deep-copy an owned policy, including authorizations and calculated digests.
  * On failure, *destination is NULL. Source and copy can be freed independently.
  * Any previous value in *destination is overwritten without being freed.

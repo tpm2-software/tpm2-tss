@@ -26,10 +26,10 @@
 #include "util/log.h" // for LOG_TRACE, return_if_error, goto_i...
 
 typedef struct {
-    char           *description;
-    TPMI_POLICYTYPE capability;
-    UINT32          property;
-    UINT32          max;
+    char     *description;
+    TPM2_CAP  capability;
+    UINT32    property;
+    UINT32    max;
 } IFAPI_INFO_CAP;
 
 #define CAP_IDX_PT_FIXED 9

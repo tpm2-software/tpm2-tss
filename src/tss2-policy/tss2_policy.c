@@ -6,7 +6,6 @@
 #endif
 
 #include <inttypes.h> // for PRIx16, PRIx32
-#include <json.h>     // for json_object_put, json_obj...
 #include <stdbool.h>  // for true, bool, false
 #include <stdlib.h>   // for NULL, free, size_t, calloc
 #include <string.h>   // for memcpy, memset, strlen
@@ -14,14 +13,11 @@
 #include "fapi_crypto.h"                   // for PEM authorization conversion
 #include "fapi_int.h"                      // for IPOLICY_EXEC_CTX
 #include "ifapi_policy.h"                  // for ifapi_calculate_tree_ex
-#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
-#include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
 #include "ipolicy_calculate.h"             // for IPOLICY_EXEC_CTX
 #include "ipolicy_execute.h"               // for IPOLICY_EXEC_CTX
 #include "ipolicy_helpers.h"
 #include "ipolicy_instantiate.h"  // for IPOLICY_EVAL_INST_CTX
 #include "ipolicy_types.h"        // for TPMS_POLICY
-#include "tpm_json_deserialize.h" // for ifapi_parse_json
 #include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"          // for ifapi_hash_get_digest_size
 #include "tss2_esys.h"            // for ESYS_CONTEXT, ESYS_TR
@@ -33,12 +29,6 @@
 
 #define LOGMODULE "policy"
 #include "util/log.h" // for LOG_ERROR, str, LOG_TRACE
-
-#define JSON_OBJECT_SAFE_PUT(o)                                                                    \
-    do {                                                                                           \
-        json_object_put(o);                                                                        \
-        (o) = NULL;                                                                                \
-    } while (0)
 
 #define policy_check_not_null(X)                                                                   \
     if ((X) == NULL) {                                                                             \
@@ -278,7 +268,6 @@ Tss2_PolicyInit(const char *json_policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX *
     policy_check_not_null(policy_ctx);
 
     TPMS_POLICY *tmp_policy = NULL;
-    json_object *jso;
     TSS2_RC      r;
 
     *policy_ctx = calloc(1, sizeof(TSS2_POLICY_CTX));
@@ -289,11 +278,7 @@ Tss2_PolicyInit(const char *json_policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX *
     (*policy_ctx)->hash_alg = hash_alg;
     (*policy_ctx)->exec_ctx.hash_alg = hash_alg;
 
-    jso = ifapi_parse_json(json_policy);
-    goto_if_null(jso, "Policy could not be parsed.", TSS2_POLICY_RC_BAD_VALUE, cleanup);
-
-    r = ifapi_json_TPMS_POLICY_deserialize(jso, &tmp_policy);
-    json_object_put(jso);
+    r = Tss2_PolicyJsonDeserialize(json_policy, &tmp_policy);
     goto_if_error(r, "Deserialize policy", cleanup);
 
     r = check_policy_is_calculated(tmp_policy, hash_alg, *policy_ctx);
@@ -659,16 +644,9 @@ Tss2_PolicyGetCalculatedJSON(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *
 
     /* cache the calculated json */
     if (!policy_ctx->calculated.json.string) {
-        /* Generate JSON string of the policy */
-        json_object *jso = NULL;
-        TSS2_RC      rc = CALL_FAPI(ifapi_json_TPMS_POLICY_serialize(policy_ctx->policy_ptr, &jso));
+        TSS2_RC rc = Tss2_PolicyJsonSerialize(policy_ctx->policy_ptr,
+                                             &policy_ctx->calculated.json.string);
         return_if_error(rc, "Policy could not be serialized.");
-
-        policy_ctx->calculated.json.string
-            = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
-        JSON_OBJECT_SAFE_PUT(jso);
-        return_if_null(policy_ctx->calculated.json.string, "Converting json to string",
-                       TSS2_POLICY_RC_MEMORY);
 
         /* add extra byte so we can NULL terminate it */
         policy_ctx->calculated.json.len = strlen(policy_ctx->calculated.json.string) + 1;

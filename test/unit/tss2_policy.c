@@ -543,6 +543,42 @@ test_init_tpms_policy(void **state) {
 }
 
 static void
+test_policy_json_api(void **state) {
+    UNUSED(state);
+    const char *input = "{\"description\":\"json api\",\"policy\":["
+                        "{\"type\":\"POLICYCOMMANDCODE\",\"code\":349}]}";
+    TPMS_POLICY *policy = NULL;
+    TPMS_POLICY *copy = NULL;
+    char *json = NULL;
+    char *json_copy = NULL;
+    assert_int_equal(Tss2_PolicyJsonDeserialize(input, NULL), TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_int_equal(Tss2_PolicyJsonDeserialize(NULL, &policy), TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_null(policy);
+    const char *invalid[] = { "{", "[]", "null", "{}",
+        "{\"description\":\"invalid\",\"policy\":[{\"type\":\"POLICYOR\"}]}" };
+    for (size_t i = 0; i < ARRAY_LEN(invalid); ++i) {
+        assert_int_equal(Tss2_PolicyJsonDeserialize(invalid[i], &policy), TSS2_POLICY_RC_BAD_VALUE);
+        assert_null(policy);
+    }
+    assert_int_equal(Tss2_PolicyJsonSerialize(NULL, &json), TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_null(json);
+    assert_int_equal(Tss2_PolicyJsonDeserialize(input, &policy), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyJsonSerialize(policy, NULL), TSS2_POLICY_RC_BAD_REFERENCE);
+    /* Serialization works without a TPM, a context or calculated digests. */
+    assert_int_equal(Tss2_PolicyJsonSerialize(policy, &json), TSS2_RC_SUCCESS);
+    assert_non_null(json);
+    Tss2_PolicyCleanup(&policy);
+    assert_int_equal(Tss2_PolicyJsonDeserialize(json, &copy), TSS2_RC_SUCCESS);
+    assert_string_equal(copy->description, "json api");
+    assert_int_equal(copy->policy->elements[0].element.PolicyCommandCode.code, 349);
+    assert_int_equal(Tss2_PolicyJsonSerialize(copy, &json_copy), TSS2_RC_SUCCESS);
+    assert_string_equal(json, json_copy);
+    Tss2_PolicyCleanup(&copy);
+    free(json);
+    free(json_copy);
+}
+
+static void
 test_policy_copy(void **state) {
     UNUSED(state);
     TPMS_POLICY *source = Tss2_InitTpmsPolicy();
@@ -652,6 +688,7 @@ main(int argc, char *argv[]) {
                                         cmocka_unit_test(test_policy_get_authorization),
                                         cmocka_unit_test(test_init_tpms_policy),
                                         cmocka_unit_test(test_policy_copy),
+                                        cmocka_unit_test(test_policy_json_api),
                                         cmocka_unit_test(test_policy_copy_empty_and_invalid) };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

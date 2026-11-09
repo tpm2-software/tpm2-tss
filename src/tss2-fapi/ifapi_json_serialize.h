@@ -16,6 +16,11 @@
 #include "ifapi_keystore.h"     // for IFAPI_DUPLICATE, IFAPI_EXT_PUB_KEY
 #include "tss2_common.h"        // for TSS2_RC, UINT32
 
+#include "tss2_policy.h"
+
+TSS2_RC
+ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *policy, json_object **jso);
+
 #define YES 1
 #define NO  0
 

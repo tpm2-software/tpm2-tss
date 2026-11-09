@@ -21,8 +21,7 @@
 #include "ifapi_helpers.h"         // for ifapi_set_name_hierarchy_object ,,,
 #include "ifapi_ima_eventlog.h"    // for IFAPI_IMA_EVENT, ifapi_ge...
 #include "ifapi_json_deserialize.h"
-#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
-#include "ipolicy_types.h"                 // for TPMS_POLICY
+#include "tss2_policy.h" // for the opaque Policy API
 #include "tpm_json_deserialize.h"          // for ifapi_get_sub_object, ifa...
 #include "tss2_crypto.h"                   // for ifapi_crypto_hash_abort
 #include "tss2_esys.h"                     // for ESYS_TR_RH_OWNER
@@ -1231,4 +1230,21 @@ ifapi_json_TPMS_EVENT_CELMGT_deserialize(json_object *jso, TPMS_EVENT_CELMGT *ou
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
+}
+
+/* Adapt an embedded JSON object to the public Policy string API. */
+TSS2_RC
+ifapi_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY **policy) {
+    if (!policy)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    *policy = NULL;
+    if (!jso)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    const char *json = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PLAIN);
+    if (!json)
+        return TSS2_FAPI_RC_MEMORY;
+    TSS2_RC r = Tss2_PolicyJsonDeserialize(json, policy);
+    if ((r & TSS2_RC_LAYER_MASK) == TSS2_POLICY_RC_LAYER)
+        r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+    return r;
 }
