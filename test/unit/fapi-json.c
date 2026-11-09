@@ -432,6 +432,101 @@ check_bin(void **state) {
 
     CHECK_BIN(TPMT_SIG_SCHEME, rsa_scheme);
 
+    /* PQC: ML-DSA public key */
+    TPM2B_PUBLIC inPublicMLDSA = {
+        .size = 0,
+        .publicArea = {
+            .type = TPM2_ALG_MLDSA,
+            .nameAlg = TPM2_ALG_SHA256,
+            .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
+                                 TPMA_OBJECT_SIGN_ENCRYPT |
+                                 TPMA_OBJECT_FIXEDTPM |
+                                 TPMA_OBJECT_FIXEDPARENT |
+                                 TPMA_OBJECT_SENSITIVEDATAORIGIN),
+            .authPolicy = {
+                 .size = 0,
+             },
+            .parameters.mldsaDetail = {
+                 .parameterSet = TPM2_MLDSA_PARMS_65,
+                 .allowExternalMu = 0,
+             },
+            .unique.mldsa = {
+                 .size = 0,
+                 .buffer = {},
+             },
+        },
+    };
+
+    CHECK_BIN(TPM2B_PUBLIC, inPublicMLDSA);
+
+    /* PQC: Hash-ML-DSA public key */
+    TPM2B_PUBLIC inPublicHashMLDSA = {
+        .size = 0,
+        .publicArea = {
+            .type = TPM2_ALG_HASH_MLDSA,
+            .nameAlg = TPM2_ALG_SHA256,
+            .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
+                                 TPMA_OBJECT_SIGN_ENCRYPT |
+                                 TPMA_OBJECT_FIXEDTPM |
+                                 TPMA_OBJECT_FIXEDPARENT |
+                                 TPMA_OBJECT_SENSITIVEDATAORIGIN),
+            .authPolicy = {
+                 .size = 0,
+             },
+            .parameters.hash_mldsaDetail = {
+                 .parameterSet = TPM2_MLDSA_PARMS_87,
+                 .hashAlg = TPM2_ALG_SHA256,
+             },
+            .unique.mldsa = {
+                 .size = 0,
+                 .buffer = {},
+             },
+        },
+    };
+
+    CHECK_BIN(TPM2B_PUBLIC, inPublicHashMLDSA);
+
+    /* PQC: ML-KEM public key */
+    TPM2B_PUBLIC inPublicMLKEM = {
+        .size = 0,
+        .publicArea = {
+            .type = TPM2_ALG_MLKEM,
+            .nameAlg = TPM2_ALG_SHA256,
+            .objectAttributes = (TPMA_OBJECT_USERWITHAUTH |
+                                 TPMA_OBJECT_DECRYPT |
+                                 TPMA_OBJECT_FIXEDTPM |
+                                 TPMA_OBJECT_FIXEDPARENT |
+                                 TPMA_OBJECT_SENSITIVEDATAORIGIN),
+            .authPolicy = {
+                 .size = 0,
+             },
+            .parameters.mlkemDetail = {
+                 .symmetric = {
+                     .algorithm = TPM2_ALG_NULL,
+                 },
+                 .parameterSet = TPM2_MLKEM_PARMS_768,
+             },
+            .unique.mlkem = {
+                 .size = 0,
+                 .buffer = {},
+             },
+        },
+    };
+
+    CHECK_BIN(TPM2B_PUBLIC, inPublicMLKEM);
+
+    /* PQC: MLDSA signing scheme */
+    TPMT_SIG_SCHEME mldsa_scheme
+        = { .scheme = TPM2_ALG_MLDSA, .details.any = { .hashAlg = TPM2_ALG_NULL } };
+
+    CHECK_BIN(TPMT_SIG_SCHEME, mldsa_scheme);
+
+    /* PQC: HASH_MLDSA signing scheme */
+    TPMT_SIG_SCHEME hash_mldsa_scheme
+        = { .scheme = TPM2_ALG_HASH_MLDSA, .details.any = { .hashAlg = TPM2_ALG_SHA256 } };
+
+    CHECK_BIN(TPMT_SIG_SCHEME, hash_mldsa_scheme);
+
     TPMA_NV testNV = 0xffffff0f;
 
     CHECK_BIN_SIMPLE(TPMA_NV, testNV);
@@ -735,6 +830,55 @@ check_json_structs(void **state) {
 
     CHECK_JSON(TPM2B_PUBLIC, test_json_TPM2B_PUBLIC_src, test_json_TPM2B_PUBLIC_expected);
     CHECK_JSON(TPM2B_PUBLIC, test_json_TPM2B_PUBLIC_dwnc_src, test_json_TPM2B_PUBLIC_expected);
+
+    /* PQC: ML-DSA public key JSON round-trip */
+    const char *test_json_TPM2B_PUBLIC_MLDSA_src = "{"
+                                                   "  \"size\":0,"
+                                                   "  \"publicArea\":{"
+                                                   "    \"type\":\"MLDSA\","
+                                                   "    \"nameAlg\":\"sha256\","
+                                                   "    \"objectAttributes\":["
+                                                   "      \"fixedTPM\","
+                                                   "      \"fixedParent\","
+                                                   "      \"sensitiveDataOrigin\","
+                                                   "      \"userWithAuth\","
+                                                   "      \"sign\""
+                                                   "    ],"
+                                                   "    \"authPolicy\":\"\","
+                                                   "    \"parameters\":{"
+                                                   "      \"parameterSet\":2,"
+                                                   "      \"allowExternalMu\":0"
+                                                   "    },"
+                                                   "    \"unique\":\"\""
+                                                   "  }"
+                                                   "}";
+    const char *test_json_TPM2B_PUBLIC_MLDSA_expected = "{\n"
+                                                        "  \"size\":0,\n"
+                                                        "  \"publicArea\":{\n"
+                                                        "    \"type\":\"MLDSA\",\n"
+                                                        "    \"nameAlg\":\"sha256\",\n"
+                                                        "\"objectAttributes\":{"
+                                                        "      \"fixedTPM\":1,"
+                                                        "      \"stClear\":0,"
+                                                        "      \"fixedParent\":1,"
+                                                        "      \"sensitiveDataOrigin\":1,"
+                                                        "      \"userWithAuth\":1,"
+                                                        "      \"adminWithPolicy\":0,"
+                                                        "      \"noDA\":0,"
+                                                        "      \"encryptedDuplication\":0,"
+                                                        "      \"restricted\":0,"
+                                                        "      \"decrypt\":0,"
+                                                        "      \"sign\":1"
+                                                        "    },"
+                                                        "    \"authPolicy\":\"\",\n"
+                                                        "    \"parameters\":{\n"
+                                                        "      \"parameterSet\":2\n"
+                                                        "    },\n"
+                                                        "    \"unique\":\"\"\n"
+                                                        "  }\n"
+                                                        "}";
+    CHECK_JSON(TPM2B_PUBLIC, test_json_TPM2B_PUBLIC_MLDSA_src,
+               test_json_TPM2B_PUBLIC_MLDSA_expected);
 
     const char *test_json_TPMS_ATTEST_certify_src
         = "{\n"
@@ -2327,6 +2471,22 @@ check_tpmjson_tofromtxt(void **state) {
     const char *expected_alg_public = { "\"RSA\"" };
     for (size_t i = 0; i < sizeof(testcase_alg_public) / sizeof(testcase_alg_public[0]); i++) {
         CHECK_JSON_SIMPLE(TPMI_ALG_PUBLIC, testcase_alg_public[i], expected_alg_public);
+    }
+
+    /* PQC: ML-DSA algorithm name resolution */
+    const char *testcase_alg_mldsa[]
+        = { "\"TPM2_ALG_MLDSA\"", "\"ALG_MLDSA\"", "\"MLDSA\"", "\"0x00a1\"" };
+    const char *expected_alg_mldsa = { "\"MLDSA\"" };
+    for (size_t i = 0; i < sizeof(testcase_alg_mldsa) / sizeof(testcase_alg_mldsa[0]); i++) {
+        CHECK_JSON_SIMPLE(TPMI_ALG_PUBLIC, testcase_alg_mldsa[i], expected_alg_mldsa);
+    }
+
+    /* PQC: ML-KEM algorithm name resolution */
+    const char *testcase_alg_mlkem[]
+        = { "\"TPM2_ALG_MLKEM\"", "\"ALG_MLKEM\"", "\"MLKEM\"", "\"0x00a0\"" };
+    const char *expected_alg_mlkem = { "\"MLKEM\"" };
+    for (size_t i = 0; i < sizeof(testcase_alg_mlkem) / sizeof(testcase_alg_mlkem[0]); i++) {
+        CHECK_JSON_SIMPLE(TPMI_ALG_PUBLIC, testcase_alg_mlkem[i], expected_alg_mlkem);
     }
 }
 
