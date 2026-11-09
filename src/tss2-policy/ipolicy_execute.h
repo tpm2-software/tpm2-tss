@@ -14,6 +14,7 @@
 #include "tss2_esys.h"       // for ESYS_TR, ESYS_CONTEXT
 #include "tss2_policy.h"     // for TSS2_POLICY_EXEC_CALLBACKS
 #include "tss2_tpm2_types.h" // for TPMI_ALG_HASH, TPM2B_DIGEST, TPM2B_NAME
+#include "tss2_types.h"      // for NODE_OBJECT_T (shared types)
 
 /** The states for policy execution */
 enum IPOLICY_STATE_EXCECUTE {
@@ -30,7 +31,7 @@ enum IPOLICY_STATE_EXCECUTE {
 };
 
 /** The context of the policy execution */
-struct IPOLICY_EXEC_CTX {
+typedef struct IPOLICY_EXEC_CTX {
     enum IPOLICY_STATE_EXCECUTE state;
     /**< The execution state of the current
          policy command */
@@ -57,7 +58,7 @@ struct IPOLICY_EXEC_CTX {
     /**< callbacks used for execution of sub
          policies and actions which require access
          to the FAPI context. */
-};
+} IPOLICY_EXEC_CTX;
 
 TSS2_RC
 ifapi_policyeval_execute_prepare(IPOLICY_EXEC_CTX   *pol_ctx,

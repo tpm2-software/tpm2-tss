@@ -10,20 +10,17 @@
 #include <stdlib.h>   // for NULL, free, size_t, calloc
 #include <string.h>   // for memcpy, memset, strlen
 
-#include "fapi_crypto.h"                   // for PEM authorization conversion
-#include "fapi_int.h"                      // for IPOLICY_EXEC_CTX
-#include "ifapi_policy.h"                  // for ifapi_calculate_tree_ex
-#include "ipolicy_calculate.h"             // for IPOLICY_EXEC_CTX
-#include "ipolicy_execute.h"               // for IPOLICY_EXEC_CTX
+#include "ipolicy_calculate.h" // for IPOLICY_EXEC_CTX
+#include "ipolicy_execute.h"   // for IPOLICY_EXEC_CTX
 #include "ipolicy_helpers.h"
-#include "ipolicy_instantiate.h"  // for IPOLICY_EVAL_INST_CTX
-#include "ipolicy_types.h"        // for TPMS_POLICY
-#include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_crypto.h"          // for ifapi_hash_get_digest_size
-#include "tss2_esys.h"            // for ESYS_CONTEXT, ESYS_TR
-#include "tss2_helpers.h"         // for internal helpers
-#include "tss2_policy.h"          // for TSS2_POLICY_CTX, TSS2_POL...
-#include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPMT_HA
+#include "ipolicy_instantiate.h" // for IPOLICY_EVAL_INST_CTX
+#include "ipolicy_types.h"       // for TPMS_POLICY
+#include "tss2_common.h"         // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"         // for ifapi_hash_get_digest_size
+#include "tss2_esys.h"           // for ESYS_CONTEXT, ESYS_TR
+#include "tss2_helpers.h"        // for internal helpers
+#include "tss2_policy.h"         // for TSS2_POLICY_CTX, TSS2_POL...
+#include "tss2_tpm2_types.h"     // for TPM2B_DIGEST, TPMT_HA
 
 #include "util/aux_util.h"
 
@@ -100,7 +97,7 @@ ipolicy_calculate_tree_ex(IPOLICY_EVAL_INST_CTX *context,
 
     statecase(context->state, IPOLICY_INSTANTIATE);
         r = ifapi_policyeval_instantiate_finish(context);
-        FAPI_SYNC(r, "Instantiate policy.", cleanup);
+        TSS2_SYNC(r, "Instantiate policy.", cleanup);
         ifapi_free_node_list(context->policy_elements);
         context->policy_elements = NULL;
 
@@ -644,8 +641,8 @@ Tss2_PolicyGetCalculatedJSON(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *
 
     /* cache the calculated json */
     if (!policy_ctx->calculated.json.string) {
-        TSS2_RC rc = Tss2_PolicyJsonSerialize(policy_ctx->policy_ptr,
-                                             &policy_ctx->calculated.json.string);
+        TSS2_RC rc
+            = Tss2_PolicyJsonSerialize(policy_ctx->policy_ptr, &policy_ctx->calculated.json.string);
         return_if_error(rc, "Policy could not be serialized.");
 
         /* add extra byte so we can NULL terminate it */

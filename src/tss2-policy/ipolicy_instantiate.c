@@ -5,6 +5,7 @@
  *******************************************************************************/
 
 #include "tss2_common.h"
+#include "tss2_crypto.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif

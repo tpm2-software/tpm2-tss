@@ -16,19 +16,20 @@
 #include <strings.h>  // for strncasecmp, strcasecmp
 
 #include "fapi_int.h"              // for HASH_UPDATE_BUFFER
-#include "fapi_types.h"            // for UINT8_ARY
 #include "ifapi_eventlog_system.h" // for IFAPI_FIRMWARE_EVENT, ifa...
 #include "ifapi_helpers.h"         // for ifapi_set_name_hierarchy_object ,,,
 #include "ifapi_ima_eventlog.h"    // for IFAPI_IMA_EVENT, ifapi_ge...
 #include "ifapi_json_deserialize.h"
-#include "tss2_policy.h" // for the opaque Policy API
-#include "tpm_json_deserialize.h"          // for ifapi_get_sub_object, ifa...
-#include "tss2_crypto.h"                   // for ifapi_crypto_hash_abort
-#include "tss2_esys.h"                     // for ESYS_TR_RH_OWNER
-#include "tss2_helpers.h"                  // for ifapi_check_json_object_f...
-#include "tss2_mu.h"                       // for Tss2_MU_TPM2B_PRIVATE_Unm...
-#include "tss2_policy.h"                   // for Tss2_PolicyCleanup
-#include "tss2_tpm2_types.h"               // for TPMT_HA, TPM2_NO, TPML_DI...
+#include "json_helpers.h"
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifa...
+#include "tss2_crypto.h"          // for ifapi_crypto_hash_abort
+#include "tss2_esys.h"            // for ESYS_TR_RH_OWNER
+#include "tss2_helpers.h"         // for ifapi_check_json_object_f...
+#include "tss2_mu.h"              // for Tss2_MU_TPM2B_PRIVATE_Unm...
+#include "tss2_policy.h"          // for the opaque Policy API
+#include "tss2_policy.h"          // for Tss2_PolicyCleanup
+#include "tss2_tpm2_types.h"      // for TPMT_HA, TPM2_NO, TPML_DI...
+#include "tss2_types.h"           // for UINT8_ARY
 
 #define LOGMODULE fapijson
 #include "util/log.h" // for return_if_error, LOG_ERROR
@@ -109,20 +110,6 @@ get_number(const char *token, int64_t *num) {
     }
 
     return true;
-}
-
-/** Deserialize a character string.
- *
- * @param[in] jso json string object.
- * @param[out] out the pointer to the created string.
- * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- */
-TSS2_RC
-ifapi_json_char_deserialize(json_object *jso, char **out) {
-    *out = strdup(json_object_get_string(jso));
-    return_if_null(*out, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-    return TSS2_RC_SUCCESS;
 }
 
 /** Deserialize a IFAPI_KEY json object.

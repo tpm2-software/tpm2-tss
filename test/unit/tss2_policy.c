@@ -545,17 +545,18 @@ test_init_tpms_policy(void **state) {
 static void
 test_policy_json_api(void **state) {
     UNUSED(state);
-    const char *input = "{\"description\":\"json api\",\"policy\":["
-                        "{\"type\":\"POLICYCOMMANDCODE\",\"code\":349}]}";
+    const char  *input = "{\"description\":\"json api\",\"policy\":["
+                         "{\"type\":\"POLICYCOMMANDCODE\",\"code\":349}]}";
     TPMS_POLICY *policy = NULL;
     TPMS_POLICY *copy = NULL;
-    char *json = NULL;
-    char *json_copy = NULL;
+    char        *json = NULL;
+    char        *json_copy = NULL;
     assert_int_equal(Tss2_PolicyJsonDeserialize(input, NULL), TSS2_POLICY_RC_BAD_REFERENCE);
     assert_int_equal(Tss2_PolicyJsonDeserialize(NULL, &policy), TSS2_POLICY_RC_BAD_REFERENCE);
     assert_null(policy);
-    const char *invalid[] = { "{", "[]", "null", "{}",
-        "{\"description\":\"invalid\",\"policy\":[{\"type\":\"POLICYOR\"}]}" };
+    const char *invalid[]
+        = { "{", "[]", "null", "{}",
+            "{\"description\":\"invalid\",\"policy\":[{\"type\":\"POLICYOR\"}]}" };
     for (size_t i = 0; i < ARRAY_LEN(invalid); ++i) {
         assert_int_equal(Tss2_PolicyJsonDeserialize(invalid[i], &policy), TSS2_POLICY_RC_BAD_VALUE);
         assert_null(policy);

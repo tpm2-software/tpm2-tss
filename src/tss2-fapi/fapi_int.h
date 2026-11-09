@@ -12,7 +12,6 @@
 #include <stdio.h>   // for size_t, NULL
 #include <unistd.h>  // for R_OK, W_OK
 
-#include "fapi_types.h"         // for NODE_STR_T, NODE_OBJECT_T, UIN...
 #include "ifapi_config.h"       // for IFAPI_CONFIG
 #include "ifapi_eventlog.h"     // for IFAPI_EVENT, FAPI_QUOTE_INFO
 #include "ifapi_io.h"           // for IFAPI_IO
@@ -24,6 +23,7 @@
 #include "tss2_fapi.h"          // for Fapi_CB_Auth, Fapi_CB_Branch
 #include "tss2_policy.h"        // for TSS2_POLICY_CTX, TSS2_POLICY_CALC_CALLBACKS
 #include "tss2_tpm2_types.h"    // for TPM2_HANDLE, TPMS_CAPABILITY_DATA
+#include "tss2_types.h"         // for NODE_STR_T, NODE_OBJECT_T, UIN...
 #include "util/aux_util.h"      // for goto_if_error, TPM2_ERROR_FORMAT
 
 #define DEFAULT_LOG_DIR       "/run/tpm2_tss"
@@ -89,12 +89,6 @@ typedef struct {
     UINT16 size;
     BYTE   buffer[IFAPI_MAX_BUFFER_SIZE];
 } IFAPI_MAX_BUFFER;
-
-#define OSSL_FREE(S, TYPE)                                                                         \
-    if ((S) != NULL) {                                                                             \
-        TYPE##_free((void *)(S));                                                                  \
-        (S) = NULL;                                                                                \
-    }
 
 #define FAPI_COPY_DIGEST(dest_buffer, dest_size, src, src_size)                                    \
     if ((src_size) > sizeof(TPMU_HA)) {                                                            \
@@ -650,7 +644,6 @@ enum IFAPI_STATE_POLICY {
     POLICY_FLUSH
 };
 
-typedef struct IPOLICY_EXEC_CTX       IPOLICY_EXEC_CTX;
 typedef struct IFAPI_POLICYUTIL_STACK IFAPI_POLICYUTIL_STACK;
 
 /** The states for session creation */

@@ -6,17 +6,14 @@
 #ifndef TSS2_HELPERS_H
 #define TSS2_HELPERS_H
 
-// TODO change Makefile.am #include <json.h>    // for json_object
-#include <json-c/json.h> // for json_object
-#include <stdbool.h>     // for bool
-#include <stddef.h>      // for size_t
-#include <stdint.h>      // for uint8_t
+#include <stdbool.h> // for bool
+#include <stddef.h>  // for size_t
+#include <stdint.h>  // for uint8_t
 
 #include "tss2_common.h" // for TSS2_RC
 
-#include "fapi_crypto.h"
-#include "fapi_types.h"
 #include "tss2_policy.h"
+#include "tss2_types.h"
 
 #define TSS2_FILE_DELIM_CHAR '/'
 
@@ -31,9 +28,6 @@ push_object_to_list(void *object, NODE_OBJECT_T **object_list);
 TSS2_RC
 ifapi_asprintf(char **str, const char *fmt, ...);
 
-void ifapi_check_json_object_fields(json_object *jso, char **field_tab,
-                                    size_t size_of_tab);
-
 void ifapi_free_node_list(NODE_OBJECT_T *node);
 
 TSS2_RC
@@ -41,10 +35,5 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name);
 
 TSS2_RC
 ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name);
-
-TSS2_RC
-ifapi_set_name_hierarchy_object(IFAPI_OBJECT *hierarchy);
-
-void ifapi_init_hierarchy_object(IFAPI_OBJECT *hierarchy, ESYS_TR esys_handle);
 
 #endif /* TSS2_HELPERS_H */

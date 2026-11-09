@@ -6,22 +6,29 @@
 #ifndef AUX_UTIL_H
 #define AUX_UTIL_H
 
-#include "util/aux_util.h"
 #include <stdbool.h> // for true, bool, false
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 #include <inttypes.h> // for PRIx32
-#include <string.h>   // for explicit_bzero
 
 #include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC_LAYER_MASK
 #include "tss2_tpm2_types.h" // for TPM2_RC_1, TPM2_RC_ASYMMETRIC, TPM2_RC_...
-#if defined(_WIN32)
-#include <windows.h> // for SecureZeroMemory
-#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define OSSL_FREE(S, TYPE)                                                                         \
+    if ((S) != NULL) {                                                                             \
+        TYPE##_free((void *)(S));                                                                  \
+        (S) = NULL;                                                                                \
+    }
+
+#define SAFE_FREE(S)                                                                               \
+    if ((S) != NULL) {                                                                             \
+        free((void *)(S));                                                                         \
+        (S) = NULL;                                                                                \
+    }
 
 /*
  * secure_mem_zero(buf, size)
@@ -208,6 +215,18 @@ extern "C" {
     if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {                                                    \
         LOG_TRACE("Received TRY_AGAIN; returning TRY_AGAIN");                                      \
         return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
+    }
+
+#define return_if_error2(r, msg, ...)                                                              \
+    if (r != TSS2_RC_SUCCESS) {                                                                    \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        return r;                                                                                  \
+    }
+
+#define check_oom(X)                                                                               \
+    if ((X) == NULL) {                                                                             \
+        LOG_ERROR("Out of memory");                                                                \
+        return TSS2_FAPI_RC_MEMORY;                                                                \
     }
 
 #define statecase(VAR, STATE)                                                                      \
