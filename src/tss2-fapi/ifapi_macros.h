@@ -20,12 +20,6 @@
         }                                                                                          \
     }
 
-#define return_if_error2(r, msg, ...)                                                              \
-    if (r != TSS2_RC_SUCCESS) {                                                                    \
-        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
-        return r;                                                                                  \
-    }
-
 #define return_if_error_reset_state(r, msg, ...)                                                   \
     if (r != TSS2_RC_SUCCESS) {                                                                    \
         LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
@@ -70,12 +64,6 @@
             LOG_ERROR(str(X) " is larger than %zi", _upper);                                       \
             return TSS2_FAPI_RC_BAD_VALUE;                                                         \
         }                                                                                          \
-    }
-
-#define check_oom(X)                                                                               \
-    if ((X) == NULL) {                                                                             \
-        LOG_ERROR("Out of memory");                                                                \
-        return TSS2_FAPI_RC_MEMORY;                                                                \
     }
 
 #define general_failure(VAR)                                                                       \

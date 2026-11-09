@@ -20,12 +20,12 @@
 #include <unistd.h>   // for access, read, rmdir, write
 
 #include "fapi_int.h"      // for FAPI_WRITE
-#include "fapi_types.h"    // for NODE_OBJECT_T
 #include "ifapi_helpers.h" // for ifapi_asprintf, ifapi_create_dirs
 #include "ifapi_io.h"
 #include "ifapi_macros.h" // for check_not_null, return_error2, check_oom
 #include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_RC_S...
 #include "tss2_helpers.h" // for ifapi_asprintf, ifapi_create_dirs
+#include "tss2_types.h"   // for NODE_OBJECT_T
 #include <fcntl.h>        // for open
 #define LOGMODULE fapi
 #include "util-io/io.h" // for TEMP_RETRY

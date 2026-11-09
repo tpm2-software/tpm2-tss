@@ -13,10 +13,10 @@
 #include <stdlib.h> // for calloc, free, reallocarray
 #include <string.h> // for memset, strdup, strlen
 
-#include "fapi_int.h"                      // for IFAPI_FILE_DELIM_CHAR
-#include "ifapi_helpers.h"                 // for FAPI helpers
-#include "ifapi_macros.h"                  // for check_not_null, goto_if_n...
+#include "fapi_int.h"               // for IFAPI_FILE_DELIM_CHAR
+#include "ifapi_helpers.h"          // for FAPI helpers
 #include "ifapi_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_macros.h"           // for check_not_null, goto_if_n...
 #include "ifapi_profiles.h"
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifa...
 #include "tss2_common.h"          // for TSS2_FAPI_RC_BAD_VALUE

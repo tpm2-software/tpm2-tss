@@ -13,7 +13,6 @@
 #include <stdlib.h>   // for size_t, NULL, calloc, malloc
 #include <string.h>   // for memset, memcmp, memcpy, strcmp
 
-#include "fapi_types.h"    // for UINT8_ARY
 #include "fapi_util.h"     // for ifapi_get_object_path, ifapi_a...
 #include "ifapi_helpers.h" // for ifapi_TPMT_PUBLIC_cmp, ifapi_c...
 #include "ifapi_macros.h"  // for statecase, fallthrough, return...
@@ -26,6 +25,7 @@
 #include "tss2_helpers.h"             // for policy helpers
 #include "tss2_mu.h"                  // for Tss2_MU_TPMT_HA_Unmarshal
 #include "tss2_policy.h"              // for Tss2_PolicyCleanup
+#include "tss2_types.h"               // for UINT8_ARY
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, goto_if_error, retu...

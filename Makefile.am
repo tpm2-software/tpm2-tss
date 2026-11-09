@@ -658,6 +658,8 @@ noinst_LTLIBRARIES += libtss2-fapi-policy-internal.la
 lib_fapi_policy_internal = libtss2-fapi-policy-internal.la
 
 libtss2_fapi_policy_internal_la_SOURCES = \
+    src/tss2-fapi-policy/json_helpers.c \
+    src/tss2-fapi-policy/json_helpers.h \
     src/tss2-fapi-policy/tpm_json_deserialize.c \
     src/tss2-fapi-policy/tpm_json_deserialize.h \
     src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -677,7 +679,7 @@ libtss2_fapi_policy_internal_la_CFLAGS = \
     $(CRYPTO_CFLAGS)
 
 noinst_HEADERS = \
-    src/tss2-fapi-policy/fapi_types.h \
+    src/tss2-fapi-policy/tss2_types.h \
     src/tss2-fapi-policy/tss2_helpers.h \
     src/tss2-fapi-policy/tss2_crypto.h
 

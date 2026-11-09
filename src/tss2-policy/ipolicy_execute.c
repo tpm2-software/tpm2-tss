@@ -12,7 +12,6 @@
 #include <stdlib.h>   // for size_t, NULL, malloc
 #include <string.h>   // for memcpy, memset
 
-#include "ifapi_helpers.h" // for ifapi_nv_get_name, append_object_to_list
 #include "ipolicy_execute.h"
 #include "ipolicy_helpers.h"
 #include "tss2_crypto.h"   // for ifapi_crypto_hash_finish, ifapi_crypto_ha...

@@ -12,8 +12,7 @@
 #include <stdlib.h> // for free
 #include <string.h> // for memset, strdup, memcpy
 
-#include "fapi_int.h"   // for IFAPI_PCR_LOG_FILE, FAPI_...
-#include "fapi_types.h" // for UINT8_ARY
+#include "fapi_int.h" // for IFAPI_PCR_LOG_FILE, FAPI_...
 #include "ifapi_eventlog.h"
 #include "ifapi_helpers.h"                 // ifapi_cal...
 #include "ifapi_ima_eventlog.h"            // for IFAPI_IMA_EVENT, ifapi_re...
@@ -23,6 +22,7 @@
 #include "ifapi_macros.h"                  // for check_not_null, statecase
 #include "tpm_json_deserialize.h"          // for ifapi_parse_json
 #include "tss2_helpers.h"                  // for ifapi_asprintf, ifapi_cal...
+#include "tss2_types.h"                    // for UINT8_ARY
 
 #define LOGMODULE fapi
 #include "util/log.h" // for goto_if_error, SAFE_FREE

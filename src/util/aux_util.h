@@ -18,6 +18,12 @@
 extern "C" {
 #endif
 
+#define OSSL_FREE(S, TYPE)                                                                         \
+    if ((S) != NULL) {                                                                             \
+        TYPE##_free((void *)(S));                                                                  \
+        (S) = NULL;                                                                                \
+    }
+
 #define SAFE_FREE(S)                                                                               \
     if ((S) != NULL) {                                                                             \
         free((void *)(S));                                                                         \
@@ -169,6 +175,18 @@ extern "C" {
     if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {                                                    \
         LOG_TRACE("Received TRY_AGAIN; returning TRY_AGAIN");                                      \
         return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
+    }
+
+#define return_if_error2(r, msg, ...)                                                              \
+    if (r != TSS2_RC_SUCCESS) {                                                                    \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        return r;                                                                                  \
+    }
+
+#define check_oom(X)                                                                               \
+    if ((X) == NULL) {                                                                             \
+        LOG_ERROR("Out of memory");                                                                \
+        return TSS2_FAPI_RC_MEMORY;                                                                \
     }
 
 #define statecase(VAR, STATE)                                                                      \

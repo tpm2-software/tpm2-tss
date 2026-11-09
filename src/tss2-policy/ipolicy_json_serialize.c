@@ -8,12 +8,12 @@
 #endif
 
 #include <inttypes.h> // for PRIx32
-#include <stdlib.h>
 #include <stdio.h>    // for NULL, size_t
-#include <string.h>   // for strcmp, strlen
+#include <stdlib.h>
+#include <string.h> // for strcmp, strlen
 
-#include "ifapi_json_serialize.h" // for ifapi_json_UINT8_ARY_serialize
 #include "ipolicy_json_serialize.h"
+#include "json_helpers.h"
 #include "tpm_json_serialize.h" // for ifapi_json_TPM2B_DIGEST_serialize
 #include "tss2_tpm2_types.h"    // for TPM2B_NAME, TPMT_PUBLIC, TPM2B_DIGEST
 
@@ -1527,7 +1527,7 @@ Tss2_PolicyJsonSerialize(const TPMS_POLICY *policy, char **json) {
     if (!policy)
         return TSS2_POLICY_RC_BAD_REFERENCE;
     json_object *jso = NULL;
-    TSS2_RC r = ipolicy_json_TPMS_POLICY_serialize(policy, &jso);
+    TSS2_RC      r = ipolicy_json_TPMS_POLICY_serialize(policy, &jso);
     if (!r) {
         const char *string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
         *json = string ? strdup(string) : NULL;

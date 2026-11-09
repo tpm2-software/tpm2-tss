@@ -3,8 +3,8 @@
  * Copyright 2018-2019, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  ******************************************************************************/
-#ifndef FAPI_TYPES_H
-#define FAPI_TYPES_H
+#ifndef TSS2_TYPES_H
+#define TSS2_TYPES_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -20,9 +20,9 @@ typedef TSS2_POLICY_BUFFER UINT8_ARY;
  * The structure is used for the processing of file paths
  */
 typedef struct str_node {
-  char *str;        /**< A string of the string list */
-  bool free_string; /**< Indicates whether a free has to called on cleanup */
-  struct str_node *next; /**< Pointer to next element */
+    char            *str;         /**< A string of the string list */
+    bool             free_string; /**< Indicates whether a free has to called on cleanup */
+    struct str_node *next;        /**< Pointer to next element */
 } NODE_STR_T;
 
 /** The data structure storing a linked list of objects.
@@ -30,9 +30,9 @@ typedef struct str_node {
  * The structure is used for the processing of file paths
  */
 typedef struct object_node {
-  void *object;             /**< The pointer to the object  */
-  size_t size;              /**< Will be used only for BYTE arrays */
-  struct object_node *next; /**< Pointer to next element */
+    void               *object; /**< The pointer to the object  */
+    size_t              size;   /**< Will be used only for BYTE arrays */
+    struct object_node *next;   /**< Pointer to next element */
 } NODE_OBJECT_T;
 
-#endif /* FAPI_TYPES_H */
+#endif /* TSS2_TYPES_H */
