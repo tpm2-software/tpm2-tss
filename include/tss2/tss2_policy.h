@@ -237,6 +237,14 @@ TPMS_POLICY *Tss2_InitTpmsPolicy(void);
  */
 void Tss2_PolicyCleanup(TPMS_POLICY **policy);
 
+/* Deep-copy an owned policy, including authorizations and calculated digests.
+ * On failure, *destination is NULL. Source and copy can be freed independently.
+ * Any previous value in *destination is overwritten without being freed.
+ * A PolicyAuthorizeNV runtime policy_buffer without length cannot be copied
+ * and returns TSS2_POLICY_RC_BAD_VALUE.
+ */
+TSS2_RC Tss2_PolicyCopy(const TPMS_POLICY *source, TPMS_POLICY **destination);
+
 TSS2_RC
 Tss2_PolicySetPolicy(TPMS_POLICY *policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX **policy_ctx);
 

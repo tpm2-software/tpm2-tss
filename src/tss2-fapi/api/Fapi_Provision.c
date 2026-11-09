@@ -1282,9 +1282,10 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         command->hierarchy_auth.size = strlen(command->authValueLockout);
         context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
         if (defaultProfile->lockout_policy) {
-            command->hierarchy_policy = ifapi_copy_policy(defaultProfile->lockout_policy);
-            goto_if_null2(command->hierarchy_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                          error_cleanup);
+            r = Tss2_PolicyCopy(defaultProfile->lockout_policy, &command->hierarchy_policy);
+            if (r)
+                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+            goto_if_error(r, "Copy policy.", error_cleanup);
         } else {
             command->hierarchy_policy = NULL;
         }
@@ -1373,9 +1374,10 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_CHANGE_EH_CHECK);
         context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
         if (defaultProfile->eh_policy) {
-            command->hierarchy_policy = ifapi_copy_policy(defaultProfile->eh_policy);
-            goto_if_null2(command->hierarchy_policy, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-                          error_cleanup);
+            r = Tss2_PolicyCopy(defaultProfile->eh_policy, &command->hierarchy_policy);
+            if (r)
+                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+            goto_if_error(r, "Copy policy.", error_cleanup);
         } else {
             command->hierarchy_policy = NULL;
         }
@@ -1441,9 +1443,10 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_CHANGE_SH_CHECK);
         context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
         if (defaultProfile->sh_policy) {
-            command->hierarchy_policy = ifapi_copy_policy(defaultProfile->sh_policy);
-            goto_if_null2(command->hierarchy_policy, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-                          error_cleanup);
+            r = Tss2_PolicyCopy(defaultProfile->sh_policy, &command->hierarchy_policy);
+            if (r)
+                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+            goto_if_error(r, "Copy policy.", error_cleanup);
         } else {
             command->hierarchy_policy = NULL;
         }

@@ -651,8 +651,10 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
         newObject->objectType = IFAPI_KEY_OBJ;
         newObject->misc.key.public = keyTree->public;
         if (keyTree->policy) {
-            newObject->policy = ifapi_copy_policy(keyTree->policy);
-            goto_if_null(keyTree->policy, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+            r = Tss2_PolicyCopy(keyTree->policy, &newObject->policy);
+            if (r)
+                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+            goto_if_error(r, "Copy policy.", error_cleanup);
         } else {
             newObject->policy = NULL;
         }

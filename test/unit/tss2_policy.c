@@ -542,6 +542,102 @@ test_init_tpms_policy(void **state) {
     Tss2_PolicyCleanup(NULL);
 }
 
+static void
+test_policy_copy(void **state) {
+    UNUSED(state);
+    TPMS_POLICY *source = Tss2_InitTpmsPolicy();
+    TPMS_POLICY *copy = NULL;
+    assert_non_null(source);
+    source->description = strdup("copy source");
+    source->policyDigests.count = 1;
+    source->policyDigests.digests[0].hashAlg = TPM2_ALG_SHA256;
+    source->policyDigests.digests[0].digest.sha256[0] = 0x42;
+    source->policy = calloc(1, sizeof(*source->policy) + sizeof(TPMT_POLICYELEMENT));
+    assert_non_null(source->policy);
+    source->policy->count = 1;
+    source->policy->elements[0].type = POLICYOR;
+    TPML_POLICYBRANCHES *branches = calloc(1, sizeof(*branches) + sizeof(TPMS_POLICYBRANCH));
+    assert_non_null(branches);
+    source->policy->elements[0].element.PolicyOr.branches = branches;
+    branches->count = 1;
+    branches->authorizations[0].name = strdup("branch");
+    branches->authorizations[0].description = strdup("nested policy");
+    branches->authorizations[0].policy
+        = calloc(1, sizeof(TPML_POLICYELEMENTS) + sizeof(TPMT_POLICYELEMENT));
+    assert_non_null(branches->authorizations[0].policy);
+    branches->authorizations[0].policy->count = 1;
+    branches->authorizations[0].policy->elements[0].type = POLICYACTION;
+    branches->authorizations[0].policy->elements[0].element.PolicyAction.action = strdup("action");
+    source->policyAuthorizations
+        = calloc(1, sizeof(*source->policyAuthorizations) + 2 * sizeof(TPMS_POLICYAUTHORIZATION));
+    assert_non_null(source->policyAuthorizations);
+    source->policyAuthorizations->count = 2;
+    TPMS_POLICYAUTHORIZATION *pem = &source->policyAuthorizations->authorizations[0];
+    pem->type = strdup("pem");
+    pem->keyPEM = strdup("PEM key");
+    pem->pemSignature.size = 3;
+    pem->pemSignature.buffer = malloc(3);
+    assert_non_null(pem->pemSignature.buffer);
+    memcpy(pem->pemSignature.buffer, "sig", 3);
+    source->policyAuthorizations->authorizations[1].type = strdup("tpm");
+    source->policyAuthorizations->authorizations[1].signature.sigAlg = TPM2_ALG_RSASSA;
+
+    assert_int_equal(Tss2_PolicyCopy(source, &copy), TSS2_RC_SUCCESS);
+    assert_non_null(copy);
+    assert_ptr_not_equal(source, copy);
+    assert_ptr_not_equal(source->description, copy->description);
+    assert_ptr_not_equal(source->policy, copy->policy);
+    assert_ptr_not_equal(branches, copy->policy->elements[0].element.PolicyOr.branches);
+    assert_ptr_not_equal(pem->keyPEM, copy->policyAuthorizations->authorizations[0].keyPEM);
+    assert_ptr_not_equal(pem->pemSignature.buffer,
+                         copy->policyAuthorizations->authorizations[0].pemSignature.buffer);
+    /* All data in the copy must remain valid after freeing the source. */
+    Tss2_PolicyCleanup(&source);
+    assert_string_equal(copy->description, "copy source");
+    assert_int_equal(copy->policyDigests.digests[0].digest.sha256[0], 0x42);
+    branches = copy->policy->elements[0].element.PolicyOr.branches;
+    assert_string_equal(branches->authorizations[0].name, "branch");
+    assert_string_equal(branches->authorizations[0].description, "nested policy");
+    assert_string_equal(branches->authorizations[0].policy->elements[0].element.PolicyAction.action,
+                        "action");
+    assert_int_equal(copy->policyAuthorizations->count, 2);
+    assert_string_equal(copy->policyAuthorizations->authorizations[0].keyPEM, "PEM key");
+    assert_memory_equal(copy->policyAuthorizations->authorizations[0].pemSignature.buffer, "sig",
+                        3);
+    assert_int_equal(copy->policyAuthorizations->authorizations[1].signature.sigAlg,
+                     TPM2_ALG_RSASSA);
+    Tss2_PolicyCleanup(&copy);
+    assert_null(copy);
+}
+
+static void
+test_policy_copy_empty_and_invalid(void **state) {
+    UNUSED(state);
+    TPMS_POLICY *source = Tss2_InitTpmsPolicy();
+    TPMS_POLICY *copy = NULL;
+    assert_non_null(source);
+    assert_int_equal(Tss2_PolicyCopy(source, NULL), TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_int_equal(Tss2_PolicyCopy(NULL, &copy), TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_null(copy);
+    assert_int_equal(Tss2_PolicyCopy(source, &copy), TSS2_RC_SUCCESS);
+    assert_null(copy->description);
+    assert_null(copy->policy);
+    assert_null(copy->policyAuthorizations);
+    Tss2_PolicyCleanup(&copy);
+
+    source->policy = calloc(1, sizeof(*source->policy) + sizeof(TPMT_POLICYELEMENT));
+    assert_non_null(source->policy);
+    source->policy->count = 1;
+    source->policy->elements[0].type = POLICYAUTHORIZENV;
+    source->policy->elements[0].element.PolicyAuthorizeNv.nvPath = strdup("NV/path");
+    source->policy->elements[0].element.PolicyAuthorizeNv.policy_buffer = malloc(1);
+    assert_non_null(source->policy->elements[0].element.PolicyAuthorizeNv.policy_buffer);
+    assert_int_equal(Tss2_PolicyCopy(source, &copy), TSS2_POLICY_RC_BAD_VALUE);
+    assert_null(copy);
+    assert_string_equal(source->policy->elements[0].element.PolicyAuthorizeNv.nvPath, "NV/path");
+    Tss2_PolicyCleanup(&source);
+}
+
 int
 main(int argc, char *argv[]) {
     UNUSED(argc);
@@ -554,7 +650,9 @@ main(int argc, char *argv[]) {
                                         cmocka_unit_test(test_policy_calculation_retry),
                                         cmocka_unit_test(test_policy_authorization),
                                         cmocka_unit_test(test_policy_get_authorization),
-                                        cmocka_unit_test(test_init_tpms_policy) };
+                                        cmocka_unit_test(test_init_tpms_policy),
+                                        cmocka_unit_test(test_policy_copy),
+                                        cmocka_unit_test(test_policy_copy_empty_and_invalid) };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -19,12 +19,6 @@
 #include "tss2_policy.h"            // for TSS2_POLICY_CALC_CALLBACKS
 #include "tss2_tpm2_types.h"        // for TPMI_ALG_HASH, TPM2B_DIGEST
 
-TSS2_RC
-ifapi_compute_policy_digest(TPML_PCRVALUES     *pcrs,
-                            TPML_PCR_SELECTION *pcr_selection,
-                            TPMI_ALG_HASH       hash_alg,
-                            TPM2B_DIGEST       *pcr_digest);
-
 static inline void
 ifapi_policy_ctx_init(FAPI_CONTEXT *context) {
 

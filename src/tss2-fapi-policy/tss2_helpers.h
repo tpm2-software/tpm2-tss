@@ -16,8 +16,6 @@
 
 #include "fapi_crypto.h"
 #include "fapi_types.h"
-#include "ipolicy_types.h"
-#include "tss2_helpers.h"
 #include "tss2_policy.h"
 
 #define TSS2_FILE_DELIM_CHAR '/'
@@ -35,19 +33,7 @@ ifapi_asprintf(char **str, const char *fmt, ...);
 
 void ifapi_check_json_object_fields(json_object *jso, char **field_tab, size_t size_of_tab);
 
-void cleanup_policy_element(TPMT_POLICYELEMENT *policy);
-
-void cleanup_policy_elements(TPML_POLICYELEMENTS *policy);
-
-TSS2_RC
-ifapi_compute_policy_digest(TPML_PCRVALUES     *pcrs,
-                            TPML_PCR_SELECTION *pcr_selection,
-                            TPMI_ALG_HASH       hash_alg,
-                            TPM2B_DIGEST       *pcr_digest);
-
 void ifapi_free_node_list(NODE_OBJECT_T *node);
-
-void ifapi_free_policy_element_list(NODE_OBJECT_T *node);
 
 TSS2_RC
 ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name);
@@ -55,13 +41,9 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name);
 TSS2_RC
 ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name);
 
-void ifapi_helper_init_policy_pcr_selections(TSS2_POLICY_PCR_SELECTION *s,
-                                             TPMT_POLICYELEMENT        *pol_element);
 TSS2_RC
 ifapi_set_name_hierarchy_object(IFAPI_OBJECT *hierarchy);
 
 void ifapi_init_hierarchy_object(IFAPI_OBJECT *hierarchy, ESYS_TR esys_handle);
-
-struct TPMS_POLICY *ifapi_copy_policy(const struct TPMS_POLICY *from_policy);
 
 #endif /* TSS2_HELPERS_H */

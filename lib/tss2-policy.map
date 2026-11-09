@@ -3,6 +3,7 @@
         Tss2_PolicyInit;
         Tss2_InitTpmsPolicy;
         Tss2_PolicyCleanup;
+        Tss2_PolicyCopy;
         Tss2_PolicyFinalize;
         Tss2_PolicySetCalcCallbacks;
         Tss2_PolicySetExecCallbacks;

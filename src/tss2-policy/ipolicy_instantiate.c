@@ -12,6 +12,7 @@
 #include <stdlib.h> // for size_t, NULL
 #include <string.h> // for strlen
 
+#include "ipolicy_helpers.h"
 #include "ipolicy_instantiate.h"
 #include "tss2_helpers.h"    // for ifapi_free_node_list
 #include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
