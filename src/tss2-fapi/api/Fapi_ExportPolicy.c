@@ -27,7 +27,8 @@
 #include "tss2_crypto.h"                 // for ifapi_hash_get_digest_size
 #include "tss2_esys.h"                   // for Esys_SetTimeout
 #include "tss2_fapi.h"                   // for FAPI_CONTEXT, Fapi_ExportPo...
-#include "tss2_helpers.h"                // for ifapi_cleanup_policy
+#include "tss2_helpers.h"                // for internal helpers
+#include "tss2_policy.h"                 // for Tss2_PolicyCleanup
 #include "tss2_tcti.h"                   // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"             // for TPML_DIGEST_VALUES, TPMT_HA
 
@@ -313,7 +314,7 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
     if (jso)
         json_object_put(jso);
     ifapi_cleanup_ifapi_object(&command->object);
-    ifapi_cleanup_policy(&command->policy);
+    Tss2_PolicyCleanup(&command->policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
@@ -327,7 +328,7 @@ error_cleanup:
         ifapi_cleanup_ifapi_object(&command->object);
     if (jso)
         json_object_put(jso);
-    ifapi_cleanup_policy(&command->policy);
+    Tss2_PolicyCleanup(&command->policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

@@ -17,7 +17,7 @@
 #include "fapi_int.h"                      // for FAPI_CONTEXT, IFAPI_Impor...
 #include "fapi_types.h"                    // for UINT8_ARY, NODE_STR_T
 #include "fapi_util.h"                     // for ifapi_non_tpm_mode_init
-#include "ifapi_helpers.h"                 // for ifapi_cleanup_policy, ifa...
+#include "ifapi_helpers.h"                 // for FAPI helpers
 #include "ifapi_io.h"                      // for ifapi_io_poll
 #include "ifapi_json_deserialize.h"        // for ifapi_json_IFAPI_OBJECT_d...
 #include "ifapi_keystore.h"                // for IFAPI_OBJECT, ifapi_clean...
@@ -289,7 +289,7 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
                                                policy);
             goto_if_error_reset_state(r, "Could not open: %s", cleanup_error, command->out_path);
 
-            ifapi_cleanup_policy(&policy);
+            Tss2_PolicyCleanup(&policy);
 
             context->state = IMPORT_KEY_WRITE_POLICY;
 
@@ -355,7 +355,7 @@ cleanup_error:
     if (jso)
         json_object_put(jso);
     context->state = FAPI_STATE_INIT;
-    ifapi_cleanup_policy(&policy);
+    Tss2_PolicyCleanup(&policy);
     ifapi_cleanup_ifapi_object(object);
     SAFE_FREE(command->jso_string);
     SAFE_FREE(extPubKey->pem_ext_public);
@@ -714,7 +714,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     /* Cleanup policy for key objects.*/
     if (newObject->objectType == IFAPI_KEY_OBJ) {
         if (newObject->policy)
-            ifapi_cleanup_policy(&newObject->policy);
+            Tss2_PolicyCleanup(&newObject->policy);
     }
     SAFE_FREE(command->parent_path);
     ifapi_cleanup_ifapi_object(&command->object);

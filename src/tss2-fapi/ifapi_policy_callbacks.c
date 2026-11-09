@@ -23,8 +23,9 @@
 #include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
 #include "tss2_crypto.h"              // for ifapi_get_tpm2b_public_from_pem
 #include "tss2_fapi.h"                // for FAPI_CONTEXT
-#include "tss2_helpers.h"             // for ifapi_cleanup_policy ...
+#include "tss2_helpers.h"             // for policy helpers
 #include "tss2_mu.h"                  // for Tss2_MU_TPMT_HA_Unmarshal
+#include "tss2_policy.h"              // for Tss2_PolicyCleanup
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, goto_if_error, retu...
@@ -1025,12 +1026,12 @@ search_policy(FAPI_CONTEXT         *context,
             if (!all_objects && context->fsearch.path_idx == 0) {
                 /* All files checked, but no policy found. */
                 context->fsearch.state = FSEARCH_INIT;
-                ifapi_cleanup_policy(&policy);
+                Tss2_PolicyCleanup(&policy);
                 return TSS2_BASE_RC_POLICY_UNKNOWN;
             } else {
                 /* Continue search. */
                 context->fsearch.state = FSEARCH_OBJECT;
-                ifapi_cleanup_policy(&policy);
+                Tss2_PolicyCleanup(&policy);
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
         }
@@ -1076,7 +1077,7 @@ search_policy(FAPI_CONTEXT         *context,
     return TSS2_RC_SUCCESS;
 cleanup:
     SAFE_FREE(policy_object);
-    ifapi_cleanup_policy(&policy);
+    Tss2_PolicyCleanup(&policy);
     for (size_t i = 0; i < context->fsearch.numPaths; i++) {
         SAFE_FREE(context->fsearch.pathlist[i]);
     }
@@ -1096,7 +1097,7 @@ cleanup_policy_list(struct POLICY_LIST *list) {
         while (branch) {
             struct POLICY_LIST *next = branch->next;
             /* Cleanup the policy stored in the list. */
-            ifapi_cleanup_policy(&branch->policy);
+            Tss2_PolicyCleanup(&branch->policy);
             SAFE_FREE(branch->path);
             SAFE_FREE(branch);
             branch = next;

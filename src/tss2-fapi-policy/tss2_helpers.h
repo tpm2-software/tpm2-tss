@@ -39,8 +39,6 @@ void cleanup_policy_element(TPMT_POLICYELEMENT *policy);
 
 void cleanup_policy_elements(TPML_POLICYELEMENTS *policy);
 
-void ifapi_cleanup_policy(struct TPMS_POLICY **policy);
-
 TSS2_RC
 ifapi_compute_policy_digest(TPML_PCRVALUES     *pcrs,
                             TPML_PCR_SELECTION *pcr_selection,

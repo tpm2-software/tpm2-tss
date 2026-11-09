@@ -231,6 +231,12 @@ Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest
  */
 TPMS_POLICY *Tss2_InitTpmsPolicy(void);
 
+/* Free an owned policy and all nested allocations, then set *policy to NULL.
+ * NULL and a pointer to NULL are accepted. Borrowed policies must outlive
+ * their policy contexts; finalize those contexts before freeing the policy.
+ */
+void Tss2_PolicyCleanup(TPMS_POLICY **policy);
+
 TSS2_RC
 Tss2_PolicySetPolicy(TPMS_POLICY *policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX **policy_ctx);
 

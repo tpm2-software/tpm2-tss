@@ -536,8 +536,10 @@ test_init_tpms_policy(void **state) {
     assert_int_equal(policy->policyDigests.count, 0);
     assert_null(policy->policyAuthorizations);
     assert_null(policy->policy);
-    /* No nested allocations exist in a newly initialized policy. */
-    free(policy);
+    Tss2_PolicyCleanup(&policy);
+    assert_null(policy);
+    Tss2_PolicyCleanup(&policy);
+    Tss2_PolicyCleanup(NULL);
 }
 
 int
