@@ -244,10 +244,10 @@ Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg);
  * On failure, the policy remains unchanged. All input objects remain caller-owned.
  */
 TSS2_RC
-Tss2_PolicyAuthorizePolicy(TPMS_POLICY          *policy,
-                           const TPMT_SIGNATURE *signature,
-                           TPM2B_DIGEST          policyRef,
-                           const TPMT_PUBLIC    *key);
+Tss2_PolicyAddAuthorization(TPMS_POLICY          *policy,
+                            const TPMT_SIGNATURE *signature,
+                            const TPM2B_DIGEST    policyRef,
+                            const TPMT_PUBLIC    *key);
 
 /* Find an authorization by key type/unique ID and policy reference.
  * NULL policy_ref means an empty reference; NULL signature requests a match only.
