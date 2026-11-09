@@ -13,7 +13,7 @@
 
 #include "fapi_int.h"           // for IFAPI_Fapi_AuthorizePolicy, FAPI_C...
 #include "fapi_util.h"          // for ifapi_cleanup_session, ifapi_key_sign
-#include "ifapi_helpers.h"      // for ifapi_cleanup_policy
+#include "ifapi_helpers.h"      // for internal helpers
 #include "ifapi_io.h"           // for ifapi_io_poll
 #include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_...
 #include "ifapi_macros.h"       // for check_not_null, statecase, fallthr...
@@ -23,7 +23,7 @@
 #include "tss2_crypto.h"        // for ifapi_crypto_hash_abort, ifapi_cry...
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_AuthorizePolicy
-#include "tss2_helpers.h"       // for ifapi_cleanup_policy
+#include "tss2_helpers.h"       // for internal helpers
 #include "tss2_policy.h"        // for Tss2_PolicyAddAuthorization
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
@@ -367,7 +367,7 @@ cleanup:
     if (cryptoContext)
         ifapi_crypto_hash_abort(&cryptoContext);
     ifapi_session_clean(context);
-    ifapi_cleanup_policy(policy);
+    Tss2_PolicyCleanup(policy);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);

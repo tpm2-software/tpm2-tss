@@ -20,8 +20,9 @@
 #include "tss2_common.h"        // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_WriteAuthorizeNv
-#include "tss2_helpers.h"       // for ifapi_cleanup_policy
+#include "tss2_helpers.h"       // for internal helpers
 #include "tss2_mu.h"            // for Tss2_MU_TPMI_ALG_HASH_Marshal
+#include "tss2_policy.h"        // for Tss2_PolicyCleanup
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPMI_ALG_HASH, TPM2B_NV_PUBLIC, TPMS...
 
@@ -341,7 +342,7 @@ error_cleanup:
     SAFE_FREE(nvCmd->nvPath);
     SAFE_FREE(nvCmd->nv_buffer);
     ifapi_session_clean(context);
-    ifapi_cleanup_policy(policy);
+    Tss2_PolicyCleanup(policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

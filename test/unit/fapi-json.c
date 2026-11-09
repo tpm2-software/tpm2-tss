@@ -15,7 +15,7 @@
 
 #include "../helper/cmocka_all.h"          // for assert_int_equal, assert_...
 #include "fapi_types.h"                    // for UINT8_ARY
-#include "ifapi_helpers.h"                 // for ifapi_cleanup_policy
+#include "ifapi_helpers.h"                 // for internal helpers
 #include "ifapi_json_deserialize.h"        // for ifapi_json_IFAPI_OBJECT_d...
 #include "ifapi_keystore.h"                // for IFAPI_OBJECT, IFAPI_KEY
 #include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
@@ -24,7 +24,7 @@
 #include "tpm_json_deserialize.h"          // for ifapi_json_TPMS_ATTEST_de...
 #include "tpm_json_serialize.h"            // for ifapi_json_TPMT_SIG_SCHEM...
 #include "tss2_common.h"                   // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_helpers.h"                  // for ifapi_cleanup_policy
+#include "tss2_helpers.h"                  // for internal helpers
 #include "tss2_policy.h"                   // for TPMS_PCRVALUE, TPML_PCRVA...
 #include "tss2_tpm2_types.h"               // for TPM2B_PUBLIC, TPMT_SIG_SC...
 #include "util/aux_util.h"                 // for SAFE_FREE
@@ -95,7 +95,7 @@ cleanup_ifapi_object(IFAPI_OBJECT *object) {
                 cleanup_ifapi_hierarchy(&object->misc.hierarchy);
             }
 
-            ifapi_cleanup_policy(&object->policy);
+            Tss2_PolicyCleanup(&object->policy);
             SAFE_FREE(object->rel_path);
             object->objectType = IFAPI_OBJ_NONE;
         }
@@ -193,7 +193,7 @@ normalize(const char *string) {
         char *string2 = normalize(DST);                                                            \
         assert_string_equal(string1, string2);                                                     \
         json_object_put(jso);                                                                      \
-        ifapi_cleanup_policy(&out);                                                                \
+        Tss2_PolicyCleanup(&out);                                                                  \
         free(string1);                                                                             \
         free(string2);                                                                             \
     }
@@ -518,7 +518,7 @@ check_policy_bin(void **state) {
         json_object_put(jso);
         free(jso_string1);
         free(jso_string2);
-        ifapi_cleanup_policy(&parsed);
+        Tss2_PolicyCleanup(&parsed);
     }
 
     or_branch_list = calloc(2, sizeof(TPML_POLICYBRANCHES) + (2 * sizeof(TPMS_POLICYBRANCH)));
@@ -590,7 +590,7 @@ check_policy_bin(void **state) {
         json_object_put(jso);
         free(jso_string1);
         free(jso_string2);
-        ifapi_cleanup_policy(&parsed);
+        Tss2_PolicyCleanup(&parsed);
     }
 
     free(policy_elements_or);
@@ -1387,7 +1387,7 @@ check_json_policy(void **state) {
         char *string2 = normalize(test_json_policy_nv_expected);
         assert_string_equal(string1, string2);
         json_object_put(jso);
-        ifapi_cleanup_policy(&out);
+        Tss2_PolicyCleanup(&out);
         free(string1);
         free(string2);
     }
@@ -1505,7 +1505,7 @@ check_json_policy(void **state) {
         char *string2 = normalize(test_json_policy_or_expected);
         assert_string_equal(string1, string2);
         json_object_put(jso);
-        ifapi_cleanup_policy(&out);
+        Tss2_PolicyCleanup(&out);
         free(string1);
         free(string2);
     }
@@ -2351,10 +2351,10 @@ check_policy_allocating_deserialize(void **state) {
     assert_non_null(policy);
     assert_string_equal(policy->description, "empty");
     json_object_put(jso);
-    ifapi_cleanup_policy(&policy);
+    Tss2_PolicyCleanup(&policy);
     assert_null(policy);
-    ifapi_cleanup_policy(&policy);
-    ifapi_cleanup_policy(NULL);
+    Tss2_PolicyCleanup(&policy);
+    Tss2_PolicyCleanup(NULL);
     const char *invalid[] = {
         "[]",
         "{}",
