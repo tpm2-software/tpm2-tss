@@ -803,10 +803,10 @@ Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy_ctx) {
  * This function stores the authorization without verifying the signature.
  */
 TSS2_RC
-Tss2_PolicyAuthorizePolicy(TPMS_POLICY          *policy,
-                           const TPMT_SIGNATURE *signature,
-                           TPM2B_DIGEST          policyRef,
-                           const TPMT_PUBLIC    *key) {
+Tss2_PolicyAddAuthorization(TPMS_POLICY          *policy,
+                            const TPMT_SIGNATURE *signature,
+                            const TPM2B_DIGEST    policyRef,
+                            const TPMT_PUBLIC    *key) {
     if (!policy || !signature || !key)
         return TSS2_POLICY_RC_BAD_REFERENCE;
     if (policyRef.size > sizeof(policyRef.buffer))

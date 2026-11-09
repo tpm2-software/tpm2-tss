@@ -24,7 +24,7 @@
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_AuthorizePolicy
 #include "tss2_helpers.h"       // for ifapi_cleanup_policy
-#include "tss2_policy.h"        // for Tss2_PolicyAuthorizePolicy
+#include "tss2_policy.h"        // for Tss2_PolicyAddAuthorization
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
 
@@ -327,8 +327,8 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
         SAFE_FREE(publicKey);
 
         /* Policy owns the authorization representation and copies the signing results. */
-        r = Tss2_PolicyAuthorizePolicy(*policy, signature, command->policyRef,
-                                       &(*keyObject)->misc.key.public.publicArea);
+        r = Tss2_PolicyAddAuthorization(*policy, signature, command->policyRef,
+                                        &(*keyObject)->misc.key.public.publicArea);
         SAFE_FREE(signature);
         if (r)
             r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);

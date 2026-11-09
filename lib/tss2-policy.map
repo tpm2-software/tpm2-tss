@@ -17,7 +17,7 @@
         Tss2_PolicyGetDigestIdx;
         Tss2_PolicySetPolicy;
         Tss2_PolicySetHashAlg;
-        Tss2_PolicyAuthorizePolicy;
+        Tss2_PolicyAddAuthorization;
         Tss2_PolicyGetAuthorization;
     local:
         *;

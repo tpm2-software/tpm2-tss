@@ -437,19 +437,19 @@ test_policy_authorization(void **state) {
     TPMT_SIGNATURE signature = { .sigAlg = TPM2_ALG_RSASSA };
     TPMT_PUBLIC    key = { .type = TPM2_ALG_RSA, .nameAlg = TPM2_ALG_SHA256 };
     TPM2B_DIGEST   ref = { .size = 1, .buffer = { 0x42 } };
-    assert_int_equal(Tss2_PolicyAuthorizePolicy(NULL, &signature, ref, &key),
+    assert_int_equal(Tss2_PolicyAddAuthorization(NULL, &signature, ref, &key),
                      TSS2_POLICY_RC_BAD_REFERENCE);
-    assert_int_equal(Tss2_PolicyAuthorizePolicy(&policy, NULL, ref, &key),
+    assert_int_equal(Tss2_PolicyAddAuthorization(&policy, NULL, ref, &key),
                      TSS2_POLICY_RC_BAD_REFERENCE);
-    assert_int_equal(Tss2_PolicyAuthorizePolicy(&policy, &signature, ref, NULL),
+    assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, ref, NULL),
                      TSS2_POLICY_RC_BAD_REFERENCE);
     TPM2B_DIGEST invalid_ref = { .size = sizeof(ref.buffer) + 1 };
-    assert_int_equal(Tss2_PolicyAuthorizePolicy(&policy, &signature, invalid_ref, &key),
+    assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, invalid_ref, &key),
                      TSS2_POLICY_RC_BAD_VALUE);
     assert_null(policy.policyAuthorizations);
     for (unsigned i = 0; i < 2; ++i) {
         ref.buffer[0] = 0x42 + i;
-        assert_int_equal(Tss2_PolicyAuthorizePolicy(&policy, &signature, ref, &key),
+        assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, ref, &key),
                          TSS2_RC_SUCCESS);
     }
     /* The API retains copies, including entries present before an append. */
@@ -488,7 +488,7 @@ test_policy_get_authorization(void **state) {
     for (unsigned i = 0; i < 2; ++i) {
         ref.buffer[0] = i + 1;
         signature.signature.rsassa.sig.buffer[0] = 0x80 + i;
-        assert_int_equal(Tss2_PolicyAuthorizePolicy(&policy, &signature, ref, &key), 0);
+        assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, ref, &key), 0);
     }
     assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, &result), 0);
     assert_true(found);
@@ -509,7 +509,7 @@ test_policy_get_authorization(void **state) {
     assert_false(found);
     key.unique.rsa.buffer[0]--;
     TPM2B_NONCE empty = { 0 };
-    assert_int_equal(Tss2_PolicyAuthorizePolicy(&policy, &signature, empty, &key), 0);
+    assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, empty, &key), 0);
     assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, NULL, &found, NULL), 0);
     assert_true(found);
     assert_int_equal(Tss2_PolicyGetAuthorization(NULL, &key, &ref, &found, NULL),
