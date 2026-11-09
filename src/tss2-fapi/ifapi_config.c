@@ -107,6 +107,13 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out) {
         out->ek_cert_less = TPM2_NO;
     }
 
+    if (ifapi_get_sub_object(jso, "ignore_lockout", &jso2)) {
+        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ignore_lockout);
+        return_if_error(r, "Bad value for field \"ignore_lockout\".");
+    } else {
+        out->ignore_lockout = TPM2_NO;
+    }
+
     if (ifapi_get_sub_object(jso, "ek_fingerprint", &jso2)) {
         r = ifapi_json_TPMT_HA_deserialize(jso2, &out->ek_fingerprint);
         return_if_error(r, "Bad value for field \"ek_fingerprint\".");
