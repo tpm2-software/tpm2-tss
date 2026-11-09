@@ -11,7 +11,6 @@
 
 #include "fapi_int.h"        // for IFAPI_CreatePrimary, IFAPI_LoadKey
 #include "ifapi_keystore.h"  // for IFAPI_OBJECT
-#include "ipolicy_types.h"   // for struct TPMS_POLICY
 #include "tss2_common.h"     // for TSS2_RC
 #include "tss2_esys.h"       // for ESYS_TR
 #include "tss2_policy.h"     // for TSS2_OBJECT, TSS2_POLICY_PCR_SELECTION

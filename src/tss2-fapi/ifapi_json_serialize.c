@@ -16,7 +16,6 @@
 #include "ifapi_config.h" // for IFAPI_CONFIG
 #include "ifapi_json_serialize.h"
 #include "ifapi_macros.h"                // for check_oom, goto_if_null2
-#include "ifapi_policy_json_serialize.h" // for ifapi_json_TPMS_POLICY_seri...
 #include "tpm_json_deserialize.h"        // for ifapi_parse_json
 #include "tpm_json_serialize.h"          // for ifapi_json_TPMI_YES_NO_seri...
 #include "tss2_tpm2_types.h"             // for TPM2B_DIGEST, TPM2B_PUBLIC
@@ -1266,4 +1265,23 @@ ifapi_json_TPMS_EVENT_CELMGT_serialize(const TPMS_EVENT_CELMGT *in, json_object 
         }
     }
     return TSS2_RC_SUCCESS;
+}
+
+/* Adapt the public Policy string API to an embedded JSON object. */
+TSS2_RC
+ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *policy, json_object **jso) {
+    if (!jso)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    *jso = NULL;
+    char *json = NULL;
+    TSS2_RC r = Tss2_PolicyJsonSerialize(policy, &json);
+    if (!r) {
+        *jso = json_tokener_parse(json);
+        if (!*jso)
+            r = TSS2_FAPI_RC_MEMORY;
+    }
+    free(json);
+    if ((r & TSS2_RC_LAYER_MASK) == TSS2_POLICY_RC_LAYER)
+        r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+    return r;
 }

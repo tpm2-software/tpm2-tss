@@ -14,6 +14,11 @@
 #include "ifapi_macros.h"   // for return_if_error2
 #include "tss2_common.h"    // for TSS2_RC, UINT32
 
+#include "tss2_policy.h"
+
+TSS2_RC
+ifapi_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY **policy);
+
 #define YES 1
 #define NO  0
 
