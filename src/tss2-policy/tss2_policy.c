@@ -24,7 +24,7 @@
 #include "tss2_common.h"                   // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"                   // for ifapi_hash_get_digest_size
 #include "tss2_esys.h"                     // for ESYS_CONTEXT, ESYS_TR
-#include "tss2_helpers.h"                  // for ifapi_cleanup_policy
+#include "tss2_helpers.h"                  // for internal helpers
 #include "tss2_policy.h"                   // for TSS2_POLICY_CTX, TSS2_POL...
 #include "tss2_tpm2_types.h"               // for TPM2B_DIGEST, TPMT_HA
 
@@ -205,6 +205,34 @@ Tss2_InitTpmsPolicy(void) {
     return calloc(1, sizeof(TPMS_POLICY));
 }
 
+/** Free memory allocated during deserialization of policy.
+ *
+ * The policy and its contents are freed and the caller's pointer is set to NULL.
+ *
+ * @param[in,out] policy_ptr The pointer to the policy to be freed.
+ *
+ */
+void
+Tss2_PolicyCleanup(TPMS_POLICY **policy_ptr) {
+    if (policy_ptr && *policy_ptr) {
+        TPMS_POLICY *policy = *policy_ptr;
+        SAFE_FREE(policy->description);
+        if (policy->policyAuthorizations) {
+            for (size_t i = 0; i < policy->policyAuthorizations->count; i++) {
+                if (policy->policyAuthorizations->authorizations[i].type
+                    && strcmp(policy->policyAuthorizations->authorizations[i].type, "pem") == 0) {
+                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].keyPEM);
+                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].pemSignature.buffer);
+                }
+                SAFE_FREE(policy->policyAuthorizations->authorizations[i].type);
+            }
+        }
+        SAFE_FREE(policy->policyAuthorizations);
+        cleanup_policy_elements(policy->policy);
+        SAFE_FREE(*policy_ptr);
+    }
+}
+
 /**
  * Initialize a policy context with a policy and default hash algorithm.
  *
@@ -311,7 +339,7 @@ Tss2_PolicyInit(const char *json_policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX *
     return TSS2_RC_SUCCESS;
 
 cleanup:
-    ifapi_cleanup_policy(&tmp_policy);
+    Tss2_PolicyCleanup(&tmp_policy);
     Tss2_PolicyFinalize(policy_ctx);
     return r;
 }
@@ -791,7 +819,7 @@ Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy_ctx) {
     SAFE_FREE(p->exec_ctx.buffer);
     SAFE_FREE(p->exec_ctx.pem_key);
     if (!p->policy_caller_allocated) {
-        ifapi_cleanup_policy(&p->policy_ptr);
+        Tss2_PolicyCleanup(&p->policy_ptr);
     }
     free(p->calculated.json.string);
     free(p);

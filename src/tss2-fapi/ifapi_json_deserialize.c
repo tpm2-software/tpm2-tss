@@ -28,6 +28,7 @@
 #include "tss2_esys.h"                     // for ESYS_TR_RH_OWNER
 #include "tss2_helpers.h"                  // for ifapi_check_json_object_f...
 #include "tss2_mu.h"                       // for Tss2_MU_TPM2B_PRIVATE_Unm...
+#include "tss2_policy.h"                   // for Tss2_PolicyCleanup
 #include "tss2_tpm2_types.h"               // for TPMT_HA, TPM2_NO, TPML_DI...
 
 #define LOGMODULE fapijson
@@ -653,7 +654,7 @@ ifapi_json_IFAPI_DUPLICATE_deserialize(json_object *jso, IFAPI_DUPLICATE *out) {
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
-    SAFE_FREE(out->policy);
+    Tss2_PolicyCleanup(&out->policy);
     return r;
 }
 
@@ -763,7 +764,7 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out) {
     return TSS2_RC_SUCCESS;
 
 cleanup:
-    SAFE_FREE(out->policy);
+    Tss2_PolicyCleanup(&out->policy);
     return r;
 }
 

@@ -1588,7 +1588,7 @@ ifapi_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY **out) {
         return TSS2_FAPI_RC_MEMORY;
     TSS2_RC r = deserialize_policy(jso, policy);
     if (r) {
-        ifapi_cleanup_policy(&policy);
+        Tss2_PolicyCleanup(&policy);
         return r;
     }
     *out = policy;

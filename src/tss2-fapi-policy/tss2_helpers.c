@@ -227,34 +227,6 @@ cleanup_policy_elements(TPML_POLICYELEMENTS *policy) {
     }
 }
 
-/** Free memory allocated during deserialization of policy.
- *
- * The policy and its contents are freed and the caller's pointer is set to NULL.
- *
- * @param[in,out] policy_ptr The pointer to the policy to be freed.
- *
- */
-void
-ifapi_cleanup_policy(TPMS_POLICY **policy_ptr) {
-    if (policy_ptr && *policy_ptr) {
-        TPMS_POLICY *policy = *policy_ptr;
-        SAFE_FREE(policy->description);
-        if (policy->policyAuthorizations) {
-            for (size_t i = 0; i < policy->policyAuthorizations->count; i++) {
-                if (policy->policyAuthorizations->authorizations[i].type
-                    && strcmp(policy->policyAuthorizations->authorizations[i].type, "pem") == 0) {
-                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].keyPEM);
-                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].pemSignature.buffer);
-                }
-                SAFE_FREE(policy->policyAuthorizations->authorizations[i].type);
-            }
-        }
-        SAFE_FREE(policy->policyAuthorizations);
-        cleanup_policy_elements(policy->policy);
-        SAFE_FREE(*policy_ptr);
-    }
-}
-
 /** Compute PCR selection and a PCR digest for a PCR value list.
  *
  * @param[in]  pcrs The list of PCR values.
@@ -868,7 +840,7 @@ ifapi_copy_policy(const TPMS_POLICY *from_policy) {
     to_policy->description = NULL;
     TSS2_RC r = copy_policy(to_policy, from_policy);
     if (r != TSS2_RC_SUCCESS) {
-        ifapi_cleanup_policy(&to_policy);
+        Tss2_PolicyCleanup(&to_policy);
         return NULL;
     } else {
         return to_policy;

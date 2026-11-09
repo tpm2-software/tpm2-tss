@@ -14,13 +14,14 @@
 #include <string.h> // for memset, strdup, strlen
 
 #include "fapi_int.h"                      // for IFAPI_FILE_DELIM_CHAR
-#include "ifapi_helpers.h"                 // for ifapi_cleanup_policy, ifa...
+#include "ifapi_helpers.h"                 // for FAPI helpers
 #include "ifapi_macros.h"                  // for check_not_null, goto_if_n...
 #include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
 #include "ifapi_profiles.h"
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifa...
 #include "tss2_common.h"          // for TSS2_FAPI_RC_BAD_VALUE
 #include "tss2_helpers.h"         // for ifapi_asprintf ...
+#include "tss2_policy.h"          // for Tss2_PolicyCleanup
 
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, LOG_ERROR
@@ -296,11 +297,13 @@ ifapi_profiles_finalize(IFAPI_PROFILES *profiles) {
         SAFE_FREE(profile->srk_description);
         SAFE_FREE(profile->ek_description);
 
-        ifapi_cleanup_policy(&profile->eh_policy);
+        Tss2_PolicyCleanup(&profile->eh_policy);
 
-        ifapi_cleanup_policy(&profile->ek_policy);
+        Tss2_PolicyCleanup(&profile->ek_policy);
 
-        ifapi_cleanup_policy(&profile->sh_policy);
+        Tss2_PolicyCleanup(&profile->sh_policy);
+        Tss2_PolicyCleanup(&profile->srk_policy);
+        Tss2_PolicyCleanup(&profile->lockout_policy);
     }
     SAFE_FREE(profiles->profiles);
 
@@ -509,7 +512,7 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
     return TSS2_RC_SUCCESS;
 
 cleanup:
-    SAFE_FREE(out->eh_policy);
+    Tss2_PolicyCleanup(&out->eh_policy);
     return r;
 }
 

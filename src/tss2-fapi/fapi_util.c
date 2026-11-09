@@ -624,7 +624,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
                                  &policy, context->profiles.default_profile.nameAlg, &digest);
         if (r) {
             LOG_ERROR("Policy calculation");
-            SAFE_FREE(policy);
+            Tss2_PolicyCleanup(&policy);
             return r;
         }
         /* Check whether policy digest defined for key matches the computed policy. */
@@ -635,7 +635,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
                        &context->cmd.Provision.public_templ.public.publicArea.authPolicy.buffer[0],
                        digest.size)
                        != 0) {
-                SAFE_FREE(policy);
+                Tss2_PolicyCleanup(&policy);
                 return_error(TSS2_FAPI_RC_BAD_VALUE,
                              "EK Policy does not match policy defined in profile.");
             }
@@ -3084,7 +3084,7 @@ ifapi_initialize_object(ESYS_CONTEXT *ectx, IFAPI_OBJECT *object) {
     return r;
 
 cleanup:
-    SAFE_FREE(object->policy);
+    Tss2_PolicyCleanup(&object->policy);
     return r;
 }
 
@@ -3889,7 +3889,7 @@ ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
         } else {
             /* No policy will be used for this hierarchy. */
             context->cmd.Provision.policy_digest.size = 0;
-            ifapi_cleanup_policy(&hierarchy_object->policy);
+            Tss2_PolicyCleanup(&hierarchy_object->policy);
             hierarchy_object->misc.hierarchy.with_auth = TPM2_NO;
             hierarchy_object->misc.hierarchy.authPolicy.size = 0;
         }

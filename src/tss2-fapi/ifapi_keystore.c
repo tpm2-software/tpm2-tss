@@ -23,6 +23,7 @@
 #include "ifapi_macros.h"         // for goto_if_error2, strdup_check
 #include "tpm_json_deserialize.h" // for ifapi_parse_json
 #include "tss2_helpers.h"         // for free_string_list, ifapi_asprintf
+#include "tss2_policy.h"          // for Tss2_PolicyCleanup
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, goto_if_error, LOG_ERROR
@@ -1532,7 +1533,7 @@ void
 ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE *duplicate) {
     if (duplicate != NULL) {
         SAFE_FREE(duplicate->certificate);
-        ifapi_cleanup_policy(&duplicate->policy);
+        Tss2_PolicyCleanup(&duplicate->policy);
     }
 }
 
@@ -1680,7 +1681,7 @@ ifapi_cleanup_ifapi_object(IFAPI_OBJECT *object) {
             } else if (object->objectType == IFAPI_HIERARCHY_OBJ) {
                 ifapi_cleanup_ifapi_hierarchy(&object->misc.hierarchy);
             }
-            ifapi_cleanup_policy(&object->policy);
+            Tss2_PolicyCleanup(&object->policy);
             SAFE_FREE(object->rel_path);
             object->objectType = IFAPI_OBJ_NONE;
         }
