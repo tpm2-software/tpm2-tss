@@ -12,13 +12,13 @@
 #include <stdint.h>  // for uint8_t
 
 #include "fapi_int.h"        // for IFAPI_KEY_TEMPLATE, IFAPI_NV_TEMPLATE
-#include "fapi_types.h"      // for NODE_STR_T, NODE_OBJECT_T
 #include "ifapi_eventlog.h"  // for FAPI_QUOTE_INFO
 #include "ifapi_keystore.h"  // for IFAPI_OBJECT
 #include "tss2_common.h"     // for TSS2_RC
 #include "tss2_esys.h"       // for ESYS_TR
 #include "tss2_policy.h"     // for TPML_PCRVALUES, TSS2_POLICY_PCR_SELE...
 #include "tss2_tpm2_types.h" // for TPML_PCR_SELECTION, TPM2_HANDLE, TPM...
+#include "tss2_types.h"      // for NODE_STR_T, NODE_OBJECT_T
 
 /** Type for representing a external public key
  */
@@ -122,5 +122,10 @@ ifapi_extend_pcr(TPMI_ALG_HASH alg, uint8_t *pcr, const uint8_t *digest, size_t 
 
 /* Compare the type and unique public identifier of two TPM public areas. */
 bool ifapi_TPMT_PUBLIC_cmp(TPMT_PUBLIC *in1, TPMT_PUBLIC *in2);
+
+TSS2_RC
+ifapi_set_name_hierarchy_object(IFAPI_OBJECT *hierarchy);
+
+void ifapi_init_hierarchy_object(IFAPI_OBJECT *hierarchy, ESYS_TR esys_handle);
 
 #endif /* IFAPI_HELPERS_H */

@@ -15,10 +15,11 @@
 
 #include "ifapi_config.h" // for IFAPI_CONFIG
 #include "ifapi_json_serialize.h"
-#include "ifapi_macros.h"                // for check_oom, goto_if_null2
-#include "tpm_json_deserialize.h"        // for ifapi_parse_json
-#include "tpm_json_serialize.h"          // for ifapi_json_TPMI_YES_NO_seri...
-#include "tss2_tpm2_types.h"             // for TPM2B_DIGEST, TPM2B_PUBLIC
+#include "ifapi_macros.h" // for check_oom, goto_if_null2
+#include "json_helpers.h"
+#include "tpm_json_deserialize.h" // for ifapi_parse_json
+#include "tpm_json_serialize.h"   // for ifapi_json_TPMI_YES_NO_seri...
+#include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPM2B_PUBLIC
 
 #define LOGMODULE fapijson
 #include "util/log.h" // for return_error, return_if_error
@@ -64,42 +65,6 @@ ifapi_json_char_serialize(const char *in, json_object **jso) {
     }
     return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     return TSS2_RC_SUCCESS;
-}
-
-/** Serialize value of type UINT8_ARY to json.
- *
- * @param[in] in value to be serialized.
- * @param[out] jso pointer to the json object.
- * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPM2B_DIGEST.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- */
-TSS2_RC
-ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso) {
-    TSS2_RC r;
-
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
-
-    char *hex_string = malloc((in->size) * 2 + 1);
-    return_if_null(hex_string, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-
-    if (in->size > 0) {
-        uint8_t *buffer = in->buffer;
-
-        for (size_t i = 0, off = 0; i < in->size; i++, off += 2)
-            sprintf(&hex_string[off], "%02x", buffer[i]);
-    }
-    hex_string[(in->size) * 2] = '\0';
-    *jso = json_object_new_string(hex_string);
-    goto_if_null2(jso, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
-
-    SAFE_FREE(hex_string);
-    return TSS2_RC_SUCCESS;
-
-error:
-    SAFE_FREE(hex_string);
-    return r;
 }
 
 /** Serialize value of type IFAPI_KEY to json.
@@ -1273,7 +1238,7 @@ ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *policy, json_object **jso) {
     if (!jso)
         return TSS2_FAPI_RC_BAD_REFERENCE;
     *jso = NULL;
-    char *json = NULL;
+    char   *json = NULL;
     TSS2_RC r = Tss2_PolicyJsonSerialize(policy, &json);
     if (!r) {
         *jso = json_tokener_parse(json);

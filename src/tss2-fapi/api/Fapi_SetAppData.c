@@ -13,13 +13,13 @@
 #include <string.h> // for memcpy, memset
 
 #include "fapi_int.h"       // for IFAPI_Path_SetDescription, FAPI_CONTEXT
-#include "fapi_types.h"     // for UINT8_ARY
 #include "fapi_util.h"      // for ifapi_initialize_object
 #include "ifapi_io.h"       // for ifapi_io_poll
 #include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
 #include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
 #include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_B...
 #include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetAppData, Fapi_SetA...
+#include "tss2_types.h"     // for UINT8_ARY
 
 #define LOGMODULE fapi
 #include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_error, LOGB...

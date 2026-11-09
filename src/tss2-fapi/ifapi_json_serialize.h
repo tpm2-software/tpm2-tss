@@ -9,12 +9,12 @@
 #include <json.h> // for json_object
 
 #include "fapi_int.h"           // for IFAPI_CAP_INFO, IFAPI_INFO
-#include "fapi_types.h"         // for UINT8_ARY
 #include "ifapi_config.h"       // for IFAPI_CONFIG
 #include "ifapi_eventlog.h"     // for IFAPI_EVENT_TYPE, FAPI_QUOTE_INFO
 #include "ifapi_ima_eventlog.h" // for IFAPI_IMA_EVENT
 #include "ifapi_keystore.h"     // for IFAPI_DUPLICATE, IFAPI_EXT_PUB_KEY
 #include "tss2_common.h"        // for TSS2_RC, UINT32
+#include "tss2_types.h"         // for UINT8_ARY
 
 #include "tss2_policy.h"
 
@@ -23,9 +23,6 @@ ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *policy, json_object **jso);
 
 #define YES 1
 #define NO  0
-
-TSS2_RC
-ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso);
 
 TSS2_RC
 ifapi_json_IFAPI_OBJECT_TYPE_CONSTANT_serialize(const IFAPI_OBJECT_TYPE_CONSTANT in,

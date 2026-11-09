@@ -5,8 +5,8 @@
 #endif
 
 #include "../helper/cmocka_all.h"
-#include "ipolicy_types.h" // for test policy fixtures
 #include "ifapi_policyutil_execute.h"
+#include "ipolicy_types.h" // for test policy fixtures
 #include <stdlib.h>
 
 /* Exercise the FAPI execution boundary without a TPM or a real Policy engine. */
