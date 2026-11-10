@@ -786,7 +786,7 @@ ifapi_calculate_policy_name_hash(TPMS_POLICYNAMEHASH *policy,
     return_if_error(r, "crypto hash start");
 
     /* Compute name hash from the list of object names */
-    for (i = 0; i <= policy->count; i++) {
+    for (i = 0; i < policy->count; i++) {
         HASH_UPDATE_BUFFER(cryptoContext, &policy->objectNames[i].name[0],
                            policy->objectNames[i].size, r, cleanup);
     }
