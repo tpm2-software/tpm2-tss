@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.2.2-rc0] - 2026-11-10
+### Fixes
+- mu: fix offset of NULL in TPMS_EMPTY marshalling
+- ESYS: avoid zero-length VLA in iesys_decrypt_param
+- SAPI: fix alignment of the response parameter pointer
+
 ## [4.2.1] - 2026-10-30
 ### Security
 - GHSA-h664-qxhh-gx3w CVE-2026-109545
