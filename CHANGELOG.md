@@ -4,10 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## [4.2.2-rc0] - 2026-11-10
+### Security
+- GHSA-89w7-5q38-fgm3 CVE-ID requested
+
 ### Fixes
 - mu: fix offset of NULL in TPMS_EMPTY marshalling
 - ESYS: avoid zero-length VLA in iesys_decrypt_param
 - SAPI: fix alignment of the response parameter pointer
+- FAPI: Reject out-of-range PCR indices in policy JSON deserialization
+- FAPI: Prevent count underflow in POLICYNAMEHASH instantiation
+- TCTI: Reject undersized TPM responses in swtpm receive path
+- FAPI: fix oob access of policy during name hash calculation
 
 ## [4.2.1] - 2026-10-30
 ### Security
