@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
-## [4.1.6-rc0] - 2026-11-11
+## [4.1.6] - 2026-11-12
 ### Security
 - GHSA-89w7-5q38-fgm3 CVE-ID requested
 
