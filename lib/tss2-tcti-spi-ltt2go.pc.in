@@ -8,4 +8,4 @@ Description: TCTI library for communicating with the LetsTrust-TPM2Go over USB.
 URL: https://github.com/tpm2-software/tpm2-tss
 Version: @VERSION@
 Cflags: -I${includedir} -I${includedir}/tss2
-Libs: -ltss2-tcti-spi-helper -ltss2-tcti-spi-ltt2go -L${libdir} -lusb-1.0
+Libs: -ltss2-tcti-spi-helper -ltss2-tcti-spi-ltt2go -L${libdir} @LIBUSB_LIBS@
