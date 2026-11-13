@@ -126,3 +126,9 @@ path = "sphinx/requirements.txt"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2024 Jürgen Repp"
 SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = ["CMakePresets.json", "vcpkg.json", "vcpkg-configuration.json", "cmake/triplets/*.cmake", "cmake/toolchains/*.cmake"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Ahmed Samy"
+SPDX-License-Identifier = "BSD-2-Clause"
