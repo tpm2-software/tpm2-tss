@@ -725,7 +725,9 @@ ifapi_policy_cp_hash(void *userdata) {
 
 /** Callback for branch selection of policy or.
  *
- * @param[in]  branches The list of policy branches.
+ * @param[in]  description The policy description (unused by the FAPI adapter).
+ * @param[in]  branch_names The names of the policy branches.
+ * @param[in]  branch_count The number of policy branches.
  * @param[out] branch_idx The index of the selcted branch.
  * @param[in,out] userdata The Fapi context which will be used for keystore
  *                access, and storing the policy execution state.
@@ -739,11 +741,11 @@ ifapi_policy_cp_hash(void *userdata) {
  *         delivered by the callback does not identify a branch.
  */
 TSS2_RC
-ifapi_branch_selection(TSS2_OBJECT *auth_object,
-                       const char  *branch_names[8],
-                       size_t       branch_count,
-                       size_t      *branch_idx,
-                       void        *userdata) {
+ifapi_branch_selection(char       *description,
+                       const char *branch_names[8],
+                       size_t      branch_count,
+                       size_t     *branch_idx,
+                       void       *userdata) {
     TSS2_RC       r;
     FAPI_CONTEXT *fapi_ctx = userdata;
     const char   *object_path;
@@ -755,7 +757,7 @@ ifapi_branch_selection(TSS2_OBJECT *auth_object,
                                         : fapi_ctx->policy.policyutil_stack;
     return_if_null(frame, "Policy not initialized.", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(frame->auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
-    (void)auth_object;
+    (void)description;
 
     return_if_null(fapi_ctx->callbacks.branch, "No branch selection callback",
                    TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN);

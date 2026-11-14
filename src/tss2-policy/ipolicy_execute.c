@@ -1560,8 +1560,9 @@ compute_policy_list(IPOLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *elements) {
 
             return_if_null(pol_ctx->callbacks.cbpolsel, "Policy Select Callback Not Set",
                            TSS2_FAPI_RC_NULL_CALLBACK);
-            r = pol_ctx->callbacks.cbpolsel(pol_ctx->auth_object, branch_names, branches->count,
-                                            &branch_idx, pol_ctx->callbacks.cbpolsel_userdata);
+            r = pol_ctx->callbacks.cbpolsel(pol_ctx->policy->description, branch_names,
+                                            branches->count, &branch_idx,
+                                            pol_ctx->callbacks.cbpolsel_userdata);
             return_if_error(r, "Select policy branch.");
 
             if (branch_idx >= branches->count) {
