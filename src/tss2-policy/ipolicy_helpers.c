@@ -113,10 +113,10 @@ cleanup_policy_elements(TPML_POLICYELEMENTS *policy) {
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
-ifapi_compute_policy_digest(const TPML_PCRVALUES *pcrs,
-                            TPML_PCR_SELECTION   *pcr_selection,
-                            TPMI_ALG_HASH         hash_alg,
-                            TPM2B_DIGEST         *pcr_digest) {
+ipolicy_compute_policy_digest(const TPML_PCRVALUES *pcrs,
+                              TPML_PCR_SELECTION   *pcr_selection,
+                              TPMI_ALG_HASH         hash_alg,
+                              TPM2B_DIGEST         *pcr_digest) {
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     size_t                     i, j;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
@@ -154,10 +154,10 @@ ifapi_compute_policy_digest(const TPML_PCRVALUES *pcrs,
             pcr_selection->pcrSelections[j].sizeofSelect = (pcrIndex / 8) + 1;
     }
     /* Compute digest for current pcr selection */
-    r = ifapi_crypto_hash_start(&cryptoContext, hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, hash_alg);
     return_if_error(r, "crypto hash start");
 
-    if (!(pcr_digest->size = ifapi_hash_get_digest_size(hash_alg))) {
+    if (!(pcr_digest->size = tss2_hash_get_digest_size(hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hash_alg);
     }
@@ -165,7 +165,7 @@ ifapi_compute_policy_digest(const TPML_PCRVALUES *pcrs,
     for (i = 0; i < pcr_selection->count; i++) {
         TPMS_PCR_SELECTION selection = pcr_selection->pcrSelections[i];
         TPMI_ALG_HASH      hashAlg = selection.hash;
-        if (!(hash_size = ifapi_hash_get_digest_size(hashAlg))) {
+        if (!(hash_size = tss2_hash_get_digest_size(hashAlg))) {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
                        cleanup, hashAlg);
         }
@@ -174,7 +174,7 @@ ifapi_compute_policy_digest(const TPML_PCRVALUES *pcrs,
                 /* pcr selected */
                 for (j = 0; j < pcrs->count; j++) {
                     if (pcrs->pcrs[j].pcr == pcr) {
-                        r = ifapi_crypto_hash_update(
+                        r = tss2_crypto_hash_update(
                             cryptoContext, (const uint8_t *)&pcrs->pcrs[j].digest, hash_size);
                         goto_if_error(r, "crypto hash update", cleanup);
                     }
@@ -182,16 +182,16 @@ ifapi_compute_policy_digest(const TPML_PCRVALUES *pcrs,
             }
         }
     }
-    r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest->buffer[0], &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest->buffer[0], &hash_size);
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
 void
-ifapi_helper_init_policy_pcr_selections(TSS2_POLICY_PCR_SELECTION *s,
-                                        const TPMT_POLICYELEMENT  *pol_element) {
+ipolicy_helper_init_policy_pcr_selections(TSS2_POLICY_PCR_SELECTION *s,
+                                          const TPMT_POLICYELEMENT  *pol_element) {
     if (pol_element->element.PolicyPCR.currentPCRs.sizeofSelect > 0) {
         s->type = TSS2_POLICY_PCR_SELECTOR_PCR_SELECT;
         s->selections.pcr_select = pol_element->element.PolicyPCR.currentPCRs;

@@ -124,7 +124,7 @@ ifapi_get_hash_md(TPM2_ALG_ID hashAlgorithm) {
  * @retval 0 if hashAlgorithm is invalid
  */
 size_t
-ifapi_hash_get_digest_size(TPM2_ALG_ID hashAlgorithm) {
+tss2_hash_get_digest_size(TPM2_ALG_ID hashAlgorithm) {
     switch (hashAlgorithm) {
     case TPM2_ALG_SHA1:
         return TPM2_SHA1_DIGEST_SIZE;
@@ -172,7 +172,7 @@ ifapi_crypto_context_free(IFAPI_CRYPTO_CONTEXT *ctx) {
  * @param[in,out] context The context of the digest object.
  */
 void
-ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context) {
+tss2_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context) {
     LOG_TRACE("called for context-pointer %p", context);
     if (context == NULL || *context == NULL) {
         LOG_DEBUG("Null-Pointer passed");
@@ -195,7 +195,7 @@ ifapi_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context) {
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
  */
 TSS2_RC
-ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context, const uint8_t *buffer, size_t size) {
+tss2_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context, const uint8_t *buffer, size_t size) {
     /* Check for NULL parameters */
     return_if_null(context, "context is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(buffer, "buffer is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -225,7 +225,7 @@ ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context, const uint8_t *buff
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
  */
 TSS2_RC
-ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context, uint8_t *digest, size_t *digestSize) {
+tss2_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context, uint8_t *digest, size_t *digestSize) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     /* Check for NULL parameters */
@@ -276,7 +276,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
  */
 TSS2_RC
-ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context, TPM2_ALG_ID hashAlgorithm) {
+tss2_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context, TPM2_ALG_ID hashAlgorithm) {
     /* Check for NULL parameters */
     return_if_null(context, "context is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -306,7 +306,7 @@ ifapi_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context, TPM2_ALG_ID hashAlg
     }
 #endif
 
-    if (!(mycontext->hashSize = ifapi_hash_get_digest_size(hashAlgorithm))) {
+    if (!(mycontext->hashSize = tss2_hash_get_digest_size(hashAlgorithm))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlgorithm);
     }
@@ -706,7 +706,7 @@ error_cleanup:
  *         the function.
  */
 TSS2_RC
-ifapi_pub_pem_key_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, char **pemKey, int *pemKeySize) {
+tss2_pub_pem_key_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, char **pemKey, int *pemKeySize) {
     /* Check for NULL parameters */
     return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(pemKeySize, "pemKeySize is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -818,7 +818,7 @@ ifapi_hmac_sig_to_tpm(const unsigned char *signature,
     return_if_null(signature, "signature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(tpmSignature, "tpmSignature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    if (ifapi_hash_get_digest_size(hashAlgorithm) != signatureSize) {
+    if (tss2_hash_get_digest_size(hashAlgorithm) != signatureSize) {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid HMAC size");
     }
 
@@ -848,11 +848,11 @@ ifapi_hmac_sig_to_tpm(const unsigned char *signature,
  *         the function.
  */
 TSS2_RC
-ifapi_der_sig_to_tpm(const TPMT_PUBLIC   *tpmPublic,
-                     const unsigned char *signature,
-                     size_t               signatureSize,
-                     TPMI_ALG_HASH        hashAlgorithm,
-                     TPMT_SIGNATURE      *tpmSignature) {
+tss2_der_sig_to_tpm(const TPMT_PUBLIC   *tpmPublic,
+                    const unsigned char *signature,
+                    size_t               signatureSize,
+                    TPMI_ALG_HASH        hashAlgorithm,
+                    TPMT_SIGNATURE      *tpmSignature) {
     /* Check for NULL parameters */
     return_if_null(tpmPublic, "tpmPublic is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
     return_if_null(signature, "signature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -1402,7 +1402,7 @@ ifapi_get_tpm_key_fingerprint(const TPM2B_PUBLIC *tpmPublicKey,
     size_t                     hashSize;
     size_t                     fingerPrintSize;
 
-    hashSize = ifapi_hash_get_digest_size(hashAlg);
+    hashSize = tss2_hash_get_digest_size(hashAlg);
     if (!hashSize)
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlg);
@@ -1423,11 +1423,11 @@ ifapi_get_tpm_key_fingerprint(const TPM2B_PUBLIC *tpmPublicKey,
     }
 
     /* Compute the digest of the DER public key */
-    r = ifapi_crypto_hash_start(&cryptoContext, hashAlg);
+    r = tss2_crypto_hash_start(&cryptoContext, hashAlg);
     goto_if_error(r, "crypto hash start", cleanup);
 
     HASH_UPDATE_BUFFER(cryptoContext, pubKeyDer, pubKeyDerSize, r, cleanup);
-    r = ifapi_crypto_hash_finish(&cryptoContext, &fingerprint->buffer[0], &fingerPrintSize);
+    r = tss2_crypto_hash_finish(&cryptoContext, &fingerprint->buffer[0], &fingerPrintSize);
     goto_if_error(r, "crypto hash finish", cleanup);
 
     fingerprint->size = fingerPrintSize;
@@ -1436,7 +1436,7 @@ cleanup:
     EVP_PKEY_free(evpPublicKey);
     SAFE_FREE(pubKeyDer);
     if (cryptoContext) {
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     }
     return r;
 }
@@ -1453,7 +1453,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
-ifapi_base64encode(uint8_t *buffer, size_t buffer_size, char **b64_data) {
+tss2_base64encode(uint8_t *buffer, size_t buffer_size, char **b64_data) {
     BIO     *bio64 = NULL;
     BIO     *bio = NULL;
     TSS2_RC  r = TPM2_RC_SUCCESS;
