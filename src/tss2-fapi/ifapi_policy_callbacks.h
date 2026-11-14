@@ -16,10 +16,10 @@
 #include "tss2_policy.h"     // for TSS2_OBJECT, TSS2_POLICY_PCR_SELECTION
 #include "tss2_tpm2_types.h" // for TPM2B_NAME, TPMI_ALG_HASH, TPM2B_DIGEST
 
-typedef TSS2_RC (*Policy_Compare_Object)(struct TPMS_POLICY *policy,
-                                         void               *object1,
-                                         void               *object2,
-                                         bool               *found);
+typedef TSS2_RC (*Policy_Compare_Object)(TPMS_POLICY *policy,
+                                         void        *object1,
+                                         void        *object2,
+                                         bool        *found);
 
 /** List of policies which fulfill a certain predicate.
  *
@@ -27,7 +27,7 @@ typedef TSS2_RC (*Policy_Compare_Object)(struct TPMS_POLICY *policy,
  */
 struct POLICY_LIST {
     const char         *path;   /**< The path of the policy object */
-    struct TPMS_POLICY *policy; /**< The policy object */
+    TPMS_POLICY        *policy; /**< The policy object */
     struct POLICY_LIST *next;   /**< Pointer to next element */
 };
 
@@ -67,7 +67,7 @@ typedef struct {
     IFAPI_NV_Cmds       nv_cmd_state_sav; /**< backup for state of fapi nv commands */
     TPM2B_DIGEST        policy_digest;
     ESYS_TR             session;
-    struct TPMS_POLICY *policy;
+    TPMS_POLICY        *policy;
 } IFAPI_POLICY_EXEC_CB_CTX;
 
 /* Application hooks used by the Policy engine without accessing FAPI state. */
