@@ -15,7 +15,7 @@
 
 #include "ipolicy_helpers.h"
 #include "ipolicy_instantiate.h"
-#include "tss2_helpers.h"    // for ifapi_free_node_list
+#include "tss2_helpers.h"    // for tss2_free_node_list
 #include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
 #include "util/aux_util.h"   // for return_error2, return_try_again
 
@@ -98,7 +98,7 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
 
 error_cleanup:
     if (*policy_element_list)
-        ifapi_free_node_list(*policy_element_list);
+        tss2_free_node_list(*policy_element_list);
     *policy_element_list = NULL;
     return r;
 }
@@ -115,7 +115,7 @@ error_cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_policyeval_instantiate_async(
+ipolicy_eval_instantiate_async(
     IPOLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
     TPMS_POLICY           *policy /* in */) {
     TSS2_RC r;
@@ -226,7 +226,7 @@ set_pem_key_param(const char      *keyPEM,
  *         or contains illegal characters.
  */
 TSS2_RC
-ifapi_policyeval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
+ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
     TSS2_RC        r = TSS2_RC_SUCCESS;
     NODE_OBJECT_T *first_in_pol_list;
     size_t         i_last;

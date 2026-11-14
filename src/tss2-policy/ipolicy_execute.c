@@ -1659,7 +1659,7 @@ ifapi_policyeval_execute(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_polic
             if (do_flush && current_policy->session && current_policy->session != ESYS_TR_NONE) {
                 Esys_FlushContext(esys_ctx, current_policy->session);
             }
-            ifapi_free_node_list(current_policy->policy_elements);
+            tss2_free_node_list(current_policy->policy_elements);
         }
         return_if_error(r, "Execute policy.");
 

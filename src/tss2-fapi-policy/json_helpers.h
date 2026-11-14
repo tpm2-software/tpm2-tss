@@ -42,6 +42,9 @@
     }
 
 TSS2_RC
+ifapi_json_char_serialize(const char *in, json_object **jso);
+
+TSS2_RC
 ifapi_json_char_deserialize(json_object *jso, char **out);
 
 TSS2_RC

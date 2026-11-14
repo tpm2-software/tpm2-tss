@@ -32,11 +32,11 @@ typedef struct {
 } IPOLICY_EVAL_INST_CTX;
 
 TSS2_RC
-ifapi_policyeval_instantiate_async(
+ipolicy_eval_instantiate_async(
     IPOLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
     struct TPMS_POLICY    *policy);    /* in */
 TSS2_RC
 
-ifapi_policyeval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context);
+ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context);
 
 #endif /* IPOLICY_INSTANTIATE_H */

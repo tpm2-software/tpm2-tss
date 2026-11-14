@@ -28,7 +28,7 @@ push_object_to_list(void *object, NODE_OBJECT_T **object_list);
 TSS2_RC
 ifapi_asprintf(char **str, const char *fmt, ...);
 
-void ifapi_free_node_list(NODE_OBJECT_T *node);
+void tss2_free_node_list(NODE_OBJECT_T *node);
 
 TSS2_RC
 ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name);

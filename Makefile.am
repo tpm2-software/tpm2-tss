@@ -672,7 +672,6 @@ libtss2_fapi_policy_internal_la_SOURCES = \
 libtss2_fapi_policy_internal_la_CFLAGS = \
     $(AM_CFLAGS) \
     -I$(srcdir)/src/tss2-policy \
-    -I$(srcdir)/src/tss2-fapi \
     -I$(srcdir)/src/tss2-fapi-policy \
     $(JSONC_CFLAGS) \
     $(UUID_CFLAGS) \
@@ -688,7 +687,7 @@ tss2_HEADERS += $(srcdir)/include/tss2/tss2_policy.h
 lib_LTLIBRARIES += $(libtss2_policy)
 pkgconfig_DATA += lib/tss2-policy.pc
 
-src_tss2_policy_libtss2_policy_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-policy -I$(srcdir)/src/tss2-fapi \
+src_tss2_policy_libtss2_policy_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-policy \
     -I$(srcdir)/src/tss2-fapi-policy \
     $(JSONC_CFLAGS) $(UUID_CFLAGS) $(CRYPTO_CFLAGS)
 src_tss2_policy_libtss2_policy_la_LIBADD  = $(libtss2_esys) $(libtss2_mu) $(libutil) $(JSONC_LIBS) $(UUID_LIBS) \
@@ -698,19 +697,7 @@ if HAVE_LD_VERSION_SCRIPT
 src_tss2_policy_libtss2_policy_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/tss2-policy.map
 endif # HAVE_LD_VERSION_SCRIPT
 
-src_tss2_policy_libtss2_policy_la_SOURCES = $(TSS2_POLICY_SRC) \
-    src/tss2-fapi/fapi_crypto.c \
-    src/tss2-fapi/ifapi_eventlog.c \
-    src/tss2-fapi/ifapi_ima_eventlog.c \
-    src/tss2-fapi/ifapi_eventlog_system.c \
-    src/tss2-fapi/ifapi_helpers.c \
-    src/tss2-fapi/ifapi_io.c \
-    src/tss2-fapi/ifapi_json_deserialize.c \
-    src/tss2-fapi/ifapi_json_serialize.c \
-    src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-    src/tss2-fapi/ifapi_policy.c \
-    src/tss2-fapi/ifapi_keystore.c \
-    src/tss2-fapi/ifapi_policy_store.c
+src_tss2_policy_libtss2_policy_la_SOURCES = $(TSS2_POLICY_SRC)
 endif # POLICY
 EXTRA_DIST += lib/tss2-policy.map lib/tss2-policy.def
 
