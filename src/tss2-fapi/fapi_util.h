@@ -163,10 +163,10 @@ ifapi_change_auth_hierarchy(FAPI_CONTEXT *context,
                             TPM2B_AUTH   *newAuthValue);
 
 TSS2_RC
-ifapi_change_policy_hierarchy(FAPI_CONTEXT       *context,
-                              ESYS_TR             handle,
-                              IFAPI_OBJECT       *hierarchy_object,
-                              struct TPMS_POLICY *policy);
+ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
+                              ESYS_TR       handle,
+                              IFAPI_OBJECT *hierarchy_object,
+                              TPMS_POLICY  *policy);
 
 IFAPI_OBJECT
 *ifapi_allocate_object(FAPI_CONTEXT *context);

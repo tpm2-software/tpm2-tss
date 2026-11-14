@@ -34,13 +34,13 @@ ifapi_policy_ctx_init(FAPI_CONTEXT *context) {
 }
 
 TSS2_RC
-ifapi_calculate_tree_ex(IFAPI_POLICY_CTX    *policyContext,
-                        IFAPI_POLICY_STORE  *pstore,
-                        IFAPI_IO            *io,
-                        const char          *policyPath,
-                        struct TPMS_POLICY **policy,
-                        TPMI_ALG_HASH        hash_alg,
-                        TPM2B_DIGEST        *digest);
+ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *policyContext,
+                        IFAPI_POLICY_STORE *pstore,
+                        IFAPI_IO           *io,
+                        const char         *policyPath,
+                        TPMS_POLICY       **policy,
+                        TPMI_ALG_HASH       hash_alg,
+                        TPM2B_DIGEST       *digest);
 
 TSS2_RC
 ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
@@ -49,18 +49,18 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
                       IFAPI_POLICY_STORE         *pstore,
                       IFAPI_IO                   *io,
                       const char                 *policyPath,
-                      struct TPMS_POLICY        **policy,
+                      TPMS_POLICY               **policy,
                       ESYS_CONTEXT               *esys_ctx,
                       ESYS_TR                     session,
                       TPMI_ALG_HASH               hash_alg,
                       bool                        do_flush);
 
 static inline TSS2_RC
-ifapi_calculate_tree(FAPI_CONTEXT        *context,
-                     const char          *policyPath,
-                     struct TPMS_POLICY **policy,
-                     TPMI_ALG_HASH        hash_alg,
-                     TPM2B_DIGEST        *digest) {
+ifapi_calculate_tree(FAPI_CONTEXT *context,
+                     const char   *policyPath,
+                     TPMS_POLICY **policy,
+                     TPMI_ALG_HASH hash_alg,
+                     TPM2B_DIGEST *digest) {
 
     return ifapi_calculate_tree_ex(&context->policy, &context->pstore, &context->io, policyPath,
                                    policy, hash_alg, digest);

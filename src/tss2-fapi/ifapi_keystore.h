@@ -93,10 +93,10 @@ typedef struct {
 
     TPM2B_PRIVATE          duplicate;      /**< The duplicate of the key to export*/
     TPM2B_ENCRYPTED_SECRET encrypted_seed; /**< Encrypted seed needed for key import */
-    TPM2B_PUBLIC public;               /**< The public information of the key to be duplicated */
-    TPM2B_PUBLIC        public_parent; /**< The public information of the new parent key */
-    char               *certificate;   /**< The certificate of the key to be duplicated */
-    struct TPMS_POLICY *policy;        /**< The policy of the key to be duplicated */
+    TPM2B_PUBLIC public;        /**< The public information of the key to be duplicated */
+    TPM2B_PUBLIC public_parent; /**< The public information of the new parent key */
+    char        *certificate;   /**< The certificate of the key to be duplicated */
+    TPMS_POLICY *policy;        /**< The policy of the key to be duplicated */
 } IFAPI_DUPLICATE;
 
 /** type for representing public info of a TPM-Resource
@@ -160,7 +160,7 @@ typedef struct IFAPI_OBJECT {
      * since offsetof isn't C99, we won't use it here.
      */
     TSS2_OBJECT public; /**< public fields of an IFAPI_OBJECT */
-    struct TPMS_POLICY        *policy;
+    TPMS_POLICY               *policy;
     IFAPI_OBJECT_TYPE_CONSTANT objectType; /**< Selector for object type */
     IFAPI_OBJECT_UNION         misc;       /**< Resource specific information */
     TPMI_YES_NO                system;     /**< Store the object in the system wide

@@ -35,9 +35,9 @@ struct IFAPI_POLICYUTIL_STACK {
 };
 
 TSS2_RC
-ifapi_policyutil_execute_prepare(FAPI_CONTEXT       *context,
-                                 TPMI_ALG_HASH       hash_alg,
-                                 struct TPMS_POLICY *policy);
+ifapi_policyutil_execute_prepare(FAPI_CONTEXT *context,
+                                 TPMI_ALG_HASH hash_alg,
+                                 TPMS_POLICY  *policy);
 
 TSS2_RC
 ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session);
