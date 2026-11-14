@@ -1,3 +1,4 @@
+/* SPDX-FileCopyrightText: 2026, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifndef IPOLICY_HELPERS_H
 #define IPOLICY_HELPERS_H
