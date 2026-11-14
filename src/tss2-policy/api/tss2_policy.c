@@ -766,11 +766,11 @@ Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy_ctx) {
 TSS2_RC
 Tss2_PolicyAddAuthorization(TPMS_POLICY          *policy,
                             const TPMT_SIGNATURE *signature,
-                            const TPM2B_DIGEST    policyRef,
+                            const TPM2B_DIGEST   *policyRef,
                             const TPMT_PUBLIC    *key) {
-    if (!policy || !signature || !key)
+    if (!policy || !signature || !policyRef || !key)
         return TSS2_POLICY_RC_BAD_REFERENCE;
-    if (policyRef.size > sizeof(policyRef.buffer))
+    if (policyRef->size > sizeof(policyRef->buffer))
         return TSS2_POLICY_RC_BAD_VALUE;
 
     size_t count = policy->policyAuthorizations ? policy->policyAuthorizations->count : 0;
@@ -796,7 +796,7 @@ Tss2_PolicyAddAuthorization(TPMS_POLICY          *policy,
     entries->authorizations[count] = (TPMS_POLICYAUTHORIZATION){
         .type = type,
         .signature = *signature,
-        .policyRef = policyRef,
+        .policyRef = *policyRef,
         .key = *key,
     };
     entries->count = count + 1;
