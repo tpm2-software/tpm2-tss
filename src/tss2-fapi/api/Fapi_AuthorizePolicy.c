@@ -327,7 +327,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
         SAFE_FREE(publicKey);
 
         /* Policy owns the authorization representation and copies the signing results. */
-        r = Tss2_PolicyAddAuthorization(*policy, signature, command->policyRef,
+        r = Tss2_PolicyAddAuthorization(*policy, signature, &command->policyRef,
                                         &(*keyObject)->misc.key.public.publicArea);
         SAFE_FREE(signature);
         if (r)
