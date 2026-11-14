@@ -20,24 +20,6 @@
 #define LOGMODULE fapijson
 #include "util/log.h" // for return_error, return_if_error, ret...
 
-/** Serialize a character string to json.
- *
- * @param[in]in the character string.
- * @param[out] out the json object.
- * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- */
-static TSS2_RC
-ifapi_json_char_serialize(const char *in, json_object **jso) {
-    if (in == NULL) {
-        *jso = json_object_new_string("");
-    } else {
-        *jso = json_object_new_string(in);
-    }
-    return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-    return TSS2_RC_SUCCESS;
-}
-
 typedef struct {
     TPMI_POLICYTYPE in;
     char           *name;

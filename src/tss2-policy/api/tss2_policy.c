@@ -13,17 +13,17 @@
 #include "ipolicy_calculate.h" // for IPOLICY_EXEC_CTX
 #include "ipolicy_execute.h"   // for IPOLICY_EXEC_CTX
 #include "ipolicy_helpers.h"
+#include "ipolicy_instantiate.h" // for IPOLICY_EVAL_INST_CTX
 #include "ipolicy_json_deserialize.h"
 #include "ipolicy_json_serialize.h"
+#include "ipolicy_types.h" // for TPMS_POLICY
 #include "tpm_json_deserialize.h"
-#include "ipolicy_instantiate.h" // for IPOLICY_EVAL_INST_CTX
-#include "ipolicy_types.h"       // for TPMS_POLICY
-#include "tss2_common.h"         // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_crypto.h"         // for ifapi_hash_get_digest_size
-#include "tss2_esys.h"           // for ESYS_CONTEXT, ESYS_TR
-#include "tss2_helpers.h"        // for internal helpers
-#include "tss2_policy.h"         // for TSS2_POLICY_CTX, TSS2_POL...
-#include "tss2_tpm2_types.h"     // for TPM2B_DIGEST, TPMT_HA
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"     // for ifapi_hash_get_digest_size
+#include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR
+#include "tss2_helpers.h"    // for internal helpers
+#include "tss2_policy.h"     // for TSS2_POLICY_CTX, TSS2_POL...
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPMT_HA
 
 #include "util/aux_util.h"
 
@@ -94,14 +94,14 @@ ipolicy_calculate_tree_ex(IPOLICY_EVAL_INST_CTX *context,
 
     switch (context->state) {
     statecase(context->state, IPOLICY_INSTANTIATE_PREPARE);
-        r = ifapi_policyeval_instantiate_async(context, policy);
+        r = ipolicy_eval_instantiate_async(context, policy);
         goto_if_error(r, "Instantiate policy.", cleanup);
         fallthrough;
 
     statecase(context->state, IPOLICY_INSTANTIATE);
-        r = ifapi_policyeval_instantiate_finish(context);
+        r = ipolicy_eval_instantiate_finish(context);
         TSS2_SYNC(r, "Instantiate policy.", cleanup);
-        ifapi_free_node_list(context->policy_elements);
+        tss2_free_node_list(context->policy_elements);
         context->policy_elements = NULL;
 
         if (!(*hash_size = ifapi_hash_get_digest_size(hash_alg))) {
@@ -136,7 +136,7 @@ ipolicy_calculate_tree_ex(IPOLICY_EVAL_INST_CTX *context,
     statecasedefault(context->state);
     }
 cleanup:
-    ifapi_free_node_list(context->policy_elements);
+    tss2_free_node_list(context->policy_elements);
     context->policy_elements = NULL;
     context->state = IPOLICY_INSTANTIATE_PREPARE;
     return r;
@@ -430,7 +430,7 @@ Tss2_PolicyExecute_Async(TSS2_POLICY_CTX *policy_ctx) {
     r = CALL_FAPI(ifapi_policyeval_execute_prepare(&policy_ctx->exec_ctx, policy_ctx->hash_alg,
                                                    policy_ctx->policy_ptr));
     if (r != TSS2_RC_SUCCESS) {
-        ifapi_free_node_list(policy_ctx->exec_ctx.policy_elements);
+        tss2_free_node_list(policy_ctx->exec_ctx.policy_elements);
         policy_ctx->exec_ctx.policy_elements = NULL;
         return r;
     }
@@ -747,7 +747,7 @@ Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy_ctx) {
     if (!p) {
         return;
     }
-    ifapi_free_node_list(p->exec_ctx.policy_elements);
+    tss2_free_node_list(p->exec_ctx.policy_elements);
     SAFE_FREE(p->exec_ctx.nonceTPM);
     SAFE_FREE(p->exec_ctx.buffer);
     SAFE_FREE(p->exec_ctx.pem_key);
@@ -925,7 +925,6 @@ Tss2_PolicyCleanup(TPMS_POLICY **policy_ptr) {
         SAFE_FREE(*policy_ptr);
     }
 }
-
 
 TSS2_RC
 Tss2_PolicyJsonSerialize(const TPMS_POLICY *policy, char **json) {
