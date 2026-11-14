@@ -137,7 +137,7 @@ ifapi_path_length(NODE_STR_T *node) {
  * @param[in] node the first node of the linked list.
  */
 void
-ifapi_free_node_list(NODE_OBJECT_T *node) {
+tss2_free_node_list(NODE_OBJECT_T *node) {
     NODE_OBJECT_T *next;
     if (node == NULL)
         return;
