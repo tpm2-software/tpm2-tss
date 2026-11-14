@@ -201,39 +201,6 @@ ifapi_helper_init_policy_pcr_selections(TSS2_POLICY_PCR_SELECTION *s,
     }
 }
 
-TPMS_POLICY *
-Tss2_InitTpmsPolicy(void) {
-    return calloc(1, sizeof(TPMS_POLICY));
-}
-
-/** Free memory allocated during deserialization of policy.
- *
- * The policy and its contents are freed and the caller's pointer is set to NULL.
- *
- * @param[in,out] policy_ptr The pointer to the policy to be freed.
- *
- */
-void
-Tss2_PolicyCleanup(TPMS_POLICY **policy_ptr) {
-    if (policy_ptr && *policy_ptr) {
-        TPMS_POLICY *policy = *policy_ptr;
-        SAFE_FREE(policy->description);
-        if (policy->policyAuthorizations) {
-            for (size_t i = 0; i < policy->policyAuthorizations->count; i++) {
-                if (policy->policyAuthorizations->authorizations[i].type
-                    && strcmp(policy->policyAuthorizations->authorizations[i].type, "pem") == 0) {
-                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].keyPEM);
-                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].pemSignature.buffer);
-                }
-                SAFE_FREE(policy->policyAuthorizations->authorizations[i].type);
-            }
-        }
-        SAFE_FREE(policy->policyAuthorizations);
-        cleanup_policy_elements(policy->policy);
-        SAFE_FREE(*policy_ptr);
-    }
-}
-
 /* Allocate a flexible array without overflowing its allocation size. */
 static void *
 copy_array_alloc(size_t header, size_t count, size_t element) {
@@ -418,13 +385,13 @@ copy_policy_authorizations(const TPML_POLICYAUTHORIZATIONS *source,
 }
 
 TSS2_RC
-Tss2_PolicyCopy(const TPMS_POLICY *source, TPMS_POLICY **destination) {
+ipolicy_copy(const TPMS_POLICY *source, TPMS_POLICY **destination) {
     if (!destination)
         return TSS2_POLICY_RC_BAD_REFERENCE;
     *destination = NULL;
     if (!source)
         return TSS2_POLICY_RC_BAD_REFERENCE;
-    TPMS_POLICY *copy = Tss2_InitTpmsPolicy();
+    TPMS_POLICY *copy = calloc(1, sizeof(TPMS_POLICY));
     if (!copy)
         return TSS2_POLICY_RC_MEMORY;
     copy->policyDigests = source->policyDigests;

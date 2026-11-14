@@ -1592,20 +1592,3 @@ ipolicy_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY **out) {
     *out = policy;
     return TSS2_RC_SUCCESS;
 }
-
-TSS2_RC
-Tss2_PolicyJsonDeserialize(const char *json, TPMS_POLICY **policy) {
-    if (!policy)
-        return TSS2_POLICY_RC_BAD_REFERENCE;
-    *policy = NULL;
-    if (!json)
-        return TSS2_POLICY_RC_BAD_REFERENCE;
-    json_object *jso = ifapi_parse_json(json);
-    if (!jso)
-        return TSS2_POLICY_RC_BAD_VALUE;
-    TSS2_RC r = ipolicy_json_TPMS_POLICY_deserialize(jso, policy);
-    json_object_put(jso);
-    if ((r & TSS2_RC_LAYER_MASK) == TSS2_FEATURE_RC_LAYER)
-        r = TSS2_POLICY_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
-    return r;
-}
