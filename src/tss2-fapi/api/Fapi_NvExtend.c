@@ -23,7 +23,7 @@
 #include "ifapi_macros.h"         // for check_not_null, goto_if_error_rese...
 #include "ifapi_profiles.h"       // for IFAPI_PROFILES
 #include "tss2_common.h"          // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_crypto.h"          // for ifapi_crypto_hash_abort, ifapi_cry...
+#include "tss2_crypto.h"          // for tss2_crypto_hash_abort, ifapi_cry...
 #include "tss2_esys.h"            // for Esys_SetTimeout, ESYS_TR, Esys_NV_...
 #include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_NvExtend, Fapi_...
 #include "tss2_helpers.h"         // for ifapi_init_hierachy_object'
@@ -370,13 +370,13 @@ Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
 
         /* Compute Digest of the current event */
         hashAlg = object->misc.nv.public.nvPublic.nameAlg;
-        r = ifapi_crypto_hash_start(&cryptoContext, hashAlg);
+        r = tss2_crypto_hash_start(&cryptoContext, hashAlg);
         goto_if_error(r, "crypto hash start", error_cleanup);
 
         HASH_UPDATE_BUFFER(cryptoContext, &auxData->buffer[0], auxData->size, r, error_cleanup);
 
-        r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&event->digests.digests[0].digest,
-                                     &hashSize);
+        r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&event->digests.digests[0].digest,
+                                    &hashSize);
         goto_if_error(r, "crypto hash finish", error_cleanup);
 
         event->digests.digests[0].hashAlg = hashAlg;
@@ -466,7 +466,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     if (cryptoContext) {
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     }
     if (event)
         ifapi_cleanup_event(event);

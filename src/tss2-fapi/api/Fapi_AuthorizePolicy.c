@@ -20,7 +20,7 @@
 #include "ifapi_policy.h"       // for ifapi_calculate_tree
 #include "ifapi_policy_store.h" // for ifapi_policy_store_store_async
 #include "tss2_common.h"        // for TSS2_RC, BYTE, TSS2_RC_SUCCESS
-#include "tss2_crypto.h"        // for ifapi_crypto_hash_abort, ifapi_cry...
+#include "tss2_crypto.h"        // for tss2_crypto_hash_abort, ifapi_cry...
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_AuthorizePolicy
 #include "tss2_helpers.h"       // for internal helpers
@@ -290,7 +290,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
          */
         hashAlg = (*keyObject)->misc.key.public.publicArea.nameAlg;
 
-        if (!(hashSize = ifapi_hash_get_digest_size(hashAlg))) {
+        if (!(hashSize = tss2_hash_get_digest_size(hashAlg))) {
             goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED, "Unsupported hash algorithm (%" PRIu16 ")",
                        cleanup, hashAlg);
         }
@@ -301,7 +301,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
         goto_if_error(r, "Fapi calculate tree.", cleanup);
 
         /* Compute the aHash from policy digest and policyRef */
-        r = ifapi_crypto_hash_start(&cryptoContext, hashAlg);
+        r = tss2_crypto_hash_start(&cryptoContext, hashAlg);
         goto_if_error(r, "crypto hash start", cleanup);
 
         HASH_UPDATE_BUFFER(cryptoContext, digest.buffer, digest.size, r, cleanup);
@@ -309,7 +309,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
             HASH_UPDATE_BUFFER(cryptoContext, &command->policyRef.buffer[0],
                                command->policyRef.size, r, cleanup);
         }
-        r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &hashSize);
+        r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &hashSize);
         goto_if_error(r, "crypto hash finish", cleanup);
 
         aHash.size = hashSize;
@@ -365,7 +365,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
 cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     ifapi_session_clean(context);
     Tss2_PolicyCleanup(policy);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

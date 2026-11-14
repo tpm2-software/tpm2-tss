@@ -739,7 +739,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         hash_alg = context->config.ek_fingerprint.hashAlg;
         if (hash_alg) {
             LOG_DEBUG("Only fingerprint check for EK.");
-            if (!(hash_size = ifapi_hash_get_digest_size(hash_alg))) {
+            if (!(hash_size = tss2_hash_get_digest_size(hash_alg))) {
                 goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
                            "Unsupported hash algorithm (%" PRIu16 ")", error_cleanup, hash_alg);
             }

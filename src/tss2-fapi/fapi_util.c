@@ -1466,7 +1466,7 @@ ifapi_merge_profile_into_nv_template(FAPI_CONTEXT *context, IFAPI_NV_TEMPLATE *t
     if ((template->public.attributes & extend_mask) == extend_mask) {
         /* The size of the NV ram to be extended must be read from the
            profile */
-        hash_size = ifapi_hash_get_digest_size(profile->nameAlg);
+        hash_size = tss2_hash_get_digest_size(profile->nameAlg);
         template->public.dataSize = hash_size;
     } else if ((template->public.attributes & counter_mask) == counter_mask
                || (template->public.attributes & bitfield_mask) == bitfield_mask) {
@@ -2918,7 +2918,7 @@ ifapi_key_sign(FAPI_CONTEXT      *context,
         int pem_size;
         if (publicKey) {
             /* Convert internal key object to PEM format. */
-            r = ifapi_pub_pem_key_from_tpm(&sig_key_object->misc.key.public, publicKey, &pem_size);
+            r = tss2_pub_pem_key_from_tpm(&sig_key_object->misc.key.public, publicKey, &pem_size);
             goto_if_error(r, "Conversion pub key to PEM failed", cleanup);
         }
         context->Key_Sign.handle = ESYS_TR_NONE;

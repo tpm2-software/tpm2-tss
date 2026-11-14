@@ -17,7 +17,7 @@
 #include <strings.h>  // for strcasecmp, strncasecmp
 #include <sys/stat.h> // for mkdir, mode_t
 
-#include "tss2_crypto.h" // for ifapi_hash_get_digest_size ...
+#include "tss2_crypto.h" // for tss2_hash_get_digest_size ...
 #include "tss2_helpers.h"
 #include "tss2_mu.h" // for Tss2_MU_TPMS_NV_PUBLIC_Marshal
 #include "tss2_policy.h"
@@ -174,27 +174,27 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name) {
         return TSS2_RC_SUCCESS;
     }
     TSS2_RC r;
-    r = ifapi_crypto_hash_start(&cryptoContext, publicInfo->nameAlg);
+    r = tss2_crypto_hash_start(&cryptoContext, publicInfo->nameAlg);
     return_if_error(r, "crypto hash start");
 
     r = Tss2_MU_TPMT_PUBLIC_Marshal(publicInfo, &buffer[0], sizeof(TPMT_PUBLIC), &offset);
     if (r) {
         LOG_ERROR("Marshaling TPMT_PUBLIC");
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
         return r;
     }
 
-    r = ifapi_crypto_hash_update(cryptoContext, &buffer[0], offset);
+    r = tss2_crypto_hash_update(cryptoContext, &buffer[0], offset);
     if (r) {
         LOG_ERROR("crypto hash update");
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
         return r;
     }
 
-    r = ifapi_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id], &size);
+    r = tss2_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id], &size);
     if (r) {
         LOG_ERROR("crypto hash finish");
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
         return r;
     }
 
@@ -221,7 +221,7 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name) {
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC
-ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name) {
+tss2_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name) {
     BYTE                       buffer[sizeof(TPMS_NV_PUBLIC)];
     size_t                     offset = 0;
     size_t                     size = sizeof(TPMU_NAME) - sizeof(TPMI_ALG_HASH);
@@ -235,29 +235,29 @@ ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name) {
     TSS2_RC r;
 
     /* Initialize the hash computation with the nameAlg. */
-    r = ifapi_crypto_hash_start(&cryptoContext, publicInfo->nameAlg);
+    r = tss2_crypto_hash_start(&cryptoContext, publicInfo->nameAlg);
     return_if_error(r, "Crypto hash start");
 
     /* Get the marshaled data of the public area. */
     r = Tss2_MU_TPMS_NV_PUBLIC_Marshal(publicInfo, &buffer[0], sizeof(TPMS_NV_PUBLIC), &offset);
     if (r) {
         LOG_ERROR("Marshaling TPMS_NV_PUBLIC");
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
         return r;
     }
 
-    r = ifapi_crypto_hash_update(cryptoContext, &buffer[0], offset);
+    r = tss2_crypto_hash_update(cryptoContext, &buffer[0], offset);
     if (r) {
         LOG_ERROR("crypto hash update");
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
         return r;
     }
 
     /* The hash will be stored after the nameAlg.*/
-    r = ifapi_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id], &size);
+    r = tss2_crypto_hash_finish(&cryptoContext, &name->name[len_alg_id], &size);
     if (r) {
         LOG_ERROR("crypto hash finish");
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
         return r;
     }
 

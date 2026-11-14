@@ -18,7 +18,7 @@
 #include "ifapi_macros.h"       // for statecase, fallthrough, return...
 #include "ifapi_policy_store.h" // for ifapi_policy_store_load_async
 #include "tss2_common.h"        // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_crypto.h"        // for ifapi_hash_get_digest_size
+#include "tss2_crypto.h"        // for tss2_hash_get_digest_size
 #include "tss2_esys.h"          // for ESYS_CONTEXT
 #include "tss2_helpers.h"       // for free_node_list
 #include "tss2_helpers.h"       // for tss2_free_node_list

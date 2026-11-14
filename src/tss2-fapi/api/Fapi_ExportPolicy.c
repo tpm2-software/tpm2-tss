@@ -22,7 +22,7 @@
 #include "ifapi_policy_store.h" // for ifapi_policy_store_load_async
 #include "ifapi_profiles.h"     // for IFAPI_PROFILES, IFAPI_PROFILE
 #include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_crypto.h"        // for ifapi_hash_get_digest_size
+#include "tss2_crypto.h"        // for tss2_hash_get_digest_size
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_ExportPo...
 #include "tss2_helpers.h"       // for internal helpers

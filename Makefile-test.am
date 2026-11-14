@@ -920,8 +920,8 @@ test_unit_fapi_policyutil_SOURCES = test/unit/fapi-policyutil.c \
 test_unit_fapi_helpers_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_helpers_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_helpers_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
-                                 -Wl,--wrap=ifapi_crypto_hash_update \
-                                 -Wl,--wrap=ifapi_crypto_hash_finish
+                                 -Wl,--wrap=tss2_crypto_hash_update \
+                                 -Wl,--wrap=tss2_crypto_hash_finish
 test_unit_fapi_helpers_SOURCES = test/unit/fapi-helpers.c \
                                  src/tss2-fapi/ifapi_json_deserialize.c \
                                  src/tss2-fapi/ifapi_json_serialize.c \

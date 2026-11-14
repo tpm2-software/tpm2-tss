@@ -25,9 +25,9 @@
 #include "util/log.h" // for return_if_error, SAFE_FREE, goto_if_error
 
 static TSS2_RC
-ifapi_pcr_selection_to_pcrvalues(TPML_PCR_SELECTION *pcr_selection,
-                                 TPML_DIGEST        *pcr_digests,
-                                 TPML_PCRVALUES    **out) {
+ipolicy_pcr_selection_to_pcrvalues(TPML_PCR_SELECTION *pcr_selection,
+                                   TPML_DIGEST        *pcr_digests,
+                                   TPML_PCRVALUES    **out) {
 
     /* Count pcrs */
     UINT32 i = 0, pcr = 0, n_pcrs = 0, i_pcr = 0;
@@ -322,7 +322,7 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             }
 
             TSS2_POLICY_PCR_SELECTION s = { 0 };
-            ifapi_helper_init_policy_pcr_selections(&s, pol_element);
+            ipolicy_helper_init_policy_pcr_selections(&s, pol_element);
 
             TPML_PCR_SELECTION out_pcrselect = { 0 };
             TPML_DIGEST        out_digests = { 0 };
@@ -334,9 +334,9 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             return_try_again(r);
             return_if_error(r, "read_finish failed");
 
-            r = ifapi_pcr_selection_to_pcrvalues(&out_pcrselect, &out_digests,
-                                                 &pol_element->element.PolicyPCR.pcrs);
-            return_if_error(r, "ifapi_pcr_selection_to_pcrvalues failed");
+            r = ipolicy_pcr_selection_to_pcrvalues(&out_pcrselect, &out_digests,
+                                                   &pol_element->element.PolicyPCR.pcrs);
+            return_if_error(r, "ipolicy_pcr_selection_to_pcrvalues failed");
 
             pol_element->element.PolicyPCR.currentPCRs.sizeofSelect = 0;
             pol_element->element.PolicyPCR.currentPCRandBanks.count = 0;

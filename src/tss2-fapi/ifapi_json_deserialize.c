@@ -22,7 +22,7 @@
 #include "ifapi_json_deserialize.h"
 #include "json_helpers.h"
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifa...
-#include "tss2_crypto.h"          // for ifapi_crypto_hash_abort
+#include "tss2_crypto.h"          // for tss2_crypto_hash_abort
 #include "tss2_esys.h"            // for ESYS_TR_RH_OWNER
 #include "tss2_helpers.h"         // for ifapi_check_json_object_f...
 #include "tss2_mu.h"              // for Tss2_MU_TPM2B_PRIVATE_Unm...
@@ -978,17 +978,17 @@ check_event_digest(IFAPI_EVENT *event, enum IFAPI_EVENT_ERROR_HANDLING error_han
     }
 
     for (i = 0; i < event->digests.count; i++) {
-        if (!(hash_size = ifapi_hash_get_digest_size(event->digests.digests[i].hashAlg))) {
+        if (!(hash_size = tss2_hash_get_digest_size(event->digests.digests[i].hashAlg))) {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
                        error_cleanup, event->digests.digests[i].hashAlg);
         }
-        r = ifapi_crypto_hash_start(&cryptoContext, event->digests.digests[i].hashAlg);
+        r = tss2_crypto_hash_start(&cryptoContext, event->digests.digests[i].hashAlg);
         return_if_error(r, "crypto hash start");
 
         r = get_event_hash(cryptoContext, event);
         goto_if_error(r, "Get digest event hash.", error_cleanup);
 
-        r = ifapi_crypto_hash_finish(&cryptoContext, &data_hash[0], &hash_size);
+        r = tss2_crypto_hash_finish(&cryptoContext, &data_hash[0], &hash_size);
         return_if_error(r, "crypto hash finish");
 
         if (memcmp(&event->digests.digests[i].digest.sha512[0], &data_hash[0], hash_size) != 0) {
@@ -1002,7 +1002,7 @@ check_event_digest(IFAPI_EVENT *event, enum IFAPI_EVENT_ERROR_HANDLING error_han
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
-    ifapi_crypto_hash_abort(&cryptoContext);
+    tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 

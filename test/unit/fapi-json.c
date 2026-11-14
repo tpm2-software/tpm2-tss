@@ -143,7 +143,7 @@ normalize(const char *string) {
         cleanup_ifapi_object(&out);                                                                \
     }
 
-#define CHECK_JSON2(TYPE, SRC, DST, PSERIALIZE)                                                    \
+#define CHECK_JSON2_PREFIX(PREFIX, TYPE, SRC, DST, PSERIALIZE)                                     \
     {                                                                                              \
         TYPE         out;                                                                          \
         TSS2_RC      rc;                                                                           \
@@ -151,13 +151,13 @@ normalize(const char *string) {
         if (!jso)                                                                                  \
             fprintf(stderr, "JSON parsing failed\n");                                              \
         assert_non_null(jso);                                                                      \
-        rc = ifapi_json_##TYPE##_deserialize(jso, &out);                                           \
+        rc = PREFIX##_json_##TYPE##_deserialize(jso, &out);                                        \
         if (rc)                                                                                    \
             fprintf(stderr, "Deserialization failed\n");                                           \
         assert_int_equal(rc, TSS2_RC_SUCCESS);                                                     \
         json_object_put(jso);                                                                      \
         jso = NULL;                                                                                \
-        rc = ifapi_json_##TYPE##_serialize(PSERIALIZE, &jso);                                      \
+        rc = PREFIX##_json_##TYPE##_serialize(PSERIALIZE, &jso);                                   \
         assert_int_equal(rc, TSS2_RC_SUCCESS);                                                     \
         assert_non_null(jso);                                                                      \
         const char *jso_string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);     \
@@ -169,6 +169,9 @@ normalize(const char *string) {
         free(string1);                                                                             \
         free(string2);                                                                             \
     }
+
+#define CHECK_JSON2(TYPE, SRC, DST, PSERIALIZE)                                                    \
+    CHECK_JSON2_PREFIX(ifapi, TYPE, SRC, DST, PSERIALIZE)
 
 #define CHECK_JSON(TYPE, SRC, DST) CHECK_JSON2(TYPE, SRC, DST, &out)
 
@@ -617,7 +620,8 @@ check_json_structs(void **state) {
         = "{\n"
           "  \"templateHash\": \"0011223344556677889900112233445566778899\"\n"
           "}";
-    CHECK_JSON(TPMS_POLICYTEMPLATE, test_json_TPMS_POLICYTEMPLATE, test_json_TPMS_POLICYTEMPLATE);
+    CHECK_JSON2_PREFIX(ipolicy, TPMS_POLICYTEMPLATE, test_json_TPMS_POLICYTEMPLATE,
+                       test_json_TPMS_POLICYTEMPLATE, &out);
 
     const char *test_json_TPM2B_PUBLIC_expected = "{\n"
                                                   "  \"size\":0,\n"

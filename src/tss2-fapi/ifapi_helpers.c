@@ -18,7 +18,7 @@
 #include <sys/stat.h> // for mkdir, mode_t
 
 #include "efi_event.h"             // for EV_NO_ACTION_STRUCT, EV_EFI_HCRT...
-#include "fapi_crypto.h"           // for ifapi_crypto_hash_abort, ifapi_c...
+#include "fapi_crypto.h"           // for tss2_crypto_hash_abort, ifapi_c...
 #include "ifapi_eventlog.h"        // for IFAPI_EVENT, FAPI_QUOTE_INFO
 #include "ifapi_eventlog_system.h" // for IFAPI_FIRMWARE_EVENT
 #include "ifapi_helpers.h"
@@ -852,7 +852,7 @@ ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal) {
         obj_name = &object->misc.key.name;
         break;
     case IFAPI_NV_OBJ:
-        r = ifapi_nv_get_name(&object->misc.nv.public.nvPublic, &nv_name);
+        r = tss2_nv_get_name(&object->misc.nv.public.nvPublic, &nv_name);
         return_if_error(r, "Get NV name.");
 
         obj_name = &nv_name;
@@ -1239,7 +1239,7 @@ ifapi_extend_vpcr(TPM2B_DIGEST *vpcr, TPMI_ALG_HASH bank, const IFAPI_EVENT *eve
     LOGBLOB_TRACE(&vpcr->buffer[0], vpcr->size, "Old vpcr value");
     for (i = 0; i < event->digests.count; i++) {
         if (event->digests.digests[i].hashAlg == bank) {
-            event_size = ifapi_hash_get_digest_size(event->digests.digests[i].hashAlg);
+            event_size = tss2_hash_get_digest_size(event->digests.digests[i].hashAlg);
 
             LOGBLOB_TRACE(&event->digests.digests[i].digest.sha512[0], event_size,
                           "Extending with");
@@ -1253,13 +1253,13 @@ ifapi_extend_vpcr(TPM2B_DIGEST *vpcr, TPMI_ALG_HASH bank, const IFAPI_EVENT *eve
             if (zero_digest)
                 continue;
 
-            r = ifapi_crypto_hash_start(&cryptoContext, bank);
+            r = tss2_crypto_hash_start(&cryptoContext, bank);
             return_if_error(r, "crypto hash start");
 
             HASH_UPDATE_BUFFER(cryptoContext, &vpcr->buffer[0], vpcr->size, r, error_cleanup);
             HASH_UPDATE_BUFFER(cryptoContext, &event->digests.digests[i].digest.sha512[0],
                                event_size, r, error_cleanup);
-            r = ifapi_crypto_hash_finish(&cryptoContext, &vpcr->buffer[0], &size);
+            r = tss2_crypto_hash_finish(&cryptoContext, &vpcr->buffer[0], &size);
             return_if_error(r, "crypto hash finish");
             vpcr->size = size;
             break;
@@ -1288,7 +1288,7 @@ ifapi_extend_vpcr(TPM2B_DIGEST *vpcr, TPMI_ALG_HASH bank, const IFAPI_EVENT *eve
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
-    ifapi_crypto_hash_abort(&cryptoContext);
+    tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -1310,12 +1310,12 @@ ifapi_extend_pcr(TPMI_ALG_HASH alg, uint8_t *pcr, const uint8_t *digest, size_t 
     LOGBLOB_TRACE(pcr, alg_size, "Old pcr value");
     LOGBLOB_TRACE(digest, alg_size, "Extend with");
 
-    r = ifapi_crypto_hash_start(&cryptoContext, alg);
+    r = tss2_crypto_hash_start(&cryptoContext, alg);
     return_if_error(r, "crypto hash start");
 
     HASH_UPDATE_BUFFER(cryptoContext, pcr, alg_size, r, error_cleanup);
     HASH_UPDATE_BUFFER(cryptoContext, digest, alg_size, r, error_cleanup);
-    r = ifapi_crypto_hash_finish(&cryptoContext, pcr, &alg_size);
+    r = tss2_crypto_hash_finish(&cryptoContext, pcr, &alg_size);
     return_if_error(r, "crypto hash finish");
 
     LOGBLOB_TRACE(pcr, alg_size, "New vpcr value");
@@ -1323,7 +1323,7 @@ ifapi_extend_pcr(TPMI_ALG_HASH alg, uint8_t *pcr, const uint8_t *digest, size_t 
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
-    ifapi_crypto_hash_abort(&cryptoContext);
+    tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -1340,14 +1340,14 @@ ifapi_pcr_digest_matches(const IFAPI_PCR_REG *pcrs,
 
     *matches = false;
 
-    r = ifapi_crypto_hash_start(&cryptoContext, pcr_digest_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, pcr_digest_hash_alg);
     goto_if_error(r, "crypto hash start", error_cleanup);
 
     for (i = 0; i < n_pcrs; i++) {
         HASH_UPDATE_BUFFER(cryptoContext, &pcrs[i].value.buffer, pcrs[i].value.size, r,
                            error_cleanup);
     }
-    r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest.buffer[0], &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest.buffer[0], &hash_size);
     goto_if_error(r, "crypto hash finish", error_cleanup);
     pcr_digest.size = hash_size;
 
@@ -1355,7 +1355,7 @@ ifapi_pcr_digest_matches(const IFAPI_PCR_REG *pcrs,
 
 error_cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -1402,7 +1402,7 @@ ifapi_calculate_pcrs(json_object              *jso_event_list,
             uint8_t byte_idx = pcr / 8;
             uint8_t flag = ((uint8_t)1) << (pcr % 8);
             if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
-                hash_size = ifapi_hash_get_digest_size(pcr_selection->pcrSelections[i].hash);
+                hash_size = tss2_hash_get_digest_size(pcr_selection->pcrSelections[i].hash);
                 pcrs[n_pcrs].pcr = pcr;
                 pcrs[n_pcrs].bank = pcr_selection->pcrSelections[i].hash;
                 pcrs[n_pcrs].value.size = hash_size;

@@ -34,6 +34,6 @@ TSS2_RC
 ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name);
 
 TSS2_RC
-ifapi_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name);
+tss2_nv_get_name(TPMS_NV_PUBLIC *publicInfo, TPM2B_NAME *name);
 
 #endif /* TSS2_HELPERS_H */

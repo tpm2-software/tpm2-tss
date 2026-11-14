@@ -15,8 +15,8 @@
 #include "ipolicy_helpers.h"
 #include "ipolicy_types.h"   // for TPMT_POLICYELEMENT, TPML_POLICYELEMENTS
 #include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
-#include "tss2_crypto.h"     // for ifapi_crypto_hash_finish, ifapi_cryp...
-#include "tss2_helpers.h"    // for ifapi_nv_get_namexs
+#include "tss2_crypto.h"     // for tss2_crypto_hash_finish, ifapi_cryp...
+#include "tss2_helpers.h"    // for tss2_nv_get_name
 #include "tss2_mu.h"         // for Tss2_MU_TPM2_CC_Marshal, Tss2_MU_UIN...
 #include "tss2_tpm2_types.h" // for TPMT_HA, TPML_DIGEST_VALUES, TPM2_CC
 
@@ -127,7 +127,7 @@ compute_policy_pcr(TPMS_POLICYPCR     *policy,
 
     LOG_TRACE("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -137,11 +137,11 @@ compute_policy_pcr(TPMS_POLICYPCR     *policy,
     return_if_error(r, "Get hash alg for digest.");
 
     /* Compute PCR selection and pcr digest */
-    r = ifapi_compute_policy_digest(policy->pcrs, &pcr_selection, current_hash_alg, &pcr_digest);
+    r = ipolicy_compute_policy_digest(policy->pcrs, &pcr_selection, current_hash_alg, &pcr_digest);
     return_if_error(r, "Compute policy digest and selection.");
 
     LOG_TRACE("Compute policy pcr");
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     /* Update the passed policy. */
@@ -152,13 +152,13 @@ compute_policy_pcr(TPMS_POLICYPCR     *policy,
     HASH_UPDATE(cryptoContext, TPML_PCR_SELECTION, &pcr_selection, r, cleanup);
     HASH_UPDATE_BUFFER(cryptoContext, &pcr_digest.buffer[0], hash_size, r, cleanup);
 
-    r = ifapi_crypto_hash_finish(
-        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext,
+                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
     goto_if_error(r, "crypto hash finish", cleanup);
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -195,7 +195,7 @@ calculate_policy_key_param(TPM2_CC       command_code,
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
 
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     LOGBLOB_DEBUG((uint8_t *)digest, hash_size, "Digest Start");
@@ -208,24 +208,24 @@ calculate_policy_key_param(TPM2_CC       command_code,
         LOGBLOB_DEBUG(&name->name[0], name->size, "Key name");
         HASH_UPDATE_BUFFER(cryptoContext, &name->name[0], name->size, r, cleanup);
     }
-    r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)digest, &hash_size);
     LOGBLOB_DEBUG((uint8_t *)digest, hash_size, "Digest Finish");
     goto_if_error(r, "crypto hash finish", cleanup);
 
     /* Use policyRef for second hash computation */
     if (policyRef) {
-        r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+        r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
         return_if_error(r, "crypto hash start");
 
         HASH_UPDATE_BUFFER(cryptoContext, digest, hash_size, r, cleanup);
         HASH_UPDATE_BUFFER(cryptoContext, &policyRef->buffer[0], policyRef->size, r, cleanup);
-        r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)digest, &hash_size);
+        r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)digest, &hash_size);
         goto_if_error(r, "crypto hash finish", cleanup);
     }
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -256,7 +256,7 @@ calculate_policy_signed(TPMS_POLICYSIGNED  *policy,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -305,10 +305,10 @@ calculate_policy_authorize_nv(TPMS_POLICYAUTHORIZENV *policy,
        policy execution it will be set. */
     policy->nvPublic.attributes |= TPMA_NV_WRITTEN;
 
-    r = ifapi_nv_get_name(&policy->nvPublic, &nv_name);
+    r = tss2_nv_get_name(&policy->nvPublic, &nv_name);
     return_if_error(r, "Compute NV name");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -352,7 +352,7 @@ calculate_policy_duplicate(TPMS_POLICYDUPLICATIONSELECT *policy,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -362,7 +362,7 @@ calculate_policy_duplicate(TPMS_POLICYDUPLICATIONSELECT *policy,
     return_if_error(r, "Get hash alg for digest.");
 
     LOG_TRACE("Compute policy");
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     /* Update the policy digest */
@@ -375,8 +375,8 @@ calculate_policy_duplicate(TPMS_POLICYDUPLICATIONSELECT *policy,
                        cleanup);
     HASH_UPDATE(cryptoContext, BYTE, policy->includeObject, r, cleanup);
 
-    r = ifapi_crypto_hash_finish(
-        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext,
+                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
     goto_if_error(r, "crypto hash finish", cleanup);
 
     LOGBLOB_DEBUG((uint8_t *)&current_digest->digests[digest_idx].digest, hash_size,
@@ -384,7 +384,7 @@ calculate_policy_duplicate(TPMS_POLICYDUPLICATIONSELECT *policy,
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -419,7 +419,7 @@ calculate_policy_authorize(TPMS_POLICYAUTHORIZE *policy,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -467,7 +467,7 @@ calculate_policy_secret(TPMS_POLICYSECRET  *policy,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -516,7 +516,7 @@ calculate_policy_counter_timer(TPMS_POLICYCOUNTERTIMER *policy,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -525,7 +525,7 @@ calculate_policy_counter_timer(TPMS_POLICYCOUNTERTIMER *policy,
     r = get_policy_digest_idx(current_digest, current_hash_alg, &digest_idx);
     return_if_error(r, "Get hash alg for digest.");
 
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     /* Compute a has value from the offset, the timer value and the operation. */
@@ -534,24 +534,24 @@ calculate_policy_counter_timer(TPMS_POLICYCOUNTERTIMER *policy,
     HASH_UPDATE(cryptoContext, UINT16, policy->offset, r, cleanup);
     HASH_UPDATE(cryptoContext, UINT16, policy->operation, r, cleanup);
 
-    r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&counter_timer_hash.buffer[0],
-                                 &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&counter_timer_hash.buffer[0],
+                                &hash_size);
     return_if_error(r, "crypto hash finish");
 
     /* Extend the policy digest from the hash value computed above and the
        command code. */
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
                        cleanup);
     HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyCounterTimer, r, cleanup);
     HASH_UPDATE_BUFFER(cryptoContext, &counter_timer_hash.buffer[0], hash_size, r, cleanup);
-    r = ifapi_crypto_hash_finish(
-        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext,
+                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -585,7 +585,7 @@ calculate_simple_policy(TPM2_CC             command_code1,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -595,7 +595,7 @@ calculate_simple_policy(TPM2_CC             command_code1,
     return_if_error(r, "Get hash alg for digest.");
 
     /* Update the policy */
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
@@ -606,12 +606,12 @@ calculate_simple_policy(TPM2_CC             command_code1,
     if (command_code2) {
         HASH_UPDATE(cryptoContext, TPM2_CC, command_code2, r, cleanup);
     }
-    r = ifapi_crypto_hash_finish(
-        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext,
+                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -754,7 +754,7 @@ calculate_policy_digest_hash(TPM2B_DIGEST       *digest,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -764,18 +764,18 @@ calculate_policy_digest_hash(TPM2B_DIGEST       *digest,
     return_if_error(r, "Get hash alg for digest.");
 
     /* Update the policy. */
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
                        cleanup);
     HASH_UPDATE(cryptoContext, TPM2_CC, command_code, r, cleanup);
     HASH_UPDATE_BUFFER(cryptoContext, &digest->buffer[0], digest->size, r, cleanup);
-    r = ifapi_crypto_hash_finish(
-        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext,
+                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -807,13 +807,13 @@ calculate_policy_name_hash(TPMS_POLICYNAMEHASH *policy,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
     /* Compute of the index of the current policy in the passed digest list */
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     /* Compute name hash from the list of object names */
@@ -821,8 +821,7 @@ calculate_policy_name_hash(TPMS_POLICYNAMEHASH *policy,
         HASH_UPDATE_BUFFER(cryptoContext, &policy->objectNames[i].name[0],
                            policy->objectNames[i].size, r, cleanup);
     }
-    r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&policy->nameHash.buffer[0],
-                                 &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&policy->nameHash.buffer[0], &hash_size);
     return_if_error(r, "crypto hash finish");
 
     policy->nameHash.size = hash_size;
@@ -835,7 +834,7 @@ calculate_policy_name_hash(TPMS_POLICYNAMEHASH *policy,
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -894,7 +893,7 @@ calculate_policy_locality(TPMS_POLICYLOCALITY *policy,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -904,19 +903,19 @@ calculate_policy_locality(TPMS_POLICYLOCALITY *policy,
     return_if_error(r, "Get hash alg for digest.");
 
     /* Update the policy */
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
                        cleanup);
     HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyLocality, r, cleanup);
     HASH_UPDATE(cryptoContext, BYTE, policy->locality, r, cleanup);
-    r = ifapi_crypto_hash_finish(
-        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext,
+                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -946,7 +945,7 @@ calculate_policy_nv_written(TPMS_POLICYNVWRITTEN *policy,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -956,7 +955,7 @@ calculate_policy_nv_written(TPMS_POLICYNVWRITTEN *policy,
     return_if_error(r, "Get hash alg for digest.");
 
     /* Update the policy */
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
@@ -964,12 +963,12 @@ calculate_policy_nv_written(TPMS_POLICYNVWRITTEN *policy,
     HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyNvWritten, r, cleanup);
     /* Update the expected attribute value. */
     HASH_UPDATE(cryptoContext, BYTE, policy->writtenSet, r, cleanup);
-    r = ifapi_crypto_hash_finish(
-        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext,
+                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -1010,14 +1009,14 @@ calculate_policy_nv(TPMS_POLICYNV      *policy,
 
     /* Compute NV name from public info */
 
-    r = ifapi_nv_get_name(&policy->nvPublic, &nv_name);
+    r = tss2_nv_get_name(&policy->nvPublic, &nv_name);
     return_if_error(r, "Compute NV name");
 
     /* Compute of the index of the current policy in the passed digest list */
     r = get_policy_digest_idx(current_digest, current_hash_alg, &digest_idx);
     return_if_error(r, "Get hash alg for digest.");
 
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     /* Compute the hash for the compare operation. */
@@ -1025,13 +1024,13 @@ calculate_policy_nv(TPMS_POLICYNV      *policy,
                        cleanup);
     HASH_UPDATE(cryptoContext, UINT16, policy->offset, r, cleanup);
     HASH_UPDATE(cryptoContext, UINT16, policy->operation, r, cleanup);
-    r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&nv_hash.buffer[0], &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&nv_hash.buffer[0], &hash_size);
     return_if_error(r, "crypto hash finish");
 
     nv_hash.size = hash_size;
 
     /* Update the policy with the hash of the compare operation and the NV name. */
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
@@ -1039,13 +1038,13 @@ calculate_policy_nv(TPMS_POLICYNV      *policy,
     HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyNV, r, cleanup);
     HASH_UPDATE_BUFFER(cryptoContext, &nv_hash.buffer[0], nv_hash.size, r, cleanup)
     HASH_UPDATE_BUFFER(cryptoContext, &nv_name.name[0], nv_name.size, r, cleanup);
-    r = ifapi_crypto_hash_finish(
-        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext,
+                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
     goto_if_error(r, "crypto hash finish", cleanup);
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -1093,9 +1092,9 @@ calculate_policy_or(TPMS_POLICYOR      *policyOr,
     }
     /* Reset the or policy digest because the digest is included in all sub policies */
     memset(&current_digest->digests[digest_idx], 0, hash_size);
-    r = ifapi_crypto_hash_start(&cryptoContext, hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, hash_alg);
     return_if_error(r, "crypto hash start");
-    r = ifapi_crypto_hash_update(
+    r = tss2_crypto_hash_update(
         cryptoContext, (const uint8_t *)&current_digest->digests[digest_idx].digest, hash_size);
     goto_if_error(r, "crypto hash update", cleanup);
 
@@ -1105,30 +1104,30 @@ calculate_policy_or(TPMS_POLICYOR      *policyOr,
     r = Tss2_MU_TPM2_CC_Marshal(TPM2_CC_PolicyOR, &buffer[0], sizeof(TPM2_CC), &offset);
     goto_if_error(r, "Marshal cc", cleanup);
 
-    r = ifapi_crypto_hash_update(cryptoContext, (const uint8_t *)&buffer[0], sizeof(TPM2_CC));
+    r = tss2_crypto_hash_update(cryptoContext, (const uint8_t *)&buffer[0], sizeof(TPM2_CC));
     goto_if_error(r, "crypto hash update", cleanup);
 
     /* Update the digest with the complete list of computed digests of the branches. */
     for (i = 0; i < policyOr->branches->count; i++) {
-        r = ifapi_crypto_hash_update(cryptoContext,
-                                     (const uint8_t *)&policyOr->branches->authorizations[i]
-                                         .policyDigests.digests[digest_idx]
-                                         .digest,
-                                     hash_size);
+        r = tss2_crypto_hash_update(cryptoContext,
+                                    (const uint8_t *)&policyOr->branches->authorizations[i]
+                                        .policyDigests.digests[digest_idx]
+                                        .digest,
+                                    hash_size);
         log_policy_digest(&policyOr->branches->authorizations[i].policyDigests, digest_idx,
                           hash_size, "Or branch");
         current_digest->count = policyOr->branches->authorizations[i].policyDigests.count;
         goto_if_error(r, "crypto hash update", cleanup);
     }
     current_digest->digests[digest_idx].hashAlg = hash_alg;
-    r = ifapi_crypto_hash_finish(
-        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext,
+                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
     log_policy_digest(current_digest, digest_idx, hash_size, "Final or digest");
     goto_if_error(r, "crypto hash finish", cleanup);
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -1167,7 +1166,7 @@ calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
 
     LOG_DEBUG("call");
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
@@ -1182,11 +1181,11 @@ calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
                                         sizeof(TPMT_PUBLIC), &offset);
         return_if_error(r, "Marshaling TPMT_PUBLIC");
 
-        r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+        r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
         return_if_error(r, "crypto hash start");
 
         HASH_UPDATE_BUFFER(cryptoContext, &buffer[0], offset, r, cleanup);
-        r = ifapi_crypto_hash_finish(&cryptoContext, &used_template_hash->buffer[0], &digest_size);
+        r = tss2_crypto_hash_finish(&cryptoContext, &used_template_hash->buffer[0], &digest_size);
         goto_if_error(r, "crypto hash finish", cleanup);
         used_template_hash->size = digest_size;
     } else {
@@ -1194,7 +1193,7 @@ calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
     }
 
     LOG_TRACE("Compute policy template");
-    r = ifapi_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
     return_if_error(r, "crypto hash start");
 
     HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
@@ -1202,8 +1201,8 @@ calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
     HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyTemplate, r, cleanup);
     HASH_UPDATE_BUFFER(cryptoContext, &used_template_hash->buffer[0], used_template_hash->size, r,
                        cleanup);
-    r = ifapi_crypto_hash_finish(
-        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = tss2_crypto_hash_finish(&cryptoContext,
+                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
     goto_if_error(r, "crypto hash finish", cleanup);
 
     LOGBLOB_DEBUG((uint8_t *)&current_digest->digests[digest_idx].digest, hash_size,
@@ -1211,7 +1210,7 @@ calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
