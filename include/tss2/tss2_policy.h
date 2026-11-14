@@ -226,11 +226,6 @@ Tss2_PolicyGetDescription(TSS2_POLICY_CTX *policy_ctx, char *description, size_t
 TSS2_RC
 Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest);
 
-/** Allocate an empty policy object owned by the caller.
- * Returns NULL on allocation failure. No policy elements are created.
- */
-TPMS_POLICY *Tss2_InitTpmsPolicy(void);
-
 /* Free an owned policy and all nested allocations, then set *policy to NULL.
  * NULL and a pointer to NULL are accepted. Borrowed policies must outlive
  * their policy contexts; finalize those contexts before freeing the policy.
@@ -259,9 +254,6 @@ TSS2_RC Tss2_PolicyCopy(const TPMS_POLICY *source, TPMS_POLICY **destination);
 
 TSS2_RC
 Tss2_PolicySetPolicy(TPMS_POLICY *policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX **policy_ctx);
-
-TSS2_RC
-Tss2_PolicyGetDigestIdx(TSS2_POLICY_CTX *policy_ctx, size_t *digest_idx, size_t *hash_size);
 
 TSS2_RC
 Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg);

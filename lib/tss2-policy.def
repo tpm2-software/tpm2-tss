@@ -1,7 +1,6 @@
 LIBRARY tss2-policy
 EXPORTS
     Tss2_PolicyInit
-    Tss2_InitTpmsPolicy
     Tss2_PolicyCleanup
     Tss2_PolicyCopy
     Tss2_PolicyJsonDeserialize
@@ -18,7 +17,6 @@ EXPORTS
     Tss2_PolicyGetCalculatedJSON
     Tss2_PolicyGetCalculatedDigest
     Tss2_PolicyGetDescription
-    Tss2_PolicyGetDigestIdx
     Tss2_PolicySetPolicy
     Tss2_PolicySetHashAlg
     Tss2_PolicyAddAuthorization
