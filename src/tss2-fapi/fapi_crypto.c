@@ -387,7 +387,7 @@ ifapi_verify_signature_quote(const IFAPI_OBJECT    *keyObject,
     /* Check whether or not the key is valid */
     if (keyObject->objectType == IFAPI_KEY_OBJ) {
         /* Compute public key */
-        r = ifapi_pub_pem_key_from_tpm(&keyObject->misc.key.public, &public_pem_key, &pem_size);
+        r = tss2_pub_pem_key_from_tpm(&keyObject->misc.key.public, &public_pem_key, &pem_size);
         goto_if_error(r, "Compute public PEM key.", error_cleanup);
     } else if (keyObject->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
         public_pem_key = strdup(keyObject->misc.ext_pub_key.pem_ext_public);
@@ -504,7 +504,7 @@ ifapi_verify_signature(const IFAPI_OBJECT *keyObject,
     /* Check whether or not the key is valid */
     if (keyObject->objectType == IFAPI_KEY_OBJ) {
         /* Compute public key */
-        r = ifapi_pub_pem_key_from_tpm(&keyObject->misc.key.public, &public_pem_key, &pem_size);
+        r = tss2_pub_pem_key_from_tpm(&keyObject->misc.key.public, &public_pem_key, &pem_size);
         goto_if_error(r, "Compute public PEM key.", error_cleanup);
     } else if (keyObject->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
         public_pem_key = strdup(keyObject->misc.ext_pub_key.pem_ext_public);

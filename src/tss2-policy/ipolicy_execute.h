@@ -61,11 +61,11 @@ typedef struct IPOLICY_EXEC_CTX {
 } IPOLICY_EXEC_CTX;
 
 TSS2_RC
-ifapi_policyeval_execute_prepare(IPOLICY_EXEC_CTX   *pol_ctx,
-                                 TPMI_ALG_HASH       hash_alg,
-                                 struct TPMS_POLICY *policy);
+ipolicy_policyeval_execute_prepare(IPOLICY_EXEC_CTX   *pol_ctx,
+                                   TPMI_ALG_HASH       hash_alg,
+                                   struct TPMS_POLICY *policy);
 
 TSS2_RC
-ifapi_policyeval_execute(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy, bool do_flush);
+ipolicy_policyeval_execute(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy, bool do_flush);
 
 #endif /* IPOLICY_EXECUTE_H */

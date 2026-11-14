@@ -21,7 +21,7 @@
 #include "ifapi_eventlog_system.h"
 #include "ifapi_macros.h"         // for check_oom, return_error2
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifapi_json_U...
-#include "tss2_crypto.h"          // for ifapi_hash_get_digest_size
+#include "tss2_crypto.h"          // for tss2_hash_get_digest_size
 #include "tss2_tpm2_types.h"      // for TPM2_MAX_PCRS, TPMI_ALG_HASH
 
 #define LOGMODULE fapi
@@ -120,7 +120,7 @@ foreach_digest2(tpm2_eventlog_context *ctx,
         }
 
         const TPMI_ALG_HASH alg = digest->AlgorithmId;
-        const size_t        alg_size = ifapi_hash_get_digest_size(alg);
+        const size_t        alg_size = tss2_hash_get_digest_size(alg);
         if (size < sizeof(*digest) + alg_size) {
             LOG_ERROR("insufficient size for digest buffer");
             return false;

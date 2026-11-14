@@ -25,7 +25,7 @@
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object
 #include "tpm_json_serialize.h"   // for ifapi_json_TPM2_ALG_ID_serialize
 #include "tss2_common.h"          // for TSS2_RC, TSS2_FAPI_RC_GENERAL_FAI...
-#include "tss2_crypto.h"          // for ifapi_hash_get_digest_size
+#include "tss2_crypto.h"          // for tss2_hash_get_digest_size
 #include "tss2_tpm2_types.h"      // for TPM2_ALG_SHA1, TPM2_MAX_PCRS
 
 #define LOGMODULE fapifirmware
@@ -221,7 +221,7 @@ ifapi_json_TCG_DIGEST2_serialize(const TCG_DIGEST2 *in, json_object **jso) {
     }
     jso2 = NULL;
 
-    size = ifapi_hash_get_digest_size(in->AlgorithmId);
+    size = tss2_hash_get_digest_size(in->AlgorithmId);
     r = ifapi_json_BYTE_ARY_serialize(&in->Digest[0], size, &jso2);
     return_if_jso_error(r, "Serialize UINT8", jso2);
 

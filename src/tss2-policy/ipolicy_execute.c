@@ -14,7 +14,7 @@
 
 #include "ipolicy_execute.h"
 #include "ipolicy_helpers.h"
-#include "tss2_crypto.h"   // for ifapi_crypto_hash_finish, ifapi_crypto_ha...
+#include "tss2_crypto.h"   // for tss2_crypto_hash_finish, ifapi_crypto_ha...
 #include "tss2_helpers.h"  // for append_object_to_list
 #include "tss2_mu.h"       // for Tss2_MU_TPMT_PUBLIC_Marshal
 #include "util/aux_util.h" // for statecase, fallthrough, try_again_or_error
@@ -41,7 +41,7 @@ compute_or_digest_list(TPML_POLICYBRANCHES *branches,
     size_t digest_idx, hash_size;
     bool   digest_found = false;
 
-    if (!(hash_size = ifapi_hash_get_digest_size(current_hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
         return_error2(TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
                       current_hash_alg);
     }
@@ -110,8 +110,8 @@ execute_policy_pcr(ESYS_CONTEXT     *esys_ctx,
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
     /* Compute PCR selection and pcr digest */
-        r = ifapi_compute_policy_digest(policy->pcrs, &pcr_selection, current_hash_alg,
-                                        &pcr_digest);
+        r = ipolicy_compute_policy_digest(policy->pcrs, &pcr_selection, current_hash_alg,
+                                          &pcr_digest);
         return_if_error(r, "Compute policy digest and selection.");
 
         LOGBLOB_DEBUG(&pcr_digest.buffer[0], pcr_digest.size, "PCR Digest");
@@ -235,7 +235,7 @@ execute_policy_nv(ESYS_CONTEXT *esys_ctx, TPMS_POLICYNV *policy, IPOLICY_EXEC_CT
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        r = ifapi_nv_get_name(&policy->nvPublic, &current_policy->name);
+        r = tss2_nv_get_name(&policy->nvPublic, &current_policy->name);
         return_if_error(r, "Compute NV name");
         fallthrough;
 
@@ -346,14 +346,14 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
 
         if (policy->keyPublic.type == TPM2_ALG_KEYEDHASH) {
             LOG_TRACE("Keyedhash used for PoliySigned");
-            r = ifapi_base64encode(&policy->publicKey.name[0], policy->publicKey.size,
-                                   &current_policy->pem_key);
+            r = tss2_base64encode(&policy->publicKey.name[0], policy->publicKey.size,
+                                  &current_policy->pem_key);
             return_if_error(r, "Encode key name do base64.");
         } else if (!current_policy->pem_key) {
             /* Recreate pem key from tpm public key */
             tpm_public.publicArea = policy->keyPublic;
             tpm_public.size = 0;
-            r = ifapi_pub_pem_key_from_tpm(&tpm_public, &current_policy->pem_key, &pem_key_size);
+            r = tss2_pub_pem_key_from_tpm(&tpm_public, &current_policy->pem_key, &pem_key_size);
             return_if_error(r, "Convert TPM public key into PEM key.");
         }
 
@@ -368,8 +368,8 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
         try_again_or_error_goto(r, "Execute policy signature callback.", cleanup);
 
         /* Convert signature into TPM format */
-        r = ifapi_der_sig_to_tpm(&policy->keyPublic, signature_ossl, signature_size,
-                                 policy->keyPEMhashAlg, &policy->signature_tpm);
+        r = tss2_der_sig_to_tpm(&policy->keyPublic, signature_ossl, signature_size,
+                                policy->keyPEMhashAlg, &policy->signature_tpm);
         goto_if_error2(r, "Convert der signature into TPM format", cleanup);
 
         if (policy->keyPublic.type == TPM2_ALG_KEYEDHASH) {
@@ -515,7 +515,7 @@ execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
     public2b.size = 0;
 
     size_t hash_size;
-    if (!(hash_size = ifapi_hash_get_digest_size(hash_alg))) {
+    if (!(hash_size = tss2_hash_get_digest_size(hash_alg))) {
         goto_error(r, TSS2_FAPI_RC_NULL_CALLBACK, "Unsupported hash algorithm (%" PRIu16 ")",
                    cleanup, hash_alg);
     }
@@ -550,13 +550,13 @@ execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
         SAFE_FREE(tmp_name);
 
         /* Use policyRef and policy to compute authorization hash */
-        r = ifapi_crypto_hash_start(&cryptoContext, hash_alg);
+        r = tss2_crypto_hash_start(&cryptoContext, hash_alg);
         return_if_error(r, "crypto hash start");
 
         HASH_UPDATE_BUFFER(cryptoContext, &policy->approvedPolicy.buffer[0], hash_size, r, cleanup);
         HASH_UPDATE_BUFFER(cryptoContext, &policy->policyRef.buffer[0], policy->policyRef.size, r,
                            cleanup);
-        r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &size);
+        r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &size);
         return_if_error(r, "crypto hash finish");
 
         aHash.size = size;
@@ -671,7 +671,7 @@ execute_policy_authorize_nv(ESYS_CONTEXT           *esys_ctx,
         r = cb->cbauthnv(&policy->nvPublic, hash_alg, cb->cbauthnv_userdata);
         try_again_or_error(r, "Execute policy authorize nv callback.");
 
-        r = ifapi_nv_get_name(&policy->nvPublic, &current_policy->name);
+        r = tss2_nv_get_name(&policy->nvPublic, &current_policy->name);
         return_if_error(r, "Compute NV name");
         fallthrough;
 
@@ -1356,12 +1356,12 @@ execute_policy_template(ESYS_CONTEXT        *esys_ctx,
                                             sizeof(TPMT_PUBLIC), &offset);
             return_if_error(r, "Marshaling TPMT_PUBLIC");
 
-            r = ifapi_crypto_hash_start(&cryptoContext, current_policy->hash_alg);
+            r = tss2_crypto_hash_start(&cryptoContext, current_policy->hash_alg);
             return_if_error(r, "crypto hash start");
 
             HASH_UPDATE_BUFFER(cryptoContext, &buffer[0], offset, r, cleanup);
-            r = ifapi_crypto_hash_finish(&cryptoContext, &used_template_hash->buffer[0],
-                                         &digest_size);
+            r = tss2_crypto_hash_finish(&cryptoContext, &used_template_hash->buffer[0],
+                                        &digest_size);
             goto_if_error(r, "crypto hash finish", cleanup);
             used_template_hash->size = digest_size;
 
@@ -1389,7 +1389,7 @@ execute_policy_template(ESYS_CONTEXT        *esys_ctx,
 
 cleanup:
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -1596,9 +1596,9 @@ compute_policy_list(IPOLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *elements) {
  * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 TSS2_RC
-ifapi_policyeval_execute_prepare(IPOLICY_EXEC_CTX *pol_ctx,
-                                 TPMI_ALG_HASH     hash_alg,
-                                 TPMS_POLICY      *policy) {
+ipolicy_policyeval_execute_prepare(IPOLICY_EXEC_CTX *pol_ctx,
+                                   TPMI_ALG_HASH     hash_alg,
+                                   TPMS_POLICY      *policy) {
     TSS2_RC r;
 
     pol_ctx->policy = policy;
@@ -1641,7 +1641,7 @@ ifapi_policyeval_execute_prepare(IPOLICY_EXEC_CTX *pol_ctx,
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
  */
 TSS2_RC
-ifapi_policyeval_execute(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy, bool do_flush)
+ipolicy_policyeval_execute(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy, bool do_flush)
 
 {
     TSS2_RC        r = TSS2_RC_SUCCESS;

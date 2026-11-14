@@ -180,7 +180,7 @@ ifapi_get_object_name(const char *path, TPM2B_NAME *name, void *ctx) {
             r = ifapi_get_name(&object.misc.ext_pub_key.public.publicArea, (TPM2B_NAME *)name);
             break;
         case IFAPI_NV_OBJ:
-            r = ifapi_nv_get_name(&object.misc.nv.public.nvPublic, name);
+            r = tss2_nv_get_name(&object.misc.nv.public.nvPublic, name);
             break;
         default:
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid object %s.", cleanup, path);
@@ -1346,7 +1346,7 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     cb_ctx = &current_policy->cb_ctx;
     esys_ctx = fapi_ctx->esys;
 
-    if (!(digest_size = ifapi_hash_get_digest_size(hash_alg))) {
+    if (!(digest_size = tss2_hash_get_digest_size(hash_alg))) {
         return_error2(TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", hash_alg);
     }
 

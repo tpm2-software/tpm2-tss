@@ -12,7 +12,7 @@
 #include <stdlib.h> // for NULL
 #include <string.h> // for memset, strdup
 
-#include "fapi_crypto.h"          // for ifapi_pub_pem_key_from_tpm
+#include "fapi_crypto.h"          // for tss2_pub_pem_key_from_tpm
 #include "fapi_int.h"             // for IFAPI_ExportKey, FAPI_CONTEXT, EXP...
 #include "fapi_util.h"            // for ifapi_flush_object, ifapi_authoriz...
 #include "ifapi_io.h"             // for ifapi_io_poll
@@ -299,8 +299,8 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
             pubKey->misc.ext_pub_key.public = commandObject.misc.key.public;
 
             /* Convert the TPM key format to PEM. */
-            r = ifapi_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
-                                           &pubKey->misc.ext_pub_key.pem_ext_public, &sizePem);
+            r = tss2_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
+                                          &pubKey->misc.ext_pub_key.pem_ext_public, &sizePem);
             goto_if_error(r, "Convert public TPM key to pem.", cleanup);
         } else {
             /* No key object was loaded */

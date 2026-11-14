@@ -19,7 +19,7 @@
 #include "ipolicy_types.h" // for TPMS_POLICY
 #include "tpm_json_deserialize.h"
 #include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_crypto.h"     // for ifapi_hash_get_digest_size
+#include "tss2_crypto.h"     // for tss2_hash_get_digest_size
 #include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR
 #include "tss2_helpers.h"    // for internal helpers
 #include "tss2_policy.h"     // for TSS2_POLICY_CTX, TSS2_POL...
@@ -104,7 +104,7 @@ ipolicy_calculate_tree_ex(IPOLICY_EVAL_INST_CTX *context,
         tss2_free_node_list(context->policy_elements);
         context->policy_elements = NULL;
 
-        if (!(*hash_size = ifapi_hash_get_digest_size(hash_alg))) {
+        if (!(*hash_size = tss2_hash_get_digest_size(hash_alg))) {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
                        cleanup, hash_alg);
         }
@@ -168,7 +168,7 @@ check_policy_is_calculated(TPMS_POLICY     *policy,
     if (i < policy->policyDigests.count) {
 
         /* get the hash algorithm size */
-        size_t hash_size = ifapi_hash_get_digest_size(hash_alg);
+        size_t hash_size = tss2_hash_get_digest_size(hash_alg);
         if (hash_size == 0) {
             return_error2(TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%#" PRIx16 ")",
                           hash_alg);
@@ -427,8 +427,8 @@ Tss2_PolicyExecute_Async(TSS2_POLICY_CTX *policy_ctx) {
     policy_ctx->exec_ctx.state = POLICY_EXECUTE_INIT;
     policy_ctx->exec_ctx.flush_handle = false;
     policy_ctx->exec_ctx.session = ESYS_TR_NONE;
-    r = CALL_FAPI(ifapi_policyeval_execute_prepare(&policy_ctx->exec_ctx, policy_ctx->hash_alg,
-                                                   policy_ctx->policy_ptr));
+    r = CALL_FAPI(ipolicy_policyeval_execute_prepare(&policy_ctx->exec_ctx, policy_ctx->hash_alg,
+                                                     policy_ctx->policy_ptr));
     if (r != TSS2_RC_SUCCESS) {
         tss2_free_node_list(policy_ctx->exec_ctx.policy_elements);
         policy_ctx->exec_ctx.policy_elements = NULL;
@@ -489,7 +489,7 @@ Tss2_PolicyExecute_Finish(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, E
 
     policy_ctx->exec_esys = esys_ctx;
     policy_ctx->exec_ctx.session = session;
-    TSS2_RC r = CALL_FAPI(ifapi_policyeval_execute(esys_ctx, &policy_ctx->exec_ctx, false));
+    TSS2_RC r = CALL_FAPI(ipolicy_policyeval_execute(esys_ctx, &policy_ctx->exec_ctx, false));
     if (is_try_again(r))
         return r;
 
@@ -883,9 +883,9 @@ Tss2_PolicyGetAuthorization(const TPMS_POLICY *policy,
             if (pem) {
                 if (entry->pemSignature.size && !entry->pemSignature.buffer)
                     return TSS2_POLICY_RC_BAD_VALUE;
-                r = CALL_FAPI(ifapi_der_sig_to_tpm(candidate, entry->pemSignature.buffer,
-                                                   entry->pemSignature.size, entry->hashAlg,
-                                                   &result));
+                r = CALL_FAPI(tss2_der_sig_to_tpm(candidate, entry->pemSignature.buffer,
+                                                  entry->pemSignature.size, entry->hashAlg,
+                                                  &result));
                 return_if_error(r, "Convert authorization signature.");
             } else {
                 result = entry->signature;
