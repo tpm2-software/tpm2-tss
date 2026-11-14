@@ -1518,25 +1518,3 @@ ipolicy_json_TPMS_POLICY_serialize(const TPMS_POLICY *in, json_object **jso) {
     }
     return TSS2_RC_SUCCESS;
 }
-
-TSS2_RC
-Tss2_PolicyJsonSerialize(const TPMS_POLICY *policy, char **json) {
-    if (!json)
-        return TSS2_POLICY_RC_BAD_REFERENCE;
-    *json = NULL;
-    if (!policy)
-        return TSS2_POLICY_RC_BAD_REFERENCE;
-    json_object *jso = NULL;
-    TSS2_RC      r = ipolicy_json_TPMS_POLICY_serialize(policy, &jso);
-    if (!r) {
-        const char *string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
-        *json = string ? strdup(string) : NULL;
-        if (!*json)
-            r = TSS2_POLICY_RC_MEMORY;
-    }
-    if (jso)
-        json_object_put(jso);
-    if ((r & TSS2_RC_LAYER_MASK) == TSS2_FEATURE_RC_LAYER)
-        r = TSS2_POLICY_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
-    return r;
-}

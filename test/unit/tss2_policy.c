@@ -355,7 +355,7 @@ test_policy_set_policy_execute(void **state) {
 }
 
 static void
-test_cached_policy_digest_metadata(void **state) {
+test_cached_policy_digest(void **state) {
     UNUSED(state);
     TPMS_POLICY policy = { 0 };
     policy.policyDigests.count = 2;
@@ -364,18 +364,14 @@ test_cached_policy_digest_metadata(void **state) {
     policy.policyDigests.digests[1].hashAlg = TPM2_ALG_SHA256;
     memset(policy.policyDigests.digests[1].digest.sha256, 0x22, 32);
     TSS2_POLICY_CTX *ctx = NULL;
-    size_t           digest_idx = 99, hash_size = 99;
     TPM2B_DIGEST     digest;
 
     assert_int_equal(Tss2_PolicySetPolicy(&policy, TPM2_ALG_SHA256, &ctx), TSS2_RC_SUCCESS);
-    assert_int_equal(Tss2_PolicyGetDigestIdx(ctx, &digest_idx, &hash_size), TSS2_RC_SUCCESS);
-    assert_int_equal(digest_idx, 1);
-    assert_int_equal(hash_size, 32);
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
+    assert_int_equal(digest.size, 32);
+    assert_memory_equal(digest.buffer, policy.policyDigests.digests[1].digest.sha256, 32);
     assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_RC_SUCCESS);
     assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_RC_SUCCESS);
-    assert_int_equal(Tss2_PolicyGetDigestIdx(ctx, &digest_idx, &hash_size), TSS2_RC_SUCCESS);
-    assert_int_equal(digest_idx, 1);
-    assert_int_equal(hash_size, 32);
     assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
     assert_int_equal(digest.size, 32);
     assert_memory_equal(digest.buffer, policy.policyDigests.digests[1].digest.sha256, 32);
@@ -383,9 +379,6 @@ test_cached_policy_digest_metadata(void **state) {
     assert_int_equal(Tss2_PolicySetHashAlg(ctx, TPM2_ALG_SHA1), TSS2_RC_SUCCESS);
     assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_RC_SUCCESS);
     assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_RC_SUCCESS);
-    assert_int_equal(Tss2_PolicyGetDigestIdx(ctx, &digest_idx, &hash_size), TSS2_RC_SUCCESS);
-    assert_int_equal(digest_idx, 0);
-    assert_int_equal(hash_size, 20);
     assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
     assert_int_equal(digest.size, 20);
     assert_memory_equal(digest.buffer, policy.policyDigests.digests[0].digest.sha1, 20);
@@ -528,9 +521,9 @@ test_policy_get_authorization(void **state) {
 }
 
 static void
-test_init_tpms_policy(void **state) {
+test_cleanup_empty_policy(void **state) {
     UNUSED(state);
-    TPMS_POLICY *policy = Tss2_InitTpmsPolicy();
+    TPMS_POLICY *policy = calloc(1, sizeof(TPMS_POLICY));
     assert_non_null(policy);
     assert_null(policy->description);
     assert_int_equal(policy->policyDigests.count, 0);
@@ -582,7 +575,7 @@ test_policy_json_api(void **state) {
 static void
 test_policy_copy(void **state) {
     UNUSED(state);
-    TPMS_POLICY *source = Tss2_InitTpmsPolicy();
+    TPMS_POLICY *source = calloc(1, sizeof(TPMS_POLICY));
     TPMS_POLICY *copy = NULL;
     assert_non_null(source);
     source->description = strdup("copy source");
@@ -650,7 +643,7 @@ test_policy_copy(void **state) {
 static void
 test_policy_copy_empty_and_invalid(void **state) {
     UNUSED(state);
-    TPMS_POLICY *source = Tss2_InitTpmsPolicy();
+    TPMS_POLICY *source = calloc(1, sizeof(TPMS_POLICY));
     TPMS_POLICY *copy = NULL;
     assert_non_null(source);
     assert_int_equal(Tss2_PolicyCopy(source, NULL), TSS2_POLICY_RC_BAD_REFERENCE);
@@ -683,11 +676,11 @@ main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = { cmocka_unit_test(test_policy_instantiate),
                                         cmocka_unit_test(test_policy_execute_async),
                                         cmocka_unit_test(test_policy_set_policy_execute),
-                                        cmocka_unit_test(test_cached_policy_digest_metadata),
+                                        cmocka_unit_test(test_cached_policy_digest),
                                         cmocka_unit_test(test_policy_calculation_retry),
                                         cmocka_unit_test(test_policy_authorization),
                                         cmocka_unit_test(test_policy_get_authorization),
-                                        cmocka_unit_test(test_init_tpms_policy),
+                                        cmocka_unit_test(test_cleanup_empty_policy),
                                         cmocka_unit_test(test_policy_copy),
                                         cmocka_unit_test(test_policy_json_api),
                                         cmocka_unit_test(test_policy_copy_empty_and_invalid) };

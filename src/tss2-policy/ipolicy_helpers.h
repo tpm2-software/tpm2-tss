@@ -13,6 +13,9 @@
         goto label;                                                                                \
     }
 
+TSS2_RC
+ipolicy_copy(const TPMS_POLICY *source, TPMS_POLICY **destination);
+
 void cleanup_policy_element(TPMT_POLICYELEMENT *policy);
 void cleanup_policy_elements(TPML_POLICYELEMENTS *policy);
 

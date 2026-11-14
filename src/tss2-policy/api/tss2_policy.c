@@ -13,6 +13,9 @@
 #include "ipolicy_calculate.h" // for IPOLICY_EXEC_CTX
 #include "ipolicy_execute.h"   // for IPOLICY_EXEC_CTX
 #include "ipolicy_helpers.h"
+#include "ipolicy_json_deserialize.h"
+#include "ipolicy_json_serialize.h"
+#include "tpm_json_deserialize.h"
 #include "ipolicy_instantiate.h" // for IPOLICY_EVAL_INST_CTX
 #include "ipolicy_types.h"       // for TPMS_POLICY
 #include "tss2_common.h"         // for TSS2_RC, TSS2_RC_SUCCESS
@@ -724,19 +727,6 @@ Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest
 }
 
 TSS2_RC
-Tss2_PolicyGetDigestIdx(TSS2_POLICY_CTX *policy_ctx, size_t *digest_idx, size_t *hash_size) {
-    policy_check_not_null(policy_ctx);
-
-    if (!policy_ctx->is_calculated) {
-        return TSS2_POLICY_RC_POLICY_NOT_CALCULATED;
-    }
-
-    *digest_idx = policy_ctx->digest_idx;
-    *hash_size = policy_ctx->hash_size;
-    return TSS2_RC_SUCCESS;
-}
-
-TSS2_RC
 Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg) {
     policy_check_not_null(policy_ctx);
 
@@ -906,4 +896,77 @@ Tss2_PolicyGetAuthorization(const TPMS_POLICY *policy,
         return TSS2_RC_SUCCESS;
     }
     return TSS2_RC_SUCCESS;
+}
+
+/** Free memory allocated during deserialization of policy.
+ *
+ * The policy and its contents are freed and the caller's pointer is set to NULL.
+ *
+ * @param[in,out] policy_ptr The pointer to the policy to be freed.
+ *
+ */
+void
+Tss2_PolicyCleanup(TPMS_POLICY **policy_ptr) {
+    if (policy_ptr && *policy_ptr) {
+        TPMS_POLICY *policy = *policy_ptr;
+        SAFE_FREE(policy->description);
+        if (policy->policyAuthorizations) {
+            for (size_t i = 0; i < policy->policyAuthorizations->count; i++) {
+                if (policy->policyAuthorizations->authorizations[i].type
+                    && strcmp(policy->policyAuthorizations->authorizations[i].type, "pem") == 0) {
+                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].keyPEM);
+                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].pemSignature.buffer);
+                }
+                SAFE_FREE(policy->policyAuthorizations->authorizations[i].type);
+            }
+        }
+        SAFE_FREE(policy->policyAuthorizations);
+        cleanup_policy_elements(policy->policy);
+        SAFE_FREE(*policy_ptr);
+    }
+}
+
+
+TSS2_RC
+Tss2_PolicyJsonSerialize(const TPMS_POLICY *policy, char **json) {
+    if (!json)
+        return TSS2_POLICY_RC_BAD_REFERENCE;
+    *json = NULL;
+    if (!policy)
+        return TSS2_POLICY_RC_BAD_REFERENCE;
+    json_object *jso = NULL;
+    TSS2_RC      r = ipolicy_json_TPMS_POLICY_serialize(policy, &jso);
+    if (!r) {
+        const char *string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
+        *json = string ? strdup(string) : NULL;
+        if (!*json)
+            r = TSS2_POLICY_RC_MEMORY;
+    }
+    if (jso)
+        json_object_put(jso);
+    if ((r & TSS2_RC_LAYER_MASK) == TSS2_FEATURE_RC_LAYER)
+        r = TSS2_POLICY_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+    return r;
+}
+
+TSS2_RC
+Tss2_PolicyJsonDeserialize(const char *json, TPMS_POLICY **policy) {
+    if (!policy)
+        return TSS2_POLICY_RC_BAD_REFERENCE;
+    *policy = NULL;
+    if (!json)
+        return TSS2_POLICY_RC_BAD_REFERENCE;
+    json_object *jso = ifapi_parse_json(json);
+    if (!jso)
+        return TSS2_POLICY_RC_BAD_VALUE;
+    TSS2_RC r = ipolicy_json_TPMS_POLICY_deserialize(jso, policy);
+    json_object_put(jso);
+    if ((r & TSS2_RC_LAYER_MASK) == TSS2_FEATURE_RC_LAYER)
+        r = TSS2_POLICY_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+    return r;
+}
+
+TSS2_RC
+Tss2_PolicyCopy(const TPMS_POLICY *source, TPMS_POLICY **destination) {
+    return ipolicy_copy(source, destination);
 }
