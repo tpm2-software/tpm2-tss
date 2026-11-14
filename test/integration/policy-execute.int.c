@@ -92,12 +92,12 @@ struct mycb_data {
 };
 
 static TSS2_RC
-polsel_cb(TSS2_OBJECT *auth_object,
+polsel_cb(char        *description,
           const char **branch_names,
           size_t       branch_count,
           size_t      *branch_idx,
           void        *userdata) {
-    UNUSED(auth_object);
+    UNUSED(description);
     UNUSED(branch_names);
     UNUSED(branch_count);
     UNUSED(userdata);

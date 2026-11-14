@@ -13,15 +13,16 @@
 #include <string.h>  // for memcpy, strcmp, memset, strlen
 #include <strings.h> // for strcasecmp
 
-#include "fapi_crypto.h" // for ifapi_get_hash_alg_for_size
 #include "fapi_util.h"
 #include "ifapi_config.h"             // for IFAPI_CONFIG
-#include "ifapi_helpers.h"            // for free_string_list, ifapi_path_l...
+#include "ifapi_helpers.h"            // for ifapi_path_l...
 #include "ifapi_json_serialize.h"     // for ifapi_json_IFAPI_OBJECT_serialize
 #include "ifapi_keystore.h"           // for ifapi_check_provisioned
 #include "ifapi_macros.h"             // for statecase, fallthrough, goto_i...
 #include "ifapi_policy.h"             // for ifapi_calculate_tree
 #include "ifapi_policyutil_execute.h" // for ifapi_policyutil_execute, ifap...
+#include "tss2_crypto.h"              // for ifapi_get_hash_alg_for_size
+#include "tss2_helpers.h"             // for free_string_list
 #include "tss2_policy.h"              // for TSS2_OBJECT
 #include "util/aux_util.h"            // for goto_error
 
@@ -567,6 +568,7 @@ TSS2_RC
 ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
     TSS2_RC      r;
     TPMS_POLICY *policy;
+    TPM2B_DIGEST digest;
     IFAPI_KEY   *pkey = &context->createPrimary.pkey_object.misc.key;
 
     r = TSS2_RC_SUCCESS;
@@ -615,37 +617,32 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
 
     if (policy) {
         /* Duplicate policy to prevent profile policy from cleanup. */
-        policy = ifapi_copy_policy(policy);
-        return_if_null(policy, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        r = Tss2_PolicyCopy(policy, &policy);
+        if (r)
+            r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+        return_if_error(r, "Copy policy.");
 
         r = ifapi_calculate_tree(context, NULL, /**< no path needed */
-                                 policy, context->profiles.default_profile.nameAlg,
-                                 &context->cmd.Provision.digest_idx,
-                                 &context->cmd.Provision.hash_size);
+                                 &policy, context->profiles.default_profile.nameAlg, &digest);
         if (r) {
             LOG_ERROR("Policy calculation");
-            SAFE_FREE(policy);
+            Tss2_PolicyCleanup(&policy);
             return r;
         }
         /* Check whether policy digest defined for key matches the computed policy. */
         if (context->cmd.Provision.public_templ.public.publicArea.authPolicy.size) {
-            if (context->cmd.Provision.public_templ.public.publicArea.authPolicy.size
-                    != context->cmd.Provision.hash_size
+            if (context->cmd.Provision.public_templ.public.publicArea.authPolicy.size != digest.size
                 || memcmp(
-                       &policy->policyDigests.digests[context->policy.digest_idx].digest,
+                       digest.buffer,
                        &context->cmd.Provision.public_templ.public.publicArea.authPolicy.buffer[0],
-                       context->cmd.Provision.hash_size)
+                       digest.size)
                        != 0) {
-                SAFE_FREE(policy);
+                Tss2_PolicyCleanup(&policy);
                 return_error(TSS2_FAPI_RC_BAD_VALUE,
                              "EK Policy does not match policy defined in profile.");
             }
         }
-        context->cmd.Provision.public_templ.public.publicArea.authPolicy.size
-            = context->cmd.Provision.hash_size;
-        memcpy(&context->cmd.Provision.public_templ.public.publicArea.authPolicy.buffer[0],
-               &policy->policyDigests.digests[context->policy.digest_idx].digest,
-               context->cmd.Provision.hash_size);
+        context->cmd.Provision.public_templ.public.publicArea.authPolicy = digest;
     }
     context->createPrimary.pkey_object.policy = policy;
     context->createPrimary.pkey_object.objectType = IFAPI_KEY_OBJ;
@@ -1469,7 +1466,7 @@ ifapi_merge_profile_into_nv_template(FAPI_CONTEXT *context, IFAPI_NV_TEMPLATE *t
     if ((template->public.attributes & extend_mask) == extend_mask) {
         /* The size of the NV ram to be extended must be read from the
            profile */
-        hash_size = ifapi_hash_get_digest_size(profile->nameAlg);
+        hash_size = tss2_hash_get_digest_size(profile->nameAlg);
         template->public.dataSize = hash_size;
     } else if ((template->public.attributes & counter_mask) == counter_mask
                || (template->public.attributes & bitfield_mask) == bitfield_mask) {
@@ -2921,7 +2918,7 @@ ifapi_key_sign(FAPI_CONTEXT      *context,
         int pem_size;
         if (publicKey) {
             /* Convert internal key object to PEM format. */
-            r = ifapi_pub_pem_key_from_tpm(&sig_key_object->misc.key.public, publicKey, &pem_size);
+            r = tss2_pub_pem_key_from_tpm(&sig_key_object->misc.key.public, publicKey, &pem_size);
             goto_if_error(r, "Conversion pub key to PEM failed", cleanup);
         }
         context->Key_Sign.handle = ESYS_TR_NONE;
@@ -3089,7 +3086,7 @@ ifapi_initialize_object(ESYS_CONTEXT *ectx, IFAPI_OBJECT *object) {
     return r;
 
 cleanup:
-    SAFE_FREE(object->policy);
+    Tss2_PolicyCleanup(&object->policy);
     return r;
 }
 
@@ -3336,6 +3333,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     IFAPI_OBJECT        *hierarchy = &context->cmd.Key_Create.hierarchy;
     ESYS_TR              auth_session;
     uint8_t             *random_data = NULL;
+    TPM2B_DIGEST         digest;
 
     LOG_TRACE("call");
 
@@ -3380,24 +3378,14 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
 
     case KEY_CREATE_CALCULATE_POLICY:
         if (context->cmd.Key_Create.state == KEY_CREATE_CALCULATE_POLICY) {
-            r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath,
-                                     &context->policy.policy,
+            r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath, &object->policy,
                                      context->cmd.Key_Create.public_templ.public.publicArea.nameAlg,
-                                     &context->policy.digest_idx, &context->policy.hash_size);
+                                     &digest);
             return_try_again(r);
             goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
                            context->cmd.Key_Create.policyPath);
 
-            /* Store the calculated policy in the key object */
-            object->policy = calloc(1, sizeof(TPMS_POLICY));
-            return_if_null(object->policy, "Out of memory", TSS2_FAPI_RC_MEMORY);
-            *(object->policy) = context->policy.policy;
-
-            context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.size
-                = context->policy.hash_size;
-            memcpy(&context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.buffer[0],
-                   &context->policy.policy.policyDigests.digests[context->policy.digest_idx].digest,
-                   context->policy.hash_size);
+            context->cmd.Key_Create.public_templ.public.publicArea.authPolicy = digest;
         }
         r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,
                                      TPMA_SESSION_ENCRYPT | TPMA_SESSION_DECRYPT, 0);
@@ -3866,12 +3854,13 @@ ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
                               ESYS_TR       handle,
                               IFAPI_OBJECT *hierarchy_object,
                               TPMS_POLICY  *policy) {
-    TSS2_RC r;
-    ESYS_TR auth_session;
+    TSS2_RC      r;
+    ESYS_TR      auth_session;
+    TPM2B_DIGEST digest;
 
     switch (context->hierarchy_policy_state) {
     statecase(context->hierarchy_policy_state, HIERARCHY_CHANGE_POLICY_INIT);
-        if ((!policy || !policy->policy) && !hierarchy_object->policy) {
+        if ((!policy) && !hierarchy_object->policy) {
             /* No policy will be used for hierarchy */
             return TSS2_RC_SUCCESS;
         }
@@ -3891,25 +3880,18 @@ ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
 
             /* Calculate the policy digest which will be used as hierarchy policy. */
             r = ifapi_calculate_tree(context, NULL, /**< no path needed */
-                                     policy, context->profiles.default_profile.nameAlg,
-                                     &context->cmd.Provision.digest_idx,
-                                     &context->cmd.Provision.hash_size);
+                                     &policy, context->profiles.default_profile.nameAlg, &digest);
             goto_if_error(r, "Policy calculation", error);
 
             /* Policy data will be stored in the provisioning context. */
-            context->cmd.Provision.policy_digest.size = context->cmd.Provision.hash_size;
-            memcpy(&context->cmd.Provision.policy_digest.buffer[0],
-                   &policy->policyDigests.digests[context->cmd.Provision.digest_idx].digest,
-                   context->cmd.Provision.hash_size);
+            context->cmd.Provision.policy_digest = digest;
 
             hierarchy_object->policy = policy;
             hierarchy_object->misc.hierarchy.authPolicy = context->cmd.Provision.policy_digest;
         } else {
             /* No policy will be used for this hierarchy. */
             context->cmd.Provision.policy_digest.size = 0;
-            ifapi_cleanup_policy(hierarchy_object->policy);
-            SAFE_FREE(hierarchy_object->policy);
-            hierarchy_object->policy = NULL;
+            Tss2_PolicyCleanup(&hierarchy_object->policy);
             hierarchy_object->misc.hierarchy.with_auth = TPM2_NO;
             hierarchy_object->misc.hierarchy.authPolicy.size = 0;
         }
@@ -4574,6 +4556,7 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     IFAPI_KEY           *pkey = &context->cmd.Key_Create.object.misc.key;
     const char          *hierarchy_path;
     const char          *profile_name;
+    TPM2B_DIGEST         digest;
 
     /* Compute policy */
 
@@ -4606,24 +4589,14 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     /* FALLTHRU */
     case KEY_CREATE_PRIMARY_CALCULATE_POLICY:
         if (context->cmd.Key_Create.state == KEY_CREATE_PRIMARY_CALCULATE_POLICY) {
-            r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath,
-                                     &context->policy.policy,
+            r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath, &object->policy,
                                      context->cmd.Key_Create.public_templ.public.publicArea.nameAlg,
-                                     &context->policy.digest_idx, &context->policy.hash_size);
+                                     &digest);
             return_try_again(r);
             goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
                            context->cmd.Key_Create.policyPath);
 
-            /* Store the calculated policy in the key object */
-            object->policy = calloc(1, sizeof(TPMS_POLICY));
-            return_if_null(object->policy, "Out of memory", TSS2_FAPI_RC_MEMORY);
-            *(object->policy) = context->policy.policy;
-
-            context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.size
-                = context->policy.hash_size;
-            memcpy(&context->cmd.Key_Create.public_templ.public.publicArea.authPolicy.buffer[0],
-                   &context->policy.policy.policyDigests.digests[context->policy.digest_idx].digest,
-                   context->policy.hash_size);
+            context->cmd.Key_Create.public_templ.public.publicArea.authPolicy = digest;
         }
 
         r = ifapi_get_sessions_async(context, IFAPI_SESSION_GEN_SRK | IFAPI_SESSION1,

@@ -13,13 +13,15 @@
 #include <stdlib.h> // for calloc, free, reallocarray
 #include <string.h> // for memset, strdup, strlen
 
-#include "fapi_int.h"                      // for IFAPI_FILE_DELIM_CHAR
-#include "ifapi_helpers.h"                 // for ifapi_cleanup_policy, ifa...
-#include "ifapi_macros.h"                  // for check_not_null, goto_if_n...
-#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
+#include "fapi_int.h"               // for IFAPI_FILE_DELIM_CHAR
+#include "ifapi_helpers.h"          // for FAPI helpers
+#include "ifapi_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
+#include "ifapi_macros.h"           // for check_not_null, goto_if_n...
 #include "ifapi_profiles.h"
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifa...
 #include "tss2_common.h"          // for TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_helpers.h"         // for ifapi_asprintf ...
+#include "tss2_policy.h"          // for Tss2_PolicyCleanup
 
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, LOG_ERROR
@@ -295,14 +297,13 @@ ifapi_profiles_finalize(IFAPI_PROFILES *profiles) {
         SAFE_FREE(profile->srk_description);
         SAFE_FREE(profile->ek_description);
 
-        ifapi_cleanup_policy(profile->eh_policy);
-        SAFE_FREE(profile->eh_policy);
+        Tss2_PolicyCleanup(&profile->eh_policy);
 
-        ifapi_cleanup_policy(profile->ek_policy);
-        SAFE_FREE(profile->ek_policy);
+        Tss2_PolicyCleanup(&profile->ek_policy);
 
-        ifapi_cleanup_policy(profile->sh_policy);
-        SAFE_FREE(profile->sh_policy);
+        Tss2_PolicyCleanup(&profile->sh_policy);
+        Tss2_PolicyCleanup(&profile->srk_policy);
+        Tss2_PolicyCleanup(&profile->lockout_policy);
     }
     SAFE_FREE(profiles->profiles);
 
@@ -454,42 +455,27 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
     }
 
     if (ifapi_get_sub_object(jso, "eh_policy", &jso2)) {
-        out->eh_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->eh_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->eh_policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->eh_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     }
 
     if (ifapi_get_sub_object(jso, "sh_policy", &jso2)) {
-        out->sh_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->sh_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->sh_policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->sh_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     }
 
     if (ifapi_get_sub_object(jso, "ek_policy", &jso2)) {
-        out->ek_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->ek_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->ek_policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->ek_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     }
 
     if (ifapi_get_sub_object(jso, "srk_policy", &jso2)) {
-        out->srk_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->srk_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->srk_policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->srk_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     }
 
     if (ifapi_get_sub_object(jso, "lockout_policy", &jso2)) {
-        out->lockout_policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->lockout_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->lockout_policy);
+        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->lockout_policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     }
 
@@ -526,7 +512,7 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
     return TSS2_RC_SUCCESS;
 
 cleanup:
-    SAFE_FREE(out->eh_policy);
+    Tss2_PolicyCleanup(&out->eh_policy);
     return r;
 }
 

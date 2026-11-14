@@ -18,6 +18,12 @@
 extern "C" {
 #endif
 
+#define OSSL_FREE(S, TYPE)                                                                         \
+    if ((S) != NULL) {                                                                             \
+        TYPE##_free((void *)(S));                                                                  \
+        (S) = NULL;                                                                                \
+    }
+
 #define SAFE_FREE(S)                                                                               \
     if ((S) != NULL) {                                                                             \
         free((void *)(S));                                                                         \
@@ -73,6 +79,12 @@ extern "C" {
         return r;                                                                                  \
     }
 
+#define return_error2(r, msg, ...)                                                                 \
+    {                                                                                              \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        return (r);                                                                                \
+    }
+
 #define goto_state_if_error(r, s, msg, label)                                                      \
     if ((r) != TSS2_RC_SUCCESS) {                                                                  \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r));                               \
@@ -83,6 +95,13 @@ extern "C" {
 #define goto_if_null(p, msg, ec, label)                                                            \
     if ((p) == NULL) {                                                                             \
         LOG_ERROR("%s ", (msg));                                                                   \
+        r = (ec);                                                                                  \
+        goto label;                                                                                \
+    }
+
+#define goto_if_null2(p, msg, r, ec, label, ...)                                                   \
+    if ((p) == NULL) {                                                                             \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(ec), ##__VA_ARGS__);                  \
         r = (ec);                                                                                  \
         goto label;                                                                                \
     }
@@ -117,6 +136,75 @@ extern "C" {
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r));                               \
         (r_max) = r;                                                                               \
     }
+
+#define strdup_check(dest, str, r, label)                                                          \
+    if (str) {                                                                                     \
+        (dest) = strdup(str);                                                                      \
+        if (!(dest)) {                                                                             \
+            (r) = TSS2_FAPI_RC_MEMORY;                                                             \
+            LOG_ERROR("Out of memory.");                                                           \
+            goto label;                                                                            \
+        }                                                                                          \
+    } else {                                                                                       \
+        (dest) = NULL;                                                                             \
+    }
+
+#define goto_if_error2(r, msg, label, ...)                                                         \
+    if (r != TSS2_RC_SUCCESS) {                                                                    \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        goto label;                                                                                \
+    }
+
+#define try_again_or_error(r, msg, ...)                                                            \
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)                                                      \
+        return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
+    if (r != TSS2_RC_SUCCESS) {                                                                    \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        return r;                                                                                  \
+    }
+
+#define try_again_or_error_goto(r, msg, label, ...)                                                \
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)                                                      \
+        return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
+    if (r != TSS2_RC_SUCCESS) {                                                                    \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        goto label;                                                                                \
+    }
+
+#define return_try_again(r)                                                                        \
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {                                                    \
+        LOG_TRACE("Received TRY_AGAIN; returning TRY_AGAIN");                                      \
+        return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
+    }
+
+#define return_if_error2(r, msg, ...)                                                              \
+    if (r != TSS2_RC_SUCCESS) {                                                                    \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        return r;                                                                                  \
+    }
+
+#define check_oom(X)                                                                               \
+    if ((X) == NULL) {                                                                             \
+        LOG_ERROR("Out of memory");                                                                \
+        return TSS2_FAPI_RC_MEMORY;                                                                \
+    }
+
+#define statecase(VAR, STATE)                                                                      \
+    case STATE:                                                                                    \
+        LOG_TRACE("State " str(VAR) " reached " str(STATE));                                       \
+        (VAR) = STATE;
+
+#define statecasedefault(VAR)                                                                      \
+    default:                                                                                       \
+        LOG_ERROR("Bad state for " str(VAR) ": %i", VAR);                                          \
+        return TSS2_FAPI_RC_BAD_SEQUENCE;
+
+#if defined __GNUC__ && __GNUC__ < 7
+#define fallthrough                                                                                \
+    {}
+#else
+#define fallthrough __attribute__((fallthrough))
+#endif
 
 #define rc_layer(r)  ((r) & TSS2_RC_LAYER_MASK)
 #define base_rc(r)   ((r) & ~TSS2_RC_LAYER_MASK)

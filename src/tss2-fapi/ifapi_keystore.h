@@ -10,13 +10,12 @@
 #include <stdbool.h> // for bool
 #include <stdlib.h>  // for size_t
 
-#include "fapi_types.h"         // for UINT8_ARY
-#include "ifapi_io.h"           // for IFAPI_IO
-#include "ifapi_policy_types.h" // for TPMS_POLICY
-#include "tss2_common.h"        // for TSS2_RC, UINT32
-#include "tss2_esys.h"          // for ESYS_TR
-#include "tss2_policy.h"        // for TSS2_OBJECT
-#include "tss2_tpm2_types.h"    // for TPMI_YES_NO, TPM2B_PUBLIC, TPM2B_DIGEST
+#include "ifapi_io.h"        // for IFAPI_IO
+#include "tss2_common.h"     // for TSS2_RC, UINT32
+#include "tss2_esys.h"       // for ESYS_TR
+#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_tpm2_types.h" // for TPMI_YES_NO, TPM2B_PUBLIC, TPM2B_DIGEST
+#include "tss2_types.h"      // for UINT8_ARY
 
 typedef UINT32 IFAPI_OBJECT_TYPE_CONSTANT;
 #define IFAPI_OBJ_NONE        0 /**< Tag for key resource */

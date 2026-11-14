@@ -13,15 +13,15 @@
 #include <string.h> // for memcpy
 
 #include "fapi_int.h"      // for FAPI_CONTEXT, GET_PLATFORM_CERTIFICATE
-#include "fapi_types.h"    // for NODE_OBJECT_T
 #include "fapi_util.h"     // for ifapi_get_certificates, ifapi_session_init
-#include "ifapi_helpers.h" // for ifapi_free_node_list
+#include "ifapi_helpers.h" // for tss2_free_node_list
 #include "ifapi_io.h"      // for ifapi_io_poll
 #include "ifapi_macros.h"  // for check_not_null, return_if_error_reset_state
 #include "tss2_common.h"   // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TR...
 #include "tss2_esys.h"     // for Esys_SetTimeout
 #include "tss2_fapi.h"     // for FAPI_CONTEXT, Fapi_GetPlatformCertificates
 #include "tss2_tcti.h"     // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_types.h"    // for NODE_OBJECT_T
 
 #define LOGMODULE fapi
 #include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_if_error

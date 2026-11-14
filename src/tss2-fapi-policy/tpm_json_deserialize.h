@@ -10,9 +10,9 @@
 #include <stdbool.h> // for bool
 #include <stddef.h>  // for size_t
 
-#include "fapi_types.h"      // for UINT8_ARY
 #include "tss2_common.h"     // for TSS2_RC, UINT32, BYTE, UINT16, UINT64
 #include "tss2_tpm2_types.h" // for TPM2B_CREATION_DATA, TPM2B_DATA, TPM2B_...
+#include "tss2_types.h"      // for UINT8_ARY
 
 #define YES 1
 #define NO  0

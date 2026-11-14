@@ -17,6 +17,8 @@
 #include "ifapi_helpers.h"        // for ifapi_get_name, ifapi_TPMT_PUBLIC_cmp
 #include "ifapi_profiles.h"       // for IFAPI_PROFILE
 #include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_crypto.h"          // for hash functions
+#include "tss2_helpers.h"         // for ifapi_get_name
 #include "tss2_tpm2_types.h"      // for TPMT_PUBLIC, TPMT_SIG_SCHEME, TPM2_ALG_...
 
 #define LOGMODULE tests
@@ -36,37 +38,37 @@ bool wrap_activate_crypto_hash_finish = false;
  * Wrappers for crypto functions.
  */
 TSS2_RC
-__real_ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context,
-                                const uint8_t             *buffer,
-                                size_t                     size,
-                                ...);
+__real_tss2_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context,
+                               const uint8_t             *buffer,
+                               size_t                     size,
+                               ...);
 
 TSS2_RC
-__wrap_ifapi_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context,
-                                const uint8_t             *buffer,
-                                size_t                     size,
-                                ...) {
+__wrap_tss2_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context,
+                               const uint8_t             *buffer,
+                               size_t                     size,
+                               ...) {
     if (wrap_activate_crypto_hash_update)
         return mock_type(int);
     else
-        return __real_ifapi_crypto_hash_update(context, buffer, size);
+        return __real_tss2_crypto_hash_update(context, buffer, size);
 }
 
 TSS2_RC
-__real_ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
-                                const uint8_t              *digest,
-                                size_t                      size,
-                                ...);
+__real_tss2_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
+                               const uint8_t              *digest,
+                               size_t                      size,
+                               ...);
 
 TSS2_RC
-__wrap_ifapi_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
-                                const uint8_t              *digest,
-                                size_t                      size,
-                                ...) {
+__wrap_tss2_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context,
+                               const uint8_t              *digest,
+                               size_t                      size,
+                               ...) {
     if (wrap_activate_crypto_hash_finish)
         return mock_type(int);
     else
-        return __real_ifapi_crypto_hash_finish(context, digest, size);
+        return __real_tss2_crypto_hash_finish(context, digest, size);
 }
 
 /*
@@ -257,14 +259,14 @@ check_get_name(void **state) {
     assert_int_equal(r, TSS2_MU_RC_INSUFFICIENT_BUFFER);
 
     wrap_activate_crypto_hash_update = true;
-    will_return(__wrap_ifapi_crypto_hash_update, TSS2_FAPI_RC_GENERAL_FAILURE);
+    will_return(__wrap_tss2_crypto_hash_update, TSS2_FAPI_RC_GENERAL_FAILURE);
 
     r = ifapi_get_name(&in_public, &name);
     assert_int_equal(r, TSS2_FAPI_RC_GENERAL_FAILURE);
     wrap_activate_crypto_hash_update = false;
 
     wrap_activate_crypto_hash_finish = true;
-    will_return(__wrap_ifapi_crypto_hash_finish, TSS2_FAPI_RC_GENERAL_FAILURE);
+    will_return(__wrap_tss2_crypto_hash_finish, TSS2_FAPI_RC_GENERAL_FAILURE);
 
     r = ifapi_get_name(&in_public, &name);
     assert_int_equal(r, TSS2_FAPI_RC_GENERAL_FAILURE);

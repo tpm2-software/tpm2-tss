@@ -13,21 +13,20 @@
 #include <stdlib.h>  // for calloc
 #include <string.h>  // for memcpy, strlen, memset, strcmp
 
-#include "fapi_int.h"           // for IFAPI_NV_Cmds, FAPI_CONTEXT, IFAPI_P...
-#include "fapi_util.h"          // for ifapi_authorize_object, ifapi_esys_s...
-#include "ifapi_helpers.h"      // for ifapi_check_nv_index, ifapi_get_nv_s...
-#include "ifapi_io.h"           // for ifapi_io_poll
-#include "ifapi_keystore.h"     // for IFAPI_NV, ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"       // for goto_if_error_reset_state, statecase
-#include "ifapi_policy.h"       // for ifapi_calculate_tree
-#include "ifapi_policy_types.h" // for TPMS_POLICY
-#include "ifapi_profiles.h"     // for IFAPI_PROFILES, IFAPI_PROFILE
-#include "tss2_common.h"        // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
-#include "tss2_esys.h"          // for Esys_SetTimeout, Esys_NV_DefineSpace...
-#include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_CreateNv, Fapi_Cr...
-#include "tss2_policy.h"        // for TSS2_OBJECT
-#include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"    // for TPMS_NV_PUBLIC, TPM2B_NV_PUBLIC, TPM...
+#include "fapi_int.h"        // for IFAPI_NV_Cmds, FAPI_CONTEXT, IFAPI_P...
+#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_esys_s...
+#include "ifapi_helpers.h"   // for ifapi_check_nv_index, ifapi_get_nv_s...
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for IFAPI_NV, ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"    // for goto_if_error_reset_state, statecase
+#include "ifapi_policy.h"    // for ifapi_calculate_tree
+#include "ifapi_profiles.h"  // for IFAPI_PROFILES, IFAPI_PROFILE
+#include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
+#include "tss2_esys.h"       // for Esys_SetTimeout, Esys_NV_DefineSpace...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_CreateNv, Fapi_Cr...
+#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPMS_NV_PUBLIC, TPM2B_NV_PUBLIC, TPM...
 
 #define LOGMODULE fapi
 #include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
@@ -293,8 +292,8 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
     TPM2B_NV_PUBLIC *publicInfo = &miscNv->public;
     TPM2B_NV_PUBLIC *existing_nv_public = NULL;
     TPM2B_DIGEST    *authPolicy = &(miscNv->public.nvPublic.authPolicy);
-    TPMS_POLICY     *policy = &(context->policy.policy);
     TPMS_POLICY    **nvCmdPolicy = &nvCmd->nv_object.policy;
+    TPM2B_DIGEST     digest;
     ESYS_TR          auth_session;
     bool             nv_exists;
 
@@ -344,24 +343,15 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_CREATE_CALCULATE_POLICY)
         if (!nvCmd->skip_policy_computation) {
             /* Calculate the policy as read for the keystore. */
-            r = ifapi_calculate_tree(context, miscNv->policyInstance, policy,
-                                     miscNv->public.nvPublic.nameAlg, &context->policy.digest_idx,
-                                     &context->policy.hash_size);
+            r = ifapi_calculate_tree(context, miscNv->policyInstance, nvCmdPolicy,
+                                     miscNv->public.nvPublic.nameAlg, &digest);
             return_try_again(r);
 
             goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
                            context->cmd.Key_Create.policyPath);
 
-            /* Store the calculated policy in the NV object */
-            *nvCmdPolicy = calloc(1, sizeof(TPMS_POLICY));
-            goto_if_null(*nvCmdPolicy, "Out of memory,", TSS2_FAPI_RC_MEMORY, error_cleanup);
-            **(nvCmdPolicy) = *policy;
-
-            authPolicy->size = context->policy.hash_size;
-            memcpy(&authPolicy->buffer[0],
-                   &policy->policyDigests.digests[context->policy.digest_idx].digest,
-                   context->policy.hash_size);
-            LOGBLOB_TRACE(&authPolicy->buffer[0], context->policy.hash_size, "Create Key Policy");
+            *authPolicy = digest;
+            LOGBLOB_TRACE(&authPolicy->buffer[0], digest.size, "Create Key Policy");
         }
         fallthrough;
 
@@ -529,6 +519,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     SAFE_FREE(miscNv->policyInstance);
+    SAFE_FREE(*nvCmdPolicy);
     SAFE_FREE(nvCmd->nvPath);
     ifapi_session_clean(context);
     SAFE_FREE(existing_nv_public);

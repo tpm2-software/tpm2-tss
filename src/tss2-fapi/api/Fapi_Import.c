@@ -13,27 +13,27 @@
 #include <stdlib.h> // for NULL, size_t
 #include <string.h> // for strncmp, memset, memcpy
 
-#include "fapi_crypto.h"                   // for ifapi_get_profile_sig_scheme
-#include "fapi_int.h"                      // for FAPI_CONTEXT, IFAPI_Impor...
-#include "fapi_types.h"                    // for UINT8_ARY, NODE_STR_T
-#include "fapi_util.h"                     // for ifapi_non_tpm_mode_init
-#include "ifapi_helpers.h"                 // for ifapi_cleanup_policy, ifa...
-#include "ifapi_io.h"                      // for ifapi_io_poll
-#include "ifapi_json_deserialize.h"        // for ifapi_json_IFAPI_OBJECT_d...
-#include "ifapi_keystore.h"                // for IFAPI_OBJECT, ifapi_clean...
-#include "ifapi_macros.h"                  // for goto_if_error_reset_state
-#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
-#include "ifapi_policy_store.h"            // for ifapi_policy_store_store_...
-#include "ifapi_policy_types.h"            // for TPMS_POLICY
-#include "ifapi_profiles.h"                // for ifapi_profiles_get, IFAPI...
-#include "tpm_json_deserialize.h"          // for ifapi_get_sub_object
-#include "tss2_common.h"                   // for TSS2_RC, BYTE, TSS2_RC_SU...
-#include "tss2_esys.h"                     // for Esys_SetTimeout, Esys_Flu...
-#include "tss2_fapi.h"                     // for FAPI_CONTEXT, Fapi_Import
-#include "tss2_mu.h"                       // for Tss2_MU_TPMT_SENSITIVE_Ma...
-#include "tss2_policy.h"                   // for TSS2_OBJECT
-#include "tss2_tcti.h"                     // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"               // for TPM2B_PRIVATE, TPM2B_PUBLIC
+#include "fapi_crypto.h"            // for ifapi_get_profile_sig_scheme
+#include "fapi_int.h"               // for FAPI_CONTEXT, IFAPI_Impor...
+#include "fapi_util.h"              // for ifapi_non_tpm_mode_init
+#include "ifapi_helpers.h"          // for FAPI helpers
+#include "ifapi_io.h"               // for ifapi_io_poll
+#include "ifapi_json_deserialize.h" // for ifapi_json_IFAPI_OBJECT_d...
+#include "ifapi_keystore.h"         // for IFAPI_OBJECT, ifapi_clean...
+#include "ifapi_macros.h"           // for goto_if_error_reset_state
+#include "ifapi_policy_store.h"     // for ifapi_policy_store_store_...
+#include "ifapi_profiles.h"         // for ifapi_profiles_get, IFAPI...
+#include "tpm_json_deserialize.h"   // for ifapi_get_sub_object
+#include "tss2_common.h"            // for TSS2_RC, BYTE, TSS2_RC_SU...
+#include "tss2_crypto.h"
+#include "tss2_esys.h"       // for Esys_SetTimeout, Esys_Flu...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Import
+#include "tss2_helpers.h"    // for ifapi_asnprintf ...
+#include "tss2_mu.h"         // for Tss2_MU_TPMT_SENSITIVE_Ma...
+#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_PRIVATE, TPM2B_PUBLIC
+#include "tss2_types.h"      // for UINT8_ARY, NODE_STR_T
 
 #define LOGMODULE fapi
 #include "util/log.h" // for goto_if_error, SAFE_FREE
@@ -150,7 +150,7 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
     json_object *jso = NULL;
     json_object *jso2;
     size_t       pos = 0;
-    TPMS_POLICY  policy = { 0 };
+    TPMS_POLICY *policy = NULL;
     TPMA_OBJECT *attributes;
 
     /* Check for NULL parameters */
@@ -286,10 +286,10 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
             goto_if_error_reset_state(r, "Check overwrite %s", cleanup_error, command->out_path);
 
             r = ifapi_policy_store_store_async(&context->pstore, &context->io, command->out_path,
-                                               &policy);
+                                               policy);
             goto_if_error_reset_state(r, "Could not open: %s", cleanup_error, command->out_path);
 
-            ifapi_cleanup_policy(&policy);
+            Tss2_PolicyCleanup(&policy);
 
             context->state = IMPORT_KEY_WRITE_POLICY;
 
@@ -355,7 +355,7 @@ cleanup_error:
     if (jso)
         json_object_put(jso);
     context->state = FAPI_STATE_INIT;
-    ifapi_cleanup_policy(&policy);
+    Tss2_PolicyCleanup(&policy);
     ifapi_cleanup_ifapi_object(object);
     SAFE_FREE(command->jso_string);
     SAFE_FREE(extPubKey->pem_ext_public);
@@ -651,8 +651,10 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
         newObject->objectType = IFAPI_KEY_OBJ;
         newObject->misc.key.public = keyTree->public;
         if (keyTree->policy) {
-            newObject->policy = ifapi_copy_policy(keyTree->policy);
-            goto_if_null(keyTree->policy, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+            r = Tss2_PolicyCopy(keyTree->policy, &newObject->policy);
+            if (r)
+                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+            goto_if_error(r, "Copy policy.", error_cleanup);
         } else {
             newObject->policy = NULL;
         }
@@ -714,8 +716,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     /* Cleanup policy for key objects.*/
     if (newObject->objectType == IFAPI_KEY_OBJ) {
         if (newObject->policy)
-            ifapi_cleanup_policy(newObject->policy);
-        SAFE_FREE(newObject->policy);
+            Tss2_PolicyCleanup(&newObject->policy);
     }
     SAFE_FREE(command->parent_path);
     ifapi_cleanup_ifapi_object(&command->object);

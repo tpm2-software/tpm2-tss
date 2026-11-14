@@ -6,6 +6,7 @@
 
 TESTS_CFLAGS = $(AM_CFLAGS) $(CRYPTO_CFLAGS) -I$(srcdir)/include -I$(srcdir)/src/tss2-mu \
     -I$(srcdir)/src/tss2-sys -I$(srcdir)/src/tss2-esys -I$(srcdir)/src/tss2-fapi \
+    -I$(srcdir)/src/tss2-policy -I$(srcdir)/src/tss2-fapi-policy \
     -I$(srcdir)/test/data -Wno-unused-parameter -Wno-missing-field-initializers \
     -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 TESTS_LDADD = $(check_LTLIBRARIES) $(lib_LTLIBRARIES) \
@@ -170,6 +171,7 @@ TESTS_CFLAGS +=  -DTOP_SOURCEDIR"=\"$(top_srcdir)\""
 TESTS_UNIT += \
     test/unit/fapi-json \
     test/unit/fapi-helpers \
+    test/unit/fapi-policyutil \
     test/unit/fapi-io \
     test/unit/fapi-profiles \
     test/unit/fapi-config \
@@ -892,37 +894,52 @@ test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi/ifapi_ima_eventlog.c \
                               src/tss2-fapi/ifapi_eventlog_system.c \
                               src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                              src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                              src/tss2-fapi/ifapi_policy_json_serialize.c \
-                              src/tss2-fapi/tpm_json_deserialize.c \
-                              src/tss2-fapi/tpm_json_serialize.c \
+                              src/tss2-policy/ipolicy_json_deserialize.c \
+                              src/tss2-policy/ipolicy_json_serialize.c \
+                              src/tss2-fapi-policy/tpm_json_deserialize.c \
+                              src/tss2-fapi-policy/tpm_json_serialize.c \
                               src/tss2-fapi/ifapi_helpers.c \
+                              src/tss2-fapi-policy/tss2_crypto.c \
                               src/tss2-fapi/fapi_crypto.c \
                               src/tss2-fapi/ifapi_eventlog.c \
                               src/tss2-fapi/ifapi_keystore.c  \
                               src/tss2-fapi/ifapi_io.c \
+                              src/tss2-fapi-policy/json_helpers.c \
+                              src/tss2-fapi-policy/tss2_helpers.c \
                               test/helper/cmocka_all.h
+
+# Test the execution adapter without the unused preparation/callback machinery.
+test_unit_fapi_policyutil_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS) -ffunction-sections
+test_unit_fapi_policyutil_LDADD = $(CMOCKA_LIBS) $(libtss2_esys)
+test_unit_fapi_policyutil_LDFLAGS = -Wl,--gc-sections \
+    -Wl,--wrap=Tss2_PolicyExecute_Finish -Wl,--wrap=Tss2_PolicyFinalize \
+    -Wl,--wrap=Esys_FlushContext
+test_unit_fapi_policyutil_SOURCES = test/unit/fapi-policyutil.c \
+    src/tss2-fapi/ifapi_policyutil_execute.c src/util/log.c test/helper/cmocka_all.h
 
 test_unit_fapi_helpers_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
 test_unit_fapi_helpers_LDADD = $(CMOCKA_LIBS)  $(TESTS_LDADD)
 test_unit_fapi_helpers_LDFLAGS = $(TESTS_LDFLAGS) $(JSONC_LIBS) $(CURL_LIBS) $(UUID_LIBS) \
-                                 -Wl,--wrap=ifapi_crypto_hash_update \
-                                 -Wl,--wrap=ifapi_crypto_hash_finish
+                                 -Wl,--wrap=tss2_crypto_hash_update \
+                                 -Wl,--wrap=tss2_crypto_hash_finish
 test_unit_fapi_helpers_SOURCES = test/unit/fapi-helpers.c \
                                  src/tss2-fapi/ifapi_json_deserialize.c \
                                  src/tss2-fapi/ifapi_json_serialize.c \
                                  src/tss2-fapi/ifapi_ima_eventlog.c \
                                  src/tss2-fapi/ifapi_eventlog_system.c \
                                  src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                                 src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                                 src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                 src/tss2-fapi/tpm_json_deserialize.c \
-                                 src/tss2-fapi/tpm_json_serialize.c \
+                                 src/tss2-policy/ipolicy_json_deserialize.c \
+                                 src/tss2-policy/ipolicy_json_serialize.c \
+                                 src/tss2-fapi-policy/tpm_json_deserialize.c \
+                                 src/tss2-fapi-policy/tpm_json_serialize.c \
                                  src/tss2-fapi/fapi_crypto.c \
+                                 src/tss2-fapi-policy/tss2_crypto.c \
                                  src/tss2-fapi/ifapi_eventlog.c \
                                  src/tss2-fapi/ifapi_helpers.c \
                                  src/tss2-fapi/ifapi_keystore.c  \
                                  src/tss2-fapi/ifapi_io.c \
+                                 src/tss2-fapi-policy/json_helpers.c \
+                                 src/tss2-fapi-policy/tss2_helpers.c \
                                  test/helper/cmocka_all.h
 
 test_unit_fapi_io_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -946,15 +963,18 @@ test_unit_fapi_io_SOURCES = test/unit/fapi-io.c \
                             src/tss2-fapi/ifapi_ima_eventlog.c \
                             src/tss2-fapi/ifapi_eventlog_system.c \
                             src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                            src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                            src/tss2-fapi/ifapi_policy_json_serialize.c \
-                            src/tss2-fapi/tpm_json_deserialize.c \
-                            src/tss2-fapi/tpm_json_serialize.c \
+                            src/tss2-policy/ipolicy_json_deserialize.c \
+                            src/tss2-policy/ipolicy_json_serialize.c \
+                            src/tss2-fapi-policy/tpm_json_deserialize.c \
+                            src/tss2-fapi-policy/tpm_json_serialize.c \
                             src/tss2-fapi/fapi_crypto.c \
+                            src/tss2-fapi-policy/tss2_crypto.c \
                             src/tss2-fapi/ifapi_eventlog.c \
                             src/tss2-fapi/ifapi_helpers.c \
                             src/tss2-fapi/ifapi_keystore.c  \
                             src/tss2-fapi/ifapi_io.c \
+                            src/tss2-fapi-policy/json_helpers.c \
+                            src/tss2-fapi-policy/tss2_helpers.c \
                             test/helper/cmocka_all.h
 
 test_unit_fapi_profiles_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -968,15 +988,18 @@ test_unit_fapi_profiles_SOURCES = test/unit/fapi-profiles.c \
                                   src/tss2-fapi/ifapi_ima_eventlog.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c \
                                   src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                  src/tss2-fapi/tpm_json_deserialize.c \
-                                  src/tss2-fapi/tpm_json_serialize.c \
+                                  src/tss2-policy/ipolicy_json_deserialize.c \
+                                  src/tss2-policy/ipolicy_json_serialize.c \
+                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
+                                  src/tss2-fapi-policy/tpm_json_serialize.c \
                                   src/tss2-fapi/fapi_crypto.c \
+                                  src/tss2-fapi-policy/tss2_crypto.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c \
+                                  src/tss2-fapi-policy/json_helpers.c \
+                                  src/tss2-fapi-policy/tss2_helpers.c \
                                   test/helper/cmocka_all.h
 
 test_unit_fapi_config_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -990,15 +1013,18 @@ test_unit_fapi_config_SOURCES = test/unit/fapi-config.c \
                                   src/tss2-fapi/ifapi_ima_eventlog.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c \
                                   src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                  src/tss2-fapi/tpm_json_deserialize.c \
-                                  src/tss2-fapi/tpm_json_serialize.c \
+                                  src/tss2-policy/ipolicy_json_deserialize.c \
+                                  src/tss2-policy/ipolicy_json_serialize.c \
+                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
+                                  src/tss2-fapi-policy/tpm_json_serialize.c \
                                   src/tss2-fapi/fapi_crypto.c \
+                                  src/tss2-fapi-policy/tss2_crypto.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c \
+                                  src/tss2-fapi-policy/json_helpers.c \
+                                  src/tss2-fapi-policy/tss2_helpers.c \
                                   test/helper/cmocka_all.h
 
 test_unit_fapi_get_web_cert_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -1013,15 +1039,18 @@ test_unit_fapi_get_web_cert_SOURCES = test/unit/fapi-get-web-cert.c \
                                        src/tss2-fapi/ifapi_ima_eventlog.c \
                                        src/tss2-fapi/ifapi_eventlog_system.c \
                                        src/tss2-fapi/ifapi_json_eventlog_serialize.c \
-                                       src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                                       src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                       src/tss2-fapi/tpm_json_deserialize.c \
-                                       src/tss2-fapi/tpm_json_serialize.c \
+                                       src/tss2-policy/ipolicy_json_deserialize.c \
+                                       src/tss2-policy/ipolicy_json_serialize.c \
+                                       src/tss2-fapi-policy/tpm_json_deserialize.c \
+                                       src/tss2-fapi-policy/tpm_json_serialize.c \
                                        src/tss2-fapi/fapi_crypto.c \
+                                       src/tss2-fapi-policy/tss2_crypto.c \
                                        src/tss2-fapi/ifapi_eventlog.c \
                                        src/tss2-fapi/ifapi_helpers.c \
                                        src/tss2-fapi/ifapi_keystore.c  \
                                        src/tss2-fapi/ifapi_io.c \
+                                       src/tss2-fapi-policy/json_helpers.c \
+                                       src/tss2-fapi-policy/tss2_helpers.c \
                                        test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_eventlog_DEPENDENCIES = $(FAPI_TEST_BINS)
@@ -1035,15 +1064,18 @@ test_unit_fapi_eventlog_SOURCES = test/unit/fapi-eventlog.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                  src/tss2-fapi/tpm_json_deserialize.c \
-                                  src/tss2-fapi/tpm_json_serialize.c \
+                                  src/tss2-policy/ipolicy_json_deserialize.c \
+                                  src/tss2-policy/ipolicy_json_serialize.c \
+                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
+                                  src/tss2-fapi-policy/tpm_json_serialize.c \
                                   src/tss2-fapi/fapi_crypto.c \
+                                  src/tss2-fapi-policy/tss2_crypto.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c \
+                                  src/tss2-fapi-policy/json_helpers.c \
+                                  src/tss2-fapi-policy/tss2_helpers.c \
                                   test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_ima_eventlog_DEPENDENCIES = $(FAPI_TEST_BINS)
@@ -1055,17 +1087,20 @@ test_unit_fapi_ima_eventlog_SOURCES = test/unit/fapi-ima-eventlog.c \
                                   src/tss2-fapi/ifapi_ima_eventlog.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                  src/tss2-fapi/tpm_json_deserialize.c \
-                                  src/tss2-fapi/tpm_json_serialize.c \
+                                  src/tss2-policy/ipolicy_json_deserialize.c \
+                                  src/tss2-policy/ipolicy_json_serialize.c \
+                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
+                                  src/tss2-fapi-policy/tpm_json_serialize.c \
                                   src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                   src/tss2-fapi/fapi_crypto.c \
+                                  src/tss2-fapi-policy/tss2_crypto.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c \
+                                  src/tss2-fapi-policy/json_helpers.c \
+                                  src/tss2-fapi-policy/tss2_helpers.c \
                                   test/helper/cmocka_all.h
 
 EXTRA_test_unit_fapi_check_ima_log_DEPENDENCIES = $(FAPI_TEST_BINS)
@@ -1077,17 +1112,20 @@ test_unit_fapi_check_ima_log_SOURCES = test/unit/fapi-check-ima-log.c \
                                   src/tss2-fapi/ifapi_ima_eventlog.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                                  src/tss2-fapi/ifapi_policy_json_serialize.c \
-                                  src/tss2-fapi/tpm_json_deserialize.c \
-                                  src/tss2-fapi/tpm_json_serialize.c \
+                                  src/tss2-policy/ipolicy_json_deserialize.c \
+                                  src/tss2-policy/ipolicy_json_serialize.c \
+                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
+                                  src/tss2-fapi-policy/tpm_json_serialize.c \
                                   src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                   src/tss2-fapi/fapi_crypto.c \
+                                  src/tss2-fapi-policy/tss2_crypto.c \
                                   src/tss2-fapi/ifapi_eventlog.c \
                                   src/tss2-fapi/ifapi_helpers.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c\
                                   src/tss2-fapi/ifapi_keystore.c  \
                                   src/tss2-fapi/ifapi_io.c \
+                                  src/tss2-fapi-policy/json_helpers.c \
+                                  src/tss2-fapi-policy/tss2_helpers.c \
                                   test/helper/cmocka_all.h
 
 test_unit_fapi_ima_fuzzing_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
@@ -1099,17 +1137,20 @@ test_unit_fapi_ima_fuzzing_SOURCES = test/unit/fapi-ima-fuzzing.c \
                          src/tss2-fapi/ifapi_ima_eventlog.c \
                          src/tss2-fapi/ifapi_json_deserialize.c \
                          src/tss2-fapi/ifapi_json_serialize.c \
-                         src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                         src/tss2-fapi/ifapi_policy_json_serialize.c \
-                         src/tss2-fapi/tpm_json_deserialize.c \
-                         src/tss2-fapi/tpm_json_serialize.c \
+                         src/tss2-policy/ipolicy_json_deserialize.c \
+                         src/tss2-policy/ipolicy_json_serialize.c \
+                         src/tss2-fapi-policy/tpm_json_deserialize.c \
+                         src/tss2-fapi-policy/tpm_json_serialize.c \
                          src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                          src/tss2-fapi/fapi_crypto.c \
+                         src/tss2-fapi-policy/tss2_crypto.c \
                          src/tss2-fapi/ifapi_eventlog.c \
                          src/tss2-fapi/ifapi_helpers.c \
                          src/tss2-fapi/ifapi_eventlog_system.c\
                          src/tss2-fapi/ifapi_keystore.c  \
                          src/tss2-fapi/ifapi_io.c \
+                         src/tss2-fapi-policy/json_helpers.c \
+                         src/tss2-fapi-policy/tss2_helpers.c \
                          test/helper/cmocka_all.h
 
 noinst_PROGRAMS += test/unit/fapi-ima-fuzzing
@@ -1125,15 +1166,18 @@ test_unit_fapi_system_fuzzing_SOURCES = test/unit/fapi-system-fuzzing.c \
                           src/tss2-fapi/ifapi_eventlog_system.c \
                           src/tss2-fapi/ifapi_json_deserialize.c \
                           src/tss2-fapi/ifapi_json_serialize.c \
-                          src/tss2-fapi/ifapi_policy_json_deserialize.c \
-                          src/tss2-fapi/ifapi_policy_json_serialize.c \
-                          src/tss2-fapi/tpm_json_deserialize.c \
-                          src/tss2-fapi/tpm_json_serialize.c \
+                          src/tss2-policy/ipolicy_json_deserialize.c \
+                          src/tss2-policy/ipolicy_json_serialize.c \
+                          src/tss2-fapi-policy/tpm_json_deserialize.c \
+                          src/tss2-fapi-policy/tpm_json_serialize.c \
                           src/tss2-fapi/fapi_crypto.c \
+                          src/tss2-fapi-policy/tss2_crypto.c \
                           src/tss2-fapi/ifapi_eventlog.c \
                           src/tss2-fapi/ifapi_helpers.c\
                           src/tss2-fapi/ifapi_keystore.c  \
                           src/tss2-fapi/ifapi_io.c \
+                          src/tss2-fapi-policy/json_helpers.c \
+                          src/tss2-fapi-policy/tss2_helpers.c \
                           test/helper/cmocka_all.h
 
 noinst_PROGRAMS += test/unit/fapi-system-fuzzing

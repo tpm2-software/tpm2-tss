@@ -13,7 +13,6 @@
 #include <stdlib.h>   // for NULL, size_t, calloc, getenv
 #include <string.h>   // for strlen, memset, memcpy, strcmp, memcmp
 
-#include "fapi_crypto.h"             // for ifapi_cert_to_pem, ifapi_get_public_...
 #include "fapi_int.h"                // for IFAPI_Provision, FAPI_CONTEXT, IFAPI...
 #include "fapi_util.h"               // for ifapi_change_auth_hierarchy, ifapi_c...
 #include "ifapi_config.h"            // for IFAPI_CONFIG
@@ -27,8 +26,10 @@
 #include "ifapi_profiles.h"          // for IFAPI_PROFILE, IFAPI_PROFILES
 #include "ifapi_verify_cert_chain.h" // for ifapi_verify_cert_chain
 #include "tss2_common.h"             // for TSS2_FAPI_RC_TRY_AGAIN, BYTE, TSS2_RC
+#include "tss2_crypto.h"             // for ifapi_cert_to_pem, ifapi_get_public_...
 #include "tss2_esys.h"               // for ESYS_TR_NONE, Esys_GetCapability_Async
 #include "tss2_fapi.h"               // for FAPI_CONTEXT, Fapi_Provision, Fapi_P...
+#include "tss2_helpers.h"            // for ifapi_asprintfg ...
 #include "tss2_mu.h"                 // for Tss2_MU_TPMT_PUBLIC_Unmarshal
 #include "tss2_policy.h"             // for TSS2_OBJECT
 #include "tss2_tcti.h"               // for TSS2_TCTI_TIMEOUT_BLOCK
@@ -119,10 +120,9 @@ instantiate_policies(FAPI_CONTEXT *context) {
             if (i == 5) {
                 return TSS2_RC_SUCCESS;
             }
-            size_t digest_idx, hash_size;
-            r = ifapi_calculate_tree_ex(&context->policy, NULL, NULL, NULL, ctx->policies[i],
-                                        context->profiles.default_profile.nameAlg, &digest_idx,
-                                        &hash_size);
+            TPM2B_DIGEST digest;
+            r = ifapi_calculate_tree_ex(&context->policy, NULL, NULL, NULL, &ctx->policies[i],
+                                        context->profiles.default_profile.nameAlg, &digest);
             return_try_again(r);
             return_if_error(r, "Instantiate policy");
             ctx->pol_idx = i + 1;
@@ -739,7 +739,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         hash_alg = context->config.ek_fingerprint.hashAlg;
         if (hash_alg) {
             LOG_DEBUG("Only fingerprint check for EK.");
-            if (!(hash_size = ifapi_hash_get_digest_size(hash_alg))) {
+            if (!(hash_size = tss2_hash_get_digest_size(hash_alg))) {
                 goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
                            "Unsupported hash algorithm (%" PRIu16 ")", error_cleanup, hash_alg);
             }
@@ -1282,9 +1282,10 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         command->hierarchy_auth.size = strlen(command->authValueLockout);
         context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
         if (defaultProfile->lockout_policy) {
-            command->hierarchy_policy = ifapi_copy_policy(defaultProfile->lockout_policy);
-            goto_if_null2(command->hierarchy_policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY,
-                          error_cleanup);
+            r = Tss2_PolicyCopy(defaultProfile->lockout_policy, &command->hierarchy_policy);
+            if (r)
+                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+            goto_if_error(r, "Copy policy.", error_cleanup);
         } else {
             command->hierarchy_policy = NULL;
         }
@@ -1373,9 +1374,10 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_CHANGE_EH_CHECK);
         context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
         if (defaultProfile->eh_policy) {
-            command->hierarchy_policy = ifapi_copy_policy(defaultProfile->eh_policy);
-            goto_if_null2(command->hierarchy_policy, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-                          error_cleanup);
+            r = Tss2_PolicyCopy(defaultProfile->eh_policy, &command->hierarchy_policy);
+            if (r)
+                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+            goto_if_error(r, "Copy policy.", error_cleanup);
         } else {
             command->hierarchy_policy = NULL;
         }
@@ -1441,9 +1443,10 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_CHANGE_SH_CHECK);
         context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
         if (defaultProfile->sh_policy) {
-            command->hierarchy_policy = ifapi_copy_policy(defaultProfile->sh_policy);
-            goto_if_null2(command->hierarchy_policy, "Out of memory", r, TSS2_FAPI_RC_MEMORY,
-                          error_cleanup);
+            r = Tss2_PolicyCopy(defaultProfile->sh_policy, &command->hierarchy_policy);
+            if (r)
+                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+            goto_if_error(r, "Copy policy.", error_cleanup);
         } else {
             command->hierarchy_policy = NULL;
         }

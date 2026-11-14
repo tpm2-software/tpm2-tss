@@ -12,7 +12,7 @@
 #include <stdlib.h> // for NULL
 #include <string.h> // for memset, strdup
 
-#include "fapi_crypto.h"          // for ifapi_pub_pem_key_from_tpm
+#include "fapi_crypto.h"          // for tss2_pub_pem_key_from_tpm
 #include "fapi_int.h"             // for IFAPI_ExportKey, FAPI_CONTEXT, EXP...
 #include "fapi_util.h"            // for ifapi_flush_object, ifapi_authoriz...
 #include "ifapi_io.h"             // for ifapi_io_poll
@@ -20,11 +20,12 @@
 #include "ifapi_keystore.h"       // for ifapi_cleanup_ifapi_object, IFAPI_...
 #include "ifapi_macros.h"         // for statecase, check_not_null, fallthr...
 #include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BAS...
-#include "tss2_esys.h"            // for ESYS_TR_NONE, Esys_SetTimeout, Esy...
-#include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_ExportKey, Fapi...
-#include "tss2_policy.h"          // for TSS2_OBJECT
-#include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"      // for TPM2B_DATA, TPMT_SYM_DEF_OBJECT
+#include "tss2_crypto.h"
+#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_SetTimeout, Esy...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_ExportKey, Fapi...
+#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_DATA, TPMT_SYM_DEF_OBJECT
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, LOG_TRACE, goto_if_error
@@ -298,8 +299,8 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
             pubKey->misc.ext_pub_key.public = commandObject.misc.key.public;
 
             /* Convert the TPM key format to PEM. */
-            r = ifapi_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
-                                           &pubKey->misc.ext_pub_key.pem_ext_public, &sizePem);
+            r = tss2_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
+                                          &pubKey->misc.ext_pub_key.pem_ext_public, &sizePem);
             goto_if_error(r, "Convert public TPM key to pem.", cleanup);
         } else {
             /* No key object was loaded */

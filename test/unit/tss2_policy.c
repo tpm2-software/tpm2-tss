@@ -15,6 +15,7 @@
 #include <string.h> // for memcpy, memset
 
 #include "../helper/cmocka_all.h" // for assert_int_equal, assert_s...
+#include "ipolicy_types.h"        // for borrowed policy construction
 #include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC
 #include "tss2_policy.h"          // for TSS2_POLICY_PCR_SELECTION
 #include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPMS_PCR_SEL...
@@ -258,12 +259,473 @@ test_policy_instantiate(void **state) {
     } /* end for each policy file */
 } /* end of cmocka test */
 
+static TSS2_RC
+select_branch_description(char        *description,
+                          const char **branch_names,
+                          size_t       branch_count,
+                          size_t      *branch_idx,
+                          void        *userdata) {
+    unsigned *calls = userdata;
+    assert_string_equal(description, "branch selection test");
+    assert_int_equal(branch_count, 2);
+    assert_string_equal(branch_names[0], "first");
+    assert_string_equal(branch_names[1], "second");
+    *branch_idx = 1;
+    (*calls)++;
+    return TSS2_RC_SUCCESS;
+}
+
+static void
+test_branch_selection_description(void **state) {
+    UNUSED(state);
+    const char *json
+        = "{\"description\":\"branch selection test\",\"policy\":[{\"type\":\"POLICYOR\","
+          "\"branches\":[{\"name\":\"first\",\"description\":\"first branch\","
+          "\"policy\":[{\"type\":\"POLICYCOMMANDCODE\",\"code\":349}]},"
+          "{\"name\":\"second\",\"description\":\"second branch\","
+          "\"policy\":[{\"type\":\"POLICYCOMMANDCODE\",\"code\":350}]}]}]}";
+    TSS2_POLICY_CTX           *ctx = NULL;
+    unsigned                   calls = 0;
+    TSS2_POLICY_EXEC_CALLBACKS callbacks = {
+        .cbpolsel = select_branch_description,
+        .cbpolsel_userdata = &calls,
+    };
+    assert_int_equal(Tss2_PolicyInit(json, TPM2_ALG_SHA256, &ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicySetExecCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyExecute_Async(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(calls, 1);
+    Tss2_PolicyFinalize(&ctx);
+}
+
+static TSS2_RC
+execute_action_retry(const char *action, void *userdata) {
+    unsigned *calls = userdata;
+    assert_string_equal(action, "test");
+    return ++*calls == 1 ? TSS2_POLICY_RC_TRY_AGAIN : TSS2_RC_SUCCESS;
+}
+
+static void
+test_policy_execute_async(void **state) {
+    UNUSED(state);
+    TSS2_POLICY_CTX *ctx = NULL;
+    /* PolicyAction does not issue TPM commands, so no TPM connection is needed. */
+    char                       esys_storage;
+    ESYS_CONTEXT              *esys = (ESYS_CONTEXT *)&esys_storage;
+    unsigned                   calls = 0;
+    TSS2_POLICY_EXEC_CALLBACKS callbacks = {
+        .cbaction = execute_action_retry,
+        .cbaction_userdata = &calls,
+    };
+
+    assert_int_equal(Tss2_PolicyInit("{\"description\":\"test\",\"policy\":[{\"type\":"
+                                     "\"POLICYACTION\",\"action\":\"test\"}]}",
+                                     TPM2_ALG_SHA256, &ctx),
+                     TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyExecute_Finish(ctx, esys, ESYS_TR_PASSWORD),
+                     TSS2_POLICY_RC_BAD_SEQUENCE);
+    assert_int_equal(Tss2_PolicyExecute_Async(ctx), TSS2_POLICY_RC_POLICY_NOT_CALCULATED);
+    assert_int_equal(Tss2_PolicyCalculate(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicySetExecCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyExecute_Async(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(calls, 0);
+    assert_int_equal(Tss2_PolicyExecute_Finish(ctx, esys, ESYS_TR_NONE), TSS2_POLICY_RC_BAD_VALUE);
+    assert_int_equal(Tss2_PolicyExecute_Async(ctx), TSS2_POLICY_RC_BAD_SEQUENCE);
+    assert_int_equal(Tss2_PolicyExecute_Finish(ctx, esys, ESYS_TR_PASSWORD),
+                     TSS2_POLICY_RC_TRY_AGAIN);
+    assert_int_equal(calls, 1);
+    assert_int_equal(Tss2_PolicyExecute_Finish(ctx, esys, ESYS_TR_PASSWORD), TSS2_RC_SUCCESS);
+    assert_int_equal(calls, 2);
+    assert_int_equal(Tss2_PolicyExecute_Finish(ctx, esys, ESYS_TR_PASSWORD),
+                     TSS2_POLICY_RC_BAD_SEQUENCE);
+    assert_int_equal(Tss2_PolicySetExecCallbacks(ctx, NULL), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyExecute_Async(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyExecute_Finish(ctx, esys, ESYS_TR_PASSWORD),
+                     TSS2_POLICY_RC_NULL_CALLBACK);
+    assert_int_equal(Tss2_PolicyExecute_Finish(ctx, esys, ESYS_TR_PASSWORD),
+                     TSS2_POLICY_RC_BAD_SEQUENCE);
+    assert_int_equal(Tss2_PolicySetExecCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
+    calls = 0;
+    assert_int_equal(Tss2_PolicyExecute(ctx, esys, ESYS_TR_PASSWORD), TSS2_RC_SUCCESS);
+    assert_int_equal(calls, 2);
+    Tss2_PolicyFinalize(&ctx);
+}
+
+/* Each frame borrows the same policy but owns independent engine/callback state. */
+static void
+test_policy_set_policy_execute(void **state) {
+    UNUSED(state);
+    TPML_POLICYELEMENTS *elements = calloc(1, sizeof(*elements) + sizeof(TPMT_POLICYELEMENT));
+    assert_non_null(elements);
+    elements->count = 1;
+    elements->elements[0].type = POLICYACTION;
+    elements->elements[0].element.PolicyAction.action = "test";
+    TPMS_POLICY policy = { .policy = elements };
+    policy.policyDigests.count = 1;
+    policy.policyDigests.digests[0].hashAlg = TPM2_ALG_SHA256;
+    TSS2_POLICY_CTX           *first = NULL, *second = NULL;
+    unsigned                   first_calls = 0, second_calls = 0;
+    TSS2_POLICY_EXEC_CALLBACKS callbacks = {
+        .cbaction = execute_action_retry,
+        .cbaction_userdata = &first_calls,
+    };
+    char          esys_storage;
+    ESYS_CONTEXT *esys = (ESYS_CONTEXT *)&esys_storage;
+
+    assert_int_equal(Tss2_PolicySetPolicy(&policy, TPM2_ALG_SHA256, &first), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicySetPolicy(&policy, TPM2_ALG_SHA256, &second), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicySetExecCallbacks(first, &callbacks), TSS2_RC_SUCCESS);
+    callbacks.cbaction_userdata = &second_calls;
+    assert_int_equal(Tss2_PolicySetExecCallbacks(second, &callbacks), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyExecute_Async(first), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyExecute_Async(second), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyExecute_Finish(first, esys, ESYS_TR_PASSWORD),
+                     TSS2_POLICY_RC_TRY_AGAIN);
+    assert_int_equal(Tss2_PolicyExecute_Finish(second, esys, ESYS_TR_PASSWORD),
+                     TSS2_POLICY_RC_TRY_AGAIN);
+    assert_int_equal(Tss2_PolicyExecute_Finish(first, esys, ESYS_TR_PASSWORD), TSS2_RC_SUCCESS);
+    Tss2_PolicyFinalize(&first);
+    assert_int_equal(Tss2_PolicyExecute_Finish(second, esys, ESYS_TR_PASSWORD), TSS2_RC_SUCCESS);
+    assert_int_equal(first_calls, 2);
+    assert_int_equal(second_calls, 2);
+    Tss2_PolicyFinalize(&second);
+    assert_string_equal(elements->elements[0].element.PolicyAction.action, "test");
+    free(elements);
+}
+
+static void
+test_cached_policy_digest(void **state) {
+    UNUSED(state);
+    TPMS_POLICY policy = { 0 };
+    policy.policyDigests.count = 2;
+    policy.policyDigests.digests[0].hashAlg = TPM2_ALG_SHA1;
+    memset(policy.policyDigests.digests[0].digest.sha1, 0x11, 20);
+    policy.policyDigests.digests[1].hashAlg = TPM2_ALG_SHA256;
+    memset(policy.policyDigests.digests[1].digest.sha256, 0x22, 32);
+    TSS2_POLICY_CTX *ctx = NULL;
+    TPM2B_DIGEST     digest;
+
+    assert_int_equal(Tss2_PolicySetPolicy(&policy, TPM2_ALG_SHA256, &ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
+    assert_int_equal(digest.size, 32);
+    assert_memory_equal(digest.buffer, policy.policyDigests.digests[1].digest.sha256, 32);
+    assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
+    assert_int_equal(digest.size, 32);
+    assert_memory_equal(digest.buffer, policy.policyDigests.digests[1].digest.sha256, 32);
+
+    assert_int_equal(Tss2_PolicySetHashAlg(ctx, TPM2_ALG_SHA1), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
+    assert_int_equal(digest.size, 20);
+    assert_memory_equal(digest.buffer, policy.policyDigests.digests[0].digest.sha1, 20);
+    Tss2_PolicyFinalize(&ctx);
+}
+
+static TSS2_RC
+policy_cb_pcr_retry(TSS2_POLICY_PCR_SELECTION *selection,
+                    TPML_PCR_SELECTION        *out_selection,
+                    TPML_DIGEST               *out_digest,
+                    void                      *userdata) {
+    unsigned *calls = userdata;
+    if (++*calls == 1)
+        return TSS2_POLICY_RC_TRY_AGAIN;
+    return policy_cb_pcr(selection, out_selection, out_digest, NULL);
+}
+
+static void
+test_policy_calculation_retry(void **state) {
+    UNUSED(state);
+    TSS2_POLICY_CTX           *ctx = NULL;
+    unsigned                   calls = 0;
+    TSS2_POLICY_CALC_CALLBACKS callbacks = {
+        .cbpcr = policy_cb_pcr_retry,
+        .cbpcr_userdata = &calls,
+    };
+    assert_int_equal(
+        Tss2_PolicyInit("{\"description\":\"PCR "
+                        "retry\",\"policy\":[{\"type\":\"POLICYPCR\",\"currentPCRs\":[16]}]}",
+                        TPM2_ALG_SHA256, &ctx),
+        TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicySetCalcCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_POLICY_RC_TRY_AGAIN);
+    TPM2B_DIGEST digest;
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest),
+                     TSS2_POLICY_RC_POLICY_NOT_CALCULATED);
+    assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
+    assert_int_equal(digest.size, 32);
+    assert_int_equal(calls, 2);
+    Tss2_PolicyFinalize(&ctx);
+}
+
+static void
+test_policy_authorization(void **state) {
+    UNUSED(state);
+    TPMS_POLICY    policy = { 0 };
+    TPMT_SIGNATURE signature = { .sigAlg = TPM2_ALG_RSASSA };
+    TPMT_PUBLIC    key = { .type = TPM2_ALG_RSA, .nameAlg = TPM2_ALG_SHA256 };
+    TPM2B_DIGEST   ref = { .size = 1, .buffer = { 0x42 } };
+    assert_int_equal(Tss2_PolicyAddAuthorization(NULL, &signature, &ref, &key),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_int_equal(Tss2_PolicyAddAuthorization(&policy, NULL, &ref, &key),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, &ref, NULL),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, NULL, &key),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
+    TPM2B_DIGEST invalid_ref = { .size = sizeof(ref.buffer) + 1 };
+    assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, &invalid_ref, &key),
+                     TSS2_POLICY_RC_BAD_VALUE);
+    assert_null(policy.policyAuthorizations);
+    for (unsigned i = 0; i < 2; ++i) {
+        ref.buffer[0] = 0x42 + i;
+        assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, &ref, &key),
+                         TSS2_RC_SUCCESS);
+    }
+    /* The API retains copies, including entries present before an append. */
+    ref.buffer[0] = 0;
+    signature.sigAlg = TPM2_ALG_NULL;
+    key.nameAlg = TPM2_ALG_SHA1;
+    assert_int_equal(policy.policyAuthorizations->count, 2);
+    for (unsigned i = 0; i < 2; ++i) {
+        TPMS_POLICYAUTHORIZATION *entry = &policy.policyAuthorizations->authorizations[i];
+        assert_string_equal(entry->type, "tpm");
+        assert_int_equal(entry->signature.sigAlg, TPM2_ALG_RSASSA);
+        assert_int_equal(entry->key.nameAlg, TPM2_ALG_SHA256);
+        assert_int_equal(entry->policyRef.size, 1);
+        assert_int_equal(entry->policyRef.buffer[0], 0x42 + i);
+        free(entry->type);
+    }
+    free(policy.policyAuthorizations);
+}
+
+static void
+test_policy_get_authorization(void **state) {
+    UNUSED(state);
+    TPMS_POLICY policy = { 0 };
+    TPMT_PUBLIC key = { .type = TPM2_ALG_RSA };
+    key.unique.rsa.size = 1;
+    key.unique.rsa.buffer[0] = 0x42;
+    TPMT_SIGNATURE signature = { .sigAlg = TPM2_ALG_RSASSA };
+    signature.signature.rsassa.sig.size = 1;
+    TPM2B_NONCE    ref = { .size = 1, .buffer = { 1 } };
+    bool           found = true;
+    TPMT_SIGNATURE result = { .sigAlg = TPM2_ALG_NULL };
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, &result), 0);
+    assert_false(found);
+    assert_int_equal(result.sigAlg, TPM2_ALG_NULL);
+    /* Two authorizations for the same key must be distinguished by policyRef. */
+    for (unsigned i = 0; i < 2; ++i) {
+        ref.buffer[0] = i + 1;
+        signature.signature.rsassa.sig.buffer[0] = 0x80 + i;
+        assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, &ref, &key), 0);
+    }
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, &result), 0);
+    assert_true(found);
+    assert_int_equal(result.signature.rsassa.sig.buffer[0], 0x81);
+    ref.buffer[0] = 1;
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, NULL), 0);
+    assert_true(found);
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, &result), 0);
+    assert_int_equal(result.signature.rsassa.sig.buffer[0], 0x80);
+    ref.buffer[0] = 3;
+    result.sigAlg = TPM2_ALG_NULL;
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, &result), 0);
+    assert_false(found);
+    assert_int_equal(result.sigAlg, TPM2_ALG_NULL);
+    ref.buffer[0] = 1;
+    key.unique.rsa.buffer[0]++;
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, NULL), 0);
+    assert_false(found);
+    key.unique.rsa.buffer[0]--;
+    TPM2B_NONCE empty = { 0 };
+    assert_int_equal(Tss2_PolicyAddAuthorization(&policy, &signature, &empty, &key), 0);
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, NULL, &found, NULL), 0);
+    assert_true(found);
+    assert_int_equal(Tss2_PolicyGetAuthorization(NULL, &key, &ref, &found, NULL),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_false(found);
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, NULL, &ref, &found, NULL),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, NULL, NULL),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
+    ref.size = sizeof(ref.buffer) + 1;
+    assert_int_equal(Tss2_PolicyGetAuthorization(&policy, &key, &ref, &found, NULL),
+                     TSS2_POLICY_RC_BAD_VALUE);
+    for (size_t i = 0; i < policy.policyAuthorizations->count; ++i)
+        free(policy.policyAuthorizations->authorizations[i].type);
+    free(policy.policyAuthorizations);
+}
+
+static void
+test_cleanup_empty_policy(void **state) {
+    UNUSED(state);
+    TPMS_POLICY *policy = calloc(1, sizeof(TPMS_POLICY));
+    assert_non_null(policy);
+    assert_null(policy->description);
+    assert_int_equal(policy->policyDigests.count, 0);
+    assert_null(policy->policyAuthorizations);
+    assert_null(policy->policy);
+    Tss2_PolicyCleanup(&policy);
+    assert_null(policy);
+    Tss2_PolicyCleanup(&policy);
+    Tss2_PolicyCleanup(NULL);
+}
+
+static void
+test_policy_json_api(void **state) {
+    UNUSED(state);
+    const char  *input = "{\"description\":\"json api\",\"policy\":["
+                         "{\"type\":\"POLICYCOMMANDCODE\",\"code\":349}]}";
+    TPMS_POLICY *policy = NULL;
+    TPMS_POLICY *copy = NULL;
+    char        *json = NULL;
+    char        *json_copy = NULL;
+    assert_int_equal(Tss2_PolicyJsonDeserialize(input, NULL), TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_int_equal(Tss2_PolicyJsonDeserialize(NULL, &policy), TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_null(policy);
+    const char *invalid[]
+        = { "{", "[]", "null", "{}",
+            "{\"description\":\"invalid\",\"policy\":[{\"type\":\"POLICYOR\"}]}" };
+    for (size_t i = 0; i < ARRAY_LEN(invalid); ++i) {
+        assert_int_equal(Tss2_PolicyJsonDeserialize(invalid[i], &policy), TSS2_POLICY_RC_BAD_VALUE);
+        assert_null(policy);
+    }
+    assert_int_equal(Tss2_PolicyJsonSerialize(NULL, &json), TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_null(json);
+    assert_int_equal(Tss2_PolicyJsonDeserialize(input, &policy), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyJsonSerialize(policy, NULL), TSS2_POLICY_RC_BAD_REFERENCE);
+    /* Serialization works without a TPM, a context or calculated digests. */
+    assert_int_equal(Tss2_PolicyJsonSerialize(policy, &json), TSS2_RC_SUCCESS);
+    assert_non_null(json);
+    Tss2_PolicyCleanup(&policy);
+    assert_int_equal(Tss2_PolicyJsonDeserialize(json, &copy), TSS2_RC_SUCCESS);
+    assert_string_equal(copy->description, "json api");
+    assert_int_equal(copy->policy->elements[0].element.PolicyCommandCode.code, 349);
+    assert_int_equal(Tss2_PolicyJsonSerialize(copy, &json_copy), TSS2_RC_SUCCESS);
+    assert_string_equal(json, json_copy);
+    Tss2_PolicyCleanup(&copy);
+    free(json);
+    free(json_copy);
+}
+
+static void
+test_policy_copy(void **state) {
+    UNUSED(state);
+    TPMS_POLICY *source = calloc(1, sizeof(TPMS_POLICY));
+    TPMS_POLICY *copy = NULL;
+    assert_non_null(source);
+    source->description = strdup("copy source");
+    source->policyDigests.count = 1;
+    source->policyDigests.digests[0].hashAlg = TPM2_ALG_SHA256;
+    source->policyDigests.digests[0].digest.sha256[0] = 0x42;
+    source->policy = calloc(1, sizeof(*source->policy) + sizeof(TPMT_POLICYELEMENT));
+    assert_non_null(source->policy);
+    source->policy->count = 1;
+    source->policy->elements[0].type = POLICYOR;
+    TPML_POLICYBRANCHES *branches = calloc(1, sizeof(*branches) + sizeof(TPMS_POLICYBRANCH));
+    assert_non_null(branches);
+    source->policy->elements[0].element.PolicyOr.branches = branches;
+    branches->count = 1;
+    branches->authorizations[0].name = strdup("branch");
+    branches->authorizations[0].description = strdup("nested policy");
+    branches->authorizations[0].policy
+        = calloc(1, sizeof(TPML_POLICYELEMENTS) + sizeof(TPMT_POLICYELEMENT));
+    assert_non_null(branches->authorizations[0].policy);
+    branches->authorizations[0].policy->count = 1;
+    branches->authorizations[0].policy->elements[0].type = POLICYACTION;
+    branches->authorizations[0].policy->elements[0].element.PolicyAction.action = strdup("action");
+    source->policyAuthorizations
+        = calloc(1, sizeof(*source->policyAuthorizations) + 2 * sizeof(TPMS_POLICYAUTHORIZATION));
+    assert_non_null(source->policyAuthorizations);
+    source->policyAuthorizations->count = 2;
+    TPMS_POLICYAUTHORIZATION *pem = &source->policyAuthorizations->authorizations[0];
+    pem->type = strdup("pem");
+    pem->keyPEM = strdup("PEM key");
+    pem->pemSignature.size = 3;
+    pem->pemSignature.buffer = malloc(3);
+    assert_non_null(pem->pemSignature.buffer);
+    memcpy(pem->pemSignature.buffer, "sig", 3);
+    source->policyAuthorizations->authorizations[1].type = strdup("tpm");
+    source->policyAuthorizations->authorizations[1].signature.sigAlg = TPM2_ALG_RSASSA;
+
+    assert_int_equal(Tss2_PolicyCopy(source, &copy), TSS2_RC_SUCCESS);
+    assert_non_null(copy);
+    assert_ptr_not_equal(source, copy);
+    assert_ptr_not_equal(source->description, copy->description);
+    assert_ptr_not_equal(source->policy, copy->policy);
+    assert_ptr_not_equal(branches, copy->policy->elements[0].element.PolicyOr.branches);
+    assert_ptr_not_equal(pem->keyPEM, copy->policyAuthorizations->authorizations[0].keyPEM);
+    assert_ptr_not_equal(pem->pemSignature.buffer,
+                         copy->policyAuthorizations->authorizations[0].pemSignature.buffer);
+    /* All data in the copy must remain valid after freeing the source. */
+    Tss2_PolicyCleanup(&source);
+    assert_string_equal(copy->description, "copy source");
+    assert_int_equal(copy->policyDigests.digests[0].digest.sha256[0], 0x42);
+    branches = copy->policy->elements[0].element.PolicyOr.branches;
+    assert_string_equal(branches->authorizations[0].name, "branch");
+    assert_string_equal(branches->authorizations[0].description, "nested policy");
+    assert_string_equal(branches->authorizations[0].policy->elements[0].element.PolicyAction.action,
+                        "action");
+    assert_int_equal(copy->policyAuthorizations->count, 2);
+    assert_string_equal(copy->policyAuthorizations->authorizations[0].keyPEM, "PEM key");
+    assert_memory_equal(copy->policyAuthorizations->authorizations[0].pemSignature.buffer, "sig",
+                        3);
+    assert_int_equal(copy->policyAuthorizations->authorizations[1].signature.sigAlg,
+                     TPM2_ALG_RSASSA);
+    Tss2_PolicyCleanup(&copy);
+    assert_null(copy);
+}
+
+static void
+test_policy_copy_empty_and_invalid(void **state) {
+    UNUSED(state);
+    TPMS_POLICY *source = calloc(1, sizeof(TPMS_POLICY));
+    TPMS_POLICY *copy = NULL;
+    assert_non_null(source);
+    assert_int_equal(Tss2_PolicyCopy(source, NULL), TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_int_equal(Tss2_PolicyCopy(NULL, &copy), TSS2_POLICY_RC_BAD_REFERENCE);
+    assert_null(copy);
+    assert_int_equal(Tss2_PolicyCopy(source, &copy), TSS2_RC_SUCCESS);
+    assert_null(copy->description);
+    assert_null(copy->policy);
+    assert_null(copy->policyAuthorizations);
+    Tss2_PolicyCleanup(&copy);
+
+    source->policy = calloc(1, sizeof(*source->policy) + sizeof(TPMT_POLICYELEMENT));
+    assert_non_null(source->policy);
+    source->policy->count = 1;
+    source->policy->elements[0].type = POLICYAUTHORIZENV;
+    source->policy->elements[0].element.PolicyAuthorizeNv.nvPath = strdup("NV/path");
+    source->policy->elements[0].element.PolicyAuthorizeNv.policy_buffer = malloc(1);
+    assert_non_null(source->policy->elements[0].element.PolicyAuthorizeNv.policy_buffer);
+    assert_int_equal(Tss2_PolicyCopy(source, &copy), TSS2_POLICY_RC_BAD_VALUE);
+    assert_null(copy);
+    assert_string_equal(source->policy->elements[0].element.PolicyAuthorizeNv.nvPath, "NV/path");
+    Tss2_PolicyCleanup(&source);
+}
+
 int
 main(int argc, char *argv[]) {
     UNUSED(argc);
     UNUSED(argv);
 
-    const struct CMUnitTest tests[] = { cmocka_unit_test(test_policy_instantiate) };
+    const struct CMUnitTest tests[] = { cmocka_unit_test(test_policy_instantiate),
+                                        cmocka_unit_test(test_policy_execute_async),
+                                        cmocka_unit_test(test_branch_selection_description),
+                                        cmocka_unit_test(test_policy_set_policy_execute),
+                                        cmocka_unit_test(test_cached_policy_digest),
+                                        cmocka_unit_test(test_policy_calculation_retry),
+                                        cmocka_unit_test(test_policy_authorization),
+                                        cmocka_unit_test(test_policy_get_authorization),
+                                        cmocka_unit_test(test_cleanup_empty_policy),
+                                        cmocka_unit_test(test_policy_copy),
+                                        cmocka_unit_test(test_policy_json_api),
+                                        cmocka_unit_test(test_policy_copy_empty_and_invalid) };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

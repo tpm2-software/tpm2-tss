@@ -17,16 +17,16 @@
 #include <string.h>   // for memset, strlen, strncmp
 #include <strings.h>  // for strcasecmp, strncasecmp
 
-#include "ifapi_helpers.h" // for ifapi_check_json_object_fields
-#include "ifapi_macros.h"  // for return_if_error2, return_error2
-#include "linkhash.h"      // for lh_entry
+#include "json_helpers.h"
+#include "linkhash.h" // for lh_entry
 #include "tpm_json_deserialize.h"
+#include "util/aux_util.h" // for return_if_error2, return_error2
 
 #define LOGMODULE fapijson
 #include "util/log.h" // for LOG_ERROR, LOG_TRACE, return_if_error
 
-/* Deserialize according to the rules of parenttype and then filter against values
-   provided in the ... list. */
+/* Deserialize according to the rules of parenttype and then filter against
+   values provided in the ... list. */
 #define SUBTYPE_FILTER(type, parenttype, ...)                                                      \
     TSS2_RC r;                                                                                     \
     type    tab[] = { __VA_ARGS__ };                                                               \
@@ -277,12 +277,14 @@ ifapi_get_sub_object(json_object *jso, char *name, json_object **sub_jso) {
 
 /** Get number from a json object.
  *
- * A int64 number is retrieved from a json object which should represent a number.
+ * A int64 number is retrieved from a json object which should represent a
+ * number.
  *
  * param[in] jso the json object.
  * param[out] num the int64 number.
  * @retval TSS2_RC_SUCCESS if json object represents a number.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the json object does not represent a number.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object does not represent a
+ * number.
  */
 static TSS2_RC
 get_number_from_json(json_object *jso, int64_t *num) {
@@ -302,7 +304,8 @@ get_number_from_json(json_object *jso, int64_t *num) {
  * param[in] jso the json object.
  * param[out] value the boolean value.
  * @retval TSS2_RC_SUCCESS if json object represents a boolean.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the json object does not represent a boolean.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if the json object does not represent a
+ * boolean.
  */
 static TSS2_RC
 get_boolean_from_json(json_object *jso, TPMI_YES_NO *value) {
@@ -1561,7 +1564,8 @@ ifapi_json_TPMI_ALG_SIG_SCHEME_deserialize(json_object *jso, TPMI_ALG_SIG_SCHEME
 
 /** Deserialize a TPMU_HA json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  selector The type of the HA object.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -2313,7 +2317,8 @@ ifapi_json_TPMI_ST_ATTEST_deserialize(json_object *jso, TPMI_ST_ATTEST *out) {
 
 /** Deserialize a TPMU_ATTEST json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  selector The type the attest.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -2450,7 +2455,8 @@ ifapi_json_TPMI_SM4_KEY_BITS_deserialize(json_object *jso, TPMI_SM4_KEY_BITS *ou
 
 /** Deserialize a TPMU_SYM_KEY_BITS json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  selector The type the symmetric algorithm.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -2482,7 +2488,8 @@ ifapi_json_TPMU_SYM_KEY_BITS_deserialize(UINT32             selector,
 
 /** Deserialize a TPMU_SYM_MODE json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  selector The type the symmetric algorithm.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -2763,7 +2770,8 @@ ifapi_json_TPMS_SCHEME_XOR_deserialize(json_object *jso, TPMS_SCHEME_XOR *out) {
 
 /** Deserialize a TPMU_SCHEME_KEYEDHASH json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  selector The type the keyedhash scheme.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -2919,7 +2927,8 @@ ifapi_json_TPMS_SIG_SCHEME_ECDAA_deserialize(json_object *jso, TPMS_SIG_SCHEME_E
 
 /** Deserialize a TPMU_SIG_SCHEME json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  selector The type the signature scheme.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -3086,7 +3095,8 @@ ifapi_json_TPMS_SCHEME_KDF1_SP800_108_deserialize(json_object                *js
 
 /** Deserialize a TPMU_KDF_SCHEME json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  selector The type the KDF scheme.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -3154,7 +3164,8 @@ ifapi_json_TPMT_KDF_SCHEME_deserialize(json_object *jso, TPMT_KDF_SCHEME *out) {
 
 /** Deserialize a TPMU_ASYM_SCHEME json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  jso the json object to be deserialized.
  * @param[in]  selector The type the scheme.
  * @param[out] out the deserialzed binary object.
@@ -3622,7 +3633,8 @@ ifapi_json_TPMS_SIGNATURE_ECSCHNORR_deserialize(json_object *jso, TPMS_SIGNATURE
 
 /** Deserialize a TPMU_SIGNATURE json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  selector The type the signature.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -3736,7 +3748,8 @@ ifapi_json_TPMI_ALG_PUBLIC_deserialize(json_object *jso, TPMI_ALG_PUBLIC *out) {
 
 /** Deserialize a TPMU_PUBLIC_ID json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  selector The type the public ID.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.
@@ -3895,7 +3908,8 @@ ifapi_json_TPMS_ECC_PARMS_deserialize(json_object *jso, TPMS_ECC_PARMS *out) {
 
 /** Deserialize a TPMU_PUBLIC_PARMS json object.
  *
- * This functions expects the Bitfield to be encoded as unsigned int in host-endianess.
+ * This functions expects the Bitfield to be encoded as unsigned int in
+ * host-endianess.
  * @param[in]  selector The type the public params.
  * @param[in]  jso the json object to be deserialized.
  * @param[out] out the deserialzed binary object.

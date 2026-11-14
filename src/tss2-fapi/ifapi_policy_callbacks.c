@@ -13,18 +13,19 @@
 #include <stdlib.h>   // for size_t, NULL, calloc, malloc
 #include <string.h>   // for memset, memcmp, memcpy, strcmp
 
-#include "fapi_crypto.h"   // for ifapi_get_tpm2b_public_from_pem
-#include "fapi_types.h"    // for UINT8_ARY
 #include "fapi_util.h"     // for ifapi_get_object_path, ifapi_a...
 #include "ifapi_helpers.h" // for ifapi_TPMT_PUBLIC_cmp, ifapi_c...
 #include "ifapi_macros.h"  // for statecase, fallthrough, return...
 #include "ifapi_policy_callbacks.h"
-#include "ifapi_policy_execute.h"     // for IFAPI_POLICY_EXEC_CTX, POLICY_...
 #include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
 #include "ifapi_policyutil_execute.h" // for IFAPI_POLICYUTIL_STACK, ifapi_...
 #include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "tss2_crypto.h"              // for ifapi_get_tpm2b_public_from_pem
 #include "tss2_fapi.h"                // for FAPI_CONTEXT
+#include "tss2_helpers.h"             // for policy helpers
 #include "tss2_mu.h"                  // for Tss2_MU_TPMT_HA_Unmarshal
+#include "tss2_policy.h"              // for Tss2_PolicyCleanup
+#include "tss2_types.h"               // for UINT8_ARY
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, goto_if_error, retu...
@@ -179,7 +180,7 @@ ifapi_get_object_name(const char *path, TPM2B_NAME *name, void *ctx) {
             r = ifapi_get_name(&object.misc.ext_pub_key.public.publicArea, (TPM2B_NAME *)name);
             break;
         case IFAPI_NV_OBJ:
-            r = ifapi_nv_get_name(&object.misc.nv.public.nvPublic, name);
+            r = tss2_nv_get_name(&object.misc.nv.public.nvPublic, name);
             break;
         default:
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid object %s.", cleanup, path);
@@ -443,7 +444,7 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
                         void       *userdata) {
     TSS2_RC                   r;
     FAPI_CONTEXT             *fapi_ctx = userdata;
-    IFAPI_POLICY_EXEC_CTX    *current_policy;
+    IFAPI_POLICYUTIL_STACK   *current_policy;
     IFAPI_POLICY_EXEC_CB_CTX *cb_ctx;
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -452,12 +453,12 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
 
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
-        current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.util_current_policy;
     } else {
         /* Start with the bottom of the policy stack */
-        current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.policyutil_stack;
     }
-    cb_ctx = current_policy->app_data;
+    cb_ctx = &current_policy->cb_ctx;
 
     switch (cb_ctx->cb_state) {
     statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT);
@@ -533,10 +534,13 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
         cb_ctx->auth_object_ptr = &cb_ctx->load_ctx.auth_object;
         r = ifapi_load_key(fapi_ctx, ifapi_get_object_path(&cb_ctx->object),
                            &cb_ctx->auth_object_ptr);
-        if (r == TSS2_RC_SUCCESS && !cb_ctx->load_ctx.auth_object.misc.key.persistent_handle) {
-            current_policy->flush_handle = true;
-        }
         cb_ctx->load_ctx = fapi_ctx->loadKey;
+        /* ifapi_load_key returns an address in the borrowed global loadKey.
+           Rebase it before restoring that storage to the caller's object. */
+        cb_ctx->auth_object_ptr = &cb_ctx->load_ctx.auth_object;
+        if (r == TSS2_RC_SUCCESS && !cb_ctx->load_ctx.auth_object.misc.key.persistent_handle) {
+            cb_ctx->flush_handle = true;
+        }
         cb_ctx->create_primary_ctx = fapi_ctx->createPrimary;
         fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
         fapi_ctx->createPrimary = cb_ctx->create_primary_ctx_sav;
@@ -555,8 +559,9 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
         cb_ctx->object = *cb_ctx->auth_object_ptr;
         *auth_handle = cb_ctx->auth_object_ptr->public.handle;
         r = ifapi_authorize_object(fapi_ctx, &cb_ctx->load_ctx.auth_object, authSession);
+        cb_ctx->create_primary_ctx = fapi_ctx->createPrimary;
         fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
-        fapi_ctx->createPrimary = cb_ctx->create_primary_ctx;
+        fapi_ctx->createPrimary = cb_ctx->create_primary_ctx_sav;
         FAPI_SYNC(r, "Fapi authorize object.", cleanup);
         cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
         break;
@@ -570,13 +575,8 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
     else
         *auth_handle = cb_ctx->object.public.handle;
 
-    if (current_policy->policySessionSav != ESYS_TR_NONE)
-        fapi_ctx->policy.session = current_policy->policySessionSav;
-
 cleanup:
     ifapi_cleanup_ifapi_object(&cb_ctx->object);
-    if (current_policy->policySessionSav && current_policy->policySessionSav != ESYS_TR_NONE)
-        fapi_ctx->policy.session = current_policy->policySessionSav;
     return r;
 }
 
@@ -616,7 +616,7 @@ TSS2_RC
 ifapi_policyeval_cbload_key(TPM2B_NAME *name, ESYS_TR *object_handle, void *userdata) {
     TSS2_RC                   r;
     FAPI_CONTEXT             *fapi_ctx = userdata;
-    IFAPI_POLICY_EXEC_CTX    *current_policy;
+    IFAPI_POLICYUTIL_STACK   *current_policy;
     IFAPI_POLICY_EXEC_CB_CTX *cb_ctx;
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
@@ -625,12 +625,12 @@ ifapi_policyeval_cbload_key(TPM2B_NAME *name, ESYS_TR *object_handle, void *user
 
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
-        current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.util_current_policy;
     } else {
         /* Start with the bottom of the policy stack */
-        current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.policyutil_stack;
     }
-    cb_ctx = current_policy->app_data;
+    cb_ctx = &current_policy->cb_ctx;
 
     switch (cb_ctx->cb_state) {
     statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT);
@@ -679,10 +679,13 @@ ifapi_policyeval_cbload_key(TPM2B_NAME *name, ESYS_TR *object_handle, void *user
         cb_ctx->auth_object_ptr = &cb_ctx->load_ctx.auth_object;
         r = ifapi_load_key(fapi_ctx, ifapi_get_object_path(&cb_ctx->object),
                            &cb_ctx->auth_object_ptr);
-        if (r == TSS2_RC_SUCCESS && !cb_ctx->load_ctx.auth_object.misc.key.persistent_handle) {
-            current_policy->flush_handle = true;
-        }
         cb_ctx->load_ctx = fapi_ctx->loadKey;
+        /* ifapi_load_key returns an address in the borrowed global loadKey.
+           Rebase it before restoring that storage to the caller's object. */
+        cb_ctx->auth_object_ptr = &cb_ctx->load_ctx.auth_object;
+        if (r == TSS2_RC_SUCCESS && !cb_ctx->load_ctx.auth_object.misc.key.persistent_handle) {
+            cb_ctx->flush_handle = true;
+        }
         cb_ctx->create_primary_ctx = fapi_ctx->createPrimary;
         fapi_ctx->loadKey = cb_ctx->load_ctx_sav;
         fapi_ctx->createPrimary = cb_ctx->create_primary_ctx_sav;
@@ -699,19 +702,32 @@ ifapi_policyeval_cbload_key(TPM2B_NAME *name, ESYS_TR *object_handle, void *user
     statecasedefault(cb_ctx->cb_state);
     }
 
-    if (current_policy->policySessionSav != ESYS_TR_NONE)
-        fapi_ctx->policy.session = current_policy->policySessionSav;
-
 cleanup:
     ifapi_cleanup_ifapi_object(&cb_ctx->object);
-    if (current_policy->policySessionSav && current_policy->policySessionSav != ESYS_TR_NONE)
-        fapi_ctx->policy.session = current_policy->policySessionSav;
     return r;
+}
+
+/* These hooks keep application-owned state outside the Policy context. */
+bool
+ifapi_policy_flush_auth(ESYS_TR auth_handle, void *userdata) {
+    FAPI_CONTEXT           *context = userdata;
+    IFAPI_POLICYUTIL_STACK *frame = context->policy.util_current_policy
+                                        ? context->policy.util_current_policy
+                                        : context->policy.policyutil_stack;
+    return frame && frame->cb_ctx.flush_handle && auth_handle != ESYS_TR_NONE;
+}
+
+void
+ifapi_policy_cp_hash(void *userdata) {
+    FAPI_CONTEXT *context = userdata;
+    context->session2 = ESYS_TR_NONE;
 }
 
 /** Callback for branch selection of policy or.
  *
- * @param[in]  branches The list of policy branches.
+ * @param[in]  description The policy description (unused by the FAPI adapter).
+ * @param[in]  branch_names The names of the policy branches.
+ * @param[in]  branch_count The number of policy branches.
  * @param[out] branch_idx The index of the selcted branch.
  * @param[in,out] userdata The Fapi context which will be used for keystore
  *                access, and storing the policy execution state.
@@ -725,24 +741,28 @@ cleanup:
  *         delivered by the callback does not identify a branch.
  */
 TSS2_RC
-ifapi_branch_selection(TSS2_OBJECT *auth_object,
-                       const char  *branch_names[8],
-                       size_t       branch_count,
-                       size_t      *branch_idx,
-                       void        *userdata) {
+ifapi_branch_selection(char       *description,
+                       const char *branch_names[8],
+                       size_t      branch_count,
+                       size_t     *branch_idx,
+                       void       *userdata) {
     TSS2_RC       r;
     FAPI_CONTEXT *fapi_ctx = userdata;
     const char   *object_path;
 
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    /* Determine path of object to be authenticated. */
-    return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
+    IFAPI_POLICYUTIL_STACK *frame = fapi_ctx->policy.util_current_policy
+                                        ? fapi_ctx->policy.util_current_policy
+                                        : fapi_ctx->policy.policyutil_stack;
+    return_if_null(frame, "Policy not initialized.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(frame->auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
+    (void)description;
 
     return_if_null(fapi_ctx->callbacks.branch, "No branch selection callback",
                    TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN);
 
-    object_path = ifapi_get_object_path(TSS2_OBJECT_TO_IFAPI_OBJECT(auth_object));
+    object_path = ifapi_get_object_path(frame->auth_object);
 
     r = fapi_ctx->callbacks.branch(object_path, "PolicyOR", &branch_names[0], branch_count,
                                    branch_idx, fapi_ctx->callbacks.branchData);
@@ -777,7 +797,7 @@ ifapi_policy_action(const char *action, void *userdata) {
     }
 
     /* Determine path of object to be authenticated. */
-    auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+    auth_object = fapi_ctx->policy.util_current_policy->auth_object;
     return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     object_path = ifapi_get_object_path(auth_object);
@@ -822,7 +842,7 @@ ifapi_sign_buffer(char           *key_pem,
     return_if_null(fapi_ctx, "Bad user data.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     /* Determine path of object to be authenticated. */
-    auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+    auth_object = fapi_ctx->policy.util_current_policy->auth_object;
     return_if_null(auth_object, "No object passed.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     object_path = ifapi_get_object_path(auth_object);
@@ -837,26 +857,6 @@ ifapi_sign_buffer(char           *key_pem,
     try_again_or_error(r, "Execute policy signature callback.");
 
     return TSS2_RC_SUCCESS;
-}
-
-static bool
-cmp_policy_ref(TPM2B_NONCE *ref1, TPM2B_NONCE *ref2) {
-    if ((!ref1 || !ref1->size) && (!ref2 || !ref2->size)) {
-        return true;
-    }
-    if (!ref1 || !ref1->size || !ref2 || !ref2->size) {
-        return false;
-    }
-
-    if (ref1->size != ref2->size) {
-        return false;
-    }
-
-    if (memcmp(&ref1->buffer[0], &ref2->buffer[0], ref1->size) != 0) {
-        return false;
-    }
-
-    return true;
 }
 
 /**  Check whether public data of key is assigned to policy.
@@ -874,44 +874,28 @@ equal_policy_authorization(TPMS_POLICY *policy,
                            void        *publicVoid,
                            void        *policyRefVoid,
                            bool        *equal) {
-    TPMT_PUBLIC *public = publicVoid;
-    TPM2B_NONCE               *policyRef = policyRefVoid;
-    size_t                     i;
-    TPML_POLICYAUTHORIZATIONS *authorizations = policy->policyAuthorizations;
-    TSS2_RC                    r;
-    TPM2B_PUBLIC               pem_public;
+    TSS2_RC r = Tss2_PolicyGetAuthorization(policy, publicVoid, policyRefVoid, equal, NULL);
+    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
+}
 
-    *equal = false;
-    if (authorizations) {
-        for (i = 0; i < authorizations->count; i++) {
-            if (strcmp(authorizations->authorizations[i].type, "pem") == 0) {
-                /* The public info has to be computed from the PEM key */
-                r = ifapi_get_tpm2b_public_from_pem(authorizations->authorizations[i].keyPEM,
-                                                    &pem_public);
-                return_if_error(r, "Invalid PEM key.");
-
-                if (pem_public.publicArea.type == TPM2_ALG_RSA) {
-                    pem_public.publicArea.parameters.rsaDetail.scheme
-                        = authorizations->authorizations[i].rsaScheme;
-                }
-                pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
-
-                /* Check public information if key and policyRef */
-                if (ifapi_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)
-                    && cmp_policy_ref(policyRef, &authorizations->authorizations[i].policyRef)) {
-                    *equal = true;
-                    return TSS2_RC_SUCCESS;
-                }
-            } else
-                /* Check public information if key and policyRef */
-                if (ifapi_TPMT_PUBLIC_cmp(public, &authorizations->authorizations[i].key)
-                    && cmp_policy_ref(policyRef, &authorizations->authorizations[i].policyRef)) {
-                    *equal = true;
-                    return TSS2_RC_SUCCESS;
-                }
-        }
-    }
-    return TSS2_RC_SUCCESS;
+/** Get policy digest for a certain hash alg.
+ *
+ * @param[in]  policy The policy with the digest list.
+ * @param[in]  hashAlg The hash algorithm used for the digest computation.
+ * @param[out] digest The digest matching hashAlg.
+ * @retval TSS2_RC_SUCCESS on success.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ */
+static TSS2_RC
+get_policy_digest(TPMS_POLICY *policy, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST *digest) {
+    TSS2_POLICY_CTX *ctx = NULL;
+    TSS2_RC          r = Tss2_PolicySetPolicy(policy, hashAlg, &ctx);
+    if (r == TSS2_RC_SUCCESS)
+        r = Tss2_PolicyGetCalculatedDigest(ctx, digest);
+    Tss2_PolicyFinalize(&ctx);
+    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
 }
 
 /** Check whether policy digest can be found in policy.
@@ -926,28 +910,19 @@ equal_policy_authorization(TPMS_POLICY *policy,
  */
 static TSS2_RC
 compare_policy_digest(TPMS_POLICY *policy, void *authPolicyVoid, void *nameAlgVoid, bool *equal) {
-    TPM2B_DIGEST       *authPolicy = authPolicyVoid;
-    TPMI_ALG_HASH      *hash_alg_ptr = nameAlgVoid;
-    TPMI_ALG_HASH       hash_alg = *hash_alg_ptr;
-    size_t              i;
-    TPML_DIGEST_VALUES *digest_values;
+    const TPM2B_DIGEST  *auth_policy = authPolicyVoid;
+    const TPMI_ALG_HASH *hash_alg = nameAlgVoid;
+    TPM2B_DIGEST         digest;
+    TSS2_RC              r;
 
     *equal = false;
+    r = get_policy_digest(policy, *hash_alg, &digest);
+    if (r == (TSS2_FEATURE_RC_LAYER | base_rc(TSS2_POLICY_RC_POLICY_NOT_CALCULATED)))
+        return TSS2_RC_SUCCESS;
+    return_if_error(r, "Get policy digest.");
 
-    digest_values = &policy->policyDigests;
-
-    if (digest_values) {
-        for (i = 0; i < digest_values->count; i++) {
-            if (digest_values->digests[i].hashAlg == hash_alg) {
-                if (memcmp(&digest_values->digests[i].digest, &authPolicy->buffer[0],
-                           authPolicy->size)
-                    != 0)
-                    continue;
-                *equal = true;
-                return TSS2_RC_SUCCESS;
-            }
-        }
-    }
+    *equal = digest.size == auth_policy->size
+             && memcmp(digest.buffer, auth_policy->buffer, digest.size) == 0;
     return TSS2_RC_SUCCESS;
 }
 
@@ -988,7 +963,7 @@ search_policy(FAPI_CONTEXT         *context,
               struct POLICY_LIST  **policy_found) {
     TSS2_RC             r = TSS2_RC_SUCCESS;
     char               *path;
-    TPMS_POLICY         policy = { 0 };
+    TPMS_POLICY        *policy = NULL;
     bool                found;
     struct POLICY_LIST *policy_object = NULL;
     struct POLICY_LIST *second;
@@ -1041,7 +1016,7 @@ search_policy(FAPI_CONTEXT         *context,
         goto_if_error(r, "read_finish failed", cleanup);
 
         /* Call the passed compare function. */
-        r = compare(&policy, object1, object2, &found);
+        r = compare(policy, object1, object2, &found);
         if (found) {
             LOG_DEBUG("compare true  %s", context->fsearch.pathlist[context->fsearch.path_idx]);
         } else {
@@ -1053,21 +1028,22 @@ search_policy(FAPI_CONTEXT         *context,
             if (!all_objects && context->fsearch.path_idx == 0) {
                 /* All files checked, but no policy found. */
                 context->fsearch.state = FSEARCH_INIT;
-                ifapi_cleanup_policy(&policy);
+                Tss2_PolicyCleanup(&policy);
                 return TSS2_BASE_RC_POLICY_UNKNOWN;
             } else {
                 /* Continue search. */
                 context->fsearch.state = FSEARCH_OBJECT;
-                ifapi_cleanup_policy(&policy);
+                Tss2_PolicyCleanup(&policy);
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
         }
         /* Extend linked list.*/
         policy_object = calloc(1, sizeof(struct POLICY_LIST));
-        return_if_null(policy_object, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        goto_if_null2(policy_object, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
         strdup_check(policy_object->path, context->fsearch.current_path, r, cleanup);
         policy_object->policy = policy;
+        policy = NULL;
         if (*policy_found != NULL) {
             second = *policy_found;
             policy_object->next = second;
@@ -1103,89 +1079,13 @@ search_policy(FAPI_CONTEXT         *context,
     return TSS2_RC_SUCCESS;
 cleanup:
     SAFE_FREE(policy_object);
-    ifapi_cleanup_policy(&policy);
+    Tss2_PolicyCleanup(&policy);
     for (size_t i = 0; i < context->fsearch.numPaths; i++) {
         SAFE_FREE(context->fsearch.pathlist[i]);
     }
     SAFE_FREE(context->fsearch.pathlist);
     context->fsearch.state = FSEARCH_INIT;
     return r;
-}
-
-/** Get policy digest for a certain hash alg.
- *
- * @param[in]  policy The policy with the digest list.
- * @param[in]  hashAlg The hash algorithm used for the digest computation.
- * @param[out] digest The digest matching hashAlg.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
- *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- */
-static TSS2_RC
-get_policy_digest(TPMS_POLICY *policy, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST *digest) {
-    size_t i;
-
-    if (!(digest->size = ifapi_hash_get_digest_size(hashAlg))) {
-        return_error2(TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", hashAlg);
-    }
-
-    for (i = 0; i < policy->policyDigests.count; i++) {
-        if (policy->policyDigests.digests[i].hashAlg == hashAlg) {
-            memcpy(&digest->buffer[0], &policy->policyDigests.digests[i].digest, digest->size);
-            return TSS2_RC_SUCCESS;
-        }
-    }
-    return TSS2_FAPI_RC_GENERAL_FAILURE;
-}
-
-/** Get policy authorization for a certain public key
- *
- * @param[in]  policy The policy with the authorization.
- * @param[in]  public The public data of the key.
- * @param[out] signature The signature found in the authorization list.
- * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- */
-static TSS2_RC
-get_policy_signature(TPMS_POLICY *policy, TPMT_PUBLIC *public, TPMT_SIGNATURE *signature) {
-    TSS2_RC                    r;
-    size_t                     i;
-    TPM2B_PUBLIC               pem_public;
-    TPML_POLICYAUTHORIZATIONS *authorizations = policy->policyAuthorizations;
-
-    for (i = 0; i < policy->policyAuthorizations->count; i++) {
-        if (strcmp(authorizations->authorizations[i].type, "pem") == 0) {
-            /* The public info has to be computed from the PEM key */
-            r = ifapi_get_tpm2b_public_from_pem(authorizations->authorizations[i].keyPEM,
-                                                &pem_public);
-            return_if_error(r, "Invalid PEM key.");
-
-            if (pem_public.publicArea.type == TPM2_ALG_RSA) {
-                pem_public.publicArea.parameters.rsaDetail.scheme
-                    = authorizations->authorizations[i].rsaScheme;
-            }
-            pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
-
-            if (ifapi_TPMT_PUBLIC_cmp(public, &pem_public.publicArea)) {
-                r = ifapi_der_sig_to_tpm(&pem_public.publicArea,
-                                         authorizations->authorizations[i].pemSignature.buffer,
-                                         authorizations->authorizations[i].pemSignature.size,
-                                         authorizations->authorizations[i].hashAlg, signature);
-
-                return_if_error(r, "Invalid signature.");
-
-                return TSS2_RC_SUCCESS;
-            }
-        } else if (ifapi_TPMT_PUBLIC_cmp(public,
-                                         &policy->policyAuthorizations->authorizations[i].key)) {
-            /* The public info was already stored in the policy. */
-            *signature = policy->policyAuthorizations->authorizations[i].signature;
-            return TSS2_RC_SUCCESS;
-        }
-    }
-    /* Appropriate authorization should always exist */
-    return TSS2_FAPI_RC_GENERAL_FAILURE;
 }
 
 /** Cleanup a linked list of policies.
@@ -1199,7 +1099,7 @@ cleanup_policy_list(struct POLICY_LIST *list) {
         while (branch) {
             struct POLICY_LIST *next = branch->next;
             /* Cleanup the policy stored in the list. */
-            ifapi_cleanup_policy(&branch->policy);
+            Tss2_PolicyCleanup(&branch->policy);
             SAFE_FREE(branch->path);
             SAFE_FREE(branch);
             branch = next;
@@ -1254,7 +1154,7 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
                        void           *userdata) {
     TSS2_RC                   r;
     FAPI_CONTEXT             *fapi_ctx = userdata;
-    IFAPI_POLICY_EXEC_CTX    *current_policy;
+    IFAPI_POLICYUTIL_STACK   *current_policy;
     IFAPI_POLICY_EXEC_CB_CTX *cb_ctx;
     size_t                    n, i;
     struct POLICY_LIST       *branch;
@@ -1270,16 +1170,15 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
 
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
-        current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.util_current_policy;
     } else {
         /* Start with the bottom of the policy stack */
-        current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
+        current_policy = fapi_ctx->policy.policyutil_stack;
     }
-    cb_ctx = current_policy->app_data;
+    cb_ctx = &current_policy->cb_ctx;
 
     switch (cb_ctx->cb_state) {
     statecase(cb_ctx->cb_state, POL_CB_EXECUTE_INIT)
-        current_policy->object_handle = ESYS_TR_NONE;
         current_policy->policy_list = NULL;
         fallthrough;
 
@@ -1311,7 +1210,7 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
             } while (branch);
 
             /* Determine path of object to be authenticated. */
-            auth_object = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+            auth_object = fapi_ctx->policy.util_current_policy->auth_object;
             goto_if_null2(auth_object, "No object passed.", r, TSS2_FAPI_RC_BAD_REFERENCE, cleanup);
 
             object_path = ifapi_get_object_path(auth_object);
@@ -1329,7 +1228,7 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
             branch = current_policy->policy_list;
             do {
                 if (n == branch_idx) {
-                    cb_ctx->policy = &branch->policy;
+                    cb_ctx->policy = branch->policy;
                     policy_set = true;
                     break;
                 }
@@ -1339,7 +1238,7 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
 
         } else {
             /* Only one policy found. */
-            cb_ctx->policy = &current_policy->policy_list->policy;
+            cb_ctx->policy = current_policy->policy_list->policy;
             policy_set = true;
         }
         if (!policy_set) {
@@ -1347,9 +1246,9 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
         }
         /* Prepare policy execution */
         r = ifapi_policyutil_execute_prepare(fapi_ctx, current_policy->hash_alg, cb_ctx->policy);
+        goto_if_error(r, "Prepare policy execution.", cleanup);
         /* Next state will switch from prev context to next context. */
         fapi_ctx->policy.util_current_policy = fapi_ctx->policy.util_current_policy->prev;
-        goto_if_error(r, "Prepare policy execution.", cleanup);
         fallthrough;
 
     statecase(cb_ctx->cb_state, POL_CB_EXECUTE_SUB_POLICY)
@@ -1362,8 +1261,14 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
 
         goto_if_error(r, "Execute policy.", cleanup);
 
-        r = get_policy_signature(cb_ctx->policy, key_public, signature);
+        bool found;
+        r = Tss2_PolicyGetAuthorization(cb_ctx->policy, key_public, policyRef, &found, signature);
+        if (rc_layer(r) == TSS2_POLICY_RC_LAYER)
+            r = TSS2_FEATURE_RC_LAYER | base_rc(r);
         goto_if_error(r, "Get authorization", cleanup);
+        if (!found) {
+            goto_error(r, TSS2_FAPI_RC_POLICY_UNKNOWN, "Authorization not found.", cleanup);
+        }
 
         r = get_policy_digest(cb_ctx->policy, hash_alg, digest);
         goto_if_error(r, "Get authorization", cleanup);
@@ -1420,7 +1325,7 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     TSS2_RC                   r;
     TPM2B_MAX_NV_BUFFER      *aux_data;
     FAPI_CONTEXT             *fapi_ctx = userdata;
-    IFAPI_POLICY_EXEC_CTX    *current_policy;
+    IFAPI_POLICYUTIL_STACK   *current_policy;
     IFAPI_POLICY_EXEC_CB_CTX *cb_ctx;
     char                     *nv_path = NULL;
     ESYS_CONTEXT             *esys_ctx;
@@ -1433,19 +1338,17 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
 
     if (fapi_ctx->policy.util_current_policy) {
         /* Use the current policy in the policy stack. */
-        current_policy = fapi_ctx->policy.util_current_policy->pol_exec_ctx;
-        fapi_ctx->current_auth_object
-            = fapi_ctx->policy.util_current_policy->pol_exec_ctx->auth_object;
+        current_policy = fapi_ctx->policy.util_current_policy;
+        fapi_ctx->current_auth_object = fapi_ctx->policy.util_current_policy->auth_object;
     } else {
         /* Start with the bottom of the policy stack */
-        current_policy = fapi_ctx->policy.policyutil_stack->pol_exec_ctx;
-        fapi_ctx->current_auth_object
-            = fapi_ctx->policy.policyutil_stack->pol_exec_ctx->auth_object;
+        current_policy = fapi_ctx->policy.policyutil_stack;
+        fapi_ctx->current_auth_object = fapi_ctx->policy.policyutil_stack->auth_object;
     }
-    cb_ctx = current_policy->app_data;
+    cb_ctx = &current_policy->cb_ctx;
     esys_ctx = fapi_ctx->esys;
 
-    if (!(digest_size = ifapi_hash_get_digest_size(hash_alg))) {
+    if (!(digest_size = tss2_hash_get_digest_size(hash_alg))) {
         return_error2(TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", hash_alg);
     }
 
@@ -1476,23 +1379,22 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
         r = ifapi_initialize_object(esys_ctx, &cb_ctx->object);
         goto_if_error(r, "Initialize NV object", cleanup);
 
-        current_policy->nv_index = cb_ctx->object.public.handle;
-        get_nv_auth_object(&cb_ctx->object, current_policy->nv_index,
-                           &current_policy->auth_objectNV, &current_policy->auth_handle);
+        cb_ctx->nv_index = cb_ctx->object.public.handle;
+        get_nv_auth_object(&cb_ctx->object, cb_ctx->nv_index, &cb_ctx->auth_object,
+                           &cb_ctx->auth_index);
         fallthrough;
 
     statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_OBJECT)
     /* Authorize the NV object with the corresponding auth object. */
-        r = ifapi_authorize_object(fapi_ctx, &current_policy->auth_objectNV, &cb_ctx->session);
+        r = ifapi_authorize_object(fapi_ctx, &cb_ctx->auth_object, &cb_ctx->session);
         return_try_again(r);
 
         ifapi_cleanup_ifapi_object(&cb_ctx->object);
         goto_if_error(r, "Authorize  object.", cleanup);
 
         /* Prepare the reading of the NV index from TPM. */
-        r = Esys_NV_Read_Async(esys_ctx, current_policy->auth_handle, current_policy->nv_index,
-                               cb_ctx->session, ESYS_TR_NONE, ESYS_TR_NONE,
-                               sizeof(TPMI_ALG_HASH) + digest_size, 0);
+        r = Esys_NV_Read_Async(esys_ctx, cb_ctx->auth_index, cb_ctx->nv_index, cb_ctx->session,
+                               ESYS_TR_NONE, ESYS_TR_NONE, sizeof(TPMI_ALG_HASH) + digest_size, 0);
         goto_if_error(r, "Unmarshal policy", cleanup);
         fallthrough;
 
@@ -1521,7 +1423,7 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
         }
         /* Prepare policy execution */
         r = ifapi_policyutil_execute_prepare(fapi_ctx, current_policy->hash_alg,
-                                             &current_policy->policy_list->policy);
+                                             current_policy->policy_list->policy);
         return_if_error(r, "Prepare policy execution.");
 
         /* Next state will switch from prev context to next context. */
@@ -1542,6 +1444,7 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     }
 cleanup:
     cleanup_policy_list(current_policy->policy_list);
+    current_policy->policy_list = NULL;
     SAFE_FREE(nv_path);
     return r;
 }

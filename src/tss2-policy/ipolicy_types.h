@@ -3,14 +3,19 @@
  * Copyright 2018-2019, Fraunhofer SIT sponsored by Infineon Technologies AG
  * All rights reserved.
  ******************************************************************************/
-#ifndef IFAPI_POLICY_TYPES_H
-#define IFAPI_POLICY_TYPES_H
+#ifndef IPOLICY_TYPES_H
+#define IPOLICY_TYPES_H
 
+#include <stddef.h> // for size_t
 #include <stdint.h> // for uint8_t
 
-#include "fapi_types.h"      // for UINT8_ARY
 #include "tss2_common.h"     // for UINT32, INT32, UINT16
 #include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPM2B_NAME, TPM2B_NONCE
+
+/* Internal Policy data model. FAPI migration code still includes this header
+ * until its direct field access and serialization use the public Policy API.
+ */
+#include "tss2_policy.h"
 
 struct TPML_POLICYELEMENTS;
 
@@ -131,17 +136,15 @@ typedef struct {
 /** Policy type TPMS_POLICYAUTHORIZATION
  */
 typedef struct {
-    char           *type;      /**< tpm */
-    TPMT_PUBLIC     key;       /**< Selector of the algorithm used for the signature and the pub */
-    TPM2B_NONCE     policyRef; /**< None */
-    TPMT_SIGNATURE  signature; /**< None */
-    TPMI_ALG_HASH   hashAlg;
-    UINT8_ARY       pemSignature;
-    char           *keyPEM;
-    TPMT_RSA_SCHEME rsaScheme;
+    char              *type; /**< tpm */
+    TPMT_PUBLIC        key;  /**< Selector of the algorithm used for the signature and the pub */
+    TPM2B_NONCE        policyRef; /**< None */
+    TPMT_SIGNATURE     signature; /**< None */
+    TPMI_ALG_HASH      hashAlg;
+    TSS2_POLICY_BUFFER pemSignature;
+    char              *keyPEM;
+    TPMT_RSA_SCHEME    rsaScheme;
 } TPMS_POLICYAUTHORIZATION;
-
-typedef struct policy_object_node POLICY_OBJECT;
 
 /** Policy type TPMS_POLICYAUTHORIZE
  */
@@ -276,13 +279,13 @@ struct TPML_POLICYELEMENTS {
     TPMT_POLICYELEMENT elements[]; /**< Array of policy elements */
 };
 
-/** Policy type TPMS_POLICY
+/** Policy type struct TPMS_POLICY
  */
-typedef struct TPMS_POLICY {
+struct TPMS_POLICY {
     char                             *description;          /**< O */
     TPML_DIGEST_VALUES                policyDigests;        /**< O */
     struct TPML_POLICYAUTHORIZATIONS *policyAuthorizations; /**< O */
     struct TPML_POLICYELEMENTS       *policy;               /**< X */
-} TPMS_POLICY;
+};
 
-#endif /* IFAPI_POLICY_TYPES_H */
+#endif /* IPOLICY_TYPES_H */

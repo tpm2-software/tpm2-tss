@@ -12,7 +12,6 @@
 #include <string.h> // for strlen, memcpy, memset, strcmp
 
 #include "fapi_int.h"        // for IFAPI_Entity_ChangeAuth, FAPI_CONTEXT
-#include "fapi_types.h"      // for UINT8_ARY
 #include "fapi_util.h"       // for ifapi_authorize_object, ifapi_initializ...
 #include "ifapi_helpers.h"   // for ifapi_get_hierary_handle, ifapi_path_ty...
 #include "ifapi_io.h"        // for ifapi_io_poll
@@ -25,6 +24,7 @@
 #include "tss2_policy.h"     // for TSS2_OBJECT
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h" // for TPM2B_AUTH, TPM2B_PRIVATE, TPM2_NO, TPM...
+#include "tss2_types.h"      // for UINT8_ARY
 
 #define LOGMODULE fapi
 #include "util/log.h" // for goto_if_error, LOG_TRACE, SAFE_FREE

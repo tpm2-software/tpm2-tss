@@ -16,7 +16,6 @@
 #include "ifapi_io.h"             // for ifapi_io_poll
 #include "ifapi_json_serialize.h" // for ifapi_json_IFAPI_INFO_serialize
 #include "ifapi_macros.h"         // for check_not_null, return_if_error_re...
-#include "ifapi_policy_types.h"   // for TPMI_POLICYTYPE
 #include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, UINT32
 #include "tss2_esys.h"            // for Esys_SetTimeout
 #include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_GetInfo, Fapi_G...
@@ -27,10 +26,10 @@
 #include "util/log.h" // for LOG_TRACE, return_if_error, goto_i...
 
 typedef struct {
-    char           *description;
-    TPMI_POLICYTYPE capability;
-    UINT32          property;
-    UINT32          max;
+    char    *description;
+    TPM2_CAP capability;
+    UINT32   property;
+    UINT32   max;
 } IFAPI_INFO_CAP;
 
 #define CAP_IDX_PT_FIXED 9

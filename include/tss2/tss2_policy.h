@@ -4,9 +4,11 @@
 #ifndef INCLUDE_TSS2_TSS2_POLICY_H_
 #define INCLUDE_TSS2_TSS2_POLICY_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "tss2_esys.h"
+
 #include "tss2_tpm2_types.h"
 
 #define TSS2_POLICY_RC_LAYER TSS2_RC_LAYER(13)
@@ -23,14 +25,15 @@
 #define TSS2_POLICY_RC_POLICY_NOT_CALCULATED                                                       \
     ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_NOT_PROVISIONED))
 #define TSS2_POLICY_RC_BUFFER_TOO_SMALL ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_BAD_SIZE))
+#define TSS2_POLICY_RC_BAD_SEQUENCE     ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_BAD_SEQUENCE))
+#define TSS2_POLICY_RC_TRY_AGAIN        ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_TRY_AGAIN))
 #define TSS2_POLICY_RC_NULL_CALLBACK    ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_CALLBACK_NULL))
 
-typedef struct TSS2_POLICY_CTX TSS2_POLICY_CTX;
-
-typedef struct TSS2_OBJECT TSS2_OBJECT;
-struct TSS2_OBJECT {
-    ESYS_TR handle; /**< Handle used by ESAPI */
-};
+/** Variable-length byte buffer used by policy authorizations. */
+typedef struct {
+    size_t   size;
+    uint8_t *buffer;
+} TSS2_POLICY_BUFFER;
 
 /** Policy type TPMS_PCRVALUE
  */
@@ -47,6 +50,15 @@ typedef struct TPML_PCRVALUES TPML_PCRVALUES;
 struct TPML_PCRVALUES {
     UINT32        count;  /**< None */
     TPMS_PCRVALUE pcrs[]; /**< Array of pcr values */
+};
+
+typedef struct TPMS_POLICY TPMS_POLICY;
+
+typedef struct TSS2_POLICY_CTX TSS2_POLICY_CTX;
+
+typedef struct TSS2_OBJECT TSS2_OBJECT;
+struct TSS2_OBJECT {
+    ESYS_TR handle; /**< Handle used by ESAPI */
 };
 
 typedef TSS2_RC (*TSS2_POLICY_CB_PUBLIC)(const char *path,
@@ -107,7 +119,8 @@ typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_LOAD)(TPM2B_NAME *name,
                                             ESYS_TR    *object_handle,
                                             void       *userdata);
 
-typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLSEL)(TSS2_OBJECT *auth_object,
+/* description is borrowed policy text; the callback must not modify or free it. */
+typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLSEL)(char        *description,
                                               const char **branch_names,
                                               size_t       branch_count,
                                               size_t      *branch_idx,
@@ -137,6 +150,11 @@ typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLDUP)(TPM2B_NAME *name, void *userdata);
 
 typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLACTION)(const char *action, void *userdata);
 
+/* Return true when the engine should flush the transient authorization handle. */
+typedef bool (*TSS2_POLICY_CB_EXEC_FLUSHAUTH)(ESYS_TR auth_handle, void *userdata);
+/* Called after successful PolicyCpHash execution. */
+typedef void (*TSS2_POLICY_CB_EXEC_CPHASH)(void *userdata);
+
 typedef struct TSS2_POLICY_EXEC_CALLBACKS TSS2_POLICY_EXEC_CALLBACKS;
 
 struct TSS2_POLICY_EXEC_CALLBACKS {
@@ -160,6 +178,11 @@ struct TSS2_POLICY_EXEC_CALLBACKS {
     void                         *cbdup_userdata;
     TSS2_POLICY_CB_EXEC_POLACTION cbaction; /**< Callback for policy action */
     void                         *cbaction_userdata;
+    /* Optional application hooks for authorization-handle ownership and CpHash. */
+    TSS2_POLICY_CB_EXEC_FLUSHAUTH cbflushauth;
+    void                         *cbflushauth_userdata;
+    TSS2_POLICY_CB_EXEC_CPHASH    cbcphash;
+    void                         *cbcphash_userdata;
 };
 
 TSS2_RC
@@ -178,8 +201,22 @@ Tss2_PolicySetExecCallbacks(TSS2_POLICY_CTX            *policy_ctx,
 TSS2_RC
 Tss2_PolicyExecute(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, ESYS_TR session);
 
+/* Prepare a calculated policy; does not require a session or issue TPM commands. */
+TSS2_RC
+Tss2_PolicyExecute_Async(TSS2_POLICY_CTX *policy_ctx);
+
+/* Returns TRY_AGAIN while execution or an application callback is pending. */
+TSS2_RC
+Tss2_PolicyExecute_Finish(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, ESYS_TR session);
+
 TSS2_RC
 Tss2_PolicyCalculate(TSS2_POLICY_CTX *policy_ctx);
+
+TSS2_RC
+Tss2_PolicyCalculate_Async(TSS2_POLICY_CTX *policy_ctx);
+
+TSS2_RC
+Tss2_PolicyCalculate_Finish(TSS2_POLICY_CTX *policy_ctx);
 
 TSS2_RC
 Tss2_PolicyGetCalculatedJSON(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *size);
@@ -189,5 +226,59 @@ Tss2_PolicyGetDescription(TSS2_POLICY_CTX *policy_ctx, char *description, size_t
 
 TSS2_RC
 Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest);
+
+/* Free an owned policy and all nested allocations, then set *policy to NULL.
+ * NULL and a pointer to NULL are accepted. Borrowed policies must outlive
+ * their policy contexts; finalize those contexts before freeing the policy.
+ */
+void Tss2_PolicyCleanup(TPMS_POLICY **policy);
+
+/* Parse a policy document. The caller owns *policy and releases it with
+ * Tss2_PolicyCleanup. On failure, *policy is NULL; the output slot must not
+ * own an existing policy. No TPM or Policy context is required.
+ */
+TSS2_RC Tss2_PolicyJsonDeserialize(const char *json, TPMS_POLICY **policy);
+
+/* Serialize the current policy, including any digests and authorizations.
+ * The caller releases *json with free(). On failure, *json is NULL.
+ * The output slot must not own an existing string.
+ */
+TSS2_RC Tss2_PolicyJsonSerialize(const TPMS_POLICY *policy, char **json);
+
+/* Deep-copy an owned policy, including authorizations and calculated digests.
+ * On failure, *destination is NULL. Source and copy can be freed independently.
+ * Any previous value in *destination is overwritten without being freed.
+ * A PolicyAuthorizeNV runtime policy_buffer without length cannot be copied
+ * and returns TSS2_POLICY_RC_BAD_VALUE.
+ */
+TSS2_RC Tss2_PolicyCopy(const TPMS_POLICY *source, TPMS_POLICY **destination);
+
+TSS2_RC
+Tss2_PolicySetPolicy(TPMS_POLICY *policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX **policy_ctx);
+
+TSS2_RC
+Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg);
+
+/* Append a copied TPM authorization; signature verification is the caller's responsibility.
+ * All input pointers must be non-NULL; an empty policyRef has size zero.
+ * On failure, the policy remains unchanged. All input objects remain caller-owned.
+ */
+TSS2_RC
+Tss2_PolicyAddAuthorization(TPMS_POLICY          *policy,
+                            const TPMT_SIGNATURE *signature,
+                            const TPM2B_DIGEST   *policyRef,
+                            const TPMT_PUBLIC    *key);
+
+/* Find an authorization by key type/unique ID and policy reference.
+ * NULL policy_ref means an empty reference; NULL signature requests a match only.
+ * No match returns SUCCESS with found=false and leaves signature unchanged.
+ * Matching PEM signatures are converted to TPM format when requested.
+ */
+TSS2_RC
+Tss2_PolicyGetAuthorization(const TPMS_POLICY *policy,
+                            const TPMT_PUBLIC *key,
+                            const TPM2B_NONCE *policy_ref,
+                            bool              *found,
+                            TPMT_SIGNATURE    *signature);
 
 #endif /* INCLUDE_TSS2_TSS2_POLICY_H_ */
