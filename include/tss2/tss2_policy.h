@@ -119,7 +119,8 @@ typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_LOAD)(TPM2B_NAME *name,
                                             ESYS_TR    *object_handle,
                                             void       *userdata);
 
-typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLSEL)(TSS2_OBJECT *auth_object,
+/* description is borrowed policy text; the callback must not modify or free it. */
+typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLSEL)(char        *description,
                                               const char **branch_names,
                                               size_t       branch_count,
                                               size_t      *branch_idx,
