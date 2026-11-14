@@ -260,6 +260,45 @@ test_policy_instantiate(void **state) {
 } /* end of cmocka test */
 
 static TSS2_RC
+select_branch_description(char        *description,
+                          const char **branch_names,
+                          size_t       branch_count,
+                          size_t      *branch_idx,
+                          void        *userdata) {
+    unsigned *calls = userdata;
+    assert_string_equal(description, "branch selection test");
+    assert_int_equal(branch_count, 2);
+    assert_string_equal(branch_names[0], "first");
+    assert_string_equal(branch_names[1], "second");
+    *branch_idx = 1;
+    (*calls)++;
+    return TSS2_RC_SUCCESS;
+}
+
+static void
+test_branch_selection_description(void **state) {
+    UNUSED(state);
+    const char *json
+        = "{\"description\":\"branch selection test\",\"policy\":[{\"type\":\"POLICYOR\","
+          "\"branches\":[{\"name\":\"first\",\"description\":\"first branch\","
+          "\"policy\":[{\"type\":\"POLICYCOMMANDCODE\",\"code\":349}]},"
+          "{\"name\":\"second\",\"description\":\"second branch\","
+          "\"policy\":[{\"type\":\"POLICYCOMMANDCODE\",\"code\":350}]}]}]}";
+    TSS2_POLICY_CTX           *ctx = NULL;
+    unsigned                   calls = 0;
+    TSS2_POLICY_EXEC_CALLBACKS callbacks = {
+        .cbpolsel = select_branch_description,
+        .cbpolsel_userdata = &calls,
+    };
+    assert_int_equal(Tss2_PolicyInit(json, TPM2_ALG_SHA256, &ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicySetExecCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyExecute_Async(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(calls, 1);
+    Tss2_PolicyFinalize(&ctx);
+}
+
+static TSS2_RC
 execute_action_retry(const char *action, void *userdata) {
     unsigned *calls = userdata;
     assert_string_equal(action, "test");
@@ -677,6 +716,7 @@ main(int argc, char *argv[]) {
 
     const struct CMUnitTest tests[] = { cmocka_unit_test(test_policy_instantiate),
                                         cmocka_unit_test(test_policy_execute_async),
+                                        cmocka_unit_test(test_branch_selection_description),
                                         cmocka_unit_test(test_policy_set_policy_execute),
                                         cmocka_unit_test(test_cached_policy_digest),
                                         cmocka_unit_test(test_policy_calculation_retry),
