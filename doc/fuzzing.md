@@ -80,8 +80,11 @@ Currently only fuzz targets for the System API have been implemented.
 The fuzzing TCTI is used as a temporary storage location for the `Data` and
 `Size` arguments of `LLVMFuzzerTestOneInput`.
 
-For `_Complete` calls the TCTI uses `Data` and `Size` as the response buffer and
-response size for `TSS2_TCTI_RECEIVE`.
+The TCTI answers every command with `Data` and `Size` as the response buffer and
+response size for `TSS2_TCTI_RECEIVE`. This includes the `TPM2_Startup` command
+that `test_sys_setup()` sends. `_Complete` calls do not use the TCTI: they
+unmarshal the response that is already in the SYS context, which is the response
+to that `TPM2_Startup`.
 
 ### SAPI
 
