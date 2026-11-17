@@ -5,5 +5,10 @@
 
 function get_deps() {
 
-	echo "no deps"
+	# Alpine packages Mbed TLS 4.x, but the image doesn't include it
+	if [ "$WITH_CRYPTO" == "mbed" ] && [ -f /etc/alpine-release ]; then
+		apk add --no-cache mbedtls-dev
+	else
+		echo "no deps"
+	fi
 }
