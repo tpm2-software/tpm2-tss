@@ -270,6 +270,114 @@ Tss2_MU_TPM2B_PRIVATE_KEY_RSA_Unmarshal(uint8_t const          buffer[],
                                         TPM2B_PRIVATE_KEY_RSA *dest);
 
 TSS2_RC
+Tss2_MU_TPM2B_PUBLIC_KEY_MLKEM_Marshal(TPM2B_PUBLIC_KEY_MLKEM const *src,
+                                       uint8_t                       buffer[],
+                                       size_t                        buffer_size,
+                                       size_t                       *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_PUBLIC_KEY_MLKEM_Unmarshal(uint8_t const           buffer[],
+                                         size_t                  buffer_size,
+                                         size_t                 *offset,
+                                         TPM2B_PUBLIC_KEY_MLKEM *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_PRIVATE_KEY_MLKEM_Marshal(TPM2B_PRIVATE_KEY_MLKEM const *src,
+                                        uint8_t                        buffer[],
+                                        size_t                         buffer_size,
+                                        size_t                        *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_PRIVATE_KEY_MLKEM_Unmarshal(uint8_t const            buffer[],
+                                          size_t                   buffer_size,
+                                          size_t                  *offset,
+                                          TPM2B_PRIVATE_KEY_MLKEM *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_KEM_CIPHERTEXT_Marshal(TPM2B_KEM_CIPHERTEXT const *src,
+                                     uint8_t                     buffer[],
+                                     size_t                      buffer_size,
+                                     size_t                     *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_KEM_CIPHERTEXT_Unmarshal(uint8_t const         buffer[],
+                                       size_t                buffer_size,
+                                       size_t               *offset,
+                                       TPM2B_KEM_CIPHERTEXT *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_SHARED_SECRET_Marshal(TPM2B_SHARED_SECRET const *src,
+                                    uint8_t                    buffer[],
+                                    size_t                     buffer_size,
+                                    size_t                    *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_SHARED_SECRET_Unmarshal(uint8_t const        buffer[],
+                                      size_t               buffer_size,
+                                      size_t              *offset,
+                                      TPM2B_SHARED_SECRET *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_PUBLIC_KEY_MLDSA_Marshal(TPM2B_PUBLIC_KEY_MLDSA const *src,
+                                       uint8_t                       buffer[],
+                                       size_t                        buffer_size,
+                                       size_t                       *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_PUBLIC_KEY_MLDSA_Unmarshal(uint8_t const           buffer[],
+                                         size_t                  buffer_size,
+                                         size_t                 *offset,
+                                         TPM2B_PUBLIC_KEY_MLDSA *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_PRIVATE_KEY_MLDSA_Marshal(TPM2B_PRIVATE_KEY_MLDSA const *src,
+                                        uint8_t                        buffer[],
+                                        size_t                         buffer_size,
+                                        size_t                        *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_PRIVATE_KEY_MLDSA_Unmarshal(uint8_t const            buffer[],
+                                          size_t                   buffer_size,
+                                          size_t                  *offset,
+                                          TPM2B_PRIVATE_KEY_MLDSA *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_SIGNATURE_MLDSA_Marshal(TPM2B_SIGNATURE_MLDSA const *src,
+                                      uint8_t                      buffer[],
+                                      size_t                       buffer_size,
+                                      size_t                      *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_SIGNATURE_MLDSA_Unmarshal(uint8_t const          buffer[],
+                                        size_t                 buffer_size,
+                                        size_t                *offset,
+                                        TPM2B_SIGNATURE_MLDSA *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_SIGNATURE_CTX_Marshal(TPM2B_SIGNATURE_CTX const *src,
+                                    uint8_t                    buffer[],
+                                    size_t                     buffer_size,
+                                    size_t                    *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_SIGNATURE_CTX_Unmarshal(uint8_t const        buffer[],
+                                      size_t               buffer_size,
+                                      size_t              *offset,
+                                      TPM2B_SIGNATURE_CTX *dest);
+
+TSS2_RC
+Tss2_MU_TPM2B_SIGNATURE_HINT_Marshal(TPM2B_SIGNATURE_HINT const *src,
+                                     uint8_t                     buffer[],
+                                     size_t                      buffer_size,
+                                     size_t                     *offset);
+
+TSS2_RC
+Tss2_MU_TPM2B_SIGNATURE_HINT_Unmarshal(uint8_t const         buffer[],
+                                       size_t                buffer_size,
+                                       size_t               *offset,
+                                       TPM2B_SIGNATURE_HINT *dest);
+
+TSS2_RC
 Tss2_MU_TPM2B_PRIVATE_Marshal(TPM2B_PRIVATE const *src,
                               uint8_t              buffer[],
                               size_t               buffer_size,
@@ -783,6 +891,18 @@ Tss2_MU_TPMS_SIGNATURE_ECC_Unmarshal(uint8_t const       buffer[],
                                      TPMS_SIGNATURE_ECC *dest);
 
 TSS2_RC
+Tss2_MU_TPMS_SIGNATURE_HASH_MLDSA_Marshal(TPMS_SIGNATURE_HASH_MLDSA const *src,
+                                          uint8_t                          buffer[],
+                                          size_t                           buffer_size,
+                                          size_t                          *offset);
+
+TSS2_RC
+Tss2_MU_TPMS_SIGNATURE_HASH_MLDSA_Unmarshal(uint8_t const              buffer[],
+                                            size_t                     buffer_size,
+                                            size_t                    *offset,
+                                            TPMS_SIGNATURE_HASH_MLDSA *dest);
+
+TSS2_RC
 Tss2_MU_TPMS_NV_PIN_COUNTER_PARAMETERS_Marshal(TPMS_NV_PIN_COUNTER_PARAMETERS const *src,
                                                uint8_t                               buffer[],
                                                size_t                                buffer_size,
@@ -937,6 +1057,66 @@ Tss2_MU_TPMS_RSA_PARMS_Unmarshal(uint8_t const   buffer[],
                                  size_t          buffer_size,
                                  size_t         *offset,
                                  TPMS_RSA_PARMS *dest);
+
+TSS2_RC
+Tss2_MU_TPMI_MLKEM_PARMS_Marshal(TPMI_MLKEM_PARMS src,
+                                 uint8_t          buffer[],
+                                 size_t           buffer_size,
+                                 size_t          *offset);
+
+TSS2_RC
+Tss2_MU_TPMI_MLKEM_PARMS_Unmarshal(uint8_t const     buffer[],
+                                   size_t            buffer_size,
+                                   size_t           *offset,
+                                   TPMI_MLKEM_PARMS *dest);
+
+TSS2_RC
+Tss2_MU_TPMS_MLKEM_PARMS_Marshal(TPMS_MLKEM_PARMS const *src,
+                                 uint8_t                 buffer[],
+                                 size_t                  buffer_size,
+                                 size_t                 *offset);
+
+TSS2_RC
+Tss2_MU_TPMS_MLKEM_PARMS_Unmarshal(uint8_t const     buffer[],
+                                   size_t            buffer_size,
+                                   size_t           *offset,
+                                   TPMS_MLKEM_PARMS *dest);
+
+TSS2_RC
+Tss2_MU_TPMI_MLDSA_PARMS_Marshal(TPMI_MLDSA_PARMS src,
+                                 uint8_t          buffer[],
+                                 size_t           buffer_size,
+                                 size_t          *offset);
+
+TSS2_RC
+Tss2_MU_TPMI_MLDSA_PARMS_Unmarshal(uint8_t const     buffer[],
+                                   size_t            buffer_size,
+                                   size_t           *offset,
+                                   TPMI_MLDSA_PARMS *dest);
+
+TSS2_RC
+Tss2_MU_TPMS_MLDSA_PARMS_Marshal(TPMS_MLDSA_PARMS const *src,
+                                 uint8_t                 buffer[],
+                                 size_t                  buffer_size,
+                                 size_t                 *offset);
+
+TSS2_RC
+Tss2_MU_TPMS_MLDSA_PARMS_Unmarshal(uint8_t const     buffer[],
+                                   size_t            buffer_size,
+                                   size_t           *offset,
+                                   TPMS_MLDSA_PARMS *dest);
+
+TSS2_RC
+Tss2_MU_TPMS_HASH_MLDSA_PARMS_Marshal(TPMS_HASH_MLDSA_PARMS const *src,
+                                      uint8_t                      buffer[],
+                                      size_t                       buffer_size,
+                                      size_t                      *offset);
+
+TSS2_RC
+Tss2_MU_TPMS_HASH_MLDSA_PARMS_Unmarshal(uint8_t const          buffer[],
+                                        size_t                 buffer_size,
+                                        size_t                *offset,
+                                        TPMS_HASH_MLDSA_PARMS *dest);
 
 TSS2_RC
 Tss2_MU_TPMS_SYMCIPHER_PARMS_Marshal(TPMS_SYMCIPHER_PARMS const *src,

@@ -220,8 +220,9 @@ ifapi_json_IFAPI_KEY_serialize(const IFAPI_KEY *in, json_object **jso) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
-    if (in->public.publicArea.type != TPM2_ALG_KEYEDHASH) {
-        /* Keyed hash objects to not need a signing scheme. */
+    if (in->public.publicArea.type != TPM2_ALG_KEYEDHASH
+        && in->public.publicArea.type != TPM2_ALG_MLKEM) {
+        /* Keyed hash and ML-KEM objects do not need a signing scheme. */
         jso2 = NULL;
         r = ifapi_json_TPMT_SIG_SCHEME_serialize(&in->signing_scheme, &jso2);
         return_if_error(r, "Serialize TPMT_SIG_SCHEME");

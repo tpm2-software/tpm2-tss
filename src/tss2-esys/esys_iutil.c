@@ -376,8 +376,10 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT           *esys_context,
     TSS2_RC             r = TSS2_RC_SUCCESS;
     size_t              keyHash_size = 0;
     size_t              cSize = 0;
-    TPM2B_ECC_PARAMETER Z; /* X coordinate of privKey*publicKey */
-    TPMS_ECC_POINT      Q; /* Public point of ephemeral key */
+    size_t              ss_size = 0;
+    TPM2B_SHARED_SECRET ss_K = { 0 }; /* Shared secret for ML-KEM */
+    TPM2B_ECC_PARAMETER Z;            /* X coordinate of privKey*publicKey */
+    TPMS_ECC_POINT      Q;            /* Public point of ephemeral key */
 
     if (tpmKeyNode == 0) {
         encryptedSalt->size = 0;
@@ -425,6 +427,43 @@ iesys_compute_encrypted_salt(ESYS_CONTEXT           *esys_context,
         return_if_error(r, "During KDFe computation.");
         esys_context->salt.size = keyHash_size;
         break;
+    case TPM2_ALG_MLKEM: {
+        /* Perform ML-KEM encapsulation against the public key.
+         * This produces:
+         *   ciphertext sent to TPM as encryptedSalt
+         *   shared secret K used only as KDFa key below */
+
+        r = iesys_crypto_mlkem_encapsulate(&esys_context->crypto_backend, &pub,
+                                           sizeof(TPMU_ENCRYPTED_SECRET),
+                                           (BYTE *)&encryptedSalt->secret[0], &cSize,
+                                           sizeof(TPM2B_SHARED_SECRET), ss_K.buffer, &ss_size);
+        return_if_error(r, "During ML-KEM encapsulation.");
+        ss_K.size = (UINT16)ss_size;
+        encryptedSalt->size = cSize;
+
+        /* KDFa to derive the seed, binding it to ciphertext and publicKey.
+         * label = "SECRET"
+         * contextU = ciphertext buffer contents
+         * contextV = publicKey buffer contents
+         * seed = KDFa(nameAlg, shared secret K, label, ciphertext, publicKey, bits)
+         */
+        TPM2B_KEM_CIPHERTEXT   ciphertext_ctx = { .size = (UINT16)cSize };
+        TPM2B_PUBLIC_KEY_MLKEM pubkey_ctx = { .size = pub.publicArea.unique.mlkem.size };
+        memcpy(&ciphertext_ctx.buffer[0], &encryptedSalt->secret[0], cSize);
+        memcpy(&pubkey_ctx.buffer[0], &pub.publicArea.unique.mlkem.buffer[0],
+               pub.publicArea.unique.mlkem.size);
+
+        r = iesys_crypto_KDFa(&esys_context->crypto_backend,
+                              tpmKeyNode->rsrc.misc.rsrc_key_pub.publicArea.nameAlg, ss_K.buffer,
+                              ss_K.size, "SECRET", (TPM2B *)&ciphertext_ctx, (TPM2B *)&pubkey_ctx,
+                              keyHash_size * 8, NULL, &esys_context->salt.buffer[0], FALSE);
+        return_if_error(r, "During ML-KEM KDFa computation.");
+        esys_context->salt.size = keyHash_size;
+
+        LOGBLOB_DEBUG(&encryptedSalt->secret[0], cSize, "IESYS ML-KEM ciphertext");
+        LOGBLOB_DEBUG(&esys_context->salt.buffer[0], keyHash_size, "IESYS ML-KEM derived salt");
+        break;
+    }
     default:
         LOG_ERROR("Not implemented");
         return TSS2_ESYS_RC_GENERAL_FAILURE;
@@ -598,7 +637,7 @@ iesys_encrypt_param(ESYS_CONTEXT *esys_context, TPM2B_NONCE **decryptNonce, int 
                 r = iesys_crypto_KDFa(
                     &esys_context->crypto_backend, rsrc_session->authHash,
                     &rsrc_session->sessionValue[0], rsrc_session->sizeSessionValue, "CFB",
-                    &rsrc_session->nonceCaller, &rsrc_session->nonceTPM,
+                    (TPM2B *)&rsrc_session->nonceCaller, (TPM2B *)&rsrc_session->nonceTPM,
                     symDef->keyBits.aes + AES_BLOCK_SIZE_IN_BYTES * 8, NULL, &symKey[0], FALSE);
                 return_if_error(r, "while computing KDFa");
 
@@ -616,7 +655,7 @@ iesys_encrypt_param(ESYS_CONTEXT *esys_context, TPM2B_NONCE **decryptNonce, int 
                 r = iesys_crypto_KDFa(
                     &esys_context->crypto_backend, rsrc_session->authHash,
                     &rsrc_session->sessionValue[0], rsrc_session->sizeSessionValue, "CFB",
-                    &rsrc_session->nonceCaller, &rsrc_session->nonceTPM,
+                    (TPM2B *)&rsrc_session->nonceCaller, (TPM2B *)&rsrc_session->nonceTPM,
                     symDef->keyBits.sm4 + SM4_BLOCK_SIZE_IN_BYTES * 8, NULL, &symKey[0], FALSE);
                 return_if_error(r, "while computing KDFa");
 
@@ -632,8 +671,8 @@ iesys_encrypt_param(ESYS_CONTEXT *esys_context, TPM2B_NONCE **decryptNonce, int 
                 r = iesys_xor_parameter_obfuscation(
                     &esys_context->crypto_backend, rsrc_session->authHash,
                     &rsrc_session->sessionValue[0], rsrc_session->sizeSessionValue,
-                    &rsrc_session->nonceCaller, &rsrc_session->nonceTPM, &encrypt_buffer[0],
-                    paramSize);
+                    (TPM2B *)&rsrc_session->nonceCaller, (TPM2B *)&rsrc_session->nonceTPM,
+                    &encrypt_buffer[0], paramSize);
                 return_if_error(r, "XOR obfuscation not possible.");
 
             } else {
@@ -698,7 +737,7 @@ iesys_decrypt_param(ESYS_CONTEXT *esys_context) {
 
         r = iesys_crypto_KDFa(&esys_context->crypto_backend, rsrc_session->authHash,
                               &rsrc_session->sessionValue[0], rsrc_session->sizeSessionValue, "CFB",
-                              &rsrc_session->nonceTPM, &rsrc_session->nonceCaller,
+                              (TPM2B *)&rsrc_session->nonceTPM, (TPM2B *)&rsrc_session->nonceCaller,
                               symDef->keyBits.aes + AES_BLOCK_SIZE_IN_BYTES * 8, NULL, &symKey[0],
                               FALSE);
         return_if_error(r, "KDFa error");
@@ -723,7 +762,7 @@ iesys_decrypt_param(ESYS_CONTEXT *esys_context) {
 
         r = iesys_crypto_KDFa(&esys_context->crypto_backend, rsrc_session->authHash,
                               &rsrc_session->sessionValue[0], rsrc_session->sizeSessionValue, "CFB",
-                              &rsrc_session->nonceTPM, &rsrc_session->nonceCaller,
+                              (TPM2B *)&rsrc_session->nonceTPM, (TPM2B *)&rsrc_session->nonceCaller,
                               symDef->keyBits.sm4 + SM4_BLOCK_SIZE_IN_BYTES * 8, NULL, &symKey[0],
                               FALSE);
         return_if_error(r, "KDFa error");
@@ -740,10 +779,10 @@ iesys_decrypt_param(ESYS_CONTEXT *esys_context) {
         return_if_error(r, "Setting plaintext");
     } else if (symDef->algorithm == TPM2_ALG_XOR) {
         /* Parameter decryption with XOR obfuscation */
-        r = iesys_xor_parameter_obfuscation(&esys_context->crypto_backend, rsrc_session->authHash,
-                                            &rsrc_session->sessionValue[0],
-                                            rsrc_session->sizeSessionValue, &rsrc_session->nonceTPM,
-                                            &rsrc_session->nonceCaller, &plaintext[0], p2BSize);
+        r = iesys_xor_parameter_obfuscation(
+            &esys_context->crypto_backend, rsrc_session->authHash, &rsrc_session->sessionValue[0],
+            rsrc_session->sizeSessionValue, (TPM2B *)&rsrc_session->nonceTPM,
+            (TPM2B *)&rsrc_session->nonceCaller, &plaintext[0], p2BSize);
         return_if_error(r, "XOR obfuscation not possible.");
 
         r = Tss2_Sys_SetEncryptParam(esys_context->sys, p2BSize, &plaintext[0]);

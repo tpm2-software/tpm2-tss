@@ -893,6 +893,8 @@ equal_policy_authorization(TPMS_POLICY *policy,
                 if (pem_public.publicArea.type == TPM2_ALG_RSA) {
                     pem_public.publicArea.parameters.rsaDetail.scheme
                         = authorizations->authorizations[i].rsaScheme;
+                } else if (pem_public.publicArea.type == TPM2_ALG_MLDSA
+                           || pem_public.publicArea.type == TPM2_ALG_HASH_MLDSA) {
                 }
                 pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
 
@@ -1164,6 +1166,8 @@ get_policy_signature(TPMS_POLICY *policy, TPMT_PUBLIC *public, TPMT_SIGNATURE *s
             if (pem_public.publicArea.type == TPM2_ALG_RSA) {
                 pem_public.publicArea.parameters.rsaDetail.scheme
                     = authorizations->authorizations[i].rsaScheme;
+            } else if (pem_public.publicArea.type == TPM2_ALG_MLDSA
+                       || pem_public.publicArea.type == TPM2_ALG_HASH_MLDSA) {
             }
             pem_public.publicArea.nameAlg = authorizations->authorizations[i].hashAlg;
 
