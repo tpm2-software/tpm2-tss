@@ -29,7 +29,7 @@ Tss2_Sys_StartAuthSession_Prepare(TSS2_SYS_CONTEXT             *sysContext,
     if (!ctx || !symmetric)
         return TSS2_SYS_RC_BAD_REFERENCE;
 
-    if (IsAlgorithmWeak(authHash, 0))
+    if (IsAlgorithmDeprecated(authHash, 0))
         return TSS2_SYS_RC_BAD_VALUE;
 
     rval = CommonPreparePrologue(ctx, TPM2_CC_StartAuthSession);
