@@ -16,7 +16,7 @@
 #include "tss2_common.h"     // for TSS2_RC, UINT32
 #include "tss2_esys.h"       // for ESYS_TR, ESYS_CONTEXT
 #include "tss2_fapi.h"       // for FAPI_CONTEXT
-#include "tss2_policy.h"     // for the opaque TPMS_POLICY declaration
+#include "tss2_policy.h"     // for Policy API declarations
 #include "tss2_tpm2_types.h" // for TPM2_HANDLE, TPMA_SESSION, TPM2B_DIGEST
 #include "tss2_types.h"      // for NODE_OBJECT_T
 
@@ -166,7 +166,7 @@ TSS2_RC
 ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
                               ESYS_TR       handle,
                               IFAPI_OBJECT *hierarchy_object,
-                              TPMS_POLICY  *policy);
+                              char        **policy);
 
 IFAPI_OBJECT
 *ifapi_allocate_object(FAPI_CONTEXT *context);

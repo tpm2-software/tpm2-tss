@@ -172,6 +172,7 @@ TESTS_UNIT += \
     test/unit/fapi-json \
     test/unit/fapi-helpers \
     test/unit/fapi-policyutil \
+    test/unit/fapi-policy-json \
     test/unit/fapi-io \
     test/unit/fapi-profiles \
     test/unit/fapi-config \
@@ -895,6 +896,7 @@ test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi/ifapi_eventlog_system.c \
                               src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                               src/tss2-policy/ipolicy_json_deserialize.c \
+                              src/tss2-policy/ipolicy_helpers.c \
                               src/tss2-policy/ipolicy_json_serialize.c \
                               src/tss2-fapi-policy/tpm_json_deserialize.c \
                               src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -907,6 +909,13 @@ test_unit_fapi_json_SOURCES = test/unit/fapi-json.c \
                               src/tss2-fapi-policy/json_helpers.c \
                               src/tss2-fapi-policy/tss2_helpers.c \
                               test/helper/cmocka_all.h
+
+# Test JSON policy calculation and authorization without a TPM or policy store.
+test_unit_fapi_policy_json_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
+test_unit_fapi_policy_json_LDADD = $(CMOCKA_LIBS) $(libtss2_policy) $(libtss2_esys)
+test_unit_fapi_policy_json_LDFLAGS = $(AM_LDFLAGS)
+test_unit_fapi_policy_json_SOURCES = test/unit/fapi-policy-json.c \
+    src/tss2-fapi/ifapi_policy.c src/util/log.c test/helper/cmocka_all.h
 
 # Test the execution adapter without the unused preparation/callback machinery.
 test_unit_fapi_policyutil_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS) -ffunction-sections
@@ -929,6 +938,7 @@ test_unit_fapi_helpers_SOURCES = test/unit/fapi-helpers.c \
                                  src/tss2-fapi/ifapi_eventlog_system.c \
                                  src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                  src/tss2-policy/ipolicy_json_deserialize.c \
+                                 src/tss2-policy/ipolicy_helpers.c \
                                  src/tss2-policy/ipolicy_json_serialize.c \
                                  src/tss2-fapi-policy/tpm_json_deserialize.c \
                                  src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -964,6 +974,7 @@ test_unit_fapi_io_SOURCES = test/unit/fapi-io.c \
                             src/tss2-fapi/ifapi_eventlog_system.c \
                             src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                             src/tss2-policy/ipolicy_json_deserialize.c \
+                            src/tss2-policy/ipolicy_helpers.c \
                             src/tss2-policy/ipolicy_json_serialize.c \
                             src/tss2-fapi-policy/tpm_json_deserialize.c \
                             src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -989,6 +1000,7 @@ test_unit_fapi_profiles_SOURCES = test/unit/fapi-profiles.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c \
                                   src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                   src/tss2-policy/ipolicy_json_deserialize.c \
+                                  src/tss2-policy/ipolicy_helpers.c \
                                   src/tss2-policy/ipolicy_json_serialize.c \
                                   src/tss2-fapi-policy/tpm_json_deserialize.c \
                                   src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -1014,6 +1026,7 @@ test_unit_fapi_config_SOURCES = test/unit/fapi-config.c \
                                   src/tss2-fapi/ifapi_eventlog_system.c \
                                   src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                   src/tss2-policy/ipolicy_json_deserialize.c \
+                                  src/tss2-policy/ipolicy_helpers.c \
                                   src/tss2-policy/ipolicy_json_serialize.c \
                                   src/tss2-fapi-policy/tpm_json_deserialize.c \
                                   src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -1040,6 +1053,7 @@ test_unit_fapi_get_web_cert_SOURCES = test/unit/fapi-get-web-cert.c \
                                        src/tss2-fapi/ifapi_eventlog_system.c \
                                        src/tss2-fapi/ifapi_json_eventlog_serialize.c \
                                        src/tss2-policy/ipolicy_json_deserialize.c \
+                                       src/tss2-policy/ipolicy_helpers.c \
                                        src/tss2-policy/ipolicy_json_serialize.c \
                                        src/tss2-fapi-policy/tpm_json_deserialize.c \
                                        src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -1065,6 +1079,7 @@ test_unit_fapi_eventlog_SOURCES = test/unit/fapi-eventlog.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
                                   src/tss2-policy/ipolicy_json_deserialize.c \
+                                  src/tss2-policy/ipolicy_helpers.c \
                                   src/tss2-policy/ipolicy_json_serialize.c \
                                   src/tss2-fapi-policy/tpm_json_deserialize.c \
                                   src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -1088,6 +1103,7 @@ test_unit_fapi_ima_eventlog_SOURCES = test/unit/fapi-ima-eventlog.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
                                   src/tss2-policy/ipolicy_json_deserialize.c \
+                                  src/tss2-policy/ipolicy_helpers.c \
                                   src/tss2-policy/ipolicy_json_serialize.c \
                                   src/tss2-fapi-policy/tpm_json_deserialize.c \
                                   src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -1113,6 +1129,7 @@ test_unit_fapi_check_ima_log_SOURCES = test/unit/fapi-check-ima-log.c \
                                   src/tss2-fapi/ifapi_json_deserialize.c \
                                   src/tss2-fapi/ifapi_json_serialize.c \
                                   src/tss2-policy/ipolicy_json_deserialize.c \
+                                  src/tss2-policy/ipolicy_helpers.c \
                                   src/tss2-policy/ipolicy_json_serialize.c \
                                   src/tss2-fapi-policy/tpm_json_deserialize.c \
                                   src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -1138,6 +1155,7 @@ test_unit_fapi_ima_fuzzing_SOURCES = test/unit/fapi-ima-fuzzing.c \
                          src/tss2-fapi/ifapi_json_deserialize.c \
                          src/tss2-fapi/ifapi_json_serialize.c \
                          src/tss2-policy/ipolicy_json_deserialize.c \
+                         src/tss2-policy/ipolicy_helpers.c \
                          src/tss2-policy/ipolicy_json_serialize.c \
                          src/tss2-fapi-policy/tpm_json_deserialize.c \
                          src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -1167,6 +1185,7 @@ test_unit_fapi_system_fuzzing_SOURCES = test/unit/fapi-system-fuzzing.c \
                           src/tss2-fapi/ifapi_json_deserialize.c \
                           src/tss2-fapi/ifapi_json_serialize.c \
                           src/tss2-policy/ipolicy_json_deserialize.c \
+                          src/tss2-policy/ipolicy_helpers.c \
                           src/tss2-policy/ipolicy_json_serialize.c \
                           src/tss2-fapi-policy/tpm_json_deserialize.c \
                           src/tss2-fapi-policy/tpm_json_serialize.c \
@@ -1187,9 +1206,13 @@ endif # FAPI
 if POLICY
 TESTS_UNIT += test/unit/tss2_policy
 
-test_unit_tss2_policy_CFLAGS  = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
-test_unit_tss2_policy_LDADD   = $(CMOCKA_LIBS) $(libtss2_policy) $(libtss2_esys) $(libtss2_sys)
+test_unit_tss2_policy_CFLAGS  = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
+test_unit_tss2_policy_LDADD   = $(CMOCKA_LIBS) $(libtss2_policy) $(libtss2_esys) $(libtss2_sys) \
+    $(lib_fapi_policy_internal) $(libutil) $(JSONC_LIBS) $(CRYPTO_LIBS) $(UUID_LIBS)
 test_unit_tss2_policy_SOURCES = test/unit/tss2_policy.c src/util/log.c \
+    src/tss2-policy/ipolicy_helpers.c \
+    src/tss2-policy/ipolicy_json_deserialize.c \
+    src/tss2-policy/ipolicy_json_serialize.c \
     test/data/test-fapi-policies.h test/helper/cmocka_all.h
 endif # POLICY
 

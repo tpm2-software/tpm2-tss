@@ -23,7 +23,7 @@ enum IFAPI_STATE_POLICY_UTIL_EXEC {
 /** The context of the policy execution */
 struct IFAPI_POLICYUTIL_STACK {
     ESYS_TR          policy_session; /**< The policy session created for the current evaluation  */
-    TSS2_POLICY_CTX *pol_exec_ctx;   /**< Public Policy context; borrows the policy */
+    TSS2_POLICY_CTX *pol_exec_ctx;   /**< Public Policy context; owns its parsed policy */
     IFAPI_POLICY_EXEC_CB_CTX cb_ctx; /**< FAPI callback progress and authorization state */
     TPMI_ALG_HASH            hash_alg;
     ESYS_TR             session; /**< Active session, created here or borrowed from the parent */
@@ -35,9 +35,7 @@ struct IFAPI_POLICYUTIL_STACK {
 };
 
 TSS2_RC
-ifapi_policyutil_execute_prepare(FAPI_CONTEXT *context,
-                                 TPMI_ALG_HASH hash_alg,
-                                 TPMS_POLICY  *policy);
+ifapi_policyutil_execute_prepare(FAPI_CONTEXT *context, TPMI_ALG_HASH hash_alg, const char *policy);
 
 TSS2_RC
 ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session);

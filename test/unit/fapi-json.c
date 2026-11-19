@@ -17,7 +17,8 @@
 #include "ifapi_helpers.h"          // for internal helpers
 #include "ifapi_json_deserialize.h" // for ifapi_json_IFAPI_OBJECT_d...
 #include "ifapi_json_serialize.h"
-#include "ifapi_keystore.h"           // for IFAPI_OBJECT, IFAPI_KEY
+#include "ifapi_keystore.h" // for IFAPI_OBJECT, IFAPI_KEY
+#include "ipolicy_helpers.h"
 #include "ipolicy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
 #include "ipolicy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
 #include "ipolicy_types.h"            // for TPMT_POLICYELEMENT, TPMS_...
@@ -97,7 +98,7 @@ cleanup_ifapi_object(IFAPI_OBJECT *object) {
                 cleanup_ifapi_hierarchy(&object->misc.hierarchy);
             }
 
-            Tss2_PolicyCleanup(&object->policy);
+            SAFE_FREE(object->policy);
             SAFE_FREE(object->rel_path);
             object->objectType = IFAPI_OBJ_NONE;
         }
@@ -183,13 +184,13 @@ normalize(const char *string) {
         if (!jso)                                                                                  \
             fprintf(stderr, "JSON parsing failed\n");                                              \
         assert_non_null(jso);                                                                      \
-        rc = ifapi_json_TPMS_POLICY_deserialize(jso, &out);                                        \
+        rc = ipolicy_json_TPMS_POLICY_deserialize(jso, &out);                                      \
         if (rc)                                                                                    \
             fprintf(stderr, "Deserialization failed\n");                                           \
         assert_int_equal(rc, TSS2_RC_SUCCESS);                                                     \
         json_object_put(jso);                                                                      \
         jso = NULL;                                                                                \
-        rc = ifapi_json_TPMS_POLICY_serialize(PSERIALIZE, &jso);                                   \
+        rc = ipolicy_json_TPMS_POLICY_serialize(PSERIALIZE, &jso);                                 \
         assert_int_equal(rc, TSS2_RC_SUCCESS);                                                     \
         assert_non_null(jso);                                                                      \
         const char *jso_string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);     \
@@ -198,7 +199,7 @@ normalize(const char *string) {
         char *string2 = normalize(DST);                                                            \
         assert_string_equal(string1, string2);                                                     \
         json_object_put(jso);                                                                      \
-        Tss2_PolicyCleanup(&out);                                                                  \
+        ipolicy_cleanup(&out);                                                                     \
         free(string1);                                                                             \
         free(string2);                                                                             \
     }
@@ -504,15 +505,15 @@ check_policy_bin(void **state) {
     {
         char        *jso_string1, *jso_string2;
         json_object *jso = NULL;
-        TSS2_RC      rc = ifapi_json_TPMS_POLICY_serialize(&policy, &jso);
+        TSS2_RC      rc = ipolicy_json_TPMS_POLICY_serialize(&policy, &jso);
         jso_string1 = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
         assert_int_equal(rc, TSS2_RC_SUCCESS);
         TPMS_POLICY *parsed = NULL;
-        rc = ifapi_json_TPMS_POLICY_deserialize(jso, &parsed);
+        rc = ipolicy_json_TPMS_POLICY_deserialize(jso, &parsed);
         assert_int_equal(rc, TSS2_RC_SUCCESS);
         json_object_put(jso);
         jso = NULL;
-        rc = ifapi_json_TPMS_POLICY_serialize(parsed, &jso);
+        rc = ipolicy_json_TPMS_POLICY_serialize(parsed, &jso);
         jso_string2 = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
         assert_int_equal(rc, TSS2_RC_SUCCESS);
         if (strcmp(jso_string1, jso_string2) != 0) {
@@ -523,7 +524,7 @@ check_policy_bin(void **state) {
         json_object_put(jso);
         free(jso_string1);
         free(jso_string2);
-        Tss2_PolicyCleanup(&parsed);
+        ipolicy_cleanup(&parsed);
     }
 
     or_branch_list = calloc(2, sizeof(TPML_POLICYBRANCHES) + (2 * sizeof(TPMS_POLICYBRANCH)));
@@ -576,15 +577,15 @@ check_policy_bin(void **state) {
     {
         char        *jso_string1, *jso_string2;
         json_object *jso = NULL;
-        TSS2_RC      rc = ifapi_json_TPMS_POLICY_serialize(&policy, &jso);
+        TSS2_RC      rc = ipolicy_json_TPMS_POLICY_serialize(&policy, &jso);
         jso_string1 = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
         assert_int_equal(rc, TSS2_RC_SUCCESS);
         TPMS_POLICY *parsed = NULL;
-        rc = ifapi_json_TPMS_POLICY_deserialize(jso, &parsed);
+        rc = ipolicy_json_TPMS_POLICY_deserialize(jso, &parsed);
         assert_int_equal(rc, TSS2_RC_SUCCESS);
         json_object_put(jso);
         jso = NULL;
-        rc = ifapi_json_TPMS_POLICY_serialize(parsed, &jso);
+        rc = ipolicy_json_TPMS_POLICY_serialize(parsed, &jso);
         jso_string2 = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
         assert_int_equal(rc, TSS2_RC_SUCCESS);
         if (strcmp(jso_string1, jso_string2) != 0) {
@@ -595,7 +596,7 @@ check_policy_bin(void **state) {
         json_object_put(jso);
         free(jso_string1);
         free(jso_string2);
-        Tss2_PolicyCleanup(&parsed);
+        ipolicy_cleanup(&parsed);
     }
 
     free(policy_elements_or);
@@ -1378,13 +1379,13 @@ check_json_policy(void **state) {
         if (!jso)
             fprintf(stderr, "JSON parsing failed\n");
         assert_non_null(jso);
-        rc = ifapi_json_TPMS_POLICY_deserialize(jso, &out);
+        rc = ipolicy_json_TPMS_POLICY_deserialize(jso, &out);
         if (rc)
             fprintf(stderr, "Deserialization failed\n");
         assert_int_equal(rc, TSS2_RC_SUCCESS);
         json_object_put(jso);
         jso = NULL;
-        rc = ifapi_json_TPMS_POLICY_serialize(out, &jso);
+        rc = ipolicy_json_TPMS_POLICY_serialize(out, &jso);
         assert_int_equal(rc, TSS2_RC_SUCCESS);
         assert_non_null(jso);
         const char *jso_string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
@@ -1393,7 +1394,7 @@ check_json_policy(void **state) {
         char *string2 = normalize(test_json_policy_nv_expected);
         assert_string_equal(string1, string2);
         json_object_put(jso);
-        Tss2_PolicyCleanup(&out);
+        ipolicy_cleanup(&out);
         free(string1);
         free(string2);
     }
@@ -1496,13 +1497,13 @@ check_json_policy(void **state) {
         if (!jso)
             fprintf(stderr, "JSON parsing failed\n");
         assert_non_null(jso);
-        rc = ifapi_json_TPMS_POLICY_deserialize(jso, &out);
+        rc = ipolicy_json_TPMS_POLICY_deserialize(jso, &out);
         if (rc)
             fprintf(stderr, "Deserialization failed\n");
         assert_int_equal(rc, TSS2_RC_SUCCESS);
         json_object_put(jso);
         jso = NULL;
-        rc = ifapi_json_TPMS_POLICY_serialize(out, &jso);
+        rc = ipolicy_json_TPMS_POLICY_serialize(out, &jso);
         assert_int_equal(rc, TSS2_RC_SUCCESS);
         assert_non_null(jso);
         const char *jso_string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
@@ -1511,7 +1512,7 @@ check_json_policy(void **state) {
         char *string2 = normalize(test_json_policy_or_expected);
         assert_string_equal(string1, string2);
         json_object_put(jso);
-        Tss2_PolicyCleanup(&out);
+        ipolicy_cleanup(&out);
         free(string1);
         free(string2);
     }
@@ -2345,54 +2346,98 @@ check_invalid_json(void **state) {
 }
 
 static void
-check_policy_allocating_deserialize(void **state) {
+check_object_policy_string(void **state) {
     UNUSED(state);
-    TPMS_POLICY *policy = NULL;
-    assert_int_equal(ifapi_json_TPMS_POLICY_deserialize(NULL, &policy), TSS2_FAPI_RC_BAD_REFERENCE);
-    assert_null(policy);
-    json_object *jso = json_tokener_parse("{\"description\":\"empty\",\"policy\":[]}");
-    assert_non_null(jso);
-    assert_int_equal(ifapi_json_TPMS_POLICY_deserialize(jso, NULL), TSS2_FAPI_RC_BAD_REFERENCE);
-    assert_int_equal(ifapi_json_TPMS_POLICY_deserialize(jso, &policy), TSS2_RC_SUCCESS);
-    assert_non_null(policy);
-    assert_string_equal(policy->description, "empty");
+    const char  *json = "{\"description\":\"opaque\",\"policy\":[],\"futureField\":42}";
+    IFAPI_OBJECT object = { .objectType = IFAPI_HIERARCHY_OBJ };
+    IFAPI_OBJECT restored = { 0 }, copy = { 0 };
+    object.policy = strdup(json);
+    object.rel_path = strdup("P_ECC/HS");
+    object.misc.hierarchy.description = strdup("owner");
+    object.misc.hierarchy.esysHandle = ESYS_TR_RH_OWNER;
+    object.public.handle = ESYS_TR_RH_OWNER;
+    restored.public.handle = ESYS_TR_RH_OWNER;
+    assert_non_null(object.policy);
+    assert_non_null(object.rel_path);
+    assert_non_null(object.misc.hierarchy.description);
+    assert_int_equal(ifapi_copy_ifapi_hierarchy_object(&copy, &object), TSS2_RC_SUCCESS);
+    assert_ptr_not_equal(copy.policy, object.policy);
+    assert_string_equal(copy.policy, object.policy);
+
+    json_object *jso = NULL, *embedded;
+    assert_int_equal(ifapi_json_IFAPI_OBJECT_serialize(&object, &jso), TSS2_RC_SUCCESS);
+    assert_true(json_object_object_get_ex(jso, "policy", &embedded));
+    assert_int_equal(json_object_get_type(embedded), json_type_object);
+    assert_int_equal(json_object_get_int(json_object_object_get(embedded, "futureField")), 42);
+    assert_int_equal(ifapi_json_IFAPI_OBJECT_deserialize(jso, &restored), TSS2_RC_SUCCESS);
     json_object_put(jso);
-    Tss2_PolicyCleanup(&policy);
-    assert_null(policy);
-    Tss2_PolicyCleanup(&policy);
-    Tss2_PolicyCleanup(NULL);
-    const char *invalid[] = {
-        "[]",
-        "{}",
-        "{\"description\":\"missing elements\"}",
-        "{\"description\":\"bad auth\",\"policyAuthorizations\":[{},{}],\"policy\":[]}",
-        "{\"description\":\"bad OR\",\"policy\":[{\"type\":\"POLICYOR\"}]}",
-    };
-    for (size_t i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
+    cleanup_ifapi_object(&object);
+    assert_non_null(strstr(restored.policy, "futureField"));
+    assert_string_equal(copy.policy, json);
+    cleanup_ifapi_object(&copy);
+    jso = NULL;
+    assert_int_equal(ifapi_json_IFAPI_OBJECT_serialize(&restored, &jso), TSS2_RC_SUCCESS);
+    assert_true(json_object_object_get_ex(jso, "policy", &embedded));
+    assert_int_equal(json_object_get_type(embedded), json_type_object);
+    json_object_put(jso);
+    cleanup_ifapi_object(&restored);
+}
+
+static void
+check_policy_json_string(void **state) {
+    UNUSED(state);
+    char *policy = NULL;
+    assert_int_equal(ifapi_json_policy_deserialize(NULL, &policy), TSS2_FAPI_RC_BAD_REFERENCE);
+    const char  *input = "{\"description\":\"opaque\",\"policy\":[],"
+                         "\"futureField\":{\"value\":42}}";
+    json_object *jso = json_tokener_parse(input);
+    assert_non_null(jso);
+    assert_int_equal(ifapi_json_policy_deserialize(jso, NULL), TSS2_FAPI_RC_BAD_REFERENCE);
+    assert_int_equal(ifapi_json_policy_deserialize(jso, &policy), TSS2_RC_SUCCESS);
+    json_object_put(jso);
+    assert_non_null(policy);
+    jso = NULL;
+    assert_int_equal(ifapi_json_policy_serialize(policy, &jso), TSS2_RC_SUCCESS);
+    assert_int_equal(json_object_get_type(jso), json_type_object);
+    json_object *extra;
+    assert_true(json_object_object_get_ex(jso, "futureField", &extra));
+    assert_int_equal(json_object_get_int(json_object_object_get(extra, "value")), 42);
+    json_object_put(jso);
+    SAFE_FREE(policy);
+    assert_int_equal(ifapi_json_policy_serialize(NULL, &jso), TSS2_FAPI_RC_BAD_REFERENCE);
+    assert_int_equal(ifapi_json_policy_serialize(input, NULL), TSS2_FAPI_RC_BAD_REFERENCE);
+    const char *invalid[] = { "null", "[]", "3", "\"policy\"", "{bad}" };
+    for (size_t i = 0; i < sizeof(invalid) / sizeof(invalid[0]); i++) {
+        jso = NULL;
+        assert_int_not_equal(ifapi_json_policy_serialize(invalid[i], &jso), TSS2_RC_SUCCESS);
+        assert_null(jso);
         jso = json_tokener_parse(invalid[i]);
-        assert_non_null(jso);
-        assert_int_not_equal(ifapi_json_TPMS_POLICY_deserialize(jso, &policy), TSS2_RC_SUCCESS);
-        assert_null(policy);
-        json_object_put(jso);
+        if (jso) {
+            assert_int_not_equal(ifapi_json_policy_deserialize(jso, &policy), TSS2_RC_SUCCESS);
+            assert_null(policy);
+            json_object_put(jso);
+        }
     }
+    /* Policy semantics are checked by the Policy lib, rather than object loading. */
+    jso = json_tokener_parse("{\"description\":\"invalid policy\",\"policy\":42}");
+    assert_int_equal(ifapi_json_policy_deserialize(jso, &policy), TSS2_RC_SUCCESS);
+    json_object_put(jso);
+    TSS2_POLICY_CTX *ctx = NULL;
+    assert_int_equal(Tss2_PolicyInit(policy, TPM2_ALG_SHA256, &ctx), TSS2_POLICY_RC_BAD_VALUE);
+    assert_null(ctx);
+    SAFE_FREE(policy);
 }
 
 int
 main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(check_tpmjson_tofromtxt),
-        cmocka_unit_test(check_json_structs),
-        cmocka_unit_test(check_json_constants),
-        cmocka_unit_test(check_json_numbers),
-        cmocka_unit_test(check_json_bits),
-        cmocka_unit_test(check_json_tpm2bs),
-        cmocka_unit_test(check_json_to_bin),
-        cmocka_unit_test(check_bin),
-        cmocka_unit_test(check_policy_bin),
-        cmocka_unit_test(check_error),
-        cmocka_unit_test(check_json_policy),
-        cmocka_unit_test(check_invalid_json),
-        cmocka_unit_test(check_policy_allocating_deserialize),
+        cmocka_unit_test(check_tpmjson_tofromtxt),  cmocka_unit_test(check_json_structs),
+        cmocka_unit_test(check_json_constants),     cmocka_unit_test(check_json_numbers),
+        cmocka_unit_test(check_json_bits),          cmocka_unit_test(check_json_tpm2bs),
+        cmocka_unit_test(check_json_to_bin),        cmocka_unit_test(check_bin),
+        cmocka_unit_test(check_policy_bin),         cmocka_unit_test(check_error),
+        cmocka_unit_test(check_json_policy),        cmocka_unit_test(check_invalid_json),
+        cmocka_unit_test(check_policy_json_string), cmocka_unit_test(check_object_policy_string),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

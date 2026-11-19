@@ -1,10 +1,6 @@
 {
     global:
         Tss2_PolicyInit;
-        Tss2_PolicyCleanup;
-        Tss2_PolicyCopy;
-        Tss2_PolicyJsonDeserialize;
-        Tss2_PolicyJsonSerialize;
         Tss2_PolicyFinalize;
         Tss2_PolicySetCalcCallbacks;
         Tss2_PolicySetExecCallbacks;
@@ -15,12 +11,12 @@
         Tss2_PolicyExecute_Async;
         Tss2_PolicyExecute_Finish;
         Tss2_PolicyGetCalculatedJSON;
+        Tss2_PolicyGetJSON;
+        Tss2_PolicyContextAddAuthorization;
+        Tss2_PolicyContextGetAuthorization;
         Tss2_PolicyGetCalculatedDigest;
         Tss2_PolicyGetDescription;
-        Tss2_PolicySetPolicy;
         Tss2_PolicySetHashAlg;
-        Tss2_PolicyAddAuthorization;
-        Tss2_PolicyGetAuthorization;
     local:
         *;
 };

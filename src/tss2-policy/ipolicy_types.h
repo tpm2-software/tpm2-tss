@@ -12,10 +12,10 @@
 #include "tss2_common.h"     // for UINT32, INT32, UINT16
 #include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPM2B_NAME, TPM2B_NONCE
 
-/* Internal Policy data model. FAPI migration code still includes this header
- * until its direct field access and serialization use the public Policy API.
- */
+/* Internal Policy data model. */
 #include "tss2_policy.h"
+
+typedef struct TPMS_POLICY TPMS_POLICY;
 
 struct TPML_POLICYELEMENTS;
 

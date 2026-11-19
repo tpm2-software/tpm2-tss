@@ -26,8 +26,6 @@
 #include "tss2_esys.h"            // for ESYS_TR_RH_OWNER
 #include "tss2_helpers.h"         // for ifapi_check_json_object_f...
 #include "tss2_mu.h"              // for Tss2_MU_TPM2B_PRIVATE_Unm...
-#include "tss2_policy.h"          // for the opaque Policy API
-#include "tss2_policy.h"          // for Tss2_PolicyCleanup
 #include "tss2_tpm2_types.h"      // for TPMT_HA, TPM2_NO, TPML_DI...
 #include "tss2_types.h"           // for UINT8_ARY
 
@@ -631,7 +629,7 @@ ifapi_json_IFAPI_DUPLICATE_deserialize(json_object *jso, IFAPI_DUPLICATE *out) {
     return_if_error(r, "Bad value for field \"public_parent\".");
 
     if (ifapi_get_sub_object(jso, "policy", &jso2)) {
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->policy);
+        r = ifapi_json_policy_deserialize(jso2, &out->policy);
         goto_if_error(r, "Deserialize policy.", error_cleanup);
     } else {
         out->policy = NULL;
@@ -640,7 +638,7 @@ ifapi_json_IFAPI_DUPLICATE_deserialize(json_object *jso, IFAPI_DUPLICATE *out) {
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
-    Tss2_PolicyCleanup(&out->policy);
+    SAFE_FREE(out->policy);
     return r;
 }
 
@@ -741,7 +739,7 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out) {
     }
 
     if (ifapi_get_sub_object(jso, "policy", &jso2)) {
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, &out->policy);
+        r = ifapi_json_policy_deserialize(jso2, &out->policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     } else {
         out->policy = NULL;
@@ -750,7 +748,7 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out) {
     return TSS2_RC_SUCCESS;
 
 cleanup:
-    Tss2_PolicyCleanup(&out->policy);
+    SAFE_FREE(out->policy);
     return r;
 }
 
@@ -1219,19 +1217,19 @@ ifapi_json_TPMS_EVENT_CELMGT_deserialize(json_object *jso, TPMS_EVENT_CELMGT *ou
     return TSS2_RC_SUCCESS;
 }
 
-/* Adapt an embedded JSON object to the public Policy string API. */
+/* Keep policy JSON opaque to the FAPI. Semantic validation happens in the Policy lib. */
 TSS2_RC
-ifapi_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY **policy) {
+ifapi_json_policy_deserialize(json_object *jso, char **policy) {
     if (!policy)
         return TSS2_FAPI_RC_BAD_REFERENCE;
     *policy = NULL;
     if (!jso)
         return TSS2_FAPI_RC_BAD_REFERENCE;
+    if (json_object_get_type(jso) != json_type_object)
+        return TSS2_FAPI_RC_BAD_VALUE;
     const char *json = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PLAIN);
     if (!json)
         return TSS2_FAPI_RC_MEMORY;
-    TSS2_RC r = Tss2_PolicyJsonDeserialize(json, policy);
-    if ((r & TSS2_RC_LAYER_MASK) == TSS2_POLICY_RC_LAYER)
-        r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
-    return r;
+    *policy = strdup(json);
+    return *policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
 }

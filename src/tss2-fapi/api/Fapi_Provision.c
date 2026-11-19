@@ -89,52 +89,6 @@ error_cleanup_provisioning(FAPI_CONTEXT *context) {
     }
 }
 
-/** Instanatiate all policies defined in the FAPI profile.
- *
- * The five policies which can be defined in the FAPI profile will be
- * instantiated.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
- *         the function.
- */
-TSS2_RC
-instantiate_policies(FAPI_CONTEXT *context) {
-    TSS2_RC         r = TSS2_RC_SUCCESS;
-    IFAPI_POLICIES *ctx = &context->cmd.Provision.policies;
-    size_t          i;
-    switch (ctx->state) {
-    statecase(ctx->state, POLICIES_INSTANTIATION_INIT);
-        ctx->policies[0] = context->profiles.default_profile.ek_policy;
-        ctx->policies[1] = context->profiles.default_profile.srk_policy;
-        ctx->policies[2] = context->profiles.default_profile.eh_policy;
-        ctx->policies[3] = context->profiles.default_profile.sh_policy;
-        ctx->policies[4] = context->profiles.default_profile.lockout_policy;
-        ctx->pol_idx = 0;
-        fallthrough;
-
-    statecase(ctx->state, POLICIES_INSTANTIATION_WAIT);
-        do {
-            for (i = ctx->pol_idx; i < 5 && !ctx->policies[i]; i++)
-                ;
-            if (i == 5) {
-                return TSS2_RC_SUCCESS;
-            }
-            TPM2B_DIGEST digest;
-            r = ifapi_calculate_tree_ex(&context->policy, NULL, NULL, NULL, &ctx->policies[i],
-                                        context->profiles.default_profile.nameAlg, &digest);
-            return_try_again(r);
-            return_if_error(r, "Instantiate policy");
-            ctx->pol_idx = i + 1;
-        } while (ctx->pol_idx < 5);
-
-        fallthrough;
-
-    statecasedefault(context->state);
-    }
-    return TSS2_RC_SUCCESS;
-}
-
 /** One-Call function for the initial FAPI provisioning.
  *
  * Provisions a TSS with its TPM. This includes the setting of important passwords
@@ -495,7 +449,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         }
 
     statecase(context->state, PROVISION_INIT);
-        r = instantiate_policies(context);
+        r = ifapi_instantiate_profile_policies(context);
         return_try_again(r);
         goto_if_error(r, "Instantiate policies", error_cleanup);
 
@@ -1282,7 +1236,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         command->hierarchy_auth.size = strlen(command->authValueLockout);
         context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
         if (defaultProfile->lockout_policy) {
-            r = Tss2_PolicyCopy(defaultProfile->lockout_policy, &command->hierarchy_policy);
+            command->hierarchy_policy = strdup(defaultProfile->lockout_policy);
+            r = command->hierarchy_policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
             if (r)
                 r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
             goto_if_error(r, "Copy policy.", error_cleanup);
@@ -1339,7 +1294,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         /* If a lockout policy is provided by profile, the policy will be
            assigned to lockout hierarchy asynchronous. */
         r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_LOCKOUT, hierarchy_lockout,
-                                          command->hierarchy_policy);
+                                          &command->hierarchy_policy);
         return_try_again(r);
         goto_if_error(r, "Change policy LOCKOUT", error_cleanup);
 
@@ -1374,7 +1329,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_CHANGE_EH_CHECK);
         context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
         if (defaultProfile->eh_policy) {
-            r = Tss2_PolicyCopy(defaultProfile->eh_policy, &command->hierarchy_policy);
+            command->hierarchy_policy = strdup(defaultProfile->eh_policy);
+            r = command->hierarchy_policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
             if (r)
                 r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
             goto_if_error(r, "Copy policy.", error_cleanup);
@@ -1410,7 +1366,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         /* If an endorsement hierarchy policy is provided by profile,
            the policy will be assigned asynchronous. */
         r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_ENDORSEMENT, hierarchy_he,
-                                          command->hierarchy_policy);
+                                          &command->hierarchy_policy);
         return_try_again(r);
         goto_if_error(r, "Change policy EH", error_cleanup);
 
@@ -1443,7 +1399,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_CHANGE_SH_CHECK);
         context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
         if (defaultProfile->sh_policy) {
-            r = Tss2_PolicyCopy(defaultProfile->sh_policy, &command->hierarchy_policy);
+            command->hierarchy_policy = strdup(defaultProfile->sh_policy);
+            r = command->hierarchy_policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
             if (r)
                 r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
             goto_if_error(r, "Copy policy.", error_cleanup);
@@ -1482,7 +1439,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         /* If an owner hierarchy policy is provided by profile,
            the policy will be assigned asynchronous. */
         r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_OWNER, hierarchy_hs,
-                                          command->hierarchy_policy);
+                                          &command->hierarchy_policy);
         return_try_again(r);
         goto_if_error(r, "Change policy SH", error_cleanup);
 
@@ -1677,6 +1634,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     }
 
 error_cleanup:
+    SAFE_FREE(command->hierarchy_policy);
+    Tss2_PolicyFinalize(&context->policy.tss2_policy_ctx);
     /* Primaries might not have been flushed in error cases */
     if (r)
         error_cleanup_provisioning(context);

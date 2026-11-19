@@ -522,7 +522,7 @@ ifapi_json_IFAPI_DUPLICATE_serialize(const IFAPI_DUPLICATE *in, json_object **js
     }
     if (in->policy) {
         jso2 = NULL;
-        r = ifapi_json_TPMS_POLICY_serialize(in->policy, &jso2);
+        r = ifapi_json_policy_serialize(in->policy, &jso2);
         return_if_error(r, "Serialize policy");
 
         if (json_object_object_add(*jso, "policy", jso2)) {
@@ -621,17 +621,7 @@ ifapi_json_IFAPI_OBJECT_serialize(const IFAPI_OBJECT *in, json_object **jso) {
 
     if (in->policy) {
         jso2 = NULL;
-        r = ifapi_json_TPMS_POLICY_serialize(in->policy, &jso2);
-        return_if_error(r, "Serialize policy");
-
-        if (json_object_object_add(*jso, "policy", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
-        }
-    }
-
-    if (in->policy) {
-        jso2 = NULL;
-        r = ifapi_json_TPMS_POLICY_serialize(in->policy, &jso2);
+        r = ifapi_json_policy_serialize(in->policy, &jso2);
         return_if_error(r, "Serialize policy");
 
         if (json_object_object_add(*jso, "policy", jso2)) {
@@ -1214,21 +1204,21 @@ ifapi_json_TPMS_EVENT_CELMGT_serialize(const TPMS_EVENT_CELMGT *in, json_object 
     return TSS2_RC_SUCCESS;
 }
 
-/* Adapt the public Policy string API to an embedded JSON object. */
+/* Embed the JSON policy as an object, preserving the existing keystore format. */
 TSS2_RC
-ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *policy, json_object **jso) {
+ifapi_json_policy_serialize(const char *policy, json_object **jso) {
     if (!jso)
         return TSS2_FAPI_RC_BAD_REFERENCE;
     *jso = NULL;
-    char   *json = NULL;
-    TSS2_RC r = Tss2_PolicyJsonSerialize(policy, &json);
-    if (!r) {
-        *jso = json_tokener_parse(json);
-        if (!*jso)
-            r = TSS2_FAPI_RC_MEMORY;
+    if (!policy)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    json_object *parsed = ifapi_parse_json(policy);
+    if (!parsed)
+        return TSS2_FAPI_RC_BAD_VALUE;
+    if (json_object_get_type(parsed) != json_type_object) {
+        json_object_put(parsed);
+        return TSS2_FAPI_RC_BAD_VALUE;
     }
-    free(json);
-    if ((r & TSS2_RC_LAYER_MASK) == TSS2_POLICY_RC_LAYER)
-        r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
-    return r;
+    *jso = parsed;
+    return TSS2_RC_SUCCESS;
 }

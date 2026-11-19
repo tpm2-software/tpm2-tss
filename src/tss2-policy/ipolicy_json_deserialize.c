@@ -15,6 +15,7 @@
 #include <string.h>   // for memset, strlen, strcmp, strncmp
 #include <strings.h>  // for strncasecmp
 
+#include "ipolicy_helpers.h"
 #include "ipolicy_json_deserialize.h" // for ifapi_json_TPMI_POLICYTYP...
 #include "ipolicy_types.h"            // for TPMS_POLICYSIGNED, TPMU_POLICYEL...
 #include "json_helpers.h"
@@ -1586,9 +1587,26 @@ ipolicy_json_TPMS_POLICY_deserialize(json_object *jso, TPMS_POLICY **out) {
         return TSS2_FAPI_RC_MEMORY;
     TSS2_RC r = deserialize_policy(jso, policy);
     if (r) {
-        Tss2_PolicyCleanup(&policy);
+        ipolicy_cleanup(&policy);
         return r;
     }
     *out = policy;
     return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC
+ipolicy_json_deserialize(const char *json, TPMS_POLICY **policy) {
+    if (!policy)
+        return TSS2_POLICY_RC_BAD_REFERENCE;
+    *policy = NULL;
+    if (!json)
+        return TSS2_POLICY_RC_BAD_REFERENCE;
+    json_object *jso = ifapi_parse_json(json);
+    if (!jso)
+        return TSS2_POLICY_RC_BAD_VALUE;
+    TSS2_RC r = ipolicy_json_TPMS_POLICY_deserialize(jso, policy);
+    json_object_put(jso);
+    if ((r & TSS2_RC_LAYER_MASK) == TSS2_FEATURE_RC_LAYER)
+        r = TSS2_POLICY_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+    return r;
 }

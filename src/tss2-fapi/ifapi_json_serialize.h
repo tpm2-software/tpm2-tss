@@ -16,10 +16,8 @@
 #include "tss2_common.h"        // for TSS2_RC, UINT32
 #include "tss2_types.h"         // for UINT8_ARY
 
-#include "tss2_policy.h"
-
 TSS2_RC
-ifapi_json_TPMS_POLICY_serialize(const TPMS_POLICY *policy, json_object **jso);
+ifapi_json_policy_serialize(const char *policy, json_object **jso);
 
 #define YES 1
 #define NO  0

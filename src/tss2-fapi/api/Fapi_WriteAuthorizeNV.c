@@ -22,7 +22,7 @@
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_WriteAuthorizeNv
 #include "tss2_helpers.h"       // for internal helpers
 #include "tss2_mu.h"            // for Tss2_MU_TPMI_ALG_HASH_Marshal
-#include "tss2_policy.h"        // for Tss2_PolicyCleanup
+#include "tss2_policy.h"        // for Policy context API
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPMI_ALG_HASH, TPM2B_NV_PUBLIC, TPMS...
 
@@ -237,7 +237,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     IFAPI_NV_Cmds              *nvCmd = &context->nv_cmd;
     IFAPI_OBJECT               *object = &nvCmd->nv_object;
     TPMI_ALG_HASH               hashAlg;
-    TPMS_POLICY               **policy = &nvCmd->policy;
+    char                      **policy = &nvCmd->policy;
 
     switch (context->state) {
     statecase(context->state, WRITE_AUTHORIZE_NV_READ_NV)
@@ -342,7 +342,7 @@ error_cleanup:
     SAFE_FREE(nvCmd->nvPath);
     SAFE_FREE(nvCmd->nv_buffer);
     ifapi_session_clean(context);
-    Tss2_PolicyCleanup(policy);
+    SAFE_FREE(*policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

@@ -150,7 +150,7 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
     json_object *jso = NULL;
     json_object *jso2;
     size_t       pos = 0;
-    TPMS_POLICY *policy = NULL;
+    char        *policy = NULL;
     TPMA_OBJECT *attributes;
 
     /* Check for NULL parameters */
@@ -278,8 +278,16 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
         if (ifapi_get_sub_object(jso, IFAPI_JSON_TAG_POLICY, &jso2)
             && !(ifapi_get_sub_object(jso, IFAPI_JSON_TAG_DUPLICATE, &jso2))) {
             /* Create policy object */
-            r = ifapi_json_TPMS_POLICY_deserialize(jso, &policy);
+            r = ifapi_json_policy_deserialize(jso, &policy);
             goto_if_error(r, "Serialize policy", cleanup_error);
+
+            /* Validate policy semantics in the Policy lib before storing an import. */
+            TSS2_POLICY_CTX *validation_ctx = NULL;
+            r = Tss2_PolicyInit(policy, TPM2_ALG_SHA256, &validation_ctx);
+            Tss2_PolicyFinalize(&validation_ctx);
+            if (r)
+                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+            goto_if_error(r, "Invalid policy.", cleanup_error);
 
             /* Check whether an existing object would be overwritten */
             r = ifapi_policystore_check_overwrite(&context->pstore, command->out_path);
@@ -289,7 +297,7 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
                                                policy);
             goto_if_error_reset_state(r, "Could not open: %s", cleanup_error, command->out_path);
 
-            Tss2_PolicyCleanup(&policy);
+            SAFE_FREE(policy);
 
             context->state = IMPORT_KEY_WRITE_POLICY;
 
@@ -355,7 +363,7 @@ cleanup_error:
     if (jso)
         json_object_put(jso);
     context->state = FAPI_STATE_INIT;
-    Tss2_PolicyCleanup(&policy);
+    SAFE_FREE(policy);
     ifapi_cleanup_ifapi_object(object);
     SAFE_FREE(command->jso_string);
     SAFE_FREE(extPubKey->pem_ext_public);
@@ -651,7 +659,8 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
         newObject->objectType = IFAPI_KEY_OBJ;
         newObject->misc.key.public = keyTree->public;
         if (keyTree->policy) {
-            r = Tss2_PolicyCopy(keyTree->policy, &newObject->policy);
+            newObject->policy = strdup(keyTree->policy);
+            r = newObject->policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
             if (r)
                 r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
             goto_if_error(r, "Copy policy.", error_cleanup);
@@ -716,7 +725,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     /* Cleanup policy for key objects.*/
     if (newObject->objectType == IFAPI_KEY_OBJ) {
         if (newObject->policy)
-            Tss2_PolicyCleanup(&newObject->policy);
+            SAFE_FREE(newObject->policy);
     }
     SAFE_FREE(command->parent_path);
     ifapi_cleanup_ifapi_object(&command->object);

@@ -12,10 +12,11 @@
 #include <stdbool.h>  // for bool, false, true
 #include <string.h>   // for memset
 
-#include "fapi_int.h"           // for IFAPI_POLICY_CTX, POLICY_INIT
-#include "ifapi_helpers.h"      // for tss2_free_node_list
-#include "ifapi_io.h"           // for IFAPI_IO
-#include "ifapi_macros.h"       // for statecase, fallthrough, return...
+#include "fapi_int.h"      // for IFAPI_POLICY_CTX, POLICY_INIT
+#include "ifapi_helpers.h" // for tss2_free_node_list
+#include "ifapi_io.h"      // for IFAPI_IO
+#include "ifapi_macros.h"  // for statecase, fallthrough, return...
+#include "ifapi_policy.h"
 #include "ifapi_policy_store.h" // for ifapi_policy_store_load_async
 #include "tss2_common.h"        // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
 #include "tss2_crypto.h"        // for tss2_hash_get_digest_size
@@ -66,10 +67,11 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
                         IFAPI_POLICY_STORE *pstore,
                         IFAPI_IO           *io,
                         const char         *policyPath,
-                        TPMS_POLICY       **policy,
+                        char              **policy,
                         TPMI_ALG_HASH       hash_alg,
                         TPM2B_DIGEST       *digest) {
     TSS2_RC r = TSS2_RC_SUCCESS;
+    char   *updated_policy = NULL;
 
     if (context->state == POLICY_INIT && !policyPath)
         /* Skip policy reading */
@@ -97,7 +99,7 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
         fallthrough;
 
     statecase(context->state, POLICY_INSTANTIATE_PREPARE);
-        r = Tss2_PolicySetPolicy(*policy, hash_alg, &context->tss2_policy_ctx);
+        r = Tss2_PolicyInit(*policy, hash_alg, &context->tss2_policy_ctx);
         goto_if_error(r, "Instantiate policy.", cleanup);
 
         r = Tss2_PolicySetCalcCallbacks(context->tss2_policy_ctx, &context->calc_callbacks);
@@ -114,12 +116,21 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
         r = Tss2_PolicyGetCalculatedDigest(context->tss2_policy_ctx, digest);
         goto_if_error(r, "Copy policy.", cleanup);
 
+        r = Tss2_PolicyGetJSON(context->tss2_policy_ctx, &updated_policy);
+        goto_if_error(r, "Serialize calculated policy.", cleanup);
+        SAFE_FREE(*policy);
+        *policy = updated_policy;
+        updated_policy = NULL;
+
         break;
     statecasedefault(context->state);
     }
 cleanup:
+    SAFE_FREE(updated_policy);
     Tss2_PolicyFinalize(&context->tss2_policy_ctx);
     context->state = POLICY_INIT;
+    if (rc_layer(r) == TSS2_POLICY_RC_LAYER)
+        r = TSS2_FEATURE_RC_LAYER | base_rc(r);
     return r;
 }
 
@@ -162,7 +173,7 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
                       IFAPI_POLICY_STORE         *pstore,
                       IFAPI_IO                   *io,
                       const char                 *policyPath,
-                      TPMS_POLICY               **policy,
+                      char                      **policy,
                       ESYS_CONTEXT               *esys_ctx,
                       ESYS_TR                     session,
                       TPMI_ALG_HASH               hash_alg,
@@ -202,7 +213,7 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
 
     statecase(*state, POLICY_EXECUTE_PREPARE);
         if (!*policy_ctx) {
-            r = Tss2_PolicySetPolicy(*policy, hash_alg, policy_ctx);
+            r = Tss2_PolicyInit(*policy, hash_alg, policy_ctx);
             goto_if_error(r, "Set execution policy.", cleanup);
             r = Tss2_PolicySetExecCallbacks(*policy_ctx, callbacks);
             goto_if_error(r, "Set execution callbacks.", cleanup);
@@ -229,4 +240,104 @@ cleanup:
         r = TSS2_FEATURE_RC_LAYER | base_rc(r);
     *state = POLICY_INIT;
     return r;
+}
+
+/* Replace the stored JSON only after the authorization and serialization succeed. */
+TSS2_RC
+ifapi_policy_add_authorization(char                **policy,
+                               const TPMT_SIGNATURE *signature,
+                               const TPM2B_DIGEST   *policy_ref,
+                               const TPMT_PUBLIC    *key) {
+    if (!policy || !*policy)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    TSS2_POLICY_CTX *ctx = NULL;
+    char            *updated = NULL;
+    TSS2_RC          r = Tss2_PolicyInit(*policy, TPM2_ALG_SHA256, &ctx);
+    if (!r)
+        r = Tss2_PolicyContextAddAuthorization(ctx, signature, policy_ref, key);
+    if (!r)
+        r = Tss2_PolicyGetJSON(ctx, &updated);
+    if (!r) {
+        SAFE_FREE(*policy);
+        *policy = updated;
+        updated = NULL;
+    }
+    SAFE_FREE(updated);
+    Tss2_PolicyFinalize(&ctx);
+    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
+}
+
+TSS2_RC
+ifapi_policy_get_authorization(const char        *policy,
+                               const TPMT_PUBLIC *key,
+                               const TPM2B_NONCE *policy_ref,
+                               bool              *found,
+                               TPMT_SIGNATURE    *signature) {
+    TSS2_POLICY_CTX *ctx = NULL;
+    TSS2_RC          r = Tss2_PolicyInit(policy, TPM2_ALG_SHA256, &ctx);
+    if (!r)
+        r = Tss2_PolicyContextGetAuthorization(ctx, key, policy_ref, found, signature);
+    Tss2_PolicyFinalize(&ctx);
+    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
+}
+
+/** Instantiate all policies defined in the FAPI profile.
+ *
+ * The five policies which can be defined in the FAPI profile will be
+ * instantiated.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ */
+TSS2_RC
+ifapi_instantiate_profile_policies(FAPI_CONTEXT *context) {
+    TSS2_RC         r = TSS2_RC_SUCCESS;
+    IFAPI_POLICIES *ctx = &context->cmd.Provision.policies;
+    size_t          i;
+    switch (ctx->state) {
+    statecase(ctx->state, POLICIES_INSTANTIATION_INIT);
+        ctx->policies[0] = &context->profiles.default_profile.ek_policy;
+        ctx->policies[1] = &context->profiles.default_profile.srk_policy;
+        ctx->policies[2] = &context->profiles.default_profile.eh_policy;
+        ctx->policies[3] = &context->profiles.default_profile.sh_policy;
+        ctx->policies[4] = &context->profiles.default_profile.lockout_policy;
+        ctx->pol_idx = 0;
+        fallthrough;
+
+    statecase(ctx->state, POLICIES_INSTANTIATION_WAIT);
+        do {
+            for (i = ctx->pol_idx; i < 5 && !*ctx->policies[i]; i++)
+                ;
+            if (i == 5) {
+                return TSS2_RC_SUCCESS;
+            }
+            TPM2B_DIGEST digest;
+            r = ifapi_calculate_tree_ex(&context->policy, NULL, NULL, NULL, ctx->policies[i],
+                                        context->profiles.default_profile.nameAlg, &digest);
+            return_try_again(r);
+            return_if_error(r, "Instantiate policy");
+
+            /* default_profile is a shallow view of the selected profile. Keep
+             * its owning entry in sync when calculated JSON replaces a string. */
+            for (size_t j = 0; j < context->profiles.num_profiles; j++) {
+                IFAPI_PROFILE_ENTRY *entry = &context->profiles.profiles[j];
+                if (strcmp(entry->name, context->profiles.default_name) == 0) {
+                    IFAPI_PROFILE *profile = &context->profiles.default_profile;
+                    entry->profile.ek_policy = profile->ek_policy;
+                    entry->profile.srk_policy = profile->srk_policy;
+                    entry->profile.eh_policy = profile->eh_policy;
+                    entry->profile.sh_policy = profile->sh_policy;
+                    entry->profile.lockout_policy = profile->lockout_policy;
+                    break;
+                }
+            }
+            ctx->pol_idx = i + 1;
+        } while (ctx->pol_idx < 5);
+
+        return TSS2_RC_SUCCESS;
+
+    statecasedefault(ctx->state);
+    }
+    return TSS2_RC_SUCCESS;
 }

@@ -16,6 +16,7 @@
 #include "fapi_util.h"     // for ifapi_get_object_path, ifapi_a...
 #include "ifapi_helpers.h" // for ifapi_TPMT_PUBLIC_cmp, ifapi_c...
 #include "ifapi_macros.h"  // for statecase, fallthrough, return...
+#include "ifapi_policy.h"
 #include "ifapi_policy_callbacks.h"
 #include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
 #include "ifapi_policyutil_execute.h" // for IFAPI_POLICYUTIL_STACK, ifapi_...
@@ -24,7 +25,7 @@
 #include "tss2_fapi.h"                // for FAPI_CONTEXT
 #include "tss2_helpers.h"             // for policy helpers
 #include "tss2_mu.h"                  // for Tss2_MU_TPMT_HA_Unmarshal
-#include "tss2_policy.h"              // for Tss2_PolicyCleanup
+#include "tss2_policy.h"              // for Policy context API
 #include "tss2_types.h"               // for UINT8_ARY
 
 #define LOGMODULE fapi
@@ -870,11 +871,8 @@ ifapi_sign_buffer(char           *key_pem,
  * @param[out] equal Switch whether check was successful.
  */
 static TSS2_RC
-equal_policy_authorization(TPMS_POLICY *policy,
-                           void        *publicVoid,
-                           void        *policyRefVoid,
-                           bool        *equal) {
-    TSS2_RC r = Tss2_PolicyGetAuthorization(policy, publicVoid, policyRefVoid, equal, NULL);
+equal_policy_authorization(const char *policy, void *publicVoid, void *policyRefVoid, bool *equal) {
+    TSS2_RC r = ifapi_policy_get_authorization(policy, publicVoid, policyRefVoid, equal, NULL);
     return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
 }
 
@@ -889,9 +887,9 @@ equal_policy_authorization(TPMS_POLICY *policy,
  * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
-get_policy_digest(TPMS_POLICY *policy, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST *digest) {
+get_policy_digest(const char *policy, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST *digest) {
     TSS2_POLICY_CTX *ctx = NULL;
-    TSS2_RC          r = Tss2_PolicySetPolicy(policy, hashAlg, &ctx);
+    TSS2_RC          r = Tss2_PolicyInit(policy, hashAlg, &ctx);
     if (r == TSS2_RC_SUCCESS)
         r = Tss2_PolicyGetCalculatedDigest(ctx, digest);
     Tss2_PolicyFinalize(&ctx);
@@ -909,7 +907,7 @@ get_policy_digest(TPMS_POLICY *policy, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST *dige
  * @param[out] equal Switch whether check was successful.
  */
 static TSS2_RC
-compare_policy_digest(TPMS_POLICY *policy, void *authPolicyVoid, void *nameAlgVoid, bool *equal) {
+compare_policy_digest(const char *policy, void *authPolicyVoid, void *nameAlgVoid, bool *equal) {
     const TPM2B_DIGEST  *auth_policy = authPolicyVoid;
     const TPMI_ALG_HASH *hash_alg = nameAlgVoid;
     TPM2B_DIGEST         digest;
@@ -963,7 +961,7 @@ search_policy(FAPI_CONTEXT         *context,
               struct POLICY_LIST  **policy_found) {
     TSS2_RC             r = TSS2_RC_SUCCESS;
     char               *path;
-    TPMS_POLICY        *policy = NULL;
+    char               *policy = NULL;
     bool                found;
     struct POLICY_LIST *policy_object = NULL;
     struct POLICY_LIST *second;
@@ -1028,12 +1026,12 @@ search_policy(FAPI_CONTEXT         *context,
             if (!all_objects && context->fsearch.path_idx == 0) {
                 /* All files checked, but no policy found. */
                 context->fsearch.state = FSEARCH_INIT;
-                Tss2_PolicyCleanup(&policy);
+                SAFE_FREE(policy);
                 return TSS2_BASE_RC_POLICY_UNKNOWN;
             } else {
                 /* Continue search. */
                 context->fsearch.state = FSEARCH_OBJECT;
-                Tss2_PolicyCleanup(&policy);
+                SAFE_FREE(policy);
                 return TSS2_FAPI_RC_TRY_AGAIN;
             }
         }
@@ -1079,7 +1077,7 @@ search_policy(FAPI_CONTEXT         *context,
     return TSS2_RC_SUCCESS;
 cleanup:
     SAFE_FREE(policy_object);
-    Tss2_PolicyCleanup(&policy);
+    SAFE_FREE(policy);
     for (size_t i = 0; i < context->fsearch.numPaths; i++) {
         SAFE_FREE(context->fsearch.pathlist[i]);
     }
@@ -1099,7 +1097,7 @@ cleanup_policy_list(struct POLICY_LIST *list) {
         while (branch) {
             struct POLICY_LIST *next = branch->next;
             /* Cleanup the policy stored in the list. */
-            Tss2_PolicyCleanup(&branch->policy);
+            SAFE_FREE(branch->policy);
             SAFE_FREE(branch->path);
             SAFE_FREE(branch);
             branch = next;
@@ -1262,7 +1260,8 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
         goto_if_error(r, "Execute policy.", cleanup);
 
         bool found;
-        r = Tss2_PolicyGetAuthorization(cb_ctx->policy, key_public, policyRef, &found, signature);
+        r = ifapi_policy_get_authorization(cb_ctx->policy, key_public, policyRef, &found,
+                                           signature);
         if (rc_layer(r) == TSS2_POLICY_RC_LAYER)
             r = TSS2_FEATURE_RC_LAYER | base_rc(r);
         goto_if_error(r, "Get authorization", cleanup);

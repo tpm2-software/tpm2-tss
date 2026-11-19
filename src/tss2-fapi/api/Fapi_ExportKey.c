@@ -399,10 +399,10 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
         keyTree->public = command->key_object->misc.key.public;
         keyTree->public_parent = command->public_parent;
 
-        /* For the policy added no cleanup is needed. The cleanup will
-           be done with the object cleanup. */
+        /* Borrow the object's policy JSON only while serializing the export. */
         keyTree->policy = command->key_object->policy;
         r = ifapi_get_json(context, exportTree, &command->exportedData);
+        keyTree->policy = NULL;
         goto_if_error2(r, "get JSON for exported data.", cleanup);
 
         fallthrough;

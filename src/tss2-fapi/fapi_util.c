@@ -567,7 +567,7 @@ error:
 TSS2_RC
 ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
     TSS2_RC      r;
-    TPMS_POLICY *policy;
+    char        *policy;
     TPM2B_DIGEST digest;
     IFAPI_KEY   *pkey = &context->createPrimary.pkey_object.misc.key;
 
@@ -617,7 +617,8 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
 
     if (policy) {
         /* Duplicate policy to prevent profile policy from cleanup. */
-        r = Tss2_PolicyCopy(policy, &policy);
+        policy = strdup(policy);
+        r = policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
         if (r)
             r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
         return_if_error(r, "Copy policy.");
@@ -626,7 +627,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
                                  &policy, context->profiles.default_profile.nameAlg, &digest);
         if (r) {
             LOG_ERROR("Policy calculation");
-            Tss2_PolicyCleanup(&policy);
+            SAFE_FREE(policy);
             return r;
         }
         /* Check whether policy digest defined for key matches the computed policy. */
@@ -637,7 +638,7 @@ ifapi_init_primary_async(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype) {
                        &context->cmd.Provision.public_templ.public.publicArea.authPolicy.buffer[0],
                        digest.size)
                        != 0) {
-                Tss2_PolicyCleanup(&policy);
+                SAFE_FREE(policy);
                 return_error(TSS2_FAPI_RC_BAD_VALUE,
                              "EK Policy does not match policy defined in profile.");
             }
@@ -3086,7 +3087,7 @@ ifapi_initialize_object(ESYS_CONTEXT *ectx, IFAPI_OBJECT *object) {
     return r;
 
 cleanup:
-    Tss2_PolicyCleanup(&object->policy);
+    SAFE_FREE(object->policy);
     return r;
 }
 
@@ -3822,7 +3823,7 @@ error:
  * @param[in] handle The ESAPI handle of the hierarchy.
  * @param[in,out] hierarchy_object The internal FAPI representation of a
  *                hierarchy.
- * @param[in] policy The new policy assigned to the hierarchy.
+ * @param[in,out] policy Owned policy JSON slot, cleared when the hierarchy takes ownership.
  *
  * @retval TSS2_RC_SUCCESS on success.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
@@ -3853,14 +3854,16 @@ TSS2_RC
 ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
                               ESYS_TR       handle,
                               IFAPI_OBJECT *hierarchy_object,
-                              TPMS_POLICY  *policy) {
+                              char        **policy) {
     TSS2_RC      r;
     ESYS_TR      auth_session;
     TPM2B_DIGEST digest;
 
+    return_if_null(policy, "Missing policy slot.", TSS2_FAPI_RC_BAD_REFERENCE);
+
     switch (context->hierarchy_policy_state) {
     statecase(context->hierarchy_policy_state, HIERARCHY_CHANGE_POLICY_INIT);
-        if ((!policy) && !hierarchy_object->policy) {
+        if ((!*policy) && !hierarchy_object->policy) {
             /* No policy will be used for hierarchy */
             return TSS2_RC_SUCCESS;
         }
@@ -3875,23 +3878,25 @@ ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
             auth_session = context->session1;
         }
 
-        if (policy) {
-            context->policy.state = POLICY_INIT;
+        if (*policy) {
 
             /* Calculate the policy digest which will be used as hierarchy policy. */
             r = ifapi_calculate_tree(context, NULL, /**< no path needed */
-                                     &policy, context->profiles.default_profile.nameAlg, &digest);
+                                     policy, context->profiles.default_profile.nameAlg, &digest);
+            return_try_again(r);
             goto_if_error(r, "Policy calculation", error);
 
             /* Policy data will be stored in the provisioning context. */
             context->cmd.Provision.policy_digest = digest;
 
-            hierarchy_object->policy = policy;
+            SAFE_FREE(hierarchy_object->policy);
+            hierarchy_object->policy = *policy;
+            *policy = NULL;
             hierarchy_object->misc.hierarchy.authPolicy = context->cmd.Provision.policy_digest;
         } else {
             /* No policy will be used for this hierarchy. */
             context->cmd.Provision.policy_digest.size = 0;
-            Tss2_PolicyCleanup(&hierarchy_object->policy);
+            SAFE_FREE(hierarchy_object->policy);
             hierarchy_object->misc.hierarchy.with_auth = TPM2_NO;
             hierarchy_object->misc.hierarchy.authPolicy.size = 0;
         }

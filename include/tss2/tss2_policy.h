@@ -52,8 +52,6 @@ struct TPML_PCRVALUES {
     TPMS_PCRVALUE pcrs[]; /**< Array of pcr values */
 };
 
-typedef struct TPMS_POLICY TPMS_POLICY;
-
 typedef struct TSS2_POLICY_CTX TSS2_POLICY_CTX;
 
 typedef struct TSS2_OBJECT TSS2_OBJECT;
@@ -227,58 +225,30 @@ Tss2_PolicyGetDescription(TSS2_POLICY_CTX *policy_ctx, char *description, size_t
 TSS2_RC
 Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest);
 
-/* Free an owned policy and all nested allocations, then set *policy to NULL.
- * NULL and a pointer to NULL are accepted. Borrowed policies must outlive
- * their policy contexts; finalize those contexts before freeing the policy.
- */
-void Tss2_PolicyCleanup(TPMS_POLICY **policy);
-
-/* Parse a policy document. The caller owns *policy and releases it with
- * Tss2_PolicyCleanup. On failure, *policy is NULL; the output slot must not
- * own an existing policy. No TPM or Policy context is required.
- */
-TSS2_RC Tss2_PolicyJsonDeserialize(const char *json, TPMS_POLICY **policy);
-
-/* Serialize the current policy, including any digests and authorizations.
- * The caller releases *json with free(). On failure, *json is NULL.
- * The output slot must not own an existing string.
- */
-TSS2_RC Tss2_PolicyJsonSerialize(const TPMS_POLICY *policy, char **json);
-
-/* Deep-copy an owned policy, including authorizations and calculated digests.
- * On failure, *destination is NULL. Source and copy can be freed independently.
- * Any previous value in *destination is overwritten without being freed.
- * A PolicyAuthorizeNV runtime policy_buffer without length cannot be copied
- * and returns TSS2_POLICY_RC_BAD_VALUE.
- */
-TSS2_RC Tss2_PolicyCopy(const TPMS_POLICY *source, TPMS_POLICY **destination);
-
-TSS2_RC
-Tss2_PolicySetPolicy(TPMS_POLICY *policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX **policy_ctx);
-
 TSS2_RC
 Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg);
 
-/* Append a copied TPM authorization; signature verification is the caller's responsibility.
- * All input pointers must be non-NULL; an empty policyRef has size zero.
- * On failure, the policy remains unchanged. All input objects remain caller-owned.
+/* Serialize the current policy, including authorizations and partial calculation
+ * results. No successful calculation is required. The caller frees *json.
+ * The output slot must not own a string. Errors leave *json NULL.
  */
 TSS2_RC
-Tss2_PolicyAddAuthorization(TPMS_POLICY          *policy,
-                            const TPMT_SIGNATURE *signature,
-                            const TPM2B_DIGEST   *policyRef,
-                            const TPMT_PUBLIC    *key);
+Tss2_PolicyGetJSON(const TSS2_POLICY_CTX *policy_ctx, char **json);
 
-/* Find an authorization by key type/unique ID and policy reference.
- * NULL policy_ref means an empty reference; NULL signature requests a match only.
- * No match returns SUCCESS with found=false and leaves signature unchanged.
- * Matching PEM signatures are converted to TPM format when requested.
+/* Access authorizations through the policy context. The context retains ownership of
+ * its policy. Adding an authorization while execution is pending is rejected.
  */
 TSS2_RC
-Tss2_PolicyGetAuthorization(const TPMS_POLICY *policy,
-                            const TPMT_PUBLIC *key,
-                            const TPM2B_NONCE *policy_ref,
-                            bool              *found,
-                            TPMT_SIGNATURE    *signature);
+Tss2_PolicyContextAddAuthorization(TSS2_POLICY_CTX      *policy_ctx,
+                                   const TPMT_SIGNATURE *signature,
+                                   const TPM2B_DIGEST   *policy_ref,
+                                   const TPMT_PUBLIC    *key);
+
+TSS2_RC
+Tss2_PolicyContextGetAuthorization(const TSS2_POLICY_CTX *policy_ctx,
+                                   const TPMT_PUBLIC     *key,
+                                   const TPM2B_NONCE     *policy_ref,
+                                   bool                  *found,
+                                   TPMT_SIGNATURE        *signature);
 
 #endif /* INCLUDE_TSS2_TSS2_POLICY_H_ */
