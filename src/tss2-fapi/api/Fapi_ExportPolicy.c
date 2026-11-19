@@ -26,7 +26,7 @@
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_ExportPo...
 #include "tss2_helpers.h"       // for internal helpers
-#include "tss2_policy.h"        // for Tss2_PolicyCleanup
+#include "tss2_policy.h"        // for Policy context API
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPML_DIGEST_VALUES, TPMT_HA
 
@@ -232,8 +232,7 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
         command->hashAlg = context->profiles.default_profile.nameAlg;
         command->profile_idx = 0;
 
-        r = Tss2_PolicySetPolicy(command->policy, command->hashAlg,
-                                 &context->policy.tss2_policy_ctx);
+        r = Tss2_PolicyInit(command->policy, command->hashAlg, &context->policy.tss2_policy_ctx);
         goto_if_error(r, "Instantiate policy.", error_cleanup);
 
         r = Tss2_PolicySetCalcCallbacks(context->policy.tss2_policy_ctx,
@@ -265,10 +264,9 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
 
+        /* Export all current results, including partially calculated policies. */
+        r = Tss2_PolicyGetJSON(context->policy.tss2_policy_ctx, jsonPolicy);
         Tss2_PolicyFinalize(&context->policy.tss2_policy_ctx);
-
-        /* Serialize the policy to JSON. */
-        r = Tss2_PolicyJsonSerialize(command->policy, jsonPolicy);
         if (r)
             r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
         goto_if_error(r, "Serialize policy", error_cleanup);
@@ -293,7 +291,8 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
                       error_cleanup);
 
         /* Serialize the policy to JSON. */
-        r = Tss2_PolicyJsonSerialize(context->cmd.ExportPolicy.object.policy, jsonPolicy);
+        *jsonPolicy = strdup(context->cmd.ExportPolicy.object.policy);
+        r = *jsonPolicy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
         if (r)
             r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
         goto_if_error(r, "Serialize policy", error_cleanup);
@@ -303,9 +302,10 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
     }
 
     /* Cleanup any intermediate results and state stored in the context. */
+    Tss2_PolicyFinalize(&context->policy.tss2_policy_ctx);
     context->state = FAPI_STATE_INIT;
     ifapi_cleanup_ifapi_object(&command->object);
-    Tss2_PolicyCleanup(&command->policy);
+    SAFE_FREE(command->policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
@@ -315,9 +315,10 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
 
 error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
+    Tss2_PolicyFinalize(&context->policy.tss2_policy_ctx);
     if (command->object.objectType)
         ifapi_cleanup_ifapi_object(&command->object);
-    Tss2_PolicyCleanup(&command->policy);
+    SAFE_FREE(command->policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

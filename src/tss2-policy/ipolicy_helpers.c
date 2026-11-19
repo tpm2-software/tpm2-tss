@@ -401,9 +401,182 @@ ipolicy_copy(const TPMS_POLICY *source, TPMS_POLICY **destination) {
     if (!r)
         r = copy_policy_authorizations(source->policyAuthorizations, &copy->policyAuthorizations);
     if (r) {
-        Tss2_PolicyCleanup(&copy);
+        ipolicy_cleanup(&copy);
         return r;
     }
     *destination = copy;
     return TSS2_RC_SUCCESS;
+}
+
+static TSS2_RC
+authorization_policy_rc(TSS2_RC rc) {
+    return rc_layer(rc) == TSS2_FEATURE_RC_LAYER ? TSS2_POLICY_RC_LAYER | (rc & ~TSS2_RC_LAYER_MASK)
+                                                 : rc;
+}
+
+/** Append a TPM authorization. Inputs are copied; the policy owns the new entry.
+ * The caller supplies the signature over the hash of the policy digest and policyRef.
+ * This function stores the authorization without verifying the signature.
+ */
+TSS2_RC
+ipolicy_add_authorization(TPMS_POLICY          *policy,
+                          const TPMT_SIGNATURE *signature,
+                          const TPM2B_DIGEST   *policyRef,
+                          const TPMT_PUBLIC    *key) {
+    if (!policy || !signature || !policyRef || !key)
+        return TSS2_POLICY_RC_BAD_REFERENCE;
+    if (policyRef->size > sizeof(policyRef->buffer))
+        return TSS2_POLICY_RC_BAD_VALUE;
+
+    size_t count = policy->policyAuthorizations ? policy->policyAuthorizations->count : 0;
+    if (count == UINT32_MAX)
+        return TSS2_POLICY_RC_MEMORY;
+
+#if SIZE_MAX <= UINT32_MAX
+    /* On wider platforms, the UINT32 count bounds the allocation size. */
+    if (count >= (SIZE_MAX - sizeof(TPML_POLICYAUTHORIZATIONS)) / sizeof(TPMS_POLICYAUTHORIZATION))
+        return TSS2_POLICY_RC_MEMORY;
+#endif
+
+    char *type = strdup("tpm");
+    if (!type)
+        return TSS2_POLICY_RC_MEMORY;
+    TPML_POLICYAUTHORIZATIONS *entries
+        = realloc(policy->policyAuthorizations,
+                  sizeof(*entries) + (count + 1) * sizeof(entries->authorizations[0]));
+    if (!entries) {
+        free(type);
+        return TSS2_POLICY_RC_MEMORY;
+    }
+    entries->authorizations[count] = (TPMS_POLICYAUTHORIZATION){
+        .type = type,
+        .signature = *signature,
+        .policyRef = *policyRef,
+        .key = *key,
+    };
+    entries->count = count + 1;
+    policy->policyAuthorizations = entries;
+    return TSS2_RC_SUCCESS;
+}
+
+/* Preserve the existing authorization matching rule: type and unique public ID.
+ * Algorithm parameters and nameAlg are not part of this comparison.
+ */
+static bool
+policy_public_id_equal(const TPMT_PUBLIC *a, const TPMT_PUBLIC *b) {
+    if (a->type != b->type)
+        return false;
+#define SAME_BUFFER(x, y)                                                                          \
+    ((x).size <= sizeof((x).buffer) && (y).size == (x).size                                        \
+     && memcmp((x).buffer, (y).buffer, (x).size) == 0)
+    switch (a->type) {
+    case TPM2_ALG_RSA:
+        return SAME_BUFFER(a->unique.rsa, b->unique.rsa);
+    case TPM2_ALG_ECC:
+        return SAME_BUFFER(a->unique.ecc.x, b->unique.ecc.x)
+               && SAME_BUFFER(a->unique.ecc.y, b->unique.ecc.y);
+    case TPM2_ALG_KEYEDHASH:
+        return SAME_BUFFER(a->unique.keyedHash, b->unique.keyedHash);
+    case TPM2_ALG_SYMCIPHER:
+        return SAME_BUFFER(a->unique.sym, b->unique.sym);
+    default:
+        return false;
+    }
+#undef SAME_BUFFER
+}
+
+/** Find the first authorization matching key and policy_ref.
+ * NULL policy_ref denotes an empty reference. A NULL signature requests only
+ * a match check, without converting a PEM signature. No match is success with
+ * found=false. Signature is copied only on success with found=true.
+ */
+TSS2_RC
+ipolicy_get_authorization(const TPMS_POLICY *policy,
+                          const TPMT_PUBLIC *key,
+                          const TPM2B_NONCE *policy_ref,
+                          bool              *found,
+                          TPMT_SIGNATURE    *signature) {
+    if (!found)
+        return TSS2_POLICY_RC_BAD_REFERENCE;
+    *found = false;
+    if (!policy || !key)
+        return TSS2_POLICY_RC_BAD_REFERENCE;
+    size_t ref_size = policy_ref ? policy_ref->size : 0;
+    if (ref_size > sizeof(((TPM2B_NONCE *)0)->buffer))
+        return TSS2_POLICY_RC_BAD_VALUE;
+    if (!policy->policyAuthorizations)
+        return TSS2_RC_SUCCESS;
+
+    const TPML_POLICYAUTHORIZATIONS *entries = policy->policyAuthorizations;
+    for (size_t i = 0; i < entries->count; ++i) {
+        const TPMS_POLICYAUTHORIZATION *entry = &entries->authorizations[i];
+        if (entry->policyRef.size != ref_size
+            || (ref_size && memcmp(entry->policyRef.buffer, policy_ref->buffer, ref_size)))
+            continue;
+        if (!entry->type)
+            return TSS2_POLICY_RC_BAD_VALUE;
+        bool pem = strcmp(entry->type, "pem") == 0;
+        if (!pem && strcmp(entry->type, "tpm") != 0)
+            return TSS2_POLICY_RC_BAD_VALUE;
+        TPM2B_PUBLIC public = { 0 };
+        const TPMT_PUBLIC *candidate = &entry->key;
+        TSS2_RC            r;
+        if (pem) {
+            if (!entry->keyPEM)
+                return TSS2_POLICY_RC_BAD_VALUE;
+            r = authorization_policy_rc(ifapi_get_tpm2b_public_from_pem(entry->keyPEM, &public));
+            return_if_error(r, "Parse authorization key.");
+            if (public.publicArea.type == TPM2_ALG_RSA)
+            public.publicArea.parameters.rsaDetail.scheme = entry->rsaScheme;
+            public.publicArea.nameAlg = entry->hashAlg;
+            candidate = &public.publicArea;
+        }
+        if (!policy_public_id_equal(key, candidate))
+            continue;
+        if (signature) {
+            TPMT_SIGNATURE result;
+            if (pem) {
+                if (entry->pemSignature.size && !entry->pemSignature.buffer)
+                    return TSS2_POLICY_RC_BAD_VALUE;
+                r = authorization_policy_rc(
+                    tss2_der_sig_to_tpm(candidate, entry->pemSignature.buffer,
+                                        entry->pemSignature.size, entry->hashAlg, &result));
+                return_if_error(r, "Convert authorization signature.");
+            } else {
+                result = entry->signature;
+            }
+            *signature = result;
+        }
+        *found = true;
+        return TSS2_RC_SUCCESS;
+    }
+    return TSS2_RC_SUCCESS;
+}
+
+/** Free memory allocated during deserialization of policy.
+ *
+ * The policy and its contents are freed and the caller's pointer is set to NULL.
+ *
+ * @param[in,out] policy_ptr The pointer to the policy to be freed.
+ *
+ */
+void
+ipolicy_cleanup(TPMS_POLICY **policy_ptr) {
+    if (policy_ptr && *policy_ptr) {
+        TPMS_POLICY *policy = *policy_ptr;
+        SAFE_FREE(policy->description);
+        if (policy->policyAuthorizations) {
+            for (size_t i = 0; i < policy->policyAuthorizations->count; i++) {
+                if (policy->policyAuthorizations->authorizations[i].type
+                    && strcmp(policy->policyAuthorizations->authorizations[i].type, "pem") == 0) {
+                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].keyPEM);
+                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].pemSignature.buffer);
+                }
+                SAFE_FREE(policy->policyAuthorizations->authorizations[i].type);
+            }
+        }
+        SAFE_FREE(policy->policyAuthorizations);
+        cleanup_policy_elements(policy->policy);
+        SAFE_FREE(*policy_ptr);
+    }
 }

@@ -6,7 +6,6 @@
 
 #include "../helper/cmocka_all.h"
 #include "ifapi_policyutil_execute.h"
-#include "ipolicy_types.h" // for test policy fixtures
 #include <stdlib.h>
 
 /* Exercise the FAPI execution boundary without a TPM or a real Policy engine. */
@@ -15,7 +14,8 @@ static TSS2_RC       finish_rc;
 static unsigned      flush_count;
 static unsigned      finalize_count;
 static char          policy_context;
-static TPMS_POLICY   signing_policy, nested_policy;
+static char          signing_policy[] = "{\"description\":\"signing\",\"policy\":[]}";
+static char          nested_policy[] = "{\"description\":\"nested\",\"policy\":[]}";
 
 TSS2_RC
 __wrap_Tss2_PolicyExecute_Finish(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys, ESYS_TR session) {
@@ -26,7 +26,7 @@ __wrap_Tss2_PolicyExecute_Finish(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys
     /* Model a nested Secret authorization borrowing the global load context. */
     frame->cb_ctx.load_ctx.auth_object.authorization_state = AUTH_INIT;
     frame->cb_ctx.load_ctx.auth_object.public.handle = 0x80000002;
-    frame->cb_ctx.load_ctx.auth_object.policy = &nested_policy;
+    frame->cb_ctx.load_ctx.auth_object.policy = nested_policy;
     frame->cb_ctx.load_ctx.auth_object.rel_path = "P_ECC/HS/SRK/key-2";
     frame->cb_ctx.cb_state = POL_CB_AUTHORIZE_KEY;
     active_context->loadKey = frame->cb_ctx.load_ctx;
@@ -54,7 +54,7 @@ static void
 check_outer_state(FAPI_CONTEXT *context) {
     assert_int_equal(context->loadKey.auth_object.authorization_state, AUTH_EXEC_POLICY);
     assert_int_equal(context->loadKey.auth_object.public.handle, 0x80000001);
-    assert_ptr_equal(context->loadKey.auth_object.policy, &signing_policy);
+    assert_ptr_equal(context->loadKey.auth_object.policy, signing_policy);
     assert_string_equal(context->loadKey.auth_object.rel_path, "P_ECC/HS/SRK/signing-key");
     assert_int_equal(context->createPrimary.pkey_object.public.handle, 0x80000004);
     assert_ptr_equal(context->current_auth_object, &context->loadKey.auth_object);
@@ -72,7 +72,7 @@ test_nested_policy_restores_outer_state(void **state) {
         assert_non_null(frame);
         context->loadKey.auth_object.authorization_state = AUTH_EXEC_POLICY;
         context->loadKey.auth_object.public.handle = 0x80000001;
-        context->loadKey.auth_object.policy = &signing_policy;
+        context->loadKey.auth_object.policy = signing_policy;
         context->loadKey.auth_object.rel_path = "P_ECC/HS/SRK/signing-key";
         context->createPrimary.pkey_object.public.handle = 0x80000004;
         context->current_auth_object = &context->loadKey.auth_object;
@@ -91,7 +91,7 @@ test_nested_policy_restores_outer_state(void **state) {
             assert_int_equal(r, TSS2_FAPI_RC_TRY_AGAIN);
             assert_ptr_equal(context->policy.policyutil_stack, frame);
             assert_int_equal(frame->cb_ctx.cb_state, POL_CB_AUTHORIZE_KEY);
-            assert_ptr_equal(frame->cb_ctx.load_ctx.auth_object.policy, &nested_policy);
+            assert_ptr_equal(frame->cb_ctx.load_ctx.auth_object.policy, nested_policy);
             assert_int_equal(finalize_count, 0);
             assert_int_equal(flush_count, 0);
             finish_rc = TSS2_RC_SUCCESS;

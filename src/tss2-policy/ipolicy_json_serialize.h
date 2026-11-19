@@ -12,6 +12,12 @@
 #include "tss2_common.h"   // for TSS2_RC, UINT32
 #include "tss2_policy.h"   // for TPML_PCRVALUES, TPMS_PCRVALUE
 
+/* Serialize the current policy, including any digests and authorizations.
+ * The caller releases *json with free(). On failure, *json is NULL.
+ * The output slot must not own an existing string.
+ */
+TSS2_RC ipolicy_json_serialize(const TPMS_POLICY *policy, char **json);
+
 TSS2_RC
 ipolicy_json_TPMI_POLICYTYPE_serialize(const TPMI_POLICYTYPE in, json_object **jso);
 

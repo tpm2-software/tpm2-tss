@@ -292,7 +292,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
     TPM2B_NV_PUBLIC *publicInfo = &miscNv->public;
     TPM2B_NV_PUBLIC *existing_nv_public = NULL;
     TPM2B_DIGEST    *authPolicy = &(miscNv->public.nvPublic.authPolicy);
-    TPMS_POLICY    **nvCmdPolicy = &nvCmd->nv_object.policy;
+    char           **nvCmdPolicy = &nvCmd->nv_object.policy;
     TPM2B_DIGEST     digest;
     ESYS_TR          auth_session;
     bool             nv_exists;

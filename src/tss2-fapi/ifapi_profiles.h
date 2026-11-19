@@ -11,7 +11,6 @@
 
 #include "ifapi_io.h"        // for IFAPI_IO
 #include "tss2_common.h"     // for UINT32, TSS2_RC, UINT16
-#include "tss2_policy.h"     // for the opaque TPMS_POLICY declaration
 #include "tss2_tpm2_types.h" // for TPMT_SIG_SCHEME, TPMI_ALG_CIPHER_MODE
 
 /** Internal structure for FAPI profiles
@@ -34,11 +33,11 @@ typedef struct IFAPI_PROFILE {
     UINT32               exponent;
     TPMI_ECC_CURVE       curveID;
     TPMT_SYM_DEF         session_symmetric;
-    TPMS_POLICY         *eh_policy;
-    TPMS_POLICY         *sh_policy;
-    TPMS_POLICY         *ek_policy;
-    TPMS_POLICY         *srk_policy;
-    TPMS_POLICY         *lockout_policy;
+    char                *eh_policy;
+    char                *sh_policy;
+    char                *ek_policy;
+    char                *srk_policy;
+    char                *lockout_policy;
     UINT32               newMaxTries;
     UINT32               newRecoveryTime;
     UINT32               lockoutRecovery;

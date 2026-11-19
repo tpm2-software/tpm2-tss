@@ -12,6 +12,12 @@
 #include "tss2_common.h"   // for TSS2_RC, UINT32
 #include "tss2_policy.h"   // for TPML_PCRVALUES, TPMS_PCRVALUE
 
+/* Parse a policy document. The caller owns *policy and releases it with
+ * ipolicy_cleanup. On failure, *policy is NULL; the output slot must not
+ * own an existing policy. No TPM or Policy context is required.
+ */
+TSS2_RC ipolicy_json_deserialize(const char *json, TPMS_POLICY **policy);
+
 TSS2_RC
 ipolicy_json_TPMI_POLICYTYPE_deserialize(json_object *jso, TPMI_POLICYTYPE *out);
 

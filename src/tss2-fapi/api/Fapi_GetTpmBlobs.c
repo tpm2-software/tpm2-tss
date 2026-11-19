@@ -236,7 +236,8 @@ Fapi_GetTpmBlobs_Finish(FAPI_CONTEXT *context,
 
         /* Duplicate the policy to the output parameter. */
         if (object.policy && policy) {
-            r = Tss2_PolicyJsonSerialize(object.policy, policy);
+            *policy = strdup(object.policy);
+            r = *policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
             if (r)
                 r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
             goto_if_error(r, "Serialize policy", error_cleanup);

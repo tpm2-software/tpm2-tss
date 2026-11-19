@@ -23,7 +23,7 @@
 /** Create a Policy context and keep application callback state in the FAPI frame. */
 static TSS2_RC
 new_policy(FAPI_CONTEXT            *context,
-           TPMS_POLICY             *policy,
+           const char              *policy,
            TPMI_ALG_HASH            hash_alg,
            IFAPI_POLICYUTIL_STACK **current_policy) {
     TSS2_RC r;
@@ -66,7 +66,7 @@ new_policy(FAPI_CONTEXT            *context,
     (*current_policy)->session = ESYS_TR_NONE;
     (*current_policy)->auth_object = context->current_auth_object;
 
-    r = Tss2_PolicySetPolicy(policy, hash_alg, &(*current_policy)->pol_exec_ctx);
+    r = Tss2_PolicyInit(policy, hash_alg, &(*current_policy)->pol_exec_ctx);
     goto_if_error(r, "Create Policy context.", error);
     r = Tss2_PolicySetExecCallbacks((*current_policy)->pol_exec_ctx, &callbacks);
     goto_if_error(r, "Set Policy execution callbacks.", error);
@@ -186,7 +186,7 @@ clear_current_policy(FAPI_CONTEXT *context) {
 TSS2_RC
 ifapi_policyutil_execute_prepare(FAPI_CONTEXT *context,
                                  TPMI_ALG_HASH hash_alg,
-                                 TPMS_POLICY  *policy) {
+                                 const char   *policy) {
     TSS2_RC                 r;
     IFAPI_POLICYUTIL_STACK *current_policy, *prev_policy;
 

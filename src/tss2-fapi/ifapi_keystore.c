@@ -23,7 +23,6 @@
 #include "ifapi_macros.h"         // for goto_if_error2, strdup_check
 #include "tpm_json_deserialize.h" // for ifapi_parse_json
 #include "tss2_helpers.h"         // for free_string_list, ifapi_asprintf
-#include "tss2_policy.h"          // for Tss2_PolicyCleanup
 
 #define LOGMODULE fapi
 #include "util/log.h" // for SAFE_FREE, goto_if_error, LOG_ERROR
@@ -1533,7 +1532,7 @@ void
 ifapi_cleanup_ifapi_duplicate(IFAPI_DUPLICATE *duplicate) {
     if (duplicate != NULL) {
         SAFE_FREE(duplicate->certificate);
-        Tss2_PolicyCleanup(&duplicate->policy);
+        SAFE_FREE(duplicate->policy);
     }
 }
 
@@ -1583,7 +1582,8 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
 
     /* Create the copy */
     if (src->policy) {
-        r = Tss2_PolicyCopy(src->policy, &dest->policy);
+        dest->policy = strdup(src->policy);
+        r = dest->policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
         if (r)
             r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
         goto_if_error(r, "Copy policy.", error_cleanup);
@@ -1639,7 +1639,8 @@ ifapi_copy_ifapi_hierarchy_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
 
     /* Create the copy */
     if (src->policy) {
-        r = Tss2_PolicyCopy(src->policy, &dest->policy);
+        dest->policy = strdup(src->policy);
+        r = dest->policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
         if (r)
             r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
         goto_if_error(r, "Copy policy.", error_cleanup);
@@ -1685,7 +1686,7 @@ ifapi_cleanup_ifapi_object(IFAPI_OBJECT *object) {
             } else if (object->objectType == IFAPI_HIERARCHY_OBJ) {
                 ifapi_cleanup_ifapi_hierarchy(&object->misc.hierarchy);
             }
-            Tss2_PolicyCleanup(&object->policy);
+            SAFE_FREE(object->policy);
             SAFE_FREE(object->rel_path);
             object->objectType = IFAPI_OBJ_NONE;
         }

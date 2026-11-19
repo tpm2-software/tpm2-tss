@@ -96,7 +96,7 @@ typedef struct {
     TPM2B_PUBLIC public;        /**< The public information of the key to be duplicated */
     TPM2B_PUBLIC public_parent; /**< The public information of the new parent key */
     char        *certificate;   /**< The certificate of the key to be duplicated */
-    TPMS_POLICY *policy;        /**< The policy of the key to be duplicated */
+    char        *policy;        /**< Owned policy JSON of the key to be duplicated */
 } IFAPI_DUPLICATE;
 
 /** type for representing public info of a TPM-Resource
@@ -159,8 +159,8 @@ typedef struct IFAPI_OBJECT {
      * the linux kernel linked list uses with container_of, but
      * since offsetof isn't C99, we won't use it here.
      */
-    TSS2_OBJECT public; /**< public fields of an IFAPI_OBJECT */
-    TPMS_POLICY               *policy;
+    TSS2_OBJECT public;                    /**< public fields of an IFAPI_OBJECT */
+    char                      *policy;     /**< Owned policy JSON; embedded as an object on disk. */
     IFAPI_OBJECT_TYPE_CONSTANT objectType; /**< Selector for object type */
     IFAPI_OBJECT_UNION         misc;       /**< Resource specific information */
     TPMI_YES_NO                system;     /**< Store the object in the system wide

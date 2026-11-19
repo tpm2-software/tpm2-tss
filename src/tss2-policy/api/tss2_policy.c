@@ -16,8 +16,7 @@
 #include "ipolicy_instantiate.h" // for IPOLICY_EVAL_INST_CTX
 #include "ipolicy_json_deserialize.h"
 #include "ipolicy_json_serialize.h"
-#include "ipolicy_types.h" // for TPMS_POLICY
-#include "tpm_json_deserialize.h"
+#include "ipolicy_types.h"   // for TPMS_POLICY
 #include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"     // for tss2_hash_get_digest_size
 #include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR
@@ -46,7 +45,6 @@ struct TSS2_POLICY_CTX {
     ESYS_CONTEXT              *exec_esys;
     bool                       executing;
     TPMS_POLICY               *policy_ptr;
-    bool                       policy_caller_allocated;
     size_t                     digest_idx;
     size_t                     hash_size;
     struct {
@@ -192,52 +190,6 @@ check_policy_is_calculated(TPMS_POLICY     *policy,
 }
 
 /**
- * Initialize a policy context with a policy and default hash algorithm.
- *
- * The function initializes a new policy context using the supplied policy and
- * hash algorithm. The policy is associated with the created context and the
- * hash algorithm is used as the default algorithm for subsequent policy
- * calculation and execution operations.
- *
- * @param[in] policy The policy used to initialize the policy context.
- * @param[in] hash_alg The default hash algorithm used for the policy.
- * @param[out] policy_ctx The initialized policy context.
- *
- * @retval TSS2_RC_SUCCESS If the policy context was initialized successfully.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE If policy or policy_ctx is NULL.
- * @retval TSS2_FAPI_RC_MEMORY If memory allocation for the policy context fails.
- * @retval TSS2_FAPI_RC_BAD_VALUE If hash_alg is not supported or the policy
- *         contains invalid data.
- */
-TSS2_RC
-Tss2_PolicySetPolicy(TPMS_POLICY *policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX **policy_ctx) {
-
-    policy_check_not_null(policy);
-    policy_check_not_null(policy_ctx);
-
-    TSS2_RC r;
-
-    *policy_ctx = calloc(1, sizeof(TSS2_POLICY_CTX));
-    goto_if_null(*policy_ctx, "Could not allocate policy structure", TSS2_POLICY_RC_MEMORY,
-                 cleanup);
-
-    (*policy_ctx)->policy_caller_allocated = true;
-    (*policy_ctx)->policy_ptr = policy;
-    (*policy_ctx)->hash_alg = hash_alg;
-    (*policy_ctx)->exec_ctx.hash_alg = hash_alg;
-    (*policy_ctx)->exec_ctx.policy = (*policy_ctx)->policy_ptr;
-
-    r = check_policy_is_calculated(policy, hash_alg, *policy_ctx);
-    goto_if_error(r, "Check policy is calculated", cleanup);
-
-    return TSS2_RC_SUCCESS;
-
-cleanup:
-    Tss2_PolicyFinalize(policy_ctx);
-    return r;
-}
-
-/**
  * Initialize a policy context from a JSON policy.
  *
  * The function parses the supplied JSON policy string and creates the
@@ -274,11 +226,10 @@ Tss2_PolicyInit(const char *json_policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX *
     goto_if_null(*policy_ctx, "Could not allocate policy structure", TSS2_POLICY_RC_MEMORY,
                  cleanup);
 
-    (*policy_ctx)->policy_caller_allocated = false;
     (*policy_ctx)->hash_alg = hash_alg;
     (*policy_ctx)->exec_ctx.hash_alg = hash_alg;
 
-    r = Tss2_PolicyJsonDeserialize(json_policy, &tmp_policy);
+    r = ipolicy_json_deserialize(json_policy, &tmp_policy);
     goto_if_error(r, "Deserialize policy", cleanup);
 
     r = check_policy_is_calculated(tmp_policy, hash_alg, *policy_ctx);
@@ -292,7 +243,7 @@ Tss2_PolicyInit(const char *json_policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX *
     return TSS2_RC_SUCCESS;
 
 cleanup:
-    Tss2_PolicyCleanup(&tmp_policy);
+    ipolicy_cleanup(&tmp_policy);
     Tss2_PolicyFinalize(policy_ctx);
     return r;
 }
@@ -645,7 +596,7 @@ Tss2_PolicyGetCalculatedJSON(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *
     /* cache the calculated json */
     if (!policy_ctx->calculated.json.string) {
         TSS2_RC rc
-            = Tss2_PolicyJsonSerialize(policy_ctx->policy_ptr, &policy_ctx->calculated.json.string);
+            = ipolicy_json_serialize(policy_ctx->policy_ptr, &policy_ctx->calculated.json.string);
         return_if_error(rc, "Policy could not be serialized.");
 
         /* add extra byte so we can NULL terminate it */
@@ -751,221 +702,46 @@ Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy_ctx) {
     SAFE_FREE(p->exec_ctx.nonceTPM);
     SAFE_FREE(p->exec_ctx.buffer);
     SAFE_FREE(p->exec_ctx.pem_key);
-    if (!p->policy_caller_allocated) {
-        Tss2_PolicyCleanup(&p->policy_ptr);
-    }
+    ipolicy_cleanup(&p->policy_ptr);
     free(p->calculated.json.string);
     free(p);
     *policy_ctx = NULL;
 }
 
-/** Append a TPM authorization. Inputs are copied; the policy owns the new entry.
- * The caller supplies the signature over the hash of the policy digest and policyRef.
- * This function stores the authorization without verifying the signature.
- */
 TSS2_RC
-Tss2_PolicyAddAuthorization(TPMS_POLICY          *policy,
-                            const TPMT_SIGNATURE *signature,
-                            const TPM2B_DIGEST   *policyRef,
-                            const TPMT_PUBLIC    *key) {
-    if (!policy || !signature || !policyRef || !key)
-        return TSS2_POLICY_RC_BAD_REFERENCE;
-    if (policyRef->size > sizeof(policyRef->buffer))
-        return TSS2_POLICY_RC_BAD_VALUE;
-
-    size_t count = policy->policyAuthorizations ? policy->policyAuthorizations->count : 0;
-    if (count == UINT32_MAX)
-        return TSS2_POLICY_RC_MEMORY;
-
-#if SIZE_MAX <= UINT32_MAX
-    /* On wider platforms, the UINT32 count bounds the allocation size. */
-    if (count >= (SIZE_MAX - sizeof(TPML_POLICYAUTHORIZATIONS)) / sizeof(TPMS_POLICYAUTHORIZATION))
-        return TSS2_POLICY_RC_MEMORY;
-#endif
-
-    char *type = strdup("tpm");
-    if (!type)
-        return TSS2_POLICY_RC_MEMORY;
-    TPML_POLICYAUTHORIZATIONS *entries
-        = realloc(policy->policyAuthorizations,
-                  sizeof(*entries) + (count + 1) * sizeof(entries->authorizations[0]));
-    if (!entries) {
-        free(type);
-        return TSS2_POLICY_RC_MEMORY;
-    }
-    entries->authorizations[count] = (TPMS_POLICYAUTHORIZATION){
-        .type = type,
-        .signature = *signature,
-        .policyRef = *policyRef,
-        .key = *key,
-    };
-    entries->count = count + 1;
-    policy->policyAuthorizations = entries;
-    return TSS2_RC_SUCCESS;
-}
-
-/* Preserve the existing authorization matching rule: type and unique public ID.
- * Algorithm parameters and nameAlg are not part of this comparison.
- */
-static bool
-policy_public_id_equal(const TPMT_PUBLIC *a, const TPMT_PUBLIC *b) {
-    if (a->type != b->type)
-        return false;
-#define SAME_BUFFER(x, y)                                                                          \
-    ((x).size <= sizeof((x).buffer) && (y).size == (x).size                                        \
-     && memcmp((x).buffer, (y).buffer, (x).size) == 0)
-    switch (a->type) {
-    case TPM2_ALG_RSA:
-        return SAME_BUFFER(a->unique.rsa, b->unique.rsa);
-    case TPM2_ALG_ECC:
-        return SAME_BUFFER(a->unique.ecc.x, b->unique.ecc.x)
-               && SAME_BUFFER(a->unique.ecc.y, b->unique.ecc.y);
-    case TPM2_ALG_KEYEDHASH:
-        return SAME_BUFFER(a->unique.keyedHash, b->unique.keyedHash);
-    case TPM2_ALG_SYMCIPHER:
-        return SAME_BUFFER(a->unique.sym, b->unique.sym);
-    default:
-        return false;
-    }
-#undef SAME_BUFFER
-}
-
-/** Find the first authorization matching key and policy_ref.
- * NULL policy_ref denotes an empty reference. A NULL signature requests only
- * a match check, without converting a PEM signature. No match is success with
- * found=false. Signature is copied only on success with found=true.
- */
-TSS2_RC
-Tss2_PolicyGetAuthorization(const TPMS_POLICY *policy,
-                            const TPMT_PUBLIC *key,
-                            const TPM2B_NONCE *policy_ref,
-                            bool              *found,
-                            TPMT_SIGNATURE    *signature) {
-    if (!found)
-        return TSS2_POLICY_RC_BAD_REFERENCE;
-    *found = false;
-    if (!policy || !key)
-        return TSS2_POLICY_RC_BAD_REFERENCE;
-    size_t ref_size = policy_ref ? policy_ref->size : 0;
-    if (ref_size > sizeof(((TPM2B_NONCE *)0)->buffer))
-        return TSS2_POLICY_RC_BAD_VALUE;
-    if (!policy->policyAuthorizations)
-        return TSS2_RC_SUCCESS;
-
-    const TPML_POLICYAUTHORIZATIONS *entries = policy->policyAuthorizations;
-    for (size_t i = 0; i < entries->count; ++i) {
-        const TPMS_POLICYAUTHORIZATION *entry = &entries->authorizations[i];
-        if (entry->policyRef.size != ref_size
-            || (ref_size && memcmp(entry->policyRef.buffer, policy_ref->buffer, ref_size)))
-            continue;
-        if (!entry->type)
-            return TSS2_POLICY_RC_BAD_VALUE;
-        bool pem = strcmp(entry->type, "pem") == 0;
-        if (!pem && strcmp(entry->type, "tpm") != 0)
-            return TSS2_POLICY_RC_BAD_VALUE;
-        TPM2B_PUBLIC public = { 0 };
-        const TPMT_PUBLIC *candidate = &entry->key;
-        TSS2_RC            r;
-        if (pem) {
-            if (!entry->keyPEM)
-                return TSS2_POLICY_RC_BAD_VALUE;
-            r = CALL_FAPI(ifapi_get_tpm2b_public_from_pem(entry->keyPEM, &public));
-            return_if_error(r, "Parse authorization key.");
-            if (public.publicArea.type == TPM2_ALG_RSA)
-            public.publicArea.parameters.rsaDetail.scheme = entry->rsaScheme;
-            public.publicArea.nameAlg = entry->hashAlg;
-            candidate = &public.publicArea;
-        }
-        if (!policy_public_id_equal(key, candidate))
-            continue;
-        if (signature) {
-            TPMT_SIGNATURE result;
-            if (pem) {
-                if (entry->pemSignature.size && !entry->pemSignature.buffer)
-                    return TSS2_POLICY_RC_BAD_VALUE;
-                r = CALL_FAPI(tss2_der_sig_to_tpm(candidate, entry->pemSignature.buffer,
-                                                  entry->pemSignature.size, entry->hashAlg,
-                                                  &result));
-                return_if_error(r, "Convert authorization signature.");
-            } else {
-                result = entry->signature;
-            }
-            *signature = result;
-        }
-        *found = true;
-        return TSS2_RC_SUCCESS;
-    }
-    return TSS2_RC_SUCCESS;
-}
-
-/** Free memory allocated during deserialization of policy.
- *
- * The policy and its contents are freed and the caller's pointer is set to NULL.
- *
- * @param[in,out] policy_ptr The pointer to the policy to be freed.
- *
- */
-void
-Tss2_PolicyCleanup(TPMS_POLICY **policy_ptr) {
-    if (policy_ptr && *policy_ptr) {
-        TPMS_POLICY *policy = *policy_ptr;
-        SAFE_FREE(policy->description);
-        if (policy->policyAuthorizations) {
-            for (size_t i = 0; i < policy->policyAuthorizations->count; i++) {
-                if (policy->policyAuthorizations->authorizations[i].type
-                    && strcmp(policy->policyAuthorizations->authorizations[i].type, "pem") == 0) {
-                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].keyPEM);
-                    SAFE_FREE(policy->policyAuthorizations->authorizations[i].pemSignature.buffer);
-                }
-                SAFE_FREE(policy->policyAuthorizations->authorizations[i].type);
-            }
-        }
-        SAFE_FREE(policy->policyAuthorizations);
-        cleanup_policy_elements(policy->policy);
-        SAFE_FREE(*policy_ptr);
-    }
-}
-
-TSS2_RC
-Tss2_PolicyJsonSerialize(const TPMS_POLICY *policy, char **json) {
+Tss2_PolicyGetJSON(const TSS2_POLICY_CTX *policy_ctx, char **json) {
     if (!json)
         return TSS2_POLICY_RC_BAD_REFERENCE;
     *json = NULL;
-    if (!policy)
+    if (!policy_ctx)
         return TSS2_POLICY_RC_BAD_REFERENCE;
-    json_object *jso = NULL;
-    TSS2_RC      r = ipolicy_json_TPMS_POLICY_serialize(policy, &jso);
+    return ipolicy_json_serialize(policy_ctx->policy_ptr, json);
+}
+
+TSS2_RC
+Tss2_PolicyContextAddAuthorization(TSS2_POLICY_CTX      *policy_ctx,
+                                   const TPMT_SIGNATURE *signature,
+                                   const TPM2B_DIGEST   *policy_ref,
+                                   const TPMT_PUBLIC    *key) {
+    if (!policy_ctx)
+        return TSS2_POLICY_RC_BAD_REFERENCE;
+    if (policy_ctx->executing)
+        return TSS2_POLICY_RC_BAD_SEQUENCE;
+    TSS2_RC r = ipolicy_add_authorization(policy_ctx->policy_ptr, signature, policy_ref, key);
     if (!r) {
-        const char *string = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY);
-        *json = string ? strdup(string) : NULL;
-        if (!*json)
-            r = TSS2_POLICY_RC_MEMORY;
+        SAFE_FREE(policy_ctx->calculated.json.string);
+        policy_ctx->calculated.json.len = 0;
     }
-    if (jso)
-        json_object_put(jso);
-    if ((r & TSS2_RC_LAYER_MASK) == TSS2_FEATURE_RC_LAYER)
-        r = TSS2_POLICY_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
     return r;
 }
 
 TSS2_RC
-Tss2_PolicyJsonDeserialize(const char *json, TPMS_POLICY **policy) {
-    if (!policy)
+Tss2_PolicyContextGetAuthorization(const TSS2_POLICY_CTX *policy_ctx,
+                                   const TPMT_PUBLIC     *key,
+                                   const TPM2B_NONCE     *policy_ref,
+                                   bool                  *found,
+                                   TPMT_SIGNATURE        *signature) {
+    if (!policy_ctx)
         return TSS2_POLICY_RC_BAD_REFERENCE;
-    *policy = NULL;
-    if (!json)
-        return TSS2_POLICY_RC_BAD_REFERENCE;
-    json_object *jso = ifapi_parse_json(json);
-    if (!jso)
-        return TSS2_POLICY_RC_BAD_VALUE;
-    TSS2_RC r = ipolicy_json_TPMS_POLICY_deserialize(jso, policy);
-    json_object_put(jso);
-    if ((r & TSS2_RC_LAYER_MASK) == TSS2_FEATURE_RC_LAYER)
-        r = TSS2_POLICY_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
-    return r;
-}
-
-TSS2_RC
-Tss2_PolicyCopy(const TPMS_POLICY *source, TPMS_POLICY **destination) {
-    return ipolicy_copy(source, destination);
+    return ipolicy_get_authorization(policy_ctx->policy_ptr, key, policy_ref, found, signature);
 }

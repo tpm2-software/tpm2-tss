@@ -24,7 +24,7 @@
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_AuthorizePolicy
 #include "tss2_helpers.h"       // for internal helpers
-#include "tss2_policy.h"        // for Tss2_PolicyAddAuthorization
+#include "tss2_policy.h"        // for Policy context API
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
 
@@ -268,7 +268,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
 
     /* Helpful alias pointers */
     IFAPI_Fapi_AuthorizePolicy *command = &context->cmd.Policy_AuthorizeNewPolicy;
-    TPMS_POLICY               **policy = &command->policy;
+    char                      **policy = &command->policy;
     TPMT_SIGNATURE             *signature;
     IFAPI_OBJECT              **keyObject = &context->Key_Sign.key_object;
 
@@ -327,8 +327,8 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
         SAFE_FREE(publicKey);
 
         /* Policy owns the authorization representation and copies the signing results. */
-        r = Tss2_PolicyAddAuthorization(*policy, signature, &command->policyRef,
-                                        &(*keyObject)->misc.key.public.publicArea);
+        r = ifapi_policy_add_authorization(policy, signature, &command->policyRef,
+                                           &(*keyObject)->misc.key.public.publicArea);
         SAFE_FREE(signature);
         if (r)
             r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
@@ -367,7 +367,7 @@ cleanup:
     if (cryptoContext)
         tss2_crypto_hash_abort(&cryptoContext);
     ifapi_session_clean(context);
-    Tss2_PolicyCleanup(policy);
+    SAFE_FREE(*policy);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
