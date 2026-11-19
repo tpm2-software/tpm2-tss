@@ -245,6 +245,8 @@ for PROFILE in "${PROFILES[@]}"; do
     "profile_dir": "${PROFILE_DIR}",
     "user_dir": "${USER_DIR}",
     "system_dir": "${SYSTEM_DIR}",
+    "ek_cert_less": "yes",
+    "ignore_lockout": "yes",
     "tcti": "",
     "system_pcrs": [],
     "log_dir": "${LOG_DIR}",
