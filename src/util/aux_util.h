@@ -177,44 +177,10 @@ extern "C" {
         (r_max) = r;                                                                               \
     }
 
-#define strdup_check(dest, str, r, label)                                                          \
-    if (str) {                                                                                     \
-        (dest) = strdup(str);                                                                      \
-        if (!(dest)) {                                                                             \
-            (r) = TSS2_FAPI_RC_MEMORY;                                                             \
-            LOG_ERROR("Out of memory.");                                                           \
-            goto label;                                                                            \
-        }                                                                                          \
-    } else {                                                                                       \
-        (dest) = NULL;                                                                             \
-    }
-
 #define goto_if_error2(r, msg, label, ...)                                                         \
     if (r != TSS2_RC_SUCCESS) {                                                                    \
         LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
         goto label;                                                                                \
-    }
-
-#define try_again_or_error(r, msg, ...)                                                            \
-    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)                                                      \
-        return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
-    if (r != TSS2_RC_SUCCESS) {                                                                    \
-        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
-        return r;                                                                                  \
-    }
-
-#define try_again_or_error_goto(r, msg, label, ...)                                                \
-    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)                                                      \
-        return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
-    if (r != TSS2_RC_SUCCESS) {                                                                    \
-        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
-        goto label;                                                                                \
-    }
-
-#define return_try_again(r)                                                                        \
-    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {                                                    \
-        LOG_TRACE("Received TRY_AGAIN; returning TRY_AGAIN");                                      \
-        return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
     }
 
 #define return_if_error2(r, msg, ...)                                                              \
@@ -223,21 +189,10 @@ extern "C" {
         return r;                                                                                  \
     }
 
-#define check_oom(X)                                                                               \
-    if ((X) == NULL) {                                                                             \
-        LOG_ERROR("Out of memory");                                                                \
-        return TSS2_FAPI_RC_MEMORY;                                                                \
-    }
-
 #define statecase(VAR, STATE)                                                                      \
     case STATE:                                                                                    \
         LOG_TRACE("State " str(VAR) " reached " str(STATE));                                       \
         (VAR) = STATE;
-
-#define statecasedefault(VAR)                                                                      \
-    default:                                                                                       \
-        LOG_ERROR("Bad state for " str(VAR) ": %i", VAR);                                          \
-        return TSS2_FAPI_RC_BAD_SEQUENCE;
 
 #if defined __GNUC__ && __GNUC__ < 7
 #define fallthrough                                                                                \

@@ -1204,6 +1204,14 @@ noinst_PROGRAMS += test/unit/fapi-system-fuzzing
 endif # FAPI
 
 if POLICY
+TESTS_UNIT += test/unit/policy-macros
+
+test_unit_policy_macros_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)
+test_unit_policy_macros_LDADD = $(CMOCKA_LIBS)
+test_unit_policy_macros_LDFLAGS = $(AM_LDFLAGS) -Wl,--wrap=strdup
+test_unit_policy_macros_SOURCES = test/unit/policy-macros.c src/util/log.c \
+    test/helper/cmocka_all.h
+
 TESTS_UNIT += test/unit/tss2_policy
 
 test_unit_tss2_policy_CFLAGS  = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)

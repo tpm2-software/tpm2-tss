@@ -678,6 +678,7 @@ libtss2_fapi_policy_internal_la_CFLAGS = \
     $(CRYPTO_CFLAGS)
 
 noinst_HEADERS = \
+    src/tss2-policy/ipolicy_macros.h \
     src/tss2-fapi-policy/tss2_types.h \
     src/tss2-fapi-policy/tss2_helpers.h \
     src/tss2-fapi-policy/tss2_crypto.h

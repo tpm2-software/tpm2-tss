@@ -258,9 +258,9 @@ Fapi_Provision_Async(FAPI_CONTEXT *context,
     SAFE_FREE(profile_dir);
 
     /* Initialize context and duplicate parameters */
-    strdup_check(command->authValueLockout, authValueLockout, r, end);
-    strdup_check(command->authValueEh, authValueEh, r, end);
-    strdup_check(command->authValueSh, authValueSh, r, end);
+    ifapi_strdup_check(command->authValueLockout, authValueLockout, r, end);
+    ifapi_strdup_check(command->authValueEh, authValueEh, r, end);
+    ifapi_strdup_check(command->authValueSh, authValueSh, r, end);
     context->ek_handle = ESYS_TR_NONE;
     context->srk_handle = ESYS_TR_NONE;
     command->cert_nv_idx = MIN_EK_CERT_HANDLE;
@@ -396,7 +396,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io,
                                        &command->hierarchies[command->path_idx]);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error2(r, "Could not open %s", error_cleanup, path);
 
         /* Search for slash followed by hierarchy after profile  */
@@ -450,7 +450,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_INIT);
         r = ifapi_instantiate_profile_policies(context);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Instantiate policies", error_cleanup);
 
         command->root_crt = NULL;
@@ -462,15 +462,17 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
         /* Initialize the hierarchy objects. */
         ifapi_init_hierarchy_object(hierarchy_hs, ESYS_TR_RH_OWNER);
-        strdup_check(hierarchy_hs->misc.hierarchy.description, "Owner Hierarchy", r, error_cleanup);
+        ifapi_strdup_check(hierarchy_hs->misc.hierarchy.description, "Owner Hierarchy", r,
+                           error_cleanup);
         ifapi_init_hierarchy_object(hierarchy_he, ESYS_TR_RH_ENDORSEMENT);
-        strdup_check(hierarchy_he->misc.hierarchy.description, "Endorsement Hierarchy", r,
-                     error_cleanup);
+        ifapi_strdup_check(hierarchy_he->misc.hierarchy.description, "Endorsement Hierarchy", r,
+                           error_cleanup);
         ifapi_init_hierarchy_object(hierarchy_lockout, ESYS_TR_RH_LOCKOUT);
-        strdup_check(hierarchy_lockout->misc.hierarchy.description, "Lockout Hierarchy", r,
-                     error_cleanup);
+        ifapi_strdup_check(hierarchy_lockout->misc.hierarchy.description, "Lockout Hierarchy", r,
+                           error_cleanup);
         ifapi_init_hierarchy_object(hierarchy_hn, ESYS_TR_RH_NULL);
-        strdup_check(hierarchy_hn->misc.hierarchy.description, "Null Hierarchy", r, error_cleanup);
+        ifapi_strdup_check(hierarchy_hn->misc.hierarchy.description, "Null Hierarchy", r,
+                           error_cleanup);
         fallthrough;
 
     statecase(context->state, PROVISION_PREPARE_GET_CAP_AUTH_STATE);
@@ -490,7 +492,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_WAIT_FOR_GET_CAP_AUTH_STATE);
         r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
 
         if ((*capabilityData)->data.tpmProperties.tpmProperty[0].property != TPM2_PT_PERMANENT) {
@@ -525,7 +527,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         command->srk_exists = false;
         if (command->public_templ.persistent_handle) {
             r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
 
             /* Check whether the handle already exists. */
@@ -547,7 +549,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_WAIT_FOR_GET_CAP1);
         r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
 
         /* Check whether the TPMs PCR capabilities are compatible with the profile. */
@@ -598,7 +600,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         if (command->template_nv_index) {
             /* Overwrite template with template from nv if available. */
             r = ifapi_nv_read(context, &ek_template, &ek_template_size);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error_reset_state(r, "Read EK template", error_cleanup);
 
             if (ek_template_size) {
@@ -626,7 +628,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         ek_nonce_size = 0;
         if (command->nonce_nv_index) {
             r = ifapi_nv_read(context, &ek_nonce, &ek_nonce_size);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error_reset_state(r, "Read EK nonce", error_cleanup);
         }
 
@@ -649,7 +651,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_AUTH_EK_NO_AUTH_SENT);
         r = ifapi_init_primary_finish(context, TSS2_EK, hierarchy_he);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Init primary finish", error_cleanup);
 
         /* Check whether a persistent EK handle was defined in profile. */
@@ -749,7 +751,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_WAIT_FOR_GET_CAP2);
         r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
 
         if ((*capabilityData)->data.handles.count == 0) {
@@ -814,7 +816,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_GET_CERT_NV_FINISH);
         r = Esys_TR_FromTPMPublic_Finish(context->esys, &command->esys_nv_cert_handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "TR_FromTPMPublic_Finish", error_cleanup);
 
         /* Read public to get size of certificate */
@@ -827,7 +829,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_GET_CERT_READ_PUBLIC);
         r = Esys_NV_ReadPublic_Finish(context->esys, &nvPublic, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         goto_if_error(r, "Error: nv read public", error_cleanup);
 
@@ -856,7 +858,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
         /* The NV object of the certificate will be read asynchronous. */
         r = ifapi_nv_read(context, &certData, &certSize);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI NV_Read", error_cleanup);
 
         /* Update storage hierarchy after usage by nv_read. */
@@ -893,7 +895,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         /* Retrieve the certificate chains from the TPM's NV space . */
         r = ifapi_get_certificates(context, EK_CERT_CHAIN_MIN, EK_CERT_CHAIN_MAX, &command->certs,
                                    &command->cert_list_size);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Get certificates.", error_cleanup);
         fallthrough;
 
@@ -919,14 +921,14 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
         r = ifapi_io_read_async(&context->io, root_ca_file);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error2(r, "Reading certificate %s", error_cleanup, root_ca_file);
 
         fallthrough;
 
     statecase(context->state, PROVISION_READ_ROOT_CERT);
         r = ifapi_io_read_finish(&context->io, (uint8_t **)&command->root_crt, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Reading root certificate failed", error_cleanup);
 
         fallthrough;
@@ -948,14 +950,14 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
             return TSS2_FAPI_RC_TRY_AGAIN;
         }
         r = ifapi_io_read_async(&context->io, int_ca_file);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error2(r, "Reading certificate %s", error_cleanup, getenv("FAPI_TEST_INT_CERT"));
 
         fallthrough;
 
     statecase(context->state, PROVISION_READ_INT_CERT);
         r = ifapi_io_read_finish(&context->io, (uint8_t **)&command->intermed_crt, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Reading intermediate certificate failed", error_cleanup);
 
         fallthrough;
@@ -974,7 +976,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_EK_WRITE_PREPARE);
         pkeyObject->objectType = IFAPI_KEY_OBJ;
         pkeyObject->system = command->public_templ.system;
-        strdup_check(pkeyObject->misc.key.certificate, command->pem_cert, r, error_cleanup);
+        ifapi_strdup_check(pkeyObject->misc.key.certificate, command->pem_cert, r, error_cleanup);
         SAFE_FREE(command->pem_cert);
 
         /* Perform esys serialization if necessary */
@@ -994,7 +996,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_EK_WRITE);
         /* Finish writing the EK to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
         /* Clean objects used for EK computation */
@@ -1014,7 +1016,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_WAIT_FOR_SRK_SESSION);
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
@@ -1056,7 +1058,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_WRITE_LOCKOUT_PARAM);
         r = Esys_DictionaryAttackParameters_Finish(context->esys);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         if (r == TPM2_RC_LOCKOUT) {
             LOG_WARNING("Authorization lockout hierarchy failed");
@@ -1098,7 +1100,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_AUTH_SRK_NO_AUTH_SENT);
         r = ifapi_init_primary_finish(context, TSS2_SRK, hierarchy_hs);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Init primary finish.", error_cleanup);
 
         if (command->public_templ.persistent_handle & command->srk_exists) {
@@ -1190,7 +1192,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_SRK_WRITE);
         /* Finish writing the SRK to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
         /* Clean objects used for SRK computation */
@@ -1201,7 +1203,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_CLEAN_EK_SESSION)
     /* Cleanup the session used for SRK generation. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         /* Create session which will be used for parameter encryption. */
         r = ifapi_get_sessions_async(context, IFAPI_SESSION_USE_SRK | IFAPI_SESSION1,
@@ -1213,7 +1215,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_WAIT_FOR_EK_SESSION);
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
@@ -1249,7 +1251,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_WAIT_FOR_SRK_PERSISTENT);
         r = Esys_EvictControl_Finish(context->esys, &pkeyObject->public.handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Evict control failed", error_cleanup);
 
         /* The SRK was made persistent and can be written to key store. */
@@ -1261,7 +1263,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_WAIT_FOR_EK_PERSISTENT);
         ek_handle = pkeyObject->public.handle;
         r = Esys_EvictControl_Finish(context->esys, &pkeyObject->public.handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         if (number_rc(r) == TPM2_RC_BAD_AUTH && hierarchy_hs->misc.hierarchy.with_auth == TPM2_NO) {
             hierarchy_hs->misc.hierarchy.with_auth = TPM2_YES;
@@ -1285,7 +1287,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
            if the hierarchy will be changed asynchronous. */
         r = ifapi_change_auth_hierarchy(context, ESYS_TR_RH_LOCKOUT, &command->hierarchy_lockout,
                                         &command->hierarchy_auth);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Change auth hierarchy.", error_cleanup);
 
         fallthrough;
@@ -1295,7 +1297,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
            assigned to lockout hierarchy asynchronous. */
         r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_LOCKOUT, hierarchy_lockout,
                                           &command->hierarchy_policy);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Change policy LOCKOUT", error_cleanup);
 
         /* Check whether object already exists in key store.*/
@@ -1314,7 +1316,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_WRITE_LOCKOUT);
         /* Finish writing the lockout hierarchy to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
         /* Write all lockout hierarchies. */
@@ -1358,7 +1360,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
            the auth value will be changed asynchronous. */
         r = ifapi_change_auth_hierarchy(context, ESYS_TR_RH_ENDORSEMENT, &command->hierarchy_he,
                                         &command->hierarchy_auth);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Change auth hierarchy.", error_cleanup);
         fallthrough;
 
@@ -1367,7 +1369,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
            the policy will be assigned asynchronous. */
         r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_ENDORSEMENT, hierarchy_he,
                                           &command->hierarchy_policy);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Change policy EH", error_cleanup);
 
         /* Check whether object already exists in key store.*/
@@ -1384,7 +1386,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_WRITE_EH);
         /* Finish writing the endorsement hierarchy to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
         /* Write all endorsement hierarchies. */
@@ -1430,7 +1432,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         context->hierarchy_policy_state = HIERARCHY_CHANGE_POLICY_INIT;
         r = ifapi_change_auth_hierarchy(context, ESYS_TR_RH_OWNER, &command->hierarchy_hs,
                                         &command->hierarchy_auth);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Change auth hierarchy.", error_cleanup);
 
         fallthrough;
@@ -1440,7 +1442,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
            the policy will be assigned asynchronous. */
         r = ifapi_change_policy_hierarchy(context, ESYS_TR_RH_OWNER, hierarchy_hs,
                                           &command->hierarchy_policy);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Change policy SH", error_cleanup);
 
         /* Check whether object already exists in key store.*/
@@ -1457,7 +1459,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_WRITE_SH);
         /* The onwer hierarchy object will be written to key store. */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
         /* Write all storage hierarchies. */
@@ -1481,7 +1483,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_WRITE_NULL);
         /* The null hierarchy object will be written to key store. */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
         command->hierarchy = hierarchy_hn;
@@ -1504,7 +1506,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_FLUSH_SRK);
         if (context->srk_handle != ESYS_TR_NONE) {
             r = Esys_FlushContext_Finish(context->esys);
-            try_again_or_error_goto(r, "Flush SRK", error_cleanup);
+            ifapi_try_again_or_error_goto(r, "Flush SRK", error_cleanup);
 
             context->srk_handle = ESYS_TR_NONE;
         }
@@ -1519,7 +1521,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_FLUSH_EK);
         if (context->ek_handle != ESYS_TR_NONE) {
             r = Esys_FlushContext_Finish(context->esys);
-            try_again_or_error_goto(r, "Flush EK", error_cleanup);
+            ifapi_try_again_or_error_goto(r, "Flush EK", error_cleanup);
 
             context->ek_handle = ESYS_TR_NONE;
         }
@@ -1528,7 +1530,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_CLEAN_SRK_SESSION);
         /* Cleanup the session used for parameter encryption */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         context->state = FAPI_STATE_INIT;
         memset(&context->create_nv, 0, sizeof(IFAPI_CREATE_NV));
@@ -1536,7 +1538,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PROVISION_CHECK_EXISTING_NV);
         r = ifapi_create_nv_objects(context, &context->create_nv);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "Read EK template", error_cleanup);
         break;
 
@@ -1572,7 +1574,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_WRITE_HIERARCHY);
         /* Finish writing the hierarchy to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
         command->path_idx += 1;
@@ -1594,7 +1596,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PROVISION_GET_VENDOR);
         /* Get the vendor ID asynchronous. */
         r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
 
         if ((*capabilityData)->data.tpmProperties.tpmProperty[0].value == VENDOR_INTC
@@ -1630,7 +1632,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         context->state = PROVISION_EK_WRITE_PREPARE;
         return TSS2_FAPI_RC_TRY_AGAIN;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

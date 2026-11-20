@@ -19,7 +19,7 @@
 #include "efi_event.h"      // for TCG_EVENT, TCG_EVENT2, TCG_EVENT_H...
 #include "ifapi_eventlog.h" // for IFAPI_EVENT_TYPE
 #include "ifapi_eventlog_system.h"
-#include "ifapi_macros.h"         // for check_oom, return_error2
+#include "ifapi_macros.h"         // for ifapi_check_oom, return_error2
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifapi_json_U...
 #include "tss2_crypto.h"          // for tss2_hash_get_digest_size
 #include "tss2_tpm2_types.h"      // for TPM2_MAX_PCRS, TPMI_ALG_HASH
@@ -523,7 +523,7 @@ ifapi_json_TCG_EVENT_TYPE_deserialize_txt(json_object *jso, IFAPI_EVENT_TYPE *ou
     int64_t     i64;
     const char *token = json_object_get_string(jso);
 
-    check_oom(token);
+    ifapi_check_oom(token);
     LOG_TRACE("TCG Event: %s", token);
 
     if (get_number(token, &i64)) {
@@ -642,7 +642,7 @@ ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize(json_object          *jso,
                used as digest. */
             SAFE_FREE(out->data.buffer);
             out->data.buffer = calloc(1, 4);
-            check_oom(out->data.buffer);
+            ifapi_check_oom(out->data.buffer);
             out->data.size = 4;
             /* hash of 0x00000001 will be used as digest. */
             out->data.buffer[3] = 1;

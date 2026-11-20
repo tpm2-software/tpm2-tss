@@ -200,7 +200,7 @@ Fapi_GetTpmBlobs_Finish(FAPI_CONTEXT *context,
     statecase(context->state, ENTITY_GET_TPM_BLOBS_READ);
         /* Finish readon the metadata from key store. */
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         if (object.objectType != IFAPI_KEY_OBJ) {
@@ -243,7 +243,7 @@ Fapi_GetTpmBlobs_Finish(FAPI_CONTEXT *context,
             goto_if_error(r, "Serialize policy", error_cleanup);
         } else {
             if (policy) {
-                strdup_check(*policy, "", r, error_cleanup);
+                ifapi_strdup_check(*policy, "", r, error_cleanup);
             }
         }
 
@@ -253,7 +253,7 @@ Fapi_GetTpmBlobs_Finish(FAPI_CONTEXT *context,
         LOG_TRACE("finished");
         return TSS2_RC_SUCCESS;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */

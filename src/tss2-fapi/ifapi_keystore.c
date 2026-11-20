@@ -20,7 +20,7 @@
 #include "ifapi_json_deserialize.h" // for ifapi_json_IFAPI_OBJECT_deserialize
 #include "ifapi_json_serialize.h"   // for ifapi_json_IFAPI_OBJECT_serialize
 #include "ifapi_keystore.h"
-#include "ifapi_macros.h"         // for goto_if_error2, strdup_check
+#include "ifapi_macros.h"         // for goto_if_error2, ifapi_strdup_check
 #include "tpm_json_deserialize.h" // for ifapi_parse_json
 #include "tss2_helpers.h"         // for free_string_list, ifapi_asprintf
 
@@ -547,7 +547,7 @@ ifapi_keystore_load_async(IFAPI_KEYSTORE *keystore, IFAPI_IO *io, const char *pa
     SAFE_FREE(io->char_rbuffer);
 
     /* Save relative directory path for storing in the object. */
-    strdup_check(keystore->rel_path, path, r, error_cleanup);
+    ifapi_strdup_check(keystore->rel_path, path, r, error_cleanup);
 
     /* Convert relative path to absolute path in keystore */
     r = rel_path_to_abs_path(keystore, path, &abs_path);
@@ -590,7 +590,7 @@ ifapi_keystore_load_finish(IFAPI_KEYSTORE *keystore MAYBE_UNUSED,
     uint8_t     *buffer = NULL;
 
     r = ifapi_io_read_finish(io, &buffer, NULL);
-    return_try_again(r);
+    ifapi_return_try_again(r);
     return_if_error(r, "keystore read_finish failed");
 
     /* If json objects can't be parse the object store is corrupted */
@@ -761,7 +761,7 @@ ifapi_keystore_store_finish(IFAPI_IO *io) {
 
     /* Finish writing the object */
     r = ifapi_io_write_finish(io);
-    return_try_again(r);
+    ifapi_return_try_again(r);
 
     LOG_TRACE("Return %x", r);
     return_if_error(r, "read_finish failed");
@@ -1121,7 +1121,7 @@ keystore_search_obj(IFAPI_KEYSTORE           *keystore,
 
     statecase(keystore->key_search.state, KSEARCH_READ)
         r = ifapi_keystore_load_finish(keystore, io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "read_finish failed", cleanup);
 
         /* Check whether the key has the passed name */
@@ -1142,7 +1142,7 @@ keystore_search_obj(IFAPI_KEYSTORE           *keystore,
         full_path_to_fapi_path(keystore, *found_path);
         break;
 
-    statecasedefault(keystore->key_search.state);
+    ifapi_statecasedefault(keystore->key_search.state);
     }
 cleanup:
     for (i = 0; i < keystore->key_search.numPaths; i++)
@@ -1403,9 +1403,9 @@ ifapi_copy_ifapi_key(IFAPI_KEY *dest, const IFAPI_KEY *src) {
     r = copy_uint8_ary(&dest->appData, &src->appData);
     goto_if_error(r, "Could not copy appData", error_cleanup);
 
-    strdup_check(dest->policyInstance, src->policyInstance, r, error_cleanup);
-    strdup_check(dest->description, src->description, r, error_cleanup);
-    strdup_check(dest->certificate, src->certificate, r, error_cleanup);
+    ifapi_strdup_check(dest->policyInstance, src->policyInstance, r, error_cleanup);
+    ifapi_strdup_check(dest->description, src->description, r, error_cleanup);
+    ifapi_strdup_check(dest->certificate, src->certificate, r, error_cleanup);
 
     dest->persistent_handle = src->persistent_handle;
     dest->public = src->public;
@@ -1447,7 +1447,7 @@ ifapi_copy_ifapi_hierarchy(IFAPI_HIERARCHY *dest, const IFAPI_HIERARCHY *src) {
     /* Initialize the object variables for a possible error cleanup */
     dest->description = NULL;
 
-    strdup_check(dest->description, src->description, r, error_cleanup);
+    ifapi_strdup_check(dest->description, src->description, r, error_cleanup);
     dest->with_auth = src->with_auth;
     dest->authPolicy = src->authPolicy;
 
@@ -1590,7 +1590,7 @@ ifapi_copy_ifapi_key_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
     } else {
         dest->policy = NULL;
     }
-    strdup_check(dest->rel_path, src->rel_path, r, error_cleanup);
+    ifapi_strdup_check(dest->rel_path, src->rel_path, r, error_cleanup);
 
     r = ifapi_copy_ifapi_key(&dest->misc.key, &src->misc.key);
     goto_if_error(r, "Could not copy key", error_cleanup);
@@ -1647,7 +1647,7 @@ ifapi_copy_ifapi_hierarchy_object(IFAPI_OBJECT *dest, const IFAPI_OBJECT *src) {
     } else {
         dest->policy = NULL;
     }
-    strdup_check(dest->rel_path, src->rel_path, r, error_cleanup);
+    ifapi_strdup_check(dest->rel_path, src->rel_path, r, error_cleanup);
 
     r = ifapi_copy_ifapi_hierarchy(&dest->misc.hierarchy, &src->misc.hierarchy);
     goto_if_error(r, "Could not copy key", error_cleanup);

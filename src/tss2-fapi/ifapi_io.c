@@ -22,7 +22,7 @@
 #include "fapi_int.h"      // for FAPI_WRITE
 #include "ifapi_helpers.h" // for ifapi_asprintf, ifapi_create_dirs
 #include "ifapi_io.h"
-#include "ifapi_macros.h" // for check_not_null, return_error2, check_oom
+#include "ifapi_macros.h" // for check_not_null, return_error2, ifapi_check_oom
 #include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_RC_S...
 #include "tss2_helpers.h" // for ifapi_asprintf, ifapi_create_dirs
 #include "tss2_types.h"   // for NODE_OBJECT_T
@@ -782,7 +782,7 @@ ifapi_io_poll_handles(IFAPI_IO *io, FAPI_POLL_HANDLE **handles, size_t *num_hand
     }
 
     *handles = calloc(1, sizeof(**handles));
-    check_oom(*handles);
+    ifapi_check_oom(*handles);
     (*handles)->events = io->pollevents;
     (*handles)->fd = fileno(io->stream);
     *num_handles = 1;

@@ -170,8 +170,8 @@ Fapi_WriteAuthorizeNv_Async(FAPI_CONTEXT *context, char const *nvPath, char cons
     return_if_error(r, "Initialize WriterAuthorizeNv");
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->policyPath, policyPath, r, error_cleanup);
-    strdup_check(nvCmd->nvPath, nvPath, r, error_cleanup);
+    ifapi_strdup_check(command->policyPath, policyPath, r, error_cleanup);
+    ifapi_strdup_check(nvCmd->nvPath, nvPath, r, error_cleanup);
 
     /* Load the metadata for the NV index to be written to from the keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, nvCmd->nvPath);
@@ -248,7 +248,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
                                   error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         ifapi_cleanup_ifapi_object(object);
@@ -266,7 +266,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
         if (r != TSS2_RC_SUCCESS) {
             ifapi_cleanup_ifapi_object(object);
         }
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi calculate tree.", error_cleanup);
 
         fallthrough;
@@ -292,7 +292,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_NV_RAM)
     /* Perform the actual NV Write operation. */
         r = ifapi_nv_write(context, nvCmd->nvPath, 0, nvCmd->nv_buffer, context->nv_cmd.numBytes);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI NV Write", error_cleanup);
 
         /* Perform esys serialization if necessary */
@@ -308,7 +308,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_OBJCECT)
     /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         fallthrough;
@@ -322,7 +322,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_POLICY)
     /* Save policy with computed digest */
         r = ifapi_policy_store_store_finish(&context->pstore, &context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         fallthrough;
@@ -330,10 +330,10 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, WRITE_AUTHORIZE_NV_CLEANUP)
     /* Cleanup the session used for authorizing access to the NV index. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

@@ -154,7 +154,7 @@ Fapi_GetEsysBlob_Async(FAPI_CONTEXT *context, char const *path) {
     IFAPI_OBJECT      *authObject = &command->auth_object;
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->path, path, r, error_cleanup);
+    ifapi_strdup_check(command->path, path, r, error_cleanup);
 
     object->objectType = IFAPI_OBJ_NONE;
     authObject->objectType = IFAPI_OBJ_NONE;
@@ -261,7 +261,7 @@ Fapi_GetEsysBlob_Finish(FAPI_CONTEXT *context, uint8_t *type, uint8_t **data, si
     statecase(context->state, GET_ESYS_BLOB_READ);
         /* Get object metadata from keystore. */
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         /* Initialize the ESYS object for the key or NV Index. */
@@ -300,7 +300,7 @@ Fapi_GetEsysBlob_Finish(FAPI_CONTEXT *context, uint8_t *type, uint8_t **data, si
     statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_KEY);
         /* Loading the key is needed for blob computation. */
         r = ifapi_load_key(context, command->path, &key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi load key.", error_cleanup);
 
         command->type = FAPI_ESYSBLOB_CONTEXTLOAD;
@@ -314,7 +314,7 @@ Fapi_GetEsysBlob_Finish(FAPI_CONTEXT *context, uint8_t *type, uint8_t **data, si
     statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_CONTEXT_SAVE);
         /* Save and get the context. */
         r = Esys_ContextSave_Finish(context->esys, &key_context);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Error esys context save", error_cleanup);
 
         command->length = 0;
@@ -339,7 +339,7 @@ Fapi_GetEsysBlob_Finish(FAPI_CONTEXT *context, uint8_t *type, uint8_t **data, si
     statecase(context->state, GET_ESYS_BLOB_WAIT_FOR_FLUSH);
         if (!key_object->misc.key.persistent_handle) {
             r = Esys_FlushContext_Finish(context->esys);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error(r, "Flush Context", error_cleanup);
         }
 
@@ -348,7 +348,7 @@ Fapi_GetEsysBlob_Finish(FAPI_CONTEXT *context, uint8_t *type, uint8_t **data, si
     statecase(context->state, GET_ESYS_BLOB_CLEANUP)
     /* Cleanup the session used for authorization. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
         *type = command->type;
         *data = command->data;
         *length = command->length;
@@ -356,7 +356,7 @@ Fapi_GetEsysBlob_Finish(FAPI_CONTEXT *context, uint8_t *type, uint8_t **data, si
         context->state = FAPI_STATE_INIT;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
     /* Reset the ESYS timeout to non-blocking, immediate response. */

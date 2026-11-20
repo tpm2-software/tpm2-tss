@@ -97,7 +97,7 @@ ifapi_policy_store_initialize(IFAPI_POLICY_STORE *pstore, const char *config_pol
     memset(pstore, 0, sizeof(IFAPI_POLICY_STORE));
     check_not_null(config_policydir);
 
-    strdup_check(pstore->policydir, config_policydir, r, error);
+    ifapi_strdup_check(pstore->policydir, config_policydir, r, error);
 
     r = ifapi_asprintf(
         &policy_dir, "%s%s%s", config_policydir,
@@ -201,7 +201,7 @@ ifapi_policy_store_load_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, char **
     UNUSED(pstore);
 
     r = ifapi_io_read_finish(io, &buffer, NULL);
-    return_try_again(r);
+    ifapi_return_try_again(r);
     return_if_error(r, "keystore read_finish failed");
 
     /* If json objects can't be parse the object store is corrupted */
@@ -245,7 +245,7 @@ ifapi_policy_store_read_json_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, ui
     UNUSED(pstore);
 
     r = ifapi_io_read_finish(io, policy, NULL);
-    return_try_again(r);
+    ifapi_return_try_again(r);
     return_if_error(r, "keystore read_finish failed");
 
     LOG_TRACE("Return %x", r);
@@ -322,7 +322,7 @@ ifapi_policy_store_store_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io) {
     UNUSED(pstore);
     /* Finish writing the policy */
     r = ifapi_io_write_finish(io);
-    return_try_again(r);
+    ifapi_return_try_again(r);
 
     LOG_TRACE("Return %x", r);
     return_if_error(r, "read_finish failed");

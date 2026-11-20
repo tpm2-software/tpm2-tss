@@ -236,7 +236,7 @@ Fapi_Quote_Async(FAPI_CONTEXT  *context,
     }
 
     /* Store parameters in context */
-    strdup_check(command->keyPath, keyPath, r, error_cleanup);
+    ifapi_strdup_check(command->keyPath, keyPath, r, error_cleanup);
 
     command->pcrList = malloc(pcrListSize * sizeof(TPM2_HANDLE));
     goto_if_null2(command->pcrList, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
@@ -350,7 +350,7 @@ Fapi_Quote_Finish(FAPI_CONTEXT *context,
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         r = ifapi_get_sessions_finish(context, profile, profile->nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         /* Load the key into the TPM. */
@@ -362,7 +362,7 @@ Fapi_Quote_Finish(FAPI_CONTEXT *context,
     statecase(context->state, PCR_QUOTE_WAIT_FOR_KEY);
         r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT, &command->handle,
                                    &command->key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " Load key.", error_cleanup);
 
         fallthrough;
@@ -370,7 +370,7 @@ Fapi_Quote_Finish(FAPI_CONTEXT *context,
     statecase(context->state, PCR_QUOTE_AUTHORIZE);
         /* Authorize the session for use with the key. */
         r = ifapi_authorize_object(context, command->key_object, &auth_session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Authorize key.", error_cleanup);
 
         /* Perform the Quote operation. */
@@ -386,7 +386,7 @@ Fapi_Quote_Finish(FAPI_CONTEXT *context,
         command->tpm_signature = NULL;
         SAFE_FREE(command->tpm_signature);
         r = Esys_Quote_Finish(context->esys, &command->tpm_quoted, &command->tpm_signature);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         if (r == 0x1D5) {
             LOG_ERROR("qualifyingData is of wrong size; probably larger than"
                       "the TPM's max hash size (32 for SHA256, 64 for SHA512).");
@@ -405,7 +405,7 @@ Fapi_Quote_Finish(FAPI_CONTEXT *context,
     statecase(context->state, PCR_QUOTE_WAIT_FOR_FLUSH);
         if (!command->key_object->misc.key.persistent_handle) {
             r = Esys_FlushContext_Finish(context->esys);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error(r, "Error: Sign", error_cleanup);
         }
 
@@ -424,8 +424,8 @@ Fapi_Quote_Finish(FAPI_CONTEXT *context,
 
         /* Return the key's certificate if requested. */
         if (certificate) {
-            strdup_check(command->certificate, sig_key_object->misc.key.certificate, r,
-                         error_cleanup);
+            ifapi_strdup_check(command->certificate, sig_key_object->misc.key.certificate, r,
+                               error_cleanup);
         }
 
         /* If the pcrLog was not requested, the operation is done. */
@@ -444,14 +444,14 @@ Fapi_Quote_Finish(FAPI_CONTEXT *context,
     statecase(context->state, PCR_QUOTE_READ_EVENT_LIST);
         r = ifapi_eventlog_get_finish(&context->eventlog, &command->fapi_quote_info, &context->io,
                                       &command->pcrLog);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Error getting event log", error_cleanup);
         fallthrough;
 
     statecase(context->state, PCR_QUOTE_CLEANUP)
     /* Cleanup the session used for authorization. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         if (pcrLog)
             *pcrLog = command->pcrLog;
@@ -461,7 +461,7 @@ Fapi_Quote_Finish(FAPI_CONTEXT *context,
         *signatureSize = command->signatureSize;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

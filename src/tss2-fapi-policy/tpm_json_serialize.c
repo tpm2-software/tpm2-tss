@@ -12,7 +12,7 @@
 #include <stdio.h>    // for NULL, size_t, sprintf
 
 #include "tpm_json_serialize.h"
-#include "util/aux_util.h" // for check_oom, return_error2
+#include "util/aux_util.h" // for return_if_null, return_error2
 
 #define LOGMODULE fapijson
 #include "util/log.h" // for return_error, return_if_error, return_if_null
@@ -359,7 +359,7 @@ ifapi_json_TPM2_GENERATED_serialize(const TPM2_GENERATED in, json_object **jso) 
     }
 
     *jso = json_object_new_string("VALUE");
-    check_oom(*jso);
+    return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
 
     return TSS2_RC_SUCCESS;
 }
@@ -425,7 +425,7 @@ ifapi_json_TPM2_ALG_ID_serialize(const TPM2_ALG_ID in, json_object **jso) {
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
         if (tab[i].in == in) {
             *jso = json_object_new_string(tab[i].name);
-            check_oom(*jso);
+            return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
             return TSS2_RC_SUCCESS;
         }
     }
@@ -456,7 +456,7 @@ ifapi_json_TPM2_ECC_CURVE_serialize(const TPM2_ECC_CURVE in, json_object **jso) 
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
         if (tab[i].in == in) {
             *jso = json_object_new_string(tab[i].name);
-            check_oom(*jso);
+            return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
             return TSS2_RC_SUCCESS;
         }
     }
@@ -599,7 +599,7 @@ ifapi_json_TPM2_CC_serialize(const TPM2_CC in, json_object **jso) {
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
         if (tab[i].in == in) {
             *jso = json_object_new_string(tab[i].name);
-            check_oom(*jso);
+            return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
             return TSS2_RC_SUCCESS;
         }
     }
@@ -637,7 +637,7 @@ ifapi_json_TPM2_EO_serialize(const TPM2_EO in, json_object **jso) {
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
         if (tab[i].in == in) {
             *jso = json_object_new_string(tab[i].name);
-            check_oom(*jso);
+            return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
             return TSS2_RC_SUCCESS;
         }
     }
@@ -680,7 +680,7 @@ ifapi_json_TPM2_ST_serialize(const TPM2_ST in, json_object **jso) {
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
         if (tab[i].in == in) {
             *jso = json_object_new_string(tab[i].name);
-            check_oom(*jso);
+            return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
             return TSS2_RC_SUCCESS;
         }
     }
@@ -719,7 +719,7 @@ ifapi_json_TPM2_CAP_serialize(const TPM2_CAP in, json_object **jso) {
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
         if (tab[i].in == in) {
             *jso = json_object_new_string(tab[i].name);
-            check_oom(*jso);
+            return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
             return TSS2_RC_SUCCESS;
         }
     }
@@ -816,7 +816,7 @@ ifapi_json_TPM2_PT_serialize(const TPM2_PT in, json_object **jso) {
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
         if (tab[i].in == in) {
             *jso = json_object_new_string(tab[i].name);
-            check_oom(*jso);
+            return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
             return TSS2_RC_SUCCESS;
         }
     }
@@ -857,7 +857,7 @@ ifapi_json_TPM2_PT_PCR_serialize(const TPM2_PT_PCR in, json_object **jso) {
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
         if (tab[i].in == in) {
             *jso = json_object_new_string(tab[i].name);
-            check_oom(*jso);
+            return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
             return TSS2_RC_SUCCESS;
         }
     }
@@ -1155,7 +1155,7 @@ ifapi_json_TPMI_YES_NO_serialize(const TPMI_YES_NO in, json_object **jso) {
     } else {
         return_error(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant.");
     }
-    check_oom(*jso);
+    return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
     return TSS2_RC_SUCCESS;
 }
 
@@ -1182,7 +1182,7 @@ ifapi_json_TPMI_RH_HIERARCHY_serialize(const TPMI_RH_HIERARCHY in, json_object *
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
         if (tab[i].in == in) {
             *jso = json_object_new_string(tab[i].name);
-            check_oom(*jso);
+            return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
             return TSS2_RC_SUCCESS;
         }
     }
@@ -4209,7 +4209,7 @@ ifapi_json_TPM2_NT_serialize(const TPM2_NT in, json_object **jso) {
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {
         if (tab[i].in == in) {
             *jso = json_object_new_string(tab[i].name);
-            check_oom(*jso);
+            return_if_null(*jso, "Out of memory", TSS2_FAPI_RC_MEMORY);
             return TSS2_RC_SUCCESS;
         }
     }

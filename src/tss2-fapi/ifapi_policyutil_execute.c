@@ -324,7 +324,7 @@ ifapi_policyutil_execute(FAPI_CONTEXT *context, ESYS_TR *session) {
 
         break;
 
-    statecasedefault(pol_util_ctx->state);
+    ifapi_statecasedefault(pol_util_ctx->state);
     }
     *session = pol_util_ctx->session;
     pol_util_ctx->state = POLICY_UTIL_INIT;

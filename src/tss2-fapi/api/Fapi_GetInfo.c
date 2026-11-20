@@ -234,7 +234,7 @@ Fapi_GetInfo_Finish(FAPI_CONTEXT *context, char **info) {
         capIdx = command->idx_info_cap;
         r = ifapi_capability_get(context, info_cap_tab[capIdx].capability, info_cap_tab[capIdx].max,
                                  &capabilityData);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Get capability", cleanup);
 
         if (info_cap_tab[capIdx].capability == TPM2_CAP_TPM_PROPERTIES
@@ -279,7 +279,7 @@ Fapi_GetInfo_Finish(FAPI_CONTEXT *context, char **info) {
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:

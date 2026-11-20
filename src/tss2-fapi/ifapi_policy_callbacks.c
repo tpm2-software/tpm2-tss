@@ -103,7 +103,7 @@ ifapi_get_key_public(const char *path, TPMT_PUBLIC *public, void *ctx) {
     statecase(context->io_state, IO_ACTIVE)
     /* Finalize or retry the reading and check the object type */
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         switch (object.objectType) {
@@ -170,7 +170,7 @@ ifapi_get_object_name(const char *path, TPM2B_NAME *name, void *ctx) {
     statecase(context->io_state, IO_ACTIVE)
     /* Finalize or retry the reading and check the object type */
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         switch (object.objectType) {
@@ -189,7 +189,7 @@ ifapi_get_object_name(const char *path, TPM2B_NAME *name, void *ctx) {
         goto_if_error(r, "Get object name.", cleanup);
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:
@@ -250,7 +250,7 @@ ifapi_get_nv_public(const char      *path,
 
         statecase(context->read_nv_public_state, READ_NV_PUBLIC_GET_ESYS_TR)
             r = Esys_TR_FromTPMPublic_Finish(context->esys, &esys_tr);
-            try_again_or_error_goto(r, "Error: tr from public finish", cleanup);
+            ifapi_try_again_or_error_goto(r, "Error: tr from public finish", cleanup);
 
             r = Esys_NV_ReadPublic_Async(context->esys, esys_tr, ESYS_TR_NONE, ESYS_TR_NONE,
                                          ESYS_TR_NONE);
@@ -259,14 +259,14 @@ ifapi_get_nv_public(const char      *path,
 
         statecase(context->read_nv_public_state, READ_NV_PUBLIC_GET_PUBLIC)
             r = Esys_NV_ReadPublic_Finish(context->esys, &nv_public_esys, NULL);
-            try_again_or_error_goto(r, "Error: nv read public finish", cleanup);
+            ifapi_try_again_or_error_goto(r, "Error: nv read public finish", cleanup);
 
             *nv_public = nv_public_esys->nvPublic;
             SAFE_FREE(nv_public_esys);
             context->io_state = IO_INIT;
             break;
 
-        statecasedefault(context->state);
+        ifapi_statecasedefault(context->state);
         }
 
     } else {
@@ -280,7 +280,7 @@ ifapi_get_nv_public(const char      *path,
         statecase(context->io_state, IO_ACTIVE)
         /* Finalize or retry the reading and check the object type */
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
             if (object.objectType != IFAPI_NV_OBJ) {
@@ -291,7 +291,7 @@ ifapi_get_nv_public(const char      *path,
             context->io_state = IO_INIT;
             break;
 
-        statecasedefault(context->state);
+        ifapi_statecasedefault(context->state);
         }
     }
 
@@ -393,7 +393,7 @@ ifapi_read_pcr(TSS2_POLICY_PCR_SELECTION *pcr_selection,
         context->io_state = IO_INIT;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:
@@ -478,7 +478,7 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
     statecase(cb_ctx->cb_state, POL_CB_READ_OBJECT);
         /* Get object from file */
         r = ifapi_keystore_load_finish(&fapi_ctx->keystore, &fapi_ctx->io, &cb_ctx->object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         r = ifapi_initialize_object(fapi_ctx->esys, &cb_ctx->object);
@@ -513,7 +513,7 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
 
     statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_OBJECT);
         r = ifapi_authorize_object(fapi_ctx, cb_ctx->auth_object_ptr, authSession);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Authorize  object.", cleanup);
 
         cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
@@ -567,7 +567,7 @@ ifapi_policyeval_cbauth(TPM2B_NAME *name,
         cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
         break;
 
-    statecasedefault(cb_ctx->cb_state);
+    ifapi_statecasedefault(cb_ctx->cb_state);
     }
 
     *object_handle = cb_ctx->object.public.handle;
@@ -650,7 +650,7 @@ ifapi_policyeval_cbload_key(TPM2B_NAME *name, ESYS_TR *object_handle, void *user
     statecase(cb_ctx->cb_state, POL_CB_READ_OBJECT);
         /* Get object from file */
         r = ifapi_keystore_load_finish(&fapi_ctx->keystore, &fapi_ctx->io, &cb_ctx->object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         r = ifapi_initialize_object(fapi_ctx->esys, &cb_ctx->object);
@@ -700,7 +700,7 @@ ifapi_policyeval_cbload_key(TPM2B_NAME *name, ESYS_TR *object_handle, void *user
         cb_ctx->cb_state = POL_CB_EXECUTE_INIT;
         break;
 
-    statecasedefault(cb_ctx->cb_state);
+    ifapi_statecasedefault(cb_ctx->cb_state);
     }
 
 cleanup:
@@ -855,7 +855,7 @@ ifapi_sign_buffer(char           *key_pem,
                                  public_key_hint ? public_key_hint : "", key_pem_hash_alg, buffer,
                                  buffer_size, signature, signature_size,
                                  fapi_ctx->callbacks.signData);
-    try_again_or_error(r, "Execute policy signature callback.");
+    ifapi_try_again_or_error(r, "Execute policy signature callback.");
 
     return TSS2_RC_SUCCESS;
 }
@@ -1010,7 +1010,7 @@ search_policy(FAPI_CONTEXT         *context,
         LOG_DEBUG("** STATE ** FSEARCH_READ");
         /* Finalize policy loading if possible. */
         r = ifapi_policy_store_load_finish(&context->pstore, &context->io, &policy);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "read_finish failed", cleanup);
 
         /* Call the passed compare function. */
@@ -1039,7 +1039,7 @@ search_policy(FAPI_CONTEXT         *context,
         policy_object = calloc(1, sizeof(struct POLICY_LIST));
         goto_if_null2(policy_object, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
 
-        strdup_check(policy_object->path, context->fsearch.current_path, r, cleanup);
+        ifapi_strdup_check(policy_object->path, context->fsearch.current_path, r, cleanup);
         policy_object->policy = policy;
         policy = NULL;
         if (*policy_found != NULL) {
@@ -1372,7 +1372,7 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     statecase(cb_ctx->cb_state, POL_CB_NV_READ)
     /* Get object from file */
         r = ifapi_keystore_load_finish(&fapi_ctx->keystore, &fapi_ctx->io, &cb_ctx->object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         r = ifapi_initialize_object(esys_ctx, &cb_ctx->object);
@@ -1386,7 +1386,7 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     statecase(cb_ctx->cb_state, POL_CB_AUTHORIZE_OBJECT)
     /* Authorize the NV object with the corresponding auth object. */
         r = ifapi_authorize_object(fapi_ctx, &cb_ctx->auth_object, &cb_ctx->session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         ifapi_cleanup_ifapi_object(&cb_ctx->object);
         goto_if_error(r, "Authorize  object.", cleanup);
@@ -1400,7 +1400,7 @@ ifapi_exec_auth_nv_policy(TPMS_NV_PUBLIC *nv_public, TPMI_ALG_HASH hash_alg, voi
     statecase(cb_ctx->cb_state, POL_CB_READ_NV_POLICY)
     /* Finalize the reading. */
         r = Esys_NV_Read_Finish(esys_ctx, &aux_data);
-        try_again_or_error_goto(r, "NV read", cleanup);
+        ifapi_try_again_or_error_goto(r, "NV read", cleanup);
 
         offset = 0;
         r = Tss2_MU_TPMT_HA_Unmarshal(&aux_data->buffer[0], aux_data->size, &offset, &nv_policy);

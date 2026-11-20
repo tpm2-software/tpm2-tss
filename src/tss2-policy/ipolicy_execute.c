@@ -14,10 +14,11 @@
 
 #include "ipolicy_execute.h"
 #include "ipolicy_helpers.h"
+#include "ipolicy_macros.h"
 #include "tss2_crypto.h"   // for tss2_crypto_hash_finish, ifapi_crypto_ha...
 #include "tss2_helpers.h"  // for append_object_to_list
 #include "tss2_mu.h"       // for Tss2_MU_TPMT_PUBLIC_Marshal
-#include "util/aux_util.h" // for statecase, fallthrough, try_again_or_error
+#include "util/aux_util.h" // for statecase, fallthrough, ipolicy_try_again_or_error
 
 #include "ipolicy_types.h" // for policy element definitions
 
@@ -125,12 +126,12 @@ execute_policy_pcr(ESYS_CONTEXT     *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyPCR_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyPCR_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyPCR_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
     return r;
 }
@@ -179,12 +180,12 @@ execute_policy_duplicate(ESYS_CONTEXT                 *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyDuplicationSelect_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyDuplicationselect_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyDuplicationselect_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
     return r;
 }
@@ -248,7 +249,7 @@ execute_policy_nv(ESYS_CONTEXT *esys_ctx, TPMS_POLICYNV *policy, IPOLICY_EXEC_CT
         r = cb->cbauth(&current_policy->name, &current_policy->object_handle,
                        &current_policy->auth_handle, &current_policy->auth_session,
                        cb->cbauth_userdata);
-        return_try_again(r);
+        ipolicy_return_try_again(r);
         return_if_error(r, "Execute authorized policy.");
 
         /* Prepare the policy execution. */
@@ -262,12 +263,12 @@ execute_policy_nv(ESYS_CONTEXT *esys_ctx, TPMS_POLICYNV *policy, IPOLICY_EXEC_CT
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyNV_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyNV_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyNV_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
     return r;
 }
@@ -366,7 +367,7 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
                        &signature_size, cb->cbsign_userdata);
         SAFE_FREE(current_policy->pem_key);
         SAFE_FREE(current_policy->buffer);
-        try_again_or_error_goto(r, "Execute policy signature callback.", cleanup);
+        ipolicy_try_again_or_error_goto(r, "Execute policy signature callback.", cleanup);
 
         /* Convert signature into TPM format */
         r = tss2_der_sig_to_tpm(&policy->keyPublic, signature_ossl, signature_size,
@@ -390,7 +391,7 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
 
     statecase(current_policy->state, POLICY_LOAD_KEY);
         r = Esys_LoadExternal_Finish(esys_ctx, &current_policy->object_handle);
-        try_again_or_error(r, "Load external key.");
+        ipolicy_try_again_or_error(r, "Load external key.");
 
         current_policy->flush_handle = true;
 
@@ -406,7 +407,7 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH);
         /* Finalize the policy execution if possible. */
         r = Esys_PolicySigned_Finish(esys_ctx, NULL, NULL);
-        try_again_or_error(r, "Execute PolicySigned_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicySigned_Finish.");
 
         r = Esys_FlushContext_Async(esys_ctx, current_policy->object_handle);
         goto_if_error(r, "FlushContext_Async", cleanup);
@@ -414,7 +415,7 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
 
     statecase(current_policy->state, POLICY_FLUSH_KEY);
         r = Esys_FlushContext_Finish(esys_ctx);
-        try_again_or_error(r, "Flush key finish.");
+        ipolicy_try_again_or_error(r, "Flush key finish.");
 
         current_policy->object_handle = ESYS_TR_NONE;
         current_policy->state = POLICY_EXECUTE_INIT;
@@ -425,7 +426,7 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
         r = cb->cbauth(&policy->publicKey, &current_policy->object_handle,
                        &current_policy->auth_handle, &current_policy->auth_session,
                        cb->cbauth_userdata);
-        return_try_again(r);
+        ipolicy_return_try_again(r);
         goto_if_error(r, "Authorize object callback.", cleanup);
 
         /* Prepare the policy execution. */
@@ -439,7 +440,7 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
         current_policy->state = POLICY_EXECUTE_FINISH;
         return TSS2_POLICY_RC_TRY_AGAIN;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
 cleanup:
     SAFE_FREE(current_policy->nonceTPM);
@@ -530,7 +531,7 @@ execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
                      TSS2_POLICY_RC_NOT_IMPLEMENTED, cleanup);
         r = cb->cbauthpol(&policy->keyPublic, hash_alg, &policy->approvedPolicy, &policy->policyRef,
                           &policy->signature, cb->cbauthpol_userdata);
-        return_try_again(r);
+        ipolicy_return_try_again(r);
         goto_if_error(r, "Execute authorized policy.", cleanup);
 
         public2b.size = 0;
@@ -542,7 +543,7 @@ execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
 
     statecase(current_policy->state, POLICY_LOAD_KEY);
         r = Esys_LoadExternal_Finish(esys_ctx, &current_policy->object_handle);
-        try_again_or_error(r, "Load external key.");
+        ipolicy_try_again_or_error(r, "Load external key.");
 
         /* Save key name for policy execution */
         r = Esys_TR_GetName(esys_ctx, current_policy->object_handle, &tmp_name);
@@ -573,7 +574,7 @@ execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
 
     statecase(current_policy->state, POLICY_VERIFY);
         r = Esys_VerifySignature_Finish(esys_ctx, &ticket);
-        try_again_or_error(r, "Verify signature.");
+        ipolicy_try_again_or_error(r, "Verify signature.");
 
         /* Execute policy authorize */
         policy->checkTicket = *ticket;
@@ -586,7 +587,7 @@ execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
 
     statecase(current_policy->state, POLICY_EXECUTE_FINISH);
         r = Esys_PolicyAuthorize_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyAuthorize.");
+        ipolicy_try_again_or_error(r, "Execute PolicyAuthorize.");
 
         r = Esys_FlushContext_Async(esys_ctx, current_policy->object_handle);
         goto_if_error(r, "FlushContext_Async", cleanup);
@@ -595,13 +596,13 @@ execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
     statecase(current_policy->state, POLICY_FLUSH_KEY);
         /* Flush key used for verification. */
         r = Esys_FlushContext_Finish(esys_ctx);
-        try_again_or_error(r, "Flush key finish.");
+        ipolicy_try_again_or_error(r, "Flush key finish.");
 
         current_policy->object_handle = ESYS_TR_NONE;
         current_policy->state = POLICY_EXECUTE_INIT;
         break;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
 cleanup:
     /* In error cases object might not have been flushed. */
@@ -670,7 +671,7 @@ execute_policy_authorize_nv(ESYS_CONTEXT           *esys_ctx,
     /* Execute the policy stored in the NV object. */
         return_if_null(cb->cbauthnv, "Authorize NV Callback Not Set", TSS2_POLICY_RC_NULL_CALLBACK);
         r = cb->cbauthnv(&policy->nvPublic, hash_alg, cb->cbauthnv_userdata);
-        try_again_or_error(r, "Execute policy authorize nv callback.");
+        ipolicy_try_again_or_error(r, "Execute policy authorize nv callback.");
 
         r = tss2_nv_get_name(&policy->nvPublic, &current_policy->name);
         return_if_error(r, "Compute NV name");
@@ -682,7 +683,7 @@ execute_policy_authorize_nv(ESYS_CONTEXT           *esys_ctx,
         r = cb->cbauth(&current_policy->name, &current_policy->object_handle,
                        &current_policy->auth_handle, &current_policy->auth_session,
                        cb->cbauth_userdata);
-        return_try_again(r);
+        ipolicy_return_try_again(r);
         goto_if_error(r, "Execute authorized policy.", cleanup);
         fallthrough;
 
@@ -698,12 +699,12 @@ execute_policy_authorize_nv(ESYS_CONTEXT           *esys_ctx,
     statecase(current_policy->state, POLICY_AUTH_SENT)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyAuthorizeNV_Finish(esys_ctx);
-        return_try_again(r);
+        ipolicy_return_try_again(r);
         goto_if_error(r, "FAPI PolicyAuthorizeNV_Finish", cleanup);
         current_policy->state = POLICY_EXECUTE_INIT;
         break;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
 cleanup:
     return r;
@@ -763,7 +764,7 @@ execute_policy_secret(ESYS_CONTEXT      *esys_ctx,
         r = cb->cbauth(&policy->objectName, &current_policy->object_handle,
                        &current_policy->auth_handle, &current_policy->auth_session,
                        cb->cbauth_userdata);
-        return_try_again(r);
+        ipolicy_return_try_again(r);
         /* Authorization can fail after the callback has loaded a transient key. */
         if (cb->cbflushauth)
             current_policy->flush_handle
@@ -788,7 +789,7 @@ execute_policy_secret(ESYS_CONTEXT      *esys_ctx,
     statecase(current_policy->state, POLICY_AUTH_SENT)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicySecret_Finish(esys_ctx, NULL, NULL);
-        return_try_again(r);
+        ipolicy_return_try_again(r);
         goto_if_error(r, "FAPI PolicySecret_Finish", cleanup);
 
         if (!current_policy->flush_handle) {
@@ -801,12 +802,12 @@ execute_policy_secret(ESYS_CONTEXT      *esys_ctx,
 
     statecase(current_policy->state, POLICY_FLUSH_KEY);
         r = Esys_FlushContext_Finish(esys_ctx);
-        try_again_or_error(r, "Flush key finish.");
+        ipolicy_try_again_or_error(r, "Flush key finish.");
         current_policy->auth_handle = ESYS_TR_NONE;
         current_policy->state = POLICY_EXECUTE_INIT;
         break;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
 
     return r;
@@ -858,12 +859,12 @@ execute_policy_counter_timer(ESYS_CONTEXT            *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyCounterTimer_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyCounterTImer_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyCounterTImer_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
     return r;
 }
@@ -898,12 +899,12 @@ execute_policy_physical_presence(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *curre
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyPhysicalPresence_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyPhysicalPresence_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyPhysicalPresence_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
     return r;
 }
@@ -940,12 +941,12 @@ execute_policy_auth_value(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_poli
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyAuthValue_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyAuthValue_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyAuthValue_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
     return r;
 }
@@ -983,12 +984,12 @@ execute_policy_password(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyPassword_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyPassword_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyPassword_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
     return r;
 }
@@ -1026,12 +1027,12 @@ execute_policy_command_code(ESYS_CONTEXT           *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyCommandCode_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyCommandCode_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyCommandCode_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state)
+    ipolicy_statecasedefault(current_policy->state)
     }
     return r;
 }
@@ -1071,12 +1072,12 @@ execute_policy_name_hash(ESYS_CONTEXT        *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyNameHash_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyNameHash_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyNameHash_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state)
+    ipolicy_statecasedefault(current_policy->state)
     }
     return r;
 }
@@ -1115,7 +1116,7 @@ execute_policy_cp_hash(ESYS_CONTEXT      *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyCpHash_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyCpHash_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyCpHash_Finish.");
 
         /* Disable encryption to enable check of cp hash defined in
            policy cp. */
@@ -1128,7 +1129,7 @@ execute_policy_cp_hash(ESYS_CONTEXT      *esys_ctx,
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
     return r;
 }
@@ -1166,12 +1167,12 @@ execute_policy_locality(ESYS_CONTEXT        *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyLocality_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyNV_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyNV_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
     return r;
 }
@@ -1211,12 +1212,12 @@ execute_policy_nv_written(ESYS_CONTEXT         *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyNvWritten_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyNV_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyNV_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
     return r;
 }
@@ -1267,12 +1268,12 @@ execute_policy_or(ESYS_CONTEXT     *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyOR_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyOR_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyOR_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
 }
 
@@ -1312,11 +1313,11 @@ execute_policy_action(ESYS_CONTEXT      *esys_ctx,
                        TSS2_POLICY_RC_NULL_CALLBACK);
         /* Execute the callback and try it again if the callback is not finished. */
         r = cb->cbaction(policy->action, cb->cbaction_userdata);
-        try_again_or_error(r, "Execute policy action callback.");
+        ipolicy_try_again_or_error(r, "Execute policy action callback.");
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state);
+    ipolicy_statecasedefault(current_policy->state);
     }
 }
 
@@ -1380,12 +1381,12 @@ execute_policy_template(ESYS_CONTEXT        *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_FINISH)
     /* Finalize the policy execution if possible. */
         r = Esys_PolicyTemplate_Finish(esys_ctx);
-        try_again_or_error(r, "Execute PolicyTemplate_Finish.");
+        ipolicy_try_again_or_error(r, "Execute PolicyTemplate_Finish.");
 
         current_policy->state = POLICY_EXECUTE_INIT;
         return r;
 
-    statecasedefault(current_policy->state)
+    ipolicy_statecasedefault(current_policy->state)
     }
     return r;
 
@@ -1439,85 +1440,85 @@ execute_policy_element(ESYS_CONTEXT       *esys_ctx,
     switch (policy->type) {
     case POLICYSECRET:
         r = execute_policy_secret(esys_ctx, &policy->element.PolicySecret, current_policy);
-        try_again_or_error_goto(r, "Execute policy authorize", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy authorize", error);
         break;
     case POLICYPCR:
         r = execute_policy_pcr(esys_ctx, &policy->element.PolicyPCR, hash_alg, current_policy);
-        try_again_or_error_goto(r, "Execute policy pcr", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy pcr", error);
         break;
     case POLICYAUTHVALUE:
         r = execute_policy_auth_value(esys_ctx, current_policy);
-        try_again_or_error_goto(r, "Execute policy auth value", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy auth value", error);
         break;
     case POLICYOR:
         r = execute_policy_or(esys_ctx, &policy->element.PolicyOr, hash_alg, current_policy);
-        try_again_or_error_goto(r, "Execute policy or", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy or", error);
         break;
     case POLICYSIGNED:
         r = execute_policy_signed(esys_ctx, &policy->element.PolicySigned, current_policy);
-        try_again_or_error_goto(r, "Execute policy signed", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy signed", error);
         break;
     case POLICYAUTHORIZE:
         r = execute_policy_authorize(esys_ctx, &policy->element.PolicyAuthorize, hash_alg,
                                      current_policy);
-        try_again_or_error_goto(r, "Execute policy authorize", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy authorize", error);
         break;
     case POLICYAUTHORIZENV:
         r = execute_policy_authorize_nv(esys_ctx, &policy->element.PolicyAuthorizeNv, hash_alg,
                                         current_policy);
-        try_again_or_error_goto(r, "Execute policy authorize", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy authorize", error);
         break;
     case POLICYNV:
         r = execute_policy_nv(esys_ctx, &policy->element.PolicyNV, current_policy);
-        try_again_or_error_goto(r, "Execute policy nv", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy nv", error);
         break;
     case POLICYDUPLICATIONSELECT:
         r = execute_policy_duplicate(esys_ctx, &policy->element.PolicyDuplicationSelect,
                                      current_policy);
-        try_again_or_error_goto(r, "Execute policy duplicate", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy duplicate", error);
         break;
     case POLICYNVWRITTEN:
         r = execute_policy_nv_written(esys_ctx, &policy->element.PolicyNvWritten, current_policy);
-        try_again_or_error_goto(r, "Execute policy nv written", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy nv written", error);
         break;
     case POLICYLOCALITY:
         r = execute_policy_locality(esys_ctx, &policy->element.PolicyLocality, current_policy);
-        try_again_or_error_goto(r, "Execute policy locality", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy locality", error);
         break;
     case POLICYCOMMANDCODE:
         r = execute_policy_command_code(esys_ctx, &policy->element.PolicyCommandCode,
                                         current_policy);
-        try_again_or_error_goto(r, "Execute policy command code", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy command code", error);
         break;
     case POLICYNAMEHASH:
         r = execute_policy_name_hash(esys_ctx, &policy->element.PolicyNameHash, current_policy);
-        try_again_or_error_goto(r, "Execute policy name hash", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy name hash", error);
         break;
     case POLICYCPHASH:
         r = execute_policy_cp_hash(esys_ctx, &policy->element.PolicyCpHash, current_policy);
-        try_again_or_error_goto(r, "Execute policy cp hash", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy cp hash", error);
         break;
     case POLICYPHYSICALPRESENCE:
         r = execute_policy_physical_presence(esys_ctx, current_policy);
-        try_again_or_error_goto(r, "Execute policy physical presence", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy physical presence", error);
         break;
     case POLICYPASSWORD:
         r = execute_policy_password(esys_ctx, current_policy);
-        try_again_or_error_goto(r, "Execute policy password", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy password", error);
         break;
     case POLICYCOUNTERTIMER:
         r = execute_policy_counter_timer(esys_ctx, &policy->element.PolicyCounterTimer,
                                          current_policy);
-        try_again_or_error_goto(r, "Execute policy counter timer", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy counter timer", error);
         break;
     case POLICYACTION:
         r = execute_policy_action(esys_ctx, &policy->element.PolicyAction, current_policy);
-        try_again_or_error_goto(r, "Execute policy action", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy action", error);
         break;
 
     case POLICYTEMPLATE:
         r = execute_policy_template(esys_ctx, &policy->element.PolicyTemplate, current_policy);
-        try_again_or_error_goto(r, "Execute policy template", error);
+        ipolicy_try_again_or_error_goto(r, "Execute policy template", error);
         break;
 
     default:
@@ -1656,7 +1657,7 @@ ipolicy_policyeval_execute(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_pol
         r = execute_policy_element(esys_ctx,
                                    (TPMT_POLICYELEMENT *)current_policy->policy_elements->object,
                                    current_policy->hash_alg, current_policy);
-        return_try_again(r);
+        ipolicy_return_try_again(r);
 
         if (r != TSS2_RC_SUCCESS) {
             if (do_flush && current_policy->session && current_policy->session != ESYS_TR_NONE) {

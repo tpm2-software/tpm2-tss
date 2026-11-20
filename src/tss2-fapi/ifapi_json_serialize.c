@@ -15,7 +15,7 @@
 
 #include "ifapi_config.h" // for IFAPI_CONFIG
 #include "ifapi_json_serialize.h"
-#include "ifapi_macros.h" // for check_oom, goto_if_null2
+#include "ifapi_macros.h" // for ifapi_check_oom, goto_if_null2
 #include "json_helpers.h"
 #include "tpm_json_deserialize.h" // for ifapi_parse_json
 #include "tpm_json_serialize.h"   // for ifapi_json_TPMI_YES_NO_seri...
@@ -1160,7 +1160,7 @@ ifapi_json_TPMI_CELMGTTYPE_serialize(const TPMI_CELMGTTYPE in, json_object **jso
     for (size_t j = 0; j < sizeof(jso_tab) / sizeof(jso_tab[0]); j++) {
         if (jso_tab[j].in == in) {
             *jso = json_object_new_string(jso_tab[j].name);
-            check_oom(*jso);
+            ifapi_check_oom(*jso);
             return TSS2_RC_SUCCESS;
         }
     }

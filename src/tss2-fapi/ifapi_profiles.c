@@ -63,13 +63,13 @@ ifapi_profiles_initialize_async(IFAPI_PROFILES *profiles,
     memset(profiles, 0, sizeof(*profiles));
 
     profiles->default_name = strdup(defaultprofile);
-    check_oom(profiles->default_name);
+    ifapi_check_oom(profiles->default_name);
 
     r = ifapi_io_dirfiles(profilesdir, &profiles->filenames, &profiles->num_profiles);
     return_if_error(r, "Reading profiles from profiles dir");
 
     profiles->profiles = calloc(profiles->num_profiles, sizeof(profiles->profiles[0]));
-    check_oom(profiles->profiles);
+    ifapi_check_oom(profiles->profiles);
 
     /* Clean up list of files to only include those that match our filename pattern
        Expand the filenames with the directory
@@ -83,7 +83,7 @@ ifapi_profiles_initialize_async(IFAPI_PROFILES *profiles,
             /* Add the profile name */
             profiles->profiles[i].name
                 = strndup(profiles->filenames[i], ext - profiles->filenames[i]);
-            check_oom(profiles->profiles[i].name);
+            ifapi_check_oom(profiles->profiles[i].name);
             /* Expand the filename with the directory */
             tmp = profiles->filenames[i];
             r = ifapi_asprintf(&profiles->filenames[i], "%s/%s", profilesdir, tmp);
