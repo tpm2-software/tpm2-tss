@@ -693,8 +693,10 @@ src_tss2_policy_libtss2_policy_la_CFLAGS = $(AM_CFLAGS) -I$(srcdir)/src/tss2-pol
 src_tss2_policy_libtss2_policy_la_LIBADD  = $(libtss2_esys) $(libtss2_mu) $(libutil) $(JSONC_LIBS) $(UUID_LIBS) \
 	$(CRYPTO_LIBS) $(lib_fapi_policy_internal) $(lib_policy_internal)
 
+# The removal of the structure-based policy API breaks compatibility with ABI 0.
+src_tss2_policy_libtss2_policy_la_LDFLAGS = -version-info 1:0:0
 if HAVE_LD_VERSION_SCRIPT
-src_tss2_policy_libtss2_policy_la_LDFLAGS = -Wl,--version-script=$(srcdir)/lib/tss2-policy.map
+src_tss2_policy_libtss2_policy_la_LDFLAGS += -Wl,--version-script=$(srcdir)/lib/tss2-policy.map
 endif # HAVE_LD_VERSION_SCRIPT
 
 src_tss2_policy_libtss2_policy_la_SOURCES = $(TSS2_POLICY_SRC)

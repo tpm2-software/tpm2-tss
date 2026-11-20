@@ -1015,12 +1015,12 @@ search_policy(FAPI_CONTEXT         *context,
 
         /* Call the passed compare function. */
         r = compare(policy, object1, object2, &found);
+        goto_if_error(r, "Invalid cipher object.", cleanup);
         if (found) {
             LOG_DEBUG("compare true  %s", context->fsearch.pathlist[context->fsearch.path_idx]);
         } else {
             LOG_DEBUG("compare false  %s", context->fsearch.pathlist[context->fsearch.path_idx]);
         }
-        goto_if_error(r, "Invalid cipher object.", cleanup);
 
         if (!found) {
             if (!all_objects && context->fsearch.path_idx == 0) {

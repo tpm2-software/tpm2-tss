@@ -26,11 +26,12 @@
 #include "tpm_json_deserialize.h" // for ifapi_json_TPMS_ATTEST_de...
 #include "tpm_json_serialize.h"   // for ifapi_json_TPMT_SIG_SCHEM...
 #include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC
-#include "tss2_helpers.h"         // for internal helpers
-#include "tss2_policy.h"          // for TPMS_PCRVALUE, TPML_PCRVA...
-#include "tss2_tpm2_types.h"      // for TPM2B_PUBLIC, TPMT_SIG_SC...
-#include "tss2_types.h"           // for UINT8_ARY
-#include "util/aux_util.h"        // for SAFE_FREE
+#include "tss2_fapi.h"
+#include "tss2_helpers.h"    // for internal helpers
+#include "tss2_policy.h"     // for TPMS_PCRVALUE, TPML_PCRVA...
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPMT_SIG_SC...
+#include "tss2_types.h"      // for UINT8_ARY
+#include "util/aux_util.h"   // for SAFE_FREE
 
 #define LOGMODULE tests
 #include "util/log.h" // for LOG_ERROR
@@ -2428,16 +2429,77 @@ check_policy_json_string(void **state) {
     SAFE_FREE(policy);
 }
 
+typedef struct {
+    unsigned calls;
+    TSS2_RC  error;
+} EXPORT_ERROR_CALLBACK;
+
+static TSS2_RC
+export_pcr_error(TSS2_POLICY_PCR_SELECTION *selection,
+                 TPML_PCR_SELECTION        *out_selection,
+                 TPML_DIGEST               *out_digest,
+                 void                      *userdata) {
+    (void)selection;
+    (void)out_selection;
+    (void)out_digest;
+    EXPORT_ERROR_CALLBACK *callback = userdata;
+    if (callback->calls++ == 0)
+        return TSS2_POLICY_RC_TRY_AGAIN;
+    return callback->error;
+}
+
+static void
+check_export_error_layers(void **state) {
+    (void)state;
+    const TSS2_RC errors[] = { TSS2_POLICY_RC_BAD_VALUE, TSS2_ESYS_RC_BAD_VALUE };
+    const TSS2_RC expected[] = { TSS2_FAPI_RC_BAD_VALUE, TSS2_ESYS_RC_BAD_VALUE };
+    for (size_t i = 0; i < ARRAY_LEN(errors); i++) {
+        FAPI_CONTEXT *context = calloc(1, sizeof(*context));
+        assert_non_null(context);
+        EXPORT_ERROR_CALLBACK      callback = { .error = errors[i] };
+        TSS2_POLICY_CALC_CALLBACKS callbacks = {
+            .cbpcr = export_pcr_error,
+            .cbpcr_userdata = &callback,
+        };
+        assert_int_equal(
+            Tss2_PolicyInit("{\"description\":\"export error\",\"policy\":[{\"type\":\"POLICYPCR\","
+                            "\"currentPCRs\":[16]}]}",
+                            TPM2_ALG_SHA256, &context->policy.tss2_policy_ctx),
+            TSS2_RC_SUCCESS);
+        assert_int_equal(Tss2_PolicySetCalcCallbacks(context->policy.tss2_policy_ctx, &callbacks),
+                         TSS2_RC_SUCCESS);
+        context->state = POLICY_EXPORT_PREPARE_CALCULATE_POLICY;
+        char *json = NULL;
+        assert_int_equal(Fapi_ExportPolicy_Finish(context, &json), TSS2_FAPI_RC_TRY_AGAIN);
+        assert_non_null(context->policy.tss2_policy_ctx);
+        assert_int_equal(context->state, POLICY_EXPORT_CALCULATE_POLICY);
+        assert_int_equal(Fapi_ExportPolicy_Finish(context, &json), expected[i]);
+        assert_null(json);
+        assert_null(context->policy.tss2_policy_ctx);
+        assert_int_equal(context->state, FAPI_STATE_INIT);
+        assert_int_equal(callback.calls, 2);
+        free(context);
+    }
+}
+
 int
 main(int argc, char *argv[]) {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(check_tpmjson_tofromtxt),  cmocka_unit_test(check_json_structs),
-        cmocka_unit_test(check_json_constants),     cmocka_unit_test(check_json_numbers),
-        cmocka_unit_test(check_json_bits),          cmocka_unit_test(check_json_tpm2bs),
-        cmocka_unit_test(check_json_to_bin),        cmocka_unit_test(check_bin),
-        cmocka_unit_test(check_policy_bin),         cmocka_unit_test(check_error),
-        cmocka_unit_test(check_json_policy),        cmocka_unit_test(check_invalid_json),
-        cmocka_unit_test(check_policy_json_string), cmocka_unit_test(check_object_policy_string),
+        cmocka_unit_test(check_tpmjson_tofromtxt),
+        cmocka_unit_test(check_json_structs),
+        cmocka_unit_test(check_json_constants),
+        cmocka_unit_test(check_json_numbers),
+        cmocka_unit_test(check_json_bits),
+        cmocka_unit_test(check_json_tpm2bs),
+        cmocka_unit_test(check_json_to_bin),
+        cmocka_unit_test(check_bin),
+        cmocka_unit_test(check_policy_bin),
+        cmocka_unit_test(check_error),
+        cmocka_unit_test(check_json_policy),
+        cmocka_unit_test(check_invalid_json),
+        cmocka_unit_test(check_export_error_layers),
+        cmocka_unit_test(check_policy_json_string),
+        cmocka_unit_test(check_object_policy_string),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
