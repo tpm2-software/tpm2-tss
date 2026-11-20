@@ -103,7 +103,7 @@ ipolicy_calculate_tree_ex(IPOLICY_EVAL_INST_CTX *context,
         context->policy_elements = NULL;
 
         if (!(*hash_size = tss2_hash_get_digest_size(hash_alg))) {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
+            goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
                        cleanup, hash_alg);
         }
 
@@ -118,7 +118,7 @@ ipolicy_calculate_tree_ex(IPOLICY_EVAL_INST_CTX *context,
             break;
 
         if (i >= TPM2_NUM_PCR_BANKS) {
-            goto_if_error(TSS2_FAPI_RC_BAD_VALUE, "Table overflow", cleanup);
+            goto_if_error(TSS2_POLICY_RC_BAD_VALUE, "Table overflow", cleanup);
         }
         *digest_idx = i;
         policy->policyDigests.count += 1;
@@ -205,12 +205,12 @@ check_policy_is_calculated(TPMS_POLICY     *policy,
  *
  * @retval TSS2_RC_SUCCESS If the JSON policy was parsed and the policy context
  *         was initialized successfully.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE If json_policy or policy_ctx is NULL.
- * @retval TSS2_FAPI_RC_BAD_VALUE If the JSON policy is invalid or hash_alg is
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If json_policy or policy_ctx is NULL.
+ * @retval TSS2_POLICY_RC_BAD_VALUE If the JSON policy is invalid or hash_alg is
  *         not supported.
- * @retval TSS2_FAPI_RC_MEMORY If memory allocation for the policy or policy
+ * @retval TSS2_POLICY_RC_MEMORY If memory allocation for the policy or policy
  *         context fails.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs which is not
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE If an internal error occurs which is not
  *         covered by another return code.
  */
 TSS2_RC
@@ -463,12 +463,12 @@ Tss2_PolicyExecute_Finish(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, E
  * @param[out] The JSON string of the instantiated policy.
  *
  * @retval TSS2_RC_SUCCESS After the end of the wait.
- * @retval TSS2_FAPI_RC_IO_ERROR if reading the policy file fails.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ * @retval TSS2_POLICY_RC_IO_ERROR if reading the policy file fails.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
- * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during policy calculation.
+ * @retval TSS2_POLICY_RC_BAD_VALUE If wrong values are detected during policy calculation.
  * @retval TSS2_POLICY_RC_NULL_CALLBACK is a callback is NULL and needed for policy
  *         calculation.
  */
@@ -504,12 +504,12 @@ cleanup:
  * @param[out] The JSON string of the instantiated policy.
  *
  * @retval TSS2_RC_SUCCESS After the end of the wait.
- * @retval TSS2_FAPI_RC_IO_ERROR if reading the policy file fails.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ * @retval TSS2_POLICY_RC_IO_ERROR if reading the policy file fails.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
- * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during policy calculation.
+ * @retval TSS2_POLICY_RC_BAD_VALUE If wrong values are detected during policy calculation.
  * @retval TSS2_POLICY_RC_NULL_CALLBACK is a callback is NULL and needed for policy
  *         calculation.
  */
@@ -537,12 +537,12 @@ Tss2_PolicyCalculate_Async(TSS2_POLICY_CTX *policy_ctx) {
  * @param[out] The JSON string of the instantiated policy.
  *
  * @retval TSS2_RC_SUCCESS After the end of the wait.
- * @retval TSS2_FAPI_RC_IO_ERROR if reading the policy file fails.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE If an internal error occurs, which is
+ * @retval TSS2_POLICY_RC_IO_ERROR if reading the policy file fails.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE If an internal error occurs, which is
  *         not covered by other return codes.
- * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during policy calculation.
+ * @retval TSS2_POLICY_RC_BAD_VALUE If wrong values are detected during policy calculation.
  * @retval TSS2_POLICY_RC_NULL_CALLBACK is a callback is NULL and needed for policy
  *         calculation.
  */
@@ -631,7 +631,7 @@ Tss2_PolicyGetCalculatedJSON(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *
  * @param[in] description The description from the policy file.
  *
  * @retval TSS2_RC_SUCCESS After the end of the wait.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 Tss2_PolicyGetDescription(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *size) {

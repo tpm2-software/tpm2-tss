@@ -52,8 +52,8 @@ static TPMI_POLICYTYPE_ASSIGN serialize_TPMI_POLICYTYPE_tab[] = {
  * @param[in] in binary value of constant.
  * @param[out] str_jso with text representing the constant.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMI_POLICYTYPE.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the constant is not of type TPMI_POLICYTYPE.
  */
 TSS2_RC
 ipolicy_json_TPMI_POLICYTYPE_serialize_txt(const TPMI_POLICYTYPE in, json_object **str_jso) {
@@ -62,12 +62,12 @@ ipolicy_json_TPMI_POLICYTYPE_serialize_txt(const TPMI_POLICYTYPE in, json_object
     for (i = 0; i < n; i++) {
         if (serialize_TPMI_POLICYTYPE_tab[i].in == in) {
             *str_jso = json_object_new_string(serialize_TPMI_POLICYTYPE_tab[i].name);
-            return_if_null(str_jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+            return_if_null(str_jso, "Out of memory.", TSS2_POLICY_RC_MEMORY);
 
             return TSS2_RC_SUCCESS;
         }
     }
-    return_error(TSS2_FAPI_RC_BAD_VALUE, "Undefined constant.");
+    return_error(TSS2_POLICY_RC_BAD_VALUE, "Undefined constant.");
 }
 
 /** Serialize TPMI_POLICYTYPE to json.
@@ -75,8 +75,8 @@ ipolicy_json_TPMI_POLICYTYPE_serialize_txt(const TPMI_POLICYTYPE in, json_object
  * @param[in] in constant to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the constant is not of type TPMI_POLICYTYPE.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the constant is not of type TPMI_POLICYTYPE.
  */
 TSS2_RC
 ipolicy_json_TPMI_POLICYTYPE_serialize(const TPMI_POLICYTYPE in, json_object **jso) {
@@ -88,13 +88,13 @@ ipolicy_json_TPMI_POLICYTYPE_serialize(const TPMI_POLICYTYPE in, json_object **j
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYSIGNED.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYSIGNED.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -109,7 +109,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
         if (json_object_object_add(*jso, "cpHashA", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->policyRef.size != 0) {
@@ -118,7 +118,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
         return_if_error(r, "Serialize TPM2B_NONCE");
 
         if (json_object_object_add(*jso, "policyRef", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->keyPath && strlen(in->keyPath) > 0) {
@@ -128,7 +128,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "keyPath", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->keyPublic.type != 0) {
@@ -138,7 +138,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
         if (json_object_object_add(*jso, "keyPublic", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if ((in->keyPEM) && strcmp(in->keyPEM, "") != 0) {
@@ -148,7 +148,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "keyPEM", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if ((in->publicKeyHint) && strcmp(in->publicKeyHint, "") != 0) {
@@ -157,7 +157,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "publicKeyHint", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->publicKey.size) {
@@ -166,7 +166,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
         return_if_error(r, "Serialize key name");
 
         if (json_object_object_add(*jso, "publicKey", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->keyPEMhashAlg != 0) {
@@ -175,12 +175,12 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
         return_if_error(r, "Serialize TPMI_ALG_HASH");
 
         if (json_object_object_add(*jso, "keyPEMhashAlg", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
+        return_error(TSS2_POLICY_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy signed.");
     }
     jso2 = NULL;
@@ -188,7 +188,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
     return_if_error(r, "Serialize RSA scheme");
 
     if (json_object_object_add(*jso, "rsaScheme", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
     return TSS2_RC_SUCCESS;
@@ -199,13 +199,13 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYSECRET.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYSECRET.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -218,14 +218,14 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
     return_if_error(r, "Serialize TPM2B_NONCE");
 
     if (json_object_object_add(*jso, "nonceTPM", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
     r = ifapi_json_TPM2B_DIGEST_serialize(&in->cpHashA, &jso2);
     return_if_error(r, "Serialize TPM2B_DIGEST");
 
     if (json_object_object_add(*jso, "cpHashA", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     if (in->policyRef.size != 0) {
         jso2 = NULL;
@@ -233,7 +233,7 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
         return_if_error(r, "Serialize TPM2B_NONCE");
 
         if (json_object_object_add(*jso, "policyRef", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     jso2 = NULL;
@@ -241,7 +241,7 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
     return_if_error(r, "Serialize INT32");
 
     if (json_object_object_add(*jso, "expiration", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     if ((in->objectPath) && strcmp(in->objectPath, "") != 0) {
         jso2 = NULL;
@@ -250,7 +250,7 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "objectPath", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->objectName.size != 0) {
@@ -260,11 +260,12 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
         if (json_object_object_add(*jso, "objectName", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional needed for policy secret .");
+        return_error(TSS2_POLICY_RC_BAD_VALUE,
+                     "Exactly one conditional needed for policy secret .");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -274,13 +275,13 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYLOCALITY.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYLOCALITY.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYLOCALITY_serialize(const TPMS_POLICYLOCALITY *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -292,7 +293,7 @@ ipolicy_json_TPMS_POLICYLOCALITY_serialize(const TPMS_POLICYLOCALITY *in, json_o
     return_if_error(r, "Serialize TPMA_LOCALITY");
 
     if (json_object_object_add(*jso, "locality", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -302,13 +303,13 @@ ipolicy_json_TPMS_POLICYLOCALITY_serialize(const TPMS_POLICYLOCALITY *in, json_o
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYNV.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYNV.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -323,7 +324,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "nvPath", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->nvIndex != 0) {
@@ -333,7 +334,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
         return_if_error(r, "Serialize TPMI_RH_NV_INDEX");
 
         if (json_object_object_add(*jso, "nvIndex", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
 
@@ -345,7 +346,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
         return_if_error(r, "Serialize TPM2B_NV_PUBLIC");
 
         if (json_object_object_add(*jso, "nvPublic", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
 
@@ -354,7 +355,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
     return_if_error(r, "Serialize TPM2B_OPERAND");
 
     if (json_object_object_add(*jso, "operandB", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     if (in->offset != 0) {
         jso2 = NULL;
@@ -362,7 +363,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
         return_if_error(r, "Serialize UINT16");
 
         if (json_object_object_add(*jso, "offset", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->operation != 0) {
@@ -371,12 +372,12 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
         return_if_error(r, "Serialize TPM2_EO");
 
         if (json_object_object_add(*jso, "operation", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for policy NV.");
+        return_error(TSS2_POLICY_RC_BAD_VALUE, "Exactly one conditional is allowed for policy NV.");
     }
 
     return TSS2_RC_SUCCESS;
@@ -387,14 +388,14 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYCOUNTERTIMER.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYCOUNTERTIMER.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in,
                                                json_object                  **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -406,7 +407,7 @@ ipolicy_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in
     return_if_error(r, "Serialize TPM2B_OPERAND");
 
     if (json_object_object_add(*jso, "operandB", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     if (in->offset != 0) {
         jso2 = NULL;
@@ -414,7 +415,7 @@ ipolicy_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in
         return_if_error(r, "Serialize UINT16");
 
         if (json_object_object_add(*jso, "offset", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     jso2 = NULL;
@@ -422,7 +423,7 @@ ipolicy_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in
     return_if_error(r, "Serialize TPM2_EO");
 
     if (json_object_object_add(*jso, "operation", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -432,13 +433,13 @@ ipolicy_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYCOMMANDCODE.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYCOMMANDCODE.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYCOMMANDCODE_serialize(const TPMS_POLICYCOMMANDCODE *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -450,7 +451,7 @@ ipolicy_json_TPMS_POLICYCOMMANDCODE_serialize(const TPMS_POLICYCOMMANDCODE *in, 
     return_if_error(r, "Serialize TPM2_CC");
 
     if (json_object_object_add(*jso, "code", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -460,14 +461,14 @@ ipolicy_json_TPMS_POLICYCOMMANDCODE_serialize(const TPMS_POLICYCOMMANDCODE *in, 
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYPHYSICALPRESENCE.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYPHYSICALPRESENCE.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYPHYSICALPRESENCE_serialize(const TPMS_POLICYPHYSICALPRESENCE *in,
                                                    json_object                      **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -479,13 +480,13 @@ ipolicy_json_TPMS_POLICYPHYSICALPRESENCE_serialize(const TPMS_POLICYPHYSICALPRES
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYCPHASH.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYCPHASH.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYCPHASH_serialize(const TPMS_POLICYCPHASH *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -497,7 +498,7 @@ ipolicy_json_TPMS_POLICYCPHASH_serialize(const TPMS_POLICYCPHASH *in, json_objec
     return_if_error(r, "Serialize TPM2B_DIGEST");
 
     if (json_object_object_add(*jso, "cpHash", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -507,13 +508,13 @@ ipolicy_json_TPMS_POLICYCPHASH_serialize(const TPMS_POLICYCPHASH *in, json_objec
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYNAMEHASH.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYNAMEHASH.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2, *jso_ary;
@@ -522,7 +523,7 @@ ipolicy_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_o
 
     if (*jso == NULL) {
         *jso = json_object_new_object();
-        return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        return_if_null(jso, "Out of memory.", TSS2_POLICY_RC_MEMORY);
     }
 
     if (in->nameHash.size) {
@@ -532,7 +533,7 @@ ipolicy_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_o
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
         if (json_object_object_add(*jso, "nameHash", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
 
         /* No need to serialize namePaths or objectNames from which would be
@@ -541,7 +542,7 @@ ipolicy_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_o
     }
 
     jso_ary = json_object_new_array();
-    return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(jso, "Out of memory.", TSS2_POLICY_RC_MEMORY);
 
     if (in->namePaths[0]) {
         /* Pathnamees for objects are used */
@@ -552,11 +553,11 @@ ipolicy_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_o
             return_if_error(r, "Serialize char");
 
             if (json_object_array_add(jso_ary, jso2)) {
-                return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+                return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
             }
         }
         if (json_object_object_add(*jso, "namePaths", jso_ary)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     } else {
         /* TPM object names are used */
@@ -565,16 +566,16 @@ ipolicy_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_o
             r = ifapi_json_TPM2B_NAME_serialize(&in->objectNames[i], &jso2);
             return_if_error(r, "Serialize TPM2B_NAME");
             if (json_object_array_add(jso_ary, jso2)) {
-                return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+                return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
             }
         }
         if (json_object_object_add(*jso, "objectNames", jso_ary)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
+        return_error(TSS2_POLICY_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy name hash.");
     }
 
@@ -586,14 +587,14 @@ ipolicy_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_o
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYDUPLICATIONSELECT.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYDUPLICATIONSELECT.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATIONSELECT *in,
                                                     json_object                       **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -606,7 +607,7 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
     return_if_error(r, "Serialize TPM2B_NAME");
 
     if (json_object_object_add(*jso, "objectName", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
     if (in->newParentName.size) {
@@ -616,7 +617,7 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
         return_if_error(r, "Serialize TPM2B_NAME");
 
         if (json_object_object_add(*jso, "newParentName", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     jso2 = NULL;
@@ -624,7 +625,7 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
     return_if_error(r, "Serialize TPMI_YES_NO");
 
     if (json_object_object_add(*jso, "includeObject", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
     if (in->newParentPath) {
@@ -634,7 +635,7 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "newParentPath", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
 
@@ -645,14 +646,14 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
         return_if_error(r, "Serialize TPM2B_PUBLIC");
 
         if (json_object_object_add(*jso, "newParentPublic", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
 
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for policy "
-                                             "duplication select.");
+        return_error(TSS2_POLICY_RC_BAD_VALUE, "Exactly one conditional is allowed for policy "
+                                               "duplication select.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -662,13 +663,13 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYAUTHORIZE.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYAUTHORIZE.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -681,7 +682,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
     return_if_error(r, "Serialize TPM2B_DIGEST");
 
     if (json_object_object_add(*jso, "approvedPolicy", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     if (in->policyRef.size != 0) {
         jso2 = NULL;
@@ -689,7 +690,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
         return_if_error(r, "Serialize TPM2B_NONCE");
 
         if (json_object_object_add(*jso, "policyRef", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     jso2 = NULL;
@@ -697,7 +698,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
     return_if_error(r, "Serialize TPM2B_NAME");
 
     if (json_object_object_add(*jso, "keyName", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
 
@@ -707,7 +708,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "keyPath", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->keyPublic.type != 0) {
@@ -717,7 +718,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
         if (json_object_object_add(*jso, "keyPublic", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if ((in->keyPEM) && strcmp(in->keyPEM, "") != 0) {
@@ -726,7 +727,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "keyPEM", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->keyPEMhashAlg != 0) {
@@ -735,7 +736,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
         return_if_error(r, "Serialize TPMI_ALG_HASH");
 
         if (json_object_object_add(*jso, "keyPEMhashAlg", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
 
@@ -744,13 +745,13 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
     return_if_error(r, "Serialize RSA scheme");
 
     if (json_object_object_add(*jso, "rsaScheme", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
     /* Check whether only one condition field found in policy. */
     if (cond_cnt > 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for policy "
-                                             "duplication select.");
+        return_error(TSS2_POLICY_RC_BAD_VALUE, "Exactly one conditional is allowed for policy "
+                                               "duplication select.");
     }
 
     return TSS2_RC_SUCCESS;
@@ -761,13 +762,13 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYAUTHVALUE.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYAUTHVALUE.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYAUTHVALUE_serialize(const TPMS_POLICYAUTHVALUE *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -779,13 +780,13 @@ ipolicy_json_TPMS_POLICYAUTHVALUE_serialize(const TPMS_POLICYAUTHVALUE *in, json
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYPASSWORD.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYPASSWORD.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYPASSWORD_serialize(const TPMS_POLICYPASSWORD *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     if (*jso == NULL)
         *jso = json_object_new_object();
@@ -797,13 +798,13 @@ ipolicy_json_TPMS_POLICYPASSWORD_serialize(const TPMS_POLICYPASSWORD *in, json_o
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYNVWRITTEN.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYNVWRITTEN.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYNVWRITTEN_serialize(const TPMS_POLICYNVWRITTEN *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -815,7 +816,7 @@ ipolicy_json_TPMS_POLICYNVWRITTEN_serialize(const TPMS_POLICYNVWRITTEN *in, json
     return_if_error(r, "Serialize TPMI_YES_NO");
 
     if (json_object_object_add(*jso, "writtenSet", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -825,13 +826,13 @@ ipolicy_json_TPMS_POLICYNVWRITTEN_serialize(const TPMS_POLICYNVWRITTEN *in, json
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYTEMPLATE.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYTEMPLATE.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -846,7 +847,7 @@ ipolicy_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in, json_o
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
         if (json_object_object_add(*jso, "templateHash", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (in->templatePublic.publicArea.type) {
@@ -856,13 +857,13 @@ ipolicy_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in, json_o
         return_if_error(r, "Serialize TPM2B_PUBLIC");
 
         if (json_object_object_add(*jso, "templatePublic", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
 
     /* Check whether only one condition field found in policy. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
+        return_error(TSS2_POLICY_RC_BAD_VALUE,
                      "Exactly one conditional is allowed for policy template.");
     }
     return TSS2_RC_SUCCESS;
@@ -873,13 +874,13 @@ ipolicy_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in, json_o
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYAUTHORIZENV.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYAUTHORIZENV.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -894,7 +895,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in, 
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "nvPath", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     jso2 = NULL;
@@ -905,11 +906,11 @@ ipolicy_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in, 
         return_if_error(r, "Serialize TPM2B_NV_PUBLIC");
 
         if (json_object_object_add(*jso, "nvPublic", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE,
+        return_error(TSS2_POLICY_RC_BAD_VALUE,
                      "Exactly one conditional needed for policy authorize nv .");
     }
     return TSS2_RC_SUCCESS;
@@ -920,13 +921,13 @@ ipolicy_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in, 
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYACTION.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYACTION.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYACTION_serialize(const TPMS_POLICYACTION *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -938,7 +939,7 @@ ipolicy_json_TPMS_POLICYACTION_serialize(const TPMS_POLICYACTION *in, json_objec
     return_if_error(r, "Serialize char");
 
     if (json_object_object_add(*jso, "action", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -948,13 +949,13 @@ ipolicy_json_TPMS_POLICYACTION_serialize(const TPMS_POLICYACTION *in, json_objec
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_PCRVALUE.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_PCRVALUE.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_PCRVALUE_serialize(const TPMS_PCRVALUE *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -966,21 +967,21 @@ ipolicy_json_TPMS_PCRVALUE_serialize(const TPMS_PCRVALUE *in, json_object **jso)
     return_if_error(r, "Serialize UINT32");
 
     if (json_object_object_add(*jso, "pcr", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
     r = ifapi_json_TPM2_ALG_ID_serialize(in->hashAlg, &jso2);
     return_if_error(r, "Serialize TPM2_ALG_ID");
 
     if (json_object_object_add(*jso, "hashAlg", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
     r = ifapi_json_TPMU_HA_serialize(&in->digest, in->hashAlg, &jso2);
     return_if_error(r, "Serialize TPMU_HA");
 
     if (json_object_object_add(*jso, "digest", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -990,9 +991,9 @@ ipolicy_json_TPMS_PCRVALUE_serialize(const TPMS_PCRVALUE *in, json_object **jso)
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPML_PCRVALUES.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPML_PCRVALUES.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPML_PCRVALUES_serialize(const TPML_PCRVALUES *in, json_object **jso) {
@@ -1002,7 +1003,7 @@ ipolicy_json_TPML_PCRVALUES_serialize(const TPML_PCRVALUES *in, json_object **js
     if (*jso == NULL)
         *jso = json_object_new_array();
     jso2 = NULL;
-    return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(jso, "Out of memory.", TSS2_POLICY_RC_MEMORY);
 
     for (size_t i = 0; i < in->count; i++) {
         jso2 = NULL;
@@ -1010,7 +1011,7 @@ ipolicy_json_TPML_PCRVALUES_serialize(const TPML_PCRVALUES *in, json_object **js
         return_if_error(r, "Serialize TPMS_PCRVALUE");
 
         if (json_object_array_add(*jso, jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     return TSS2_RC_SUCCESS;
@@ -1021,13 +1022,13 @@ ipolicy_json_TPML_PCRVALUES_serialize(const TPML_PCRVALUES *in, json_object **js
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYPCR.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYPCR.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -1042,7 +1043,7 @@ ipolicy_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **js
         return_if_error(r, "Serialize TPML_PCRVALUES");
 
         if (json_object_object_add(*jso, "pcrs", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
 
@@ -1053,7 +1054,7 @@ ipolicy_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **js
         return_if_error(r, "Serialize TPML_PCR_SELECTION");
 
         if (json_object_object_add(*jso, "currentPCRandBanks", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
 
@@ -1064,12 +1065,13 @@ ipolicy_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **js
         return_if_error(r, "Serialize TPMS_PCR_SELECT");
 
         if (json_object_object_add(*jso, "currentPCRs", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     /* Check whether only one conditional is used. */
     if (cond_cnt != 1) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Exactly one conditional is allowed for policy pcr.");
+        return_error(TSS2_POLICY_RC_BAD_VALUE,
+                     "Exactly one conditional is allowed for policy pcr.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -1079,14 +1081,14 @@ ipolicy_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **js
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYAUTHORIZATION.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYAUTHORIZATION.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *in,
                                                 json_object                   **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -1098,7 +1100,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
     return_if_error(r, "Serialize char");
 
     if (json_object_object_add(*jso, "type", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
     jso2 = NULL;
@@ -1106,7 +1108,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
     return_if_error(r, "Serialize TPM2B_NONCE");
 
     if (json_object_object_add(*jso, "policyRef", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
     if (strcmp(in->type, "tpm") == 0) {
@@ -1115,7 +1117,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
         if (json_object_object_add(*jso, "key", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
         jso2 = NULL;
 
@@ -1124,7 +1126,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         return_if_error(r, "Serialize TPMT_SIGNATURE");
 
         if (json_object_object_add(*jso, "signature", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     } else if (strcmp(in->type, "pem") == 0) {
         jso2 = NULL;
@@ -1132,7 +1134,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
         if (json_object_object_add(*jso, "key", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
         jso2 = NULL;
 
@@ -1141,7 +1143,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         return_if_error(r, "Serialize Signature");
 
         if (json_object_object_add(*jso, "signature", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
 
         jso2 = NULL;
@@ -1149,7 +1151,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         return_if_error(r, "Serialize RSA scheme");
 
         if (json_object_object_add(*jso, "rsaScheme", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
 
         jso2 = NULL;
@@ -1157,10 +1159,10 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         return_if_error(r, "Serialize hash alg.");
 
         if (json_object_object_add(*jso, "hashAlg", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     } else {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid key type.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Invalid key type.");
     }
 
     return TSS2_RC_SUCCESS;
@@ -1171,14 +1173,14 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPML_POLICYAUTHORIZATIONS.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPML_POLICYAUTHORIZATIONS.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPML_POLICYAUTHORIZATIONS_serialize(const TPML_POLICYAUTHORIZATIONS *in,
                                                  json_object                    **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -1186,7 +1188,7 @@ ipolicy_json_TPML_POLICYAUTHORIZATIONS_serialize(const TPML_POLICYAUTHORIZATIONS
     if (*jso == NULL)
         *jso = json_object_new_array();
     jso2 = NULL;
-    return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(jso, "Out of memory.", TSS2_POLICY_RC_MEMORY);
     jso2 = NULL;
     for (size_t i = 0; i < in->count; i++) {
         jso2 = NULL;
@@ -1194,7 +1196,7 @@ ipolicy_json_TPML_POLICYAUTHORIZATIONS_serialize(const TPML_POLICYAUTHORIZATIONS
         return_if_error(r, "Serialize TPMS_POLICYAUTHORIZATION");
 
         if (json_object_array_add(*jso, jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     return TSS2_RC_SUCCESS;
@@ -1205,13 +1207,13 @@ ipolicy_json_TPML_POLICYAUTHORIZATIONS_serialize(const TPML_POLICYAUTHORIZATIONS
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYBRANCH.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYBRANCH.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -1223,21 +1225,21 @@ ipolicy_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in, json_objec
     return_if_error(r, "Serialize char");
 
     if (json_object_object_add(*jso, "name", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
     r = ifapi_json_char_serialize(in->description, &jso2);
     return_if_error(r, "Serialize char");
 
     if (json_object_object_add(*jso, "description", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
     r = ipolicy_json_TPML_POLICYELEMENTS_serialize(in->policy, &jso2);
     return_if_error(r, "Serialize TPML_POLICYELEMENTS");
 
     if (json_object_object_add(*jso, "policy", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     if (in->policyDigests.count > 0) {
         jso2 = NULL;
@@ -1245,7 +1247,7 @@ ipolicy_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in, json_objec
         return_if_error(r, "Serialize TPML_DIGEST_VALUES");
 
         if (json_object_object_add(*jso, "policyDigests", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     return TSS2_RC_SUCCESS;
@@ -1256,13 +1258,13 @@ ipolicy_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in, json_objec
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPML_POLICYBRANCHES.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPML_POLICYBRANCHES.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPML_POLICYBRANCHES_serialize(const TPML_POLICYBRANCHES *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -1270,7 +1272,7 @@ ipolicy_json_TPML_POLICYBRANCHES_serialize(const TPML_POLICYBRANCHES *in, json_o
     if (*jso == NULL)
         *jso = json_object_new_array();
     jso2 = NULL;
-    return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(jso, "Out of memory.", TSS2_POLICY_RC_MEMORY);
     jso2 = NULL;
     for (size_t i = 0; i < in->count; i++) {
         jso2 = NULL;
@@ -1278,7 +1280,7 @@ ipolicy_json_TPML_POLICYBRANCHES_serialize(const TPML_POLICYBRANCHES *in, json_o
         return_if_error(r, "Serialize TPMS_POLICYBRANCH");
 
         if (json_object_array_add(*jso, jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     return TSS2_RC_SUCCESS;
@@ -1289,13 +1291,13 @@ ipolicy_json_TPML_POLICYBRANCHES_serialize(const TPML_POLICYBRANCHES *in, json_o
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICYOR.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICYOR.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICYOR_serialize(const TPMS_POLICYOR *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -1307,7 +1309,7 @@ ipolicy_json_TPMS_POLICYOR_serialize(const TPMS_POLICYOR *in, json_object **jso)
     return_if_error(r, "Serialize TPML_POLICYBRANCHES");
 
     if (json_object_object_add(*jso, "branches", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -1319,9 +1321,9 @@ ipolicy_json_TPMS_POLICYOR_serialize(const TPMS_POLICYOR *in, json_object **jso)
  * @param[in] selector the type of the policy element.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMU_POLICYELEMENT.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMU_POLICYELEMENT.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMU_POLICYELEMENT_serialize(const TPMU_POLICYELEMENT *in,
@@ -1329,7 +1331,7 @@ ipolicy_json_TPMU_POLICYELEMENT_serialize(const TPMU_POLICYELEMENT *in,
                                           json_object             **jso) {
     if (*jso == NULL)
         *jso = json_object_new_object();
-    return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(*jso, "Out of memory.", TSS2_POLICY_RC_MEMORY);
 
     switch (selector) {
     case POLICYOR:
@@ -1383,13 +1385,13 @@ ipolicy_json_TPMU_POLICYELEMENT_serialize(const TPMU_POLICYELEMENT *in,
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMT_POLICYELEMENT.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMT_POLICYELEMENT.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMT_POLICYELEMENT_serialize(const TPMT_POLICYELEMENT *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -1401,7 +1403,7 @@ ipolicy_json_TPMT_POLICYELEMENT_serialize(const TPMT_POLICYELEMENT *in, json_obj
     return_if_error(r, "Serialize TPMI_POLICYTYPE");
 
     if (json_object_object_add(*jso, "type", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
     if (in->policyDigests.count > 0) {
@@ -1410,7 +1412,7 @@ ipolicy_json_TPMT_POLICYELEMENT_serialize(const TPMT_POLICYELEMENT *in, json_obj
         return_if_error(r, "Serialize TPML_DIGEST_VALUES");
 
         if (json_object_object_add(*jso, "policyDigests", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     r = ipolicy_json_TPMU_POLICYELEMENT_serialize(&in->element, in->type, jso);
@@ -1424,13 +1426,13 @@ ipolicy_json_TPMT_POLICYELEMENT_serialize(const TPMT_POLICYELEMENT *in, json_obj
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPML_POLICYELEMENTS.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPML_POLICYELEMENTS.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -1438,7 +1440,7 @@ ipolicy_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in, json_o
     if (*jso == NULL)
         *jso = json_object_new_array();
     jso2 = NULL;
-    return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(jso, "Out of memory.", TSS2_POLICY_RC_MEMORY);
 
     for (size_t i = 0; i < in->count; i++) {
         jso2 = NULL;
@@ -1446,7 +1448,7 @@ ipolicy_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in, json_o
         return_if_error(r, "Serialize TPMT_POLICYELEMENT");
 
         if (json_object_array_add(*jso, jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     return TSS2_RC_SUCCESS;
@@ -1457,13 +1459,13 @@ ipolicy_json_TPML_POLICYELEMENTS_serialize(const TPML_POLICYELEMENTS *in, json_o
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPMS_POLICY.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY: if the Policy library cannot allocate enough memory.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if the value is not of type TPMS_POLICY.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ipolicy_json_TPMS_POLICY_serialize(const TPMS_POLICY *in, json_object **jso) {
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(in, "Bad reference.", TSS2_POLICY_RC_BAD_REFERENCE);
 
     TSS2_RC      r;
     json_object *jso2;
@@ -1475,14 +1477,14 @@ ipolicy_json_TPMS_POLICY_serialize(const TPMS_POLICY *in, json_object **jso) {
     return_if_error(r, "Serialize char");
 
     if (json_object_object_add(*jso, "description", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
     r = ifapi_json_TPML_DIGEST_VALUES_serialize(&in->policyDigests, &jso2);
     return_if_error(r, "Serialize TPML_DIGEST_VALUES");
 
     if (json_object_object_add(*jso, "policyDigests", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     if (in->policyAuthorizations) {
         jso2 = NULL;
@@ -1490,7 +1492,7 @@ ipolicy_json_TPMS_POLICY_serialize(const TPMS_POLICY *in, json_object **jso) {
         return_if_error(r, "Serialize TPML_POLICYAUTHORIZATIONS");
 
         if (json_object_object_add(*jso, "policyAuthorizations", jso2)) {
-            return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+            return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
         }
     }
     jso2 = NULL;
@@ -1498,7 +1500,7 @@ ipolicy_json_TPMS_POLICY_serialize(const TPMS_POLICY *in, json_object **jso) {
     return_if_error(r, "Serialize TPML_POLICYELEMENTS");
 
     if (json_object_object_add(*jso, "policy", jso2)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     return TSS2_RC_SUCCESS;
 }

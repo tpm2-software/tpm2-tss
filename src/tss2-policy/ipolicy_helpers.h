@@ -8,7 +8,7 @@
 
 #define TSS2_SYNC(r, msg, label, ...)                                                              \
     if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)                                                      \
-        return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
+        return TSS2_POLICY_RC_TRY_AGAIN;                                                           \
     if (r != TSS2_RC_SUCCESS) {                                                                    \
         LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
         goto label;                                                                                \

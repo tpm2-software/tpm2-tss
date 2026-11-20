@@ -106,11 +106,11 @@ cleanup_policy_elements(TPML_POLICYELEMENTS *policy) {
  *             PCR value list.
  *
  * @retval TSS2_RC_SUCCESS if the PCR selection and the PCR digest could be computed..
- * @retval TSS2_FAPI_RC_BAD_VALUE: If inappropriate values are detected in the
+ * @retval TSS2_POLICY_RC_BAD_VALUE: If inappropriate values are detected in the
  *         input data.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
 ipolicy_compute_policy_digest(const TPML_PCRVALUES *pcrs,
@@ -138,14 +138,15 @@ ipolicy_compute_policy_digest(const TPML_PCRVALUES *pcrs,
             /* New hash alg */
             pcr_selection->count += 1;
             if (pcr_selection->count > TPM2_NUM_PCR_BANKS) {
-                return_error(TSS2_FAPI_RC_BAD_VALUE, "More hash algs than banks.");
+                return_error(TSS2_POLICY_RC_BAD_VALUE, "More hash algs than banks.");
             }
             pcr_selection->pcrSelections[j].hash = pcrs->pcrs[i].hashAlg;
             pcr_selection->pcrSelections[j].sizeofSelect = 3;
         }
         UINT32 pcrIndex = pcrs->pcrs[i].pcr;
         if (pcrIndex >= TPM2_MAX_PCRS) {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid PCR index %" PRIu32, cleanup, pcrIndex);
+            goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Invalid PCR index %" PRIu32, cleanup,
+                       pcrIndex);
         }
         if (pcrIndex + 1 > max_pcr)
             max_pcr = pcrIndex + 1;
@@ -158,7 +159,7 @@ ipolicy_compute_policy_digest(const TPML_PCRVALUES *pcrs,
     return_if_error(r, "crypto hash start");
 
     if (!(pcr_digest->size = tss2_hash_get_digest_size(hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hash_alg);
     }
 
@@ -166,7 +167,7 @@ ipolicy_compute_policy_digest(const TPML_PCRVALUES *pcrs,
         TPMS_PCR_SELECTION selection = pcr_selection->pcrSelections[i];
         TPMI_ALG_HASH      hashAlg = selection.hash;
         if (!(hash_size = tss2_hash_get_digest_size(hashAlg))) {
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
+            goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
                        cleanup, hashAlg);
         }
         for (pcr = 0; pcr < max_pcr; pcr++) {
