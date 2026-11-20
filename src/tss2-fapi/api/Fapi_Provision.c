@@ -247,8 +247,8 @@ Fapi_Provision_Async(FAPI_CONTEXT *context,
     memset(&context->cmd.Provision, 0, sizeof(IFAPI_Provision));
 
     /* First it will be checked whether the profile is already provisioned. */
-    r = ifapi_asprintf(&profile_dir, "%s/%s/HS", context->keystore.systemdir,
-                       context->keystore.defaultprofile);
+    r = ifapi_call_base(ifapi_asprintf(&profile_dir, "%s/%s/HS", context->keystore.systemdir,
+                                       context->keystore.defaultprofile));
     goto_if_error(r, "Out of memory.", end);
 
     if (ifapi_io_path_exists(profile_dir)) {
@@ -699,8 +699,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
                 goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED,
                            "Unsupported hash algorithm (%" PRIu16 ")", error_cleanup, hash_alg);
             }
-            r = ifapi_get_tpm_key_fingerprint(&pkeyObject->misc.key.public, hash_alg,
-                                              &ek_fingerprint);
+            r = ifapi_call_base(ifapi_get_tpm_key_fingerprint(&pkeyObject->misc.key.public,
+                                                              hash_alg, &ek_fingerprint));
             goto_if_error_reset_state(r, "Get fingerprint of EK", error_cleanup);
 
             if (hash_size != ek_fingerprint.size
@@ -729,7 +729,7 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
             }
 
             /* Get the public key from the certificate. */
-            r = ifapi_get_public_from_pem_cert(command->pem_cert, &public_key);
+            r = ifapi_call_base(ifapi_get_public_from_pem_cert(command->pem_cert, &public_key));
             goto_if_error_reset_state(r, "Get public key from pem certificate", error_cleanup);
             /* Compare public key of certificate with public data of EK */
             if (ifapi_cmp_public_key(&pkeyObject->misc.key.public, &public_key)) {
@@ -865,8 +865,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
         *hierarchy_hs = nvCmd->auth_object;
 
         /* For storage in key store the certificate will be converted to PEM. */
-        r = ifapi_cert_to_pem(certData, certSize, &command->pem_cert, &command->cert_key_type,
-                              &public_key);
+        r = ifapi_call_base(ifapi_cert_to_pem(certData, certSize, &command->pem_cert,
+                                              &command->cert_key_type, &public_key));
         SAFE_FREE(certData);
         goto_if_error(r, "Convert certificate to pem.", error_cleanup);
 
@@ -1610,7 +1610,8 @@ Fapi_Provision_Finish(FAPI_CONTEXT *context) {
                 &cert_buffer, &cert_size);
             goto_if_error_reset_state(r, "Get certificates", error_cleanup);
 
-            r = ifapi_cert_to_pem(cert_buffer, cert_size, &command->pem_cert, NULL, &public);
+            r = ifapi_call_base(
+                ifapi_cert_to_pem(cert_buffer, cert_size, &command->pem_cert, NULL, &public));
             SAFE_FREE(cert_buffer);
             goto_if_error_reset_state(r, "Convert certificate buffer to PEM.", error_cleanup);
 

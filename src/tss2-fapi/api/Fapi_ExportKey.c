@@ -300,8 +300,9 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
             pubKey->misc.ext_pub_key.public = commandObject.misc.key.public;
 
             /* Convert the TPM key format to PEM. */
-            r = tss2_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
-                                          &pubKey->misc.ext_pub_key.pem_ext_public, &sizePem);
+            r = ifapi_call_base(tss2_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
+                                                          &pubKey->misc.ext_pub_key.pem_ext_public,
+                                                          &sizePem));
             goto_if_error(r, "Convert public TPM key to pem.", cleanup);
         } else {
             /* No key object was loaded */

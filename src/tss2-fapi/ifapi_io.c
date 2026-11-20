@@ -47,7 +47,7 @@ is_directory(const char *dir_name, struct dirent *entry, bool *isdir) {
 
     /* stat is used if d_type is not supported or unknown. */
     struct stat file_stat;
-    r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
+    r = ifapi_call_base(ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name));
     return_if_error(r, "Out of memory");
 
     if (stat(path, &file_stat) == -1) {
@@ -80,7 +80,7 @@ is_regular_file(const char *dir_name, struct dirent *entry, bool *isreg) {
 
     /* stat is used if d_type is not supported or unknown. */
     struct stat file_stat;
-    r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
+    r = ifapi_call_base(ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name));
     return_if_error(r, "Out of memory");
 
     if (stat(path, &file_stat) == -1) {
@@ -453,7 +453,7 @@ ifapi_io_remove_directories(const char *dirname, const char *keystore_path, cons
         goto_if_error(r, "directory check", error_cleanup);
 
         if (is_dir) {
-            r = ifapi_asprintf(&path, "%s/%s", dirname, entry->d_name);
+            r = ifapi_call_base(ifapi_asprintf(&path, "%s/%s", dirname, entry->d_name));
             goto_if_error(r, "Out of memory", error_cleanup);
 
             r = ifapi_io_remove_directories(path, keystore_path, sub_dir);
@@ -464,7 +464,7 @@ ifapi_io_remove_directories(const char *dirname, const char *keystore_path, cons
         }
 
         /* If an entry is a file or symlink or anything else, we remove it */
-        r = ifapi_asprintf(&path, "%s/%s", dirname, entry->d_name);
+        r = ifapi_call_base(ifapi_asprintf(&path, "%s/%s", dirname, entry->d_name));
         goto_if_error(r, "Out of memory", error_cleanup);
 
         LOG_WARNING("Removing: %s", path);
@@ -612,7 +612,7 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n) {
             /* Recursive call for sub directories */
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
-            r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
+            r = ifapi_call_base(ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name));
             if (r)
                 closedir(dir);
             return_if_error(r, "Out of memory");
@@ -625,7 +625,7 @@ dirfiles_all(const char *dir_name, NODE_OBJECT_T **list, size_t *n) {
             return_if_error(r, "get_entities");
 
         } else {
-            r = ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name);
+            r = ifapi_call_base(ifapi_asprintf(&path, "%s/%s", dir_name, entry->d_name));
             if (r)
                 closedir(dir);
             return_if_error(r, "Out of memory");

@@ -743,7 +743,7 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
                               &pkey->serialization.size);
         goto_if_error(r, "Error serialize esys object", error_cleanup);
 
-        r = ifapi_get_name(&outPublic->publicArea, &pkey->name);
+        r = ifapi_call_base(ifapi_get_name(&outPublic->publicArea, &pkey->name));
         goto_if_error(r, "Get primary name", error_cleanup);
 
         pkey->public = *outPublic;
@@ -1335,7 +1335,8 @@ ifapi_get_sessions_async(FAPI_CONTEXT      *context,
     }
 
     context->primary_state = PRIMARY_INIT;
-    r = ifapi_asprintf(&file, "%s%s", context->config.profile_name, IFAPI_SRK_KEY_PATH);
+    r = ifapi_call_base(
+        ifapi_asprintf(&file, "%s%s", context->config.profile_name, IFAPI_SRK_KEY_PATH));
     goto_if_error(r, "Error ifapi_asprintf", error_cleanup);
 
     r = ifapi_load_primary_async(context, file);
@@ -1899,7 +1900,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent) {
             goto error_cleanup;
         }
         /* Add object to the list of keys to be loaded. */
-        r = push_object_to_list(copyToPush, &context->loadKey.key_list);
+        r = ifapi_call_base(push_object_to_list(copyToPush, &context->loadKey.key_list));
         if (r) {
             free(copyToPush);
             LOG_ERROR("Out of memory");
@@ -2919,7 +2920,8 @@ ifapi_key_sign(FAPI_CONTEXT      *context,
         int pem_size;
         if (publicKey) {
             /* Convert internal key object to PEM format. */
-            r = tss2_pub_pem_key_from_tpm(&sig_key_object->misc.key.public, publicKey, &pem_size);
+            r = ifapi_call_base(
+                tss2_pub_pem_key_from_tpm(&sig_key_object->misc.key.public, publicKey, &pem_size));
             goto_if_error(r, "Conversion pub key to PEM failed", cleanup);
         }
         context->Key_Sign.handle = ESYS_TR_NONE;
@@ -3474,7 +3476,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
         else
             object->misc.key.with_auth = TPM2_NO;
         ;
-        r = ifapi_get_name(&outPublic->publicArea, &object->misc.key.name);
+        r = ifapi_call_base(ifapi_get_name(&outPublic->publicArea, &object->misc.key.name));
         goto_if_error(r, "Get key name", error_cleanup);
 
         SAFE_FREE(outPrivate);
@@ -3681,7 +3683,7 @@ ifapi_get_sig_scheme(FAPI_CONTEXT    *context,
     TSS2_RC       r;
 
     /* Get hash algorithm from digest size */
-    r = ifapi_get_hash_alg_for_size(digest->size, &hash_alg);
+    r = ifapi_call_base(ifapi_get_hash_alg_for_size(digest->size, &hash_alg));
     return_if_error2(r, "Invalid digest size");
 
     if (digest->size == TPM2_SM3_256_DIGEST_SIZE
@@ -4685,7 +4687,7 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
         else
             object->misc.key.with_auth = TPM2_NO;
         ;
-        r = ifapi_get_name(&outPublic->publicArea, &object->misc.key.name);
+        r = ifapi_call_base(ifapi_get_name(&outPublic->publicArea, &object->misc.key.name));
         goto_if_error(r, "Get key name", error_cleanup);
 
         if (object->misc.key.public.publicArea.type == TPM2_ALG_RSA)
@@ -4945,7 +4947,8 @@ ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx) {
 
         for (i = 0; i < ARRAY_LEN(nv_tab); i++) {
             if (ctx->nv_index >= nv_tab[i].from && ctx->nv_index <= nv_tab[i].to) {
-                r = ifapi_asprintf(&ctx->path, "/nv/%s/%x", nv_tab[i].name, ctx->nv_index);
+                r = ifapi_call_base(
+                    ifapi_asprintf(&ctx->path, "/nv/%s/%x", nv_tab[i].name, ctx->nv_index));
                 return_if_error(r, "Can't create pathname for nv index.");
             }
         }

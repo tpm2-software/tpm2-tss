@@ -13,6 +13,7 @@
 #include <string.h> // for strcmp, strlen
 
 #include "ipolicy_json_serialize.h"
+#include "ipolicy_macros.h"
 #include "json_helpers.h"
 #include "tpm_json_serialize.h" // for ifapi_json_TPM2B_DIGEST_serialize
 #include "tss2_tpm2_types.h"    // for TPM2B_NAME, TPMT_PUBLIC, TPM2B_DIGEST
@@ -105,7 +106,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
 
     if (in->cpHashA.size != 0) {
         jso2 = NULL;
-        r = ifapi_json_TPM2B_DIGEST_serialize(&in->cpHashA, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2B_DIGEST_serialize(&in->cpHashA, &jso2));
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
         if (json_object_object_add(*jso, "cpHashA", jso2)) {
@@ -114,7 +115,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
     }
     if (in->policyRef.size != 0) {
         jso2 = NULL;
-        r = ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2));
         return_if_error(r, "Serialize TPM2B_NONCE");
 
         if (json_object_object_add(*jso, "policyRef", jso2)) {
@@ -124,7 +125,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
     if (in->keyPath && strlen(in->keyPath) > 0) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_char_serialize(in->keyPath, &jso2);
+        r = ipolicy_call_base(ifapi_json_char_serialize(in->keyPath, &jso2));
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "keyPath", jso2)) {
@@ -134,7 +135,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
     if (in->keyPublic.type != 0) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPMT_PUBLIC_serialize(&in->keyPublic, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMT_PUBLIC_serialize(&in->keyPublic, &jso2));
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
         if (json_object_object_add(*jso, "keyPublic", jso2)) {
@@ -144,7 +145,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
     if ((in->keyPEM) && strcmp(in->keyPEM, "") != 0) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_char_serialize(in->keyPEM, &jso2);
+        r = ipolicy_call_base(ifapi_json_char_serialize(in->keyPEM, &jso2));
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "keyPEM", jso2)) {
@@ -153,7 +154,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
     }
     if ((in->publicKeyHint) && strcmp(in->publicKeyHint, "") != 0) {
         jso2 = NULL;
-        r = ifapi_json_char_serialize(in->publicKeyHint, &jso2);
+        r = ipolicy_call_base(ifapi_json_char_serialize(in->publicKeyHint, &jso2));
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "publicKeyHint", jso2)) {
@@ -162,7 +163,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
     }
     if (in->publicKey.size) {
         jso2 = NULL;
-        r = ifapi_json_TPM2B_NAME_serialize(&in->publicKey, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2B_NAME_serialize(&in->publicKey, &jso2));
         return_if_error(r, "Serialize key name");
 
         if (json_object_object_add(*jso, "publicKey", jso2)) {
@@ -171,7 +172,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
     }
     if (in->keyPEMhashAlg != 0) {
         jso2 = NULL;
-        r = ifapi_json_TPMI_ALG_HASH_serialize(in->keyPEMhashAlg, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMI_ALG_HASH_serialize(in->keyPEMhashAlg, &jso2));
         return_if_error(r, "Serialize TPMI_ALG_HASH");
 
         if (json_object_object_add(*jso, "keyPEMhashAlg", jso2)) {
@@ -184,7 +185,7 @@ ipolicy_json_TPMS_POLICYSIGNED_serialize(const TPMS_POLICYSIGNED *in, json_objec
                      "Exactly one conditional is allowed for policy signed.");
     }
     jso2 = NULL;
-    r = ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2));
     return_if_error(r, "Serialize RSA scheme");
 
     if (json_object_object_add(*jso, "rsaScheme", jso2)) {
@@ -214,14 +215,14 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_TPM2B_NONCE_serialize(&in->nonceTPM, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2B_NONCE_serialize(&in->nonceTPM, &jso2));
     return_if_error(r, "Serialize TPM2B_NONCE");
 
     if (json_object_object_add(*jso, "nonceTPM", jso2)) {
         return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
-    r = ifapi_json_TPM2B_DIGEST_serialize(&in->cpHashA, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2B_DIGEST_serialize(&in->cpHashA, &jso2));
     return_if_error(r, "Serialize TPM2B_DIGEST");
 
     if (json_object_object_add(*jso, "cpHashA", jso2)) {
@@ -229,7 +230,7 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
     }
     if (in->policyRef.size != 0) {
         jso2 = NULL;
-        r = ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2));
         return_if_error(r, "Serialize TPM2B_NONCE");
 
         if (json_object_object_add(*jso, "policyRef", jso2)) {
@@ -237,7 +238,7 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
         }
     }
     jso2 = NULL;
-    r = ifapi_json_INT32_serialize(in->expiration, &jso2);
+    r = ipolicy_call_base(ifapi_json_INT32_serialize(in->expiration, &jso2));
     return_if_error(r, "Serialize INT32");
 
     if (json_object_object_add(*jso, "expiration", jso2)) {
@@ -246,7 +247,7 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
     if ((in->objectPath) && strcmp(in->objectPath, "") != 0) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_char_serialize(in->objectPath, &jso2);
+        r = ipolicy_call_base(ifapi_json_char_serialize(in->objectPath, &jso2));
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "objectPath", jso2)) {
@@ -256,7 +257,7 @@ ipolicy_json_TPMS_POLICYSECRET_serialize(const TPMS_POLICYSECRET *in, json_objec
     if (in->objectName.size != 0) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPM2B_NAME_serialize(&in->objectName, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2B_NAME_serialize(&in->objectName, &jso2));
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
         if (json_object_object_add(*jso, "objectName", jso2)) {
@@ -289,7 +290,7 @@ ipolicy_json_TPMS_POLICYLOCALITY_serialize(const TPMS_POLICYLOCALITY *in, json_o
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_TPMA_LOCALITY_serialize(in->locality, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPMA_LOCALITY_serialize(in->locality, &jso2));
     return_if_error(r, "Serialize TPMA_LOCALITY");
 
     if (json_object_object_add(*jso, "locality", jso2)) {
@@ -320,7 +321,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
     if ((in->nvPath) && strcmp(in->nvPath, "") != 0) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_char_serialize(in->nvPath, &jso2);
+        r = ipolicy_call_base(ifapi_json_char_serialize(in->nvPath, &jso2));
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "nvPath", jso2)) {
@@ -330,7 +331,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
     if (in->nvIndex != 0) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPMI_RH_NV_INDEX_serialize(in->nvIndex, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMI_RH_NV_INDEX_serialize(in->nvIndex, &jso2));
         return_if_error(r, "Serialize TPMI_RH_NV_INDEX");
 
         if (json_object_object_add(*jso, "nvIndex", jso2)) {
@@ -342,7 +343,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
         jso2 = NULL;
         TPM2B_NV_PUBLIC tmp = { 0 };
         tmp.nvPublic = in->nvPublic;
-        r = ifapi_json_TPM2B_NV_PUBLIC_serialize(&tmp, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2B_NV_PUBLIC_serialize(&tmp, &jso2));
         return_if_error(r, "Serialize TPM2B_NV_PUBLIC");
 
         if (json_object_object_add(*jso, "nvPublic", jso2)) {
@@ -351,7 +352,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
     }
 
     jso2 = NULL;
-    r = ifapi_json_TPM2B_OPERAND_serialize(&in->operandB, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2B_OPERAND_serialize(&in->operandB, &jso2));
     return_if_error(r, "Serialize TPM2B_OPERAND");
 
     if (json_object_object_add(*jso, "operandB", jso2)) {
@@ -359,7 +360,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
     }
     if (in->offset != 0) {
         jso2 = NULL;
-        r = ifapi_json_UINT16_serialize(in->offset, &jso2);
+        r = ipolicy_call_base(ifapi_json_UINT16_serialize(in->offset, &jso2));
         return_if_error(r, "Serialize UINT16");
 
         if (json_object_object_add(*jso, "offset", jso2)) {
@@ -368,7 +369,7 @@ ipolicy_json_TPMS_POLICYNV_serialize(const TPMS_POLICYNV *in, json_object **jso)
     }
     if (in->operation != 0) {
         jso2 = NULL;
-        r = ifapi_json_TPM2_EO_serialize(in->operation, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2_EO_serialize(in->operation, &jso2));
         return_if_error(r, "Serialize TPM2_EO");
 
         if (json_object_object_add(*jso, "operation", jso2)) {
@@ -403,7 +404,7 @@ ipolicy_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_TPM2B_OPERAND_serialize(&in->operandB, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2B_OPERAND_serialize(&in->operandB, &jso2));
     return_if_error(r, "Serialize TPM2B_OPERAND");
 
     if (json_object_object_add(*jso, "operandB", jso2)) {
@@ -411,7 +412,7 @@ ipolicy_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in
     }
     if (in->offset != 0) {
         jso2 = NULL;
-        r = ifapi_json_UINT16_serialize(in->offset, &jso2);
+        r = ipolicy_call_base(ifapi_json_UINT16_serialize(in->offset, &jso2));
         return_if_error(r, "Serialize UINT16");
 
         if (json_object_object_add(*jso, "offset", jso2)) {
@@ -419,7 +420,7 @@ ipolicy_json_TPMS_POLICYCOUNTERTIMER_serialize(const TPMS_POLICYCOUNTERTIMER *in
         }
     }
     jso2 = NULL;
-    r = ifapi_json_TPM2_EO_serialize(in->operation, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2_EO_serialize(in->operation, &jso2));
     return_if_error(r, "Serialize TPM2_EO");
 
     if (json_object_object_add(*jso, "operation", jso2)) {
@@ -447,7 +448,7 @@ ipolicy_json_TPMS_POLICYCOMMANDCODE_serialize(const TPMS_POLICYCOMMANDCODE *in, 
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_TPM2_CC_serialize(in->code, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2_CC_serialize(in->code, &jso2));
     return_if_error(r, "Serialize TPM2_CC");
 
     if (json_object_object_add(*jso, "code", jso2)) {
@@ -494,7 +495,7 @@ ipolicy_json_TPMS_POLICYCPHASH_serialize(const TPMS_POLICYCPHASH *in, json_objec
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_TPM2B_DIGEST_serialize(&in->cpHash, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2B_DIGEST_serialize(&in->cpHash, &jso2));
     return_if_error(r, "Serialize TPM2B_DIGEST");
 
     if (json_object_object_add(*jso, "cpHash", jso2)) {
@@ -529,7 +530,7 @@ ipolicy_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_o
     if (in->nameHash.size) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPM2B_DIGEST_serialize(&in->nameHash, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2B_DIGEST_serialize(&in->nameHash, &jso2));
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
         if (json_object_object_add(*jso, "nameHash", jso2)) {
@@ -549,7 +550,7 @@ ipolicy_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_o
         cond_cnt++;
         for (i = 0; i < in->count; i++) {
             jso2 = NULL;
-            r = ifapi_json_char_serialize(in->namePaths[i], &jso2);
+            r = ipolicy_call_base(ifapi_json_char_serialize(in->namePaths[i], &jso2));
             return_if_error(r, "Serialize char");
 
             if (json_object_array_add(jso_ary, jso2)) {
@@ -563,7 +564,7 @@ ipolicy_json_TPMS_POLICYNAMEHASH_serialize(const TPMS_POLICYNAMEHASH *in, json_o
         /* TPM object names are used */
         for (i = 0; i < in->count; i++) {
             jso2 = NULL;
-            r = ifapi_json_TPM2B_NAME_serialize(&in->objectNames[i], &jso2);
+            r = ipolicy_call_base(ifapi_json_TPM2B_NAME_serialize(&in->objectNames[i], &jso2));
             return_if_error(r, "Serialize TPM2B_NAME");
             if (json_object_array_add(jso_ary, jso2)) {
                 return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -603,7 +604,7 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_TPM2B_NAME_serialize(&in->objectName, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2B_NAME_serialize(&in->objectName, &jso2));
     return_if_error(r, "Serialize TPM2B_NAME");
 
     if (json_object_object_add(*jso, "objectName", jso2)) {
@@ -613,7 +614,7 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
     if (in->newParentName.size) {
         cond_cnt++;
         jso2 = NULL;
-        r = ifapi_json_TPM2B_NAME_serialize(&in->newParentName, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2B_NAME_serialize(&in->newParentName, &jso2));
         return_if_error(r, "Serialize TPM2B_NAME");
 
         if (json_object_object_add(*jso, "newParentName", jso2)) {
@@ -621,7 +622,7 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
         }
     }
     jso2 = NULL;
-    r = ifapi_json_TPMI_YES_NO_serialize(in->includeObject, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPMI_YES_NO_serialize(in->includeObject, &jso2));
     return_if_error(r, "Serialize TPMI_YES_NO");
 
     if (json_object_object_add(*jso, "includeObject", jso2)) {
@@ -631,7 +632,7 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
     if (in->newParentPath) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_char_serialize(in->newParentPath, &jso2);
+        r = ipolicy_call_base(ifapi_json_char_serialize(in->newParentPath, &jso2));
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "newParentPath", jso2)) {
@@ -642,7 +643,7 @@ ipolicy_json_TPMS_POLICYDUPLICATIONSELECT_serialize(const TPMS_POLICYDUPLICATION
     if (in->newParentPublic.type) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPMT_PUBLIC_serialize(&in->newParentPublic, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMT_PUBLIC_serialize(&in->newParentPublic, &jso2));
         return_if_error(r, "Serialize TPM2B_PUBLIC");
 
         if (json_object_object_add(*jso, "newParentPublic", jso2)) {
@@ -678,7 +679,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_TPM2B_DIGEST_serialize(&in->approvedPolicy, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2B_DIGEST_serialize(&in->approvedPolicy, &jso2));
     return_if_error(r, "Serialize TPM2B_DIGEST");
 
     if (json_object_object_add(*jso, "approvedPolicy", jso2)) {
@@ -686,7 +687,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
     }
     if (in->policyRef.size != 0) {
         jso2 = NULL;
-        r = ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2));
         return_if_error(r, "Serialize TPM2B_NONCE");
 
         if (json_object_object_add(*jso, "policyRef", jso2)) {
@@ -694,7 +695,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
         }
     }
     jso2 = NULL;
-    r = ifapi_json_TPM2B_NAME_serialize(&in->keyName, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2B_NAME_serialize(&in->keyName, &jso2));
     return_if_error(r, "Serialize TPM2B_NAME");
 
     if (json_object_object_add(*jso, "keyName", jso2)) {
@@ -704,7 +705,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
 
     if (in->keyPath) {
         cond_cnt++;
-        r = ifapi_json_char_serialize(in->keyPath, &jso2);
+        r = ipolicy_call_base(ifapi_json_char_serialize(in->keyPath, &jso2));
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "keyPath", jso2)) {
@@ -714,7 +715,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
     if (in->keyPublic.type != 0) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPMT_PUBLIC_serialize(&in->keyPublic, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMT_PUBLIC_serialize(&in->keyPublic, &jso2));
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
         if (json_object_object_add(*jso, "keyPublic", jso2)) {
@@ -723,7 +724,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
     }
     if ((in->keyPEM) && strcmp(in->keyPEM, "") != 0) {
         jso2 = NULL;
-        r = ifapi_json_char_serialize(in->keyPEM, &jso2);
+        r = ipolicy_call_base(ifapi_json_char_serialize(in->keyPEM, &jso2));
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "keyPEM", jso2)) {
@@ -732,7 +733,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
     }
     if (in->keyPEMhashAlg != 0) {
         jso2 = NULL;
-        r = ifapi_json_TPMI_ALG_HASH_serialize(in->keyPEMhashAlg, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMI_ALG_HASH_serialize(in->keyPEMhashAlg, &jso2));
         return_if_error(r, "Serialize TPMI_ALG_HASH");
 
         if (json_object_object_add(*jso, "keyPEMhashAlg", jso2)) {
@@ -741,7 +742,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZE_serialize(const TPMS_POLICYAUTHORIZE *in, json
     }
 
     jso2 = NULL;
-    r = ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2));
     return_if_error(r, "Serialize RSA scheme");
 
     if (json_object_object_add(*jso, "rsaScheme", jso2)) {
@@ -812,7 +813,7 @@ ipolicy_json_TPMS_POLICYNVWRITTEN_serialize(const TPMS_POLICYNVWRITTEN *in, json
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_TPMI_YES_NO_serialize(in->writtenSet, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPMI_YES_NO_serialize(in->writtenSet, &jso2));
     return_if_error(r, "Serialize TPMI_YES_NO");
 
     if (json_object_object_add(*jso, "writtenSet", jso2)) {
@@ -843,7 +844,7 @@ ipolicy_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in, json_o
     if (in->templateHash.size != 0) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPM2B_DIGEST_serialize(&in->templateHash, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPM2B_DIGEST_serialize(&in->templateHash, &jso2));
         return_if_error(r, "Serialize TPM2B_DIGEST");
 
         if (json_object_object_add(*jso, "templateHash", jso2)) {
@@ -853,7 +854,8 @@ ipolicy_json_TPMS_POLICYTEMPLATE_serialize(const TPMS_POLICYTEMPLATE *in, json_o
     if (in->templatePublic.publicArea.type) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPMT_PUBLIC_serialize(&in->templatePublic.publicArea, &jso2);
+        r = ipolicy_call_base(
+            ifapi_json_TPMT_PUBLIC_serialize(&in->templatePublic.publicArea, &jso2));
         return_if_error(r, "Serialize TPM2B_PUBLIC");
 
         if (json_object_object_add(*jso, "templatePublic", jso2)) {
@@ -891,7 +893,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in, 
     jso2 = NULL;
     if (in->nvPath) {
         cond_cnt++;
-        r = ifapi_json_char_serialize(in->nvPath, &jso2);
+        r = ipolicy_call_base(ifapi_json_char_serialize(in->nvPath, &jso2));
         return_if_error(r, "Serialize char");
 
         if (json_object_object_add(*jso, "nvPath", jso2)) {
@@ -902,7 +904,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZENV_serialize(const TPMS_POLICYAUTHORIZENV *in, 
     if (in->nvPublic.nvIndex > 0) {
         cond_cnt++;
         /* Template already instantiated */
-        r = ifapi_json_TPMS_NV_PUBLIC_serialize(&in->nvPublic, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMS_NV_PUBLIC_serialize(&in->nvPublic, &jso2));
         return_if_error(r, "Serialize TPM2B_NV_PUBLIC");
 
         if (json_object_object_add(*jso, "nvPublic", jso2)) {
@@ -935,7 +937,7 @@ ipolicy_json_TPMS_POLICYACTION_serialize(const TPMS_POLICYACTION *in, json_objec
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_char_serialize(in->action, &jso2);
+    r = ipolicy_call_base(ifapi_json_char_serialize(in->action, &jso2));
     return_if_error(r, "Serialize char");
 
     if (json_object_object_add(*jso, "action", jso2)) {
@@ -963,21 +965,21 @@ ipolicy_json_TPMS_PCRVALUE_serialize(const TPMS_PCRVALUE *in, json_object **jso)
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_UINT32_serialize(in->pcr, &jso2);
+    r = ipolicy_call_base(ifapi_json_UINT32_serialize(in->pcr, &jso2));
     return_if_error(r, "Serialize UINT32");
 
     if (json_object_object_add(*jso, "pcr", jso2)) {
         return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
-    r = ifapi_json_TPM2_ALG_ID_serialize(in->hashAlg, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2_ALG_ID_serialize(in->hashAlg, &jso2));
     return_if_error(r, "Serialize TPM2_ALG_ID");
 
     if (json_object_object_add(*jso, "hashAlg", jso2)) {
         return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
-    r = ifapi_json_TPMU_HA_serialize(&in->digest, in->hashAlg, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPMU_HA_serialize(&in->digest, in->hashAlg, &jso2));
     return_if_error(r, "Serialize TPMU_HA");
 
     if (json_object_object_add(*jso, "digest", jso2)) {
@@ -1050,7 +1052,8 @@ ipolicy_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **js
     if (in->currentPCRandBanks.count) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPML_PCR_SELECTION_serialize(&in->currentPCRandBanks, &jso2);
+        r = ipolicy_call_base(
+            ifapi_json_TPML_PCR_SELECTION_serialize(&in->currentPCRandBanks, &jso2));
         return_if_error(r, "Serialize TPML_PCR_SELECTION");
 
         if (json_object_object_add(*jso, "currentPCRandBanks", jso2)) {
@@ -1061,7 +1064,7 @@ ipolicy_json_TPMS_POLICYPCR_serialize(const TPMS_POLICYPCR *in, json_object **js
     if (in->currentPCRs.sizeofSelect) {
         jso2 = NULL;
         cond_cnt++;
-        r = ifapi_json_TPMS_PCR_SELECT_serialize(&in->currentPCRs, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMS_PCR_SELECT_serialize(&in->currentPCRs, &jso2));
         return_if_error(r, "Serialize TPMS_PCR_SELECT");
 
         if (json_object_object_add(*jso, "currentPCRs", jso2)) {
@@ -1096,7 +1099,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_char_serialize(in->type, &jso2);
+    r = ipolicy_call_base(ifapi_json_char_serialize(in->type, &jso2));
     return_if_error(r, "Serialize char");
 
     if (json_object_object_add(*jso, "type", jso2)) {
@@ -1104,7 +1107,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
     }
 
     jso2 = NULL;
-    r = ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPM2B_NONCE_serialize(&in->policyRef, &jso2));
     return_if_error(r, "Serialize TPM2B_NONCE");
 
     if (json_object_object_add(*jso, "policyRef", jso2)) {
@@ -1113,7 +1116,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
 
     if (strcmp(in->type, "tpm") == 0) {
         jso2 = NULL;
-        r = ifapi_json_TPMT_PUBLIC_serialize(&in->key, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMT_PUBLIC_serialize(&in->key, &jso2));
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
         if (json_object_object_add(*jso, "key", jso2)) {
@@ -1122,7 +1125,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         jso2 = NULL;
 
         jso2 = NULL;
-        r = ifapi_json_TPMT_SIGNATURE_serialize(&in->signature, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMT_SIGNATURE_serialize(&in->signature, &jso2));
         return_if_error(r, "Serialize TPMT_SIGNATURE");
 
         if (json_object_object_add(*jso, "signature", jso2)) {
@@ -1130,7 +1133,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         }
     } else if (strcmp(in->type, "pem") == 0) {
         jso2 = NULL;
-        r = ifapi_json_char_serialize(in->keyPEM, &jso2);
+        r = ipolicy_call_base(ifapi_json_char_serialize(in->keyPEM, &jso2));
         return_if_error(r, "Serialize TPMT_PUBLIC");
 
         if (json_object_object_add(*jso, "key", jso2)) {
@@ -1139,7 +1142,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         jso2 = NULL;
 
         jso2 = NULL;
-        r = ifapi_json_UINT8_ARY_serialize(&in->pemSignature, &jso2);
+        r = ipolicy_call_base(ifapi_json_UINT8_ARY_serialize(&in->pemSignature, &jso2));
         return_if_error(r, "Serialize Signature");
 
         if (json_object_object_add(*jso, "signature", jso2)) {
@@ -1147,7 +1150,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         }
 
         jso2 = NULL;
-        r = ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMT_RSA_SCHEME_serialize(&in->rsaScheme, &jso2));
         return_if_error(r, "Serialize RSA scheme");
 
         if (json_object_object_add(*jso, "rsaScheme", jso2)) {
@@ -1155,7 +1158,7 @@ ipolicy_json_TPMS_POLICYAUTHORIZATION_serialize(const TPMS_POLICYAUTHORIZATION *
         }
 
         jso2 = NULL;
-        r = ifapi_json_TPMI_ALG_HASH_serialize(in->hashAlg, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPMI_ALG_HASH_serialize(in->hashAlg, &jso2));
         return_if_error(r, "Serialize hash alg.");
 
         if (json_object_object_add(*jso, "hashAlg", jso2)) {
@@ -1221,14 +1224,14 @@ ipolicy_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in, json_objec
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_char_serialize(in->name, &jso2);
+    r = ipolicy_call_base(ifapi_json_char_serialize(in->name, &jso2));
     return_if_error(r, "Serialize char");
 
     if (json_object_object_add(*jso, "name", jso2)) {
         return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
-    r = ifapi_json_char_serialize(in->description, &jso2);
+    r = ipolicy_call_base(ifapi_json_char_serialize(in->description, &jso2));
     return_if_error(r, "Serialize char");
 
     if (json_object_object_add(*jso, "description", jso2)) {
@@ -1243,7 +1246,7 @@ ipolicy_json_TPMS_POLICYBRANCH_serialize(const TPMS_POLICYBRANCH *in, json_objec
     }
     if (in->policyDigests.count > 0) {
         jso2 = NULL;
-        r = ifapi_json_TPML_DIGEST_VALUES_serialize(&in->policyDigests, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPML_DIGEST_VALUES_serialize(&in->policyDigests, &jso2));
         return_if_error(r, "Serialize TPML_DIGEST_VALUES");
 
         if (json_object_object_add(*jso, "policyDigests", jso2)) {
@@ -1408,7 +1411,7 @@ ipolicy_json_TPMT_POLICYELEMENT_serialize(const TPMT_POLICYELEMENT *in, json_obj
 
     if (in->policyDigests.count > 0) {
         jso2 = NULL;
-        r = ifapi_json_TPML_DIGEST_VALUES_serialize(&in->policyDigests, &jso2);
+        r = ipolicy_call_base(ifapi_json_TPML_DIGEST_VALUES_serialize(&in->policyDigests, &jso2));
         return_if_error(r, "Serialize TPML_DIGEST_VALUES");
 
         if (json_object_object_add(*jso, "policyDigests", jso2)) {
@@ -1473,14 +1476,14 @@ ipolicy_json_TPMS_POLICY_serialize(const TPMS_POLICY *in, json_object **jso) {
     if (*jso == NULL)
         *jso = json_object_new_object();
     jso2 = NULL;
-    r = ifapi_json_char_serialize(in->description, &jso2);
+    r = ipolicy_call_base(ifapi_json_char_serialize(in->description, &jso2));
     return_if_error(r, "Serialize char");
 
     if (json_object_object_add(*jso, "description", jso2)) {
         return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
-    r = ifapi_json_TPML_DIGEST_VALUES_serialize(&in->policyDigests, &jso2);
+    r = ipolicy_call_base(ifapi_json_TPML_DIGEST_VALUES_serialize(&in->policyDigests, &jso2));
     return_if_error(r, "Serialize TPML_DIGEST_VALUES");
 
     if (json_object_object_add(*jso, "policyDigests", jso2)) {
@@ -1522,7 +1525,5 @@ ipolicy_json_serialize(const TPMS_POLICY *policy, char **json) {
     }
     if (jso)
         json_object_put(jso);
-    if ((r & TSS2_RC_LAYER_MASK) == TSS2_FEATURE_RC_LAYER)
-        r = TSS2_POLICY_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
     return r;
 }

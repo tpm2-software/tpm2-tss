@@ -773,6 +773,40 @@ test_policy_copy_empty_and_invalid(void **state) {
     ipolicy_cleanup(&source);
 }
 
+static TSS2_RC
+policy_action_return_code(const char *action, void *userdata) {
+    assert_string_equal(action, "return-code-test");
+    return *(TSS2_RC *)userdata;
+}
+
+static void
+test_policy_callback_return_codes(void **state) {
+    UNUSED(state);
+    const char   *input = "{\"description\":\"callback layers\",\"policy\":["
+                          "{\"type\":\"POLICYACTION\",\"action\":\"return-code-test\"}]}";
+    const TSS2_RC errors[]
+        = { TSS2_FAPI_RC_BAD_VALUE, TSS2_ESYS_RC_BAD_VALUE, TEST_LAYER | TSS2_BASE_RC_BAD_VALUE };
+    for (size_t i = 0; i <= sizeof(errors) / sizeof(errors[0]); ++i) {
+        TSS2_POLICY_CTX           *ctx = NULL;
+        bool                       retry = i == sizeof(errors) / sizeof(errors[0]);
+        TSS2_RC                    result = retry ? TSS2_FAPI_RC_TRY_AGAIN : errors[i];
+        TSS2_POLICY_EXEC_CALLBACKS callbacks
+            = { .cbaction = policy_action_return_code, .cbaction_userdata = &result };
+        assert_int_equal(Tss2_PolicyInit(input, TPM2_ALG_SHA256, &ctx), TSS2_RC_SUCCESS);
+        assert_int_equal(Tss2_PolicyCalculate(ctx), TSS2_RC_SUCCESS);
+        assert_int_equal(Tss2_PolicySetExecCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
+        assert_int_equal(Tss2_PolicyExecute_Async(ctx), TSS2_RC_SUCCESS);
+        /* PolicyAction calls no ESYS functions; a non-NULL marker is sufficient. */
+        ESYS_CONTEXT *esys = (ESYS_CONTEXT *)&result;
+        assert_int_equal(Tss2_PolicyExecute_Finish(ctx, esys, 0x03000000), result);
+        if (retry) {
+            result = TSS2_RC_SUCCESS;
+            assert_int_equal(Tss2_PolicyExecute_Finish(ctx, esys, 0x03000000), TSS2_RC_SUCCESS);
+        }
+        Tss2_PolicyFinalize(&ctx);
+    }
+}
+
 int
 main(int argc, char *argv[]) {
     UNUSED(argc);
@@ -791,7 +825,8 @@ main(int argc, char *argv[]) {
             cmocka_unit_test(test_policy_copy),
             cmocka_unit_test(test_policy_json_api),
             cmocka_unit_test(test_policy_context_json_authorization),
-            cmocka_unit_test(test_policy_copy_empty_and_invalid) };
+            cmocka_unit_test(test_policy_copy_empty_and_invalid),
+            cmocka_unit_test(test_policy_callback_return_codes) };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

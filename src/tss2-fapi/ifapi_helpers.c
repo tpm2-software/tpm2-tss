@@ -118,21 +118,24 @@ ifapi_set_key_flags(const char *type, bool policy, IFAPI_KEY_TEMPLATE *template)
                 goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid unique_zero", error);
             }
         } else if ((unique_value = extract_value(flag, "unique"))) {
-            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_RSA_KEY_BYTES,
-                                      &template->public.publicArea.unique.rsa.buffer[0]);
+            r = ifapi_call_base(
+                ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_RSA_KEY_BYTES,
+                                      &template->public.publicArea.unique.rsa.buffer[0]));
             goto_if_error(r, "Invalid unique field", error);
 
             template->public.publicArea.unique.rsa.size = strlen(unique_value) / 2;
             template->unique_rsa_set = true;
         } else if ((unique_value = extract_value(flag, "unique_x"))) {
-            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_ECC_KEY_BYTES,
-                                      &template->public.publicArea.unique.ecc.x.buffer[0]);
+            r = ifapi_call_base(
+                ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_ECC_KEY_BYTES,
+                                      &template->public.publicArea.unique.ecc.x.buffer[0]));
             goto_if_error(r, "Invalid unique_x field", error);
             template->public.publicArea.unique.ecc.x.size = strlen(unique_value) / 2;
             template->unique_ecc_set = true;
         } else if ((unique_value = extract_value(flag, "unique_y"))) {
-            r = ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_ECC_KEY_BYTES,
-                                      &template->public.publicArea.unique.ecc.y.buffer[0]);
+            r = ifapi_call_base(
+                ifapi_hex_to_byte_ary(unique_value, TPM2_MAX_ECC_KEY_BYTES,
+                                      &template->public.publicArea.unique.ecc.y.buffer[0]));
             goto_if_error(r, "Invalid unique_y field", error);
 
             template->public.publicArea.unique.ecc.y.size = strlen(unique_value) / 2;
@@ -852,7 +855,7 @@ ifapi_object_cmp_name(IFAPI_OBJECT *object, void *name, bool *equal) {
         obj_name = &object->misc.key.name;
         break;
     case IFAPI_NV_OBJ:
-        r = tss2_nv_get_name(&object->misc.nv.public.nvPublic, &nv_name);
+        r = ifapi_call_base(tss2_nv_get_name(&object->misc.nv.public.nvPublic, &nv_name));
         return_if_error(r, "Get NV name.");
 
         obj_name = &nv_name;
@@ -1253,13 +1256,13 @@ ifapi_extend_vpcr(TPM2B_DIGEST *vpcr, TPMI_ALG_HASH bank, const IFAPI_EVENT *eve
             if (zero_digest)
                 continue;
 
-            r = tss2_crypto_hash_start(&cryptoContext, bank);
+            r = ifapi_call_base(tss2_crypto_hash_start(&cryptoContext, bank));
             return_if_error(r, "crypto hash start");
 
-            HASH_UPDATE_BUFFER(cryptoContext, &vpcr->buffer[0], vpcr->size, r, error_cleanup);
-            HASH_UPDATE_BUFFER(cryptoContext, &event->digests.digests[i].digest.sha512[0],
-                               event_size, r, error_cleanup);
-            r = tss2_crypto_hash_finish(&cryptoContext, &vpcr->buffer[0], &size);
+            ifapi_hash_update_buffer(cryptoContext, &vpcr->buffer[0], vpcr->size, r, error_cleanup);
+            ifapi_hash_update_buffer(cryptoContext, &event->digests.digests[i].digest.sha512[0],
+                                     event_size, r, error_cleanup);
+            r = ifapi_call_base(tss2_crypto_hash_finish(&cryptoContext, &vpcr->buffer[0], &size));
             return_if_error(r, "crypto hash finish");
             vpcr->size = size;
             break;
@@ -1310,12 +1313,12 @@ ifapi_extend_pcr(TPMI_ALG_HASH alg, uint8_t *pcr, const uint8_t *digest, size_t 
     LOGBLOB_TRACE(pcr, alg_size, "Old pcr value");
     LOGBLOB_TRACE(digest, alg_size, "Extend with");
 
-    r = tss2_crypto_hash_start(&cryptoContext, alg);
+    r = ifapi_call_base(tss2_crypto_hash_start(&cryptoContext, alg));
     return_if_error(r, "crypto hash start");
 
-    HASH_UPDATE_BUFFER(cryptoContext, pcr, alg_size, r, error_cleanup);
-    HASH_UPDATE_BUFFER(cryptoContext, digest, alg_size, r, error_cleanup);
-    r = tss2_crypto_hash_finish(&cryptoContext, pcr, &alg_size);
+    ifapi_hash_update_buffer(cryptoContext, pcr, alg_size, r, error_cleanup);
+    ifapi_hash_update_buffer(cryptoContext, digest, alg_size, r, error_cleanup);
+    r = ifapi_call_base(tss2_crypto_hash_finish(&cryptoContext, pcr, &alg_size));
     return_if_error(r, "crypto hash finish");
 
     LOGBLOB_TRACE(pcr, alg_size, "New vpcr value");
@@ -1340,14 +1343,15 @@ ifapi_pcr_digest_matches(const IFAPI_PCR_REG *pcrs,
 
     *matches = false;
 
-    r = tss2_crypto_hash_start(&cryptoContext, pcr_digest_hash_alg);
+    r = ifapi_call_base(tss2_crypto_hash_start(&cryptoContext, pcr_digest_hash_alg));
     goto_if_error(r, "crypto hash start", error_cleanup);
 
     for (i = 0; i < n_pcrs; i++) {
-        HASH_UPDATE_BUFFER(cryptoContext, &pcrs[i].value.buffer, pcrs[i].value.size, r,
-                           error_cleanup);
+        ifapi_hash_update_buffer(cryptoContext, &pcrs[i].value.buffer, pcrs[i].value.size, r,
+                                 error_cleanup);
     }
-    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest.buffer[0], &hash_size);
+    r = ifapi_call_base(
+        tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest.buffer[0], &hash_size));
     goto_if_error(r, "crypto hash finish", error_cleanup);
     pcr_digest.size = hash_size;
 

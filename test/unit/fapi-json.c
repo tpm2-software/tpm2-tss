@@ -18,6 +18,7 @@
 #include "ifapi_json_deserialize.h" // for ifapi_json_IFAPI_OBJECT_d...
 #include "ifapi_json_serialize.h"
 #include "ifapi_keystore.h" // for IFAPI_OBJECT, IFAPI_KEY
+#include "ifapi_macros.h"
 #include "ipolicy_helpers.h"
 #include "ipolicy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
 #include "ipolicy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
@@ -127,7 +128,7 @@ normalize(const char *string) {
         TSS2_RC      rc;                                                                           \
         json_object *jso = json_tokener_parse((SRC));                                              \
         assert_non_null(jso);                                                                      \
-        rc = ifapi_json_##TYPE##_deserialize(jso, &out);                                           \
+        rc = ifapi_call_base(ifapi_json_##TYPE##_deserialize(jso, &out));                          \
         assert_int_equal(rc, RC);                                                                  \
         json_object_put(jso);                                                                      \
     }
@@ -139,7 +140,7 @@ normalize(const char *string) {
         json_object *jso = json_tokener_parse((SRC));                                              \
         memset(&out, 0, sizeof(TYPE));                                                             \
         assert_non_null(jso);                                                                      \
-        rc = ifapi_json_##TYPE##_deserialize(jso, &out);                                           \
+        rc = ifapi_call_base(ifapi_json_##TYPE##_deserialize(jso, &out));                          \
         assert_int_equal(rc, RC);                                                                  \
         json_object_put(jso);                                                                      \
         cleanup_ifapi_object(&out);                                                                \
@@ -216,7 +217,7 @@ normalize(const char *string) {
         TYPE         expected = DST;                                                               \
         json_object *jso = json_tokener_parse((SRC));                                              \
         assert_non_null(jso);                                                                      \
-        rc = ifapi_json_##TYPE##_deserialize(jso, &out);                                           \
+        rc = ifapi_call_base(ifapi_json_##TYPE##_deserialize(jso, &out));                          \
         assert_int_equal(rc, TSS2_RC_SUCCESS);                                                     \
         json_object_put(jso);                                                                      \
         assert_true(out == expected);                                                              \
@@ -227,14 +228,14 @@ normalize(const char *string) {
     {                                                                                              \
         char        *jso_string1, *jso_string2;                                                    \
         json_object *jso = NULL;                                                                   \
-        TSS2_RC      rc = ifapi_json_##TYPE##_serialize(PSERIALIZE, &jso);                         \
+        TSS2_RC      rc = ifapi_call_base(ifapi_json_##TYPE##_serialize(PSERIALIZE, &jso));        \
         jso_string1 = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));        \
         assert_int_equal(rc, TSS2_RC_SUCCESS);                                                     \
-        rc = ifapi_json_##TYPE##_deserialize(jso, &BIN##2);                                        \
+        rc = ifapi_call_base(ifapi_json_##TYPE##_deserialize(jso, &BIN##2));                       \
         assert_int_equal(rc, TSS2_RC_SUCCESS);                                                     \
         json_object_put(jso);                                                                      \
         jso = NULL;                                                                                \
-        rc = ifapi_json_##TYPE##_serialize(PSERIALIZE##2, &jso);                                   \
+        rc = ifapi_call_base(ifapi_json_##TYPE##_serialize(PSERIALIZE##2, &jso));                  \
         jso_string2 = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));        \
         assert_int_equal(rc, TSS2_RC_SUCCESS);                                                     \
         if (strcmp(jso_string1, jso_string2) != 0) {                                               \

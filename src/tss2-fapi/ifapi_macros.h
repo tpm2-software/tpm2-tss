@@ -11,6 +11,9 @@
 #include "util/aux_util.h"
 
 /* FAPI-owned errors retain the FAPI layer. */
+/* Use only at calls to helpers with a documented layerless-base-error contract. */
+#define ifapi_call_base(call) tss2_rc_from_base((call), TSS2_FEATURE_RC_LAYER)
+
 #define ifapi_strdup_check(dest, str, r, label)                                                    \
     if (str) {                                                                                     \
         (dest) = strdup(str);                                                                      \
@@ -122,5 +125,46 @@
         LOG_ERROR("Bad state for " str(VAR) ": %i", VAR);                                          \
         (r) = TSS2_FAPI_RC_BAD_SEQUENCE;                                                           \
         goto label;
+
+/* Shared-helper calls expanded by macros need the caller layer as well. */
+#define ifapi_hash_update(CONTEXT, TYPE, OBJECT, R, LABEL)                                         \
+    {                                                                                              \
+        uint8_t buffer[sizeof(TYPE)];                                                              \
+        size_t  offset = 0;                                                                        \
+        (R) = Tss2_MU_##TYPE##_Marshal(OBJECT, &buffer[0], sizeof(TYPE), &offset);                 \
+        goto_if_error(R, "Marshal for hash update", LABEL);                                        \
+        (R) = ifapi_call_base(                                                                     \
+            tss2_crypto_hash_update(CONTEXT, (const uint8_t *)&buffer[0], offset));                \
+        goto_if_error(R, "crypto hash update", LABEL);                                             \
+    }
+
+#define ifapi_hash_update_buffer(CONTEXT, BUFFER, SIZE, R, LABEL)                                  \
+    R = ifapi_call_base(tss2_crypto_hash_update(CONTEXT, (const uint8_t *)(BUFFER), SIZE));        \
+    goto_if_error(R, "crypto hash update", LABEL);
+
+#define ifapi_get_optional(name, json_name, type)                                                  \
+    if (!ifapi_get_sub_object(jso, json_name, &jso2)) {                                            \
+        memset(&out->name, 0, sizeof(type));                                                       \
+    } else {                                                                                       \
+        r = ifapi_call_base(ifapi_json_##type##_deserialize(jso2, &out->name));                    \
+        return_if_error2(r, "Bad value for field \"%s\".", json_name);                             \
+    }
+
+#define ifapi_get_conditional_tpm2b(name, json_name, tpm2b_type, type, field_name, cond_cnt)       \
+    if (!ifapi_get_sub_object(jso, json_name, &jso2)) {                                            \
+        memset(&out->name, 0, sizeof(type));                                                       \
+    } else {                                                                                       \
+        (cond_cnt)++;                                                                              \
+        json_object *jso_size;                                                                     \
+        if (ifapi_get_sub_object(jso2, "size", &jso_size)) {                                       \
+            tpm2b_type tmp = { 0 };                                                                \
+            r = ifapi_call_base(ifapi_json_##tpm2b_type##_deserialize(jso2, &tmp));                \
+            return_if_error2(r, "Bad value for field \"%s\".", json_name);                         \
+            out->name = tmp.field_name;                                                            \
+        } else {                                                                                   \
+            r = ifapi_call_base(ifapi_json_##type##_deserialize(jso2, &out->name));                \
+            return_if_error2(r, "Bad value for field \"%s\".", json_name);                         \
+        }                                                                                          \
+    }
 
 #endif /* IFAPI_MACROS_H */

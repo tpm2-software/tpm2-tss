@@ -278,7 +278,7 @@ ifapi_verify_cert_chain(char    *ek_pem,
         goto_if_null(cert, "Failed to convert DER certificate to X509 certificate.",
                      TSS2_FAPI_RC_MEMORY, error);
 
-        r = append_object_to_list(cert, &cert_list);
+        r = ifapi_call_base(append_object_to_list(cert, &cert_list));
         goto_if_error(r, "Failed to create certificate list.", error);
 
         /* Calculate the length of the current certificate in the buffer. */
@@ -313,7 +313,7 @@ ifapi_verify_cert_chain(char    *ek_pem,
             goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Failed to add root certificate", error);
         }
 
-        r = append_object_to_list(root_cert, &root_certs);
+        r = ifapi_call_base(append_object_to_list(root_cert, &root_certs));
         goto_if_error(r, "Failed to create certificate list.", error);
     }
 
@@ -323,7 +323,7 @@ ifapi_verify_cert_chain(char    *ek_pem,
         goto_if_null2(intermed_cert, "Failed to convert PEM certificate to DER.", r,
                       TSS2_FAPI_RC_BAD_VALUE, error);
 
-        r = append_object_to_list(intermed_cert, &cert_list);
+        r = ifapi_call_base(append_object_to_list(intermed_cert, &cert_list));
         goto_if_error(r, "Failed to create certificate list.", error);
     }
 
@@ -333,7 +333,7 @@ ifapi_verify_cert_chain(char    *ek_pem,
         goto_if_null(root_cert, "Failed to convert PEM certificate to DER.", TSS2_FAPI_RC_BAD_VALUE,
                      error);
 
-        r = append_object_to_list(root_cert, &root_certs);
+        r = ifapi_call_base(append_object_to_list(root_cert, &root_certs));
         goto_if_error(r, "Failed to create certificate list.", error);
 
         if (1 != X509_STORE_add_cert(store, root_cert)) {

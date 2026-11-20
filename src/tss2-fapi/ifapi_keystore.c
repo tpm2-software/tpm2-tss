@@ -314,8 +314,8 @@ expand_path(IFAPI_KEYSTORE *keystore, const char *path, char **file_name) {
         } else {
             if (strncmp("/", path, 1) == 0)
                 pos = 1;
-            r = ifapi_asprintf(file_name, "/%s%s%s", keystore->defaultprofile, IFAPI_FILE_DELIM,
-                               &path[pos]);
+            r = ifapi_call_base(ifapi_asprintf(file_name, "/%s%s%s", keystore->defaultprofile,
+                                               IFAPI_FILE_DELIM, &path[pos]));
             return_if_error(r, "Out of memory.");
         }
     } else if (ifapi_path_type_p(path, IFAPI_NV_PATH) || ifapi_path_type_p(path, IFAPI_POLICY_PATH)
@@ -388,7 +388,8 @@ expand_path_to_object(IFAPI_KEYSTORE *keystore,
     return_if_error(r, "Expand path");
 
     /* Append object file. */
-    r = ifapi_asprintf(file_name, "%s/%s/%s", dir, expanded_path, IFAPI_OBJECT_FILE);
+    r = ifapi_call_base(
+        ifapi_asprintf(file_name, "%s/%s/%s", dir, expanded_path, IFAPI_OBJECT_FILE));
     SAFE_FREE(expanded_path);
     return r;
 }
@@ -810,8 +811,8 @@ keystore_list_all_abs(IFAPI_KEYSTORE *keystore,
     }
 
     /* Get the objects from system store */
-    r = ifapi_asprintf(&full_search_path, "%s%s", keystore->systemdir,
-                       expanded_search_path ? expanded_search_path : "");
+    r = ifapi_call_base(ifapi_asprintf(&full_search_path, "%s%s", keystore->systemdir,
+                                       expanded_search_path ? expanded_search_path : ""));
     goto_if_error(r, "Out of memory.", cleanup);
 
     r = ifapi_io_dirfiles_all(full_search_path, &file_ary_system, &num_paths_system);
@@ -819,8 +820,8 @@ keystore_list_all_abs(IFAPI_KEYSTORE *keystore,
     SAFE_FREE(full_search_path);
 
     /* Get the objects from user store */
-    r = ifapi_asprintf(&full_search_path, "%s%s", keystore->userdir,
-                       expanded_search_path ? expanded_search_path : "");
+    r = ifapi_call_base(ifapi_asprintf(&full_search_path, "%s%s", keystore->userdir,
+                                       expanded_search_path ? expanded_search_path : ""));
     goto_if_error(r, "Out of memory.", cleanup);
 
     r = ifapi_io_dirfiles_all(full_search_path, &file_ary_user, &num_paths_user);
@@ -958,8 +959,8 @@ expand_directory(IFAPI_KEYSTORE *keystore, const char *path, char **directory_na
              || strncmp(&path[start_pos], "HE", 2) == 0)
             && strlen(&path[start_pos]) <= 3) {
             /* Root directory is hierarchy */
-            r = ifapi_asprintf(directory_name, "/%s/%s/", keystore->defaultprofile,
-                               &path[start_pos]);
+            r = ifapi_call_base(ifapi_asprintf(directory_name, "/%s/%s/", keystore->defaultprofile,
+                                               &path[start_pos]));
             return_if_error(r, "Out of memory.");
 
         } else {
@@ -1006,8 +1007,8 @@ ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name
         pos = 1;
     else
         pos = 0;
-    r = ifapi_asprintf(&absolute_dir_path, "%s%s", keystore->userdir,
-                       exp_dir_name ? &exp_dir_name[pos] : "");
+    r = ifapi_call_base(ifapi_asprintf(&absolute_dir_path, "%s%s", keystore->userdir,
+                                       exp_dir_name ? &exp_dir_name[pos] : ""));
     goto_if_error(r, "Out of memory.", cleanup);
 
     if (stat(absolute_dir_path, &fbuffer) == 0) {
@@ -1023,8 +1024,8 @@ ifapi_keystore_remove_directories(IFAPI_KEYSTORE *keystore, const char *dir_name
         pos = 1;
     else
         pos = 0;
-    r = ifapi_asprintf(&absolute_dir_path, "%s%s", keystore->systemdir,
-                       exp_dir_name ? &exp_dir_name[pos] : "");
+    r = ifapi_call_base(ifapi_asprintf(&absolute_dir_path, "%s%s", keystore->systemdir,
+                                       exp_dir_name ? &exp_dir_name[pos] : ""));
     goto_if_error(r, "Out of memory.", cleanup);
 
     if (stat(absolute_dir_path, &fbuffer) == 0) {
@@ -1732,7 +1733,7 @@ ifapi_check_provisioned(IFAPI_KEYSTORE *keystore, const char *rel_path, bool *ok
             end_profile[0] = '\0';
         }
         /* Compute user path of the profile. */
-        r = ifapi_asprintf(&profile_dir, "%s/%s", keystore->userdir, directory);
+        r = ifapi_call_base(ifapi_asprintf(&profile_dir, "%s/%s", keystore->userdir, directory));
         goto_if_error2(r, "Profile path could not be created.", cleanup);
 
         if (ifapi_io_path_exists(profile_dir)) {
@@ -1741,7 +1742,7 @@ ifapi_check_provisioned(IFAPI_KEYSTORE *keystore, const char *rel_path, bool *ok
         }
         /* Compute system path of the profile. */
         SAFE_FREE(profile_dir);
-        r = ifapi_asprintf(&profile_dir, "%s/%s", keystore->systemdir, directory);
+        r = ifapi_call_base(ifapi_asprintf(&profile_dir, "%s/%s", keystore->systemdir, directory));
         goto_if_error2(r, "Profile path could not be created.", cleanup);
 
         if (ifapi_io_path_exists(profile_dir)) {

@@ -57,13 +57,6 @@ struct TSS2_POLICY_CTX {
 };
 
 static inline TSS2_RC
-fapi_to_policy_rc(TSS2_RC rc) {
-    return (rc_layer(rc) == TSS2_FEATURE_RC_LAYER)
-               ? TSS2_POLICY_RC_LAYER | (rc & ~TSS2_RC_LAYER_MASK)
-               : rc;
-}
-
-static inline TSS2_RC
 is_try_again(TSS2_RC rc) {
     TSS2_RC layer = rc_layer(rc);
     /*
@@ -78,8 +71,6 @@ is_try_again(TSS2_RC rc) {
                || layer == TSS2_SYS_RC_LAYER || layer == TSS2_POLICY_RC_LAYER
                || layer == TSS2_TCTI_RC_LAYER);
 }
-
-#define CALL_FAPI(fn) fapi_to_policy_rc(fn)
 
 TSS2_RC
 ipolicy_calculate_tree_ex(IPOLICY_EVAL_INST_CTX *context,
@@ -379,8 +370,8 @@ Tss2_PolicyExecute_Async(TSS2_POLICY_CTX *policy_ctx) {
     policy_ctx->exec_ctx.state = POLICY_EXECUTE_INIT;
     policy_ctx->exec_ctx.flush_handle = false;
     policy_ctx->exec_ctx.session = ESYS_TR_NONE;
-    r = CALL_FAPI(ipolicy_policyeval_execute_prepare(&policy_ctx->exec_ctx, policy_ctx->hash_alg,
-                                                     policy_ctx->policy_ptr));
+    r = ipolicy_policyeval_execute_prepare(&policy_ctx->exec_ctx, policy_ctx->hash_alg,
+                                           policy_ctx->policy_ptr);
     if (r != TSS2_RC_SUCCESS) {
         tss2_free_node_list(policy_ctx->exec_ctx.policy_elements);
         policy_ctx->exec_ctx.policy_elements = NULL;
@@ -441,7 +432,7 @@ Tss2_PolicyExecute_Finish(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, E
 
     policy_ctx->exec_esys = esys_ctx;
     policy_ctx->exec_ctx.session = session;
-    TSS2_RC r = CALL_FAPI(ipolicy_policyeval_execute(esys_ctx, &policy_ctx->exec_ctx, false));
+    TSS2_RC r = ipolicy_policyeval_execute(esys_ctx, &policy_ctx->exec_ctx, false);
     if (is_try_again(r))
         return r;
 
@@ -563,8 +554,8 @@ Tss2_PolicyCalculate_Finish(TSS2_POLICY_CTX *policy_ctx) {
     size_t digest_idx = 0;
     size_t hash_size = 0;
 
-    r = CALL_FAPI(ipolicy_calculate_tree_ex(&policy_ctx->eval_ctx, policy_ctx->policy_ptr,
-                                            policy_ctx->hash_alg, &digest_idx, &hash_size));
+    r = ipolicy_calculate_tree_ex(&policy_ctx->eval_ctx, policy_ctx->policy_ptr,
+                                  policy_ctx->hash_alg, &digest_idx, &hash_size);
     /* Retain the pending calculation on TRY_AGAIN; publish no partial digest. */
     if (r != TSS2_RC_SUCCESS)
         return r;

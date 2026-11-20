@@ -237,7 +237,7 @@ execute_policy_nv(ESYS_CONTEXT *esys_ctx, TPMS_POLICYNV *policy, IPOLICY_EXEC_CT
 
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
-        r = tss2_nv_get_name(&policy->nvPublic, &current_policy->name);
+        r = ipolicy_call_base(tss2_nv_get_name(&policy->nvPublic, &current_policy->name));
         return_if_error(r, "Compute NV name");
         fallthrough;
 
@@ -348,14 +348,15 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
 
         if (policy->keyPublic.type == TPM2_ALG_KEYEDHASH) {
             LOG_TRACE("Keyedhash used for PoliySigned");
-            r = tss2_base64encode(&policy->publicKey.name[0], policy->publicKey.size,
-                                  &current_policy->pem_key);
+            r = ipolicy_call_base(tss2_base64encode(
+                &policy->publicKey.name[0], policy->publicKey.size, &current_policy->pem_key));
             return_if_error(r, "Encode key name do base64.");
         } else if (!current_policy->pem_key) {
             /* Recreate pem key from tpm public key */
             tpm_public.publicArea = policy->keyPublic;
             tpm_public.size = 0;
-            r = tss2_pub_pem_key_from_tpm(&tpm_public, &current_policy->pem_key, &pem_key_size);
+            r = ipolicy_call_base(
+                tss2_pub_pem_key_from_tpm(&tpm_public, &current_policy->pem_key, &pem_key_size));
             return_if_error(r, "Convert TPM public key into PEM key.");
         }
 
@@ -370,8 +371,9 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
         ipolicy_try_again_or_error_goto(r, "Execute policy signature callback.", cleanup);
 
         /* Convert signature into TPM format */
-        r = tss2_der_sig_to_tpm(&policy->keyPublic, signature_ossl, signature_size,
-                                policy->keyPEMhashAlg, &policy->signature_tpm);
+        r = ipolicy_call_base(tss2_der_sig_to_tpm(&policy->keyPublic, signature_ossl,
+                                                  signature_size, policy->keyPEMhashAlg,
+                                                  &policy->signature_tpm));
         goto_if_error2(r, "Convert der signature into TPM format", cleanup);
 
         if (policy->keyPublic.type == TPM2_ALG_KEYEDHASH) {
@@ -552,13 +554,15 @@ execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
         SAFE_FREE(tmp_name);
 
         /* Use policyRef and policy to compute authorization hash */
-        r = tss2_crypto_hash_start(&cryptoContext, hash_alg);
+        r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, hash_alg));
         return_if_error(r, "crypto hash start");
 
-        HASH_UPDATE_BUFFER(cryptoContext, &policy->approvedPolicy.buffer[0], hash_size, r, cleanup);
-        HASH_UPDATE_BUFFER(cryptoContext, &policy->policyRef.buffer[0], policy->policyRef.size, r,
-                           cleanup);
-        r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &size);
+        ipolicy_hash_update_buffer(cryptoContext, &policy->approvedPolicy.buffer[0], hash_size, r,
+                                   cleanup);
+        ipolicy_hash_update_buffer(cryptoContext, &policy->policyRef.buffer[0],
+                                   policy->policyRef.size, r, cleanup);
+        r = ipolicy_call_base(
+            tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &size));
         return_if_error(r, "crypto hash finish");
 
         aHash.size = size;
@@ -673,7 +677,7 @@ execute_policy_authorize_nv(ESYS_CONTEXT           *esys_ctx,
         r = cb->cbauthnv(&policy->nvPublic, hash_alg, cb->cbauthnv_userdata);
         ipolicy_try_again_or_error(r, "Execute policy authorize nv callback.");
 
-        r = tss2_nv_get_name(&policy->nvPublic, &current_policy->name);
+        r = ipolicy_call_base(tss2_nv_get_name(&policy->nvPublic, &current_policy->name));
         return_if_error(r, "Compute NV name");
         fallthrough;
 
@@ -1359,12 +1363,12 @@ execute_policy_template(ESYS_CONTEXT        *esys_ctx,
                                             sizeof(TPMT_PUBLIC), &offset);
             return_if_error(r, "Marshaling TPMT_PUBLIC");
 
-            r = tss2_crypto_hash_start(&cryptoContext, current_policy->hash_alg);
+            r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_policy->hash_alg));
             return_if_error(r, "crypto hash start");
 
-            HASH_UPDATE_BUFFER(cryptoContext, &buffer[0], offset, r, cleanup);
-            r = tss2_crypto_hash_finish(&cryptoContext, &used_template_hash->buffer[0],
-                                        &digest_size);
+            ipolicy_hash_update_buffer(cryptoContext, &buffer[0], offset, r, cleanup);
+            r = ipolicy_call_base(tss2_crypto_hash_finish(
+                &cryptoContext, &used_template_hash->buffer[0], &digest_size));
             goto_if_error(r, "crypto hash finish", cleanup);
             used_template_hash->size = digest_size;
 
@@ -1576,7 +1580,8 @@ compute_policy_list(IPOLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *elements) {
             r = compute_policy_list(pol_ctx, or_elements);
             return_if_error(r, "Compute policy digest list for policy or.");
         }
-        r = append_object_to_list(&elements->elements[i], &pol_ctx->policy_elements);
+        r = ipolicy_call_base(
+            append_object_to_list(&elements->elements[i], &pol_ctx->policy_elements));
         return_if_error(r, "Extend policy list.");
     }
     return r;

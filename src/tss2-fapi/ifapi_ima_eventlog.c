@@ -886,7 +886,7 @@ ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso, IFAPI_IMA_EVENT *out) {
             return TSS2_FAPI_RC_BAD_VALUE;
         }
     }
-    r = ifapi_json_UINT8_ARY_deserialize(jso2, &out->template_value);
+    r = ifapi_call_base(ifapi_json_UINT8_ARY_deserialize(jso2, &out->template_value));
     return_if_error(r, "Bad value for field \"template_data \".");
 
     LOG_TRACE("true");

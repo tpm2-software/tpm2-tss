@@ -205,6 +205,14 @@ extern "C" {
 #define base_rc(r)   ((r) & ~TSS2_RC_LAYER_MASK)
 #define number_rc(r) ((r) & ~TPM2_RC_N_MASK)
 
+/* Only for helpers documented to return layerless base errors, never for
+ * arbitrary TPM or callback results: TPM errors also have layer zero.
+ */
+static inline TSS2_RC
+tss2_rc_from_base(TSS2_RC rc, TSS2_RC layer) {
+    return rc != TSS2_RC_SUCCESS && rc_layer(rc) == 0 ? layer | rc : rc;
+}
+
 static inline TSS2_RC
 tss2_fmt_p1_error_to_rc(UINT16 err) {
     return TPM2_RC_1 + TPM2_RC_P + err;

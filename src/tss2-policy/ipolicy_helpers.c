@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "ipolicy_helpers.h"
+#include "ipolicy_macros.h"
 #include "tss2_crypto.h"
 #include "util/aux_util.h"
 
@@ -155,7 +156,7 @@ ipolicy_compute_policy_digest(const TPML_PCRVALUES *pcrs,
             pcr_selection->pcrSelections[j].sizeofSelect = (pcrIndex / 8) + 1;
     }
     /* Compute digest for current pcr selection */
-    r = tss2_crypto_hash_start(&cryptoContext, hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, hash_alg));
     return_if_error(r, "crypto hash start");
 
     if (!(pcr_digest->size = tss2_hash_get_digest_size(hash_alg))) {
@@ -175,15 +176,16 @@ ipolicy_compute_policy_digest(const TPML_PCRVALUES *pcrs,
                 /* pcr selected */
                 for (j = 0; j < pcrs->count; j++) {
                     if (pcrs->pcrs[j].pcr == pcr) {
-                        r = tss2_crypto_hash_update(
-                            cryptoContext, (const uint8_t *)&pcrs->pcrs[j].digest, hash_size);
+                        r = ipolicy_call_base(tss2_crypto_hash_update(
+                            cryptoContext, (const uint8_t *)&pcrs->pcrs[j].digest, hash_size));
                         goto_if_error(r, "crypto hash update", cleanup);
                     }
                 }
             }
         }
     }
-    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest->buffer[0], &hash_size);
+    r = ipolicy_call_base(
+        tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&pcr_digest->buffer[0], &hash_size));
 cleanup:
     if (cryptoContext)
         tss2_crypto_hash_abort(&cryptoContext);
@@ -409,12 +411,6 @@ ipolicy_copy(const TPMS_POLICY *source, TPMS_POLICY **destination) {
     return TSS2_RC_SUCCESS;
 }
 
-static TSS2_RC
-authorization_policy_rc(TSS2_RC rc) {
-    return rc_layer(rc) == TSS2_FEATURE_RC_LAYER ? TSS2_POLICY_RC_LAYER | (rc & ~TSS2_RC_LAYER_MASK)
-                                                 : rc;
-}
-
 /** Append a TPM authorization. Inputs are copied; the policy owns the new entry.
  * The caller supplies the signature over the hash of the policy digest and policyRef.
  * This function stores the authorization without verifying the signature.
@@ -525,7 +521,7 @@ ipolicy_get_authorization(const TPMS_POLICY *policy,
         if (pem) {
             if (!entry->keyPEM)
                 return TSS2_POLICY_RC_BAD_VALUE;
-            r = authorization_policy_rc(ifapi_get_tpm2b_public_from_pem(entry->keyPEM, &public));
+            r = ipolicy_call_base(ifapi_get_tpm2b_public_from_pem(entry->keyPEM, &public));
             return_if_error(r, "Parse authorization key.");
             if (public.publicArea.type == TPM2_ALG_RSA)
             public.publicArea.parameters.rsaDetail.scheme = entry->rsaScheme;
@@ -539,9 +535,9 @@ ipolicy_get_authorization(const TPMS_POLICY *policy,
             if (pem) {
                 if (entry->pemSignature.size && !entry->pemSignature.buffer)
                     return TSS2_POLICY_RC_BAD_VALUE;
-                r = authorization_policy_rc(
-                    tss2_der_sig_to_tpm(candidate, entry->pemSignature.buffer,
-                                        entry->pemSignature.size, entry->hashAlg, &result));
+                r = ipolicy_call_base(tss2_der_sig_to_tpm(candidate, entry->pemSignature.buffer,
+                                                          entry->pemSignature.size, entry->hashAlg,
+                                                          &result));
                 return_if_error(r, "Convert authorization signature.");
             } else {
                 result = entry->signature;

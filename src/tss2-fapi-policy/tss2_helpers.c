@@ -50,14 +50,14 @@ free_string_list(NODE_STR_T *node) {
  * @param[in,out] object_list The linked list to be extended.
  *
  * @retval TSS2_RC_SUCCESS if the object was added.
- * @retval TSS2_FAPI_RC_MEMORY If memory for the list extension cannot
+ * @retval TSS2_BASE_RC_MEMORY If memory for the list extension cannot
  *         be allocated.
  */
 TSS2_RC
 append_object_to_list(void *object, NODE_OBJECT_T **object_list) {
     NODE_OBJECT_T *list;
     NODE_OBJECT_T *last = calloc(1, sizeof(NODE_OBJECT_T));
-    return_if_null(last, "Out of space.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(last, "Out of space.", TSS2_BASE_RC_MEMORY);
     last->object = object;
     if (!*object_list) {
         *object_list = last;
@@ -76,13 +76,13 @@ append_object_to_list(void *object, NODE_OBJECT_T **object_list) {
  * @param[in,out] object_list The linked list to be extended.
  *
  * @retval TSS2_RC_SUCCESS if the object was added.
- * @retval TSS2_FAPI_RC_MEMORY If memory for the list extension cannot
+ * @retval TSS2_BASE_RC_MEMORY If memory for the list extension cannot
  *         be allocated.
  */
 TSS2_RC
 push_object_to_list(void *object, NODE_OBJECT_T **object_list) {
     NODE_OBJECT_T *first = calloc(1, sizeof(NODE_OBJECT_T));
-    return_if_null(first, "Out of space.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(first, "Out of space.", TSS2_BASE_RC_MEMORY);
     first->object = object;
     if (*object_list)
         first->next = *object_list;
@@ -100,7 +100,7 @@ push_object_to_list(void *object, NODE_OBJECT_T **object_list) {
  * @param[in] ... The list of objects to be printed.
  *
  * @retval TSS2_RC_SUCCESS If the printing was successful.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_BASE_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_asprintf(char **str, const char *fmt, ...) {
@@ -110,7 +110,7 @@ ifapi_asprintf(char **str, const char *fmt, ...) {
     size = vasprintf(str, fmt, args);
     va_end(args);
     if (size == -1)
-        return TSS2_FAPI_RC_MEMORY;
+        return TSS2_BASE_RC_MEMORY;
     return TSS2_RC_SUCCESS;
 }
 
@@ -153,13 +153,13 @@ tss2_free_node_list(NODE_OBJECT_T *node) {
  * @param[in] publicInfo The public information of the TPM object.
  * @param[out] name The computed name.
  * @retval TPM2_RC_SUCCESS  or one of the possible errors
- * TSS2_FAPI_RC_BAD_VALUE, TSS2_FAPI_RC_MEMORY, TSS2_FAPI_RC_GENERAL_FAILURE. or
+ * TSS2_BASE_RC_BAD_VALUE, TSS2_BASE_RC_MEMORY, TSS2_BASE_RC_GENERAL_FAILURE. or
  * return codes of SAPI errors.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_BASE_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_BASE_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_BASE_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an internal error occurred.
  */
 TSS2_RC
 ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name) {
@@ -214,10 +214,10 @@ ifapi_get_name(TPMT_PUBLIC *publicInfo, TPM2B_NAME *name) {
  * @param[in] publicInfo The public information of the NV index.
  * @param[out] name The computed name.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_MEMORY Memory can not be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE for invalid parameters.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE for unexpected NULL pointer parameters.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE for errors of the crypto library.
+ * @retval TSS2_BASE_RC_MEMORY Memory can not be allocated.
+ * @retval TSS2_BASE_RC_BAD_VALUE for invalid parameters.
+ * @retval TSS2_BASE_RC_BAD_REFERENCE for unexpected NULL pointer parameters.
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE for errors of the crypto library.
  * @retval TSS2_SYS_RC_* for SAPI errors.
  */
 TSS2_RC

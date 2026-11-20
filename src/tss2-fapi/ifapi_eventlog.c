@@ -244,8 +244,9 @@ loop:
     switch (eventlog->state) {
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_INIT)
     /* Construct the filename for the eventlog file */
-        r = ifapi_asprintf(&event_log_file, "%s/%s%i", eventlog->log_dir, IFAPI_PCR_LOG_FILE,
-                           eventlog->pcrList[eventlog->pcrListIdx]);
+        r = ifapi_call_base(ifapi_asprintf(&event_log_file, "%s/%s%i", eventlog->log_dir,
+                                           IFAPI_PCR_LOG_FILE,
+                                           eventlog->pcrList[eventlog->pcrListIdx]));
         return_if_error(r, "Out of memory.");
 
         if (!ifapi_io_path_exists(event_log_file)) {
@@ -441,8 +442,8 @@ ifapi_eventlog_append_finish(IFAPI_EVENTLOG *eventlog, IFAPI_IO *io, const IFAPI
         logstr2 = json_object_to_json_string_ext(eventlog->log, JSON_C_TO_STRING_PRETTY);
 
         /* Construct the filename for the eventlog file */
-        r = ifapi_asprintf(&event_log_file, "%s/%s%i", eventlog->log_dir, IFAPI_PCR_LOG_FILE,
-                           eventlog->event.pcr);
+        r = ifapi_call_base(ifapi_asprintf(&event_log_file, "%s/%s%i", eventlog->log_dir,
+                                           IFAPI_PCR_LOG_FILE, eventlog->event.pcr));
         goto_if_error(r, "Create file name", error_cleanup);
 
         /* Start writing the eventlog back to disk */

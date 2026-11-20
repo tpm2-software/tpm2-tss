@@ -301,15 +301,16 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
         goto_if_error(r, "Fapi calculate tree.", cleanup);
 
         /* Compute the aHash from policy digest and policyRef */
-        r = tss2_crypto_hash_start(&cryptoContext, hashAlg);
+        r = ifapi_call_base(tss2_crypto_hash_start(&cryptoContext, hashAlg));
         goto_if_error(r, "crypto hash start", cleanup);
 
-        HASH_UPDATE_BUFFER(cryptoContext, digest.buffer, digest.size, r, cleanup);
+        ifapi_hash_update_buffer(cryptoContext, digest.buffer, digest.size, r, cleanup);
         if (command->policyRef.size > 0) {
-            HASH_UPDATE_BUFFER(cryptoContext, &command->policyRef.buffer[0],
-                               command->policyRef.size, r, cleanup);
+            ifapi_hash_update_buffer(cryptoContext, &command->policyRef.buffer[0],
+                                     command->policyRef.size, r, cleanup);
         }
-        r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &hashSize);
+        r = ifapi_call_base(
+            tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &hashSize));
         goto_if_error(r, "crypto hash finish", cleanup);
 
         aHash.size = hashSize;

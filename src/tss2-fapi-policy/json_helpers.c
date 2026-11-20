@@ -23,16 +23,17 @@
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
+ * @retval TSS2_BASE_RC_MEMORY: if the helper cannot allocate enough memory.
  */
 TSS2_RC
 ifapi_json_char_serialize(const char *in, json_object **jso) {
+    return_if_null(jso, "Bad reference.", TSS2_BASE_RC_BAD_REFERENCE);
     if (in == NULL) {
         *jso = json_object_new_string("");
     } else {
         *jso = json_object_new_string(in);
     }
-    return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(*jso, "Out of memory.", TSS2_BASE_RC_MEMORY);
     return TSS2_RC_SUCCESS;
 }
 
@@ -41,12 +42,17 @@ ifapi_json_char_serialize(const char *in, json_object **jso) {
  * @param[in] jso json string object.
  * @param[out] out the pointer to the created string.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_BASE_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_json_char_deserialize(json_object *jso, char **out) {
-    *out = strdup(json_object_get_string(jso));
-    return_if_null(*out, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(out, "Bad reference.", TSS2_BASE_RC_BAD_REFERENCE);
+    *out = NULL;
+    return_if_null(jso, "Bad reference.", TSS2_BASE_RC_BAD_REFERENCE);
+    const char *text = json_object_get_string(jso);
+    return_if_null(text, "Bad value.", TSS2_BASE_RC_BAD_VALUE);
+    *out = strdup(text);
+    return_if_null(*out, "Out of memory.", TSS2_BASE_RC_MEMORY);
     return TSS2_RC_SUCCESS;
 }
 
@@ -55,18 +61,22 @@ ifapi_json_char_deserialize(json_object *jso, char **out) {
  * @param[in] in value to be serialized.
  * @param[out] jso pointer to the json object.
  * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY: if the FAPI cannot allocate enough memory.
- * @retval TSS2_FAPI_RC_BAD_VALUE if the value is not of type TPM2B_DIGEST.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_BASE_RC_MEMORY: if the helper cannot allocate enough memory.
+ * @retval TSS2_BASE_RC_BAD_VALUE if the value is not of type TPM2B_DIGEST.
+ * @retval TSS2_BASE_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso) {
     TSS2_RC r;
 
-    return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(jso, "Bad reference.", TSS2_BASE_RC_BAD_REFERENCE);
+    *jso = NULL;
+    return_if_null(in, "Bad reference.", TSS2_BASE_RC_BAD_REFERENCE);
+    if ((in->size && !in->buffer) || in->size > (SIZE_MAX - 1) / 2)
+        return TSS2_BASE_RC_BAD_VALUE;
 
     char *hex_string = malloc((in->size) * 2 + 1);
-    return_if_null(hex_string, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(hex_string, "Out of memory.", TSS2_BASE_RC_MEMORY);
 
     if (in->size > 0) {
         uint8_t *buffer = in->buffer;
@@ -76,7 +86,7 @@ ifapi_json_UINT8_ARY_serialize(const UINT8_ARY *in, json_object **jso) {
     }
     hex_string[(in->size) * 2] = '\0';
     *jso = json_object_new_string(hex_string);
-    goto_if_null2(jso, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error);
+    goto_if_null2(*jso, "Out of memory", r, TSS2_BASE_RC_MEMORY, error);
 
     SAFE_FREE(hex_string);
     return TSS2_RC_SUCCESS;

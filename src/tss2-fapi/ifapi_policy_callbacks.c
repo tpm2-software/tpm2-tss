@@ -175,13 +175,15 @@ ifapi_get_object_name(const char *path, TPM2B_NAME *name, void *ctx) {
 
         switch (object.objectType) {
         case IFAPI_KEY_OBJ:
-            r = ifapi_get_name(&object.misc.key.public.publicArea, (TPM2B_NAME *)name);
+            r = ifapi_call_base(
+                ifapi_get_name(&object.misc.key.public.publicArea, (TPM2B_NAME *)name));
             break;
         case IFAPI_EXT_PUB_KEY_OBJ:
-            r = ifapi_get_name(&object.misc.ext_pub_key.public.publicArea, (TPM2B_NAME *)name);
+            r = ifapi_call_base(
+                ifapi_get_name(&object.misc.ext_pub_key.public.publicArea, (TPM2B_NAME *)name));
             break;
         case IFAPI_NV_OBJ:
-            r = tss2_nv_get_name(&object.misc.nv.public.nvPublic, name);
+            r = ifapi_call_base(tss2_nv_get_name(&object.misc.nv.public.nvPublic, name));
             break;
         default:
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid object %s.", cleanup, path);

@@ -191,14 +191,14 @@ tss2_crypto_hash_abort(IFAPI_CRYPTO_CONTEXT_BLOB **context) {
  * @param[in] size The size of data in bytes
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE for invalid parameters.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_BAD_REFERENCE for invalid parameters.
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
  */
 TSS2_RC
 tss2_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context, const uint8_t *buffer, size_t size) {
     /* Check for NULL parameters */
-    return_if_null(context, "context is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(buffer, "buffer is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(context, "context is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(buffer, "buffer is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     LOG_DEBUG("called for context %p, buffer %p and size %zd", context, buffer, size);
 
@@ -207,7 +207,7 @@ tss2_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context, const uint8_t *buffe
     LOGBLOB_DEBUG(buffer, size, "Updating hash with");
 
     if (1 != EVP_DigestUpdate(mycontext->osslContext, buffer, size)) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "OSSL hash update");
+        return_error(TSS2_BASE_RC_GENERAL_FAILURE, "OSSL hash update");
     }
 
     return TSS2_RC_SUCCESS;
@@ -221,16 +221,16 @@ tss2_crypto_hash_update(IFAPI_CRYPTO_CONTEXT_BLOB *context, const uint8_t *buffe
  * @param[out] digestSize The size of digest in bytes. Can be NULL
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if context or digest is NULL
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if context or digest is NULL
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
  */
 TSS2_RC
 tss2_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context, uint8_t *digest, size_t *digestSize) {
     TSS2_RC r = TSS2_RC_SUCCESS;
 
     /* Check for NULL parameters */
-    return_if_null(context, "context is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(digest, "digest is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(context, "context is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(digest, "digest is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     unsigned int computedDigestSize = 0;
 
@@ -239,11 +239,11 @@ tss2_crypto_hash_finish(IFAPI_CRYPTO_CONTEXT_BLOB **context, uint8_t *digest, si
     /* Compute the digest */
     IFAPI_CRYPTO_CONTEXT *mycontext = *context;
     if (1 != EVP_DigestFinal_ex(mycontext->osslContext, digest, &computedDigestSize)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "OSSL error.", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "OSSL error.", cleanup);
     }
 
     if (computedDigestSize != mycontext->hashSize) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid size computed by EVP_DigestFinal_ex",
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Invalid size computed by EVP_DigestFinal_ex",
                    cleanup);
     }
 
@@ -270,26 +270,26 @@ cleanup:
  * use.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if hashAlgorithm is invalid
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if context is NULL
- * @retval TSS2_FAPI_RC_MEMORY if memory cannot be allocated
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_BAD_VALUE if hashAlgorithm is invalid
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if context is NULL
+ * @retval TSS2_BASE_RC_MEMORY if memory cannot be allocated
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
  */
 TSS2_RC
 tss2_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context, TPM2_ALG_ID hashAlgorithm) {
     /* Check for NULL parameters */
-    return_if_null(context, "context is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(context, "context is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     /* Initialize the hash context */
     TSS2_RC r = TSS2_RC_SUCCESS;
     LOG_DEBUG("call: context=%p hashAlg=%" PRIu16, context, hashAlgorithm);
     IFAPI_CRYPTO_CONTEXT *mycontext = NULL;
     mycontext = calloc(1, sizeof(IFAPI_CRYPTO_CONTEXT));
-    return_if_null(mycontext, "Out of memory", TSS2_FAPI_RC_MEMORY);
+    return_if_null(mycontext, "Out of memory", TSS2_BASE_RC_MEMORY);
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     if (!(mycontext->osslHashAlgorithm = ifapi_get_ossl_hash_md(hashAlgorithm))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlgorithm);
     }
 #else
@@ -297,26 +297,26 @@ tss2_crypto_hash_start(IFAPI_CRYPTO_CONTEXT_BLOB **context, TPM2_ALG_ID hashAlgo
      * As we don't want the TPM to be called for these operations, we have
      * to initialize own library context with the default provider. */
     mycontext->libctx = OSSL_LIB_CTX_new();
-    goto_if_null(mycontext->libctx, "Out of memory", TSS2_FAPI_RC_MEMORY, cleanup);
+    goto_if_null(mycontext->libctx, "Out of memory", TSS2_BASE_RC_MEMORY, cleanup);
 
     if (!(mycontext->osslHashAlgorithm
           = EVP_MD_fetch(mycontext->libctx, ifapi_get_hash_md(hashAlgorithm), NULL))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlgorithm);
     }
 #endif
 
     if (!(mycontext->hashSize = tss2_hash_get_digest_size(hashAlgorithm))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlgorithm);
     }
 
     if (!(mycontext->osslContext = EVP_MD_CTX_create())) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Error EVP_MD_CTX_create", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Error EVP_MD_CTX_create", cleanup);
     }
 
     if (1 != EVP_DigestInit_ex(mycontext->osslContext, mycontext->osslHashAlgorithm, NULL)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Error EVP_DigestInit_ex", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Error EVP_DigestInit_ex", cleanup);
     }
 
     *context = (IFAPI_CRYPTO_CONTEXT_BLOB *)mycontext;
@@ -410,15 +410,15 @@ static const TPM2B_PUBLIC templateEccSign = {
  * @param[out] public The template to initialize
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if template is NULL
- * @retval TSS2_FAPI_RC_BAD_VALUE if signatureAlgorithm is not TPM2_ALG_RSA or
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if template is NULL
+ * @retval TSS2_BASE_RC_BAD_VALUE if signatureAlgorithm is not TPM2_ALG_RSA or
  *         TPM2_ALG_ECC
  */
 TSS2_RC
 ifapi_initialize_sign_public(TPM2_ALG_ID signatureAlgorithm, TPM2B_PUBLIC *public) {
 
     /* Check for NULL parameters */
-    return_if_null(public, "public is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(public, "public is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     /* Initialize the template */
     if (signatureAlgorithm == TPM2_ALG_RSA) {
@@ -430,7 +430,7 @@ ifapi_initialize_sign_public(TPM2_ALG_ID signatureAlgorithm, TPM2B_PUBLIC *publi
     } else {
         /* Invalid key type */
         LOG_ERROR("No suitable template found");
-        return TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_BASE_RC_BAD_VALUE;
     }
     return TSS2_RC_SUCCESS;
 }
@@ -468,9 +468,9 @@ ifapi_bn2binpad(const BIGNUM *bn, unsigned char *bin, int binSize) {
  *             OpenSSL
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if one of the parameters is NULL
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if one of the parameters is NULL
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 ossl_rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey) {
@@ -483,8 +483,8 @@ ossl_rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
 #endif
 
     /* Check for NULL parameters */
-    return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(evpPublicKey, "evpPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(evpPublicKey, "evpPublicKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     TSS2_RC r = TSS2_RC_SUCCESS;
     /* Initialize the RSA parameters */
@@ -492,7 +492,7 @@ ossl_rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
     BIGNUM *n = BN_bin2bn(tpmPublicKey->publicArea.unique.rsa.buffer,
                           tpmPublicKey->publicArea.unique.rsa.size, NULL);
     if (!n) {
-        goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_MEMORY, "Out of memory", error_cleanup);
     }
 
     uint32_t exp;
@@ -503,29 +503,29 @@ ossl_rsa_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     if ((rsa = RSA_new()) == NULL) {
-        goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_MEMORY, "Out of memory", error_cleanup);
     }
 
     if ((e = BN_new()) == NULL) {
-        goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_MEMORY, "Out of memory", error_cleanup);
     }
     if (1 != BN_set_word(e, exp)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not set exponent.", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Could not set exponent.", error_cleanup);
     }
 
     if (!RSA_set0_key(rsa, n, e, NULL)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Could not set public key.", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Could not set public key.", error_cleanup);
     }
     n = NULL; /* ownership transferred */
     e = NULL;
 
     *evpPublicKey = EVP_PKEY_new();
-    goto_if_null2(*evpPublicKey, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
+    goto_if_null2(*evpPublicKey, "Out of memory.", r, TSS2_BASE_RC_MEMORY, error_cleanup);
 
     /* Assign the parameters to the key */
     if (!EVP_PKEY_assign_RSA(*evpPublicKey, rsa)) {
         EVP_PKEY_free(*evpPublicKey);
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Assign rsa key", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Assign rsa key", error_cleanup);
     }
     rsa = NULL; /* ownership transferred */
 error_cleanup:
@@ -535,13 +535,13 @@ error_cleanup:
         || !OSSL_PARAM_BLD_push_BN(build, OSSL_PKEY_PARAM_RSA_N, n)
         || !OSSL_PARAM_BLD_push_uint32(build, OSSL_PKEY_PARAM_RSA_E, exp)
         || (params = OSSL_PARAM_BLD_to_param(build)) == NULL) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create rsa key parameters", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Create rsa key parameters", error_cleanup);
     }
 
     if ((ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL)) == NULL
         || EVP_PKEY_fromdata_init(ctx) <= 0
         || EVP_PKEY_fromdata(ctx, evpPublicKey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create rsa key", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Create rsa key", error_cleanup);
     }
 error_cleanup:
     OSSL_FREE(ctx, EVP_PKEY_CTX);
@@ -562,17 +562,17 @@ error_cleanup:
  *             OpenSSL
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if one of the parameters is NULL
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if one of the parameters is NULL
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_BASE_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
 static TSS2_RC
 ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey) {
     /* Check for NULL parameters */
-    return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(evpPublicKey, "evpPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(evpPublicKey, "evpPublicKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     TSS2_RC   r = TSS2_RC_SUCCESS;
     EC_GROUP *ecgroup = NULL;
@@ -612,12 +612,12 @@ ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
         break;
 #endif
     default:
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "ECC curve not implemented.");
+        return_error(TSS2_BASE_RC_BAD_VALUE, "ECC curve not implemented.");
     }
 
     /* Initialize the OpenSSL ECC key with its group */
     ecgroup = EC_GROUP_new_by_curve_name(curveId);
-    goto_if_null(ecgroup, "new EC group.", TSS2_FAPI_RC_GENERAL_FAILURE, error_cleanup);
+    goto_if_null(ecgroup, "new EC group.", TSS2_BASE_RC_GENERAL_FAILURE, error_cleanup);
 
     /* Set the ECC parameters in the OpenSSL key */
     x = BN_bin2bn(tpmPublicKey->publicArea.unique.ecc.x.buffer,
@@ -627,33 +627,33 @@ ossl_ecc_pub_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, EVP_PKEY **evpPublicKey)
                   tpmPublicKey->publicArea.unique.ecc.y.size, NULL);
 
     if (!x || !y) {
-        goto_error(r, TSS2_FAPI_RC_MEMORY, "Out of memory", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_MEMORY, "Out of memory", error_cleanup);
     }
 
     if ((ecPoint = EC_POINT_new(ecgroup)) == NULL
         || !EC_POINT_set_affine_coordinates_tss(ecgroup, ecPoint, x, y, NULL)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EC_POINT_set_affine_coordinates",
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "EC_POINT_set_affine_coordinates",
                    error_cleanup);
     }
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000
     ecKey = EC_KEY_new();
-    return_if_null(ecKey, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(ecKey, "Out of memory.", TSS2_BASE_RC_MEMORY);
 
     if (!EC_KEY_set_group(ecKey, ecgroup)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EC_KEY_set_group", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "EC_KEY_set_group", error_cleanup);
     }
 
     if (!EC_KEY_set_public_key(ecKey, ecPoint)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "EC_KEY_set_public_key", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "EC_KEY_set_public_key", error_cleanup);
     }
 
     *evpPublicKey = EVP_PKEY_new();
-    goto_if_null2(*evpPublicKey, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
+    goto_if_null2(*evpPublicKey, "Out of memory.", r, TSS2_BASE_RC_MEMORY, error_cleanup);
 
     if (!EVP_PKEY_assign_EC_KEY(*evpPublicKey, ecKey)) {
         EVP_PKEY_free(*evpPublicKey);
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Assign ecc key", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Assign ecc key", error_cleanup);
     }
     ecKey = NULL; /* ownership transferred */
 error_cleanup:
@@ -667,13 +667,13 @@ error_cleanup:
                == 0
         || !OSSL_PARAM_BLD_push_octet_string(build, OSSL_PKEY_PARAM_PUB_KEY, puboct, bsize)
         || (params = OSSL_PARAM_BLD_to_param(build)) == NULL) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create ecc key parameters", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Create ecc key parameters", error_cleanup);
     }
 
     if ((ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL)) == NULL
         || EVP_PKEY_fromdata_init(ctx) <= 0
         || EVP_PKEY_fromdata(ctx, evpPublicKey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create ecc key", error_cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Create ecc key", error_cleanup);
     }
 error_cleanup:
     EVP_PKEY_CTX_free(ctx);
@@ -698,18 +698,18 @@ error_cleanup:
  * @param[out] pemKeySize The size of pemKey in bytes
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
  * @retval TSS2_FAPI_BAD_REFERENCE if tpmPublicKey or pemKeySize are NULL
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_BASE_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_BASE_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
 TSS2_RC
 tss2_pub_pem_key_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, char **pemKey, int *pemKeySize) {
     /* Check for NULL parameters */
-    return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(pemKeySize, "pemKeySize is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(pemKeySize, "pemKeySize is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     EVP_PKEY *evpPublicKey = NULL;
     BIO      *bio = NULL;
@@ -717,31 +717,31 @@ tss2_pub_pem_key_from_tpm(const TPM2B_PUBLIC *tpmPublicKey, char **pemKey, int *
 
     /* Memory IO will be used for OSSL key conversion */
     bio = BIO_new(BIO_s_mem());
-    goto_if_null2(bio, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
+    goto_if_null2(bio, "Out of memory.", r, TSS2_BASE_RC_MEMORY, cleanup);
 
     if (tpmPublicKey->publicArea.type == TPM2_ALG_RSA) {
         r = ossl_rsa_pub_from_tpm(tpmPublicKey, &evpPublicKey);
     } else if (tpmPublicKey->publicArea.type == TPM2_ALG_ECC) {
         r = ossl_ecc_pub_from_tpm(tpmPublicKey, &evpPublicKey);
     } else {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid alg id.", cleanup);
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Invalid alg id.", cleanup);
     }
     goto_if_error(r, "Get ossl public key.", cleanup);
 
     if (!PEM_write_bio_PUBKEY(bio, evpPublicKey)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "PEM_write_bio_PUBKEY", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "PEM_write_bio_PUBKEY", cleanup);
     }
 
     /* Determine the size of the data written */
     *pemKeySize = BIO_get_mem_data(bio, pemKey);
     *pemKey = malloc(*pemKeySize + 1);
-    goto_if_null(*pemKey, "Out of memory.", TSS2_FAPI_RC_MEMORY, cleanup);
+    goto_if_null(*pemKey, "Out of memory.", TSS2_BASE_RC_MEMORY, cleanup);
     memset(*pemKey, 0, *pemKeySize + 1);
 
     /* Get the byte buffer written to the BIO object */
     int readSize = BIO_read(bio, *pemKey, *pemKeySize);
     if (readSize != *pemKeySize) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid BIO_read", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Invalid BIO_read", cleanup);
     }
 
 cleanup:
@@ -760,9 +760,9 @@ cleanup:
  * @param[out] tpmSignature The signature in the TPM format
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if signature or tpmSignature is NULL
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if signature or tpmSignature is NULL
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
  */
 static TSS2_RC
 ifapi_ecc_der_sig_to_tpm(const unsigned char *signature,
@@ -771,8 +771,8 @@ ifapi_ecc_der_sig_to_tpm(const unsigned char *signature,
                          TPMI_ALG_HASH        hashAlgorithm,
                          TPMT_SIGNATURE      *tpmSignature) {
     /* Check for NULL parameters */
-    return_if_null(signature, "signature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(tpmSignature, "tpmSignature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(signature, "signature is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(tpmSignature, "tpmSignature is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     /* Initialize the ECDSA signature components */
     ECDSA_SIG    *ecdsaSignature = NULL;
@@ -780,7 +780,7 @@ ifapi_ecc_der_sig_to_tpm(const unsigned char *signature,
     const BIGNUM *bns;
 
     d2i_ECDSA_SIG(&ecdsaSignature, &signature, (long)signatureSize);
-    return_if_null(ecdsaSignature, "Invalid DER signature", TSS2_FAPI_RC_GENERAL_FAILURE);
+    return_if_null(ecdsaSignature, "Invalid DER signature", TSS2_BASE_RC_GENERAL_FAILURE);
 
     ECDSA_SIG_get0(ecdsaSignature, &bnr, &bns);
 
@@ -805,9 +805,9 @@ ifapi_ecc_der_sig_to_tpm(const unsigned char *signature,
  * @param[out] tpmSignature The signature in the TPM format
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if signature or tpmSignature is NULL
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if signature or tpmSignature is NULL
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
  */
 static TSS2_RC
 ifapi_hmac_sig_to_tpm(const unsigned char *signature,
@@ -815,11 +815,11 @@ ifapi_hmac_sig_to_tpm(const unsigned char *signature,
                       TPMI_ALG_HASH        hashAlgorithm,
                       TPMT_SIGNATURE      *tpmSignature) {
     /* Check for NULL parameters */
-    return_if_null(signature, "signature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(tpmSignature, "tpmSignature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(signature, "signature is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(tpmSignature, "tpmSignature is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     if (tss2_hash_get_digest_size(hashAlgorithm) != signatureSize) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid HMAC size");
+        return_error(TSS2_BASE_RC_BAD_VALUE, "Invalid HMAC size");
     }
 
     tpmSignature->sigAlg = TPM2_ALG_HMAC;
@@ -841,10 +841,10 @@ ifapi_hmac_sig_to_tpm(const unsigned char *signature,
  * @param[out] tpmSignature The signature in TPM format
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if tpmPublic, signature or tpmSignature is NULL
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if tpmPublic, signature or tpmSignature is NULL
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
 TSS2_RC
@@ -854,9 +854,9 @@ tss2_der_sig_to_tpm(const TPMT_PUBLIC   *tpmPublic,
                     TPMI_ALG_HASH        hashAlgorithm,
                     TPMT_SIGNATURE      *tpmSignature) {
     /* Check for NULL parameters */
-    return_if_null(tpmPublic, "tpmPublic is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(signature, "signature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(tpmSignature, "tpmSignature is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(tpmPublic, "tpmPublic is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(signature, "signature is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(tpmSignature, "tpmSignature is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     /* Convert the signature */
     if (tpmPublic->type == TPM2_ALG_RSA) {
@@ -865,17 +865,17 @@ tss2_der_sig_to_tpm(const TPMT_PUBLIC   *tpmPublic,
             tpmSignature->signature.rsapss.hash = hashAlgorithm;
             tpmSignature->signature.rsapss.sig.size = signatureSize;
             if (signatureSize > sizeof(tpmSignature->signature.rsapss.sig.buffer))
-                return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid signature size.");
+                return_error(TSS2_BASE_RC_BAD_VALUE, "Invalid signature size.");
             memcpy(&tpmSignature->signature.rsapss.sig.buffer[0], signature, signatureSize);
         } else if (tpmPublic->parameters.rsaDetail.scheme.scheme == TPM2_ALG_RSASSA) {
             tpmSignature->sigAlg = TPM2_ALG_RSASSA;
             tpmSignature->signature.rsassa.hash = hashAlgorithm;
             tpmSignature->signature.rsassa.sig.size = signatureSize;
             if (signatureSize > sizeof(tpmSignature->signature.rsapss.sig.buffer))
-                return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid signature size.");
+                return_error(TSS2_BASE_RC_BAD_VALUE, "Invalid signature size.");
             memcpy(&tpmSignature->signature.rsassa.sig.buffer[0], signature, signatureSize);
         } else {
-            return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid RSA scheme.");
+            return_error(TSS2_BASE_RC_BAD_VALUE, "Invalid RSA scheme.");
         }
     } else if (tpmPublic->type == TPM2_ALG_ECC) {
         return ifapi_ecc_der_sig_to_tpm(signature, signatureSize, tpmPublic->unique.ecc.x.size,
@@ -884,7 +884,7 @@ tss2_der_sig_to_tpm(const TPMT_PUBLIC   *tpmPublic,
         return ifapi_hmac_sig_to_tpm(signature, signatureSize, hashAlgorithm, tpmSignature);
 
     } else {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid key tpye.");
+        return_error(TSS2_BASE_RC_BAD_VALUE, "Invalid key tpye.");
     }
     return TSS2_RC_SUCCESS;
 }
@@ -899,15 +899,15 @@ tss2_der_sig_to_tpm(const TPMT_PUBLIC   *tpmPublic,
  * @param[out] tpmPublic The public information of publicKey
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if profile, publicKey or tpmPublic is NULL
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if profile, publicKey or tpmPublic is NULL
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
  */
 static TSS2_RC
 get_rsa_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
     /* Check for NULL parameters */
-    return_if_null(publicKey, "publicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(tpmPublic, "tpmPublic is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(publicKey, "publicKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(tpmPublic, "tpmPublic is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     /* Extract the public information */
     TSS2_RC r = TSS2_RC_SUCCESS;
@@ -916,11 +916,11 @@ get_rsa_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     const BIGNUM *e = NULL, *n = NULL;
     RSA          *rsaKey = EVP_PKEY_get1_RSA(publicKey);
-    return_if_null(rsaKey, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(rsaKey, "Out of memory.", TSS2_BASE_RC_MEMORY);
 
     keySize = RSA_size(rsaKey);
     if (keySize > TPM2_MAX_RSA_KEY_BYTES) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Key size too large", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Key size too large", cleanup);
     }
     keyBits = keySize * 8;
     RSA_get0_key(rsaKey, &n, &e, NULL);
@@ -929,17 +929,17 @@ get_rsa_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
 
     keyBits = EVP_PKEY_get_bits(publicKey);
     if (keyBits == 0 || keyBits > TPM2_MAX_RSA_KEY_BYTES * 8) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Key size too large", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Key size too large", cleanup);
     }
     keySize = (keyBits + 7) / 8;
     if (!EVP_PKEY_get_bn_param(publicKey, OSSL_PKEY_PARAM_RSA_N, &n)
         || !EVP_PKEY_get_bn_param(publicKey, OSSL_PKEY_PARAM_RSA_E, &e)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Retrieve pubkey", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Retrieve pubkey", cleanup);
     }
 #endif
     tpmPublic->publicArea.unique.rsa.size = keySize;
     if (1 != ifapi_bn2binpad(n, &tpmPublic->publicArea.unique.rsa.buffer[0], keySize)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Write big num byte buffer", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Write big num byte buffer", cleanup);
     }
     tpmPublic->publicArea.parameters.rsaDetail.keyBits = keyBits;
     tpmPublic->publicArea.parameters.rsaDetail.exponent = BN_get_word(e);
@@ -964,17 +964,17 @@ cleanup:
  * @param[out] tpmPublic The public information of publicKey
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if profile, publicKey or tpmPublic is NULL
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if profile, publicKey or tpmPublic is NULL
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
 static TSS2_RC
 get_ecc_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
     /* Check for NULL parameters */
-    return_if_null(publicKey, "publicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(tpmPublic, "tpmPublic is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(publicKey, "publicKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(tpmPublic, "tpmPublic is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     /* Initialize variables that will contain the relevant information */
     TSS2_RC        r = TSS2_RC_SUCCESS;
@@ -987,7 +987,7 @@ get_ecc_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
     const EC_GROUP *ecGroup;
     const EC_POINT *publicPoint;
     EC_KEY         *ecKey = EVP_PKEY_get1_EC_KEY(publicKey);
-    return_if_null(ecKey, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(ecKey, "Out of memory.", TSS2_BASE_RC_MEMORY);
 
     /* Retrieve the relevant information and write it to tpmPublic */
     ecGroup = EC_KEY_get0_group(ecKey);
@@ -996,15 +996,15 @@ get_ecc_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
     ecKeySize = (EC_GROUP_get_degree(ecGroup) + 7) / 8;
 
     if (!(bnX = BN_new())) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create bignum", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Create bignum", cleanup);
     }
 
     if (!(bnY = BN_new())) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Create bignum", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Create bignum", cleanup);
     }
 
     if (1 != EC_POINT_get_affine_coordinates_tss(ecGroup, publicPoint, bnX, bnY, NULL)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Get affine coordinates", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Get affine coordinates", cleanup);
     }
 #else
     char curveName[80];
@@ -1021,10 +1021,10 @@ get_ecc_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
     tpmPublic->publicArea.unique.ecc.x.size = ecKeySize;
     tpmPublic->publicArea.unique.ecc.y.size = ecKeySize;
     if (1 != ifapi_bn2binpad(bnX, &tpmPublic->publicArea.unique.ecc.x.buffer[0], (int)ecKeySize)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Write big num byte buffer", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Write big num byte buffer", cleanup);
     }
     if (1 != ifapi_bn2binpad(bnY, &tpmPublic->publicArea.unique.ecc.y.buffer[0], (int)ecKeySize)) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Write big num byte buffer", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Write big num byte buffer", cleanup);
     }
     switch (curveId) {
     case NID_X9_62_prime192v1:
@@ -1048,7 +1048,7 @@ get_ecc_tpm2b_public_from_evp(EVP_PKEY *publicKey, TPM2B_PUBLIC *tpmPublic) {
         break;
 #endif
     default:
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Curve %i not implemented", cleanup, curveId);
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Curve %i not implemented", cleanup, curveId);
     }
     tpmPublic->publicArea.parameters.eccDetail.curveID = tpmCurveId;
 
@@ -1067,26 +1067,26 @@ cleanup:
  * @param[in] pemKey A byte buffer holding the PEM key to convert
  * @param[out] publicKey An EVP public key
  *
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if any of the parameters is NULL
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
- * @retval TSS2_FAPI_RC_BAD_VALUE if the PEM key could not be decoded
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if any of the parameters is NULL
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_BAD_VALUE if the PEM key could not be decoded
  */
 static TSS2_RC
 ifapi_get_evp_from_pem(const char *pemKey, EVP_PKEY **publicKey) {
     /* Check for NULL parameters */
-    return_if_null(pemKey, "pemKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(publicKey, "publicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(pemKey, "pemKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(publicKey, "publicKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     TSS2_RC r = TSS2_RC_SUCCESS;
     BIO    *bufio = NULL;
 
     /* Use BIO for conversion */
     bufio = BIO_new_mem_buf((void *)pemKey, (int)strlen(pemKey));
-    goto_if_null(bufio, "BIO buffer could not be allocated.", TSS2_FAPI_RC_MEMORY, cleanup);
+    goto_if_null(bufio, "BIO buffer could not be allocated.", TSS2_BASE_RC_MEMORY, cleanup);
 
     /* Convert the key */
     *publicKey = PEM_read_bio_PUBKEY(bufio, NULL, NULL, NULL);
-    goto_if_null(*publicKey, "PEM format could not be decoded.", TSS2_FAPI_RC_BAD_VALUE, cleanup);
+    goto_if_null(*publicKey, "PEM format could not be decoded.", TSS2_BASE_RC_BAD_VALUE, cleanup);
 cleanup:
     BIO_free(bufio);
     return r;
@@ -1101,9 +1101,9 @@ cleanup:
  * @retval TPM2_ALG_RSA if pemKey holds an RSA key
  * @retval TPM2_ALG_ECC if pemKey holds an ECC key
  * @retval TPM2_ALG_ERROR if the signature algorithm could not be determined
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_BASE_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_BASE_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_BASE_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
 TPM2_ALG_ID
@@ -1145,17 +1145,17 @@ cleanup:
  * @param[out] tpmPublic The public information of pemKey
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if profile, pemKey or tpmPublic is NULL
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if profile, pemKey or tpmPublic is NULL
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
 TSS2_RC
 ifapi_get_tpm2b_public_from_pem(const char *pemKey, TPM2B_PUBLIC *tpmPublic) {
     /* Check for NULL parameters */
-    return_if_null(pemKey, "pemKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(tpmPublic, "public is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(pemKey, "pemKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(tpmPublic, "public is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     TSS2_RC   r = TSS2_RC_SUCCESS;
     EVP_PKEY *publicKey = NULL;
@@ -1172,7 +1172,7 @@ ifapi_get_tpm2b_public_from_pem(const char *pemKey, TPM2B_PUBLIC *tpmPublic) {
         r = get_ecc_tpm2b_public_from_evp(publicKey, tpmPublic);
         goto_if_error(r, "Get public for ECC key.", cleanup);
     } else {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong key_type", cleanup);
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Wrong key_type", cleanup);
     }
 cleanup:
     OSSL_FREE(publicKey, EVP_PKEY);
@@ -1190,10 +1190,10 @@ cleanup:
  * @param[out] tpmPublic The public key of the certificate in TPM format.
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if certBuffer or pemCert is NULL
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
- * @retval TSS2_FAPI_RC_BAD_VALUE if the certificate is invalid
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if certBuffer or pemCert is NULL
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_BAD_VALUE if the certificate is invalid
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
  */
 TSS2_RC
 ifapi_cert_to_pem(const uint8_t *certBuffer,
@@ -1202,8 +1202,8 @@ ifapi_cert_to_pem(const uint8_t *certBuffer,
                   TPM2_ALG_ID   *certAlgorithmId,
                   TPM2B_PUBLIC  *tpmPublic) {
     /* Check for NULL parameters */
-    return_if_null(certBuffer, "certBuffer is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(pemCert, "pemCert is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(certBuffer, "certBuffer is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(pemCert, "pemCert is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     TSS2_RC   r = TSS2_RC_SUCCESS;
     X509     *cert = NULL;
@@ -1213,32 +1213,32 @@ ifapi_cert_to_pem(const uint8_t *certBuffer,
 
     if (!d2i_X509(&cert, (const unsigned char **)&certBuffer, (long)certBufferSize)) {
         LOGBLOB_ERROR(certBuffer, certBufferSize, "Bad certificate data");
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid certificate.");
+        return_error(TSS2_BASE_RC_GENERAL_FAILURE, "Invalid certificate.");
     }
     *pemCert = NULL;
 
     /* Memory IO will be used for OSSL key conversion */
     bio = BIO_new(BIO_s_mem());
-    return_if_null(bio, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(bio, "Out of memory.", TSS2_BASE_RC_MEMORY);
 
     if (!PEM_write_bio_X509(bio, cert)) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "PEM_write_bio_X509", cleanup);
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "PEM_write_bio_X509", cleanup);
     }
     /* Determine the size of the data written */
     pemCertSize = BIO_get_mem_data(bio, pemCert);
     *pemCert = malloc(pemCertSize + 1);
-    goto_if_null(pemCert, "Out of memory.", TSS2_FAPI_RC_MEMORY, cleanup);
+    goto_if_null(pemCert, "Out of memory.", TSS2_BASE_RC_MEMORY, cleanup);
 
     /* Get the byte buffer written to the BIO object */
     int readSize = BIO_read(bio, *pemCert, pemCertSize);
     if (readSize != pemCertSize) {
         SAFE_FREE(*pemCert);
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid BIO_read", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Invalid BIO_read", cleanup);
     }
     (*pemCert)[pemCertSize] = '\0';
 
     publicKey = X509_get_pubkey(cert);
-    goto_if_null(publicKey, "No public key in certificate.", TSS2_FAPI_RC_GENERAL_FAILURE, cleanup);
+    goto_if_null(publicKey, "No public key in certificate.", TSS2_BASE_RC_GENERAL_FAILURE, cleanup);
 
     if (EVP_PKEY_type(EVP_PKEY_id(publicKey)) == EVP_PKEY_RSA) {
         tpmPublic->publicArea.type = TPM2_ALG_RSA;
@@ -1250,7 +1250,7 @@ ifapi_cert_to_pem(const uint8_t *certBuffer,
         r = get_ecc_tpm2b_public_from_evp(publicKey, tpmPublic);
         goto_if_error(r, "Get public for ECC key.", cleanup);
     } else {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong key_type", cleanup);
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Wrong key_type", cleanup);
     }
 
     if (certAlgorithmId != NULL) {
@@ -1262,7 +1262,7 @@ ifapi_cert_to_pem(const uint8_t *certBuffer,
             *certAlgorithmId = TPM2_ALG_ECC;
             break;
         default:
-            goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong certificate (key type).", cleanup);
+            goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Wrong certificate (key type).", cleanup);
         }
     }
 cleanup:
@@ -1279,13 +1279,13 @@ cleanup:
  * @param[out] hashAlgorithm A suitable hash algorithm for the digest size
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_REFERENCE if hashAlgorithm is NULL
- * @retval TSS2_FAPI_RC_BAD_VALUE if the digest size is invalid
+ * @retval TSS2_BASE_RC_BAD_REFERENCE if hashAlgorithm is NULL
+ * @retval TSS2_BASE_RC_BAD_VALUE if the digest size is invalid
  */
 TSS2_RC
 ifapi_get_hash_alg_for_size(uint16_t size, TPMI_ALG_HASH *hashAlgorithm) {
     /* Check for NULL parameters */
-    return_if_null(hashAlgorithm, "hashAlgorithm is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(hashAlgorithm, "hashAlgorithm is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     /* Determine the hash algorithm */
     switch (size) {
@@ -1302,7 +1302,7 @@ ifapi_get_hash_alg_for_size(uint16_t size, TPMI_ALG_HASH *hashAlgorithm) {
         *hashAlgorithm = TPM2_ALG_SHA512;
         return TSS2_RC_SUCCESS;
     default:
-        return TSS2_FAPI_RC_BAD_VALUE;
+        return TSS2_BASE_RC_BAD_VALUE;
     }
 }
 
@@ -1337,10 +1337,10 @@ get_X509_from_pem(const char *pem_cert) {
  * @param[out] tpm_public The public information of the key in TPM format.
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_BAD_VALUE if the conversion fails.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if openssl errors occur.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_BASE_RC_BAD_VALUE if the conversion fails.
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if openssl errors occur.
+ * @retval TSS2_BASE_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_BASE_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ifapi_get_public_from_pem_cert(const char *pem_cert, TPM2B_PUBLIC *tpm_public) {
@@ -1349,10 +1349,10 @@ ifapi_get_public_from_pem_cert(const char *pem_cert, TPM2B_PUBLIC *tpm_public) {
     EVP_PKEY *public_key = NULL;
 
     cert = get_X509_from_pem(pem_cert);
-    return_if_null(cert, "Invalid certificate.", TSS2_FAPI_RC_BAD_VALUE);
+    return_if_null(cert, "Invalid certificate.", TSS2_BASE_RC_BAD_VALUE);
 
     public_key = X509_get_pubkey(cert);
-    goto_if_null(public_key, "No public key in certificate.", TSS2_FAPI_RC_GENERAL_FAILURE,
+    goto_if_null(public_key, "No public key in certificate.", TSS2_BASE_RC_GENERAL_FAILURE,
                  cleanup);
 
     if (EVP_PKEY_type(EVP_PKEY_id(public_key)) == EVP_PKEY_RSA) {
@@ -1365,7 +1365,7 @@ ifapi_get_public_from_pem_cert(const char *pem_cert, TPM2B_PUBLIC *tpm_public) {
         r = get_ecc_tpm2b_public_from_evp(public_key, tpm_public);
         goto_if_error(r, "Get public for ECC key.", cleanup);
     } else {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong key_type", cleanup);
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Wrong key_type", cleanup);
     }
 cleanup:
     OSSL_FREE(cert, X509);
@@ -1380,11 +1380,11 @@ cleanup:
  * @param[out] fingerprint The fingerprint digest.
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
  * @retval TSS2_FAPI_BAD_REFERENCE if tpmPublicKey or pemKeySize are NULL
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_BASE_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_BASE_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
 TSS2_RC
@@ -1392,7 +1392,7 @@ ifapi_get_tpm_key_fingerprint(const TPM2B_PUBLIC *tpmPublicKey,
                               TPMI_ALG_HASH       hashAlg,
                               TPM2B_DIGEST       *fingerprint) {
     /* Check for NULL parameters */
-    return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(tpmPublicKey, "tpmPublicKey is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     EVP_PKEY                  *evpPublicKey = NULL;
     TSS2_RC                    r = TPM2_RC_SUCCESS;
@@ -1404,7 +1404,7 @@ ifapi_get_tpm_key_fingerprint(const TPM2B_PUBLIC *tpmPublicKey,
 
     hashSize = tss2_hash_get_digest_size(hashAlg);
     if (!hashSize)
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    hashAlg);
 
     if (tpmPublicKey->publicArea.type == TPM2_ALG_RSA) {
@@ -1412,14 +1412,14 @@ ifapi_get_tpm_key_fingerprint(const TPM2B_PUBLIC *tpmPublicKey,
     } else if (tpmPublicKey->publicArea.type == TPM2_ALG_ECC) {
         r = ossl_ecc_pub_from_tpm(tpmPublicKey, &evpPublicKey);
     } else {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid alg id.", cleanup);
+        goto_error(r, TSS2_BASE_RC_BAD_VALUE, "Invalid alg id.", cleanup);
     }
     goto_if_error(r, "Get ossl public key.", cleanup);
 
     /* Convert the OpenSSL EVP pub key into DEF format */
     pubKeyDerSize = i2d_PUBKEY(evpPublicKey, &pubKeyDer);
     if (pubKeyDerSize == -1) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "OSSL error", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "OSSL error", cleanup);
     }
 
     /* Compute the digest of the DER public key */
@@ -1448,9 +1448,9 @@ cleanup:
  * @param[out] b64_data The base64 encoded string.
  *
  * @retval TSS2_RC_SUCCESS on success
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an error occurs in the crypto library
- * @retval TSS2_FAPI_RC_MEMORY if memory could not be allocated
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_BASE_RC_GENERAL_FAILURE if an error occurs in the crypto library
+ * @retval TSS2_BASE_RC_MEMORY if memory could not be allocated
+ * @retval TSS2_BASE_RC_BAD_REFERENCE a invalid null pointer is passed.
  */
 TSS2_RC
 tss2_base64encode(uint8_t *buffer, size_t buffer_size, char **b64_data) {
@@ -1461,29 +1461,29 @@ tss2_base64encode(uint8_t *buffer, size_t buffer_size, char **b64_data) {
     int      b64_size;
     int      bytes_written;
 
-    return_if_null(buffer, "Buffer to be encoded is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
-    return_if_null(b64_data, "Pointer to store the result is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
+    return_if_null(buffer, "Buffer to be encoded is NULL", TSS2_BASE_RC_BAD_REFERENCE);
+    return_if_null(b64_data, "Pointer to store the result is NULL", TSS2_BASE_RC_BAD_REFERENCE);
 
     /* Memory IO will be used for OSSL key conversion */
     bio64 = BIO_new(BIO_f_base64());
-    goto_if_null2(bio64, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
+    goto_if_null2(bio64, "Out of memory.", r, TSS2_BASE_RC_MEMORY, cleanup);
     bio = BIO_new(BIO_s_mem());
-    goto_if_null2(bio, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
+    goto_if_null2(bio, "Out of memory.", r, TSS2_BASE_RC_MEMORY, cleanup);
     bio = BIO_push(bio64, bio);
 
     BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
     bytes_written = BIO_write(bio, buffer, (int)buffer_size);
     if (bytes_written != (int)buffer_size) {
-        goto_error(r, TSS2_FAPI_RC_GENERAL_FAILURE, "Invalid BIO_write", cleanup);
+        goto_error(r, TSS2_BASE_RC_GENERAL_FAILURE, "Invalid BIO_write", cleanup);
     }
 
     (void)BIO_flush(bio);
     BIO_get_mem_ptr(bio, &b64_mem);
-    goto_if_null2(b64_mem, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
+    goto_if_null2(b64_mem, "Out of memory.", r, TSS2_BASE_RC_MEMORY, cleanup);
 
     b64_size = BIO_get_mem_data(bio, NULL);
     *b64_data = malloc(b64_size + 1);
-    goto_if_null(*b64_data, "Out of memory.", TSS2_FAPI_RC_MEMORY, cleanup);
+    goto_if_null(*b64_data, "Out of memory.", TSS2_BASE_RC_MEMORY, cleanup);
     memset(*b64_data, 0, b64_size + 1);
     memcpy(*b64_data, (*b64_mem).data, b64_size);
     BIO_free_all(bio);
@@ -1557,7 +1557,7 @@ load_RSA_key(EVP_PKEY *key, TPM2B_PUBLIC *pub, TPM2B_SENSITIVE *priv) {
 
     bool loaded_priv = load_private_RSA_from_key(key, priv);
     if (!loaded_priv) {
-        return TSS2_FAPI_RC_GENERAL_FAILURE;
+        return TSS2_BASE_RC_GENERAL_FAILURE;
     }
 
     rc = get_rsa_tpm2b_public_from_evp(key, pub);
@@ -1622,7 +1622,7 @@ load_ECC_key(EVP_PKEY *key, TPM2B_PUBLIC *pub, TPM2B_SENSITIVE *priv) {
     TSS2_RC rc = TSS2_RC_SUCCESS;
 
     if (!load_private_ECC_from_key(key, priv)) {
-        rc = TSS2_FAPI_RC_GENERAL_FAILURE;
+        rc = TSS2_BASE_RC_GENERAL_FAILURE;
         goto out;
     }
     rc = get_ecc_tpm2b_public_from_evp(key, pub);
@@ -1652,7 +1652,7 @@ ifapi_openssl_load_private(const char *pem_key,
 
     if (!bio) {
         LOG_ERROR("Error creating BIO.");
-        return TSS2_FAPI_RC_GENERAL_FAILURE;
+        return TSS2_BASE_RC_GENERAL_FAILURE;
     }
 
     key = PEM_read_bio_PrivateKey(bio, NULL, NULL, (void *)passin);
@@ -1660,7 +1660,7 @@ ifapi_openssl_load_private(const char *pem_key,
     if (!key) {
         LOG_ERROR("Creation of key from PEM string failed.");
         BIO_free_all(bio);
-        return TSS2_FAPI_RC_GENERAL_FAILURE;
+        return TSS2_BASE_RC_GENERAL_FAILURE;
     }
 
     switch (template->publicArea.type) {
@@ -1672,7 +1672,7 @@ ifapi_openssl_load_private(const char *pem_key,
         break;
     default:
         LOG_ERROR("Cannot handle algorithm, got: 0x%x", template->publicArea.type);
-        rc = TSS2_FAPI_RC_GENERAL_FAILURE;
+        rc = TSS2_BASE_RC_GENERAL_FAILURE;
     }
     BIO_free_all(bio);
     return rc;

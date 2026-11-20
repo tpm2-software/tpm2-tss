@@ -86,7 +86,7 @@ ifapi_profiles_initialize_async(IFAPI_PROFILES *profiles,
             ifapi_check_oom(profiles->profiles[i].name);
             /* Expand the filename with the directory */
             tmp = profiles->filenames[i];
-            r = ifapi_asprintf(&profiles->filenames[i], "%s/%s", profilesdir, tmp);
+            r = ifapi_call_base(ifapi_asprintf(&profiles->filenames[i], "%s/%s", profilesdir, tmp));
             return_if_error(r, "Out of memory");
 
             LOG_TRACE("Added profile-entry %s for file %s based on direntry %s",
@@ -336,7 +336,7 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
         LOG_ERROR("Field \"type\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPMI_ALG_PUBLIC_deserialize(jso2, &out->type);
+    r = ifapi_call_base(ifapi_json_TPMI_ALG_PUBLIC_deserialize(jso2, &out->type));
     return_if_error(r, "Bad value for field \"type\".");
 
     if (!ifapi_get_sub_object(jso, "srk_template", &jso2)) {
@@ -370,21 +370,22 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
     if (!ifapi_get_sub_object(jso, "ecc_signing_scheme", &jso2)) {
         memset(&out->ecc_signing_scheme, 0, sizeof(TPMT_SIG_SCHEME));
     } else {
-        r = ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->ecc_signing_scheme);
+        r = ifapi_call_base(ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->ecc_signing_scheme));
         return_if_error(r, "Bad value for field \"ecc_signing_scheme\".");
     }
 
     if (!ifapi_get_sub_object(jso, "rsa_signing_scheme", &jso2)) {
         memset(&out->rsa_signing_scheme, 0, sizeof(TPMT_SIG_SCHEME));
     } else {
-        r = ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->rsa_signing_scheme);
+        r = ifapi_call_base(ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->rsa_signing_scheme));
         return_if_error(r, "Bad value for field \"rsa_signing_scheme\".");
     }
 
     if (!ifapi_get_sub_object(jso, "rsa_decrypt_scheme", &jso2)) {
         memset(&out->rsa_decrypt_scheme, 0, sizeof(TPMT_RSA_DECRYPT));
     } else {
-        r = ifapi_json_TPMT_RSA_DECRYPT_deserialize(jso2, &out->rsa_decrypt_scheme);
+        r = ifapi_call_base(
+            ifapi_json_TPMT_RSA_DECRYPT_deserialize(jso2, &out->rsa_decrypt_scheme));
         return_if_error(r, "Bad value for field \"rsa_decrypt_scheme\".");
     }
 
@@ -392,35 +393,35 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
         LOG_ERROR("Field \"sym_mode\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPMI_ALG_CIPHER_MODE_deserialize(jso2, &out->sym_mode);
+    r = ifapi_call_base(ifapi_json_TPMI_ALG_CIPHER_MODE_deserialize(jso2, &out->sym_mode));
     return_if_error(r, "Bad value for field \"sym_mode\".");
 
     if (!ifapi_get_sub_object(jso, "sym_parameters", &jso2)) {
         LOG_ERROR("Field \"sym_parameters\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPMT_SYM_DEF_OBJECT_deserialize(jso2, &out->sym_parameters);
+    r = ifapi_call_base(ifapi_json_TPMT_SYM_DEF_OBJECT_deserialize(jso2, &out->sym_parameters));
     return_if_error(r, "Bad value for field \"sym_parameters\".");
 
     if (!ifapi_get_sub_object(jso, "sym_block_size", &jso2)) {
         LOG_ERROR("Field \"sym_block_size\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_UINT16_deserialize(jso2, &out->sym_block_size);
+    r = ifapi_call_base(ifapi_json_UINT16_deserialize(jso2, &out->sym_block_size));
     return_if_error(r, "Bad value for field \"sym_block_size\".");
 
     if (!ifapi_get_sub_object(jso, "pcr_selection", &jso2)) {
         LOG_ERROR("Field \"pcr_selection\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->pcr_selection);
+    r = ifapi_call_base(ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->pcr_selection));
     return_if_error(r, "Bad value for field \"pcr_selection\".");
 
     if (!ifapi_get_sub_object(jso, "nameAlg", &jso2)) {
         LOG_ERROR("Field \"nameAlg\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->nameAlg);
+    r = ifapi_call_base(ifapi_json_TPMI_ALG_HASH_deserialize(jso2, &out->nameAlg));
     return_if_error(r, "Bad value for field \"nameAlg\".");
 
     if (out->type == TPM2_ALG_RSA) {
@@ -428,13 +429,13 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
             LOG_ERROR("Field \"exponent\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
-        r = ifapi_json_UINT32_deserialize(jso2, &out->exponent);
+        r = ifapi_call_base(ifapi_json_UINT32_deserialize(jso2, &out->exponent));
         return_if_error(r, "Bad value for field \"exponent\".");
         if (!ifapi_get_sub_object(jso, "keyBits", &jso2)) {
             LOG_ERROR("Field \"keyBits\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
-        r = ifapi_json_TPMI_RSA_KEY_BITS_deserialize(jso2, &out->keyBits);
+        r = ifapi_call_base(ifapi_json_TPMI_RSA_KEY_BITS_deserialize(jso2, &out->keyBits));
         return_if_error(r, "Bad value for field \"keyBits\".");
 
     } else if (out->type == TPM2_ALG_ECC) {
@@ -442,14 +443,14 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
             LOG_ERROR("Field \"curveID\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
-        r = ifapi_json_TPMI_ECC_CURVE_deserialize(jso2, &out->curveID);
+        r = ifapi_call_base(ifapi_json_TPMI_ECC_CURVE_deserialize(jso2, &out->curveID));
         return_if_error(r, "Bad value for field \"curveID\".");
     }
 
     if (!ifapi_get_sub_object(jso, "session_symmetric", &jso2)) {
         out->session_symmetric = session_symmetric_default;
     } else {
-        r = ifapi_json_TPMT_SYM_DEF_deserialize(jso2, &out->session_symmetric);
+        r = ifapi_call_base(ifapi_json_TPMT_SYM_DEF_deserialize(jso2, &out->session_symmetric));
         return_if_error(r, "Bad value for field \"session_symmetric\".");
     }
 
@@ -481,26 +482,26 @@ ifapi_profile_json_deserialize(json_object *jso, IFAPI_PROFILE *out) {
     if (!ifapi_get_sub_object(jso, "newMaxTries", &jso2)) {
         out->newMaxTries = 5;
     } else {
-        r = ifapi_json_UINT32_deserialize(jso2, &out->newMaxTries);
+        r = ifapi_call_base(ifapi_json_UINT32_deserialize(jso2, &out->newMaxTries));
         return_if_error(r, "Bad value for field \"newMaxTries\".");
     }
 
     if (!ifapi_get_sub_object(jso, "newRecoveryTime", &jso2)) {
         out->newRecoveryTime = 1000;
     } else {
-        r = ifapi_json_UINT32_deserialize(jso2, &out->newRecoveryTime);
+        r = ifapi_call_base(ifapi_json_UINT32_deserialize(jso2, &out->newRecoveryTime));
         return_if_error(r, "Bad value for field \"newRecoveryTime\".");
     }
 
     if (!ifapi_get_sub_object(jso, "lockoutRecovery", &jso2)) {
         out->lockoutRecovery = 1000;
     } else {
-        r = ifapi_json_UINT32_deserialize(jso2, &out->lockoutRecovery);
+        r = ifapi_call_base(ifapi_json_UINT32_deserialize(jso2, &out->lockoutRecovery));
         return_if_error(r, "Bad value for field \"lockoutRecovery\".");
     }
 
     if (ifapi_get_sub_object(jso, "ignore_ek_template", &jso2)) {
-        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ignore_ek_template);
+        r = ifapi_call_base(ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ignore_ek_template));
         return_if_error(r, "Bad value for field \"ignore_ek_template\".");
 
     } else {

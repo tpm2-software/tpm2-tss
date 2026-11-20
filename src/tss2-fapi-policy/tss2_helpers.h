@@ -6,6 +6,12 @@
 #ifndef TSS2_HELPERS_H
 #define TSS2_HELPERS_H
 
+/* TSS2_RC helpers in this shared header return TSS2_BASE_RC_* for their own
+ * failures and preserve already-layered lower-level errors (for example MU).
+ * They do not issue TPM commands or call application callbacks. FAPI/Policy
+ * callers must add their layer immediately at the call site.
+ */
+
 #include <stdbool.h> // for bool
 #include <stddef.h>  // for size_t
 #include <stdint.h>  // for uint8_t
