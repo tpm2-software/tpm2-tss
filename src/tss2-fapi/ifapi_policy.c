@@ -273,6 +273,9 @@ ifapi_policy_get_authorization(const char        *policy,
                                const TPM2B_NONCE *policy_ref,
                                bool              *found,
                                TPMT_SIGNATURE    *signature) {
+    if (!found)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    *found = false;
     TSS2_POLICY_CTX *ctx = NULL;
     TSS2_RC          r = Tss2_PolicyInit(policy, TPM2_ALG_SHA256, &ctx);
     if (!r)

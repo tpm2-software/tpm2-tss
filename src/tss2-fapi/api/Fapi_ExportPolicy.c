@@ -324,5 +324,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     SAFE_FREE(command->path);
     context->state = FAPI_STATE_INIT;
+    if (rc_layer(r) == TSS2_POLICY_RC_LAYER)
+        r = TSS2_FEATURE_RC_LAYER | base_rc(r);
     return r;
 }

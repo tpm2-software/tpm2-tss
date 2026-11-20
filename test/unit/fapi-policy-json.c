@@ -170,11 +170,31 @@ test_calculation_error_keeps_string(void **state) {
     free(policy);
 }
 
+static void
+test_authorization_error_clears_found(void **state) {
+    (void)state;
+    TPMT_PUBLIC    key = { .type = TPM2_ALG_RSA };
+    TPMT_SIGNATURE signature = { .sigAlg = TPM2_ALG_NULL };
+    bool           found = true;
+    assert_int_equal(
+        ifapi_policy_get_authorization("{\"policy\":[]}", &key, NULL, &found, &signature),
+        TSS2_FAPI_RC_BAD_VALUE);
+    assert_false(found);
+    assert_int_equal(signature.sigAlg, TPM2_ALG_NULL);
+    found = true;
+    assert_int_equal(ifapi_policy_get_authorization(NULL, &key, NULL, &found, NULL),
+                     TSS2_FAPI_RC_BAD_REFERENCE);
+    assert_false(found);
+    assert_int_equal(ifapi_policy_get_authorization(policy_json, &key, NULL, NULL, NULL),
+                     TSS2_FAPI_RC_BAD_REFERENCE);
+}
+
 int
 main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_calculate_string),
         cmocka_unit_test(test_authorize_string),
+        cmocka_unit_test(test_authorization_error_clears_found),
         cmocka_unit_test(test_provision_profile_policy_strings),
         cmocka_unit_test(test_calculation_error_keeps_string),
     };
