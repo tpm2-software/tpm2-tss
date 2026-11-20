@@ -642,6 +642,13 @@ test_policy_json_api(void **state) {
     TPMS_POLICY *copy = NULL;
     char        *json = NULL;
     char        *json_copy = NULL;
+    /* Policy-owned validation must use the Policy layer, even when called internally. */
+    json_object *invalid_json = NULL;
+    assert_int_equal(ipolicy_json_TPMI_POLICYTYPE_serialize(UINT32_MAX, &invalid_json),
+                     TSS2_POLICY_RC_BAD_VALUE);
+    assert_null(invalid_json);
+    assert_int_equal(ipolicy_json_TPMS_POLICY_deserialize(NULL, NULL),
+                     TSS2_POLICY_RC_BAD_REFERENCE);
     assert_int_equal(ipolicy_json_deserialize(input, NULL), TSS2_POLICY_RC_BAD_REFERENCE);
     assert_int_equal(ipolicy_json_deserialize(NULL, &policy), TSS2_POLICY_RC_BAD_REFERENCE);
     assert_null(policy);

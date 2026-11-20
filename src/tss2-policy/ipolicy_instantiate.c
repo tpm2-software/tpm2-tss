@@ -42,7 +42,7 @@ ipolicy_pcr_selection_to_pcrvalues(TPML_PCR_SELECTION *pcr_selection,
     }
 
     TPML_PCRVALUES *pcr_values = calloc(1, sizeof(TPML_PCRVALUES) + n_pcrs * sizeof(TPMS_PCRVALUE));
-    return_if_null(pcr_values, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    return_if_null(pcr_values, "Out of memory.", TSS2_POLICY_RC_MEMORY);
     /* Initialize digest list with pcr values from TPM */
     i_pcr = 0;
     pcr_values->count = pcr_digests->count;
@@ -70,7 +70,7 @@ static TSS2_RC get_policy_elements(TPML_POLICYELEMENTS *policy,
                                    NODE_OBJECT_T      **policy_element_list);
 
 /** Compute linked list with a list of policy elements which could be instantiated.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list) {
@@ -78,7 +78,7 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
     size_t  i, j;
 
     if (!policy) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Bad policy pointer");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Bad policy pointer");
     }
 
     for (i = 0; i < policy->count; i++) {
@@ -112,7 +112,7 @@ error_cleanup:
  * @param[in] policy The policy to be instantiated.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval FAPI error codes on failure
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ipolicy_eval_instantiate_async(
@@ -137,11 +137,11 @@ ipolicy_eval_instantiate_async(
  * @param[out] name the name computed from the public information.
  * @param[in]  hash_alg The name alg of the key has to passed.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 set_pem_key_param(const char      *keyPEM,
@@ -173,7 +173,7 @@ set_pem_key_param(const char      *keyPEM,
             public.publicArea.parameters.rsaDetail.scheme.details.rsassa
                 = sigScheme->details.rsassa;
         } else {
-            return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid signing scheme.");
+            return_error(TSS2_POLICY_RC_BAD_VALUE, "Invalid signing scheme.");
         }
     }
 
@@ -189,12 +189,12 @@ set_pem_key_param(const char      *keyPEM,
 
 #define CHECK_TEMPLATE_PATH(path, template)                                                        \
     if (!(path)) {                                                                                 \
-        return_error2(TSS2_FAPI_RC_BAD_TEMPLATE, "No path for policy %s", template);               \
+        return_error2(TSS2_POLICY_RC_BAD_TEMPLATE, "No path for policy %s", template);             \
     }
 
 #define CHECK_CALLBACK(callback, name)                                                             \
     if (!(callback)) {                                                                             \
-        return_error2(TSS2_FAPI_RC_NULL_CALLBACK, "Callback %s was NULL", name)                    \
+        return_error2(TSS2_POLICY_RC_NULL_CALLBACK, "Callback %s was NULL", name)                  \
     }
 
 /** Finalize  instantiation a policy template.
@@ -204,21 +204,21 @@ set_pem_key_param(const char      *keyPEM,
  *
  * @param[in] context The context storing information for re-entry after try again.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the template is not complete for instantiation.
+ * @retval TSS2_POLICY_RC_BAD_TEMPLATE If the template is not complete for instantiation.
  * @retval FAPI error codes on failure
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ * @retval TSS2_POLICY_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
@@ -282,10 +282,11 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             size_t count = pol_element->element.PolicyNameHash.count;
 
             if (count == 0) {
-                return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyNameHash requires at least one name.");
+                return_error(TSS2_POLICY_RC_BAD_VALUE,
+                             "PolicyNameHash requires at least one name.");
             }
             if (count > 3) {
-                return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyNameHash count out of bounds.");
+                return_error(TSS2_POLICY_RC_BAD_VALUE, "PolicyNameHash count out of bounds.");
             }
 
             /* Set index of last name to be computed. */
@@ -298,7 +299,7 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
                 /* Not all object names have been computed or were initialized */
                 size_t i = pol_element->element.PolicyNameHash.i;
                 if (i >= count) {
-                    return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyNameHash index out of bounds.");
+                    return_error(TSS2_POLICY_RC_BAD_VALUE, "PolicyNameHash index out of bounds.");
                 }
 
                 r = context->callbacks.cbname(pol_element->element.PolicyNameHash.namePaths[i],

@@ -30,7 +30,7 @@
  * @param[in] current_hash_alg The hash algorithm used for computation.
  * @param[out] digest_list The list of policies computed for every branch.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE If no appropriate digest was found in
+ * @retval TSS2_POLICY_RC_BAD_VALUE If no appropriate digest was found in
  *         the branch list.
  */
 static TSS2_RC
@@ -42,7 +42,7 @@ compute_or_digest_list(TPML_POLICYBRANCHES *branches,
     bool   digest_found = false;
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        return_error2(TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
+        return_error2(TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
                       current_hash_alg);
     }
     /* Determine digest values with appropriate hash alg */
@@ -55,13 +55,13 @@ compute_or_digest_list(TPML_POLICYBRANCHES *branches,
         }
     }
     if (!digest_found) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "No digest found for hash alg");
+        return_error(TSS2_POLICY_RC_BAD_VALUE, "No digest found for hash alg");
     }
 
     digest_list->count = branches->count;
     for (i = 0; i < branches->count; i++) {
         if (i > 7) {
-            return_error(TSS2_FAPI_RC_BAD_VALUE, "Too much or branches.");
+            return_error(TSS2_POLICY_RC_BAD_VALUE, "Too much or branches.");
         }
         digest_list->digests[i].size = hash_size;
         memcpy(&digest_list->digests[i].buffer[0],
@@ -85,16 +85,16 @@ compute_or_digest_list(TPML_POLICYBRANCHES *branches,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 execute_policy_pcr(ESYS_CONTEXT     *esys_ctx,
@@ -146,11 +146,11 @@ execute_policy_pcr(ESYS_CONTEXT     *esys_ctx,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
 static TSS2_RC
@@ -164,7 +164,8 @@ execute_policy_duplicate(ESYS_CONTEXT                 *esys_ctx,
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
-        return_if_null(cb->cbdup, "Policy Duplicate Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
+        return_if_null(cb->cbdup, "Policy Duplicate Callback Not Set",
+                       TSS2_POLICY_RC_NULL_CALLBACK);
         r = cb->cbdup(&policy->objectName, cb->cbdup_userdata);
         return_if_error(r, "Get name for policy duplicate select.");
 
@@ -203,27 +204,27 @@ execute_policy_duplicate(ESYS_CONTEXT                 *esys_ctx,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ * @retval TSS2_POLICY_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
  */
@@ -243,7 +244,7 @@ execute_policy_nv(ESYS_CONTEXT *esys_ctx, TPMS_POLICYNV *policy, IPOLICY_EXEC_CT
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
 
         /* Authorize NV object. */
-        return_if_null(cb->cbauth, "Policy Auth Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
+        return_if_null(cb->cbauth, "Policy Auth Callback Not Set", TSS2_POLICY_RC_NULL_CALLBACK);
         r = cb->cbauth(&current_policy->name, &current_policy->object_handle,
                        &current_policy->auth_handle, &current_policy->auth_session,
                        cb->cbauth_userdata);
@@ -286,18 +287,18 @@ execute_policy_nv(ESYS_CONTEXT *esys_ctx, TPMS_POLICYNV *policy, IPOLICY_EXEC_CT
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
@@ -319,7 +320,7 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
         current_policy->buffer_size
             = sizeof(INT32) + sizeof(TPM2B_NONCE) + policy->cpHashA.size + policy->policyRef.size;
         current_policy->buffer = malloc(current_policy->buffer_size);
-        return_if_null(current_policy->buffer, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+        return_if_null(current_policy->buffer, "Out of memory.", TSS2_POLICY_RC_MEMORY);
 
         r = Esys_TRSess_GetNonceTPM(esys_ctx, current_policy->session, &current_policy->nonceTPM);
         return_if_error(r, "Get TPM nonce.");
@@ -358,7 +359,7 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
         }
 
         /* Callback for signing the autorization hash. */
-        goto_if_null(cb->cbsign, "Policy Sign Callback Not Set", TSS2_FAPI_RC_NOT_IMPLEMENTED,
+        goto_if_null(cb->cbsign, "Policy Sign Callback Not Set", TSS2_POLICY_RC_NOT_IMPLEMENTED,
                      cleanup);
         r = cb->cbsign(current_policy->pem_key, policy->publicKeyHint, policy->keyPEMhashAlg,
                        current_policy->buffer, current_policy->buffer_size, &signature_ossl,
@@ -374,7 +375,7 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
 
         if (policy->keyPublic.type == TPM2_ALG_KEYEDHASH) {
             current_policy->state = POLICY_LOAD_KEYEDHASH;
-            return TSS2_FAPI_RC_TRY_AGAIN;
+            return TSS2_POLICY_RC_TRY_AGAIN;
         }
 
         TPM2B_PUBLIC inPublic;
@@ -436,7 +437,7 @@ execute_policy_signed(ESYS_CONTEXT      *esys_ctx,
         goto_if_error(r, "Execute PolicySigned.", cleanup);
 
         current_policy->state = POLICY_EXECUTE_FINISH;
-        return TSS2_FAPI_RC_TRY_AGAIN;
+        return TSS2_POLICY_RC_TRY_AGAIN;
 
     statecasedefault(current_policy->state);
     }
@@ -474,19 +475,19 @@ cleanup:
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
@@ -494,9 +495,9 @@ cleanup:
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ * @retval TSS2_POLICY_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 static TSS2_RC
 execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
@@ -516,7 +517,7 @@ execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
 
     size_t hash_size;
     if (!(hash_size = tss2_hash_get_digest_size(hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_NULL_CALLBACK, "Unsupported hash algorithm (%" PRIu16 ")",
+        goto_error(r, TSS2_POLICY_RC_NULL_CALLBACK, "Unsupported hash algorithm (%" PRIu16 ")",
                    cleanup, hash_alg);
     }
 
@@ -526,7 +527,7 @@ execute_policy_authorize(ESYS_CONTEXT         *esys_ctx,
         /* Execute authorized policy. */
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
         goto_if_null(cb->cbauthpol, "Authorize Policy Callback Not Set",
-                     TSS2_FAPI_RC_NOT_IMPLEMENTED, cleanup);
+                     TSS2_POLICY_RC_NOT_IMPLEMENTED, cleanup);
         r = cb->cbauthpol(&policy->keyPublic, hash_alg, &policy->approvedPolicy, &policy->policyRef,
                           &policy->signature, cb->cbauthpol_userdata);
         return_try_again(r);
@@ -629,29 +630,29 @@ cleanup:
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ * @retval TSS2_POLICY_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 static TSS2_RC
 execute_policy_authorize_nv(ESYS_CONTEXT           *esys_ctx,
@@ -667,7 +668,7 @@ execute_policy_authorize_nv(ESYS_CONTEXT           *esys_ctx,
     switch (current_policy->state) {
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
     /* Execute the policy stored in the NV object. */
-        return_if_null(cb->cbauthnv, "Authorize NV Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
+        return_if_null(cb->cbauthnv, "Authorize NV Callback Not Set", TSS2_POLICY_RC_NULL_CALLBACK);
         r = cb->cbauthnv(&policy->nvPublic, hash_alg, cb->cbauthnv_userdata);
         try_again_or_error(r, "Execute policy authorize nv callback.");
 
@@ -677,7 +678,7 @@ execute_policy_authorize_nv(ESYS_CONTEXT           *esys_ctx,
 
     statecase(current_policy->state, POLICY_AUTH_CALLBACK)
     /* Authorize the NV object for policy execution. */
-        return_if_null(cb->cbauth, "Policy Auth Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
+        return_if_null(cb->cbauth, "Policy Auth Callback Not Set", TSS2_POLICY_RC_NULL_CALLBACK);
         r = cb->cbauth(&current_policy->name, &current_policy->object_handle,
                        &current_policy->auth_handle, &current_policy->auth_session,
                        cb->cbauth_userdata);
@@ -722,27 +723,27 @@ cleanup:
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occured while accessing the
+ * @retval TSS2_POLICY_RC_IO_ERROR if an error occured while accessing the
  *         object store.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occured.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occured.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
  */
@@ -758,7 +759,7 @@ execute_policy_secret(ESYS_CONTEXT      *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_INIT)
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
         /* Callback for the object authorization. */
-        return_if_null(cb->cbauth, "Policy Auth Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
+        return_if_null(cb->cbauth, "Policy Auth Callback Not Set", TSS2_POLICY_RC_NULL_CALLBACK);
         r = cb->cbauth(&policy->objectName, &current_policy->object_handle,
                        &current_policy->auth_handle, &current_policy->auth_session,
                        cb->cbauth_userdata);
@@ -831,9 +832,9 @@ cleanup:
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -874,9 +875,9 @@ execute_policy_counter_timer(ESYS_CONTEXT            *esys_ctx,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -916,9 +917,9 @@ execute_policy_physical_presence(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *curre
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -959,9 +960,9 @@ execute_policy_auth_value(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_poli
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -1000,9 +1001,9 @@ execute_policy_password(ESYS_CONTEXT *esys_ctx, IPOLICY_EXEC_CTX *current_policy
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -1045,9 +1046,9 @@ execute_policy_command_code(ESYS_CONTEXT           *esys_ctx,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -1088,9 +1089,9 @@ execute_policy_name_hash(ESYS_CONTEXT        *esys_ctx,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -1140,9 +1141,9 @@ execute_policy_cp_hash(ESYS_CONTEXT      *esys_ctx,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -1185,9 +1186,9 @@ execute_policy_locality(ESYS_CONTEXT        *esys_ctx,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -1230,12 +1231,12 @@ execute_policy_nv_written(ESYS_CONTEXT         *esys_ctx,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
 static TSS2_RC
@@ -1253,7 +1254,7 @@ execute_policy_or(ESYS_CONTEXT     *esys_ctx,
         if (policy->branches->count < 2) {
             LOG_ERROR("At least 2 branches are required for policy or, but only got %u",
                       policy->branches->count);
-            return TSS2_FAPI_RC_BAD_VALUE;
+            return TSS2_POLICY_RC_BAD_VALUE;
         }
         r = compute_or_digest_list(policy->branches, current_hash_alg,
                                    &current_policy->digest_list);
@@ -1287,12 +1288,12 @@ execute_policy_or(ESYS_CONTEXT     *esys_ctx,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
  */
 static TSS2_RC
@@ -1307,7 +1308,8 @@ execute_policy_action(ESYS_CONTEXT      *esys_ctx,
     statecase(current_policy->state, POLICY_EXECUTE_INIT);
         TSS2_POLICY_EXEC_CALLBACKS *cb = &current_policy->callbacks;
 
-        return_if_null(cb->cbaction, "Policy Action Callback Not Set", TSS2_FAPI_RC_NULL_CALLBACK);
+        return_if_null(cb->cbaction, "Policy Action Callback Not Set",
+                       TSS2_POLICY_RC_NULL_CALLBACK);
         /* Execute the callback and try it again if the callback is not finished. */
         r = cb->cbaction(policy->action, cb->cbaction_userdata);
         try_again_or_error(r, "Execute policy action callback.");
@@ -1327,9 +1329,9 @@ execute_policy_action(ESYS_CONTEXT      *esys_ctx,
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  */
@@ -1402,26 +1404,26 @@ cleanup:
  * @param[in,out] current_policy The policy context which stores the state
  *                of the policy execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ * @retval TSS2_POLICY_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN if policy search for a certain policy digest
  *         was not successful.
  */
@@ -1519,7 +1521,7 @@ execute_policy_element(ESYS_CONTEXT       *esys_ctx,
         break;
 
     default:
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Policy not implemented");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Policy not implemented");
     }
 
     /* All policies executed successfully */
@@ -1532,11 +1534,11 @@ error:
  * To simplify asynchronous policy execution a linked list of the policy structures
  * needed for execution based on the result of the  branch selection callbacks
  * is computed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 static TSS2_RC
 compute_policy_list(IPOLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *elements) {
@@ -1553,20 +1555,20 @@ compute_policy_list(IPOLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *elements) {
             const char *branch_names[8] = { 0 };
 
             if (branches->count > 8)
-                return_error2(TSS2_FAPI_RC_AUTHORIZATION_FAILED, "Invalid branch count.");
+                return_error2(TSS2_POLICY_RC_AUTHORIZATION_FAILED, "Invalid branch count.");
 
             for (j = 0; j < branches->count; j++)
                 branch_names[j] = branches->authorizations[j].name;
 
             return_if_null(pol_ctx->callbacks.cbpolsel, "Policy Select Callback Not Set",
-                           TSS2_FAPI_RC_NULL_CALLBACK);
+                           TSS2_POLICY_RC_NULL_CALLBACK);
             r = pol_ctx->callbacks.cbpolsel(pol_ctx->policy->description, branch_names,
                                             branches->count, &branch_idx,
                                             pol_ctx->callbacks.cbpolsel_userdata);
             return_if_error(r, "Select policy branch.");
 
             if (branch_idx >= branches->count) {
-                return_error2(TSS2_FAPI_RC_AUTHORIZATION_FAILED, "Invalid branch number.");
+                return_error2(TSS2_POLICY_RC_AUTHORIZATION_FAILED, "Invalid branch number.");
             }
 
             or_elements = branches->authorizations[branch_idx].policy;
@@ -1587,14 +1589,14 @@ compute_policy_list(IPOLICY_EXEC_CTX *pol_ctx, TPML_POLICYELEMENTS *elements) {
  *                be used to store computed parameters needed for policy
  *                execution.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN If the callback for branch selection is
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN If the callback for branch selection is
  *         not defined. This callback will be needed if or policies have to be
  *         executed.
- * @retval TSS2_FAPI_RC_BAD_VALUE If the computed branch index delivered by the
+ * @retval TSS2_POLICY_RC_BAD_VALUE If the computed branch index delivered by the
  *         callback does not identify a branch.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  */
 TSS2_RC
 ipolicy_policyeval_execute_prepare(IPOLICY_EXEC_CTX *pol_ctx,
@@ -1617,25 +1619,25 @@ ipolicy_policyeval_execute_prepare(IPOLICY_EXEC_CTX *pol_ctx,
  * @param[in] do_flush True to flush session on error, false to not flush.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_MEMORY: if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE If wrong values are detected during execution.
- * @retval TSS2_FAPI_RC_IO_ERROR If an error occurs during access to the policy
+ * @retval TSS2_POLICY_RC_MEMORY: if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_BAD_VALUE If wrong values are detected during execution.
+ * @retval TSS2_POLICY_RC_IO_ERROR If an error occurs during access to the policy
  *         store.
  * @retval TSS2_FAPI_RC_POLICY_UNKNOWN If policy search for a certain policy digest was
  *         not successful.
- * @retval TSS2_FAPI_RC_BAD_TEMPLATE In a invalid policy is loaded during execution.
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_BAD_TEMPLATE In a invalid policy is loaded during execution.
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN if a required authorization callback
  *         is not set.
- * @retval TSS2_FAPI_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
+ * @retval TSS2_POLICY_RC_AUTHORIZATION_FAILED if the authorization attempt fails.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_BAD_PATH if the path is used in inappropriate context
  *         or contains illegal characters.

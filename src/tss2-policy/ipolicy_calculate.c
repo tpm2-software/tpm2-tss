@@ -33,7 +33,7 @@
  * @param[in] hashAlg The hash algorithm to be searched.
  * @param[out] idx The index of the found digest.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE If no appropriate digest was found in
+ * @retval TSS2_POLICY_RC_BAD_VALUE If no appropriate digest was found in
  *         the digest list.
  */
 static TSS2_RC
@@ -48,7 +48,7 @@ get_policy_digest_idx(TPML_DIGEST_VALUES *digest_values, TPMI_ALG_HASH hashAlg, 
     }
 
     if (i >= TPM2_NUM_PCR_BANKS) {
-        return_error(TSS2_FAPI_RC_BAD_VALUE, "Table overflow");
+        return_error(TSS2_POLICY_RC_BAD_VALUE, "Table overflow");
     }
     digest_values->digests[i].hashAlg = hashAlg;
     memset(&digest_values->digests[i].digest, 0, sizeof(TPMU_HA));
@@ -108,11 +108,11 @@ log_policy_digest(TPML_DIGEST_VALUES *dest MAYBE_UNUSED,
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 compute_policy_pcr(TPMS_POLICYPCR     *policy,
@@ -128,7 +128,7 @@ compute_policy_pcr(TPMS_POLICYPCR     *policy,
     LOG_TRACE("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -179,10 +179,10 @@ cleanup:
  * @param[in,out] digest The policy digest which will be extended.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
 static TSS2_RC
@@ -240,11 +240,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_signed(TPMS_POLICYSIGNED  *policy,
@@ -257,7 +257,7 @@ calculate_policy_signed(TPMS_POLICYSIGNED  *policy,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -284,11 +284,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 calculate_policy_authorize_nv(TPMS_POLICYAUTHORIZENV *policy,
@@ -309,7 +309,7 @@ calculate_policy_authorize_nv(TPMS_POLICYAUTHORIZENV *policy,
     return_if_error(r, "Compute NV name");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -335,11 +335,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_duplicate(TPMS_POLICYDUPLICATIONSELECT *policy,
@@ -353,7 +353,7 @@ calculate_policy_duplicate(TPMS_POLICYDUPLICATIONSELECT *policy,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -403,11 +403,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_authorize(TPMS_POLICYAUTHORIZE *policy,
@@ -420,7 +420,7 @@ calculate_policy_authorize(TPMS_POLICYAUTHORIZE *policy,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -451,11 +451,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_secret(TPMS_POLICYSECRET  *policy,
@@ -468,7 +468,7 @@ calculate_policy_secret(TPMS_POLICYSECRET  *policy,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -498,11 +498,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_counter_timer(TPMS_POLICYCOUNTERTIMER *policy,
@@ -517,7 +517,7 @@ calculate_policy_counter_timer(TPMS_POLICYCOUNTERTIMER *policy,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -567,11 +567,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_simple_policy(TPM2_CC             command_code1,
@@ -586,7 +586,7 @@ calculate_simple_policy(TPM2_CC             command_code1,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -624,11 +624,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_physical_presence(TPML_DIGEST_VALUES *current_digest,
@@ -652,11 +652,11 @@ calculate_policy_physical_presence(TPML_DIGEST_VALUES *current_digest,
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_auth_value(TPML_DIGEST_VALUES *current_digest, TPMI_ALG_HASH current_hash_alg) {
@@ -678,11 +678,11 @@ calculate_policy_auth_value(TPML_DIGEST_VALUES *current_digest, TPMI_ALG_HASH cu
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_password(TPML_DIGEST_VALUES *current_digest, TPMI_ALG_HASH current_hash_alg) {
@@ -707,11 +707,11 @@ calculate_policy_password(TPML_DIGEST_VALUES *current_digest, TPMI_ALG_HASH curr
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_command_code(TPMS_POLICYCOMMANDCODE *policy,
@@ -736,11 +736,11 @@ calculate_policy_command_code(TPMS_POLICYCOMMANDCODE *policy,
  * @param[in] command_code The compute of the command which did compute the digest.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_digest_hash(TPM2B_DIGEST       *digest,
@@ -755,7 +755,7 @@ calculate_policy_digest_hash(TPM2B_DIGEST       *digest,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -790,11 +790,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_name_hash(TPMS_POLICYNAMEHASH *policy,
@@ -808,7 +808,7 @@ calculate_policy_name_hash(TPMS_POLICYNAMEHASH *policy,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -848,11 +848,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_cp_hash(TPMS_POLICYCPHASH  *policy,
@@ -876,11 +876,11 @@ calculate_policy_cp_hash(TPMS_POLICYCPHASH  *policy,
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_locality(TPMS_POLICYLOCALITY *policy,
@@ -894,7 +894,7 @@ calculate_policy_locality(TPMS_POLICYLOCALITY *policy,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -928,11 +928,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_nv_written(TPMS_POLICYNVWRITTEN *policy,
@@ -946,7 +946,7 @@ calculate_policy_nv_written(TPMS_POLICYNVWRITTEN *policy,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -982,10 +982,10 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
  */
 static TSS2_RC
@@ -1061,11 +1061,11 @@ cleanup:
  * @param[in] digest_idx The index of the current policy in the passed digest list.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 calculate_policy_or(TPMS_POLICYOR      *policyOr,
@@ -1142,11 +1142,11 @@ cleanup:
  * @param[in] current_hash_alg The hash algorithm used for the policy computation.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
@@ -1167,7 +1167,7 @@ calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
     LOG_DEBUG("call");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
-        goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
+        goto_error(r, TSS2_POLICY_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")", cleanup,
                    current_hash_alg);
     }
 
@@ -1226,11 +1226,11 @@ cleanup:
  * @param[in] digest_idx The index of the current policy in the passed digest list.
  *
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
 ipolicy_calculate_policy(TPML_POLICYELEMENTS *policy,
@@ -1367,7 +1367,7 @@ ipolicy_calculate_policy(TPML_POLICYELEMENTS *policy,
             break;
 
         default:
-            return_error(TSS2_FAPI_RC_BAD_VALUE, "Policy not implemented");
+            return_error(TSS2_POLICY_RC_BAD_VALUE, "Policy not implemented");
         }
 
         copy_policy_digest(policyDigests, &policy->elements[i].policyDigests, digest_idx, hash_size,

@@ -15,6 +15,10 @@
 
 #define TSS2_POLICY_RC_GENERAL_FAILURE                                                             \
     ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_GENERAL_FAILURE))
+#define TSS2_POLICY_RC_NOT_IMPLEMENTED                                                             \
+    ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_NOT_IMPLEMENTED))
+#define TSS2_POLICY_RC_AUTHORIZATION_FAILED                                                        \
+    ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_AUTHORIZATION_FAILED))
 #define TSS2_POLICY_RC_IO_ERROR ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_IO_ERROR))
 #define TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN                                                       \
     ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_AUTHORIZATION_UNKNOWN))
