@@ -168,7 +168,7 @@ Fapi_NvIncrement_Async(FAPI_CONTEXT *context, char const *nvPath) {
 
     /* Copy parameters to context for use during _Finish. */
     memset(&context->nv_cmd, 0, sizeof(IFAPI_NV_Cmds));
-    strdup_check(command->nvPath, nvPath, r, error_cleanup);
+    ifapi_strdup_check(command->nvPath, nvPath, r, error_cleanup);
 
     command->rdata = NULL;
 
@@ -245,7 +245,7 @@ Fapi_NvIncrement_Finish(FAPI_CONTEXT *context) {
                                   error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         if (object->objectType != IFAPI_NV_OBJ)
@@ -285,7 +285,7 @@ Fapi_NvIncrement_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_INCREMENT_WAIT_FOR_SESSION)
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       object->misc.nv.public.nvPublic.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         fallthrough;
@@ -293,7 +293,7 @@ Fapi_NvIncrement_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_INCREMENT_AUTHORIZE)
     /* Authorize the session for accessing the NV-index. */
         r = ifapi_authorize_object(context, authObject, &auth_session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Authorize NV object.", error_cleanup);
 
         /* Prepare increment */
@@ -305,7 +305,7 @@ Fapi_NvIncrement_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, NV_INCREMENT_AUTH_SENT)
         r = Esys_NV_Increment_Finish(context->esys);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "FAPI NV_Increment_Finish", error_cleanup);
 
         if (context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes & TPMA_NV_WRITTEN
@@ -332,18 +332,18 @@ Fapi_NvIncrement_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_INCREMENT_WRITE)
     /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
         fallthrough;
 
     statecase(context->state, NV_INCREMENT_CLEANUP)
     /* Cleanup the authorization session. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

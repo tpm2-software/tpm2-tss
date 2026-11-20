@@ -219,14 +219,14 @@ Fapi_GetPlatformCertificates_Finish(FAPI_CONTEXT *context,
         /* Retrieve the certificates from the TPM's NV space. */
         r = ifapi_get_certificates(context, MIN_PLATFORM_CERT_HANDLE, MAX_PLATFORM_CERT_HANDLE,
                                    certificates, certificatesSize);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Get certificates.", error);
 
         if (*certificatesSize == 0) {
             goto_error(r, TSS2_FAPI_RC_NO_CERT, "No platform certificates available.", error);
         }
         break;
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
     /* Cleanup any intermediate results and state stored in the context. */

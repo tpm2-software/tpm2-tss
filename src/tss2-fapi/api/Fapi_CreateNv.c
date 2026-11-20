@@ -211,10 +211,10 @@ Fapi_CreateNv_Async(FAPI_CONTEXT *context,
     } else {
         auth->size = 0;
     }
-    strdup_check(nvCmd->nvPath, path, r, error_cleanup);
+    ifapi_strdup_check(nvCmd->nvPath, path, r, error_cleanup);
     nvCmd->numBytes = size;
     nvCmd->nv_object.objectType = IFAPI_NV_OBJ;
-    strdup_check(miscNv->policyInstance, policyPath, r, error_cleanup);
+    ifapi_strdup_check(miscNv->policyInstance, policyPath, r, error_cleanup);
 
     /* Set the flags of the NV index to be created. If no type is given the empty-string
        default type flags are set. */
@@ -324,7 +324,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, NV_CREATE_READ_HIERARCHY)
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &nvCmd->auth_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "read_finish failed", error_cleanup);
 
         /* Initialize the esys object for the hierarchy. */
@@ -345,7 +345,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
             /* Calculate the policy as read for the keystore. */
             r = ifapi_calculate_tree(context, miscNv->policyInstance, nvCmdPolicy,
                                      miscNv->public.nvPublic.nameAlg, &digest);
-            return_try_again(r);
+            ifapi_return_try_again(r);
 
             goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
                            context->cmd.Key_Create.policyPath);
@@ -375,7 +375,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_CREATE_FIND_INDEX)
     /* Get nv index if not already defined. */
         r = ifapi_get_free_handle_finish(context, &publicInfo->nvPublic.nvIndex, nvCmd->maxNvIndex);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "FAPI get handle index.", error_cleanup);
 
         fallthrough;
@@ -391,7 +391,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_CREATE_WAIT_FOR_SESSION)
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         fallthrough;
@@ -410,7 +410,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, NV_CREATE_AUTH_SENT)
         r = Esys_NV_DefineSpace_Finish(context->esys, &nvHandle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         goto_if_error_reset_state(r, "FAPI CreateWithTemplate_Finish", error_cleanup);
 
@@ -447,7 +447,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_CREATE_WRITE)
     /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         break;
@@ -455,7 +455,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_CREATE_CHECK_EXISTING)
         r = ifapi_check_existing_nv(context, publicInfo->nvPublic.nvIndex, &nv_exists,
                                     &nvCmd->nv_object.public.handle, &existing_nv_public);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "checking whether nv index exists failed");
 
         if (nv_exists) {
@@ -504,7 +504,7 @@ Fapi_CreateNv_Finish(FAPI_CONTEXT *context) {
         }
         return TSS2_FAPI_RC_TRY_AGAIN;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
     context->state = FAPI_STATE_INIT;

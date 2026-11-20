@@ -178,7 +178,7 @@ Fapi_GetAppData_Finish(FAPI_CONTEXT *context, uint8_t **appData, size_t *appData
     switch (context->state) {
     statecase(context->state, PATH_GET_DESCRIPTION_READ);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         /* Get the application data from the metadata objects. */
@@ -209,7 +209,7 @@ Fapi_GetAppData_Finish(FAPI_CONTEXT *context, uint8_t **appData, size_t *appData
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:

@@ -4,6 +4,7 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include "ipolicy_macros.h"
 #include "tss2_common.h"
 #include "tss2_crypto.h"
 #ifdef HAVE_CONFIG_H
@@ -17,7 +18,7 @@
 #include "ipolicy_instantiate.h"
 #include "tss2_helpers.h"    // for tss2_free_node_list
 #include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
-#include "util/aux_util.h"   // for return_error2, return_try_again
+#include "util/aux_util.h"   // for return_error2, ipolicy_return_try_again
 
 #include "ipolicy_types.h" // for policy element definitions
 
@@ -266,7 +267,7 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             r = context->callbacks.cbpublic(pol_element->element.PolicySigned.keyPath,
                                             &pol_element->element.PolicySigned.keyPublic,
                                             context->callbacks.cbpublic_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
             r = ifapi_get_name(&pol_element->element.PolicySigned.keyPublic,
@@ -305,7 +306,7 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
                 r = context->callbacks.cbname(pol_element->element.PolicyNameHash.namePaths[i],
                                               &pol_element->element.PolicyNameHash.objectNames[i],
                                               context->callbacks.cbname_userdata);
-                return_try_again(r);
+                ipolicy_return_try_again(r);
                 return_if_error(r, "get object name.");
                 pol_element->element.PolicyNameHash.i++;
                 SAFE_FREE(pol_element->element.PolicyNameHash.namePaths[i]);
@@ -325,7 +326,7 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             r = context->callbacks.cbname(pol_element->element.PolicySecret.objectPath,
                                           &pol_element->element.PolicySecret.objectName,
                                           context->callbacks.cbname_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
             SAFE_FREE(pol_element->element.PolicySecret.objectPath);
             break;
@@ -346,7 +347,7 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             /* Current values of PCRs will be used for policy */
             r = context->callbacks.cbpcr(&s, &out_pcrselect, &out_digests,
                                          context->callbacks.cbpcr_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
             r = ipolicy_pcr_selection_to_pcrvalues(&out_pcrselect, &out_digests,
@@ -371,7 +372,7 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             r = context->callbacks.cbnvpublic(
                 pol_element->element.PolicyNV.nvPath, pol_element->element.PolicyNV.nvIndex,
                 &pol_element->element.PolicyNV.nvPublic, context->callbacks.cbnvpublic_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
             pol_element->element.PolicyNV.nvIndex = pol_element->element.PolicyNV.nvPublic.nvIndex;
@@ -403,7 +404,7 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
                 pol_element->element.PolicyDuplicationSelect.newParentPath,
                 &pol_element->element.PolicyDuplicationSelect.newParentPublic,
                 context->callbacks.cbpublic_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
             r = ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
@@ -429,7 +430,7 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             r = context->callbacks.cbnvpublic(pol_element->element.PolicyAuthorizeNv.nvPath, 0,
                                               &pol_element->element.PolicyAuthorizeNv.nvPublic,
                                               context->callbacks.cbnvpublic_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
             /* Clear NV path, only public data will be needed */
             SAFE_FREE(pol_element->element.PolicyAuthorizeNv.nvPath);
@@ -469,7 +470,7 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             r = context->callbacks.cbpublic(pol_element->element.PolicyAuthorize.keyPath,
                                             &pol_element->element.PolicyAuthorize.keyPublic,
                                             context->callbacks.cbpublic_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
             /* Compute key name from public info */

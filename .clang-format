@@ -26,4 +26,6 @@ Macros:
 - statecase(VAR, STATE)=case 0:{}
 - general_failure(VAR)=default:{}
 - statecasedefault(VAR)=default:{}
+- ifapi_statecasedefault(VAR)=default:{}
+- ipolicy_statecasedefault(VAR)=default:{}
 - statecasedefault_error(VAR, r, label)=default:{}

@@ -234,7 +234,7 @@ Fapi_VerifySignature_Finish(FAPI_CONTEXT *context) {
     IFAPI_Key_VerifySignature *command = &context->cmd.Key_VerifySignature;
 
     r = ifapi_keystore_load_finish(&context->keystore, &context->io, &command->key_object);
-    return_try_again(r);
+    ifapi_return_try_again(r);
     return_if_error_reset_state(r, "read_finish failed");
 
     /* Verify the signature using a helper that tests all known signature schemes. */

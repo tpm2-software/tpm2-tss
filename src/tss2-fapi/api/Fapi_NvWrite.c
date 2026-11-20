@@ -176,7 +176,7 @@ Fapi_NvWrite_Async(FAPI_CONTEXT *context, char const *nvPath, uint8_t const *dat
     command->data = NULL;
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->nvPath, nvPath, r, error_cleanup);
+    ifapi_strdup_check(command->nvPath, nvPath, r, error_cleanup);
 
     commandData = malloc(size);
     goto_if_null2(commandData, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
@@ -249,7 +249,7 @@ Fapi_NvWrite_Finish(FAPI_CONTEXT *context) {
         r = ifapi_nv_write(context, command->nvPath, command->offset, command->data,
                            command->numBytes);
 
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI NV Write", error_cleanup);
 
         fallthrough;
@@ -257,11 +257,11 @@ Fapi_NvWrite_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_WRITE_CLEANUP)
     /* Cleanup the authorization session. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

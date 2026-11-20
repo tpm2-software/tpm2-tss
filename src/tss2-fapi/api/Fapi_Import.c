@@ -174,7 +174,7 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
     }
 
     command->jso_string = NULL;
-    strdup_check(command->out_path, path, r, cleanup_error);
+    ifapi_strdup_check(command->out_path, path, r, cleanup_error);
     memset(&command->object, 0, sizeof(IFAPI_OBJECT));
     memset(&command->public_templ, 0, sizeof(IFAPI_KEY_TEMPLATE));
     command->ossl_priv = NULL;
@@ -183,7 +183,7 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
 
     if (strncmp(importData, IFAPI_PEM_PUBLIC_STRING, sizeof(IFAPI_PEM_PUBLIC_STRING) - 1) == 0) {
         object->objectType = IFAPI_EXT_PUB_KEY_OBJ;
-        strdup_check(extPubKey->pem_ext_public, importData, r, cleanup_error);
+        ifapi_strdup_check(extPubKey->pem_ext_public, importData, r, cleanup_error);
         extPubKey->certificate = NULL;
 
         TPM2_ALG_ID rsaOrEcc = ifapi_get_signature_algorithm_from_pem(extPubKey->pem_ext_public);
@@ -428,7 +428,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_WAIT_FOR_SESSION);
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         r = ifapi_load_parent_keys_async(context, command->out_path);
@@ -451,7 +451,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
         IFAPI_OBJECT *auth_object;
         r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT, &context->loadKey.handle,
                                    &auth_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "LoadKey finish", error_cleanup);
 
         context->loadKey.auth_object = *auth_object;
@@ -502,7 +502,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_WAIT_FOR_KEY);
         r = Esys_Load_Finish(context->esys, &context->loadKey.handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "Load", error_cleanup);
 
         /* Check whether object already exists in key store. */
@@ -518,7 +518,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_WRITE);
         /* Finish writing the key to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         if (!context->loadKey.auth_object.misc.key.persistent_handle) {
@@ -531,7 +531,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_FLUSH_PARENT);
         if (!context->loadKey.auth_object.misc.key.persistent_handle) {
             r = Esys_FlushContext_Finish(context->esys);
-            try_again_or_error_goto(r, "Flush context", error_cleanup);
+            ifapi_try_again_or_error_goto(r, "Flush context", error_cleanup);
         }
 
         /* Prepare Flushing of the loaded key */
@@ -542,20 +542,20 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_FLUSH_KEY);
         r = Esys_FlushContext_Finish(context->esys);
-        try_again_or_error_goto(r, "Flush context", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Flush context", error_cleanup);
 
         fallthrough;
 
     statecase(context->state, IMPORT_CLEANUP);
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         context->state = FAPI_STATE_INIT;
         break;
 
     statecase(context->state, IMPORT_KEY_WRITE_POLICY);
         r = ifapi_policy_store_store_finish(&context->pstore, &context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         context->state = FAPI_STATE_INIT;
@@ -563,7 +563,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_KEY_WRITE);
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         context->state = FAPI_STATE_INIT;
@@ -572,7 +572,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_KEY_SEARCH);
         r = ifapi_keystore_search_obj(&context->keystore, &context->io, &command->parent_name,
                                       &command->parent_path);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Search Key", error_cleanup);
 
         size_t dir_len, parent_len;
@@ -597,7 +597,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_KEY_LOAD_PARENT);
         r = ifapi_load_key(context, command->parent_path, &command->parent_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi load key.", error_cleanup);
 
         context->state = IMPORT_KEY_AUTHORIZE_PARENT;
@@ -605,7 +605,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_KEY_AUTHORIZE_PARENT);
         r = ifapi_authorize_object(context, command->parent_object, &session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Authorize key.", error_cleanup);
 
         TPMT_SYM_DEF_OBJECT symmetric;
@@ -620,7 +620,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_KEY_IMPORT);
         r = Esys_Import_Finish(context->esys, &command->private);
-        try_again_or_error_goto(r, "Import", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Import", error_cleanup);
 
         if (!command->ossl_priv) {
             char *base_name;
@@ -647,7 +647,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_KEY_WAIT_FOR_FLUSH);
         if (!command->parent_object->misc.key.persistent_handle) {
             r = ifapi_flush_object(context, command->parent_object->public.handle);
-            return_try_again(r);
+            ifapi_return_try_again(r);
 
             command->parent_object->public.handle = ESYS_TR_NONE;
             ifapi_cleanup_ifapi_object(command->parent_object);
@@ -699,18 +699,18 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_KEY_WRITE_OBJECT);
         /* Finish writing the object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         fallthrough;
 
     statecase(context->state, IMPORT_KEY_CLEANUP)
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
     /* Reset the ESYS timeout to non-blocking, immediate response. */

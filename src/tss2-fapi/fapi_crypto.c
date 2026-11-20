@@ -36,7 +36,7 @@
 
 #include "fapi_crypto.h"
 #include "fapi_int.h"     // for OSSL_FREE, HASH_UPDATE_BUFFER
-#include "ifapi_macros.h" // for goto_if_null2, check_oom
+#include "ifapi_macros.h" // for goto_if_null2, ifapi_check_oom
 #include "tss2_crypto.h"  // for hash functions ....
 
 #define LOGMODULE fapi
@@ -391,7 +391,7 @@ ifapi_verify_signature_quote(const IFAPI_OBJECT    *keyObject,
         goto_if_error(r, "Compute public PEM key.", error_cleanup);
     } else if (keyObject->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
         public_pem_key = strdup(keyObject->misc.ext_pub_key.pem_ext_public);
-        check_oom(public_pem_key);
+        ifapi_check_oom(public_pem_key);
     } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong object type", error_cleanup);
     }
@@ -508,7 +508,7 @@ ifapi_verify_signature(const IFAPI_OBJECT *keyObject,
         goto_if_error(r, "Compute public PEM key.", error_cleanup);
     } else if (keyObject->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
         public_pem_key = strdup(keyObject->misc.ext_pub_key.pem_ext_public);
-        check_oom(public_pem_key);
+        ifapi_check_oom(public_pem_key);
     } else {
         goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Wrong object type", error_cleanup);
     }

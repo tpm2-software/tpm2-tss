@@ -24,7 +24,7 @@
 #include "ifapi_helpers.h"
 #include "ifapi_json_deserialize.h" // for ifapi_json_FAPI_QUOTE_INFO_deser...
 #include "ifapi_json_serialize.h"   // for ifapi_json_FAPI_QUOTE_INFO_seria...
-#include "ifapi_macros.h"           // for strdup_check, goto_if_error2
+#include "ifapi_macros.h"           // for ifapi_strdup_check, goto_if_error2
 #include "ifapi_policy.h"           // for policy integration
 #include "linkhash.h"               // for lh_entry
 #include "tpm_json_deserialize.h"   // for ifapi_parse_json

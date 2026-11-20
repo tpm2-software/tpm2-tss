@@ -161,7 +161,7 @@ Fapi_ExportPolicy_Async(FAPI_CONTEXT *context, char const *path) {
     }
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->path, path, r, error_cleanup);
+    ifapi_strdup_check(command->path, path, r, error_cleanup);
     memset(&command->object, 0, sizeof(IFAPI_OBJECT));
 
     LOG_TRACE("finished");
@@ -225,7 +225,7 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
 
     statecase(context->state, POLICY_EXPORT_READ_POLICY_FINISH);
         r = ifapi_policy_store_load_finish(&context->pstore, &context->io, &command->policy);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         /* Start with digest computation from default profile. */
@@ -284,7 +284,7 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
 
     statecase(context->state, POLICY_EXPORT_READ_OBJECT_FINISH);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &command->object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "read_finish failed", error_cleanup);
 
         goto_if_null2(command->object.policy, "Object has no policy", r, TSS2_FAPI_RC_BAD_PATH,
@@ -298,7 +298,7 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
         goto_if_error(r, "Serialize policy", error_cleanup);
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
     /* Cleanup any intermediate results and state stored in the context. */

@@ -16,6 +16,7 @@
 #include "ipolicy_instantiate.h" // for IPOLICY_EVAL_INST_CTX
 #include "ipolicy_json_deserialize.h"
 #include "ipolicy_json_serialize.h"
+#include "ipolicy_macros.h"
 #include "ipolicy_types.h"   // for TPMS_POLICY
 #include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"     // for tss2_hash_get_digest_size
@@ -98,7 +99,7 @@ ipolicy_calculate_tree_ex(IPOLICY_EVAL_INST_CTX *context,
 
     statecase(context->state, IPOLICY_INSTANTIATE);
         r = ipolicy_eval_instantiate_finish(context);
-        TSS2_SYNC(r, "Instantiate policy.", cleanup);
+        ipolicy_try_again_or_error_goto(r, "Instantiate policy.", cleanup);
         tss2_free_node_list(context->policy_elements);
         context->policy_elements = NULL;
 
@@ -131,7 +132,7 @@ ipolicy_calculate_tree_ex(IPOLICY_EVAL_INST_CTX *context,
         goto_if_error(r, "Compute policy.", cleanup);
 
         break;
-    statecasedefault(context->state);
+    ipolicy_statecasedefault(context->state);
     }
 cleanup:
     tss2_free_node_list(context->policy_elements);

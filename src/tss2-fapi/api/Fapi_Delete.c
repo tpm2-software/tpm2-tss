@@ -357,7 +357,7 @@ Fapi_Delete_Async(FAPI_CONTEXT *context, char const *path) {
     context->session1 = ESYS_TR_NONE;
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->path, path, r, error_cleanup);
+    ifapi_strdup_check(command->path, path, r, error_cleanup);
 
     /* List all keystore elements in the path hierarchy of the provided
        path. The last of these is the object to be deleted. */
@@ -368,7 +368,7 @@ Fapi_Delete_Async(FAPI_CONTEXT *context, char const *path) {
     if (command->numPaths == 0 && ifapi_path_type_p(path, IFAPI_POLICY_PATH)) {
         command->numPaths = 1;
         command->pathlist = (char **)calloc(1, sizeof(char *));
-        strdup_check(command->pathlist[0], path, r, error_cleanup);
+        ifapi_strdup_check(command->pathlist[0], path, r, error_cleanup);
     }
 
     command->path_idx = command->numPaths;
@@ -491,7 +491,7 @@ Fapi_Delete_Finish(FAPI_CONTEXT *context) {
            is the entry point. */
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Create FAPI session.", error_cleanup);
 
         fallthrough;
@@ -529,7 +529,7 @@ Fapi_Delete_Finish(FAPI_CONTEXT *context) {
         /* We only end up in this path, if the referenced object requires
            TPM operations; e.g. persistent key or NV index. */
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "read_finish failed", error_cleanup);
 
         /* Initialize the ESYS object for the persistent key or NV Index. */
@@ -572,7 +572,7 @@ Fapi_Delete_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, ENTITY_DELETE_READ_HIERARCHY);
         if (authObject->objectType == IFAPI_OBJ_NONE) {
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, authObject);
-            try_again_or_error(r, "read_finish failed");
+            ifapi_try_again_or_error(r, "read_finish failed");
 
             r = ifapi_initialize_object(context->esys, authObject);
             goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
@@ -582,7 +582,7 @@ Fapi_Delete_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, ENTITY_DELETE_AUTHORIZE_NV);
         /* Authorize with the storage hierarchy / "owner" to delete the NV index. */
         r = ifapi_authorize_object(context, authObject, &auth_session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Authorize NV object.", error_cleanup);
 
         ifapi_cleanup_ifapi_object(authObject);
@@ -605,7 +605,7 @@ Fapi_Delete_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, ENTITY_DELETE_KEY_WAIT_FOR_HIERARCHY);
         if (object->misc.key.persistent_handle) {
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, authObject);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error(r, "read_finish failed", error_cleanup);
 
             r = ifapi_initialize_object(context->esys, authObject);
@@ -645,7 +645,7 @@ Fapi_Delete_Finish(FAPI_CONTEXT *context) {
         fallthrough;
     statecase(context->state, ENTITY_DELETE_NULL_AUTH_SENT_FOR_KEY);
         r = Esys_EvictControl_Finish(context->esys, &command->new_object_handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         goto_if_error_reset_state(r, "FAPI Entity_Delete", error_cleanup);
 
@@ -657,7 +657,7 @@ Fapi_Delete_Finish(FAPI_CONTEXT *context) {
         fallthrough;
     statecase(context->state, ENTITY_DELETE_NULL_AUTH_SENT_FOR_NV);
         r = Esys_NV_UndefineSpace_Finish(context->esys);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         goto_if_error_reset_state(r, "FAPI NV_UndefineSpace", error_cleanup);
 
@@ -710,7 +710,7 @@ Fapi_Delete_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, ENTITY_DELETE_CLEANUP);
         /* Cleanup the session. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         context->state = FAPI_STATE_INIT;
 
@@ -718,7 +718,7 @@ Fapi_Delete_Finish(FAPI_CONTEXT *context) {
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
     /* Reset the ESYS timeout to non-blocking, immediate response. */

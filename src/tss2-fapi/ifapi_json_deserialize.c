@@ -20,6 +20,7 @@
 #include "ifapi_helpers.h"         // for ifapi_set_name_hierarchy_object ,,,
 #include "ifapi_ima_eventlog.h"    // for IFAPI_IMA_EVENT, ifapi_ge...
 #include "ifapi_json_deserialize.h"
+#include "ifapi_macros.h"
 #include "json_helpers.h"
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifa...
 #include "tss2_crypto.h"          // for tss2_crypto_hash_abort
@@ -357,9 +358,9 @@ ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
         memcpy(out->private.buffer, &private.buffer[0], private.size);
     }
 
-    strdup_check(out->policyInstance, "", r, error_cleanup);
-    strdup_check(out->description, "", r, error_cleanup);
-    strdup_check(out->certificate, "", r, error_cleanup);
+    ifapi_strdup_check(out->policyInstance, "", r, error_cleanup);
+    ifapi_strdup_check(out->description, "", r, error_cleanup);
+    ifapi_strdup_check(out->certificate, "", r, error_cleanup);
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;

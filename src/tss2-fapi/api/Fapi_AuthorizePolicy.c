@@ -197,8 +197,8 @@ Fapi_AuthorizePolicy_Async(FAPI_CONTEXT  *context,
 
     /* Copy parameters to context for use during _Finish. */
     policy = &context->cmd.Policy_AuthorizeNewPolicy;
-    strdup_check(policy->policyPath, policyPath, r, error_cleanup);
-    strdup_check(policy->signingKeyPath, keyPath, r, error_cleanup);
+    ifapi_strdup_check(policy->policyPath, policyPath, r, error_cleanup);
+    ifapi_strdup_check(policy->signingKeyPath, keyPath, r, error_cleanup);
     if (policyRef) {
         FAPI_COPY_DIGEST(&policy->policyRef.buffer[0], policy->policyRef.size, policyRef,
                          policyRefSize);
@@ -276,7 +276,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, AUTHORIZE_NEW_LOAD_KEY);
         /* Load the key used for signing the policy authorization. */
         r = ifapi_load_key(context, command->signingKeyPath, keyObject);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi sign.", cleanup);
 
         fallthrough;
@@ -297,7 +297,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
 
         /* Calculate the policy digest of the policy to be authorized. */
         r = ifapi_calculate_tree(context, command->policyPath, policy, hashAlg, &digest);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi calculate tree.", cleanup);
 
         /* Compute the aHash from policy digest and policyRef */
@@ -321,7 +321,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, AUTHORIZE_NEW_KEY_SIGN_POLICY);
         /* Perform the singing operation on the policy's aHash. */
         r = ifapi_key_sign(context, *keyObject, NULL, &aHash, NULL, &signature, &publicKey, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi sign.", cleanup);
 
         SAFE_FREE(publicKey);
@@ -347,7 +347,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, AUTHORIZE_NEW_WRITE_POLICY);
         r = ifapi_policy_store_store_finish(&context->pstore, &context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "write_finish failed", cleanup);
 
         fallthrough;
@@ -355,11 +355,11 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, AUTHORIZE_NEW_CLEANUP)
     /* Cleanup and reset the context state. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", cleanup);
 
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:

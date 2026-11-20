@@ -16,7 +16,7 @@
 #include "fapi_int.h" // for IFAPI_FILE_DELIM, DEFAULT_LOG_DIR
 #include "ifapi_config.h"
 #include "ifapi_json_deserialize.h" // for ifapi_json_char_deserialize
-#include "ifapi_macros.h"           // for return_try_again
+#include "ifapi_macros.h"           // for ifapi_return_try_again
 #include "tpm_json_deserialize.h"   // for ifapi_get_sub_object, ifapi_json...
 #include "tss2_helpers.h"           // for ifapi_asprintf
 
@@ -244,7 +244,7 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config) {
     uint8_t *configFileContent = NULL;
     size_t   configFileContentSize = 0;
     TSS2_RC  r = ifapi_io_read_finish(io, &configFileContent, &configFileContentSize);
-    return_try_again(r);
+    ifapi_return_try_again(r);
     goto_if_error(r, "Could not finish read operation", error);
     if (configFileContent == NULL || configFileContentSize == 0) {
         LOG_ERROR("Config file is empty");

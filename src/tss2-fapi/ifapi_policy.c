@@ -91,7 +91,7 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
 
     statecase(context->state, POLICY_READ_FINISH);
         r = ifapi_policy_store_load_finish(pstore, io, policy);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         if (r) {
             LOG_ERROR("read_finish failed");
             goto cleanup;
@@ -123,7 +123,7 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
         updated_policy = NULL;
 
         break;
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 cleanup:
     SAFE_FREE(updated_policy);
@@ -204,7 +204,7 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
 
     statecase(*state, POLICY_READ_FINISH);
         r = ifapi_policy_store_load_finish(pstore, io, policy);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         if (r) {
             LOG_ERROR("read_finish failed");
             goto cleanup;
@@ -219,16 +219,16 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
             goto_if_error(r, "Set execution callbacks.", cleanup);
         }
         r = Tss2_PolicyExecute_Async(*policy_ctx);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "execute policy prepare.", cleanup);
         fallthrough;
     statecase(*state, POLICY_EXECUTE);
         r = Tss2_PolicyExecute_Finish(*policy_ctx, esys_ctx, session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "execute policy.", cleanup);
 
         break;
-    statecasedefault(*state);
+    ifapi_statecasedefault(*state);
     }
 
 cleanup:
@@ -318,7 +318,7 @@ ifapi_instantiate_profile_policies(FAPI_CONTEXT *context) {
             TPM2B_DIGEST digest;
             r = ifapi_calculate_tree_ex(&context->policy, NULL, NULL, NULL, ctx->policies[i],
                                         context->profiles.default_profile.nameAlg, &digest);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             return_if_error(r, "Instantiate policy");
 
             /* default_profile is a shallow view of the selected profile. Keep
@@ -340,7 +340,7 @@ ifapi_instantiate_profile_policies(FAPI_CONTEXT *context) {
 
         return TSS2_RC_SUCCESS;
 
-    statecasedefault(ctx->state);
+    ifapi_statecasedefault(ctx->state);
     }
     return TSS2_RC_SUCCESS;
 }

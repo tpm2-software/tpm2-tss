@@ -64,7 +64,7 @@ ifapi_flush_object(FAPI_CONTEXT *context, ESYS_TR handle) {
 
         return TSS2_RC_SUCCESS;
 
-    statecasedefault(context->flush_object_state);
+    ifapi_statecasedefault(context->flush_object_state);
     }
 }
 
@@ -768,7 +768,7 @@ ifapi_init_primary_finish(FAPI_CONTEXT *context, TSS2_KEY_TYPE ktype, IFAPI_OBJE
         SAFE_FREE(pkey->serialization.buffer);
         return TSS2_RC_SUCCESS;
 
-    statecasedefault(context->primary_state);
+    ifapi_statecasedefault(context->primary_state);
     }
 
 error_cleanup:
@@ -868,7 +868,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle) {
     statecase(context->primary_state, PRIMARY_READ_KEY);
         /* Read the primary key from keystore. */
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, pkey_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         r = ifapi_initialize_object(context->esys, pkey_object);
@@ -912,7 +912,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle) {
 
     statecase(context->primary_state, PRIMARY_READ_HIERARCHY_FINISH);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, hierarchy);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         r = ifapi_initialize_object(context->esys, hierarchy);
@@ -941,7 +941,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle) {
         /* Get the auth value to be stored in inSensitive */
         r = ifapi_set_auth_primary(context, pkey_object,
                                    &context->createPrimary.inSensitive.sensitive);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "Get auth value for primary", error_cleanup);
 
         /* Prepare primary creation. */
@@ -995,7 +995,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle) {
         } else {
             r = Esys_CreatePrimary_Finish(context->esys, &pkey_object->public.handle, &outPublic,
                                           &creationData, &creationHash, &creationTicket);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error_reset_state(r, "FAPI regenerate primary", error_cleanup);
         }
         *handle = pkey_object->public.handle;
@@ -1019,7 +1019,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle) {
 
     statecase(context->primary_state, PRIMARY_GET_CAP);
         r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
 
         /* Check whether the persistent handle exists. */
@@ -1036,7 +1036,7 @@ ifapi_load_primary_finish(FAPI_CONTEXT *context, ESYS_TR *handle) {
                    "The TPM state and the keystore state do not match.",
                    error_cleanup, pkey_object->misc.key.persistent_handle);
 
-    statecasedefault(context->primary_state);
+    ifapi_statecasedefault(context->primary_state);
     }
     SAFE_FREE(outPublic);
     SAFE_FREE(creationData);
@@ -1209,40 +1209,40 @@ ifapi_cleanup_session(FAPI_CONTEXT *context) {
                 context->session2 = ESYS_TR_NONE;
             }
             r = Esys_FlushContext_Async(context->esys, context->session1);
-            try_again_or_error_goto(r, "Flush session.", error);
+            ifapi_try_again_or_error_goto(r, "Flush session.", error);
         }
         fallthrough;
 
     statecase(context->cleanup_state, CLEANUP_SESSION1);
         if (context->session1 != ESYS_TR_NONE) {
             r = Esys_FlushContext_Finish(context->esys);
-            try_again_or_error_goto(r, "Flush session.", error);
+            ifapi_try_again_or_error_goto(r, "Flush session.", error);
         }
         context->session1 = ESYS_TR_NONE;
 
         if (context->session2 != ESYS_TR_NONE) {
             r = Esys_FlushContext_Async(context->esys, context->session2);
-            try_again_or_error_goto(r, "Flush session.", error);
+            ifapi_try_again_or_error_goto(r, "Flush session.", error);
         }
         fallthrough;
 
     statecase(context->cleanup_state, CLEANUP_SESSION2);
         if (context->session2 != ESYS_TR_NONE) {
             r = Esys_FlushContext_Finish(context->esys);
-            try_again_or_error_goto(r, "Flush session.", error);
+            ifapi_try_again_or_error_goto(r, "Flush session.", error);
         }
         context->session2 = ESYS_TR_NONE;
 
         if (!context->srk_persistent && context->srk_handle != ESYS_TR_NONE) {
             r = Esys_FlushContext_Async(context->esys, context->srk_handle);
-            try_again_or_error_goto(r, "Flush SRK.", error);
+            ifapi_try_again_or_error_goto(r, "Flush SRK.", error);
         }
         fallthrough;
 
     statecase(context->cleanup_state, CLEANUP_SRK);
         if (!context->srk_persistent && context->srk_handle != ESYS_TR_NONE) {
             r = Esys_FlushContext_Finish(context->esys);
-            try_again_or_error_goto(r, "Flush SRK.", error);
+            ifapi_try_again_or_error_goto(r, "Flush SRK.", error);
 
             context->srk_handle = ESYS_TR_NONE;
             context->srk_persistent = false;
@@ -1250,7 +1250,7 @@ ifapi_cleanup_session(FAPI_CONTEXT *context) {
         context->cleanup_state = CLEANUP_INIT;
         return TSS2_RC_SUCCESS;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 error:
     context->cleanup_state = CLEANUP_INIT;
@@ -1393,7 +1393,7 @@ ifapi_get_sessions_finish(FAPI_CONTEXT        *context,
     statecase(context->session_state, SESSION_WAIT_FOR_PRIMARY);
         LOG_TRACE("**STATE** SESSION_WAIT_FOR_PRIMARY");
         r = ifapi_load_primary_finish(context, &context->srk_handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
         return_if_error(r, "Load primary.");
@@ -1416,7 +1416,7 @@ ifapi_get_sessions_finish(FAPI_CONTEXT        *context,
         LOG_TRACE("**STATE** SESSION_WAIT_FOR_SESSION1");
         r = ifapi_get_session_finish(context->esys, &context->session1,
                                      context->session1_attribute_flags);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "Create FAPI session finish");
 
         if (!(context->session_flags & IFAPI_SESSION2)) {
@@ -1434,12 +1434,12 @@ ifapi_get_sessions_finish(FAPI_CONTEXT        *context,
         LOG_TRACE("**STATE** SESSION_WAIT_FOR_SESSION2");
         r = ifapi_get_session_finish(context->esys, &context->session2,
                                      context->session2_attribute_flags);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         return_if_error_reset_state(r, "Create FAPI session finish");
         break;
 
-    statecasedefault(context->session_state);
+    ifapi_statecasedefault(context->session_state);
     }
 
     return TSS2_RC_SUCCESS;
@@ -1638,7 +1638,7 @@ ifapi_load_keys_async(FAPI_CONTEXT *context, char const *keyPath) {
 
     LOG_TRACE("Load key: %s", keyPath);
     fapi_key_path = strdup(keyPath);
-    check_oom(fapi_key_path);
+    ifapi_check_oom(fapi_key_path);
     full_path_to_fapi_path(&context->keystore, fapi_key_path);
     r = get_explicit_key_path(&context->keystore, fapi_key_path, &path_list);
     SAFE_FREE(fapi_key_path);
@@ -1683,7 +1683,7 @@ ifapi_load_parent_keys_async(FAPI_CONTEXT *context, char const *keyPath) {
 
     LOG_TRACE("Load key: %s", keyPath);
     fapi_key_path = strdup(keyPath);
-    check_oom(fapi_key_path);
+    ifapi_check_oom(fapi_key_path);
     full_path_to_fapi_path(&context->keystore, fapi_key_path);
     r = get_explicit_key_path(&context->keystore, fapi_key_path, &path_list);
     SAFE_FREE(fapi_key_path);
@@ -1856,7 +1856,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent) {
         if (r != TSS2_RC_SUCCESS) {
             ifapi_cleanup_ifapi_object(context->loadKey.key_object);
         }
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         if (context->loadKey.key_object->objectType != IFAPI_KEY_OBJ)
@@ -1952,7 +1952,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent) {
 
     statecase(context->loadKey.state, LOAD_KEY_AUTH);
         r = Esys_Load_Finish(context->esys, &context->loadKey.handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "Load", error_cleanup);
 
         /* The current parent is flushed if not prohibited by flush parent */
@@ -1979,7 +1979,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent) {
 
     statecase(context->loadKey.state, LOAD_KEY_WAIT_FOR_PRIMARY);
         r = ifapi_load_primary_finish(context, &context->loadKey.handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "CreatePrimary", error_cleanup);
 
         /* Save the primary object for authorization */
@@ -1999,7 +1999,7 @@ ifapi_load_key_finish(FAPI_CONTEXT *context, bool flush_parent) {
         }
         break;
 
-    statecasedefault(context->loadKey.state);
+    ifapi_statecasedefault(context->loadKey.state);
     }
 
 error_cleanup:
@@ -2234,7 +2234,7 @@ ifapi_nv_write(FAPI_CONTEXT  *context,
 
     statecase(context->nv_cmd.nv_write_state, NV2_WRITE_READ);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "read_finish failed", error_cleanup);
 
         if (object->objectType != IFAPI_NV_OBJ)
@@ -2281,7 +2281,7 @@ ifapi_nv_write(FAPI_CONTEXT  *context,
     statecase(context->nv_cmd.nv_write_state, NV2_WRITE_WAIT_FOR_SESSSION);
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       object->misc.nv.public.nvPublic.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         fallthrough;
@@ -2310,7 +2310,7 @@ ifapi_nv_write(FAPI_CONTEXT  *context,
     case NV2_WRITE_AUTH_SENT:
     case NV2_WRITE_NULL_AUTH_SENT:
         r = Esys_NV_Write_Finish(context->esys);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         if (number_rc(r) == TPM2_RC_BAD_AUTH) {
             if (context->nv_cmd.nv_write_state == NV2_WRITE_NULL_AUTH_SENT) {
@@ -2393,14 +2393,14 @@ ifapi_nv_write(FAPI_CONTEXT  *context,
     statecase(context->nv_cmd.nv_write_state, NV2_WRITE_WRITE);
         /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         LOG_DEBUG("success");
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->nv_cmd.nv_write_state);
+    ifapi_statecasedefault(context->nv_cmd.nv_write_state);
     }
 
 error_cleanup:
@@ -2581,7 +2581,7 @@ ifapi_nv_read(FAPI_CONTEXT *context, uint8_t **data, size_t *size) {
 
     statecase(context->nv_cmd.nv_read_state, NV_READ_GET_CAPABILITY);
         r = Esys_GetCapability_Finish(context->esys, &moreData, &capabilityData);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
 
         if (capabilityData->data.handles.count == 0
@@ -2598,7 +2598,7 @@ ifapi_nv_read(FAPI_CONTEXT *context, uint8_t **data, size_t *size) {
 
     statecase(context->nv_cmd.nv_read_state, NV_READ_GET_ESYS_HANDLE);
         r = Esys_TR_FromTPMPublic_Finish(context->esys, &context->nv_cmd.esys_handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         goto_if_error(r, "Esys_TR_FromTPMPublic_Finish", error_cleanup);
 
@@ -2610,7 +2610,7 @@ ifapi_nv_read(FAPI_CONTEXT *context, uint8_t **data, size_t *size) {
 
     statecase(context->nv_cmd.nv_read_state, NV_READ_GET_NV_PUBLIC);
         r = Esys_NV_ReadPublic_Finish(context->esys, &nvPublic, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Error: nv read public", error_cleanup);
 
         context->nv_cmd.numBytes = nvPublic->nvPublic.dataSize;
@@ -2621,11 +2621,11 @@ ifapi_nv_read(FAPI_CONTEXT *context, uint8_t **data, size_t *size) {
     statecase(context->nv_cmd.nv_read_state, NV_READ_WRITE_CHANGED_OBJECT)
     /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
         break;
 
-    statecasedefault(context->nv_cmd.nv_read_state);
+    ifapi_statecasedefault(context->nv_cmd.nv_read_state);
     }
 
 error_cleanup:
@@ -2675,7 +2675,7 @@ ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data) {
 
     statecase(context->get_random_state, GET_RANDOM_SENT);
         r = Esys_GetRandom_Finish(context->esys, &aux_data);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "FAPI GetRandom_Finish", error_cleanup);
 
         if (aux_data->size > context->get_random.numBytes) {
@@ -2700,7 +2700,7 @@ ifapi_get_random(FAPI_CONTEXT *context, size_t numBytes, uint8_t **data) {
         }
         break;
 
-    statecasedefault(context->get_random_state);
+    ifapi_statecasedefault(context->get_random_state);
     }
 
     *data = context->get_random.data;
@@ -2777,7 +2777,7 @@ ifapi_load_key(FAPI_CONTEXT *context, char const *keyPath, IFAPI_OBJECT **key_ob
         goto_if_error_reset_state(r, "Reading profile data", error_cleanup);
 
         r = ifapi_get_sessions_finish(context, profile, profile->nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         /* Prepare the key loading. */
@@ -2788,7 +2788,7 @@ ifapi_load_key(FAPI_CONTEXT *context, char const *keyPath, IFAPI_OBJECT **key_ob
     statecase(context->loadKey.prepare_state, PREPARE_LOAD_KEY_WAIT_FOR_KEY);
         r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT, &context->loadKey.handle,
                                    key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " Load key.", error_cleanup);
 
         break;
@@ -2802,7 +2802,7 @@ ifapi_load_key(FAPI_CONTEXT *context, char const *keyPath, IFAPI_OBJECT **key_ob
 
         return TSS2_FAPI_RC_TRY_AGAIN;
 
-    statecasedefault(context->loadKey.prepare_state);
+    ifapi_statecasedefault(context->loadKey.prepare_state);
     }
 
 error_cleanup:
@@ -2882,7 +2882,7 @@ ifapi_key_sign(FAPI_CONTEXT      *context,
         context->Key_Sign.handle = sig_key_object->public.handle;
 
         r = ifapi_authorize_object(context, sig_key_object, &session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Authorize signing key", cleanup);
 
         r = ifapi_get_sig_scheme(context, sig_key_object, padding, digest, &sig_scheme);
@@ -2898,7 +2898,7 @@ ifapi_key_sign(FAPI_CONTEXT      *context,
     statecase(context->Key_Sign.state, SIGN_AUTH_SENT);
         context->Key_Sign.signature = NULL;
         r = Esys_Sign_Finish(context->esys, &context->Key_Sign.signature);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         context->session2 = ESYS_TR_NONE;
         goto_if_error(r, "Error: Sign", cleanup);
 
@@ -2912,7 +2912,7 @@ ifapi_key_sign(FAPI_CONTEXT      *context,
     statecase(context->Key_Sign.state, SIGN_WAIT_FOR_FLUSH);
         if (!sig_key_object->misc.key.persistent_handle) {
             r = Esys_FlushContext_Finish(context->esys);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error(r, "Error: Sign", cleanup);
         }
 
@@ -2929,14 +2929,14 @@ ifapi_key_sign(FAPI_CONTEXT      *context,
                 *certificate = strdup(context->Key_Sign.key_object->misc.key.certificate);
                 goto_if_null(*certificate, "Out of memory.", TSS2_FAPI_RC_MEMORY, cleanup);
             } else {
-                strdup_check(*certificate, "", r, cleanup);
+                ifapi_strdup_check(*certificate, "", r, cleanup);
             }
         }
         LOG_TRACE("success");
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->Key_Sign.state);
+    ifapi_statecasedefault(context->Key_Sign.state);
     }
 
 cleanup:
@@ -3257,8 +3257,8 @@ ifapi_key_create_prepare(FAPI_CONTEXT *context, char const *keyPath, char const 
     memset(&context->cmd.Key_Create.creationPCR, 0, sizeof(TPML_PCR_SELECTION));
     memset(object, 0, sizeof(IFAPI_OBJECT));
 
-    strdup_check(context->cmd.Key_Create.policyPath, policyPath, r, error);
-    strdup_check(context->cmd.Key_Create.keyPath, keyPath, r, error);
+    ifapi_strdup_check(context->cmd.Key_Create.policyPath, policyPath, r, error);
+    ifapi_strdup_check(context->cmd.Key_Create.keyPath, keyPath, r, error);
     r = get_explicit_key_path(&context->keystore, keyPath, &path_list);
     return_if_error(r, "Compute explicit path.");
 
@@ -3382,7 +3382,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
             r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath, &object->policy,
                                      context->cmd.Key_Create.public_templ.public.publicArea.nameAlg,
                                      &digest);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
                            context->cmd.Key_Create.policyPath);
 
@@ -3397,7 +3397,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
         LOG_TRACE("KEY_CREATE_WAIT_FOR_SESSION");
         r = ifapi_get_sessions_finish(context, context->cmd.Key_Create.profile,
                                       context->cmd.Key_Create.profile->nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
         fallthrough;
 
@@ -3405,7 +3405,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
         if (context->cmd.Key_Create.gen_sensitive_random) {
             r = ifapi_get_random(context, context->cmd.Key_Create.inSensitive.sensitive.data.size,
                                  &random_data);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error_reset_state(r, "FAPI GetRandom", error_cleanup);
 
             /* Copy the sensitive data */
@@ -3424,7 +3424,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_WAIT_FOR_PARENT);
         LOG_TRACE("KEY_CREATE_WAIT_FOR_PARENT");
         r = ifapi_load_key_finish(context, IFAPI_FLUSH_PARENT);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "LoadKey finish", error_cleanup);
         fallthrough;
 
@@ -3443,7 +3443,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_AUTH_SENT);
         r = Esys_Create_Finish(context->esys, &outPrivate, &outPublic, &creationData, &creationHash,
                                &creationTicket);
-        try_again_or_error_goto(r, "Key create finish", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Key create finish", error_cleanup);
 
         context->session2 = ESYS_TR_NONE;
 
@@ -3506,7 +3506,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_WAIT_FOR_KEY);
         if (template->persistent_handle) {
             r = Esys_Load_Finish(context->esys, &context->loadKey.handle);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error_reset_state(r, "Load", error_cleanup);
         }
         context->session2 = ESYS_TR_NONE;
@@ -3520,7 +3520,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_FLUSH1);
         if (!context->loadKey.auth_object.misc.key.persistent_handle) {
             r = Esys_FlushContext_Finish(context->esys);
-            try_again_or_error_goto(r, "Flush context", error_cleanup);
+            ifapi_try_again_or_error_goto(r, "Flush context", error_cleanup);
 
             ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
         }
@@ -3533,7 +3533,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_WAIT_FOR_HIERARCHY);
         if (template->persistent_handle) {
             r = ifapi_keystore_load_finish(&context->keystore, &context->io, hierarchy);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             return_if_error(r, "read_finish failed");
             r = ifapi_initialize_object(context->esys, hierarchy);
             goto_if_error_reset_state(r, "Initialize hierarchy object", error_cleanup);
@@ -3563,7 +3563,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
         if (template->persistent_handle) {
             /* Prepare making the loaded key permanent. */
             r = Esys_EvictControl_Finish(context->esys, &object->public.handle);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error(r, "Evict control failed", error_cleanup);
         }
 
@@ -3573,7 +3573,7 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
         /* Flush the key which was evicted. */
         if (template->persistent_handle) {
             r = ifapi_flush_object(context, context->loadKey.handle);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error(r, "Flush key", error_cleanup);
 
             context->loadKey.handle = ESYS_TR_NONE;
@@ -3613,20 +3613,20 @@ ifapi_key_create(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_WRITE);
         /* Finish writing the key to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         fallthrough;
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_CLEANUP);
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         context->cmd.Key_Create.state = KEY_CREATE_INIT;
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->cmd.Key_Create.state);
+    ifapi_statecasedefault(context->cmd.Key_Create.state);
     }
 
 cleanup:
@@ -3770,7 +3770,7 @@ ifapi_change_auth_hierarchy(FAPI_CONTEXT *context,
 
     statecase(context->hierarchy_state, HIERARCHY_CHANGE_AUTH_NULL_AUTH_SENT);
         r = Esys_HierarchyChangeAuth_Finish(context->esys);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         if (number_rc(r) == TPM2_RC_BAD_AUTH
             && hierarchy_object->misc.hierarchy.with_auth == TPM2_NO) {
@@ -3802,7 +3802,7 @@ ifapi_change_auth_hierarchy(FAPI_CONTEXT *context,
         context->hierarchy_state = HIERARCHY_CHANGE_AUTH_INIT;
         return r;
 
-    statecasedefault(context->hierarchy_state);
+    ifapi_statecasedefault(context->hierarchy_state);
     }
 error:
     context->hierarchy_state = HIERARCHY_CHANGE_AUTH_INIT;
@@ -3883,7 +3883,7 @@ ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
             /* Calculate the policy digest which will be used as hierarchy policy. */
             r = ifapi_calculate_tree(context, NULL, /**< no path needed */
                                      policy, context->profiles.default_profile.nameAlg, &digest);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error(r, "Policy calculation", error);
 
             /* Policy data will be stored in the provisioning context. */
@@ -3914,7 +3914,7 @@ ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
 
     statecase(context->hierarchy_policy_state, HIERARCHY_CHANGE_POLICY_NULL_AUTH_SENT);
         r = Esys_SetPrimaryPolicy_Finish(context->esys);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         if (number_rc(r) == TPM2_RC_BAD_AUTH
             && hierarchy_object->misc.hierarchy.with_auth == TPM2_NO) {
             /* Retry after NULL authorization was not successful */
@@ -3938,7 +3938,7 @@ ifapi_change_policy_hierarchy(FAPI_CONTEXT *context,
         return_if_error(r, "Set primary policy");
         break;
 
-    statecasedefault(context->hierarchy_policy_state);
+    ifapi_statecasedefault(context->hierarchy_policy_state);
     }
 
 error:
@@ -4073,7 +4073,7 @@ ifapi_capability_get(FAPI_CONTEXT          *context,
 
     statecase(context->state, GET_INFO_WAIT_FOR_CAP);
         r = Esys_GetCapability_Finish(ectx, &more_data, &context->cmd.GetInfo.fetched_data);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Error GetCapability", error_cleanup);
 
         LOG_TRACE("GetCapability: capability: 0x%x, property: 0x%x", capability,
@@ -4157,7 +4157,7 @@ ifapi_capability_get(FAPI_CONTEXT          *context,
         *capability_data = context->cmd.GetInfo.capability_data;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
     if (more_data) {
         context->state = GET_INFO_GET_CAP_MORE;
@@ -4242,7 +4242,7 @@ ifapi_get_certificates(FAPI_CONTEXT *context,
     statecase(context->get_cert_state, GET_CERT_WAIT_FOR_GET_CAP);
         r = Esys_GetCapability_Finish(context->esys, &moreData,
                                       &context->cmd.Provision.capabilityData);
-        try_again_or_error(r, "GetCapablity_Finish");
+        ifapi_try_again_or_error(r, "GetCapablity_Finish");
 
         if (!context->cmd.Provision.capabilityData
             || context->cmd.Provision.capabilityData->data.handles.count == 0) {
@@ -4279,7 +4279,7 @@ ifapi_get_certificates(FAPI_CONTEXT *context,
     statecase(context->get_cert_state, GET_CERT_GET_CERT_NV_FINISH);
         r = Esys_TR_FromTPMPublic_Finish(context->esys,
                                          &context->cmd.Provision.esys_nv_cert_handle);
-        try_again_or_error_goto(r, "TR_FromTPMPublic_Finish", error);
+        ifapi_try_again_or_error_goto(r, "TR_FromTPMPublic_Finish", error);
 
         /* Read public to get size of certificate */
         r = Esys_NV_ReadPublic_Async(context->esys, context->cmd.Provision.esys_nv_cert_handle,
@@ -4289,7 +4289,7 @@ ifapi_get_certificates(FAPI_CONTEXT *context,
 
     statecase(context->get_cert_state, GET_CERT_GET_CERT_READ_PUBLIC);
         r = Esys_NV_ReadPublic_Finish(context->esys, &context->cmd.Provision.nvPublic, NULL);
-        try_again_or_error_goto(r, "Error: nv read public", error);
+        ifapi_try_again_or_error_goto(r, "Error: nv read public", error);
 
         /* TPMA_NV_NO_DA is set for NV certificate */
         context->nv_cmd.nv_object.misc.nv.public.nvPublic.attributes = TPMA_NV_NO_DA;
@@ -4313,7 +4313,7 @@ ifapi_get_certificates(FAPI_CONTEXT *context,
             /* Use information from keystore if available. */
             r = ifapi_keystore_load_finish(&context->keystore, &context->io,
                                            &context->nv_cmd.auth_object);
-            try_again_or_error_goto(r, "read_finish failed", error);
+            ifapi_try_again_or_error_goto(r, "read_finish failed", error);
 
             r = ifapi_initialize_object(context->esys, &context->nv_cmd.auth_object);
             goto_if_error_reset_state(r, "Initialize hierarchy object", error);
@@ -4336,7 +4336,7 @@ ifapi_get_certificates(FAPI_CONTEXT *context,
 
     statecase(context->get_cert_state, GET_CERT_READ_CERT);
         r = ifapi_nv_read(context, &cert_data, &cert_size);
-        try_again_or_error_goto(r, " FAPI NV_Read", error);
+        ifapi_try_again_or_error_goto(r, " FAPI NV_Read", error);
 
         goto_if_null(cert_data, "Failed to read certificate", TSS2_FAPI_RC_GENERAL_FAILURE, error);
 
@@ -4370,7 +4370,7 @@ ifapi_get_certificates(FAPI_CONTEXT *context,
         }
         break;
 
-    statecasedefault(context->get_cert_state);
+    ifapi_statecasedefault(context->get_cert_state);
     }
 
 error:
@@ -4419,15 +4419,15 @@ ifapi_get_description(IFAPI_OBJECT *object, char **description) {
         break;
     default:
         *description = strdup("");
-        check_oom(*description);
+        ifapi_check_oom(*description);
         return TSS2_RC_SUCCESS;
     }
     if (obj_description) {
         *description = strdup(obj_description);
-        check_oom(*description);
+        ifapi_check_oom(*description);
     } else {
         *description = strdup("");
-        check_oom(*description);
+        ifapi_check_oom(*description);
     }
     return TSS2_RC_SUCCESS;
 }
@@ -4597,7 +4597,7 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
             r = ifapi_calculate_tree(context, context->cmd.Key_Create.policyPath, &object->policy,
                                      context->cmd.Key_Create.public_templ.public.publicArea.nameAlg,
                                      &digest);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error2(r, "Calculate policy tree %s", error_cleanup,
                            context->cmd.Key_Create.policyPath);
 
@@ -4613,7 +4613,7 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_SESSION);
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Create FAPI session.", error_cleanup);
 
         hierarchy_path = context->loadKey.path_list->next->str;
@@ -4627,7 +4627,7 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_HIERARCHY);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, hierarchy);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         r = ifapi_initialize_object(context->esys, hierarchy);
@@ -4655,7 +4655,7 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WAIT_FOR_PRIMARY);
         r = Esys_CreatePrimary_Finish(context->esys, &context->cmd.Key_Create.handle, &outPublic,
                                       &creationData, &creationHash, &creationTicket);
-        try_again_or_error_goto(r, "Create primary.", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Create primary.", error_cleanup);
 
         /* Prepare object for serialization */
         context->session2 = ESYS_TR_NONE;
@@ -4712,7 +4712,7 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
         if (template->persistent_handle) {
             /* Prepare making the loaded key permanent. */
             r = Esys_EvictControl_Finish(context->esys, &object->public.handle);
-            return_try_again(r);
+            ifapi_return_try_again(r);
             goto_if_error(r, "Evict control failed", error_cleanup);
         }
 
@@ -4721,7 +4721,7 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_FLUSH);
         /* Flush the primary key. */
         r = ifapi_flush_object(context, context->cmd.Key_Create.handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Flush key", error_cleanup);
 
         context->cmd.Key_Create.handle = ESYS_TR_NONE;
@@ -4752,19 +4752,19 @@ ifapi_create_primary(FAPI_CONTEXT *context, IFAPI_KEY_TEMPLATE *template) {
     statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_WRITE);
         /* Finish writing the key to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         fallthrough;
 
     statecase(context->cmd.Key_Create.state, KEY_CREATE_PRIMARY_CLEANUP);
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         context->cmd.Key_Create.state = KEY_CREATE_INIT;
         break;
 
-    statecasedefault(context->cmd.Key_Create.state);
+    ifapi_statecasedefault(context->cmd.Key_Create.state);
     }
     free_string_list(context->loadKey.path_list);
     ifapi_cleanup_ifapi_object(hierarchy);
@@ -4863,7 +4863,7 @@ ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx) {
 
     statecase(ctx->state, CREATE_NV_READ_NV_OBJECT);
         r = ifapi_keystore_load_finish(&fapi_ctx->keystore, &fapi_ctx->io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error2(r, "Could not open %s", cleanup_return, ctx->pathlist[ctx->path_idx]);
         ctx->nv_idx_list[ctx->path_idx] = object.misc.nv.public.nvPublic.nvIndex;
         ifapi_cleanup_ifapi_object(&object);
@@ -4881,7 +4881,7 @@ ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx) {
 
     statecase(ctx->state, CREATE_NV_GET_TPM_NV_HANDLES2);
         r = Esys_GetCapability_Finish(fapi_ctx->esys, &ctx->more_data, capability);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error2(r, "GetCapability_Finish", cleanup_return);
 
         ctx->nv_cap_idx = 0;
@@ -4926,7 +4926,7 @@ ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx) {
 
     statecase(ctx->state, CREATE_NV_NV_GET_ESYS_HANDLE);
         r = Esys_TR_FromTPMPublic_Finish(fapi_ctx->esys, &ctx->esys_nv_handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         return_if_error(r, "Esys_TR_FromTPMPublic_Finish");
 
@@ -4938,7 +4938,7 @@ ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx) {
 
     statecase(ctx->state, CREATE_NV_NV_WAIT_FOR_READ_PUBLIC);
         r = Esys_NV_ReadPublic_Finish(fapi_ctx->esys, &existing_nv_public, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "Error: nv read public");
 
         ctx->path = NULL;
@@ -5002,7 +5002,7 @@ ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx) {
         SAFE_FREE(ctx->path);
         /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&fapi_ctx->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "write_finish failed", cleanup_return);
 
         ifapi_cleanup_ifapi_object(&ctx->nv_object);
@@ -5011,7 +5011,7 @@ ifapi_create_nv_objects(FAPI_CONTEXT *fapi_ctx, IFAPI_CREATE_NV *ctx) {
         ctx->state = CREATE_NV_CHECK_NV_INDEX;
         return TSS2_FAPI_RC_TRY_AGAIN;
 
-    statecasedefault(ctx->state);
+    ifapi_statecasedefault(ctx->state);
     }
     ctx->state = CREATE_NV_CHECK_NV_OBJECTS_INIT;
     SAFE_FREE(*capability);
@@ -5080,7 +5080,7 @@ ifapi_check_existing_nv(FAPI_CONTEXT     *context,
         fallthrough;
     statecase(context->nv_cmd.nv_check, CHECK_NV_WAIT_FOR_GET_CAP);
         r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "GetCapablity_Finish");
         if ((*capabilityData)->data.handles.count == 0
             || (*capabilityData)->data.handles.handle[0] != nv_index) {
@@ -5099,7 +5099,7 @@ ifapi_check_existing_nv(FAPI_CONTEXT     *context,
 
     statecase(context->nv_cmd.nv_check, CHECK_NV_GET_ESYS_HANDLE);
         r = Esys_TR_FromTPMPublic_Finish(context->esys, esys_nv_handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         return_if_error(r, "Esys_TR_FromTPMPublic_Finish");
 
@@ -5111,11 +5111,11 @@ ifapi_check_existing_nv(FAPI_CONTEXT     *context,
 
     statecase(context->nv_cmd.nv_check, CHECK_NV_WAIT_FOR_READ_PUBLIC);
         r = Esys_NV_ReadPublic_Finish(context->esys, nvPublic, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "Error: nv read public");
         *nv_exists = true;
         break;
-    statecasedefault(context->cmd.Key_Create.state);
+    ifapi_statecasedefault(context->cmd.Key_Create.state);
     }
 
     return TSS2_RC_SUCCESS;

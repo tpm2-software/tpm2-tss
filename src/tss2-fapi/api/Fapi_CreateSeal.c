@@ -264,11 +264,11 @@ Fapi_CreateSeal_Finish(FAPI_CONTEXT *context) {
            KEYED_HASH object and created in the same way as a regular key.
            Thus the function name ifapi_key_create(). */
         r = ifapi_key_create(context, &context->cmd.Key_Create.public_templ);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Key create", error_cleanup);
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

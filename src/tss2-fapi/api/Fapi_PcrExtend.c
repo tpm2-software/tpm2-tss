@@ -185,7 +185,7 @@ Fapi_PcrExtend_Async(FAPI_CONTEXT  *context,
     }
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->logData, logData, r, error_cleanup);
+    ifapi_strdup_check(command->logData, logData, r, error_cleanup);
     command->event.size = dataSize;
     memcpy(&command->event.buffer[0], data, dataSize);
     command->pcrIndex = pcr;
@@ -257,7 +257,7 @@ Fapi_PcrExtend_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PCR_EXTEND_WAIT_FOR_GET_CAP);
         command->event_log_file = NULL;
         r = Esys_GetCapability_Finish(context->esys, &moreData, capabilityData);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
 
         /* Construct the filename for the eventlog file */
@@ -280,7 +280,7 @@ Fapi_PcrExtend_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PCR_EXTEND_READ_EVENT_LOG);
         /* Check whether log file contains valid json. */
         r = ifapi_eventlog_append_check(&context->eventlog, &context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "ifapi_eventlog_append_check", error_cleanup);
 
         /* Prepare session used for integrity protecting the PCR Event operation. */
@@ -292,7 +292,7 @@ Fapi_PcrExtend_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PCR_EXTEND_WAIT_FOR_SESSION);
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         /* Call PCR Event on the TPM, which performs an extend to all banks. */
@@ -305,7 +305,7 @@ Fapi_PcrExtend_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PCR_EXTEND_FINISH);
         r = Esys_PCR_Event_Finish(context->esys, &command->event_digests);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "PCR_Extend_Finish", error_cleanup);
 
         /* Construct the eventLog entry. */
@@ -314,7 +314,7 @@ Fapi_PcrExtend_Finish(FAPI_CONTEXT *context) {
         pcrEvent->content_type = IFAPI_TSS_EVENT_TAG;
         subEvent->data = command->event;
         if (command->logData) {
-            strdup_check(subEvent->event, command->logData, r, error_cleanup);
+            ifapi_strdup_check(subEvent->event, command->logData, r, error_cleanup);
         } else {
             subEvent->event = NULL;
         }
@@ -322,7 +322,7 @@ Fapi_PcrExtend_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PCR_EXTEND_APPEND_EVENT_LOG);
         r = ifapi_eventlog_append_finish(&context->eventlog, &context->io, &command->pcr_event);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "ifapi_eventlog_append_finish", error_cleanup);
 
         SAFE_FREE(command->event_digests);
@@ -331,11 +331,11 @@ Fapi_PcrExtend_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, PCR_EXTEND_CLEANUP)
     /* Cleanup the session used for integrity checking. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

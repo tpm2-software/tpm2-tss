@@ -234,7 +234,7 @@ loop:
         }
 
         *log = strdup(json_object_to_json_string_ext(eventlog->log, JSON_C_TO_STRING_PRETTY));
-        check_oom(*log);
+        ifapi_check_oom(*log);
         json_object_put(eventlog->log);
         eventlog->log = NULL;
         eventlog->state = IFAPI_EVENTLOG_STATE_INIT;
@@ -268,7 +268,7 @@ loop:
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_READING)
     /* Finish the reading of the eventlog file and return it directly to the output parameter */
         r = ifapi_io_read_finish(io, (uint8_t **)&logstr, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         logpart = ifapi_parse_json(logstr);
@@ -300,7 +300,7 @@ loop:
         eventlog->state = IFAPI_EVENTLOG_STATE_INIT;
         goto loop;
 
-    statecasedefault(eventlog->state);
+    ifapi_statecasedefault(eventlog->state);
     }
     return TSS2_RC_SUCCESS;
 
@@ -346,7 +346,7 @@ ifapi_eventlog_append_check(IFAPI_EVENTLOG *eventlog, IFAPI_IO *io) {
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_READING)
     /* Finish the reading of the eventlog file and return it directly to the output parameter */
         r = ifapi_io_read_finish(io, (uint8_t **)&logstr, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         /* If a log was read, we deserialize it to JSON. Otherwise we start a new log. */
@@ -370,7 +370,7 @@ ifapi_eventlog_append_check(IFAPI_EVENTLOG *eventlog, IFAPI_IO *io) {
         }
         break;
 
-    statecasedefault(eventlog->state);
+    ifapi_statecasedefault(eventlog->state);
     }
     eventlog->state = IFAPI_EVENTLOG_STATE_APPENDING;
 
@@ -456,13 +456,13 @@ ifapi_eventlog_append_finish(IFAPI_EVENTLOG *eventlog, IFAPI_IO *io, const IFAPI
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_WRITING)
     /* Finish writing the eventlog */
         r = ifapi_io_write_finish(io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "read_finish failed", error_cleanup);
 
         eventlog->state = IFAPI_EVENTLOG_STATE_INIT;
         break;
 
-    statecasedefault(eventlog->state);
+    ifapi_statecasedefault(eventlog->state);
     }
 
     return TSS2_RC_SUCCESS;

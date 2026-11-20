@@ -10,6 +10,52 @@
 
 #include "util/aux_util.h"
 
+/* FAPI-owned errors retain the FAPI layer. */
+#define ifapi_strdup_check(dest, str, r, label)                                                    \
+    if (str) {                                                                                     \
+        (dest) = strdup(str);                                                                      \
+        if (!(dest)) {                                                                             \
+            (r) = TSS2_FAPI_RC_MEMORY;                                                             \
+            LOG_ERROR("Out of memory.");                                                           \
+            goto label;                                                                            \
+        }                                                                                          \
+    } else {                                                                                       \
+        (dest) = NULL;                                                                             \
+    }
+
+#define ifapi_check_oom(X)                                                                         \
+    if ((X) == NULL) {                                                                             \
+        LOG_ERROR("Out of memory");                                                                \
+        return TSS2_FAPI_RC_MEMORY;                                                                \
+    }
+
+#define ifapi_statecasedefault(VAR)                                                                \
+    default:                                                                                       \
+        LOG_ERROR("Bad state for " str(VAR) ": %i", VAR);                                          \
+        return TSS2_FAPI_RC_BAD_SEQUENCE;
+
+#define ifapi_return_try_again(r)                                                                  \
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN) {                                                    \
+        LOG_TRACE("Received TRY_AGAIN; returning TRY_AGAIN");                                      \
+        return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
+    }
+
+#define ifapi_try_again_or_error(r, msg, ...)                                                      \
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)                                                      \
+        return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
+    if (r != TSS2_RC_SUCCESS) {                                                                    \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        return r;                                                                                  \
+    }
+
+#define ifapi_try_again_or_error_goto(r, msg, label, ...)                                          \
+    if (base_rc(r) == TSS2_BASE_RC_TRY_AGAIN)                                                      \
+        return TSS2_FAPI_RC_TRY_AGAIN;                                                             \
+    if (r != TSS2_RC_SUCCESS) {                                                                    \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        goto label;                                                                                \
+    }
+
 #define calloc_check(dest, size, r, label)                                                         \
     {                                                                                              \
         (dest) = callock(size, 1);                                                                 \
