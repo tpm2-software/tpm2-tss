@@ -99,24 +99,25 @@ ifapi_calculate_tree_ex(IFAPI_POLICY_CTX   *context,
         fallthrough;
 
     statecase(context->state, POLICY_INSTANTIATE_PREPARE);
-        r = Tss2_PolicyInit(*policy, hash_alg, &context->tss2_policy_ctx);
+        r = policy_to_fapi_rc(Tss2_PolicyInit(*policy, hash_alg, &context->tss2_policy_ctx));
         goto_if_error(r, "Instantiate policy.", cleanup);
 
-        r = Tss2_PolicySetCalcCallbacks(context->tss2_policy_ctx, &context->calc_callbacks);
+        r = policy_to_fapi_rc(
+            Tss2_PolicySetCalcCallbacks(context->tss2_policy_ctx, &context->calc_callbacks));
         goto_if_error(r, "Set policy calc callbacks.", cleanup);
 
-        r = Tss2_PolicyCalculate_Async(context->tss2_policy_ctx);
+        r = policy_to_fapi_rc(Tss2_PolicyCalculate_Async(context->tss2_policy_ctx));
         goto_if_error(r, "Instantiate policy.", cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_INSTANTIATE);
-        r = Tss2_PolicyCalculate_Finish(context->tss2_policy_ctx);
+        r = policy_to_fapi_rc(Tss2_PolicyCalculate_Finish(context->tss2_policy_ctx));
         FAPI_SYNC(r, "Instantiate policy.", cleanup);
 
-        r = Tss2_PolicyGetCalculatedDigest(context->tss2_policy_ctx, digest);
+        r = policy_to_fapi_rc(Tss2_PolicyGetCalculatedDigest(context->tss2_policy_ctx, digest));
         goto_if_error(r, "Copy policy.", cleanup);
 
-        r = Tss2_PolicyGetJSON(context->tss2_policy_ctx, &updated_policy);
+        r = policy_to_fapi_rc(Tss2_PolicyGetJSON(context->tss2_policy_ctx, &updated_policy));
         goto_if_error(r, "Serialize calculated policy.", cleanup);
         SAFE_FREE(*policy);
         *policy = updated_policy;
@@ -129,8 +130,6 @@ cleanup:
     SAFE_FREE(updated_policy);
     Tss2_PolicyFinalize(&context->tss2_policy_ctx);
     context->state = POLICY_INIT;
-    if (rc_layer(r) == TSS2_POLICY_RC_LAYER)
-        r = TSS2_FEATURE_RC_LAYER | base_rc(r);
     return r;
 }
 
@@ -213,17 +212,17 @@ ifapi_execute_tree_ex(enum IFAPI_STATE_POLICY    *state,
 
     statecase(*state, POLICY_EXECUTE_PREPARE);
         if (!*policy_ctx) {
-            r = Tss2_PolicyInit(*policy, hash_alg, policy_ctx);
+            r = policy_to_fapi_rc(Tss2_PolicyInit(*policy, hash_alg, policy_ctx));
             goto_if_error(r, "Set execution policy.", cleanup);
-            r = Tss2_PolicySetExecCallbacks(*policy_ctx, callbacks);
+            r = policy_to_fapi_rc(Tss2_PolicySetExecCallbacks(*policy_ctx, callbacks));
             goto_if_error(r, "Set execution callbacks.", cleanup);
         }
-        r = Tss2_PolicyExecute_Async(*policy_ctx);
+        r = policy_to_fapi_rc(Tss2_PolicyExecute_Async(*policy_ctx));
         ifapi_return_try_again(r);
         goto_if_error(r, "execute policy prepare.", cleanup);
         fallthrough;
     statecase(*state, POLICY_EXECUTE);
-        r = Tss2_PolicyExecute_Finish(*policy_ctx, esys_ctx, session);
+        r = policy_to_fapi_rc(Tss2_PolicyExecute_Finish(*policy_ctx, esys_ctx, session));
         ifapi_return_try_again(r);
         goto_if_error(r, "execute policy.", cleanup);
 
@@ -236,8 +235,6 @@ cleanup:
     if (r && *state == POLICY_EXECUTE && do_flush && session && session != ESYS_TR_NONE)
         Esys_FlushContext(esys_ctx, session);
     Tss2_PolicyFinalize(policy_ctx);
-    if (rc_layer(r) == TSS2_POLICY_RC_LAYER)
-        r = TSS2_FEATURE_RC_LAYER | base_rc(r);
     *state = POLICY_INIT;
     return r;
 }
@@ -252,11 +249,11 @@ ifapi_policy_add_authorization(char                **policy,
         return TSS2_FAPI_RC_BAD_REFERENCE;
     TSS2_POLICY_CTX *ctx = NULL;
     char            *updated = NULL;
-    TSS2_RC          r = Tss2_PolicyInit(*policy, TPM2_ALG_SHA256, &ctx);
+    TSS2_RC          r = policy_to_fapi_rc(Tss2_PolicyInit(*policy, TPM2_ALG_SHA256, &ctx));
     if (!r)
-        r = Tss2_PolicyContextAddAuthorization(ctx, signature, policy_ref, key);
+        r = policy_to_fapi_rc(Tss2_PolicyContextAddAuthorization(ctx, signature, policy_ref, key));
     if (!r)
-        r = Tss2_PolicyGetJSON(ctx, &updated);
+        r = policy_to_fapi_rc(Tss2_PolicyGetJSON(ctx, &updated));
     if (!r) {
         SAFE_FREE(*policy);
         *policy = updated;
@@ -264,7 +261,7 @@ ifapi_policy_add_authorization(char                **policy,
     }
     SAFE_FREE(updated);
     Tss2_PolicyFinalize(&ctx);
-    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
+    return r;
 }
 
 TSS2_RC
@@ -277,11 +274,12 @@ ifapi_policy_get_authorization(const char        *policy,
         return TSS2_FAPI_RC_BAD_REFERENCE;
     *found = false;
     TSS2_POLICY_CTX *ctx = NULL;
-    TSS2_RC          r = Tss2_PolicyInit(policy, TPM2_ALG_SHA256, &ctx);
+    TSS2_RC          r = policy_to_fapi_rc(Tss2_PolicyInit(policy, TPM2_ALG_SHA256, &ctx));
     if (!r)
-        r = Tss2_PolicyContextGetAuthorization(ctx, key, policy_ref, found, signature);
+        r = policy_to_fapi_rc(
+            Tss2_PolicyContextGetAuthorization(ctx, key, policy_ref, found, signature));
     Tss2_PolicyFinalize(&ctx);
-    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
+    return r;
 }
 
 /** Instantiate all policies defined in the FAPI profile.

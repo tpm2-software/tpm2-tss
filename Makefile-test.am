@@ -1204,6 +1204,22 @@ noinst_PROGRAMS += test/unit/fapi-system-fuzzing
 endif # FAPI
 
 if POLICY
+TESTS_UNIT += test/unit/shared-helper-errors test/unit/json-helper-errors
+
+test_unit_shared_helper_errors_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
+test_unit_shared_helper_errors_LDADD = $(CMOCKA_LIBS) $(lib_fapi_policy_internal) \
+    $(libtss2_mu) $(JSONC_LIBS) $(CRYPTO_LIBS) $(UUID_LIBS)
+test_unit_shared_helper_errors_LDFLAGS = $(AM_LDFLAGS) -Wl,--wrap=calloc
+test_unit_shared_helper_errors_SOURCES = test/unit/shared-helper-errors.c src/util/log.c \
+    test/helper/cmocka_all.h
+
+test_unit_json_helper_errors_CFLAGS = $(CMOCKA_CFLAGS) $(JSONC_CFLAGS) $(TESTS_CFLAGS)
+test_unit_json_helper_errors_LDADD = $(CMOCKA_LIBS) $(JSONC_LIBS)
+test_unit_json_helper_errors_LDFLAGS = $(AM_LDFLAGS) -Wl,--wrap=malloc \
+    -Wl,--wrap=strdup -Wl,--wrap=json_object_new_string
+test_unit_json_helper_errors_SOURCES = test/unit/json-helper-errors.c \
+    src/tss2-fapi-policy/json_helpers.c src/util/log.c test/helper/cmocka_all.h
+
 TESTS_UNIT += test/unit/policy-macros
 
 test_unit_policy_macros_CFLAGS = $(CMOCKA_CFLAGS) $(TESTS_CFLAGS)

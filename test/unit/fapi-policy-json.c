@@ -189,9 +189,28 @@ test_authorization_error_clears_found(void **state) {
                      TSS2_FAPI_RC_BAD_REFERENCE);
 }
 
+static void
+test_policy_error_translation(void **state) {
+    (void)state;
+    assert_int_equal(policy_to_fapi_rc(TSS2_POLICY_RC_BAD_VALUE), TSS2_FAPI_RC_BAD_VALUE);
+    assert_int_equal(policy_to_fapi_rc(TSS2_POLICY_RC_TRY_AGAIN), TSS2_FAPI_RC_TRY_AGAIN);
+    const TSS2_RC unchanged[] = {
+        TSS2_RC_SUCCESS,
+        TSS2_FAPI_RC_BAD_VALUE,
+        TSS2_ESYS_RC_BAD_VALUE,
+        TSS2_MU_RC_BAD_VALUE,
+        TSS2_TCTI_RC_BAD_VALUE,
+        TPM2_RC_FAILURE,
+        (19u << TSS2_RC_LAYER_SHIFT) | TSS2_BASE_RC_BAD_VALUE,
+    };
+    for (size_t i = 0; i < sizeof(unchanged) / sizeof(unchanged[0]); ++i)
+        assert_int_equal(policy_to_fapi_rc(unchanged[i]), unchanged[i]);
+}
+
 int
 main(void) {
     const struct CMUnitTest tests[] = {
+        cmocka_unit_test(test_policy_error_translation),
         cmocka_unit_test(test_calculate_string),
         cmocka_unit_test(test_authorize_string),
         cmocka_unit_test(test_authorization_error_clears_found),

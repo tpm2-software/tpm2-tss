@@ -12,6 +12,8 @@
 #include "tss2_types.h"
 #include "util/aux_util.h"
 
+/* Raw field macros propagate base errors. Library callers use the
+ * ifapi_/ipolicy_ variants to translate these at the call site. */
 #define GET_OPTIONAL(name, json_name, type)                                                        \
     if (!ifapi_get_sub_object(jso, json_name, &jso2)) {                                            \
         memset(&out->name, 0, sizeof(type));                                                       \
@@ -42,6 +44,11 @@
         }                                                                                          \
     }
 
+/* These three helpers return layerless TSS2_BASE_RC_* for their own failures.
+ * They do not issue TPM commands or invoke callbacks. Callers add their layer
+ * immediately at the call site. The same convention applies to the TPM JSON, crypto and list
+ * helpers in this shared library.
+ */
 TSS2_RC
 ifapi_json_char_serialize(const char *in, json_object **jso);
 

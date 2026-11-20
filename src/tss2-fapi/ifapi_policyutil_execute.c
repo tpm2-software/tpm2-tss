@@ -11,7 +11,8 @@
 #include <stdbool.h> // for true
 #include <stdlib.h>  // for calloc, NULL
 
-#include "ifapi_macros.h"           // for statecase, fallthrough, statecas...
+#include "ifapi_macros.h" // for statecase, fallthrough, statecas...
+#include "ifapi_policy.h"
 #include "ifapi_policy_callbacks.h" // for IFAPI_POLICY_EXEC_CB_CTX, ifapi_...
 #include "ifapi_policyutil_execute.h"
 #include "ifapi_profiles.h" // for IFAPI_PROFILE, IFAPI_PROFILES
@@ -66,9 +67,9 @@ new_policy(FAPI_CONTEXT            *context,
     (*current_policy)->session = ESYS_TR_NONE;
     (*current_policy)->auth_object = context->current_auth_object;
 
-    r = Tss2_PolicyInit(policy, hash_alg, &(*current_policy)->pol_exec_ctx);
+    r = policy_to_fapi_rc(Tss2_PolicyInit(policy, hash_alg, &(*current_policy)->pol_exec_ctx));
     goto_if_error(r, "Create Policy context.", error);
-    r = Tss2_PolicySetExecCallbacks((*current_policy)->pol_exec_ctx, &callbacks);
+    r = policy_to_fapi_rc(Tss2_PolicySetExecCallbacks((*current_policy)->pol_exec_ctx, &callbacks));
     goto_if_error(r, "Set Policy execution callbacks.", error);
 
     if (!context->policy.policyutil_stack) {
@@ -84,13 +85,6 @@ error:
     Tss2_PolicyFinalize(&(*current_policy)->pol_exec_ctx);
     SAFE_FREE(*current_policy);
     return r;
-}
-
-/* Preserve FAPI's public error layer while leaving ESYS/TPM/callback layers intact. */
-static TSS2_RC
-policy_to_fapi_rc(TSS2_RC r) {
-    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK)
-                                               : r;
 }
 
 /** Compute a new session which will be uses as policy session.
@@ -193,7 +187,6 @@ ifapi_policyutil_execute_prepare(FAPI_CONTEXT *context,
     return_if_null(context, "Bad context.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     r = new_policy(context, policy, hash_alg, &current_policy);
-    r = policy_to_fapi_rc(r);
     return_if_error(r, "Create new policy.");
 
     r = policy_to_fapi_rc(Tss2_PolicyExecute_Async(current_policy->pol_exec_ctx));

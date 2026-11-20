@@ -19,6 +19,14 @@
 #include "tss2_policy.h"            // for TSS2_POLICY_CALC_CALLBACKS
 #include "tss2_tpm2_types.h"        // for TPMI_ALG_HASH, TPM2B_DIGEST
 
+/* Translate only Policy errors; preserve TPM and other library error layers. */
+static inline TSS2_RC
+policy_to_fapi_rc(TSS2_RC r) {
+    return (r & TSS2_RC_LAYER_MASK) == TSS2_POLICY_RC_LAYER
+               ? TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK)
+               : r;
+}
+
 static inline void
 ifapi_policy_ctx_init(FAPI_CONTEXT *context) {
 

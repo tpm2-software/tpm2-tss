@@ -15,11 +15,12 @@
 #include "../helper/cmocka_all.h" // for assert_int_equal, assert_true, cmocka_u...
 #include "fapi_crypto.h"          // for ifapi_get_profile_sig_scheme, IFAPI_CRY...
 #include "ifapi_helpers.h"        // for ifapi_get_name, ifapi_TPMT_PUBLIC_cmp
-#include "ifapi_profiles.h"       // for IFAPI_PROFILE
-#include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_crypto.h"          // for hash functions
-#include "tss2_helpers.h"         // for ifapi_get_name
-#include "tss2_tpm2_types.h"      // for TPMT_PUBLIC, TPMT_SIG_SCHEME, TPM2_ALG_...
+#include "ifapi_macros.h"
+#include "ifapi_profiles.h"  // for IFAPI_PROFILE
+#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_crypto.h"     // for hash functions
+#include "tss2_helpers.h"    // for ifapi_get_name
+#include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPMT_SIG_SCHEME, TPM2_ALG_...
 
 #define LOGMODULE tests
 #include "util/log.h"
@@ -255,20 +256,20 @@ check_get_name(void **state) {
 
     public.nameAlg = TPM2_ALG_SHA256;
     public.authPolicy.size = 0xFFFF;
-    r = ifapi_get_name(&public, &name);
+    r = ifapi_call_base(ifapi_get_name(&public, &name));
     assert_int_equal(r, TSS2_MU_RC_INSUFFICIENT_BUFFER);
 
     wrap_activate_crypto_hash_update = true;
     will_return(__wrap_tss2_crypto_hash_update, TSS2_FAPI_RC_GENERAL_FAILURE);
 
-    r = ifapi_get_name(&in_public, &name);
+    r = ifapi_call_base(ifapi_get_name(&in_public, &name));
     assert_int_equal(r, TSS2_FAPI_RC_GENERAL_FAILURE);
     wrap_activate_crypto_hash_update = false;
 
     wrap_activate_crypto_hash_finish = true;
     will_return(__wrap_tss2_crypto_hash_finish, TSS2_FAPI_RC_GENERAL_FAILURE);
 
-    r = ifapi_get_name(&in_public, &name);
+    r = ifapi_call_base(ifapi_get_name(&in_public, &name));
     assert_int_equal(r, TSS2_FAPI_RC_GENERAL_FAILURE);
     wrap_activate_crypto_hash_finish = false;
 }

@@ -370,13 +370,14 @@ Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
 
         /* Compute Digest of the current event */
         hashAlg = object->misc.nv.public.nvPublic.nameAlg;
-        r = tss2_crypto_hash_start(&cryptoContext, hashAlg);
+        r = ifapi_call_base(tss2_crypto_hash_start(&cryptoContext, hashAlg));
         goto_if_error(r, "crypto hash start", error_cleanup);
 
-        HASH_UPDATE_BUFFER(cryptoContext, &auxData->buffer[0], auxData->size, r, error_cleanup);
+        ifapi_hash_update_buffer(cryptoContext, &auxData->buffer[0], auxData->size, r,
+                                 error_cleanup);
 
-        r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&event->digests.digests[0].digest,
-                                    &hashSize);
+        r = ifapi_call_base(tss2_crypto_hash_finish(
+            &cryptoContext, (uint8_t *)&event->digests.digests[0].digest, &hashSize));
         goto_if_error(r, "crypto hash finish", error_cleanup);
 
         event->digests.digests[0].hashAlg = hashAlg;

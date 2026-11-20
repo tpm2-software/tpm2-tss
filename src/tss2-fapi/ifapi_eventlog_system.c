@@ -624,7 +624,7 @@ ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize(json_object          *jso,
         LOG_ERROR("Bad value");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_UINT8_ARY_deserialize(jso2, &out->data);
+    r = ifapi_call_base(ifapi_json_UINT8_ARY_deserialize(jso2, &out->data));
     return_if_error(r, "BAD VALUE");
 
     if (event_type == EV_SEPARATOR) {

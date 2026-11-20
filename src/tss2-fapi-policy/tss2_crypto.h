@@ -6,6 +6,12 @@
 #ifndef TSS2_CRYPTO_H
 #define TSS2_CRYPTO_H
 
+/* TSS2_RC helpers in this shared header return TSS2_BASE_RC_* for their own
+ * failures and preserve already-layered lower-level errors (for example MU).
+ * They do not issue TPM commands or call application callbacks. FAPI/Policy
+ * callers must add their layer immediately at the call site.
+ */
+
 #include <openssl/evp.h> // for EVP_MD
 #include <stddef.h>      // for size_t
 #include <stdint.h>      // for uint8_t, uint16_t
@@ -15,6 +21,8 @@
 
 typedef struct IFAPI_CRYPTO_CONTEXT IFAPI_CRYPTO_CONTEXT_BLOB;
 
+/* Raw hash macros are for shared helpers. Library callers use the
+ * ifapi_/ipolicy_ variants to translate base errors at the call site. */
 #define HASH_UPDATE(CONTEXT, TYPE, OBJECT, R, LABEL)                                               \
     {                                                                                              \
         uint8_t buffer[sizeof(TYPE)];                                                              \

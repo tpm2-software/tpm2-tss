@@ -13,6 +13,7 @@
 
 #include "ipolicy_calculate.h" // for ipolicy_calculate_policy
 #include "ipolicy_helpers.h"
+#include "ipolicy_macros.h"
 #include "ipolicy_types.h"   // for TPMT_POLICYELEMENT, TPML_POLICYELEMENTS
 #include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
 #include "tss2_crypto.h"     // for tss2_crypto_hash_finish, ifapi_cryp...
@@ -141,19 +142,19 @@ compute_policy_pcr(TPMS_POLICYPCR     *policy,
     return_if_error(r, "Compute policy digest and selection.");
 
     LOG_TRACE("Compute policy pcr");
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
     /* Update the passed policy. */
-    HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyPCR, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &current_digest->digests[digest_idx].digest,
+                               hash_size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, TPM2_CC, TPM2_CC_PolicyPCR, r, cleanup);
     /* The marshaled version of the digest list will be added. */
-    HASH_UPDATE(cryptoContext, TPML_PCR_SELECTION, &pcr_selection, r, cleanup);
-    HASH_UPDATE_BUFFER(cryptoContext, &pcr_digest.buffer[0], hash_size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, TPML_PCR_SELECTION, &pcr_selection, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &pcr_digest.buffer[0], hash_size, r, cleanup);
 
-    r = tss2_crypto_hash_finish(&cryptoContext,
-                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size));
     goto_if_error(r, "crypto hash finish", cleanup);
 
 cleanup:
@@ -195,31 +196,33 @@ calculate_policy_key_param(TPM2_CC       command_code,
     TSS2_RC                    r = TSS2_RC_SUCCESS;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
 
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
     LOGBLOB_DEBUG((uint8_t *)digest, hash_size, "Digest Start");
 
     /* First compute hash from passed policy digest and command code
        and optionally the object name */
-    HASH_UPDATE_BUFFER(cryptoContext, digest, hash_size, r, cleanup);
-    HASH_UPDATE(cryptoContext, TPM2_CC, command_code, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, digest, hash_size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, TPM2_CC, command_code, r, cleanup);
     if (name && name->size > 0) {
         LOGBLOB_DEBUG(&name->name[0], name->size, "Key name");
-        HASH_UPDATE_BUFFER(cryptoContext, &name->name[0], name->size, r, cleanup);
+        ipolicy_hash_update_buffer(cryptoContext, &name->name[0], name->size, r, cleanup);
     }
-    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)digest, &hash_size);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)digest, &hash_size));
     LOGBLOB_DEBUG((uint8_t *)digest, hash_size, "Digest Finish");
     goto_if_error(r, "crypto hash finish", cleanup);
 
     /* Use policyRef for second hash computation */
     if (policyRef) {
-        r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+        r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
         return_if_error(r, "crypto hash start");
 
-        HASH_UPDATE_BUFFER(cryptoContext, digest, hash_size, r, cleanup);
-        HASH_UPDATE_BUFFER(cryptoContext, &policyRef->buffer[0], policyRef->size, r, cleanup);
-        r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)digest, &hash_size);
+        ipolicy_hash_update_buffer(cryptoContext, digest, hash_size, r, cleanup);
+        ipolicy_hash_update_buffer(cryptoContext, &policyRef->buffer[0], policyRef->size, r,
+                                   cleanup);
+        r = ipolicy_call_base(
+            tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)digest, &hash_size));
         goto_if_error(r, "crypto hash finish", cleanup);
     }
 
@@ -305,7 +308,7 @@ calculate_policy_authorize_nv(TPMS_POLICYAUTHORIZENV *policy,
        policy execution it will be set. */
     policy->nvPublic.attributes |= TPMA_NV_WRITTEN;
 
-    r = tss2_nv_get_name(&policy->nvPublic, &nv_name);
+    r = ipolicy_call_base(tss2_nv_get_name(&policy->nvPublic, &nv_name));
     return_if_error(r, "Compute NV name");
 
     if (!(hash_size = tss2_hash_get_digest_size(current_hash_alg))) {
@@ -362,21 +365,21 @@ calculate_policy_duplicate(TPMS_POLICYDUPLICATIONSELECT *policy,
     return_if_error(r, "Get hash alg for digest.");
 
     LOG_TRACE("Compute policy");
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
     /* Update the policy digest */
-    HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyDuplicationSelect, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &current_digest->digests[digest_idx].digest,
+                               hash_size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, TPM2_CC, TPM2_CC_PolicyDuplicationSelect, r, cleanup);
     LOGBLOB_DEBUG(&policy->newParentName.name[0], policy->newParentName.size,
                   "Policy Duplicate Parent Name");
-    HASH_UPDATE_BUFFER(cryptoContext, &policy->newParentName.name[0], policy->newParentName.size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, BYTE, policy->includeObject, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &policy->newParentName.name[0],
+                               policy->newParentName.size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, BYTE, policy->includeObject, r, cleanup);
 
-    r = tss2_crypto_hash_finish(&cryptoContext,
-                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size));
     goto_if_error(r, "crypto hash finish", cleanup);
 
     LOGBLOB_DEBUG((uint8_t *)&current_digest->digests[digest_idx].digest, hash_size,
@@ -525,30 +528,30 @@ calculate_policy_counter_timer(TPMS_POLICYCOUNTERTIMER *policy,
     r = get_policy_digest_idx(current_digest, current_hash_alg, &digest_idx);
     return_if_error(r, "Get hash alg for digest.");
 
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
     /* Compute a has value from the offset, the timer value and the operation. */
-    HASH_UPDATE_BUFFER(cryptoContext, &policy->operandB.buffer[0], policy->operandB.size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, UINT16, policy->offset, r, cleanup);
-    HASH_UPDATE(cryptoContext, UINT16, policy->operation, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &policy->operandB.buffer[0], policy->operandB.size, r,
+                               cleanup);
+    ipolicy_hash_update(cryptoContext, UINT16, policy->offset, r, cleanup);
+    ipolicy_hash_update(cryptoContext, UINT16, policy->operation, r, cleanup);
 
-    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&counter_timer_hash.buffer[0],
-                                &hash_size);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&counter_timer_hash.buffer[0], &hash_size));
     return_if_error(r, "crypto hash finish");
 
     /* Extend the policy digest from the hash value computed above and the
        command code. */
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
-    HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyCounterTimer, r, cleanup);
-    HASH_UPDATE_BUFFER(cryptoContext, &counter_timer_hash.buffer[0], hash_size, r, cleanup);
-    r = tss2_crypto_hash_finish(&cryptoContext,
-                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    ipolicy_hash_update_buffer(cryptoContext, &current_digest->digests[digest_idx].digest,
+                               hash_size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, TPM2_CC, TPM2_CC_PolicyCounterTimer, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &counter_timer_hash.buffer[0], hash_size, r, cleanup);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size));
 cleanup:
     if (cryptoContext)
         tss2_crypto_hash_abort(&cryptoContext);
@@ -595,19 +598,19 @@ calculate_simple_policy(TPM2_CC             command_code1,
     return_if_error(r, "Get hash alg for digest.");
 
     /* Update the policy */
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
-    HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
-                       cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &current_digest->digests[digest_idx].digest,
+                               hash_size, r, cleanup);
     if (command_code1) {
-        HASH_UPDATE(cryptoContext, TPM2_CC, command_code1, r, cleanup);
+        ipolicy_hash_update(cryptoContext, TPM2_CC, command_code1, r, cleanup);
     }
     if (command_code2) {
-        HASH_UPDATE(cryptoContext, TPM2_CC, command_code2, r, cleanup);
+        ipolicy_hash_update(cryptoContext, TPM2_CC, command_code2, r, cleanup);
     }
-    r = tss2_crypto_hash_finish(&cryptoContext,
-                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size));
 
 cleanup:
     if (cryptoContext)
@@ -764,15 +767,15 @@ calculate_policy_digest_hash(TPM2B_DIGEST       *digest,
     return_if_error(r, "Get hash alg for digest.");
 
     /* Update the policy. */
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
-    HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, TPM2_CC, command_code, r, cleanup);
-    HASH_UPDATE_BUFFER(cryptoContext, &digest->buffer[0], digest->size, r, cleanup);
-    r = tss2_crypto_hash_finish(&cryptoContext,
-                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    ipolicy_hash_update_buffer(cryptoContext, &current_digest->digests[digest_idx].digest,
+                               hash_size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, TPM2_CC, command_code, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &digest->buffer[0], digest->size, r, cleanup);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size));
 cleanup:
     if (cryptoContext)
         tss2_crypto_hash_abort(&cryptoContext);
@@ -813,15 +816,16 @@ calculate_policy_name_hash(TPMS_POLICYNAMEHASH *policy,
     }
 
     /* Compute of the index of the current policy in the passed digest list */
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
     /* Compute name hash from the list of object names */
     for (i = 0; i < policy->count; i++) {
-        HASH_UPDATE_BUFFER(cryptoContext, &policy->objectNames[i].name[0],
-                           policy->objectNames[i].size, r, cleanup);
+        ipolicy_hash_update_buffer(cryptoContext, &policy->objectNames[i].name[0],
+                                   policy->objectNames[i].size, r, cleanup);
     }
-    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&policy->nameHash.buffer[0], &hash_size);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&policy->nameHash.buffer[0], &hash_size));
     return_if_error(r, "crypto hash finish");
 
     policy->nameHash.size = hash_size;
@@ -903,15 +907,15 @@ calculate_policy_locality(TPMS_POLICYLOCALITY *policy,
     return_if_error(r, "Get hash alg for digest.");
 
     /* Update the policy */
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
-    HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyLocality, r, cleanup);
-    HASH_UPDATE(cryptoContext, BYTE, policy->locality, r, cleanup);
-    r = tss2_crypto_hash_finish(&cryptoContext,
-                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    ipolicy_hash_update_buffer(cryptoContext, &current_digest->digests[digest_idx].digest,
+                               hash_size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, TPM2_CC, TPM2_CC_PolicyLocality, r, cleanup);
+    ipolicy_hash_update(cryptoContext, BYTE, policy->locality, r, cleanup);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size));
 
 cleanup:
     if (cryptoContext)
@@ -955,16 +959,16 @@ calculate_policy_nv_written(TPMS_POLICYNVWRITTEN *policy,
     return_if_error(r, "Get hash alg for digest.");
 
     /* Update the policy */
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
-    HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyNvWritten, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &current_digest->digests[digest_idx].digest,
+                               hash_size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, TPM2_CC, TPM2_CC_PolicyNvWritten, r, cleanup);
     /* Update the expected attribute value. */
-    HASH_UPDATE(cryptoContext, BYTE, policy->writtenSet, r, cleanup);
-    r = tss2_crypto_hash_finish(&cryptoContext,
-                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    ipolicy_hash_update(cryptoContext, BYTE, policy->writtenSet, r, cleanup);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size));
 
 cleanup:
     if (cryptoContext)
@@ -1009,37 +1013,38 @@ calculate_policy_nv(TPMS_POLICYNV      *policy,
 
     /* Compute NV name from public info */
 
-    r = tss2_nv_get_name(&policy->nvPublic, &nv_name);
+    r = ipolicy_call_base(tss2_nv_get_name(&policy->nvPublic, &nv_name));
     return_if_error(r, "Compute NV name");
 
     /* Compute of the index of the current policy in the passed digest list */
     r = get_policy_digest_idx(current_digest, current_hash_alg, &digest_idx);
     return_if_error(r, "Get hash alg for digest.");
 
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
     /* Compute the hash for the compare operation. */
-    HASH_UPDATE_BUFFER(cryptoContext, &policy->operandB.buffer[0], policy->operandB.size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, UINT16, policy->offset, r, cleanup);
-    HASH_UPDATE(cryptoContext, UINT16, policy->operation, r, cleanup);
-    r = tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&nv_hash.buffer[0], &hash_size);
+    ipolicy_hash_update_buffer(cryptoContext, &policy->operandB.buffer[0], policy->operandB.size, r,
+                               cleanup);
+    ipolicy_hash_update(cryptoContext, UINT16, policy->offset, r, cleanup);
+    ipolicy_hash_update(cryptoContext, UINT16, policy->operation, r, cleanup);
+    r = ipolicy_call_base(
+        tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&nv_hash.buffer[0], &hash_size));
     return_if_error(r, "crypto hash finish");
 
     nv_hash.size = hash_size;
 
     /* Update the policy with the hash of the compare operation and the NV name. */
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
-    HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyNV, r, cleanup);
-    HASH_UPDATE_BUFFER(cryptoContext, &nv_hash.buffer[0], nv_hash.size, r, cleanup)
-    HASH_UPDATE_BUFFER(cryptoContext, &nv_name.name[0], nv_name.size, r, cleanup);
-    r = tss2_crypto_hash_finish(&cryptoContext,
-                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    ipolicy_hash_update_buffer(cryptoContext, &current_digest->digests[digest_idx].digest,
+                               hash_size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, TPM2_CC, TPM2_CC_PolicyNV, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &nv_hash.buffer[0], nv_hash.size, r, cleanup)
+        ipolicy_hash_update_buffer(cryptoContext, &nv_name.name[0], nv_name.size, r, cleanup);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size));
     goto_if_error(r, "crypto hash finish", cleanup);
 
 cleanup:
@@ -1092,10 +1097,10 @@ calculate_policy_or(TPMS_POLICYOR      *policyOr,
     }
     /* Reset the or policy digest because the digest is included in all sub policies */
     memset(&current_digest->digests[digest_idx], 0, hash_size);
-    r = tss2_crypto_hash_start(&cryptoContext, hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, hash_alg));
     return_if_error(r, "crypto hash start");
-    r = tss2_crypto_hash_update(
-        cryptoContext, (const uint8_t *)&current_digest->digests[digest_idx].digest, hash_size);
+    r = ipolicy_call_base(tss2_crypto_hash_update(
+        cryptoContext, (const uint8_t *)&current_digest->digests[digest_idx].digest, hash_size));
     goto_if_error(r, "crypto hash update", cleanup);
 
     /* Start with the update of the reset digest. */
@@ -1104,24 +1109,26 @@ calculate_policy_or(TPMS_POLICYOR      *policyOr,
     r = Tss2_MU_TPM2_CC_Marshal(TPM2_CC_PolicyOR, &buffer[0], sizeof(TPM2_CC), &offset);
     goto_if_error(r, "Marshal cc", cleanup);
 
-    r = tss2_crypto_hash_update(cryptoContext, (const uint8_t *)&buffer[0], sizeof(TPM2_CC));
+    r = ipolicy_call_base(
+        tss2_crypto_hash_update(cryptoContext, (const uint8_t *)&buffer[0], sizeof(TPM2_CC)));
     goto_if_error(r, "crypto hash update", cleanup);
 
     /* Update the digest with the complete list of computed digests of the branches. */
     for (i = 0; i < policyOr->branches->count; i++) {
-        r = tss2_crypto_hash_update(cryptoContext,
+        r = ipolicy_call_base(
+            tss2_crypto_hash_update(cryptoContext,
                                     (const uint8_t *)&policyOr->branches->authorizations[i]
                                         .policyDigests.digests[digest_idx]
                                         .digest,
-                                    hash_size);
+                                    hash_size));
         log_policy_digest(&policyOr->branches->authorizations[i].policyDigests, digest_idx,
                           hash_size, "Or branch");
         current_digest->count = policyOr->branches->authorizations[i].policyDigests.count;
         goto_if_error(r, "crypto hash update", cleanup);
     }
     current_digest->digests[digest_idx].hashAlg = hash_alg;
-    r = tss2_crypto_hash_finish(&cryptoContext,
-                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size));
     log_policy_digest(current_digest, digest_idx, hash_size, "Final or digest");
     goto_if_error(r, "crypto hash finish", cleanup);
 
@@ -1181,11 +1188,12 @@ calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
                                         sizeof(TPMT_PUBLIC), &offset);
         return_if_error(r, "Marshaling TPMT_PUBLIC");
 
-        r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+        r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
         return_if_error(r, "crypto hash start");
 
-        HASH_UPDATE_BUFFER(cryptoContext, &buffer[0], offset, r, cleanup);
-        r = tss2_crypto_hash_finish(&cryptoContext, &used_template_hash->buffer[0], &digest_size);
+        ipolicy_hash_update_buffer(cryptoContext, &buffer[0], offset, r, cleanup);
+        r = ipolicy_call_base(
+            tss2_crypto_hash_finish(&cryptoContext, &used_template_hash->buffer[0], &digest_size));
         goto_if_error(r, "crypto hash finish", cleanup);
         used_template_hash->size = digest_size;
     } else {
@@ -1193,16 +1201,16 @@ calculate_policy_template(TPMS_POLICYTEMPLATE *policy,
     }
 
     LOG_TRACE("Compute policy template");
-    r = tss2_crypto_hash_start(&cryptoContext, current_hash_alg);
+    r = ipolicy_call_base(tss2_crypto_hash_start(&cryptoContext, current_hash_alg));
     return_if_error(r, "crypto hash start");
 
-    HASH_UPDATE_BUFFER(cryptoContext, &current_digest->digests[digest_idx].digest, hash_size, r,
-                       cleanup);
-    HASH_UPDATE(cryptoContext, TPM2_CC, TPM2_CC_PolicyTemplate, r, cleanup);
-    HASH_UPDATE_BUFFER(cryptoContext, &used_template_hash->buffer[0], used_template_hash->size, r,
-                       cleanup);
-    r = tss2_crypto_hash_finish(&cryptoContext,
-                                (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size);
+    ipolicy_hash_update_buffer(cryptoContext, &current_digest->digests[digest_idx].digest,
+                               hash_size, r, cleanup);
+    ipolicy_hash_update(cryptoContext, TPM2_CC, TPM2_CC_PolicyTemplate, r, cleanup);
+    ipolicy_hash_update_buffer(cryptoContext, &used_template_hash->buffer[0],
+                               used_template_hash->size, r, cleanup);
+    r = ipolicy_call_base(tss2_crypto_hash_finish(
+        &cryptoContext, (uint8_t *)&current_digest->digests[digest_idx].digest, &hash_size));
     goto_if_error(r, "crypto hash finish", cleanup);
 
     LOGBLOB_DEBUG((uint8_t *)&current_digest->digests[digest_idx].digest, hash_size,

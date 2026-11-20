@@ -175,13 +175,15 @@ ifapi_get_object_name(const char *path, TPM2B_NAME *name, void *ctx) {
 
         switch (object.objectType) {
         case IFAPI_KEY_OBJ:
-            r = ifapi_get_name(&object.misc.key.public.publicArea, (TPM2B_NAME *)name);
+            r = ifapi_call_base(
+                ifapi_get_name(&object.misc.key.public.publicArea, (TPM2B_NAME *)name));
             break;
         case IFAPI_EXT_PUB_KEY_OBJ:
-            r = ifapi_get_name(&object.misc.ext_pub_key.public.publicArea, (TPM2B_NAME *)name);
+            r = ifapi_call_base(
+                ifapi_get_name(&object.misc.ext_pub_key.public.publicArea, (TPM2B_NAME *)name));
             break;
         case IFAPI_NV_OBJ:
-            r = tss2_nv_get_name(&object.misc.nv.public.nvPublic, name);
+            r = ifapi_call_base(tss2_nv_get_name(&object.misc.nv.public.nvPublic, name));
             break;
         default:
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Invalid object %s.", cleanup, path);
@@ -873,7 +875,7 @@ ifapi_sign_buffer(char           *key_pem,
 static TSS2_RC
 equal_policy_authorization(const char *policy, void *publicVoid, void *policyRefVoid, bool *equal) {
     TSS2_RC r = ifapi_policy_get_authorization(policy, publicVoid, policyRefVoid, equal, NULL);
-    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
+    return r;
 }
 
 /** Get policy digest for a certain hash alg.
@@ -889,11 +891,11 @@ equal_policy_authorization(const char *policy, void *publicVoid, void *policyRef
 static TSS2_RC
 get_policy_digest(const char *policy, TPMI_ALG_HASH hashAlg, TPM2B_DIGEST *digest) {
     TSS2_POLICY_CTX *ctx = NULL;
-    TSS2_RC          r = Tss2_PolicyInit(policy, hashAlg, &ctx);
+    TSS2_RC          r = policy_to_fapi_rc(Tss2_PolicyInit(policy, hashAlg, &ctx));
     if (r == TSS2_RC_SUCCESS)
-        r = Tss2_PolicyGetCalculatedDigest(ctx, digest);
+        r = policy_to_fapi_rc(Tss2_PolicyGetCalculatedDigest(ctx, digest));
     Tss2_PolicyFinalize(&ctx);
-    return rc_layer(r) == TSS2_POLICY_RC_LAYER ? TSS2_FEATURE_RC_LAYER | base_rc(r) : r;
+    return r;
 }
 
 /** Check whether policy digest can be found in policy.
@@ -1262,8 +1264,6 @@ ifapi_exec_auth_policy(TPMT_PUBLIC    *key_public,
         bool found;
         r = ifapi_policy_get_authorization(cb_ctx->policy, key_public, policyRef, &found,
                                            signature);
-        if (rc_layer(r) == TSS2_POLICY_RC_LAYER)
-            r = TSS2_FEATURE_RC_LAYER | base_rc(r);
         goto_if_error(r, "Get authorization", cleanup);
         if (!found) {
             goto_error(r, TSS2_FAPI_RC_POLICY_UNKNOWN, "Authorization not found.", cleanup);

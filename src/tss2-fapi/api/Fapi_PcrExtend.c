@@ -261,8 +261,9 @@ Fapi_PcrExtend_Finish(FAPI_CONTEXT *context) {
         goto_if_error_reset_state(r, "GetCapablity_Finish", error_cleanup);
 
         /* Construct the filename for the eventlog file */
-        r = ifapi_asprintf(&command->event_log_file, "%s/%s%i", context->eventlog.log_dir,
-                           IFAPI_PCR_LOG_FILE, command->pcrIndex);
+        r = ifapi_call_base(ifapi_asprintf(&command->event_log_file, "%s/%s%i",
+                                           context->eventlog.log_dir, IFAPI_PCR_LOG_FILE,
+                                           command->pcrIndex));
         return_if_error_reset_state(r, "Out of memory.");
 
         /* Check wheter the event log has to be read. */

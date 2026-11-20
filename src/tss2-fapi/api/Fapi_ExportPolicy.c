@@ -232,21 +232,22 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
         command->hashAlg = context->profiles.default_profile.nameAlg;
         command->profile_idx = 0;
 
-        r = Tss2_PolicyInit(command->policy, command->hashAlg, &context->policy.tss2_policy_ctx);
+        r = policy_to_fapi_rc(
+            Tss2_PolicyInit(command->policy, command->hashAlg, &context->policy.tss2_policy_ctx));
         goto_if_error(r, "Instantiate policy.", error_cleanup);
 
-        r = Tss2_PolicySetCalcCallbacks(context->policy.tss2_policy_ctx,
-                                        &context->policy.calc_callbacks);
+        r = policy_to_fapi_rc(Tss2_PolicySetCalcCallbacks(context->policy.tss2_policy_ctx,
+                                                          &context->policy.calc_callbacks));
         goto_if_error(r, "Set policy calc callbacks.", error_cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_EXPORT_PREPARE_CALCULATE_POLICY);
-        r = Tss2_PolicyCalculate_Async(context->policy.tss2_policy_ctx);
+        r = policy_to_fapi_rc(Tss2_PolicyCalculate_Async(context->policy.tss2_policy_ctx));
         goto_if_error(r, "Instantiate policy.", error_cleanup);
         fallthrough;
 
     statecase(context->state, POLICY_EXPORT_CALCULATE_POLICY);
-        r = Tss2_PolicyCalculate_Finish(context->policy.tss2_policy_ctx);
+        r = policy_to_fapi_rc(Tss2_PolicyCalculate_Finish(context->policy.tss2_policy_ctx));
         FAPI_SYNC(r, "Instantiate policy.", error_cleanup);
 
         if (r) {
@@ -255,9 +256,9 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
         }
         /* Loop for all hash algs in current profiles. */
         if (command->profile_idx < context->profiles.num_profiles) {
-            r = Tss2_PolicySetHashAlg(
+            r = policy_to_fapi_rc(Tss2_PolicySetHashAlg(
                 context->policy.tss2_policy_ctx,
-                context->profiles.profiles[command->profile_idx].profile.nameAlg);
+                context->profiles.profiles[command->profile_idx].profile.nameAlg));
             goto_if_error(r, "Set policy hashalg", error_cleanup);
             command->profile_idx++;
             context->state = POLICY_EXPORT_PREPARE_CALCULATE_POLICY;
@@ -265,10 +266,8 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
         }
 
         /* Export all current results, including partially calculated policies. */
-        r = Tss2_PolicyGetJSON(context->policy.tss2_policy_ctx, jsonPolicy);
+        r = policy_to_fapi_rc(Tss2_PolicyGetJSON(context->policy.tss2_policy_ctx, jsonPolicy));
         Tss2_PolicyFinalize(&context->policy.tss2_policy_ctx);
-        if (r)
-            r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
         goto_if_error(r, "Serialize policy", error_cleanup);
 
         break;
@@ -293,8 +292,6 @@ Fapi_ExportPolicy_Finish(FAPI_CONTEXT *context, char **jsonPolicy) {
         /* Serialize the policy to JSON. */
         *jsonPolicy = strdup(context->cmd.ExportPolicy.object.policy);
         r = *jsonPolicy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
-        if (r)
-            r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
         goto_if_error(r, "Serialize policy", error_cleanup);
         break;
 
@@ -324,7 +321,5 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     SAFE_FREE(command->path);
     context->state = FAPI_STATE_INIT;
-    if (rc_layer(r) == TSS2_POLICY_RC_LAYER)
-        r = TSS2_FEATURE_RC_LAYER | base_rc(r);
     return r;
 }

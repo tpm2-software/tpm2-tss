@@ -6,6 +6,12 @@
 #ifndef FAPI_TPM_JSON_SERIALIZE_H
 #define FAPI_TPM_JSON_SERIALIZE_H
 
+/* TSS2_RC helpers in this shared header return TSS2_BASE_RC_* for their own
+ * failures and preserve already-layered lower-level errors (for example MU).
+ * They do not issue TPM commands or call application callbacks. FAPI/Policy
+ * callers must add their layer immediately at the call site.
+ */
+
 #include <json.h> // for json_object
 
 #include "tss2_common.h"     // for TSS2_RC, UINT32, INT32, UINT16, UINT64

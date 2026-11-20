@@ -36,10 +36,12 @@ policy_rel_path_to_abs_path(IFAPI_POLICY_STORE *pstore, const char *rel_path, ch
     TSS2_RC r;
 
     if (ifapi_path_type_p(rel_path, IFAPI_POLICY_PATH)) {
-        r = ifapi_asprintf(abs_path, "%s%s%s.json", pstore->policydir, IFAPI_FILE_DELIM, rel_path);
+        r = ifapi_call_base(
+            ifapi_asprintf(abs_path, "%s%s%s.json", pstore->policydir, IFAPI_FILE_DELIM, rel_path));
     } else {
-        r = ifapi_asprintf(abs_path, "%s%s%s%s%s.json", pstore->policydir, IFAPI_FILE_DELIM,
-                           IFAPI_POLICY_PATH, IFAPI_FILE_DELIM, rel_path);
+        r = ifapi_call_base(ifapi_asprintf(abs_path, "%s%s%s%s%s.json", pstore->policydir,
+                                           IFAPI_FILE_DELIM, IFAPI_POLICY_PATH, IFAPI_FILE_DELIM,
+                                           rel_path));
     }
     return_if_error(r, "Create policy file name.");
     return r;
@@ -99,12 +101,12 @@ ifapi_policy_store_initialize(IFAPI_POLICY_STORE *pstore, const char *config_pol
 
     ifapi_strdup_check(pstore->policydir, config_policydir, r, error);
 
-    r = ifapi_asprintf(
+    r = ifapi_call_base(ifapi_asprintf(
         &policy_dir, "%s%s%s", config_policydir,
         (strcmp(&config_policydir[strlen(config_policydir) - 1], IFAPI_FILE_DELIM) == 0)
             ? ""
             : IFAPI_FILE_DELIM,
-        IFAPI_POLICY_PATH);
+        IFAPI_POLICY_PATH));
     goto_if_error(r, "Out of memory.", error);
 
     r = ifapi_io_check_create_dir(policy_dir, FAPI_READ);

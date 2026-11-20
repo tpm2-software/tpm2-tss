@@ -21,10 +21,11 @@
 #include "ifapi_json_deserialize.h" // for ifapi_json_IFAPI_OBJECT_d...
 #include "ifapi_keystore.h"         // for IFAPI_OBJECT, ifapi_clean...
 #include "ifapi_macros.h"           // for goto_if_error_reset_state
-#include "ifapi_policy_store.h"     // for ifapi_policy_store_store_...
-#include "ifapi_profiles.h"         // for ifapi_profiles_get, IFAPI...
-#include "tpm_json_deserialize.h"   // for ifapi_get_sub_object
-#include "tss2_common.h"            // for TSS2_RC, BYTE, TSS2_RC_SU...
+#include "ifapi_policy.h"
+#include "ifapi_policy_store.h"   // for ifapi_policy_store_store_...
+#include "ifapi_profiles.h"       // for ifapi_profiles_get, IFAPI...
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object
+#include "tss2_common.h"          // for TSS2_RC, BYTE, TSS2_RC_SU...
 #include "tss2_crypto.h"
 #include "tss2_esys.h"       // for Esys_SetTimeout, Esys_Flu...
 #include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Import
@@ -187,10 +188,11 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
         extPubKey->certificate = NULL;
 
         TPM2_ALG_ID rsaOrEcc = ifapi_get_signature_algorithm_from_pem(extPubKey->pem_ext_public);
-        r = ifapi_initialize_sign_public(rsaOrEcc, &extPubKey->public);
+        r = ifapi_call_base(ifapi_initialize_sign_public(rsaOrEcc, &extPubKey->public));
         goto_if_error(r, "Could not initialize key template", cleanup_error);
 
-        r = ifapi_get_tpm2b_public_from_pem(extPubKey->pem_ext_public, &extPubKey->public);
+        r = ifapi_call_base(
+            ifapi_get_tpm2b_public_from_pem(extPubKey->pem_ext_public, &extPubKey->public));
         goto_if_error(r, "Convert PEM public key into TPM public key.", cleanup_error);
 
         extPubKey->public.publicArea.nameAlg = context->profiles.default_profile.nameAlg;
@@ -200,8 +202,8 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
             pos = 1;
         if (strncmp(&path[pos], IFAPI_PUB_KEY_DIR, strlen(IFAPI_PUB_KEY_DIR)) != 0) {
             SAFE_FREE(command->out_path);
-            r = ifapi_asprintf(&command->out_path, "%s%s%s", IFAPI_PUB_KEY_DIR, IFAPI_FILE_DELIM,
-                               &path[pos]);
+            r = ifapi_call_base(ifapi_asprintf(&command->out_path, "%s%s%s", IFAPI_PUB_KEY_DIR,
+                                               IFAPI_FILE_DELIM, &path[pos]));
             goto_if_error(r, "Allocate path name", cleanup_error);
         }
         r = ifapi_non_tpm_mode_init(context);
@@ -283,10 +285,8 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
 
             /* Validate policy semantics in the Policy lib before storing an import. */
             TSS2_POLICY_CTX *validation_ctx = NULL;
-            r = Tss2_PolicyInit(policy, TPM2_ALG_SHA256, &validation_ctx);
+            r = policy_to_fapi_rc(Tss2_PolicyInit(policy, TPM2_ALG_SHA256, &validation_ctx));
             Tss2_PolicyFinalize(&validation_ctx);
-            if (r)
-                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
             goto_if_error(r, "Invalid policy.", cleanup_error);
 
             /* Check whether an existing object would be overwritten */
@@ -325,7 +325,8 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
                 break;
 
             case IFAPI_DUPLICATE_OBJ:
-                r = ifapi_get_name(&keyTree->public_parent.publicArea, &command->parent_name);
+                r = ifapi_call_base(
+                    ifapi_get_name(&keyTree->public_parent.publicArea, &command->parent_name));
                 goto_if_error2(r, "Get parent name", cleanup_error);
 
                 context->state = IMPORT_KEY_SEARCH;
@@ -344,7 +345,8 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
             goto_if_error(r, "Invalid import data for key.", cleanup_error);
 
             /* Compute key name from public data. */
-            r = ifapi_get_name(&object->misc.key.public.publicArea, &object->misc.key.name);
+            r = ifapi_call_base(
+                ifapi_get_name(&object->misc.key.public.publicArea, &object->misc.key.name));
             goto_if_error2(r, "Get parent name", cleanup_error);
 
             /* Create session for key loading. */
@@ -461,9 +463,9 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
             command->parent_object = &context->loadKey.auth_object;
             command->public_templ.public.publicArea.nameAlg
                 = command->parent_object->misc.key.public.publicArea.nameAlg;
-            r = ifapi_openssl_load_private(command->ossl_priv, NULL, NULL,
-                                           &context->cmd.ImportKey.public_templ.public,
-                                           &keyTree->public, &command->sensitive);
+            r = ifapi_call_base(ifapi_openssl_load_private(
+                command->ossl_priv, NULL, NULL, &context->cmd.ImportKey.public_templ.public,
+                &keyTree->public, &command->sensitive));
 
             goto_if_error_reset_state(r, "Fapi load OSSL Key.", error_cleanup);
 
@@ -634,7 +636,8 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
             /* Concatenate keyname and parent path */
             char *ipath = NULL;
-            r = ifapi_asprintf(&ipath, "%s%s%s", command->parent_path, IFAPI_FILE_DELIM, base_name);
+            r = ifapi_call_base(ifapi_asprintf(&ipath, "%s%s%s", command->parent_path,
+                                               IFAPI_FILE_DELIM, base_name));
             goto_if_error(r, "Out of memory.", error_cleanup);
 
             SAFE_FREE(command->out_path);
@@ -661,8 +664,6 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
         if (keyTree->policy) {
             newObject->policy = strdup(keyTree->policy);
             r = newObject->policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
-            if (r)
-                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
             goto_if_error(r, "Copy policy.", error_cleanup);
         } else {
             newObject->policy = NULL;

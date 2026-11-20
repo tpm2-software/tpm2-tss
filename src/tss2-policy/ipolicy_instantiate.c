@@ -91,7 +91,7 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
                 goto_if_error(r, "Get policy elements.", error_cleanup);
             }
         } else {
-            r = push_object_to_list(&policy->elements[i], policy_element_list);
+            r = ipolicy_call_base(push_object_to_list(&policy->elements[i], policy_element_list));
             goto_if_error(r, "Get policy elements.", error_cleanup);
         }
     }
@@ -162,7 +162,7 @@ set_pem_key_param(const char      *keyPEM,
     name->size = 0;
 
     TPM2_ALG_ID rsaOrEcc = ifapi_get_signature_algorithm_from_pem(keyPEM);
-    r = ifapi_initialize_sign_public(rsaOrEcc, &public);
+    r = ipolicy_call_base(ifapi_initialize_sign_public(rsaOrEcc, &public));
     return_if_error(r, "Could not initialize public info of key");
 
     if (rsaOrEcc == TPM2_ALG_RSA) {
@@ -178,11 +178,11 @@ set_pem_key_param(const char      *keyPEM,
         }
     }
 
-    r = ifapi_get_tpm2b_public_from_pem(keyPEM, &public);
+    r = ipolicy_call_base(ifapi_get_tpm2b_public_from_pem(keyPEM, &public));
     return_if_error(r, "Invalid PEM key.");
     public.publicArea.nameAlg = hash_alg;
     *keyPublic = public.publicArea;
-    r = ifapi_get_name(&public.publicArea, name);
+    r = ipolicy_call_base(ifapi_get_name(&public.publicArea, name));
     return_if_error(r, "Compute key name.");
 
     return TSS2_RC_SUCCESS;
@@ -270,8 +270,8 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
-            r = ifapi_get_name(&pol_element->element.PolicySigned.keyPublic,
-                               &pol_element->element.PolicySigned.publicKey);
+            r = ipolicy_call_base(ifapi_get_name(&pol_element->element.PolicySigned.keyPublic,
+                                                 &pol_element->element.PolicySigned.publicKey));
             return_if_error(r, "Compute name of key.");
 
             /* Clear keypath, only public data and name will be needed */
@@ -388,8 +388,9 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             if (pol_element->element.PolicyDuplicationSelect.newParentPublic.type) {
                 /* public data is already set in policy. Path will not be needed. */
                 SAFE_FREE(pol_element->element.PolicyDuplicationSelect.newParentPath);
-                r = ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
-                                   &pol_element->element.PolicyDuplicationSelect.newParentName);
+                r = ipolicy_call_base(
+                    ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
+                                   &pol_element->element.PolicyDuplicationSelect.newParentName));
                 return_if_error(r, "Compute object name");
 
                 pol_element->element.PolicyDuplicationSelect.newParentPublic.type = 0;
@@ -407,8 +408,9 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
-            r = ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
-                               &pol_element->element.PolicyDuplicationSelect.newParentName);
+            r = ipolicy_call_base(
+                ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
+                               &pol_element->element.PolicyDuplicationSelect.newParentName));
             return_if_error(r, "Compute key name");
 
             /* Clear keypath, and newParentPublic only public data will be needed */
@@ -440,8 +442,9 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             if (pol_element->element.PolicyAuthorize.keyPublic.type) {
                 /* Public info found in template, key path will not be needed. */
                 SAFE_FREE(pol_element->element.PolicyAuthorize.keyPath);
-                r = ifapi_get_name(&pol_element->element.PolicyAuthorize.keyPublic,
-                                   &pol_element->element.PolicyAuthorize.keyName);
+                r = ipolicy_call_base(
+                    ifapi_get_name(&pol_element->element.PolicyAuthorize.keyPublic,
+                                   &pol_element->element.PolicyAuthorize.keyName));
                 return_if_error(r, "Compute key name");
 
                 break;
@@ -474,8 +477,8 @@ ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
             return_if_error(r, "read_finish failed");
 
             /* Compute key name from public info */
-            r = ifapi_get_name(&pol_element->element.PolicyAuthorize.keyPublic,
-                               &pol_element->element.PolicyAuthorize.keyName);
+            r = ipolicy_call_base(ifapi_get_name(&pol_element->element.PolicyAuthorize.keyPublic,
+                                                 &pol_element->element.PolicyAuthorize.keyName));
             return_if_error(r, "Compute key name");
 
             /* Clear key path, only public data will be needed */
