@@ -11,8 +11,8 @@
 #include <stddef.h>  // for size_t
 
 #include "efi_event.h"   // for TCG_EVENT_HEADER2, TCG_DIGEST2, TCG_EVENT
-#include "fapi_types.h"  // for UINT8_ARY
 #include "tss2_common.h" // for UINT32, BYTE, TSS2_RC
+#include "tss2_types.h"  // for UINT8_ARY
 
 typedef UINT32 TCG_EVENT_TYPE;
 

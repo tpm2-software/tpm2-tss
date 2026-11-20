@@ -23,6 +23,7 @@
 #include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
 #include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR, Esys_NV_SetBi...
 #include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_NvSetBits, Fapi_NvSe...
+#include "tss2_helpers.h"    // for ifapi_initialize_object'
 #include "tss2_policy.h"     // for TSS2_OBJECT
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h" // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
@@ -174,7 +175,7 @@ Fapi_NvSetBits_Async(FAPI_CONTEXT *context, char const *nvPath, uint64_t bitmap)
     /* Store the parameter in the FAPI context */
     memset(&context->nv_cmd, 0, sizeof(IFAPI_NV_Cmds));
     memset(&command->nv_object, 0, sizeof(IFAPI_OBJECT));
-    strdup_check(command->nvPath, nvPath, r, error_cleanup);
+    ifapi_strdup_check(command->nvPath, nvPath, r, error_cleanup);
     command->bitmap = bitmap;
     command->rdata = NULL;
 
@@ -251,7 +252,7 @@ Fapi_NvSetBits_Finish(FAPI_CONTEXT *context) {
                                   error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         if (object->objectType != IFAPI_NV_OBJ)
@@ -292,7 +293,7 @@ Fapi_NvSetBits_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_SET_BITS_WAIT_FOR_SESSION)
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       object->misc.nv.public.nvPublic.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
@@ -301,7 +302,7 @@ Fapi_NvSetBits_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_SET_BITS_AUTHORIZE)
     /* Authorize the session to be used for accessing the NV index. */
         r = ifapi_authorize_object(context, authObject, &auth_session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Authorize NV object.", error_cleanup);
 
         /* Call the SetBit TPM operation. */
@@ -314,7 +315,7 @@ Fapi_NvSetBits_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, NV_SET_BITS_AUTH_SENT)
         r = Esys_NV_SetBits_Finish(context->esys);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "FAPI NV_SetBits_Finish", error_cleanup);
 
         /* Set written bit in keystore */
@@ -332,7 +333,7 @@ Fapi_NvSetBits_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_SET_BITS_WRITE)
     /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "write_finish failed", error_cleanup);
 
         fallthrough;
@@ -340,12 +341,12 @@ Fapi_NvSetBits_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_SET_BITS_CLEANUP)
     /* Cleanup the session used for authorization. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         LOG_DEBUG("success");
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

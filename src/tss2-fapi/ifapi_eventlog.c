@@ -12,16 +12,17 @@
 #include <stdlib.h> // for free
 #include <string.h> // for memset, strdup, memcpy
 
-#include "fapi_int.h"   // for IFAPI_PCR_LOG_FILE, FAPI_...
-#include "fapi_types.h" // for UINT8_ARY
+#include "fapi_int.h" // for IFAPI_PCR_LOG_FILE, FAPI_...
 #include "ifapi_eventlog.h"
-#include "ifapi_helpers.h"                 // for ifapi_asprintf, ifapi_cal...
+#include "ifapi_helpers.h"                 // ifapi_cal...
 #include "ifapi_ima_eventlog.h"            // for IFAPI_IMA_EVENT, ifapi_re...
 #include "ifapi_json_deserialize.h"        // for ifapi_json_IFAPI_EVENT_de...
 #include "ifapi_json_eventlog_serialize.h" // for ifapi_get_tcg_firmware_ev...
 #include "ifapi_json_serialize.h"          // for ifapi_json_IFAPI_EVENT_se...
 #include "ifapi_macros.h"                  // for check_not_null, statecase
 #include "tpm_json_deserialize.h"          // for ifapi_parse_json
+#include "tss2_helpers.h"                  // for ifapi_asprintf, ifapi_cal...
+#include "tss2_types.h"                    // for UINT8_ARY
 
 #define LOGMODULE fapi
 #include "util/log.h" // for goto_if_error, SAFE_FREE
@@ -233,7 +234,7 @@ loop:
         }
 
         *log = strdup(json_object_to_json_string_ext(eventlog->log, JSON_C_TO_STRING_PRETTY));
-        check_oom(*log);
+        ifapi_check_oom(*log);
         json_object_put(eventlog->log);
         eventlog->log = NULL;
         eventlog->state = IFAPI_EVENTLOG_STATE_INIT;
@@ -243,8 +244,9 @@ loop:
     switch (eventlog->state) {
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_INIT)
     /* Construct the filename for the eventlog file */
-        r = ifapi_asprintf(&event_log_file, "%s/%s%i", eventlog->log_dir, IFAPI_PCR_LOG_FILE,
-                           eventlog->pcrList[eventlog->pcrListIdx]);
+        r = ifapi_call_base(ifapi_asprintf(&event_log_file, "%s/%s%i", eventlog->log_dir,
+                                           IFAPI_PCR_LOG_FILE,
+                                           eventlog->pcrList[eventlog->pcrListIdx]));
         return_if_error(r, "Out of memory.");
 
         if (!ifapi_io_path_exists(event_log_file)) {
@@ -267,7 +269,7 @@ loop:
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_READING)
     /* Finish the reading of the eventlog file and return it directly to the output parameter */
         r = ifapi_io_read_finish(io, (uint8_t **)&logstr, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         logpart = ifapi_parse_json(logstr);
@@ -299,7 +301,7 @@ loop:
         eventlog->state = IFAPI_EVENTLOG_STATE_INIT;
         goto loop;
 
-    statecasedefault(eventlog->state);
+    ifapi_statecasedefault(eventlog->state);
     }
     return TSS2_RC_SUCCESS;
 
@@ -345,7 +347,7 @@ ifapi_eventlog_append_check(IFAPI_EVENTLOG *eventlog, IFAPI_IO *io) {
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_READING)
     /* Finish the reading of the eventlog file and return it directly to the output parameter */
         r = ifapi_io_read_finish(io, (uint8_t **)&logstr, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error(r, "read_finish failed");
 
         /* If a log was read, we deserialize it to JSON. Otherwise we start a new log. */
@@ -369,7 +371,7 @@ ifapi_eventlog_append_check(IFAPI_EVENTLOG *eventlog, IFAPI_IO *io) {
         }
         break;
 
-    statecasedefault(eventlog->state);
+    ifapi_statecasedefault(eventlog->state);
     }
     eventlog->state = IFAPI_EVENTLOG_STATE_APPENDING;
 
@@ -440,8 +442,8 @@ ifapi_eventlog_append_finish(IFAPI_EVENTLOG *eventlog, IFAPI_IO *io, const IFAPI
         logstr2 = json_object_to_json_string_ext(eventlog->log, JSON_C_TO_STRING_PRETTY);
 
         /* Construct the filename for the eventlog file */
-        r = ifapi_asprintf(&event_log_file, "%s/%s%i", eventlog->log_dir, IFAPI_PCR_LOG_FILE,
-                           eventlog->event.pcr);
+        r = ifapi_call_base(ifapi_asprintf(&event_log_file, "%s/%s%i", eventlog->log_dir,
+                                           IFAPI_PCR_LOG_FILE, eventlog->event.pcr));
         goto_if_error(r, "Create file name", error_cleanup);
 
         /* Start writing the eventlog back to disk */
@@ -455,13 +457,13 @@ ifapi_eventlog_append_finish(IFAPI_EVENTLOG *eventlog, IFAPI_IO *io, const IFAPI
     statecase(eventlog->state, IFAPI_EVENTLOG_STATE_WRITING)
     /* Finish writing the eventlog */
         r = ifapi_io_write_finish(io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "read_finish failed", error_cleanup);
 
         eventlog->state = IFAPI_EVENTLOG_STATE_INIT;
         break;
 
-    statecasedefault(eventlog->state);
+    ifapi_statecasedefault(eventlog->state);
     }
 
     return TSS2_RC_SUCCESS;

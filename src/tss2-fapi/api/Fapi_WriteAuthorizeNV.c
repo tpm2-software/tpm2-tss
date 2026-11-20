@@ -12,17 +12,17 @@
 
 #include "fapi_int.h"           // for FAPI_CONTEXT, IFAPI_NV_Cmds, IFAPI_a...
 #include "fapi_util.h"          // for ifapi_cleanup_session, ifapi_esys_se...
-#include "ifapi_helpers.h"      // for ifapi_cleanup_policy
 #include "ifapi_io.h"           // for ifapi_io_poll
 #include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_OB...
 #include "ifapi_macros.h"       // for statecase, check_not_null, fallthrough
 #include "ifapi_policy.h"       // for ifapi_calculate_tree
 #include "ifapi_policy_store.h" // for ifapi_policy_store_store_async, ifap...
-#include "ifapi_policy_types.h" // for TPMS_POLICY
 #include "tss2_common.h"        // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_WriteAuthorizeNv
+#include "tss2_helpers.h"       // for internal helpers
 #include "tss2_mu.h"            // for Tss2_MU_TPMI_ALG_HASH_Marshal
+#include "tss2_policy.h"        // for Policy context API
 #include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"    // for TPMI_ALG_HASH, TPM2B_NV_PUBLIC, TPMS...
 
@@ -170,8 +170,8 @@ Fapi_WriteAuthorizeNv_Async(FAPI_CONTEXT *context, char const *nvPath, char cons
     return_if_error(r, "Initialize WriterAuthorizeNv");
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->policyPath, policyPath, r, error_cleanup);
-    strdup_check(nvCmd->nvPath, nvPath, r, error_cleanup);
+    ifapi_strdup_check(command->policyPath, policyPath, r, error_cleanup);
+    ifapi_strdup_check(nvCmd->nvPath, nvPath, r, error_cleanup);
 
     /* Load the metadata for the NV index to be written to from the keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, nvCmd->nvPath);
@@ -237,7 +237,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     IFAPI_NV_Cmds              *nvCmd = &context->nv_cmd;
     IFAPI_OBJECT               *object = &nvCmd->nv_object;
     TPMI_ALG_HASH               hashAlg;
-    TPMS_POLICY                *policy = &context->policy.policy;
+    char                      **policy = &nvCmd->policy;
 
     switch (context->state) {
     statecase(context->state, WRITE_AUTHORIZE_NV_READ_NV)
@@ -248,7 +248,7 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
                                   error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         ifapi_cleanup_ifapi_object(object);
@@ -262,12 +262,11 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, WRITE_AUTHORIZE_NV_CALCULATE_POLICY)
     /* Calculate the policy digest for the referenced policy. */
         hashAlg = object->misc.nv.public.nvPublic.nameAlg;
-        r = ifapi_calculate_tree(context, command->policyPath, policy, hashAlg,
-                                 &command->digest_idx, &command->hash_size);
+        r = ifapi_calculate_tree(context, command->policyPath, policy, hashAlg, &command->digest);
         if (r != TSS2_RC_SUCCESS) {
             ifapi_cleanup_ifapi_object(object);
         }
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi calculate tree.", error_cleanup);
 
         fallthrough;
@@ -284,17 +283,16 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
                                           &nvCmd->nv_buffer[0], maxNvSize, &offset);
         goto_if_error_reset_state(r, "FAPI marshal hash alg", error_cleanup);
 
-        void *currentDigest = &policy->policyDigests.digests[command->digest_idx].digest;
-        memcpy(&nvCmd->nv_buffer[offset], currentDigest, command->hash_size);
+        memcpy(&nvCmd->nv_buffer[offset], command->digest.buffer, command->digest.size);
 
         /* Store these data in the context to be used for re-entry on nv_write. */
-        nvCmd->numBytes = command->hash_size + sizeof(TPMI_ALG_HASH);
+        nvCmd->numBytes = command->digest.size + sizeof(TPMI_ALG_HASH);
         fallthrough;
 
     statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_NV_RAM)
     /* Perform the actual NV Write operation. */
         r = ifapi_nv_write(context, nvCmd->nvPath, 0, nvCmd->nv_buffer, context->nv_cmd.numBytes);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI NV Write", error_cleanup);
 
         /* Perform esys serialization if necessary */
@@ -310,21 +308,21 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_OBJCECT)
     /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         fallthrough;
 
     statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_POLICY_PREPARE)
         r = ifapi_policy_store_store_async(&context->pstore, &context->io, command->policyPath,
-                                           policy);
+                                           *policy);
         goto_if_error_reset_state(r, "Could not open: %s", error_cleanup, command->policyPath);
         fallthrough;
 
     statecase(context->state, WRITE_AUTHORIZE_NV_WRITE_POLICY)
     /* Save policy with computed digest */
         r = ifapi_policy_store_store_finish(&context->pstore, &context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         fallthrough;
@@ -332,10 +330,10 @@ Fapi_WriteAuthorizeNv_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, WRITE_AUTHORIZE_NV_CLEANUP)
     /* Cleanup the session used for authorizing access to the NV index. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:
@@ -344,7 +342,7 @@ error_cleanup:
     SAFE_FREE(nvCmd->nvPath);
     SAFE_FREE(nvCmd->nv_buffer);
     ifapi_session_clean(context);
-    ifapi_cleanup_policy(policy);
+    SAFE_FREE(*policy);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);

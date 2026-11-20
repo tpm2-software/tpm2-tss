@@ -17,11 +17,12 @@
 #include <strings.h>     // for strncasecmp
 
 #include "ifapi_eventlog.h" // for CONTENT, CONTENT_TYPE
-#include "ifapi_helpers.h"  // for ifapi_check_json_object_fields
 #include "ifapi_ima_eventlog.h"
-#include "ifapi_macros.h"         // for goto_if_null2, return_error2, goto...
+#include "ifapi_macros.h" // for goto_if_null2, return_error2, goto...
+#include "json_helpers.h"
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifapi_json_U...
 #include "tss2_common.h"          // for UINT8, TSS2_RC, TSS2_FAPI_RC_BAD_V...
+#include "tss2_helpers.h"         // for ifapi_check_json_object_fields
 #include "tss2_tpm2_types.h"      // for TPM2_SHA1_DIGEST_SIZE, TPM2_SHA512...
 
 #define LOGMODULE fapijson
@@ -885,7 +886,7 @@ ifapi_json_IFAPI_IMA_EVENT_deserialize(json_object *jso, IFAPI_IMA_EVENT *out) {
             return TSS2_FAPI_RC_BAD_VALUE;
         }
     }
-    r = ifapi_json_UINT8_ARY_deserialize(jso2, &out->template_value);
+    r = ifapi_call_base(ifapi_json_UINT8_ARY_deserialize(jso2, &out->template_value));
     return_if_error(r, "Bad value for field \"template_data \".");
 
     LOG_TRACE("true");

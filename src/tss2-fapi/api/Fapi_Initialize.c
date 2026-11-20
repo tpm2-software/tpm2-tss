@@ -71,7 +71,7 @@ Fapi_Initialize(FAPI_CONTEXT **context, char const *uri) {
 
     r = Fapi_Initialize_Async(context, uri);
     return_if_error(r, "FAPI Async call initialize");
-    check_oom(*context);
+    ifapi_check_oom(*context);
 
     do {
         /* We wait for file I/O to be ready if the FAPI state automata
@@ -192,7 +192,7 @@ Fapi_Initialize_Finish(FAPI_CONTEXT **context) {
     statecase((*context)->state, INITIALIZE_READ);
         /* This is the entry point; finishing the initialization of the config module. */
         r = ifapi_config_initialize_finish(&(*context)->io, &(*context)->config);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Could not finish initialization", cleanup_return);
 
         /* Initialize the event log module. */
@@ -248,7 +248,7 @@ Fapi_Initialize_Finish(FAPI_CONTEXT **context) {
 
     statecase((*context)->state, INITIALIZE_WAIT_FOR_CAP);
         r = Esys_GetCapability_Finish((*context)->esys, &moreData, capability);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Get capability data.", cleanup_return);
 
         /* Check if the TPM returns the NV_BUFFER_MAX value. */
@@ -294,7 +294,7 @@ Fapi_Initialize_Finish(FAPI_CONTEXT **context) {
 
     statecase((*context)->state, INITIALIZE_READ_TIME);
         r = Esys_ReadClock_Finish((*context)->esys, &currentTime);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "ReadClock_Finish.", cleanup_return);
 
         (*context)->init_time = *currentTime;
@@ -347,7 +347,7 @@ Fapi_Initialize_Finish(FAPI_CONTEXT **context) {
 
     statecase((*context)->state, INITIALIZE_READ_NULL_PRIMARY);
         r = ifapi_keystore_load_finish(&(*context)->keystore, &(*context)->io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error2(r, "Could not open %s", cleanup_return,
                        command->pathlist[command->path_idx]);
 
@@ -369,11 +369,11 @@ Fapi_Initialize_Finish(FAPI_CONTEXT **context) {
 
     statecase((*context)->state, INITIALIZE_CHECK_EXISTING_NV);
         r = ifapi_create_nv_objects((*context), &(*context)->create_nv);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error2(r, "Create NV objects", cleanup_return);
         break;
 
-    statecasedefault((*context)->state);
+    ifapi_statecasedefault((*context)->state);
     }
 
     (*context)->state = FAPI_STATE_INIT;

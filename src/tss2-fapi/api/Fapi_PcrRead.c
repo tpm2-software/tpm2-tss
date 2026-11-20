@@ -226,7 +226,7 @@ Fapi_PcrRead_Finish(FAPI_CONTEXT *context,
     statecase(context->state, PCR_READ_READ_PCR);
         SAFE_FREE(command->pcrValues);
         r = Esys_PCR_Read_Finish(context->esys, &command->update_count, NULL, &command->pcrValues);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "PCR_ReadWithLog_Finish", cleanup);
 
         /* Copy the return values to the output parameters. */
@@ -259,7 +259,7 @@ Fapi_PcrRead_Finish(FAPI_CONTEXT *context,
 
     statecase(context->state, PCR_READ_READ_EVENT_LIST);
         r = ifapi_eventlog_get_finish(&context->eventlog, NULL, &context->io, pcrLog);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Error getting event log", cleanup);
 
         if (pcrValue)
@@ -268,7 +268,7 @@ Fapi_PcrRead_Finish(FAPI_CONTEXT *context,
             *pcrValueSize = command->pcrValueSize;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:

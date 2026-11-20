@@ -10,13 +10,12 @@
 #include <stdbool.h> // for bool
 #include <stdlib.h>  // for size_t
 
-#include "fapi_types.h"         // for UINT8_ARY
-#include "ifapi_io.h"           // for IFAPI_IO
-#include "ifapi_policy_types.h" // for TPMS_POLICY
-#include "tss2_common.h"        // for TSS2_RC, UINT32
-#include "tss2_esys.h"          // for ESYS_TR
-#include "tss2_policy.h"        // for TSS2_OBJECT
-#include "tss2_tpm2_types.h"    // for TPMI_YES_NO, TPM2B_PUBLIC, TPM2B_DIGEST
+#include "ifapi_io.h"        // for IFAPI_IO
+#include "tss2_common.h"     // for TSS2_RC, UINT32
+#include "tss2_esys.h"       // for ESYS_TR
+#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_tpm2_types.h" // for TPMI_YES_NO, TPM2B_PUBLIC, TPM2B_DIGEST
+#include "tss2_types.h"      // for UINT8_ARY
 
 typedef UINT32 IFAPI_OBJECT_TYPE_CONSTANT;
 #define IFAPI_OBJ_NONE        0 /**< Tag for key resource */
@@ -97,7 +96,7 @@ typedef struct {
     TPM2B_PUBLIC public;        /**< The public information of the key to be duplicated */
     TPM2B_PUBLIC public_parent; /**< The public information of the new parent key */
     char        *certificate;   /**< The certificate of the key to be duplicated */
-    TPMS_POLICY *policy;        /**< The policy of the key to be duplicated */
+    char        *policy;        /**< Owned policy JSON of the key to be duplicated */
 } IFAPI_DUPLICATE;
 
 /** type for representing public info of a TPM-Resource
@@ -160,8 +159,8 @@ typedef struct IFAPI_OBJECT {
      * the linux kernel linked list uses with container_of, but
      * since offsetof isn't C99, we won't use it here.
      */
-    TSS2_OBJECT public; /**< public fields of an IFAPI_OBJECT */
-    TPMS_POLICY               *policy;
+    TSS2_OBJECT public;                    /**< public fields of an IFAPI_OBJECT */
+    char                      *policy;     /**< Owned policy JSON; embedded as an object on disk. */
     IFAPI_OBJECT_TYPE_CONSTANT objectType; /**< Selector for object type */
     IFAPI_OBJECT_UNION         misc;       /**< Resource specific information */
     TPMI_YES_NO                system;     /**< Store the object in the system wide

@@ -205,7 +205,7 @@ Fapi_Encrypt_Async(FAPI_CONTEXT  *context,
     memcpy(inData, plainText, plainTextSize);
     command->in_data = inData;
 
-    strdup_check(command->keyPath, keyPath, r, error_cleanup);
+    ifapi_strdup_check(command->keyPath, keyPath, r, error_cleanup);
 
     command->in_dataSize = plainTextSize;
     command->key_handle = ESYS_TR_NONE;
@@ -277,7 +277,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
         /* Retrieve the profile for the provided key in order to get the
            encryption scheme below. */
         r = ifapi_profiles_get(&context->profiles, command->keyPath, &command->profile);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         if (strncmp(command->keyPath, "/ext", 4) == 0) {
@@ -299,7 +299,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
     statecase(context->state, DATA_ENCRYPT_WAIT_FOR_SESSION);
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Get session.", error_cleanup);
 
         /* Load the reference key by loading all of its parents starting from the SRK. */
@@ -311,7 +311,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
     statecase(context->state, DATA_ENCRYPT_WAIT_FOR_KEY);
         r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT, &command->key_handle,
                                    &command->key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " Load key.", error_cleanup);
 
         public = &command->key_object->misc.key.public;
@@ -351,7 +351,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
 
     statecase(context->state, DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION);
         r = Esys_RSA_Encrypt_Finish(context->esys, &tpmCipherText);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         if (r == 0x00000084) {
             LOG_ERROR("The data to be encrypted might be too large. Common values are "
                       "256 bytes for no OAEP or 190 with OAEP.");
@@ -381,7 +381,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
         if (strncmp(command->keyPath, "/ext", 4) == 0
             || !command->key_object->misc.key.persistent_handle) {
             r = Esys_FlushContext_Finish(context->esys);
-            return_try_again(r);
+            ifapi_return_try_again(r);
 
             goto_if_error(r, "Error: FlushContext", error_cleanup);
         }
@@ -391,7 +391,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
     statecase(context->state, DATA_ENCRYPT_CLEAN)
     /* Cleanup the sessions. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         *cipherText = command->cipherText;
         if (cipherTextSize)
@@ -403,7 +403,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
         goto_if_null2(command->key_object, "Allocating key", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, command->key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         r = ifapi_rsa_encrypt(command->key_object->misc.ext_pub_key.pem_ext_public,
@@ -417,7 +417,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
             *cipherTextSize = command->cipherTextSize;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
     context->state = FAPI_STATE_INIT;

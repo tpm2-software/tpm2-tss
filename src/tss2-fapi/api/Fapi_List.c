@@ -120,7 +120,7 @@ Fapi_List_Async(FAPI_CONTEXT *context, char const *searchPath) {
     return_if_error(r, "Initialize List");
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->searchPath, searchPath, r, error_cleanup);
+    ifapi_strdup_check(command->searchPath, searchPath, r, error_cleanup);
 
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;

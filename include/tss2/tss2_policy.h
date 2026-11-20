@@ -4,15 +4,21 @@
 #ifndef INCLUDE_TSS2_TSS2_POLICY_H_
 #define INCLUDE_TSS2_TSS2_POLICY_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "tss2_esys.h"
+
 #include "tss2_tpm2_types.h"
 
 #define TSS2_POLICY_RC_LAYER TSS2_RC_LAYER(13)
 
 #define TSS2_POLICY_RC_GENERAL_FAILURE                                                             \
     ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_GENERAL_FAILURE))
+#define TSS2_POLICY_RC_NOT_IMPLEMENTED                                                             \
+    ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_NOT_IMPLEMENTED))
+#define TSS2_POLICY_RC_AUTHORIZATION_FAILED                                                        \
+    ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_AUTHORIZATION_FAILED))
 #define TSS2_POLICY_RC_IO_ERROR ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_IO_ERROR))
 #define TSS2_POLICY_RC_AUTHORIZATION_UNKNOWN                                                       \
     ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_AUTHORIZATION_UNKNOWN))
@@ -23,14 +29,15 @@
 #define TSS2_POLICY_RC_POLICY_NOT_CALCULATED                                                       \
     ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_NOT_PROVISIONED))
 #define TSS2_POLICY_RC_BUFFER_TOO_SMALL ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_BAD_SIZE))
+#define TSS2_POLICY_RC_BAD_SEQUENCE     ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_BAD_SEQUENCE))
+#define TSS2_POLICY_RC_TRY_AGAIN        ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_TRY_AGAIN))
 #define TSS2_POLICY_RC_NULL_CALLBACK    ((TSS2_RC)(TSS2_POLICY_RC_LAYER | TSS2_BASE_RC_CALLBACK_NULL))
 
-typedef struct TSS2_POLICY_CTX TSS2_POLICY_CTX;
-
-typedef struct TSS2_OBJECT TSS2_OBJECT;
-struct TSS2_OBJECT {
-    ESYS_TR handle; /**< Handle used by ESAPI */
-};
+/** Variable-length byte buffer used by policy authorizations. */
+typedef struct {
+    size_t   size;
+    uint8_t *buffer;
+} TSS2_POLICY_BUFFER;
 
 /** Policy type TPMS_PCRVALUE
  */
@@ -47,6 +54,13 @@ typedef struct TPML_PCRVALUES TPML_PCRVALUES;
 struct TPML_PCRVALUES {
     UINT32        count;  /**< None */
     TPMS_PCRVALUE pcrs[]; /**< Array of pcr values */
+};
+
+typedef struct TSS2_POLICY_CTX TSS2_POLICY_CTX;
+
+typedef struct TSS2_OBJECT TSS2_OBJECT;
+struct TSS2_OBJECT {
+    ESYS_TR handle; /**< Handle used by ESAPI */
 };
 
 typedef TSS2_RC (*TSS2_POLICY_CB_PUBLIC)(const char *path,
@@ -107,7 +121,8 @@ typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_LOAD)(TPM2B_NAME *name,
                                             ESYS_TR    *object_handle,
                                             void       *userdata);
 
-typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLSEL)(TSS2_OBJECT *auth_object,
+/* description is borrowed policy text; the callback must not modify or free it. */
+typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLSEL)(char        *description,
                                               const char **branch_names,
                                               size_t       branch_count,
                                               size_t      *branch_idx,
@@ -137,6 +152,11 @@ typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLDUP)(TPM2B_NAME *name, void *userdata);
 
 typedef TSS2_RC (*TSS2_POLICY_CB_EXEC_POLACTION)(const char *action, void *userdata);
 
+/* Return true when the engine should flush the transient authorization handle. */
+typedef bool (*TSS2_POLICY_CB_EXEC_FLUSHAUTH)(ESYS_TR auth_handle, void *userdata);
+/* Called after successful PolicyCpHash execution. */
+typedef void (*TSS2_POLICY_CB_EXEC_CPHASH)(void *userdata);
+
 typedef struct TSS2_POLICY_EXEC_CALLBACKS TSS2_POLICY_EXEC_CALLBACKS;
 
 struct TSS2_POLICY_EXEC_CALLBACKS {
@@ -160,6 +180,11 @@ struct TSS2_POLICY_EXEC_CALLBACKS {
     void                         *cbdup_userdata;
     TSS2_POLICY_CB_EXEC_POLACTION cbaction; /**< Callback for policy action */
     void                         *cbaction_userdata;
+    /* Optional application hooks for authorization-handle ownership and CpHash. */
+    TSS2_POLICY_CB_EXEC_FLUSHAUTH cbflushauth;
+    void                         *cbflushauth_userdata;
+    TSS2_POLICY_CB_EXEC_CPHASH    cbcphash;
+    void                         *cbcphash_userdata;
 };
 
 TSS2_RC
@@ -178,8 +203,22 @@ Tss2_PolicySetExecCallbacks(TSS2_POLICY_CTX            *policy_ctx,
 TSS2_RC
 Tss2_PolicyExecute(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, ESYS_TR session);
 
+/* Prepare a calculated policy; does not require a session or issue TPM commands. */
+TSS2_RC
+Tss2_PolicyExecute_Async(TSS2_POLICY_CTX *policy_ctx);
+
+/* Returns TRY_AGAIN while execution or an application callback is pending. */
+TSS2_RC
+Tss2_PolicyExecute_Finish(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, ESYS_TR session);
+
 TSS2_RC
 Tss2_PolicyCalculate(TSS2_POLICY_CTX *policy_ctx);
+
+TSS2_RC
+Tss2_PolicyCalculate_Async(TSS2_POLICY_CTX *policy_ctx);
+
+TSS2_RC
+Tss2_PolicyCalculate_Finish(TSS2_POLICY_CTX *policy_ctx);
 
 TSS2_RC
 Tss2_PolicyGetCalculatedJSON(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *size);
@@ -189,5 +228,31 @@ Tss2_PolicyGetDescription(TSS2_POLICY_CTX *policy_ctx, char *description, size_t
 
 TSS2_RC
 Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest);
+
+TSS2_RC
+Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg);
+
+/* Serialize the current policy, including authorizations and partial calculation
+ * results. No successful calculation is required. The caller frees *json.
+ * The output slot must not own a string. Errors leave *json NULL.
+ */
+TSS2_RC
+Tss2_PolicyGetJSON(const TSS2_POLICY_CTX *policy_ctx, char **json);
+
+/* Access authorizations through the policy context. The context retains ownership of
+ * its policy. Adding an authorization while execution is pending is rejected.
+ */
+TSS2_RC
+Tss2_PolicyContextAddAuthorization(TSS2_POLICY_CTX      *policy_ctx,
+                                   const TPMT_SIGNATURE *signature,
+                                   const TPM2B_DIGEST   *policy_ref,
+                                   const TPMT_PUBLIC    *key);
+
+TSS2_RC
+Tss2_PolicyContextGetAuthorization(const TSS2_POLICY_CTX *policy_ctx,
+                                   const TPMT_PUBLIC     *key,
+                                   const TPM2B_NONCE     *policy_ref,
+                                   bool                  *found,
+                                   TPMT_SIGNATURE        *signature);
 
 #endif /* INCLUDE_TSS2_TSS2_POLICY_H_ */

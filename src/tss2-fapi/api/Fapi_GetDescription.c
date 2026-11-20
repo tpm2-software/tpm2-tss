@@ -163,7 +163,7 @@ Fapi_GetDescription_Finish(FAPI_CONTEXT *context, char **description) {
     switch (context->state) {
     statecase(context->state, PATH_GET_DESCRIPTION_READ);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         /* Retrieve the description from the metadata object. */
@@ -175,7 +175,7 @@ Fapi_GetDescription_Finish(FAPI_CONTEXT *context, char **description) {
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
     LOG_TRACE("finished");
     /* Cleanup any intermediate results and state stored in the context. */

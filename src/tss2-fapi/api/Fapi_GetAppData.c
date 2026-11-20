@@ -13,13 +13,13 @@
 #include <string.h> // for memcpy
 
 #include "fapi_int.h"       // for FAPI_CONTEXT, PATH_GET_DESCRIPTION_READ
-#include "fapi_types.h"     // for UINT8_ARY
 #include "fapi_util.h"      // for ifapi_session_init
 #include "ifapi_io.h"       // for ifapi_io_poll
 #include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
 #include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
 #include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
 #include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetAppData, Fapi_GetA...
+#include "tss2_types.h"     // for UINT8_ARY
 
 #define LOGMODULE fapi
 #include "util/log.h" // for LOG_TRACE, return_if_error, base_rc, got...
@@ -178,7 +178,7 @@ Fapi_GetAppData_Finish(FAPI_CONTEXT *context, uint8_t **appData, size_t *appData
     switch (context->state) {
     statecase(context->state, PATH_GET_DESCRIPTION_READ);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         /* Get the application data from the metadata objects. */
@@ -209,7 +209,7 @@ Fapi_GetAppData_Finish(FAPI_CONTEXT *context, uint8_t **appData, size_t *appData
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:

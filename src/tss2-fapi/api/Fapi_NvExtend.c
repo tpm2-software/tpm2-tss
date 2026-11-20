@@ -13,7 +13,6 @@
 #include <stdlib.h> // for NULL, malloc, size_t
 #include <string.h> // for memcpy, memset
 
-#include "fapi_crypto.h"          // for ifapi_crypto_hash_abort, ifapi_cry...
 #include "fapi_int.h"             // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_EX...
 #include "fapi_util.h"            // for ifapi_authorize_object, ifapi_clea...
 #include "ifapi_eventlog.h"       // for IFAPI_EVENT, IFAPI_EVENT_UNION
@@ -24,8 +23,10 @@
 #include "ifapi_macros.h"         // for check_not_null, goto_if_error_rese...
 #include "ifapi_profiles.h"       // for IFAPI_PROFILES
 #include "tss2_common.h"          // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_crypto.h"          // for tss2_crypto_hash_abort, ifapi_cry...
 #include "tss2_esys.h"            // for Esys_SetTimeout, ESYS_TR, Esys_NV_...
 #include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_NvExtend, Fapi_...
+#include "tss2_helpers.h"         // for ifapi_init_hierachy_object'
 #include "tss2_policy.h"          // for TSS2_OBJECT
 #include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h"      // for TPM2B_MAX_NV_BUFFER, TPM2B_NV_PUBLIC
@@ -199,8 +200,8 @@ Fapi_NvExtend_Async(FAPI_CONTEXT  *context,
     goto_if_null2(in_data, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
     memcpy(in_data, data, dataSize);
     command->data = in_data;
-    strdup_check(command->nvPath, nvPath, r, error_cleanup);
-    strdup_check(command->logData, logData, r, error_cleanup);
+    ifapi_strdup_check(command->nvPath, nvPath, r, error_cleanup);
+    ifapi_strdup_check(command->logData, logData, r, error_cleanup);
     command->numBytes = dataSize;
 
     /* Reset all context-internal session state information. */
@@ -288,7 +289,7 @@ Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
                                   error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         if (object->objectType != IFAPI_NV_OBJ)
@@ -330,7 +331,7 @@ Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_EXTEND_WAIT_FOR_SESSION)
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       object->misc.nv.public.nvPublic.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         if (command->numBytes > TPM2_MAX_NV_BUFFER_SIZE) {
@@ -346,7 +347,7 @@ Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_EXTEND_AUTHORIZE)
     /* Prepare the authorization data for the NV index. */
         r = ifapi_authorize_object(context, authObject, &auth_session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Authorize NV object.", error_cleanup);
 
         /* Extend the data into the NV index. */
@@ -361,7 +362,7 @@ Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, NV_EXTEND_AUTH_SENT)
         r = Esys_NV_Extend_Finish(context->esys);
-        return_try_again(r);
+        ifapi_return_try_again(r);
 
         goto_if_error_reset_state(r, "FAPI NV_Extend_Finish", error_cleanup);
 
@@ -369,13 +370,14 @@ Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
 
         /* Compute Digest of the current event */
         hashAlg = object->misc.nv.public.nvPublic.nameAlg;
-        r = ifapi_crypto_hash_start(&cryptoContext, hashAlg);
+        r = ifapi_call_base(tss2_crypto_hash_start(&cryptoContext, hashAlg));
         goto_if_error(r, "crypto hash start", error_cleanup);
 
-        HASH_UPDATE_BUFFER(cryptoContext, &auxData->buffer[0], auxData->size, r, error_cleanup);
+        ifapi_hash_update_buffer(cryptoContext, &auxData->buffer[0], auxData->size, r,
+                                 error_cleanup);
 
-        r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&event->digests.digests[0].digest,
-                                     &hashSize);
+        r = ifapi_call_base(tss2_crypto_hash_finish(
+            &cryptoContext, (uint8_t *)&event->digests.digests[0].digest, &hashSize));
         goto_if_error(r, "crypto hash finish", error_cleanup);
 
         event->digests.digests[0].hashAlg = hashAlg;
@@ -385,7 +387,7 @@ Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
         memcpy(&event->content.tss_event.data.buffer[0], &auxData->buffer[0], auxData->size);
         event->content.tss_event.data.size = auxData->size;
         if (command->logData) {
-            strdup_check(event->content.tss_event.event, command->logData, r, error_cleanup);
+            ifapi_strdup_check(event->content.tss_event.event, command->logData, r, error_cleanup);
         } else {
             event->content.tss_event.event = NULL;
         }
@@ -417,7 +419,7 @@ Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
             return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
         }
         SAFE_FREE(object->misc.nv.event_log);
-        strdup_check(
+        ifapi_strdup_check(
             object->misc.nv.event_log,
             json_object_to_json_string_ext(command->jso_event_log, JSON_C_TO_STRING_PRETTY), r,
             error_cleanup);
@@ -440,20 +442,20 @@ Fapi_NvExtend_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_EXTEND_WRITE)
     /* Finish writing the NV object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "write_finish failed", error_cleanup);
         fallthrough;
 
     statecase(context->state, NV_EXTEND_CLEANUP)
     /* Cleanup the session. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         r = TSS2_RC_SUCCESS;
 
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:
@@ -465,7 +467,7 @@ error_cleanup:
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     if (cryptoContext) {
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     }
     if (event)
         ifapi_cleanup_event(event);
