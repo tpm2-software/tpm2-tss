@@ -122,10 +122,8 @@ ipolicy_eval_instantiate_async(
     TSS2_RC r;
 
     /* Compute list of all policy elements which have to be instantiated */
-    if (context->policy_elements) {
-        // ifapi_free_object_list(context->policy_elements);
-        context->policy_elements = NULL;
-    }
+    tss2_free_node_list(context->policy_elements);
+    context->policy_elements = NULL;
     r = get_policy_elements(policy->policy, &context->policy_elements);
     return r;
 }

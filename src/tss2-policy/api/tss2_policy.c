@@ -42,6 +42,8 @@
         return TSS2_POLICY_RC_BAD_REFERENCE;                                                       \
     }
 
+enum policy_state { POLICY_STATE_IDLE = 0, POLICY_STATE_CALCULATING, POLICY_STATE_EXECUTING };
+
 struct TSS2_POLICY_CTX {
     bool                       is_calculated;
     TPM2B_DIGEST               digest;
@@ -50,7 +52,7 @@ struct TSS2_POLICY_CTX {
     IPOLICY_EVAL_INST_CTX      eval_ctx;
     IPOLICY_EXEC_CTX           exec_ctx;
     ESYS_CONTEXT              *exec_esys;
-    bool                       executing;
+    enum policy_state          state;
     TPMS_POLICY               *policy_ptr;
     size_t                     digest_idx;
     size_t                     hash_size;
@@ -256,12 +258,16 @@ cleanup:
  *
  * @retval TSS2_RC_SUCCESS If the callbacks were set or cleared.
  * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx is NULL.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE If calculation or execution is in progress.
  */
 TSS2_RC
 Tss2_PolicySetCalcCallbacks(TSS2_POLICY_CTX            *policy_ctx,
                             TSS2_POLICY_CALC_CALLBACKS *calc_callbacks) {
 
     policy_check_not_null(policy_ctx);
+
+    if (policy_ctx->state != POLICY_STATE_IDLE)
+        return TSS2_POLICY_RC_BAD_SEQUENCE;
 
     if (calc_callbacks) {
         policy_ctx->calc_callbacks = *calc_callbacks;
@@ -282,7 +288,7 @@ Tss2_PolicySetCalcCallbacks(TSS2_POLICY_CTX            *policy_ctx,
  *
  * @retval TSS2_RC_SUCCESS If the callbacks were set or cleared.
  * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx is NULL.
- * @retval TSS2_POLICY_RC_BAD_SEQUENCE If policy execution is in progress.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE If calculation or execution is in progress.
  */
 TSS2_RC
 Tss2_PolicySetExecCallbacks(TSS2_POLICY_CTX            *policy_ctx,
@@ -290,7 +296,7 @@ Tss2_PolicySetExecCallbacks(TSS2_POLICY_CTX            *policy_ctx,
 
     policy_check_not_null(policy_ctx);
 
-    if (policy_ctx->executing)
+    if (policy_ctx->state != POLICY_STATE_IDLE)
         return TSS2_POLICY_RC_BAD_SEQUENCE;
 
     if (exec_callbacks) {
@@ -333,7 +339,7 @@ Tss2_PolicyExecute(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, ESYS_TR 
 
     TSS2_RC r = TSS2_POLICY_RC_GENERAL_FAILURE;
 
-    if (policy_ctx->executing)
+    if (policy_ctx->state != POLICY_STATE_IDLE)
         return TSS2_POLICY_RC_BAD_SEQUENCE;
 
     if (!policy_ctx->is_calculated) {
@@ -387,7 +393,7 @@ Tss2_PolicyExecute_Async(TSS2_POLICY_CTX *policy_ctx) {
     TSS2_RC r;
 
     policy_check_not_null(policy_ctx);
-    if (policy_ctx->executing)
+    if (policy_ctx->state != POLICY_STATE_IDLE)
         return TSS2_POLICY_RC_BAD_SEQUENCE;
 
     r = check_policy_is_calculated(policy_ctx->policy_ptr, policy_ctx->hash_alg, policy_ctx);
@@ -399,14 +405,15 @@ Tss2_PolicyExecute_Async(TSS2_POLICY_CTX *policy_ctx) {
     policy_ctx->exec_ctx.state = POLICY_EXECUTE_INIT;
     policy_ctx->exec_ctx.flush_handle = false;
     policy_ctx->exec_ctx.session = ESYS_TR_NONE;
+    policy_ctx->state = POLICY_STATE_EXECUTING;
     r = ipolicy_policyeval_execute_prepare(&policy_ctx->exec_ctx, policy_ctx->hash_alg,
                                            policy_ctx->policy_ptr);
     if (r != TSS2_RC_SUCCESS) {
         tss2_free_node_list(policy_ctx->exec_ctx.policy_elements);
         policy_ctx->exec_ctx.policy_elements = NULL;
+        policy_ctx->state = POLICY_STATE_IDLE;
         return r;
     }
-    policy_ctx->executing = true;
     return TSS2_RC_SUCCESS;
 }
 
@@ -451,7 +458,7 @@ TSS2_RC
 Tss2_PolicyExecute_Finish(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, ESYS_TR session) {
     policy_check_not_null(policy_ctx);
     policy_check_not_null(esys_ctx);
-    if (!policy_ctx->executing)
+    if (policy_ctx->state != POLICY_STATE_EXECUTING)
         return TSS2_POLICY_RC_BAD_SEQUENCE;
     if (session == 0 || session == ESYS_TR_NONE)
         return TSS2_POLICY_RC_BAD_VALUE;
@@ -471,7 +478,7 @@ Tss2_PolicyExecute_Finish(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, E
     SAFE_FREE(policy_ctx->exec_ctx.buffer);
     SAFE_FREE(policy_ctx->exec_ctx.pem_key);
     policy_ctx->exec_esys = NULL;
-    policy_ctx->executing = false;
+    policy_ctx->state = POLICY_STATE_IDLE;
     return r;
 }
 
@@ -516,65 +523,65 @@ cleanup:
     return r;
 }
 
-/** Calculate a policy without executing policy commands.
+/** Prepare policy calculation and reserve the context until Finish completes.
  *
+ * Callback configuration, hash algorithm and authorizations must remain unchanged
+ * while calculation is pending. A cached digest still requires a matching Finish.
  *
- * @param[in] policy_ctx The policy context from Tss2_PolicyInstantiate.
- * @param[in] hash_alg The hash algorithm used for the policy computation.
- * @param[out] digest The calculated digest of the policy.
- * @param[out] The JSON string of the instantiated policy.
+ * @param[in,out] policy_ctx The initialized policy context.
  *
- * @retval TSS2_RC_SUCCESS After the end of the wait.
- * @retval TSS2_POLICY_RC_IO_ERROR if reading the policy file fails.
- * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_POLICY_RC_MEMORY: if not enough memory can be allocated.
- * @retval TSS2_POLICY_RC_GENERAL_FAILURE If an internal error occurs, which is
- *         not covered by other return codes.
- * @retval TSS2_POLICY_RC_BAD_VALUE If wrong values are detected during policy calculation.
- * @retval TSS2_POLICY_RC_NULL_CALLBACK is a callback is NULL and needed for policy
- *         calculation.
+ * @retval TSS2_RC_SUCCESS If calculation was prepared.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx is NULL.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE If calculation or execution is in progress.
+ * @retval TSS2_POLICY_RC_BAD_VALUE If a cached digest uses an unsupported hash algorithm.
  */
 TSS2_RC
 Tss2_PolicyCalculate_Async(TSS2_POLICY_CTX *policy_ctx) {
     policy_check_not_null(policy_ctx);
 
-    if (policy_ctx->executing)
+    if (policy_ctx->state != POLICY_STATE_IDLE)
         return TSS2_POLICY_RC_BAD_SEQUENCE;
     TSS2_RC r
         = check_policy_is_calculated(policy_ctx->policy_ptr, policy_ctx->hash_alg, policy_ctx);
     return_if_error(r, "Check cached policy digest");
 
     policy_ctx->eval_ctx.callbacks = policy_ctx->calc_callbacks;
+    policy_ctx->state = POLICY_STATE_CALCULATING;
+    if (!policy_ctx->is_calculated) {
+        SAFE_FREE(policy_ctx->calculated.json.string);
+        policy_ctx->calculated.json.len = 0;
+    }
 
     return TSS2_RC_SUCCESS;
 }
 
-/** Calculate a policy without executing policy commands.
+/** Advance a calculation prepared by Tss2_PolicyCalculate_Async().
  *
+ * On TRY_AGAIN, service pending application I/O and call Finish again with the
+ * same context. Success or a terminal error ends the operation and releases the
+ * context for further operations. No partial digest is published on failure.
  *
- * @param[in] policy_ctx The policy context from Tss2_PolicyInstantiate.
- * @param[in] hash_alg The hash algorithm used for the policy computation.
- * @param[out] digest The calculated digest of the policy.
- * @param[out] The JSON string of the instantiated policy.
+ * @param[in,out] policy_ctx The context containing the pending calculation.
  *
- * @retval TSS2_RC_SUCCESS After the end of the wait.
- * @retval TSS2_POLICY_RC_IO_ERROR if reading the policy file fails.
- * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_POLICY_RC_MEMORY: if not enough memory can be allocated.
- * @retval TSS2_POLICY_RC_GENERAL_FAILURE If an internal error occurs, which is
- *         not covered by other return codes.
- * @retval TSS2_POLICY_RC_BAD_VALUE If wrong values are detected during policy calculation.
- * @retval TSS2_POLICY_RC_NULL_CALLBACK is a callback is NULL and needed for policy
- *         calculation.
+ * @retval TSS2_RC_SUCCESS If the calculated or cached digest is available.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx is NULL.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE If no calculation is pending.
+ * @retval TSS2_POLICY_RC_TRY_AGAIN If calculation must be resumed later.
+ * @retval TSS2_POLICY_RC_MEMORY If memory allocation fails.
+ * @retval TSS2_POLICY_RC_BAD_VALUE If calculation encounters invalid values.
+ * @retval TSS2_POLICY_RC_NULL_CALLBACK If a required calculation callback is missing.
+ * @return Errors from callbacks or lower-level components may also be returned
+ *         without changing their layer, including retry codes from other layers.
  */
 TSS2_RC
 Tss2_PolicyCalculate_Finish(TSS2_POLICY_CTX *policy_ctx) {
     policy_check_not_null(policy_ctx);
 
-    if (policy_ctx->executing)
+    if (policy_ctx->state != POLICY_STATE_CALCULATING)
         return TSS2_POLICY_RC_BAD_SEQUENCE;
 
     if (policy_ctx->is_calculated) {
+        policy_ctx->state = POLICY_STATE_IDLE;
         return TSS2_RC_SUCCESS;
     }
 
@@ -586,6 +593,13 @@ Tss2_PolicyCalculate_Finish(TSS2_POLICY_CTX *policy_ctx) {
     r = ipolicy_calculate_tree_ex(&policy_ctx->eval_ctx, policy_ctx->policy_ptr,
                                   policy_ctx->hash_alg, &digest_idx, &hash_size);
     /* Retain the pending calculation on TRY_AGAIN; publish no partial digest. */
+    if (is_try_again(r))
+        return r;
+
+    tss2_free_node_list(policy_ctx->eval_ctx.policy_elements);
+    policy_ctx->eval_ctx.policy_elements = NULL;
+    policy_ctx->eval_ctx.state = IPOLICY_INSTANTIATE_PREPARE;
+    policy_ctx->state = POLICY_STATE_IDLE;
     if (r != TSS2_RC_SUCCESS)
         return r;
 
@@ -725,6 +739,8 @@ Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest
 
 /** Set the hash algorithm used for policy calculation and execution.
  *
+ * Changing the algorithm invalidates the selected digest until calculation is
+ * requested again. Cached policy digests for other algorithms are retained.
  * This function does not recalculate the policy or validate the algorithm.
  *
  * @param[in,out] policy_ctx The initialized policy context.
@@ -732,14 +748,21 @@ Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest
  *
  * @retval TSS2_RC_SUCCESS If the hash algorithm was set.
  * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx is NULL.
- * @retval TSS2_POLICY_RC_BAD_SEQUENCE If policy execution is in progress.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE If calculation or execution is in progress.
  */
 TSS2_RC
 Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg) {
     policy_check_not_null(policy_ctx);
 
-    if (policy_ctx->executing)
+    if (policy_ctx->state != POLICY_STATE_IDLE)
         return TSS2_POLICY_RC_BAD_SEQUENCE;
+    if (policy_ctx->hash_alg == hash_alg)
+        return TSS2_RC_SUCCESS;
+
+    policy_ctx->is_calculated = false;
+    memset(&policy_ctx->digest, 0, sizeof(policy_ctx->digest));
+    policy_ctx->digest_idx = 0;
+    policy_ctx->hash_size = 0;
     policy_ctx->hash_alg = hash_alg;
     policy_ctx->exec_ctx.hash_alg = hash_alg;
     return TSS2_RC_SUCCESS;
@@ -762,6 +785,7 @@ Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy_ctx) {
     if (!p) {
         return;
     }
+    tss2_free_node_list(p->eval_ctx.policy_elements);
     tss2_free_node_list(p->exec_ctx.policy_elements);
     SAFE_FREE(p->exec_ctx.nonceTPM);
     SAFE_FREE(p->exec_ctx.buffer);
@@ -808,7 +832,7 @@ Tss2_PolicyGetJSON(const TSS2_POLICY_CTX *policy_ctx, char **json) {
  *
  * @retval TSS2_RC_SUCCESS If the authorization was appended.
  * @retval TSS2_POLICY_RC_BAD_REFERENCE If a required pointer is NULL.
- * @retval TSS2_POLICY_RC_BAD_SEQUENCE If policy execution is in progress.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE If calculation or execution is in progress.
  * @retval TSS2_POLICY_RC_BAD_VALUE If the policy reference exceeds its buffer size.
  * @retval TSS2_POLICY_RC_MEMORY If the authorization cannot be allocated.
  */
@@ -819,7 +843,7 @@ Tss2_PolicyContextAddAuthorization(TSS2_POLICY_CTX      *policy_ctx,
                                    const TPMT_PUBLIC    *key) {
     if (!policy_ctx)
         return TSS2_POLICY_RC_BAD_REFERENCE;
-    if (policy_ctx->executing)
+    if (policy_ctx->state != POLICY_STATE_IDLE)
         return TSS2_POLICY_RC_BAD_SEQUENCE;
     TSS2_RC r = ipolicy_add_authorization(policy_ctx->policy_ptr, signature, policy_ref, key);
     if (!r) {

@@ -417,7 +417,15 @@ test_cached_policy_digest(void **state) {
     assert_int_equal(digest.size, 32);
     assert_memory_equal(digest.buffer, policy.policyDigests.digests[1].digest.sha256, 32);
 
+    /* Setting the same algorithm preserves the selected digest. */
+    assert_int_equal(Tss2_PolicySetHashAlg(ctx, TPM2_ALG_SHA256), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
     assert_int_equal(Tss2_PolicySetHashAlg(ctx, TPM2_ALG_SHA1), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest),
+                     TSS2_POLICY_RC_POLICY_NOT_CALCULATED);
+    size_t size;
+    assert_int_equal(Tss2_PolicyGetCalculatedJSON(ctx, NULL, &size),
+                     TSS2_POLICY_RC_POLICY_NOT_CALCULATED);
     assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_RC_SUCCESS);
     assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_RC_SUCCESS);
     assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
@@ -452,8 +460,19 @@ test_policy_calculation_retry(void **state) {
                         TPM2_ALG_SHA256, &ctx),
         TSS2_RC_SUCCESS);
     assert_int_equal(Tss2_PolicySetCalcCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_POLICY_RC_BAD_SEQUENCE);
     assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_RC_SUCCESS);
     assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_POLICY_RC_TRY_AGAIN);
+    assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_POLICY_RC_BAD_SEQUENCE);
+    assert_int_equal(Tss2_PolicyExecute_Async(ctx), TSS2_POLICY_RC_BAD_SEQUENCE);
+    assert_int_equal(Tss2_PolicySetHashAlg(ctx, TPM2_ALG_SHA1), TSS2_POLICY_RC_BAD_SEQUENCE);
+    assert_int_equal(Tss2_PolicySetCalcCallbacks(ctx, NULL), TSS2_POLICY_RC_BAD_SEQUENCE);
+    assert_int_equal(Tss2_PolicySetExecCallbacks(ctx, NULL), TSS2_POLICY_RC_BAD_SEQUENCE);
+    TPMT_SIGNATURE signature = { .sigAlg = TPM2_ALG_NULL };
+    TPM2B_DIGEST   ref = { 0 };
+    TPMT_PUBLIC    key = { .type = TPM2_ALG_RSA };
+    assert_int_equal(Tss2_PolicyContextAddAuthorization(ctx, &signature, &ref, &key),
+                     TSS2_POLICY_RC_BAD_SEQUENCE);
     TPM2B_DIGEST digest;
     assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest),
                      TSS2_POLICY_RC_POLICY_NOT_CALCULATED);
@@ -461,6 +480,97 @@ test_policy_calculation_retry(void **state) {
     assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
     assert_int_equal(digest.size, 32);
     assert_int_equal(calls, 2);
+    assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_POLICY_RC_BAD_SEQUENCE);
+    assert_int_equal(Tss2_PolicySetCalcCallbacks(ctx, NULL), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicySetHashAlg(ctx, TPM2_ALG_SHA1), TSS2_RC_SUCCESS);
+    Tss2_PolicyFinalize(&ctx);
+}
+
+static TSS2_RC
+policy_cb_pcr_error(TSS2_POLICY_PCR_SELECTION *selection,
+                    TPML_PCR_SELECTION        *out_selection,
+                    TPML_DIGEST               *out_digest,
+                    void                      *userdata) {
+    UNUSED(selection);
+    UNUSED(out_selection);
+    UNUSED(out_digest);
+    return *(TSS2_RC *)userdata;
+}
+
+static void
+test_policy_calculation_finalize_pending(void **state) {
+    UNUSED(state);
+    const char *json = "{\"description\":\"pending\",\"policy\":["
+                       "{\"type\":\"POLICYPCR\",\"currentPCRs\":[16]}]}";
+    /* Repeated interruption exercises list ownership under leak sanitizers. */
+    for (unsigned i = 0; i < 4; ++i) {
+        TSS2_POLICY_CTX           *ctx = NULL;
+        unsigned                   calls = 0;
+        TSS2_POLICY_CALC_CALLBACKS callbacks = {
+            .cbpcr = policy_cb_pcr_retry,
+            .cbpcr_userdata = &calls,
+        };
+        assert_int_equal(Tss2_PolicyInit(json, TPM2_ALG_SHA256, &ctx), TSS2_RC_SUCCESS);
+        assert_int_equal(Tss2_PolicySetCalcCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
+        assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_RC_SUCCESS);
+        assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_POLICY_RC_TRY_AGAIN);
+        Tss2_PolicyFinalize(&ctx);
+        assert_null(ctx);
+        Tss2_PolicyFinalize(&ctx);
+    }
+}
+
+static void
+test_policy_calculation_error_recovery(void **state) {
+    UNUSED(state);
+    TSS2_POLICY_CTX           *ctx = NULL;
+    TSS2_RC                    error = TSS2_POLICY_RC_BAD_VALUE;
+    TSS2_POLICY_CALC_CALLBACKS callbacks = {
+        .cbpcr = policy_cb_pcr_error,
+        .cbpcr_userdata = &error,
+    };
+    assert_int_equal(Tss2_PolicyInit("{\"description\":\"error\",\"policy\":["
+                                     "{\"type\":\"POLICYPCR\",\"currentPCRs\":[16]}]}",
+                                     TPM2_ALG_SHA256, &ctx),
+                     TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicySetCalcCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), error);
+    assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_POLICY_RC_BAD_SEQUENCE);
+    TPM2B_DIGEST digest;
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest),
+                     TSS2_POLICY_RC_POLICY_NOT_CALCULATED);
+    callbacks.cbpcr = policy_cb_pcr;
+    callbacks.cbpcr_userdata = NULL;
+    assert_int_equal(Tss2_PolicySetCalcCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(ctx, &digest), TSS2_RC_SUCCESS);
+    assert_int_equal(digest.size, 32);
+    Tss2_PolicyFinalize(&ctx);
+}
+
+static void
+test_policy_calculated_json_refresh(void **state) {
+    UNUSED(state);
+    const char      *json = "{\"description\":\"JSON cache\",\"policy\":["
+                            "{\"type\":\"POLICYCOMMANDCODE\",\"code\":349}]}";
+    TSS2_POLICY_CTX *ctx = NULL, *restored = NULL;
+    size_t           size;
+    assert_int_equal(Tss2_PolicyInit(json, TPM2_ALG_SHA256, &ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyGetCalculatedJSON(ctx, NULL, &size), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicySetHashAlg(ctx, TPM2_ALG_SHA1), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyCalculate(ctx), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyGetCalculatedJSON(ctx, NULL, &size), TSS2_RC_SUCCESS);
+    char *updated = malloc(size);
+    assert_non_null(updated);
+    assert_int_equal(Tss2_PolicyGetCalculatedJSON(ctx, updated, &size), TSS2_RC_SUCCESS);
+    assert_int_equal(Tss2_PolicyInit(updated, TPM2_ALG_SHA1, &restored), TSS2_RC_SUCCESS);
+    TPM2B_DIGEST digest;
+    assert_int_equal(Tss2_PolicyGetCalculatedDigest(restored, &digest), TSS2_RC_SUCCESS);
+    assert_int_equal(digest.size, 20);
+    free(updated);
+    Tss2_PolicyFinalize(&restored);
     Tss2_PolicyFinalize(&ctx);
 }
 
@@ -796,6 +906,11 @@ test_policy_callback_return_codes(void **state) {
         assert_int_equal(Tss2_PolicyCalculate(ctx), TSS2_RC_SUCCESS);
         assert_int_equal(Tss2_PolicySetExecCallbacks(ctx, &callbacks), TSS2_RC_SUCCESS);
         assert_int_equal(Tss2_PolicyExecute_Async(ctx), TSS2_RC_SUCCESS);
+        assert_int_equal(Tss2_PolicyCalculate_Async(ctx), TSS2_POLICY_RC_BAD_SEQUENCE);
+        assert_int_equal(Tss2_PolicyCalculate_Finish(ctx), TSS2_POLICY_RC_BAD_SEQUENCE);
+        assert_int_equal(Tss2_PolicySetCalcCallbacks(ctx, NULL), TSS2_POLICY_RC_BAD_SEQUENCE);
+        assert_int_equal(Tss2_PolicySetExecCallbacks(ctx, NULL), TSS2_POLICY_RC_BAD_SEQUENCE);
+        assert_int_equal(Tss2_PolicySetHashAlg(ctx, TPM2_ALG_SHA1), TSS2_POLICY_RC_BAD_SEQUENCE);
         /* PolicyAction calls no ESYS functions; a non-NULL marker is sufficient. */
         ESYS_CONTEXT *esys = (ESYS_CONTEXT *)&result;
         assert_int_equal(Tss2_PolicyExecute_Finish(ctx, esys, 0x03000000), result);
@@ -819,6 +934,9 @@ main(int argc, char *argv[]) {
             cmocka_unit_test(test_policy_contexts_execute_independently),
             cmocka_unit_test(test_cached_policy_digest),
             cmocka_unit_test(test_policy_calculation_retry),
+            cmocka_unit_test(test_policy_calculation_finalize_pending),
+            cmocka_unit_test(test_policy_calculation_error_recovery),
+            cmocka_unit_test(test_policy_calculated_json_refresh),
             cmocka_unit_test(test_policy_authorization),
             cmocka_unit_test(test_policy_get_authorization),
             cmocka_unit_test(test_cleanup_empty_policy),

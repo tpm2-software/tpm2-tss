@@ -192,6 +192,7 @@ Tss2_PolicyInit(const char *json_policy, TPM2_ALG_ID hash_alg, TSS2_POLICY_CTX *
 
 void Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy);
 
+/* Callback configuration cannot change while calculation or execution is pending. */
 TSS2_RC
 Tss2_PolicySetCalcCallbacks(TSS2_POLICY_CTX            *policy_ctx,
                             TSS2_POLICY_CALC_CALLBACKS *calc_callbacks);
@@ -214,6 +215,7 @@ Tss2_PolicyExecute_Finish(TSS2_POLICY_CTX *policy_ctx, ESYS_CONTEXT *esys_ctx, E
 TSS2_RC
 Tss2_PolicyCalculate(TSS2_POLICY_CTX *policy_ctx);
 
+/* Reserve the context until Calculate_Finish succeeds or returns a terminal error. */
 TSS2_RC
 Tss2_PolicyCalculate_Async(TSS2_POLICY_CTX *policy_ctx);
 
@@ -229,6 +231,9 @@ Tss2_PolicyGetDescription(TSS2_POLICY_CTX *policy_ctx, char *description, size_t
 TSS2_RC
 Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest);
 
+/* Changing the algorithm invalidates the selected digest until calculation is requested.
+ * Rejected while calculation or execution is pending.
+ */
 TSS2_RC
 Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg);
 
@@ -240,7 +245,7 @@ TSS2_RC
 Tss2_PolicyGetJSON(const TSS2_POLICY_CTX *policy_ctx, char **json);
 
 /* Access authorizations through the policy context. The context retains ownership of
- * its policy. Adding an authorization while execution is pending is rejected.
+ * its policy. Adding an authorization while calculation or execution is pending is rejected.
  */
 TSS2_RC
 Tss2_PolicyContextAddAuthorization(TSS2_POLICY_CTX      *policy_ctx,

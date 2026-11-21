@@ -34,9 +34,9 @@ Both registration functions copy the callback structure. The structure itself
 may therefore be a local variable. The data referenced by userdata is not
 copied and must remain valid for all calls using it. Passing NULL instead of
 a callback structure clears that group of callbacks.
-Execution callbacks cannot be changed while execution is pending.
-Register calculation callbacks before starting calculation and keep them stable
-until calculation completes.
+Neither callback group can be changed while calculation or execution is pending.
+The hash algorithm and policy authorizations must also remain unchanged until
+the operation succeeds or returns a terminal error.
 .SH CALCULATION CALLBACKS
 Callbacks in
 .B TSS2_POLICY_CALC_CALLBACKS
