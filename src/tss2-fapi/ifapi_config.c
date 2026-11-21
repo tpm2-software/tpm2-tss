@@ -15,13 +15,13 @@
 
 #include "fapi_int.h" // for IFAPI_FILE_DELIM, DEFAULT_LOG_DIR
 #include "ifapi_config.h"
-#include "ifapi_json_deserialize.h" // for ifapi_json_char_deserialize
+#include "ifapi_json_deserialize.h" // for ifapi_get_sub_object
 #include "ifapi_macros.h"           // for ifapi_return_try_again
-#include "tpm_json_deserialize.h"   // for ifapi_get_sub_object, ifapi_json...
+#include "tpm_json_deserialize.h"   // for ifapi_get_sub_object, ifapi_json_TPMI_YES_NO_deserialize
 #include "tss2_helpers.h"           // for ifapi_asprintf
 
 #define LOGMODULE fapi
-#include "util/log.h" // for return_if_error, SAFE_FREE, retu...
+#include "util/log.h" // for LOG_DEBUG, LOG_ERROR, LOG_TRACE
 
 /**
  * The path of the default config file

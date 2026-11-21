@@ -10,15 +10,15 @@
 
 #include <stdlib.h> // for size_t
 
-#include "fapi_int.h"     // for FAPI_CONTEXT, _FAPI_STATE_INIT
+#include "fapi_int.h"     // for FAPI_CONTEXT
 #include "ifapi_io.h"     // for ifapi_io_poll_handles
 #include "ifapi_macros.h" // for check_not_null
-#include "tss2_common.h"  // for TSS2_FAPI_RC_NO_HANDLE, TSS2_RC, TSS2_FAPI...
+#include "tss2_common.h"  // for TSS2_FAPI_RC_NO_HANDLE, TSS2_RC, TSS2_FAPI_RC_BAD_SEQUENCE
 #include "tss2_esys.h"    // for Esys_GetPollHandles
-#include "tss2_fapi.h"    // for FAPI_CONTEXT, FAPI_POLL_HANDLE, Fapi_GetPo...
+#include "tss2_fapi.h"    // for FAPI_CONTEXT, FAPI_POLL_HANDLE, Fapi_GetPollHandles
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_DEBUG, LOG_TRACE, LOG_ERROR, return_if...
+#include "util/log.h" // for LOG_DEBUG, LOG_TRACE, LOG_ERROR
 
 /** Retrieve handles for polling
  *

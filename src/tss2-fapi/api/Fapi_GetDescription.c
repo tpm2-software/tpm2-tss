@@ -11,13 +11,13 @@
 #include "fapi_int.h"       // for FAPI_CONTEXT, PATH_GET_DESCRIPTION_READ
 #include "fapi_util.h"      // for ifapi_get_description
 #include "ifapi_io.h"       // for ifapi_io_poll
-#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keystore_load_async
 #include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetDescription, Fapi_...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetDescription
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, base_rc, return_error, return...
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_GetDescription
  *

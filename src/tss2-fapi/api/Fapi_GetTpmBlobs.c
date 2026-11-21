@@ -9,21 +9,21 @@
 #endif
 
 #include <stdint.h> // for uint8_t
-#include <stdlib.h> // for malloc, size_t, NULL
+#include <stdlib.h> // for malloc, size_t
 #include <string.h> // for memcpy
 
-#include "fapi_int.h"        // for FAPI_CONTEXT, ENTITY_GET_TP...
+#include "fapi_int.h"        // for FAPI_CONTEXT, ENTITY_GET_TPM_BLOBS_READ
 #include "ifapi_io.h"        // for ifapi_io_poll
 #include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"    // for check_not_null, return_if_e...
+#include "ifapi_macros.h"    // for check_not_null, return_if_error2
 #include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_GetTpmBlobs
 #include "tss2_mu.h"         // for Tss2_MU_TPM2B_PUBLIC_Marshal
 #include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPM2B_PRIVATE
-#include "tss2_types.h"      // for UINT8_ARY
+#include "tss2_types.h"
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_GetTpmBlobs
  *

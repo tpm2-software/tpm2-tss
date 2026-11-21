@@ -11,25 +11,25 @@
 #include <inttypes.h> // for uint8_t, PRIu16
 #include <stddef.h>   // for NULL, size_t
 
-#include "fapi_int.h"           // for IFAPI_Fapi_AuthorizePolicy, FAPI_C...
-#include "fapi_util.h"          // for ifapi_cleanup_session, ifapi_key_sign
-#include "ifapi_helpers.h"      // for internal helpers
+#include "fapi_int.h"  // for IFAPI_Fapi_AuthorizePolicy, FAPI_CONTEXT
+#include "fapi_util.h" // for ifapi_cleanup_session, ifapi_key_sign
+#include "ifapi_helpers.h"
 #include "ifapi_io.h"           // for ifapi_io_poll
-#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_...
-#include "ifapi_macros.h"       // for check_not_null, statecase, fallthr...
+#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"       // for check_not_null
 #include "ifapi_policy.h"       // for ifapi_calculate_tree
 #include "ifapi_policy_store.h" // for ifapi_policy_store_store_async
-#include "tss2_common.h"        // for TSS2_RC, BYTE, TSS2_RC_SUCCESS
-#include "tss2_crypto.h"        // for tss2_crypto_hash_abort, ifapi_cry...
+#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"        // for tss2_crypto_hash_abort
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_AuthorizePolicy
-#include "tss2_helpers.h"       // for internal helpers
-#include "tss2_policy.h"        // for Policy context API
-#include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"    // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
+#include "tss2_helpers.h"
+#include "tss2_policy.h"
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_AuthorizePolicy
  *

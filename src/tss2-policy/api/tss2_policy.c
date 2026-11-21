@@ -5,30 +5,36 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h> // for PRIx16, PRIx32
+#include <inttypes.h> // for PRIu16, PRIx16
 #include <stdbool.h>  // for true, bool, false
 #include <stdlib.h>   // for NULL, free, size_t, calloc
-#include <string.h>   // for memcpy, memset, strlen
+#include <string.h>   // for memcpy, memset, strcpy, strlen
 
-#include "ipolicy_calculate.h" // for IPOLICY_EXEC_CTX
-#include "ipolicy_execute.h"   // for IPOLICY_EXEC_CTX
-#include "ipolicy_helpers.h"
-#include "ipolicy_instantiate.h" // for IPOLICY_EVAL_INST_CTX
-#include "ipolicy_json_deserialize.h"
-#include "ipolicy_json_serialize.h"
-#include "ipolicy_macros.h"
+#include "ipolicy_calculate.h"        // for ipolicy_calculate_policy
+#include "ipolicy_execute.h"          // for IPOLICY_EXEC_CTX, ipolicy_policyeval_execute_prepare,
+                                      //     ipolicy_policyeval_execute
+#include "ipolicy_helpers.h"          // for ipolicy_cleanup, ipolicy_add_authorization,
+                                      //     ipolicy_get_authorization
+#include "ipolicy_instantiate.h"      // for IPOLICY_EVAL_INST_CTX, ipolicy_eval_instantiate_async,
+                                      //     ipolicy_eval_instantiate_finish
+#include "ipolicy_json_deserialize.h" // for ipolicy_json_deserialize
+#include "ipolicy_json_serialize.h"   // for ipolicy_json_serialize
+#include "ipolicy_macros.h"  // for ipolicy_statecasedefault, ipolicy_try_again_or_error_goto
 #include "ipolicy_types.h"   // for TPMS_POLICY
 #include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_crypto.h"     // for tss2_hash_get_digest_size
 #include "tss2_esys.h"       // for ESYS_CONTEXT, ESYS_TR
-#include "tss2_helpers.h"    // for internal helpers
-#include "tss2_policy.h"     // for TSS2_POLICY_CTX, TSS2_POL...
-#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPMT_HA
+#include "tss2_helpers.h"    // for tss2_free_node_list
+#include "tss2_policy.h"     // for TSS2_POLICY_CTX, TSS2_POLICY_CALC_CALLBACKS,
+                             //     TSS2_POLICY_EXEC_CALLBACKS, TSS2_POLICY_RC_*
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPMU_HA, TPM2_ALG_ID, TPMI_ALG_HASH,
+                             //     TPMT_PUBLIC, TPMT_SIGNATURE, TPM2B_NONCE, UINT32
 
-#include "util/aux_util.h"
+#include "util/aux_util.h" // for SAFE_FREE, statecase, fallthrough, rc_layer, base_rc
 
 #define LOGMODULE "policy"
-#include "util/log.h" // for LOG_ERROR, str, LOG_TRACE
+#include "util/log.h" // for LOG_ERROR, LOG_TRACE, str, goto_error, goto_if_error,
+                      //     goto_if_null, return_error2, return_if_error
 
 #define policy_check_not_null(X)                                                                   \
     if ((X) == NULL) {                                                                             \

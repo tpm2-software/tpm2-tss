@@ -17,19 +17,19 @@
 #include <uuid/uuid.h> // for uuid_unparse_lower, uuid_t
 #include <wchar.h>     // for mbstate_t
 
-#include "efi_event.h"             // for TCG_EVENT2, TCG_SPECID_EVENT, UEF...
+#include "efi_event.h"             // for TCG_EVENT2, TCG_SPECID_EVENT, UEFI_IMAGE_LOAD_EVENT
 #include "ifapi_eventlog.h"        // for CONTENT, CONTENT_TYPE
-#include "ifapi_eventlog_system.h" // for parse_eventlog, tpm2_eventlog_con...
+#include "ifapi_eventlog_system.h" // for parse_eventlog, tpm2_eventlog_context
 #include "ifapi_json_eventlog_serialize.h"
-#include "ifapi_macros.h"         // for return_error2
+#include "ifapi_macros.h"         // for ifapi_call_base, ifapi_get_sub_object
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object
 #include "tpm_json_serialize.h"   // for ifapi_json_TPM2_ALG_ID_serialize
-#include "tss2_common.h"          // for TSS2_RC, TSS2_FAPI_RC_GENERAL_FAI...
+#include "tss2_common.h"          // for TSS2_RC, TSS2_FAPI_RC_GENERAL_FAILURE
 #include "tss2_crypto.h"          // for tss2_hash_get_digest_size
 #include "tss2_tpm2_types.h"      // for TPM2_ALG_SHA1, TPM2_MAX_PCRS
 
 #define LOGMODULE fapifirmware
-#include "util/log.h" // for return_if_null, return_error, LOG...
+#include "util/log.h" // for LOGBLOB_TRACE
 
 #define JSON_CLEAR(jso)                                                                            \
     if (jso) {                                                                                     \

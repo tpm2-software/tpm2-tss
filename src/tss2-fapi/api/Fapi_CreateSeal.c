@@ -13,20 +13,20 @@
 #include <stdlib.h>  // for size_t
 #include <string.h>  // for memset, strcmp
 
-#include "fapi_int.h"        // for FAPI_CONTEXT, IFAPI_CMD_STATE, IFAPI_Ke...
-#include "fapi_util.h"       // for ifapi_key_create, ifapi_key_create_prep...
+#include "fapi_int.h"        // for FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"       // for ifapi_key_create, ifapi_key_create_prepare_sensitive
 #include "ifapi_helpers.h"   // for ifapi_set_key_flags
 #include "ifapi_io.h"        // for ifapi_io_poll
 #include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_s...
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
 #include "tss2_esys.h"       // for Esys_SetTimeout
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_CreateSeal, Fapi_Cre...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_CreateSeal
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPMA_OBJECT_SENSITIVEDATA...
+#include "tss2_tpm2_types.h" // for TPMA_OBJECT_SENSITIVEDATAORIGIN
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, return_if_error, base_rc
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_CreateSeal
  *

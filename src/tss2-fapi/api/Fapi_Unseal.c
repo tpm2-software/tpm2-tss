@@ -12,20 +12,20 @@
 #include <stdlib.h> // for malloc, size_t
 #include <string.h> // for memset, memcpy
 
-#include "fapi_int.h"        // for IFAPI_Unseal, FAPI_CONTEXT, IFAPI_CMD_S...
-#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_cleanup_s...
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"    // for check_not_null, statecase, fallthrough
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_BA...
-#include "tss2_esys.h"       // for Esys_SetTimeout, Esys_FlushContext_Async
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Unseal, Fapi_Unseal_...
-#include "tss2_policy.h"     // for TSS2_OBJECT
-#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h" // for TPM2B_SENSITIVE_DATA
+#include "fapi_int.h"       // for IFAPI_Unseal, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"      // for ifapi_authorize_object, ifapi_cleanup_session
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"   // for check_not_null
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_esys.h"      // for Esys_SetTimeout, Esys_FlushContext_Async
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_Unseal, Fapi_Unseal_Async
+#include "tss2_policy.h"
+#include "tss2_tcti.h" // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, goto_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_Unseal
  *

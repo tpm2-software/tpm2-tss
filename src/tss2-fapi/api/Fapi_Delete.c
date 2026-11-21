@@ -12,23 +12,23 @@
 #include <stdlib.h>  // for size_t, calloc, free, malloc, NULL
 #include <string.h>  // for strlen, strncmp, strcmp, memcpy, memset
 
-#include "fapi_int.h"           // for FAPI_CONTEXT, IFAPI_Entity_Delete
-#include "fapi_util.h"          // for ifapi_initialize_object, ifapi_autho...
-#include "ifapi_config.h"       // for IFAPI_CONFIG
+#include "fapi_int.h"  // for FAPI_CONTEXT, IFAPI_Entity_Delete
+#include "fapi_util.h" // for ifapi_initialize_object, ifapi_authorize_object
+#include "ifapi_config.h"
 #include "ifapi_helpers.h"      // for ifapi_path_type_p
 #include "ifapi_io.h"           // for ifapi_io_poll
-#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_OB...
-#include "ifapi_macros.h"       // for statecase, fallthrough, goto_if_erro...
+#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"       // for goto_if_error
 #include "ifapi_policy_store.h" // for ifapi_policy_delete
-#include "ifapi_profiles.h"     // for IFAPI_PROFILES, IFAPI_PROFILE
-#include "tss2_common.h"        // for TSS2_FAPI_RC_TRY_AGAIN, TSS2_RC, TSS...
-#include "tss2_esys.h"          // for Esys_SetTimeout, ESYS_TR_NONE, ESYS_...
-#include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_Delete, Fapi_Dele...
-#include "tss2_policy.h"        // for TSS2_OBJECT
-#include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "ifapi_profiles.h"
+#include "tss2_common.h" // for TSS2_FAPI_RC_TRY_AGAIN, TSS2_RC, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_esys.h"   // for Esys_SetTimeout, ESYS_TR_NONE, ESYS_TR
+#include "tss2_fapi.h"   // for FAPI_CONTEXT, Fapi_Delete
+#include "tss2_policy.h"
+#include "tss2_tcti.h" // for TSS2_TCTI_TIMEOUT_BLOCK
 
 #define LOGMODULE fapi
-#include "util/log.h" // for SAFE_FREE, goto_if_error, LOG_TRACE
+#include "util/log.h" // for LOG_TRACE
 
 /** Move a certain path to the beginning of a path array.
  *

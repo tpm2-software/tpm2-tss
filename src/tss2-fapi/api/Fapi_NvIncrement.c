@@ -12,23 +12,23 @@
 #include <stdlib.h> // for NULL
 #include <string.h> // for memset
 
-#include "fapi_int.h"        // for FAPI_CONTEXT, IFAPI_NV_Cmds, NV_INCREME...
-#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_cleanup_s...
-#include "ifapi_helpers.h"   // for ifapi_init_hierarchy_object
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"    // for goto_if_error_reset_state, statecase
-#include "ifapi_profiles.h"  // for IFAPI_PROFILES
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR, Esys_NV_Incre...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_NvIncrement, Fapi_Nv...
-#include "tss2_helpers.h"    // for ifapi_initialize_object'
-#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "fapi_int.h"       // for FAPI_CONTEXT, IFAPI_NV_Cmds, NV_INCREMENT_AUTHORIZE
+#include "fapi_util.h"      // for ifapi_authorize_object, ifapi_cleanup_session
+#include "ifapi_helpers.h"  // for ifapi_init_hierarchy_object
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"   // for goto_if_error_reset_state
+#include "ifapi_profiles.h"
+#include "tss2_common.h" // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_esys.h"   // for Esys_SetTimeout, ESYS_TR, Esys_NV_Increment_Async
+#include "tss2_fapi.h"   // for FAPI_CONTEXT, Fapi_NvIncrement
+#include "tss2_helpers.h"
+#include "tss2_policy.h"
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h" // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
+#include "tss2_tpm2_types.h" // for TPMA_NV_OWNERREAD
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_NvIncrement
  *

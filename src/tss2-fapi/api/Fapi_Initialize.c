@@ -12,26 +12,26 @@
 #include <string.h>  // for memset
 #include <strings.h> // for strcasecmp
 
-#include "fapi_int.h"           // for FAPI_CONTEXT, IFAPI_INITIALIZE, IFAP...
-#include "fapi_util.h"          // for nv serialization.
-#include "ifapi_config.h"       // for IFAPI_CONFIG, ifapi_config_initializ...
+#include "fapi_int.h"           // for FAPI_CONTEXT, IFAPI_INITIALIZE
+#include "fapi_util.h"          // for ifapi_create_nv_objects
+#include "ifapi_config.h"       // for ifapi_config_initialize_async
 #include "ifapi_eventlog.h"     // for ifapi_eventlog_initialize
 #include "ifapi_helpers.h"      // for ifapi_null_primary_p
 #include "ifapi_io.h"           // for ifapi_io_poll
-#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, ifapi_ke...
-#include "ifapi_macros.h"       // for statecase, fallthrough, check_not_null
+#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, ifapi_keystore_initialize
+#include "ifapi_macros.h"       // for check_not_null
 #include "ifapi_policy.h"       // for ifapi_policy_ctx_init
 #include "ifapi_policy_store.h" // for ifapi_policy_store_initialize
-#include "ifapi_profiles.h"     // for ifapi_profiles_initialize_async, ifa...
-#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_...
-#include "tss2_esys.h"          // for ESYS_TR_NONE, Esys_Finalize, Esys_Ge...
-#include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_Initialize, Fapi_...
+#include "ifapi_profiles.h"     // for ifapi_profiles_initialize_async
+#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_esys.h"          // for ESYS_TR_NONE, Esys_Finalize, Esys_GetCapability_Async
+#include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_Initialize
 #include "tss2_tcti.h"          // for TSS2_TCTI_CONTEXT
-#include "tss2_tctildr.h"       // for Tss2_TctiLdr_Finalize, Tss2_TctiLdr_...
-#include "tss2_tpm2_types.h"    // for TPMS_CAPABILITY_DATA, TPMS_TAGGED_PR...
+#include "tss2_tctildr.h"       // for Tss2_TctiLdr_Finalize
+#include "tss2_tpm2_types.h"    // for TPMS_CAPABILITY_DATA
 
 #define LOGMODULE fapi
-#include "util/log.h" // for goto_if_error, LOG_TRACE, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_Initialize
  *

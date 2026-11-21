@@ -13,17 +13,17 @@
 #include <stdlib.h> // for calloc, free, reallocarray
 #include <string.h> // for memset, strdup, strlen
 
-#include "fapi_int.h"               // for IFAPI_FILE_DELIM_CHAR
-#include "ifapi_helpers.h"          // for FAPI helpers
+#include "fapi_int.h" // for IFAPI_FILE_DELIM_CHAR
+#include "ifapi_helpers.h"
 #include "ifapi_json_deserialize.h" // for ifapi_json_policy_deserialize
-#include "ifapi_macros.h"           // for check_not_null, goto_if_n...
+#include "ifapi_macros.h"           // for check_not_null
 #include "ifapi_profiles.h"
-#include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifa...
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object
 #include "tss2_common.h"          // for TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_helpers.h"         // for ifapi_asprintf ...
+#include "tss2_helpers.h"         // for ifapi_asprintf
 
 #define LOGMODULE fapi
-#include "util/log.h" // for return_if_error, LOG_ERROR
+#include "util/log.h" // for LOG_ERROR
 
 #define PROFILES_EXTENSION ".json"
 #define PROFILES_PREFIX    "P_"

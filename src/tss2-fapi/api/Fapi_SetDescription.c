@@ -12,15 +12,15 @@
 #include <string.h> // for memset, strlen
 
 #include "fapi_int.h"       // for IFAPI_Path_SetDescription, FAPI_CONTEXT
-#include "fapi_util.h"      // for ifapi_initialize_object, ifapi_set_descr...
+#include "fapi_util.h"      // for ifapi_initialize_object, ifapi_set_description
 #include "ifapi_io.h"       // for ifapi_io_poll
-#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keystore_load_async
 #include "ifapi_macros.h"   // for check_not_null, goto_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetDescription, Fapi_...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetDescription
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_error, base_rc
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_SetDescription
  *

@@ -17,12 +17,12 @@
 #include "ifapi_io.h"       // for ifapi_io_poll
 #include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
 #include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_B...
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetAppData, Fapi_SetA...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_PATH
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetAppData
 #include "tss2_types.h"     // for UINT8_ARY
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_error, LOGB...
+#include "util/log.h" // for LOG_TRACE, LOGBLOB_TRACE
 
 #define FAPI_MAX_APP_DATA_SIZE (10 * 1024 * 1024)
 

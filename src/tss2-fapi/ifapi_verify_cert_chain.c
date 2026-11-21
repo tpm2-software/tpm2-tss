@@ -1,35 +1,35 @@
 /* SPDX-FileCopyrightText: 2024, Juergen Repp */
 /* SPDX-License-Identifier: BSD-2-Clause */
 #ifdef HAVE_CONFIG_H
-#include "config.h" // for HAVE_CURL_URL_STRERROR
+#include "config.h"
 #endif
 
-#include <openssl/bio.h>       // for BIO_free, BIO_new_mem_buf
-#include <openssl/err.h>       // for ERR_error_string_n, ERR_get_error
-#include <openssl/evp.h>       // for X509, ASN1_IA5STRING, X509_CRL, DIST_...
-#include <openssl/obj_mac.h>   // for NID_crl_distribution_points, NID_info...
+#include <openssl/bio.h> // for BIO_free, BIO_new_mem_buf
+#include <openssl/err.h>
+#include <openssl/evp.h>       // for X509, ASN1_IA5STRING, X509_CRL
+#include <openssl/obj_mac.h>   // for NID_info_access
 #include <openssl/opensslv.h>  // for OPENSSL_VERSION_NUMBER
 #include <openssl/pem.h>       // for PEM_read_bio_X509
 #include <openssl/safestack.h> // for STACK_OF
-#include <openssl/x509.h>      // for X509_free, X509_STORE_add_cert, X509_...
-#include <openssl/x509v3.h>    // for DIST_POINT_NAME, GENERAL_NAME, ACCESS...
+#include <openssl/x509.h>      // for X509_STORE_add_cert, X509_CRL
+#include <openssl/x509v3.h>    // for ACCESS_DESCRIPTION
 #include <stdbool.h>           // for bool, false, true
-#include <stdlib.h>            // for free, realloc
-#include <string.h>            // for memcpy, strdup, strlen
+#include <stdlib.h>            // for free
+#include <string.h>            // for strlen
 
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
 #include <openssl/aes.h>
 #endif
 
 #include "fapi_certificates.h" // for root_cert_list
-#include "fapi_int.h"          // for OSSL_FREE
-#include "ifapi_curl.h"        // for ifapi_get_crl_from_cert
-#include "ifapi_helpers.h"     // linked lists...
-#include "ifapi_macros.h"      // for goto_if_null2
-#include "tss2_helpers.h"      // linked lists...
+#include "fapi_int.h"
+#include "ifapi_curl.h"    // for ifapi_get_crl_from_cert
+#include "ifapi_helpers.h" // linked lists...
+#include "ifapi_macros.h"  // for ifapi_call_base
+#include "tss2_helpers.h"  // linked lists...
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_ERROR, goto_error, SAFE_FREE, got...
+#include "util/log.h" // for LOG_ERROR
 
 /* Free linked list of X509 certificates */
 void

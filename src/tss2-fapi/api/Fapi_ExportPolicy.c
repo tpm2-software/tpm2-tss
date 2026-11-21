@@ -8,30 +8,31 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h> // for PRIu16
-#include <stdbool.h>  // for false, true
-#include <string.h>   // for memset, size_t, NULL
+#include <inttypes.h>
+#include <stdbool.h>
+#include <string.h> // for memset
 
-#include "fapi_int.h"           // for IFAPI_ExportPolicy, FAPI_CO...
+#include "fapi_int.h"           // for IFAPI_ExportPolicy, FAPI_CONTEXT
 #include "fapi_util.h"          // for ifapi_session_init
-#include "ifapi_helpers.h"      // for ifapi_path_type_p ...
+#include "ifapi_helpers.h"      // for ifapi_path_type_p
 #include "ifapi_io.h"           // for ifapi_io_poll
 #include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"       // for check_not_null, statecase
-#include "ifapi_policy.h"       // for ifapi_calculate_tree
+#include "ifapi_macros.h"       // for check_not_null
+#include "ifapi_policy.h"       // for policy_to_fapi_rc
 #include "ifapi_policy_store.h" // for ifapi_policy_store_load_async
-#include "ifapi_profiles.h"     // for IFAPI_PROFILES, IFAPI_PROFILE
-#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_crypto.h"        // for tss2_hash_get_digest_size
-#include "tss2_esys.h"          // for Esys_SetTimeout
-#include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_ExportPo...
-#include "tss2_helpers.h"       // for internal helpers
-#include "tss2_policy.h"        // for Policy context API
-#include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"    // for TPML_DIGEST_VALUES, TPMT_HA
+#include "ifapi_profiles.h"
+#include "tss2_common.h" // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"
+#include "tss2_esys.h" // for Esys_SetTimeout
+#include "tss2_fapi.h" // for FAPI_CONTEXT, Fapi_ExportPolicy
+#include "tss2_helpers.h"
+#include "tss2_policy.h" // for Tss2_PolicyCalculate_Async, Tss2_PolicyCalculate_Finish,
+                         //     Tss2_PolicyFinalize
+#include "tss2_tcti.h"   // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h"
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_...
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_ExportPolicy
  *

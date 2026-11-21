@@ -13,19 +13,19 @@
 #include <string.h> // for memcpy, memset
 
 #include "fapi_int.h"        // for IFAPI_Data_EncryptDecrypt, FAPI_CONTEXT
-#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_cleanup_s...
+#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_cleanup_session
 #include "ifapi_io.h"        // for ifapi_io_poll
 #include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"    // for check_not_null, ifapi_return_try_again, state...
-#include "ifapi_profiles.h"  // for ifapi_profiles_get, IFAPI_PROFILE, IFAP...
-#include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2_BA...
-#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Decrypt, Fapi_Decryp...
+#include "ifapi_macros.h"    // for check_not_null, ifapi_return_try_again
+#include "ifapi_profiles.h"  // for ifapi_profiles_get
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Decrypt
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC_KEY_RSA, TPM2B_PUBLIC, TPM...
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC_KEY_RSA, TPM2B_DATA
 
 #define LOGMODULE fapi
-#include "util/log.h" // for SAFE_FREE, LOG_TRACE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_Decrypt
  *

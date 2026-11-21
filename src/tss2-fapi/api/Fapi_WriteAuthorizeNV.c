@@ -10,24 +10,24 @@
 
 #include <string.h> // for memcpy, memset, size_t
 
-#include "fapi_int.h"           // for FAPI_CONTEXT, IFAPI_NV_Cmds, IFAPI_a...
-#include "fapi_util.h"          // for ifapi_cleanup_session, ifapi_esys_se...
+#include "fapi_int.h"           // for FAPI_CONTEXT, IFAPI_NV_Cmds, IFAPI_api_WriteAuthorizeNv
+#include "fapi_util.h"          // for ifapi_cleanup_session, ifapi_esys_serialize_object
 #include "ifapi_io.h"           // for ifapi_io_poll
-#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_OB...
-#include "ifapi_macros.h"       // for statecase, check_not_null, fallthrough
+#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"       // for check_not_null
 #include "ifapi_policy.h"       // for ifapi_calculate_tree
-#include "ifapi_policy_store.h" // for ifapi_policy_store_store_async, ifap...
-#include "tss2_common.h"        // for TSS2_RC, BYTE, TSS2_RC_SUCCESS, TSS2...
+#include "ifapi_policy_store.h" // for ifapi_policy_store_store_async
+#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
 #include "tss2_esys.h"          // for Esys_SetTimeout
 #include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_WriteAuthorizeNv
-#include "tss2_helpers.h"       // for internal helpers
-#include "tss2_mu.h"            // for Tss2_MU_TPMI_ALG_HASH_Marshal
-#include "tss2_policy.h"        // for Policy context API
-#include "tss2_tcti.h"          // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"    // for TPMI_ALG_HASH, TPM2B_NV_PUBLIC, TPMS...
+#include "tss2_helpers.h"
+#include "tss2_mu.h" // for Tss2_MU_TPMI_ALG_HASH_Marshal
+#include "tss2_policy.h"
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPMI_ALG_HASH
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_WriteAuthorizeNv
  *

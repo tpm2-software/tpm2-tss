@@ -7,12 +7,12 @@
 #define FAPI_CRYPTO_H
 
 #include <stddef.h> // for size_t
-#include <stdint.h> // for uint8_t, uint16_t
+#include <stdint.h> // for uint8_t
 
-#include "ifapi_keystore.h"  // for IFAPI_OBJECT
-#include "ifapi_profiles.h"  // for IFAPI_PROFILE
-#include "tss2_common.h"     // for TSS2_RC
-#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPM2_ALG_ID, TPMI_ALG_HASH
+#include "ifapi_keystore.h" // for IFAPI_OBJECT
+#include "ifapi_profiles.h" // for IFAPI_PROFILE
+#include "tss2_common.h"    // for TSS2_RC
+#include "tss2_tpm2_types.h"
 
 TSS2_RC
 ifapi_get_profile_sig_scheme(const IFAPI_PROFILE *profile,

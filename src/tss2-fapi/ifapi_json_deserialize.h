@@ -9,9 +9,9 @@
 #include <json.h>    // for json_object
 #include <stdbool.h> // for bool
 
-#include "ifapi_eventlog.h" // for IFAPI_EVENT_TYPE, FAPI_QUOTE_INFO, IFAPI...
-#include "ifapi_keystore.h" // for IFAPI_KEY, IFAPI_EXT_PUB_KEY, IFAPI_HIER...
-#include "ifapi_macros.h"   // for return_if_error2
+#include "ifapi_eventlog.h" // for IFAPI_EVENT_TYPE, FAPI_QUOTE_INFO, IFAPI_EVENT
+#include "ifapi_keystore.h" // for IFAPI_KEY, IFAPI_EXT_PUB_KEY, IFAPI_HIERARCHY
+#include "ifapi_macros.h"   // for ifapi_get_sub_object
 #include "tss2_common.h"    // for TSS2_RC, UINT32
 
 #include "json_helpers.h"

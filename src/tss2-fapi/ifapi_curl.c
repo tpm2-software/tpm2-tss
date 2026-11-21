@@ -6,15 +6,15 @@
 #include "config.h" // for HAVE_CURL_URL_STRERROR
 #endif
 
-#include <curl/curl.h>         // for curl_easy_strerror, CURLE_OK, curl_ea...
+#include <curl/curl.h>         // for curl_easy_strerror, CURLE_OK, curl_easy_cleanup
 #include <openssl/bio.h>       // for BIO_free, BIO_new_mem_buf
-#include <openssl/evp.h>       // for X509, ASN1_IA5STRING, X509_CRL, DIST_...
-#include <openssl/obj_mac.h>   // for NID_crl_distribution_points, NID_info...
+#include <openssl/evp.h>       // for X509, ASN1_IA5STRING, X509_CRL, DIST_POINT
+#include <openssl/obj_mac.h>   // for NID_crl_distribution_points, NID_info_access
 #include <openssl/opensslv.h>  // for OPENSSL_VERSION_NUMBER
 #include <openssl/pem.h>       // for PEM_read_bio_X509
 #include <openssl/safestack.h> // for STACK_OF
-#include <openssl/x509.h>      // for X509_free, X509_STORE_add_cert, X509_...
-#include <openssl/x509v3.h>    // for DIST_POINT_NAME, GENERAL_NAME, ACCESS...
+#include <openssl/x509.h>      // for X509_STORE_add_cert, X509_CRL
+#include <openssl/x509v3.h>    // for DIST_POINT_NAME, GENERAL_NAME, ACCESS_DESCRIPTION
 #include <stdbool.h>           // for bool, false, true
 #include <stdlib.h>            // for free, realloc
 #include <string.h>            // for memcpy, strdup, strlen
@@ -24,12 +24,12 @@
 #endif
 
 #include "fapi_certificates.h" // for root_cert_list
-#include "fapi_int.h"          // for OSSL_FREE
+#include "fapi_int.h"
 #include "ifapi_curl.h"
-#include "ifapi_macros.h" // for goto_if_null2
+#include "ifapi_macros.h"
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_ERROR, goto_error, SAFE_FREE, got...
+#include "util/log.h" // for LOG_ERROR
 
 static X509 *
 get_cert_from_buffer(unsigned char *cert_buffer, size_t cert_buffer_size) {

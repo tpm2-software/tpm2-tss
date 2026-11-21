@@ -13,30 +13,32 @@
 #include <stdlib.h>   // for NULL, size_t, calloc, getenv
 #include <string.h>   // for strlen, memset, memcpy, strcmp, memcmp
 
-#include "fapi_int.h"                // for IFAPI_Provision, FAPI_CONTEXT, IFAPI...
-#include "fapi_util.h"               // for ifapi_change_auth_hierarchy, ifapi_c...
-#include "ifapi_config.h"            // for IFAPI_CONFIG
-#include "ifapi_curl.h"              // for ifapi_curl_verify_ek_cert, ifapi_get...
+#include "fapi_int.h"  // for IFAPI_Provision, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h" // for ifapi_change_auth_hierarchy
+#include "ifapi_config.h"
+#include "ifapi_curl.h"              // for ifapi_curl_verify_ek_cert, ifapi_get_curl_buffer
 #include "ifapi_get_web_cert.h"      // for ifapi_get_web_ek_certificate
-#include "ifapi_helpers.h"           // for ifapi_init_hierarchy_object, ifapi_c...
-#include "ifapi_io.h"                // for ifapi_io_read_async, ifapi_io_read_f...
-#include "ifapi_keystore.h"          // for IFAPI_OBJECT, IFAPI_OBJECT_UNION
-#include "ifapi_macros.h"            // for statecase, fallthrough, goto_if_erro..
-#include "ifapi_policy.h"            // for ifapi_calculate_tree_ex
-#include "ifapi_profiles.h"          // for IFAPI_PROFILE, IFAPI_PROFILES
+#include "ifapi_helpers.h"           // for ifapi_init_hierarchy_object,
+                                     //     ifapi_check_profile_pcr_selection
+#include "ifapi_io.h"                // for ifapi_io_read_async, ifapi_io_read_finish
+#include "ifapi_keystore.h"          // for IFAPI_OBJECT
+#include "ifapi_macros.h"            // for ifapi_call_base, ifapi_return_try_again,
+                                     //     ifapi_statecasedefault
+#include "ifapi_policy.h"            // for ifapi_instantiate_profile_policies
+#include "ifapi_profiles.h"          // for IFAPI_PROFILE
 #include "ifapi_verify_cert_chain.h" // for ifapi_verify_cert_chain
-#include "tss2_common.h"             // for TSS2_FAPI_RC_TRY_AGAIN, BYTE, TSS2_RC
-#include "tss2_crypto.h"             // for ifapi_cert_to_pem, ifapi_get_public_...
+#include "tss2_common.h"             // for TSS2_FAPI_RC_TRY_AGAIN, TSS2_RC
+#include "tss2_crypto.h"             // for ifapi_cert_to_pem, ifapi_get_public_from_pem_cert
 #include "tss2_esys.h"               // for ESYS_TR_NONE, Esys_GetCapability_Async
-#include "tss2_fapi.h"               // for FAPI_CONTEXT, Fapi_Provision, Fapi_P...
-#include "tss2_helpers.h"            // for ifapi_asprintfg ...
+#include "tss2_fapi.h"               // for FAPI_CONTEXT, Fapi_Provision
+#include "tss2_helpers.h"            // for ifapi_asprintf
 #include "tss2_mu.h"                 // for Tss2_MU_TPMT_PUBLIC_Unmarshal
-#include "tss2_policy.h"             // for TSS2_OBJECT
+#include "tss2_policy.h"             // for Tss2_PolicyFinalize
 #include "tss2_tcti.h"               // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"         // for TPMS_CAPABILITY_DATA, TPMU_CAPABILITIES
-#include "util/aux_util.h"           // for UNUSED, secure_mem_zero
+#include "tss2_tpm2_types.h"         // for TPMS_CAPABILITY_DATA
+#include "util/aux_util.h"           // for SAFE_FREE
 #define LOGMODULE fapi
-#include "util/log.h" // for goto_if_error, SAFE_FREE, goto_error
+#include "util/log.h" // for LOG_DEBUG, LOG_INFO, LOG_TRACE
 
 #define EK_CERT_RANGE                (0x01c07fff)
 #define EK_CERT_CHAIN_MIN            0x01c00100

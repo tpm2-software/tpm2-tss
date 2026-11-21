@@ -12,20 +12,20 @@
 #include <stdlib.h> // for NULL, size_t
 #include <string.h> // for memset
 
-#include "fapi_int.h"        // for FAPI_CONTEXT, IFAPI_GetRandom, GET_RAND...
-#include "fapi_util.h"       // for ifapi_session_clean, ifapi_cleanup_session
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_s...
-#include "ifapi_profiles.h"  // for IFAPI_PROFILES, IFAPI_PROFILE
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
+#include "fapi_int.h"       // for FAPI_CONTEXT, IFAPI_GetRandom, GET_RANDOM_CLEANUP
+#include "fapi_util.h"      // for ifapi_session_clean, ifapi_cleanup_session
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "ifapi_profiles.h"
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
 #include "tss2_esys.h"       // for Esys_SetTimeout
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_GetRandom, Fapi_GetR...
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_GetRandom
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h" // for TPMA_SESSION_DECRYPT, TPMA_SESSION_ENCRYPT
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, return_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_GetRandom
  *

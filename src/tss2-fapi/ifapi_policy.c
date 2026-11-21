@@ -8,26 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h> // for PRIu16
-#include <stdbool.h>  // for bool, false, true
-#include <string.h>   // for memset
+#include <inttypes.h>
+#include <stdbool.h> // for bool, false
+#include <string.h>
 
-#include "fapi_int.h"      // for IFAPI_POLICY_CTX, POLICY_INIT
-#include "ifapi_helpers.h" // for tss2_free_node_list
-#include "ifapi_io.h"      // for IFAPI_IO
-#include "ifapi_macros.h"  // for statecase, fallthrough, return...
+#include "fapi_int.h" // for IFAPI_POLICY_CTX, POLICY_INIT
+#include "ifapi_helpers.h"
+#include "ifapi_io.h"     // for IFAPI_IO
+#include "ifapi_macros.h" // for ifapi_return_try_again, ifapi_statecasedefault
 #include "ifapi_policy.h"
 #include "ifapi_policy_store.h" // for ifapi_policy_store_load_async
-#include "tss2_common.h"        // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_crypto.h"        // for tss2_hash_get_digest_size
-#include "tss2_esys.h"          // for ESYS_CONTEXT
-#include "tss2_helpers.h"       // for free_node_list
-#include "tss2_helpers.h"       // for tss2_free_node_list
-#include "tss2_policy.h"        // for the opaque Policy API
-#include "tss2_tpm2_types.h"    // for TPMT_HA, TPML_DIGEST_VALUES
+#include "tss2_common.h"        // for TSS2_RC
+#include "tss2_crypto.h"
+#include "tss2_esys.h" // for ESYS_CONTEXT
+#include "tss2_helpers.h"
+#include "tss2_policy.h"     // for Tss2_PolicyCalculate_Async, Tss2_PolicyCalculate_Finish,
+                             //     Tss2_PolicyContextAddAuthorization
+#include "tss2_tpm2_types.h" // for TPM2_ALG_SHA256
 
 #define LOGMODULE fapi
-#include "util/log.h" // for goto_if_error, goto_error
+#include "util/log.h" // for LOG_ERROR
 
 /** Compute policy digest for a policy tree.
  *

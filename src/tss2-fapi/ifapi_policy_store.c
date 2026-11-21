@@ -8,25 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>   // for json_object_put, json_obj...
+#include <json.h>   // for json_object_put, json_object
 #include <stdint.h> // for uint8_t
 #include <stdio.h>  // for NULL, remove
-#include <stdlib.h> // for free
+#include <stdlib.h>
 #include <string.h> // for strdup, strlen, memset
 
-#include "fapi_int.h"               // for IFAPI_FILE_DELIM, IFAPI_P...
-#include "ifapi_helpers.h"          // for ifapi_pat...
-#include "ifapi_io.h"               // for ifapi_io_path_exists, IFA...
+#include "fapi_int.h"               // for IFAPI_FILE_DELIM, IFAPI_POLICY_PATH
+#include "ifapi_helpers.h"          // for ifapi_path_type_p
+#include "ifapi_io.h"               // for ifapi_io_path_exists, IFAPI_IO
 #include "ifapi_json_deserialize.h" // for ifapi_json_policy_deserialize
 #include "ifapi_json_serialize.h"   // for ifapi_json_policy_serialize
 #include "ifapi_keystore.h"         // for ifapi_check_valid_path
-#include "ifapi_macros.h"           // for goto_if_error2, return_tr...
+#include "ifapi_macros.h"           // for ifapi_call_base, ifapi_return_try_again,
+                                    //     ifapi_strdup_check
 #include "ifapi_policy_store.h"
 #include "tpm_json_deserialize.h" // for ifapi_parse_json
-#include "tss2_helpers.h"         // for ifapi_asprintf ....
+#include "tss2_helpers.h"         // for ifapi_asprintf
 
 #define LOGMODULE fapi
-#include "util/log.h" // for SAFE_FREE, return_if_error
+#include "util/log.h" // for LOG_TRACE, LOG_WARNING
 
 /** Compute absolute path of policy for IO.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.

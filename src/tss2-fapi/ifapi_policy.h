@@ -7,11 +7,11 @@
 #define IFAPI_POLICY_H
 
 #include <stdbool.h> // for bool
-#include <stddef.h>  // for size_t
+#include <stddef.h>
 
 #include "fapi_int.h"               // for FAPI_CONTEXT, IFAPI_POLICY_CTX
 #include "ifapi_io.h"               // for IFAPI_IO
-#include "ifapi_policy_callbacks.h" // for ifapi_get_key_public, ifapi_ge...
+#include "ifapi_policy_callbacks.h" // for ifapi_get_key_public
 #include "ifapi_policy_store.h"     // for IFAPI_POLICY_STORE
 #include "tss2_common.h"            // for TSS2_RC
 #include "tss2_esys.h"              // for ESYS_CONTEXT

@@ -8,31 +8,31 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>   // for json_object_array_add, json_object...
+#include <json.h>   // for json_object_array_add, json_object
 #include <stdint.h> // for uint8_t
 #include <stdlib.h> // for NULL, malloc, size_t
 #include <string.h> // for memcpy, memset
 
-#include "fapi_int.h"             // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_EX...
-#include "fapi_util.h"            // for ifapi_authorize_object, ifapi_clea...
-#include "ifapi_eventlog.h"       // for IFAPI_EVENT, IFAPI_EVENT_UNION
+#include "fapi_int.h"             // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_EXTEND_AUTHORIZE
+#include "fapi_util.h"            // for ifapi_authorize_object, ifapi_cleanup_session
+#include "ifapi_eventlog.h"       // for IFAPI_EVENT
 #include "ifapi_helpers.h"        // for ifapi_init_hierarchy_object
 #include "ifapi_io.h"             // for ifapi_io_poll
 #include "ifapi_json_serialize.h" // for ifapi_json_IFAPI_EVENT_serialize
-#include "ifapi_keystore.h"       // for IFAPI_OBJECT, IFAPI_OBJECT_UNION
-#include "ifapi_macros.h"         // for check_not_null, goto_if_error_rese...
-#include "ifapi_profiles.h"       // for IFAPI_PROFILES
-#include "tss2_common.h"          // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_crypto.h"          // for tss2_crypto_hash_abort, ifapi_cry...
-#include "tss2_esys.h"            // for Esys_SetTimeout, ESYS_TR, Esys_NV_...
-#include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_NvExtend, Fapi_...
-#include "tss2_helpers.h"         // for ifapi_init_hierachy_object'
-#include "tss2_policy.h"          // for TSS2_OBJECT
-#include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"      // for TPM2B_MAX_NV_BUFFER, TPM2B_NV_PUBLIC
+#include "ifapi_keystore.h"       // for IFAPI_OBJECT
+#include "ifapi_macros.h"         // for check_not_null, goto_if_error_reset_state
+#include "ifapi_profiles.h"
+#include "tss2_common.h" // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_crypto.h" // for tss2_crypto_hash_abort
+#include "tss2_esys.h"   // for Esys_SetTimeout, ESYS_TR, Esys_NV_Extend_Async
+#include "tss2_fapi.h"   // for FAPI_CONTEXT, Fapi_NvExtend
+#include "tss2_helpers.h"
+#include "tss2_policy.h"
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_MAX_NV_BUFFER
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_NvExtend
  *

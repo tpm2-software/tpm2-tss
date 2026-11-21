@@ -10,30 +10,33 @@
 
 #include <errno.h>    // for EEXIST, errno
 #include <inttypes.h> // for PRIu16, SCNx32, PRIi32, PRIu32
-#include <stdarg.h>   // for va_list, va_end, va_copy, va_start
-#include <stdio.h>    // for sscanf, vsnprintf, vsprintf, vas...
-#include <stdlib.h>   // for malloc, calloc, free
+#include <stdarg.h>   // for va_list, va_end, va_copy
+#include <stdio.h>    // for sscanf, vsnprintf, vsprintf, vasprintf
+#include <stdlib.h>   // for malloc, free
 #include <string.h>   // for strcmp, strncmp, strlen, strcat
 #include <strings.h>  // for strcasecmp, strncasecmp
 #include <sys/stat.h> // for mkdir, mode_t
 
-#include "efi_event.h"             // for EV_NO_ACTION_STRUCT, EV_EFI_HCRT...
-#include "fapi_crypto.h"           // for tss2_crypto_hash_abort, ifapi_c...
-#include "ifapi_eventlog.h"        // for IFAPI_EVENT, FAPI_QUOTE_INFO
-#include "ifapi_eventlog_system.h" // for IFAPI_FIRMWARE_EVENT
+#include "efi_event.h"      // for EV_NO_ACTION_STRUCT, EV_EFI_HCRTM_EVENT
+#include "fapi_crypto.h"    // for ifapi_tpm_ecc_sig_to_der
+#include "ifapi_eventlog.h" // for IFAPI_EVENT, FAPI_QUOTE_INFO
+#include "ifapi_eventlog_system.h"
 #include "ifapi_helpers.h"
-#include "ifapi_json_deserialize.h" // for ifapi_json_FAPI_QUOTE_INFO_deser...
-#include "ifapi_json_serialize.h"   // for ifapi_json_FAPI_QUOTE_INFO_seria...
-#include "ifapi_macros.h"           // for ifapi_strdup_check, goto_if_error2
-#include "ifapi_policy.h"           // for policy integration
-#include "linkhash.h"               // for lh_entry
-#include "tpm_json_deserialize.h"   // for ifapi_parse_json
-#include "tss2_crypto.h"            // for hash functions
-#include "tss2_helpers.h"           // for free_string_list
-#include "tss2_mu.h"                // for Tss2_MU_TPMI_ALG_HASH_Marshal
+#include "ifapi_json_deserialize.h" // for ifapi_json_FAPI_QUOTE_INFO_deserialize
+#include "ifapi_json_serialize.h"   // for ifapi_json_FAPI_QUOTE_INFO_serialize
+#include "ifapi_macros.h"           // for ifapi_call_base, ifapi_hash_update_buffer
+#include "ifapi_policy.h"
+#include "linkhash.h"
+#include "tpm_json_deserialize.h" // for ifapi_parse_json
+#include "tss2_crypto.h"          // for tss2_crypto_hash_abort, tss2_crypto_hash_finish,
+                                  //     tss2_crypto_hash_start
+#include "tss2_helpers.h"         // for free_string_list
+#include "tss2_mu.h"              // for Tss2_MU_TPM2_HANDLE_Marshal,
+                                  //     Tss2_MU_TPMS_ATTEST_Marshal,
+                                  //     Tss2_MU_TPMS_ATTEST_Unmarshal
 
 #define LOGMODULE fapi
-#include "util/log.h" // for SAFE_FREE, goto_error, LOG_ERROR
+#include "util/log.h" // for LOG_ERROR
 
 /* Returns pointer to a char array if input starts with key=, else NULL */
 static const char *

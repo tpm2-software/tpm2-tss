@@ -8,18 +8,18 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <stdbool.h> // for true
-#include <stdlib.h>  // for calloc, NULL
+#include <stdbool.h>
+#include <stdlib.h> // for calloc, NULL
 
-#include "ifapi_macros.h" // for statecase, fallthrough, statecas...
+#include "ifapi_macros.h" // for ifapi_statecasedefault
 #include "ifapi_policy.h"
-#include "ifapi_policy_callbacks.h" // for IFAPI_POLICY_EXEC_CB_CTX, ifapi_...
+#include "ifapi_policy_callbacks.h" // for ifapi_branch_selection
 #include "ifapi_policyutil_execute.h"
-#include "ifapi_profiles.h" // for IFAPI_PROFILE, IFAPI_PROFILES
-#include "tss2_policy.h"    // for TSS2_POLICY_EXEC_CALLBACKS
+#include "ifapi_profiles.h"
+#include "tss2_policy.h" // for TSS2_POLICY_EXEC_CALLBACKS
 
 #define LOGMODULE fapi
-#include "util/log.h" // for SAFE_FREE, return_error, goto_if...
+#include "util/log.h" // for LOG_DEBUG, LOG_TRACE
 
 /** Create a Policy context and keep application callback state in the FAPI frame. */
 static TSS2_RC

@@ -7,7 +7,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
-#include "fapi_int.h"     // for FAPI_CONTEXT, IFAPI_CALLBACKS
+#include "fapi_int.h"     // for FAPI_CONTEXT
 #include "ifapi_macros.h" // for check_not_null
 #include "tss2_common.h"  // for TSS2_RC, TSS2_RC_SUCCESS
 #include "tss2_fapi.h"    // for FAPI_CONTEXT, Fapi_CB_Auth, Fapi_CB_Branch

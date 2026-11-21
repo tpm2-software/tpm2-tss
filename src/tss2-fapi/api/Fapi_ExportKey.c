@@ -8,27 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>   // for json_object_put, json_object_to_js...
+#include <json.h>   // for json_object_put, json_object_to_json_string_ext
 #include <stdlib.h> // for NULL
 #include <string.h> // for memset, strdup
 
-#include "fapi_crypto.h"          // for tss2_pub_pem_key_from_tpm
-#include "fapi_int.h"             // for IFAPI_ExportKey, FAPI_CONTEXT, EXP...
-#include "fapi_util.h"            // for ifapi_flush_object, ifapi_authoriz...
+#include "fapi_crypto.h"
+#include "fapi_int.h"             // for IFAPI_ExportKey, FAPI_CONTEXT, EXPORT_KEY_CLEANUP
+#include "fapi_util.h"            // for ifapi_flush_object, ifapi_authorize_object
 #include "ifapi_io.h"             // for ifapi_io_poll
 #include "ifapi_json_serialize.h" // for ifapi_json_IFAPI_OBJECT_serialize
-#include "ifapi_keystore.h"       // for ifapi_cleanup_ifapi_object, IFAPI_...
-#include "ifapi_macros.h"         // for statecase, check_not_null, fallthr...
-#include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BAS...
+#include "ifapi_keystore.h"       // for ifapi_cleanup_ifapi_object, IFAPI_DUPLICATE
+#include "ifapi_macros.h"         // for check_not_null
+#include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
 #include "tss2_crypto.h"
-#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_SetTimeout, Esy...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_ExportKey, Fapi...
-#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "tss2_esys.h" // for ESYS_TR_NONE, Esys_SetTimeout, Esys_Duplicate_Async
+#include "tss2_fapi.h" // for FAPI_CONTEXT, Fapi_ExportKey
+#include "tss2_policy.h"
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h" // for TPM2B_DATA, TPMT_SYM_DEF_OBJECT
 
 #define LOGMODULE fapi
-#include "util/log.h" // for SAFE_FREE, LOG_TRACE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_ExportKey
  *

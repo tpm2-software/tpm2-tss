@@ -9,7 +9,7 @@
 #endif
 
 #include <inttypes.h>    // for PRIu32
-#include <openssl/evp.h> // for EVP_get_digestbyname, EVP_MD, EVP_...
+#include <openssl/evp.h> // for EVP_get_digestbyname, EVP_MD
 #include <stdbool.h>     // for bool, false, true
 #include <stdio.h>       // for fread, fclose, FILE, fopen, sprintf
 #include <stdlib.h>      // for calloc, malloc
@@ -18,15 +18,15 @@
 
 #include "ifapi_eventlog.h" // for CONTENT, CONTENT_TYPE
 #include "ifapi_ima_eventlog.h"
-#include "ifapi_macros.h" // for goto_if_null2, return_error2, goto...
+#include "ifapi_macros.h" // for goto_if_error
 #include "json_helpers.h"
-#include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifapi_json_U...
-#include "tss2_common.h"          // for UINT8, TSS2_RC, TSS2_FAPI_RC_BAD_V...
-#include "tss2_helpers.h"         // for ifapi_check_json_object_fields
-#include "tss2_tpm2_types.h"      // for TPM2_SHA1_DIGEST_SIZE, TPM2_SHA512...
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifapi_json_UINT8_ARY_deserialize
+#include "tss2_common.h"          // for UINT8, TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_helpers.h"
+#include "tss2_tpm2_types.h" // for TPM2_SHA1_DIGEST_SIZE, TPM2_SHA512_DIGEST_SIZE
 
 #define LOGMODULE fapijson
-#include "util/log.h" // for return_error, return_if_null, retu...
+#include "util/log.h" // for LOGBLOB_TRACE, LOG_ERROR, LOG_INFO
 
 /* Defines from kernel ima.h */
 #define IMA_TEMPLATE_FIELD_ID_MAX_LEN 16

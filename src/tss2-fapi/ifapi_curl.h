@@ -5,8 +5,8 @@
 
 #include <stddef.h> // for size_t
 
-#include "tss2_common.h"  // for TSS2_RC
-#include <openssl/x509.h> // for X509 and X509_CRL
+#include "tss2_common.h" // for TSS2_RC
+#include <openssl/x509.h>
 
 TSS2_RC
 ifapi_curl_verify_ek_cert(char *root_cert_pem, char *intermed_cert_pem, char *ek_cert_pem);

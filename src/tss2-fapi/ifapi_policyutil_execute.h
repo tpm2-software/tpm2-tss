@@ -6,7 +6,7 @@
 #ifndef FAPI_POLICYUTIL_EXECUTE_H
 #define FAPI_POLICYUTIL_EXECUTE_H
 
-#include "fapi_int.h"               // for IFAPI_POLICYUTIL_STACK, IFAPI_POLICY...
+#include "fapi_int.h"               // for IFAPI_POLICYUTIL_STACK
 #include "ifapi_policy_callbacks.h" // for IFAPI_POLICY_EXEC_CB_CTX
 #include "tss2_common.h"            // for TSS2_RC
 #include "tss2_esys.h"              // for ESYS_TR

@@ -8,26 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>    // for json_object_put, json_object_t...
+#include <json.h>    // for json_object_put, json_object_to_json_string_ext
 #include <stdlib.h>  // for free, calloc, malloc
 #include <string.h>  // for memcpy, strcmp, memset, strlen
 #include <strings.h> // for strcasecmp
 
 #include "fapi_util.h"
-#include "ifapi_config.h"             // for IFAPI_CONFIG
-#include "ifapi_helpers.h"            // for ifapi_path_l...
+#include "ifapi_config.h"
+#include "ifapi_helpers.h"            // for ifapi_path_length
 #include "ifapi_json_serialize.h"     // for ifapi_json_IFAPI_OBJECT_serialize
 #include "ifapi_keystore.h"           // for ifapi_check_provisioned
-#include "ifapi_macros.h"             // for statecase, fallthrough, goto_i...
+#include "ifapi_macros.h"             // for goto_if_error
 #include "ifapi_policy.h"             // for ifapi_calculate_tree
-#include "ifapi_policyutil_execute.h" // for ifapi_policyutil_execute, ifap...
+#include "ifapi_policyutil_execute.h" // for ifapi_policyutil_execute
 #include "tss2_crypto.h"              // for ifapi_get_hash_alg_for_size
 #include "tss2_helpers.h"             // for free_string_list
-#include "tss2_policy.h"              // for TSS2_OBJECT
-#include "util/aux_util.h"            // for goto_error
+#include "tss2_policy.h"
+#include "util/aux_util.h" // for goto_error
 
 #define LOGMODULE fapi
-#include "util/log.h" // for SAFE_FREE, goto_if_error, retu...
+#include "util/log.h" // for LOG_DEBUG, LOG_ERROR, LOG_TRACE
 
 /** State machine for flushing objects.
  *

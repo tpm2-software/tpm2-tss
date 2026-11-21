@@ -12,23 +12,23 @@
 #include <stdlib.h> // for free, size_t, malloc, NULL
 #include <string.h> // for strlen, memcpy, memset, strcmp
 
-#include "fapi_int.h"        // for IFAPI_Entity_ChangeAuth, FAPI_CONTEXT
-#include "fapi_util.h"       // for ifapi_authorize_object, ifapi_initializ...
-#include "ifapi_helpers.h"   // for ifapi_get_hierary_handle, ifapi_path_ty...
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"    // for statecase, fallthrough, ifapi_return_try_again
-#include "ifapi_profiles.h"  // for ifapi_profiles_get, IFAPI_PROFILE
-#include "tss2_common.h"     // for TSS2_FAPI_RC_TRY_AGAIN, TSS2_RC, BYTE
-#include "tss2_esys.h"       // for ESYS_TR_NONE, Esys_FlushContext, Esys_F...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_ChangeAuth, Fapi_Cha...
-#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "fapi_int.h"       // for IFAPI_Entity_ChangeAuth, FAPI_CONTEXT
+#include "fapi_util.h"      // for ifapi_authorize_object, ifapi_initialize_object
+#include "ifapi_helpers.h"  // for ifapi_get_hierary_handle, ifapi_path_type_p
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"   // for ifapi_return_try_again
+#include "ifapi_profiles.h" // for ifapi_profiles_get, IFAPI_PROFILE
+#include "tss2_common.h"    // for TSS2_FAPI_RC_TRY_AGAIN, TSS2_RC
+#include "tss2_esys.h"      // for ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_ChangeAuth
+#include "tss2_policy.h"
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h" // for TPM2B_AUTH, TPM2B_PRIVATE, TPM2_NO, TPM...
-#include "tss2_types.h"      // for UINT8_ARY
+#include "tss2_tpm2_types.h" // for TPM2B_AUTH, TPM2_NO
+#include "tss2_types.h"
 
 #define LOGMODULE fapi
-#include "util/log.h" // for goto_if_error, LOG_TRACE, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_ChangeAuth
  *

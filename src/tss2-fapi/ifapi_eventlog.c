@@ -12,20 +12,20 @@
 #include <stdlib.h> // for free
 #include <string.h> // for memset, strdup, memcpy
 
-#include "fapi_int.h" // for IFAPI_PCR_LOG_FILE, FAPI_...
+#include "fapi_int.h" // for IFAPI_PCR_LOG_FILE, FAPI_QUOTE_INFO
 #include "ifapi_eventlog.h"
 #include "ifapi_helpers.h"                 // ifapi_cal...
-#include "ifapi_ima_eventlog.h"            // for IFAPI_IMA_EVENT, ifapi_re...
-#include "ifapi_json_deserialize.h"        // for ifapi_json_IFAPI_EVENT_de...
-#include "ifapi_json_eventlog_serialize.h" // for ifapi_get_tcg_firmware_ev...
-#include "ifapi_json_serialize.h"          // for ifapi_json_IFAPI_EVENT_se...
-#include "ifapi_macros.h"                  // for check_not_null, statecase
+#include "ifapi_ima_eventlog.h"            // for ifapi_read_ima_event_log
+#include "ifapi_json_deserialize.h"        // for ifapi_json_IFAPI_EVENT_deserialize
+#include "ifapi_json_eventlog_serialize.h" // for ifapi_get_tcg_firmware_event_list
+#include "ifapi_json_serialize.h"          // for ifapi_json_IFAPI_EVENT_serialize
+#include "ifapi_macros.h"                  // for check_not_null
 #include "tpm_json_deserialize.h"          // for ifapi_parse_json
-#include "tss2_helpers.h"                  // for ifapi_asprintf, ifapi_cal...
-#include "tss2_types.h"                    // for UINT8_ARY
+#include "tss2_helpers.h"                  // for ifapi_asprintf
+#include "tss2_types.h"
 
 #define LOGMODULE fapi
-#include "util/log.h" // for goto_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_DEBUG, LOG_ERROR, LOG_TRACE
 
 /** Initialize the eventlog module of FAPI.
  *

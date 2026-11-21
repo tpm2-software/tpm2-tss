@@ -8,10 +8,10 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <dirent.h>   // for closedir, dirent, opendir, readdir, scandir
-#include <errno.h>    // for errno, EAGAIN, EINTR
-#include <fcntl.h>    // for fcntl, flock, F_GETFL, F_SETFL, F_SETLK
-#include <limits.h>   // for LONG_MAX
+#include <dirent.h> // for closedir, dirent, opendir, readdir, scandir
+#include <errno.h>  // for errno, EAGAIN, EINTR
+#include <fcntl.h>  // for fcntl, flock, F_GETFL, F_SETFL, F_SETLK
+#include <limits.h>
 #include <poll.h>     // for pollfd, poll, POLLIN, POLLOUT
 #include <stdio.h>    // for fclose, fileno, size_t, NULL, fopen, remove
 #include <stdlib.h>   // for free, calloc, malloc
@@ -20,16 +20,16 @@
 #include <unistd.h>   // for access, read, rmdir, write
 
 #include "fapi_int.h"      // for FAPI_WRITE
-#include "ifapi_helpers.h" // for ifapi_asprintf, ifapi_create_dirs
+#include "ifapi_helpers.h" // for ifapi_create_dirs
 #include "ifapi_io.h"
-#include "ifapi_macros.h" // for check_not_null, return_error2, ifapi_check_oom
-#include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_RC_S...
-#include "tss2_helpers.h" // for ifapi_asprintf, ifapi_create_dirs
+#include "ifapi_macros.h" // for check_not_null, ifapi_check_oom
+#include "tss2_common.h"  // for TSS2_FAPI_RC_IO_ERROR, TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_helpers.h" // for ifapi_asprintf
 #include "tss2_types.h"   // for NODE_OBJECT_T
 #include <fcntl.h>        // for open
 #define LOGMODULE fapi
 #include "util-io/io.h" // for TEMP_RETRY
-#include "util/log.h"   // for LOG_ERROR, SAFE_FREE, LOG_TRACE, goto_error
+#include "util/log.h"   // for LOG_ERROR, LOG_TRACE
 
 /** Determine if a sub file in directory is also a directory
  *

@@ -12,23 +12,23 @@
 #include <stdlib.h> // for size_t
 #include <string.h> // for memset
 
-#include "fapi_int.h"        // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_READ_READ
-#include "fapi_util.h"       // for ifapi_cleanup_session, ifapi_get_sessio...
-#include "ifapi_helpers.h"   // for ifapi_init_hierarchy_object
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"    // for check_not_null, goto_if_error_reset_state
-#include "ifapi_profiles.h"  // for IFAPI_PROFILES
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_RH_OWNER, ESYS...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_NvRead, Fapi_NvRead_...
-#include "tss2_helpers.h"    // for ifapi_initialize_object'
-#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "fapi_int.h"       // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_READ_READ
+#include "fapi_util.h"      // for ifapi_cleanup_session, ifapi_get_sessions_async
+#include "ifapi_helpers.h"  // for ifapi_init_hierarchy_object
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"   // for check_not_null, goto_if_error_reset_state
+#include "ifapi_profiles.h"
+#include "tss2_common.h" // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_esys.h"   // for Esys_SetTimeout, ESYS_TR_RH_OWNER, ESYS_TR
+#include "tss2_fapi.h"   // for FAPI_CONTEXT, Fapi_NvRead, Fapi_NvRead_Async
+#include "tss2_helpers.h"
+#include "tss2_policy.h"
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h" // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
+#include "tss2_tpm2_types.h" // for TPMA_NV_OWNERREAD
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, return_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_NvRead
  *

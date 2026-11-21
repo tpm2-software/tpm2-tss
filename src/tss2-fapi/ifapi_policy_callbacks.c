@@ -11,25 +11,26 @@
 #include <inttypes.h> // for uint8_t, PRIu16
 #include <stdbool.h>  // for true, false, bool
 #include <stdlib.h>   // for size_t, NULL, calloc, malloc
-#include <string.h>   // for memset, memcmp, memcpy, strcmp
+#include <string.h>   // for memset, memcmp, memcpy
 
-#include "fapi_util.h"     // for ifapi_get_object_path, ifapi_a...
-#include "ifapi_helpers.h" // for ifapi_TPMT_PUBLIC_cmp, ifapi_c...
-#include "ifapi_macros.h"  // for statecase, fallthrough, return...
+#include "fapi_util.h"     // for ifapi_get_object_path, ifapi_authorize_object
+#include "ifapi_helpers.h" // for ifapi_init_hierarchy_object
+#include "ifapi_macros.h"  // for return_if_error2
 #include "ifapi_policy.h"
 #include "ifapi_policy_callbacks.h"
 #include "ifapi_policy_store.h"       // for ifapi_policy_store_load_async
-#include "ifapi_policyutil_execute.h" // for IFAPI_POLICYUTIL_STACK, ifapi_...
-#include "ifapi_profiles.h"           // for IFAPI_PROFILE, IFAPI_PROFILES
-#include "tss2_crypto.h"              // for ifapi_get_tpm2b_public_from_pem
-#include "tss2_fapi.h"                // for FAPI_CONTEXT
-#include "tss2_helpers.h"             // for policy helpers
-#include "tss2_mu.h"                  // for Tss2_MU_TPMT_HA_Unmarshal
-#include "tss2_policy.h"              // for Policy context API
-#include "tss2_types.h"               // for UINT8_ARY
+#include "ifapi_policyutil_execute.h" // for IFAPI_POLICYUTIL_STACK, ifapi_policyutil_execute
+#include "ifapi_profiles.h"
+#include "tss2_crypto.h"  // for tss2_hash_get_digest_size
+#include "tss2_fapi.h"    // for FAPI_CONTEXT
+#include "tss2_helpers.h" // for ifapi_get_name, tss2_nv_get_name
+#include "tss2_mu.h"      // for Tss2_MU_TPMT_HA_Unmarshal
+#include "tss2_policy.h"  // for TSS2_POLICY_RC_POLICY_NOT_CALCULATED,
+                          //     Tss2_PolicyFinalize, Tss2_PolicyGetCalculatedDigest
+#include "tss2_types.h"
 
 #define LOGMODULE fapi
-#include "util/log.h" // for SAFE_FREE, goto_if_error, retu...
+#include "util/log.h" // for LOG_DEBUG
 
 /** Determine the auth object of a NV index.
  *

@@ -9,29 +9,29 @@
 #endif
 
 #include <errno.h>    // for errno
-#include <inttypes.h> // for int64_t, uint8_t, PRId64
-#include <stdio.h>    // for NULL, size_t, sscanf
-#include <stdlib.h>   // for calloc, malloc
+#include <inttypes.h> // for int64_t, uint8_t
+#include <stdio.h>    // for NULL, size_t
+#include <stdlib.h>   // for malloc
 #include <string.h>   // for memset, strlen, strdup
 #include <strings.h>  // for strncasecmp, strcasecmp
 
-#include "fapi_int.h"              // for HASH_UPDATE_BUFFER
-#include "ifapi_eventlog_system.h" // for IFAPI_FIRMWARE_EVENT, ifa...
-#include "ifapi_helpers.h"         // for ifapi_set_name_hierarchy_object ,,,
-#include "ifapi_ima_eventlog.h"    // for IFAPI_IMA_EVENT, ifapi_ge...
+#include "fapi_int.h"
+#include "ifapi_eventlog_system.h" // for ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize
+#include "ifapi_helpers.h"         // for ifapi_set_name_hierarchy_object
+#include "ifapi_ima_eventlog.h"    // for ifapi_get_ima_eventname
 #include "ifapi_json_deserialize.h"
 #include "ifapi_macros.h"
 #include "json_helpers.h"
-#include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifa...
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object
 #include "tss2_crypto.h"          // for tss2_crypto_hash_abort
 #include "tss2_esys.h"            // for ESYS_TR_RH_OWNER
-#include "tss2_helpers.h"         // for ifapi_check_json_object_f...
-#include "tss2_mu.h"              // for Tss2_MU_TPM2B_PRIVATE_Unm...
-#include "tss2_tpm2_types.h"      // for TPMT_HA, TPM2_NO, TPML_DI...
-#include "tss2_types.h"           // for UINT8_ARY
+#include "tss2_helpers.h"
+#include "tss2_mu.h"         // for Tss2_MU_TPM2B_PRIVATE_Unmarshal
+#include "tss2_tpm2_types.h" // for TPM2_NO
+#include "tss2_types.h"      // for UINT8_ARY
 
 #define LOGMODULE fapijson
-#include "util/log.h" // for return_if_error, LOG_ERROR
+#include "util/log.h" // for LOG_ERROR
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 

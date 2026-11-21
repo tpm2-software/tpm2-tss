@@ -14,7 +14,7 @@
 #include "ifapi_ima_eventlog.h" // for IFAPI_IMA_EVENT
 #include "ifapi_keystore.h"     // for IFAPI_DUPLICATE, IFAPI_EXT_PUB_KEY
 #include "tss2_common.h"        // for TSS2_RC, UINT32
-#include "tss2_types.h"         // for UINT8_ARY
+#include "tss2_types.h"
 
 TSS2_RC
 ifapi_json_policy_serialize(const char *policy, json_object **jso);

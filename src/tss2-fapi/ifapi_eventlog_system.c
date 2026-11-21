@@ -8,7 +8,7 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <inttypes.h>  // for uintptr_t, uint8_t, int64_t, PRId64
+#include <inttypes.h>  // for uintptr_t, int64_t, PRId64
 #include <stdio.h>     // for sscanf
 #include <stdlib.h>    // for calloc
 #include <string.h>    // for strlen, strncmp, memcmp, strcmp
@@ -16,16 +16,16 @@
 #include <sys/types.h> // for uint
 #include <uchar.h>     // for char16_t
 
-#include "efi_event.h"      // for TCG_EVENT, TCG_EVENT2, TCG_EVENT_H...
+#include "efi_event.h"      // for TCG_EVENT, TCG_EVENT2, TCG_EVENT_HEADER2
 #include "ifapi_eventlog.h" // for IFAPI_EVENT_TYPE
 #include "ifapi_eventlog_system.h"
-#include "ifapi_macros.h"         // for ifapi_check_oom, return_error2
-#include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifapi_json_U...
+#include "ifapi_macros.h"         // for ifapi_check_oom
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object, ifapi_json_UINT8_ARY_deserialize
 #include "tss2_crypto.h"          // for tss2_hash_get_digest_size
 #include "tss2_tpm2_types.h"      // for TPM2_MAX_PCRS, TPMI_ALG_HASH
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_ERROR, LOG_TRACE, SAFE_FREE
+#include "util/log.h" // for LOG_ERROR, LOG_TRACE
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 
