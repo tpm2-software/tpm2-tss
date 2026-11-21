@@ -240,6 +240,17 @@ cleanup:
     return r;
 }
 
+/** Set the callbacks used to calculate a policy.
+ *
+ * The callback structure is copied into the context. Passing NULL clears all
+ * calculation callbacks. Callback user data remains owned by the caller.
+ *
+ * @param[in,out] policy_ctx The initialized policy context.
+ * @param[in] calc_callbacks The calculation callbacks, or NULL to clear them.
+ *
+ * @retval TSS2_RC_SUCCESS If the callbacks were set or cleared.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx is NULL.
+ */
 TSS2_RC
 Tss2_PolicySetCalcCallbacks(TSS2_POLICY_CTX            *policy_ctx,
                             TSS2_POLICY_CALC_CALLBACKS *calc_callbacks) {
@@ -255,6 +266,18 @@ Tss2_PolicySetCalcCallbacks(TSS2_POLICY_CTX            *policy_ctx,
     return TSS2_RC_SUCCESS;
 }
 
+/** Set the callbacks used to execute a policy.
+ *
+ * The callback structure is copied into the context. Passing NULL clears all
+ * execution callbacks. Callback user data remains owned by the caller.
+ *
+ * @param[in,out] policy_ctx The initialized policy context.
+ * @param[in] exec_callbacks The execution callbacks, or NULL to clear them.
+ *
+ * @retval TSS2_RC_SUCCESS If the callbacks were set or cleared.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx is NULL.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE If policy execution is in progress.
+ */
 TSS2_RC
 Tss2_PolicySetExecCallbacks(TSS2_POLICY_CTX            *policy_ctx,
                             TSS2_POLICY_EXEC_CALLBACKS *exec_callbacks) {
@@ -575,6 +598,22 @@ Tss2_PolicyCalculate_Finish(TSS2_POLICY_CTX *policy_ctx) {
     return r;
 }
 
+/** Retrieve the calculated policy as a JSON string.
+ *
+ * Pass a NULL buffer to query the required size, including the terminating null
+ * byte. The policy must have been calculated before calling this function.
+ *
+ * @param[in,out] policy_ctx The policy context, in which serialized JSON is cached.
+ * @param[out] buffer The destination buffer, or NULL to query its size.
+ * @param[in,out] size The buffer capacity on input and required size on output.
+ *
+ * @retval TSS2_RC_SUCCESS If the JSON was copied or its size was returned.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx or size is NULL.
+ * @retval TSS2_POLICY_RC_POLICY_NOT_CALCULATED If no calculated policy is available.
+ * @retval TSS2_POLICY_RC_BUFFER_TOO_SMALL If the supplied buffer is too small.
+ * @retval TSS2_POLICY_RC_MEMORY If memory allocation for serialization fails.
+ * @return Errors from policy serialization may also be returned.
+ */
 TSS2_RC
 Tss2_PolicyGetCalculatedJSON(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *size) {
 
@@ -654,6 +693,15 @@ Tss2_PolicyGetDescription(TSS2_POLICY_CTX *policy_ctx, char *buffer, size_t *siz
     return TSS2_RC_SUCCESS;
 }
 
+/** Retrieve the calculated policy digest.
+ *
+ * @param[in] policy_ctx The policy context containing the calculated digest.
+ * @param[out] digest The calculated policy digest.
+ *
+ * @retval TSS2_RC_SUCCESS If the digest was copied.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx or digest is NULL.
+ * @retval TSS2_POLICY_RC_POLICY_NOT_CALCULATED If no calculated digest is available.
+ */
 TSS2_RC
 Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest) {
     policy_check_not_null(policy_ctx);
@@ -669,6 +717,17 @@ Tss2_PolicyGetCalculatedDigest(TSS2_POLICY_CTX *policy_ctx, TPM2B_DIGEST *digest
     return TSS2_RC_SUCCESS;
 }
 
+/** Set the hash algorithm used for policy calculation and execution.
+ *
+ * This function does not recalculate the policy or validate the algorithm.
+ *
+ * @param[in,out] policy_ctx The initialized policy context.
+ * @param[in] hash_alg The hash algorithm to use.
+ *
+ * @retval TSS2_RC_SUCCESS If the hash algorithm was set.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx is NULL.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE If policy execution is in progress.
+ */
 TSS2_RC
 Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg) {
     policy_check_not_null(policy_ctx);
@@ -680,6 +739,13 @@ Tss2_PolicySetHashAlg(TSS2_POLICY_CTX *policy_ctx, TPM2_ALG_ID hash_alg) {
     return TSS2_RC_SUCCESS;
 }
 
+/** Free a policy context and its owned resources.
+ *
+ * The caller's context pointer is set to NULL. Passing NULL or a pointer to NULL
+ * is allowed. This function does not flush the caller-owned TPM policy session.
+ *
+ * @param[in,out] policy_ctx The pointer to the policy context to be freed.
+ */
 void
 Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy_ctx) {
     if (!policy_ctx) {
@@ -700,6 +766,19 @@ Tss2_PolicyFinalize(TSS2_POLICY_CTX **policy_ctx) {
     *policy_ctx = NULL;
 }
 
+/** Serialize the current policy as a JSON string.
+ *
+ * Unlike Tss2_PolicyGetCalculatedJSON(), this function does not require a
+ * calculated policy. The caller must free the returned string with free().
+ *
+ * @param[in] policy_ctx The policy context to serialize.
+ * @param[out] json The allocated JSON string, set to NULL before serialization.
+ *
+ * @retval TSS2_RC_SUCCESS If the policy was serialized.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx or json is NULL.
+ * @retval TSS2_POLICY_RC_MEMORY If memory allocation for serialization fails.
+ * @return Errors from policy serialization may also be returned.
+ */
 TSS2_RC
 Tss2_PolicyGetJSON(const TSS2_POLICY_CTX *policy_ctx, char **json) {
     if (!json)
@@ -710,6 +789,23 @@ Tss2_PolicyGetJSON(const TSS2_POLICY_CTX *policy_ctx, char **json) {
     return ipolicy_json_serialize(policy_ctx->policy_ptr, json);
 }
 
+/** Append an authorization to the policy in a context.
+ *
+ * The signature, policy reference and public key are copied into the policy.
+ * The cached JSON representation is invalidated on success. This function does
+ * not create or verify the signature.
+ *
+ * @param[in,out] policy_ctx The policy context to update.
+ * @param[in] signature The signature authorizing the policy.
+ * @param[in] policy_ref The policy reference, which may have a zero size.
+ * @param[in] key The public key associated with the signature.
+ *
+ * @retval TSS2_RC_SUCCESS If the authorization was appended.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If a required pointer is NULL.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE If policy execution is in progress.
+ * @retval TSS2_POLICY_RC_BAD_VALUE If the policy reference exceeds its buffer size.
+ * @retval TSS2_POLICY_RC_MEMORY If the authorization cannot be allocated.
+ */
 TSS2_RC
 Tss2_PolicyContextAddAuthorization(TSS2_POLICY_CTX      *policy_ctx,
                                    const TPMT_SIGNATURE *signature,
@@ -727,6 +823,24 @@ Tss2_PolicyContextAddAuthorization(TSS2_POLICY_CTX      *policy_ctx,
     return r;
 }
 
+/** Find an authorization matching a public key and policy reference.
+ *
+ * The first matching authorization is returned. Keys are matched by type and
+ * unique public identifier. A missing authorization is reported as success with
+ * found set to false. A PEM signature is converted to TPM format if requested.
+ *
+ * @param[in] policy_ctx The policy context to search.
+ * @param[in] key The public key identifying the authorization.
+ * @param[in] policy_ref The policy reference, or NULL for an empty reference.
+ * @param[out] found Whether a matching authorization was found.
+ * @param[out] signature The matching signature, or NULL to check only for a match.
+ *                       Written only on success when found is true.
+ *
+ * @retval TSS2_RC_SUCCESS If the search completed, including when no match exists.
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE If policy_ctx, key or found is NULL.
+ * @retval TSS2_POLICY_RC_BAD_VALUE If the policy reference or authorization is invalid.
+ * @return Errors from public key parsing or signature conversion may also be returned.
+ */
 TSS2_RC
 Tss2_PolicyContextGetAuthorization(const TSS2_POLICY_CTX *policy_ctx,
                                    const TPMT_PUBLIC     *key,
