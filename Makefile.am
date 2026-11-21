@@ -1022,6 +1022,10 @@ man7_MANS = \
     man/man7/tss2-tcti-i2c-ftdi.7 \
     man/man7/tss2-tctildr.7
 
+if POLICY
+man7_MANS += man/man7/tss2-policy-callbacks.7
+endif # POLICY
+
 if FAPI
 man5_MANS = \
     man/man5/fapi-config.5 \
@@ -1030,6 +1034,9 @@ endif #FAPI
 
 man/man3/%.3 : man/%.3.in $(srcdir)/man/man-postlude.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
+
+man/man7/tss2-policy-callbacks.7 : man/tss2-policy-callbacks.7.in $(srcdir)/man/man-postlude-policy.troff
+	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude-policy.troff)
 
 man/man7/%.7 : man/%.7.in $(srcdir)/man/man-postlude.troff
 	$(AM_V_GEN)$(call make_man,$@,$<,$(srcdir)/man/man-postlude.troff)
@@ -1098,6 +1105,8 @@ EXTRA_DIST += \
     doc/fuzzing.md \
     doc/TSS_block_diagram.png \
     man/man-postlude.troff \
+    man/man-postlude-policy.troff \
+    man/tss2-policy-callbacks.7.in \
     man/Tss2_Tcti_Cmd_Init.3.in \
     man/Tss2_Tcti_Device_Init.3.in \
     man/Tss2_Tcti_Mssim_Init.3.in \
