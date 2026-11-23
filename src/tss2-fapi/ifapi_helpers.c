@@ -2376,14 +2376,26 @@ ifapi_filter_pcr_selection_by_index(TPML_PCR_SELECTION *pcr_selection,
     UINT32 bank, j;
     UINT16 select;
     size_t i;
-    UINT8  selection[] = { 0, 0, 0, 0 };
+    UINT8  selection[4] = { 0 };
+
+    if (!pcr_selection || (pcr_count > 0 && !pcr_index))
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+
+    if (pcr_count == 0)
+        return TSS2_FAPI_RC_BAD_VALUE;
+
+    if (pcr_selection->count
+        > sizeof(pcr_selection->pcrSelections) / sizeof(pcr_selection->pcrSelections[0]))
+        return TSS2_FAPI_RC_BAD_VALUE;
 
     for (i = 0; i < pcr_count; i++) {
-        selection[0] |= (((UINT32)1) << pcr_index[i]) % 256;
-        selection[1] |= (((UINT32)1) << (pcr_index[i] - 8)) % 256;
-        selection[2] |= (((UINT32)1) << (pcr_index[i] - 16)) % 256;
-        selection[3] |= (((UINT32)1) << (pcr_index[i] - 24)) % 256;
-    };
+        UINT32 index = pcr_index[i];
+
+        if (index >= sizeof(selection) * 8)
+            return TSS2_FAPI_RC_BAD_VALUE;
+
+        selection[index / 8] |= (UINT8)(1u << (index % 8));
+    }
 
     /* Remove unselected PCRs */
     for (bank = 0; bank < pcr_selection->count; bank++) {
