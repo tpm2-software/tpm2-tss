@@ -2192,17 +2192,21 @@ ifapi_calculate_pcrs(
     }
 
     /* Initialize used pcrs */
-    for (i = 0; i < pcr_selection->count; i++) {
-        for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
-            uint8_t byte_idx = pcr / 8;
-            uint8_t flag = ((uint8_t)1) << (pcr % 8);
-            if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
-                hash_size = ifapi_hash_get_digest_size(pcr_selection->pcrSelections[i].hash);
-                pcrs[n_pcrs].pcr = pcr;
-                pcrs[n_pcrs].bank = pcr_selection->pcrSelections[i].hash;
-                pcrs[n_pcrs].value.size = hash_size;
-                memset(&pcrs[n_pcrs].value.buffer[0], 0, hash_size);
-                n_pcrs += 1;
+    if (pcrs) {
+        for (i = 0; i < pcr_selection->count; i++) {
+            for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
+                uint8_t byte_idx = pcr / 8;
+                uint8_t flag = ((uint8_t)1) << (pcr % 8);
+                if (flag &
+                    pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
+                    hash_size = ifapi_hash_get_digest_size(
+                        pcr_selection->pcrSelections[i].hash);
+                    pcrs[n_pcrs].pcr = pcr;
+                    pcrs[n_pcrs].bank = pcr_selection->pcrSelections[i].hash;
+                    pcrs[n_pcrs].value.size = hash_size;
+                    memset(&pcrs[n_pcrs].value.buffer[0], 0, hash_size);
+                    n_pcrs += 1;
+                }
             }
         }
     }
@@ -2297,6 +2301,38 @@ error_cleanup:
     return r;
 }
 
+/* Validate the selection and count the PCRs in its declared bitmaps. */
+static TSS2_RC
+ifapi_validate_pcr_selection(const TPML_PCR_SELECTION *selection, size_t *n_pcrs) {
+    BYTE selected[TPM2_PCR_SELECT_MAX] = { 0 };
+
+    return_if_null(selection, "Missing PCR selection.", TSS2_FAPI_RC_BAD_REFERENCE);
+    if (selection->count > TPM2_NUM_PCR_BANKS) {
+        return_error(TSS2_FAPI_RC_BAD_VALUE, "Too many PCR banks.");
+    }
+
+    *n_pcrs = 0;
+    for (size_t i = 0; i < selection->count; i++) {
+        const TPMS_PCR_SELECTION *bank = &selection->pcrSelections[i];
+        if (bank->sizeofSelect > TPM2_PCR_SELECT_MAX) {
+            return_error(TSS2_FAPI_RC_BAD_VALUE, "PCR selection bitmap is too large.");
+        }
+
+        for (size_t j = 0; j < bank->sizeofSelect; j++) {
+            BYTE mask = bank->pcrSelect[j];
+            if (selected[j] & mask) {
+                return_error(TSS2_FAPI_RC_BAD_VALUE,
+                             "More than one bank selected for a PCR register.");
+            }
+            selected[j] |= mask;
+            for (; mask; mask &= mask - 1) {
+                ++*n_pcrs;
+            }
+        }
+    }
+    return TSS2_RC_SUCCESS;
+}
+
 /** Check whether a event list corresponds to a certain quote information.
  *
  * The event list is used to compute the PCR values corresponding
@@ -2323,13 +2359,22 @@ ifapi_calculate_pcr_digest(
     const FAPI_QUOTE_INFO *quote_info)
 {
     TSS2_RC r;
-    IFAPI_PCR_REG pcrs[TPM2_MAX_PCRS];
+    IFAPI_PCR_REG *pcrs = NULL;
 
     const TPML_PCR_SELECTION *pcr_selection;
     TPMI_ALG_HASH pcr_digest_hash_alg;
+    size_t n_pcrs;
 
     /* Get some data from the quote info for easier access */
     pcr_selection = &quote_info->attest.attested.quote.pcrSelect;
+
+    r = ifapi_validate_pcr_selection(pcr_selection, &n_pcrs);
+    return_if_error(r, "Invalid PCR selection.");
+
+    if (n_pcrs) {
+        pcrs = calloc(n_pcrs, sizeof(*pcrs));
+        return_if_null(pcrs, "Out of memory.", TSS2_FAPI_RC_MEMORY);
+    }
 
     switch (quote_info->sig_scheme.scheme) {
     case TPM2_ALG_RSAPSS:
@@ -2346,12 +2391,14 @@ ifapi_calculate_pcr_digest(
         break;
     default:
         LOG_ERROR("Unknown sig scheme");
+        SAFE_FREE(pcrs);
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 
     r = ifapi_calculate_pcrs(jso_event_list, pcr_selection, pcr_digest_hash_alg,
                              &quote_info->attest.attested.quote.pcrDigest,
                              &pcrs[0]);
+    SAFE_FREE(pcrs);
     return_if_error(r, "Compute PCRs");
 
     return r;
