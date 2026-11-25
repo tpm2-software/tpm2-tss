@@ -25,7 +25,6 @@
 #include "tss2_common.h"       // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_TCTI_R...
 #include "tss2_tcti.h"         // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
 #include "tss2_tcti_libtpms.h" // for Tss2_Tcti_Libtpms_Init, Tss2_Tcti_Lib...
-#include "tss2_tpm2_types.h"   // for TPM2_RC_SUCCESS
 #include "util/aux_util.h"     // for MAYBE_UNUSED, ARRAY_LEN
 
 #define LOGMODULE tcti
@@ -165,7 +164,7 @@ tcti_libtpms_map_state_file(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
      */
     tcti_libtpms->state_len = file_len;
 
-    rc = TPM2_RC_SUCCESS;
+    rc = TSS2_RC_SUCCESS;
 
 cleanup_fd:
     if (state_fd != -1) {
@@ -454,7 +453,7 @@ tcti_libtpms_dl(TSS2_TCTI_LIBTPMS_CONTEXT *tcti_libtpms) {
         goto cleanup_dl;
     }
 
-    return TPM2_RC_SUCCESS;
+    return TSS2_RC_SUCCESS;
 
 cleanup_dl:
     dlclose(tcti_libtpms->libtpms);
@@ -471,7 +470,7 @@ cleanup_dl:
  * libtpms TCTI instance.
  */
 
-TPM_RESULT
+TSS2_RC
 tcti_libtpms_cb_nvram_init(void) {
     LOG_TRACE("tcti-libtpms callback nvram_init() called.");
 
@@ -479,7 +478,7 @@ tcti_libtpms_cb_nvram_init(void) {
      * initialization of tcti-libtpms.
      */
 
-    return TPM_SUCCESS;
+    return TSS2_RC_SUCCESS;
 }
 
 /**
@@ -880,7 +879,7 @@ Tss2_Tcti_Libtpms_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char 
     }
 
     rc = tcti_libtpms_dl(tcti_libtpms);
-    if (rc != TPM2_RC_SUCCESS) {
+    if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
     LOG_TRACE("Successfully loaded libtpms and resolved symbols.");
@@ -905,7 +904,7 @@ Tss2_Tcti_Libtpms_Init(TSS2_TCTI_CONTEXT *tctiContext, size_t *size, const char 
     }
 
     rc = tcti_libtpms_map_state_file(tcti_libtpms);
-    if (rc != TPM2_RC_SUCCESS) {
+    if (rc != TSS2_RC_SUCCESS) {
         LOG_ERROR("Could not create and map state file.");
         goto cleanup_state_path;
     }

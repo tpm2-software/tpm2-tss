@@ -48,11 +48,11 @@
 #include "tcti-common.h" // for TSS2_TCTI_COMMON_CONTEXT, TPM_HEADER_SIZE
 #include "tcti-device.h"
 #include "tss2_common.h"      // for TSS2_TCTI_RC_IO_ERROR, TSS2_RC_SUCCESS
-#include "tss2_mu.h"          // for Tss2_MU_UINT32_Unmarshal
 #include "tss2_tcti.h"        // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_HANDLE
 #include "tss2_tcti_device.h" // for Tss2_Tcti_Device_Init
 #include "util-io/io.h"       // for write_all, TEMP_RETRY
 #include "util/aux_util.h"    // for UNUSED, ARRAY_LEN
+#include "util/tss2_endian.h" // for BE_TO_HOST_32
 
 #define LOGMODULE tcti
 #include "util/log.h" // for LOG_ERROR, LOG_DEBUG, LOG_WARNING, LOG...
@@ -146,7 +146,6 @@ tcti_device_receive(TSS2_TCTI_CONTEXT *tctiContext,
     struct pollfd             fds;
     int                       rc_poll, nfds = 1;
     uint8_t                   header[TPM_HEADER_SIZE];
-    size_t                    offset = 2;
     UINT32                    partial_size;
 
     rc = tcti_common_receive_checks(tcti_common, response_size, TCTI_DEVICE_MAGIC);
@@ -185,11 +184,8 @@ tcti_device_receive(TSS2_TCTI_CONTEXT *tctiContext,
                 return TSS2_TCTI_RC_GENERAL_FAILURE;
             }
             LOG_DEBUG("Partial read - received header");
-            rc = Tss2_MU_UINT32_Unmarshal(header, TPM_HEADER_SIZE, &offset, &partial_size);
-            if (rc != TSS2_RC_SUCCESS) {
-                LOG_ERROR("Failed to unmarshal response size.");
-                return rc;
-            }
+            memcpy(&partial_size, header + sizeof(TPM2_ST), sizeof(partial_size));
+            partial_size = BE_TO_HOST_32(partial_size);
             if (partial_size < TPM_HEADER_SIZE) {
                 LOG_ERROR("Received %zu bytes, not enough to hold a TPM2"
                           " response header.",

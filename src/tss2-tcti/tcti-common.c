@@ -9,11 +9,10 @@
 #endif
 
 #include <inttypes.h> // for PRIxPTR
+#include <string.h>   // for memcpy
 
 #include "tcti-common.h"
-#include "tss2_mu.h"         // for Tss2_MU_UINT32_Marshal, Tss2_MU_UINT32_...
-#include "tss2_tpm2_types.h" // for TPM2_HANDLE
-#include "util/aux_util.h"   // for UNUSED
+#include "util/tss2_endian.h" // for BE_TO_HOST_16, BE_TO_HOST_32, HOST_TO_BE_16, HOST_TO_BE_32
 
 #define LOGMODULE tcti
 #include "util/log.h" // for LOG_ERROR, LOG_TRACE
@@ -99,57 +98,39 @@ tcti_common_set_locality_checks(TSS2_TCTI_COMMON_CONTEXT *tcti_common, uint64_t 
 }
 
 TSS2_RC
-tcti_make_sticky_not_implemented(TSS2_TCTI_CONTEXT *tctiContext,
-                                 TPM2_HANDLE       *handle,
-                                 uint8_t            sticky) {
-    UNUSED(tctiContext);
-    UNUSED(handle);
-    UNUSED(sticky);
+tcti_make_sticky_not_implemented(TSS2_TCTI_CONTEXT *tctiContext, uint32_t *handle, uint8_t sticky) {
+    (void)tctiContext;
+    (void)handle;
+    (void)sticky;
     return TSS2_TCTI_RC_NOT_IMPLEMENTED;
 }
 
 TSS2_RC
 header_unmarshal(const uint8_t *buf, tpm_header_t *header) {
-    TSS2_RC rc;
-    size_t  offset = 0;
+    uint16_t tag;
+    uint32_t size;
+    uint32_t code;
 
     LOG_TRACE("Parsing header from buffer: 0x%" PRIxPTR, (uintptr_t)buf);
-    rc = Tss2_MU_TPM2_ST_Unmarshal(buf, TPM_HEADER_SIZE, &offset, &header->tag);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to unmarshal tag.");
-        return rc;
-    }
-    rc = Tss2_MU_UINT32_Unmarshal(buf, TPM_HEADER_SIZE, &offset, &header->size);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to unmarshal command size.");
-        return rc;
-    }
-    rc = Tss2_MU_UINT32_Unmarshal(buf, TPM_HEADER_SIZE, &offset, &header->code);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to unmarshal command code.");
-    }
-    return rc;
+    memcpy(&tag, buf, sizeof(tag));
+    memcpy(&size, buf + sizeof(tag), sizeof(size));
+    memcpy(&code, buf + sizeof(tag) + sizeof(size), sizeof(code));
+
+    header->tag = BE_TO_HOST_16(tag);
+    header->size = BE_TO_HOST_32(size);
+    header->code = BE_TO_HOST_32(code);
+    return TSS2_RC_SUCCESS;
 }
 
 TSS2_RC
 header_marshal(const tpm_header_t *header, uint8_t *buf) {
-    TSS2_RC rc;
-    size_t  offset = 0;
+    uint16_t tag = HOST_TO_BE_16(header->tag);
+    uint32_t size = HOST_TO_BE_32(header->size);
+    uint32_t code = HOST_TO_BE_32(header->code);
 
     LOG_TRACE("Parsing header from buffer: 0x%" PRIxPTR, (uintptr_t)buf);
-    rc = Tss2_MU_TPM2_ST_Marshal(header->tag, buf, TPM_HEADER_SIZE, &offset);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to marshal tag.");
-        return rc;
-    }
-    rc = Tss2_MU_UINT32_Marshal(header->size, buf, TPM_HEADER_SIZE, &offset);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to marshal command size.");
-        return rc;
-    }
-    rc = Tss2_MU_UINT32_Marshal(header->code, buf, TPM_HEADER_SIZE, &offset);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to marshal command code.");
-    }
-    return rc;
+    memcpy(buf, &tag, sizeof(tag));
+    memcpy(buf + sizeof(tag), &size, sizeof(size));
+    memcpy(buf + sizeof(tag) + sizeof(size), &code, sizeof(code));
+    return TSS2_RC_SUCCESS;
 }

@@ -22,10 +22,10 @@
 #include "tcti-common.h" // for TSS2_TCTI_COMMON_CONTEXT, tpm_head...
 #include "tcti-mssim.h"
 #include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC, UINT32
-#include "tss2_mu.h"              // for Tss2_MU_UINT32_Marshal, Tss2_MU_UI...
 #include "tss2_tcti.h"            // for TSS2_TCTI_CONTEXT, TSS2_TCTI_POLL_...
 #include "tss2_tcti_mssim.h"      // for MS_SIM_CANCEL_OFF, MS_SIM_CANCEL_ON
 #include "util/key-value-parse.h" // for key_value_t, parse_key_value_string
+#include "util/tss2_endian.h"     // for BE_TO_HOST_32, HOST_TO_BE_32
 
 #define LOGMODULE tcti
 #include "util/log.h" // for LOG_DEBUG, LOG_ERROR, LOG_TRACE
@@ -63,7 +63,7 @@ tcti_platform_command(TSS2_TCTI_CONTEXT *tctiContext, UINT32 cmd) {
     TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim = tcti_mssim_context_cast(tctiContext);
     uint8_t                  buf[sizeof(cmd)] = { 0 };
     UINT32                   rsp = 0;
-    TSS2_RC                  rc = TSS2_RC_SUCCESS;
+    UINT32                   command = HOST_TO_BE_32(cmd);
     size_t                   ret;
     ssize_t                  read_ret;
 
@@ -75,11 +75,7 @@ tcti_platform_command(TSS2_TCTI_CONTEXT *tctiContext, UINT32 cmd) {
         return TSS2_TCTI_RC_BAD_CONTEXT;
     }
 
-    rc = Tss2_MU_UINT32_Marshal(cmd, buf, sizeof(cmd), NULL);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to marshal platform command %" PRIu32 ", rc: 0x%" PRIx32, cmd, rc);
-        return rc;
-    }
+    memcpy(buf, &command, sizeof(command));
 
     LOGBLOB_DEBUG(buf, sizeof(cmd), "Sending %zu bytes to socket %" PRIu32 ":", sizeof(cmd),
                   tcti_mssim->platform_sock);
@@ -106,16 +102,13 @@ tcti_platform_command(TSS2_TCTI_CONTEXT *tctiContext, UINT32 cmd) {
 #endif
     LOGBLOB_DEBUG(buf, sizeof(buf), "Received %zu bytes from socket 0x%" PRIx32 ":", read_ret,
                   tcti_mssim->platform_sock);
-    rc = Tss2_MU_UINT32_Unmarshal(buf, sizeof(rsp), NULL, &rsp);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to unmarshal response to platform command. rc: 0x%" PRIx32, rc);
-        return rc;
-    }
+    memcpy(&rsp, buf, sizeof(rsp));
+    rsp = BE_TO_HOST_32(rsp);
     if (rsp != 0) {
         LOG_INFO("Platform command failed with error: %" PRIu32, rsp);
         return TSS2_TCTI_RC_IO_ERROR;
     }
-    return rc;
+    return TSS2_RC_SUCCESS;
 }
 /*
  * This function sends the special TPM_SESSION_END message over the provided
@@ -126,12 +119,8 @@ send_sim_session_end(SOCKET sock) {
     uint8_t buf[4] = {
         0,
     };
-    TSS2_RC rc;
-
-    rc = Tss2_MU_UINT32_Marshal(TPM_SESSION_END, buf, sizeof(buf), NULL);
-    if (rc != TSS2_RC_SUCCESS) {
-        return rc;
-    }
+    uint32_t session_end = HOST_TO_BE_32(TPM_SESSION_END);
+    memcpy(buf, &session_end, sizeof(session_end));
     return socket_xmit_buf(sock, buf, sizeof(buf), -1);
 }
 
@@ -148,23 +137,14 @@ TSS2_RC
 send_sim_cmd_setup(TSS2_TCTI_MSSIM_CONTEXT *tcti_mssim, UINT32 size) {
     TSS2_TCTI_COMMON_CONTEXT *tcti_common = tcti_mssim_down_cast(tcti_mssim);
     uint8_t                   buf[SIM_CMD_SIZE] = { 0 };
+    uint32_t                  command = HOST_TO_BE_32(MS_SIM_TPM_SEND_COMMAND);
+    uint32_t                  command_size = HOST_TO_BE_32(size);
     size_t                    offset = 0;
-    TSS2_RC                   rc;
 
-    rc = Tss2_MU_UINT32_Marshal(MS_SIM_TPM_SEND_COMMAND, buf, sizeof(buf), &offset);
-    if (rc != TSS2_RC_SUCCESS) {
-        return rc;
-    }
-
-    rc = Tss2_MU_UINT8_Marshal(tcti_common->locality, buf, sizeof(buf), &offset);
-    if (rc != TSS2_RC_SUCCESS) {
-        return rc;
-    }
-
-    rc = Tss2_MU_UINT32_Marshal(size, buf, sizeof(buf), &offset);
-    if (rc != TSS2_RC_SUCCESS) {
-        return rc;
-    }
+    memcpy(buf + offset, &command, sizeof(command));
+    offset += sizeof(command);
+    buf[offset++] = tcti_common->locality;
+    memcpy(buf + offset, &command_size, sizeof(command_size));
 
     return socket_xmit_buf(tcti_mssim->tpm_sock, buf, sizeof(buf), -1);
 }
@@ -338,13 +318,8 @@ tcti_mssim_receive(TSS2_TCTI_CONTEXT *tctiContext,
             goto out;
         }
 
-        rc = Tss2_MU_UINT32_Unmarshal(size_buf, sizeof(size_buf), 0, &tcti_common->header.size);
-        if (rc != TSS2_RC_SUCCESS) {
-            LOG_WARNING("Failed to unmarshal size from tpm2 simulator "
-                        "protocol: 0x%" PRIu32,
-                        rc);
-            goto out;
-        }
+        memcpy(&tcti_common->header.size, size_buf, sizeof(tcti_common->header.size));
+        tcti_common->header.size = BE_TO_HOST_32(tcti_common->header.size);
 
         LOG_DEBUG("response size: %" PRIu32, tcti_common->header.size);
     }
