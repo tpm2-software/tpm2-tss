@@ -321,7 +321,7 @@ pkgconfig_DATA += lib/tss2-tcti-device.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_device_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-device.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_device_la_LIBADD   = $(libtss2_mu) $(libutil) $(libutilio)
+src_tss2_tcti_libtss2_tcti_device_la_LIBADD   = $(libutil) $(libutilio)
 src_tss2_tcti_libtss2_tcti_device_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-device.c
@@ -338,7 +338,7 @@ pkgconfig_DATA += lib/tss2-tcti-swtpm.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_swtpm_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-swtpm.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_swtpm_la_LIBADD   = $(libtss2_mu) $(libutil) $(libutilio)
+src_tss2_tcti_libtss2_tcti_swtpm_la_LIBADD   = $(libutil) $(libutilio)
 src_tss2_tcti_libtss2_tcti_swtpm_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-swtpm.c \
@@ -356,7 +356,7 @@ pkgconfig_DATA += lib/tss2-tcti-mssim.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_mssim_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-mssim.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_mssim_la_LIBADD   = $(libtss2_mu) $(libutil) $(libutilio)
+src_tss2_tcti_libtss2_tcti_mssim_la_LIBADD   = $(libutil) $(libutilio)
 src_tss2_tcti_libtss2_tcti_mssim_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-mssim.c
@@ -375,7 +375,7 @@ pkgconfig_DATA += lib/tss2-tcti-pcap.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_pcap_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-pcap.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_pcap_la_LIBADD   = $(libtss2_tctildr) $(libtss2_mu) $(libutil) $(libutilio)
+src_tss2_tcti_libtss2_tcti_pcap_la_LIBADD   = $(libtss2_tctildr) $(libutil) $(libutilio)
 src_tss2_tcti_libtss2_tcti_pcap_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-pcap-builder.c \
@@ -393,7 +393,7 @@ pkgconfig_DATA += lib/tss2-tcti-null.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_null_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-null.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_null_la_LIBADD   = $(libtss2_tctildr) $(libtss2_mu) $(libutil) $(libutilio)
+src_tss2_tcti_libtss2_tcti_null_la_LIBADD   = $(libtss2_tctildr) $(libutil) $(libutilio)
 src_tss2_tcti_libtss2_tcti_null_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-null.c \
@@ -412,7 +412,7 @@ pkgconfig_DATA += lib/tss2-tcti-libtpms.pc
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_libtpms_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-libtpms.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_libtpms_la_LIBADD   = $(libtss2_mu) $(libutil)
+src_tss2_tcti_libtss2_tcti_libtpms_la_LIBADD   = $(libutil)
 src_tss2_tcti_libtss2_tcti_libtpms_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-libtpms.c \
@@ -432,7 +432,7 @@ if !UNIT
 src_tss2_tcti_libtss2_tcti_cmd_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-cmd.map
 endif # UNIT
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_cmd_la_LIBADD   = $(libutil) $(libtss2_mu)
+src_tss2_tcti_libtss2_tcti_cmd_la_LIBADD   = $(libutil)
 src_tss2_tcti_libtss2_tcti_cmd_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-cmd.c \
@@ -453,7 +453,7 @@ if !UNIT
 src_tss2_tcti_libtss2_tcti_spi_helper_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spi-helper.map
 endif # UNIT
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_spi_helper_la_LIBADD   = $(libutil) $(libtss2_mu)
+src_tss2_tcti_libtss2_tcti_spi_helper_la_LIBADD   = $(libutil)
 src_tss2_tcti_libtss2_tcti_spi_helper_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-spi-helper.c \
@@ -474,7 +474,7 @@ src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_LDFLAGS  = -lusb-1.0
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spi-ltt2go.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_spi_helper)
+src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_LIBADD   = $(libutil) $(libtss2_tcti_spi_helper)
 src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-spi-ltt2go.c \
@@ -495,7 +495,7 @@ src_tss2_tcti_libtss2_tcti_spidev_la_LDFLAGS  =
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_spidev_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spidev.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_spidev_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_spi_helper)
+src_tss2_tcti_libtss2_tcti_spidev_la_LIBADD   = $(libutil) $(libtss2_tcti_spi_helper)
 src_tss2_tcti_libtss2_tcti_spidev_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-spidev.c
@@ -515,7 +515,7 @@ src_tss2_tcti_libtss2_tcti_spi_ftdi_la_LDFLAGS  = $(LIBFTDI_LIBS)
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_spi_ftdi_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spi-ftdi.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_spi_ftdi_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_spi_helper)
+src_tss2_tcti_libtss2_tcti_spi_ftdi_la_LIBADD   = $(libutil) $(libtss2_tcti_spi_helper)
 src_tss2_tcti_libtss2_tcti_spi_ftdi_la_SOURCES  = \
     src/tss2-tcti/mpsse/support.c \
     src/tss2-tcti/mpsse/support.h \
@@ -540,7 +540,7 @@ if !UNIT
 src_tss2_tcti_libtss2_tcti_i2c_helper_la_LDFLAGS  = -Wl,--version-script=$(srcdir)/lib/tss2-tcti-i2c-helper.map
 endif # UNIT
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_i2c_helper_la_LIBADD   = $(libutil) $(libtss2_mu)
+src_tss2_tcti_libtss2_tcti_i2c_helper_la_LIBADD   = $(libutil)
 src_tss2_tcti_libtss2_tcti_i2c_helper_la_SOURCES  = \
     src/tss2-tcti/tcti-common.c \
     src/tss2-tcti/tcti-i2c-helper.c \
@@ -561,7 +561,7 @@ src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_LDFLAGS  = $(LIBFTDI_LIBS)
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-i2c-ftdi.map
 endif # HAVE_LD_VERSION_SCRIPT
-src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_LIBADD   = $(libutil) $(libtss2_mu) $(libtss2_tcti_i2c_helper)
+src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_LIBADD   = $(libutil) $(libtss2_tcti_i2c_helper)
 src_tss2_tcti_libtss2_tcti_i2c_ftdi_la_SOURCES  = \
     src/tss2-tcti/mpsse/support.c \
     src/tss2-tcti/mpsse/support.h \

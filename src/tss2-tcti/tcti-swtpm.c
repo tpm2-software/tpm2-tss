@@ -21,12 +21,11 @@
 #include "tcti-common.h" // for TSS2_TCTI_COMMON_CONTEXT, tpm_head...
 #include "tcti-swtpm.h"
 #include "tss2_common.h"          // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TCT...
-#include "tss2_mu.h"              // for Tss2_MU_UINT32_Marshal, Tss2_MU_UI...
 #include "tss2_tcti.h"            // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
 #include "tss2_tcti_swtpm.h"      // for Tss2_Tcti_Swtpm_Init, Tss2_Tcti_Sw...
 #include "util/aux_util.h"        // for UNUSED
 #include "util/key-value-parse.h" // for key_value_t, parse_key_value_string
-#include "util/tss2_endian.h"     // for BE_TO_HOST_32
+#include "util/tss2_endian.h"     // for BE_TO_HOST_32, HOST_TO_BE_32
 
 #define LOGMODULE tcti
 #include "util/log.h" // for LOG_ERROR, LOG_DEBUG, LOG_TRACE
@@ -153,12 +152,9 @@ tcti_control_command(TSS2_TCTI_CONTEXT *tctiContext,
     }
 
     /* marshal control command code (4 bytes) */
-    rc = Tss2_MU_UINT32_Marshal(cmd_code, req_buf, sizeof(req_buf), &req_buf_len);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to marshal control command code %" PRIu32 ", rc: 0x%" PRIx32, cmd_code,
-                  rc);
-        goto out;
-    }
+    uint32_t cmd_code_be = HOST_TO_BE_32(cmd_code);
+    memcpy(req_buf, &cmd_code_be, sizeof(cmd_code_be));
+    req_buf_len = sizeof(cmd_code_be);
 
     /* copy command payload */
     if (cmd_sdu) {
@@ -198,11 +194,8 @@ tcti_control_command(TSS2_TCTI_CONTEXT *tctiContext,
                   resp_buf_len, tcti_swtpm->ctrl_sock);
 
     /* unmarshal response code */
-    rc = Tss2_MU_UINT32_Unmarshal(resp_buf, sizeof(resp_buf), NULL, &response_code);
-    if (rc != TSS2_RC_SUCCESS) {
-        LOG_ERROR("Failed to unmarshal response code of control command. rc: 0x%" PRIx32, rc);
-        goto out;
-    }
+    memcpy(&response_code, resp_buf, sizeof(response_code));
+    response_code = BE_TO_HOST_32(response_code);
 
     /* return response payload length */
     if (resp_sdu_len != NULL) {

@@ -10,18 +10,17 @@
 #include <stddef.h>  // for size_t
 #include <stdint.h>  // for uint8_t, uint64_t
 
-#include "tss2_common.h"     // for UINT32, TSS2_RC
-#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CONTEXT_CO...
-#include "tss2_tpm2_types.h" // for TPM2_ST, TPM2_HANDLE
+#include "tss2_common.h" // for TSS2_RC
+#include "tss2_tcti.h"   // for TSS2_TCTI_CONTEXT, TSS2_TCTI_CONTEXT_CO...
 
 #define TCTI_VERSION    0x2
 
-#define TPM_HEADER_SIZE (sizeof(TPM2_ST) + sizeof(UINT32) + sizeof(UINT32))
+#define TPM_HEADER_SIZE (sizeof(uint16_t) + sizeof(uint32_t) + sizeof(uint32_t))
 
 typedef struct {
-    TPM2_ST tag;
-    UINT32  size;
-    UINT32  code;
+    uint16_t tag;
+    uint32_t size;
+    uint32_t code;
 } tpm_header_t;
 /*
  * The elements in this enumeration represent the possible states that the
@@ -105,9 +104,7 @@ tcti_common_set_locality_checks(TSS2_TCTI_COMMON_CONTEXT *tcti_common, uint64_t 
  * RC for the TCTI layer.
  */
 TSS2_RC
-tcti_make_sticky_not_implemented(TSS2_TCTI_CONTEXT *tctiContext,
-                                 TPM2_HANDLE       *handle,
-                                 uint8_t            sticky);
+tcti_make_sticky_not_implemented(TSS2_TCTI_CONTEXT *tctiContext, uint32_t *handle, uint8_t sticky);
 /*
  * Utility to function to parse the first 10 bytes of a buffer and populate
  * the 'header' structure with the results. The provided buffer is assumed to

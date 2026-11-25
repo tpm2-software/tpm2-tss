@@ -11,10 +11,9 @@
 #include <inttypes.h> // for PRIxPTR, uintptr_t, uint8_t, int32_t
 #include <string.h>   // for NULL, size_t, memset
 
-#include "tcti-common.h"     // for TSS2_TCTI_COMMON_CONTEXT, TCTI_STATE_...
-#include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TCTI_R...
-#include "tss2_tcti.h"       // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
-#include "tss2_tpm2_types.h" // for TPM2_RC_SUCCESS
+#include "tcti-common.h" // for TSS2_TCTI_COMMON_CONTEXT, TCTI_STATE_...
+#include "tss2_common.h" // for TSS2_RC_SUCCESS, TSS2_RC, TSS2_TCTI_R...
+#include "tss2_tcti.h"   // for TSS2_TCTI_CONTEXT, TSS2_TCTI_INFO
 
 #define LOGMODULE tcti
 #include "tcti-pcap-builder.h" // for pcap_print, pcap_deinit, pcap_init
@@ -102,7 +101,7 @@ tcti_pcap_receive(TSS2_TCTI_CONTEXT *tctiContext,
 
     rc = Tss2_Tcti_Receive(tcti_pcap->tcti_child, response_size, response_buffer, timeout);
     /* handle errors of underlying TCTI directly (may not write to PCAP file) */
-    if (rc != TPM2_RC_SUCCESS) {
+    if (rc != TSS2_RC_SUCCESS) {
         return rc;
     }
 
