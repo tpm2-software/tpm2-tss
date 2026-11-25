@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [4.2.3-rc1] - 2026-11-25
+
+### Fixes
+- esys: update nonce for pure policy responses
+
 ## [4.2.3-rc0] - 2026-11-24
 ### Security
 - GHSA-8fwv-r544-cjrh CVE-ID requested
