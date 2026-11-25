@@ -4,9 +4,13 @@
  */
 #ifndef TCTI_SPI_LTT2GO_H
 #define TCTI_SPI_LTT2GO_H
+#ifdef __FreeBSD__
+#include <libusb.h> // for libusb_context, libusb_device_handle
+#else
 #include <libusb-1.0/libusb.h> // for libusb_context, libusb_device_handle
-#include <stdint.h>            // for uint8_t
-#include <sys/time.h>          // for timeval
+#endif
+#include <stdint.h>   // for uint8_t
+#include <sys/time.h> // for timeval
 
 typedef struct {
     struct timeval        timeout;

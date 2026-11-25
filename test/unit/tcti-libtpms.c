@@ -8,10 +8,13 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <dlfcn.h>               // for RTLD_LAZY, RTLD_LOCAL
-#include <errno.h>               // for errno, ENOENT
-#include <fcntl.h>               // for O_CREAT, O_RDWR, SEEK_END, mode_t
-#include <inttypes.h>            // for uint32_t
+#include "tss2_common.h"           // for BYTE
+#include <dlfcn.h>                 // for RTLD_LAZY, RTLD_LOCAL
+#include <errno.h>                 // for errno, ENOENT
+#include <fcntl.h>                 // for O_CREAT, O_RDWR, SEEK_END, mode_t
+#include <inttypes.h>              // for uint32_t
+#define TPM_HAVE_TPM2_DECLARATIONS // avoid a typedef-redefinition in libtpms/tpm_library.h
+typedef uint32_t TPM_MODIFIER_INDICATOR;
 #include <libtpms/tpm_error.h>   // for TPM_SUCCESS
 #include <libtpms/tpm_library.h> // for libtpms_callbacks, TPMLIB_STATE_...
 #include <libtpms/tpm_nvfilename.h> // for TPM_PERMANENT_ALL_NAME, TPM_SAVESTATE_NAME, TPM_VOLATILESTATE_NAME
@@ -746,6 +749,11 @@ tcti_libtpms_init_state_freebsd_fail_test(void **state) {
     expect_string(__wrap_dlsym, symbol, "TPMLIB_Terminate");
     will_return(__wrap_dlsym, &TPMLIB_Terminate);
 
+#ifdef __FreeBSD__
+    expect_uint_value(__wrap_dlclose, handle, (uintptr_t)(LIBTPMS_DL_HANDLE));
+    will_return(__wrap_dlclose, 0);
+#endif
+
     ret = Tss2_Tcti_Libtpms_Init(ctx, &tcti_size, STATEFILE_PATH);
     assert_int_equal(ret, TSS2_TCTI_RC_BAD_VALUE);
 
@@ -1084,6 +1092,7 @@ tcti_libtpms_store_persistent_bigger_test(void **state) {
 }
 
 /* Test the store routine with a state file, forcing remap */
+#ifndef __FreeBSD__
 static void
 tcti_libtpms_store_persistent_huge_test(void **state) {
     TSS2_TCTI_CONTEXT         *ctx = (TSS2_TCTI_CONTEXT *)*state;
@@ -1132,8 +1141,10 @@ tcti_libtpms_store_persistent_huge_test(void **state) {
                         "\0\0\x09\x58" LITERAL_E_2392B "\0\0\0\x05" LITERAL_B_5B,
                         4 + LITERAL_E_2392B_LEN + 4 + LITERAL_B_5B_LEN);
 }
+#endif
 
 /* Test the store routine with a state file, forcing remap of two chunks */
+#ifndef __FreeBSD__
 static void
 tcti_libtpms_store_persistent_ridiculously_huge_test(void **state) {
     TSS2_TCTI_CONTEXT         *ctx = (TSS2_TCTI_CONTEXT *)*state;
@@ -1182,6 +1193,7 @@ tcti_libtpms_store_persistent_ridiculously_huge_test(void **state) {
                         "\0\0\x10\x2c" LITERAL_F_4140B "\0\0\0\x05" LITERAL_B_5B,
                         4 + LITERAL_F_4140B_LEN + 4 + LITERAL_B_5B_LEN);
 }
+#endif
 
 /* Test the store routine with a state file */
 static void
@@ -1239,6 +1251,7 @@ tcti_libtpms_store_volatile_bigger_test(void **state) {
 }
 
 /* Test the store routine with a state file */
+#ifndef __FreeBSD__
 static void
 tcti_libtpms_store_volatile_huge_test(void **state) {
     TSS2_TCTI_CONTEXT         *ctx = (TSS2_TCTI_CONTEXT *)*state;
@@ -1287,6 +1300,7 @@ tcti_libtpms_store_volatile_huge_test(void **state) {
                         "\0\0\0\x03" LITERAL_A_3B "\0\0\x09\x58" LITERAL_E_2392B,
                         4 + LITERAL_A_3B_LEN + 4 + LITERAL_E_2392B_LEN);
 }
+#endif
 
 /* Test the load routine with a state file */
 static void
@@ -1467,22 +1481,28 @@ main(int argc, char *argv[]) {
         cmocka_unit_test_setup_teardown(tcti_libtpms_no_statefile_load_test,
                                         tcti_libtpms_setup_no_statefile,
                                         tcti_libtpms_teardown_no_statefile),
+#ifndef __FreeBSD__
         cmocka_unit_test_setup_teardown(tcti_libtpms_store_persistent_smaller_test,
                                         tcti_libtpms_setup, tcti_libtpms_teardown_any),
         cmocka_unit_test_setup_teardown(tcti_libtpms_store_persistent_bigger_test,
                                         tcti_libtpms_setup, tcti_libtpms_teardown_any),
+#ifndef __FreeBSD__
         cmocka_unit_test_setup_teardown(tcti_libtpms_store_persistent_huge_test, tcti_libtpms_setup,
                                         tcti_libtpms_teardown_any),
         cmocka_unit_test_setup_teardown(tcti_libtpms_store_persistent_ridiculously_huge_test,
                                         tcti_libtpms_setup, tcti_libtpms_teardown_any),
+#endif
         cmocka_unit_test_setup_teardown(tcti_libtpms_store_volatile_smaller_test,
                                         tcti_libtpms_setup, tcti_libtpms_teardown_any),
         cmocka_unit_test_setup_teardown(tcti_libtpms_store_volatile_bigger_test, tcti_libtpms_setup,
                                         tcti_libtpms_teardown_any),
+#ifndef __FreeBSD__
         cmocka_unit_test_setup_teardown(tcti_libtpms_store_volatile_huge_test, tcti_libtpms_setup,
                                         tcti_libtpms_teardown_any),
+#endif
         cmocka_unit_test_setup_teardown(tcti_libtpms_load_test, tcti_libtpms_setup,
                                         tcti_libtpms_teardown_any),
+#endif
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

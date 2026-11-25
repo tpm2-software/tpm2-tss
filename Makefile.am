@@ -469,7 +469,7 @@ tss2_HEADERS += $(srcdir)/include/tss2/tss2_tcti_spi_ltt2go.h
 lib_LTLIBRARIES += $(libtss2_tcti_spi_ltt2go)
 pkgconfig_DATA += lib/tss2-tcti-spi-ltt2go.pc
 
-src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_LDFLAGS  = -lusb-1.0
+src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_LDFLAGS  = $(LIBUSB_LIBS)
 
 if HAVE_LD_VERSION_SCRIPT
 src_tss2_tcti_libtss2_tcti_spi_ltt2go_la_LDFLAGS  += -Wl,--version-script=$(srcdir)/lib/tss2-tcti-spi-ltt2go.map
