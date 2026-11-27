@@ -12,15 +12,15 @@
 #include <string.h> // for memset, strlen
 
 #include "fapi_int.h"       // for IFAPI_Path_SetDescription, FAPI_CONTEXT
-#include "fapi_util.h"      // for ifapi_initialize_object, ifapi_set_descr...
+#include "fapi_util.h"      // for ifapi_initialize_object, ifapi_set_description
 #include "ifapi_io.h"       // for ifapi_io_poll
-#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keystore_load_async
 #include "ifapi_macros.h"   // for check_not_null, goto_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetDescription, Fapi_...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetDescription
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_error, base_rc
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_SetDescription
  *
@@ -135,7 +135,7 @@ Fapi_SetDescription_Async(FAPI_CONTEXT *context, char const *path, char const *d
     IFAPI_Path_SetDescription *command = &context->cmd.path_set_info;
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->object_path, path, r, error_cleanup);
+    ifapi_strdup_check(command->object_path, path, r, error_cleanup);
 
     /* Load the object's current metadata from the keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, path);
@@ -144,7 +144,7 @@ Fapi_SetDescription_Async(FAPI_CONTEXT *context, char const *path, char const *d
     if (description == NULL) {
         command->description = NULL;
     } else {
-        strdup_check(command->description, description, r, error_cleanup);
+        ifapi_strdup_check(command->description, description, r, error_cleanup);
     }
 
     /* Initialize the context state for this operation. */
@@ -198,7 +198,7 @@ Fapi_SetDescription_Finish(FAPI_CONTEXT *context) {
     switch (context->state) {
     statecase(context->state, PATH_SET_DESCRIPTION_READ);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "read_finish failed", error_cleanup);
 
         r = ifapi_initialize_object(context->esys, object);
@@ -216,13 +216,13 @@ Fapi_SetDescription_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, PATH_SET_DESCRIPTION_WRITE);
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

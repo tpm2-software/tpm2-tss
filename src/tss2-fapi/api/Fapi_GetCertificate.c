@@ -15,11 +15,11 @@
 #include "ifapi_io.h"       // for ifapi_io_poll
 #include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
 #include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetCertificate, Fapi_...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetCertificate
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, return_if_error, base_rc, ret...
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_GetCertificate
  *
@@ -185,24 +185,25 @@ Fapi_GetCertificate_Finish(FAPI_CONTEXT *context, char **x509certData) {
     switch (context->state) {
     statecase(context->state, KEY_GET_CERTIFICATE_READ)
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, keyObject);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         /* Retrieve the appropriate field from the objects and duplicate its
            content to be returned to the user. */
         if (keyObject->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
-            strdup_check(*x509certData, keyObject->misc.ext_pub_key.certificate, r, error_cleanup);
+            ifapi_strdup_check(*x509certData, keyObject->misc.ext_pub_key.certificate, r,
+                               error_cleanup);
         } else if (keyObject->objectType == IFAPI_KEY_OBJ) {
-            strdup_check(*x509certData, keyObject->misc.key.certificate, r, error_cleanup);
+            ifapi_strdup_check(*x509certData, keyObject->misc.key.certificate, r, error_cleanup);
         } else {
-            strdup_check(*x509certData, "", r, error_cleanup);
+            ifapi_strdup_check(*x509certData, "", r, error_cleanup);
         }
 
         context->state = FAPI_STATE_INIT;
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

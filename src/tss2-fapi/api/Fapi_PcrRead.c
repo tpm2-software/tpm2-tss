@@ -13,21 +13,21 @@
 #include <stdlib.h>   // for malloc
 #include <string.h>   // for memcpy, memset
 
-#include "fapi_int.h"        // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
-#include "fapi_util.h"       // for ifapi_session_init
-#include "ifapi_eventlog.h"  // for ifapi_eventlog_get_async, ifapi_eventlo...
-#include "ifapi_helpers.h"   // for ifapi_filter_pcr_selection_by_index
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_s...
-#include "ifapi_profiles.h"  // for IFAPI_PROFILE, IFAPI_PROFILES
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_BA...
-#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_PCR...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_PcrRead, Fapi_PcrRea...
+#include "fapi_int.h"       // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"      // for ifapi_session_init
+#include "ifapi_eventlog.h" // for ifapi_eventlog_get_async
+#include "ifapi_helpers.h"  // for ifapi_filter_pcr_selection_by_index
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
+#include "ifapi_profiles.h"
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_PCR_Read_Async
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_PcrRead
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h" // for TPM2B_DIGEST, TPML_DIGEST, TPML_PCR_SEL...
+#include "tss2_tpm2_types.h" // for TPML_PCR_SELECTION
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, return_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_PcrRead
  *
@@ -226,7 +226,7 @@ Fapi_PcrRead_Finish(FAPI_CONTEXT *context,
     statecase(context->state, PCR_READ_READ_PCR);
         SAFE_FREE(command->pcrValues);
         r = Esys_PCR_Read_Finish(context->esys, &command->update_count, NULL, &command->pcrValues);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "PCR_ReadWithLog_Finish", cleanup);
 
         /* Copy the return values to the output parameters. */
@@ -259,7 +259,7 @@ Fapi_PcrRead_Finish(FAPI_CONTEXT *context,
 
     statecase(context->state, PCR_READ_READ_EVENT_LIST);
         r = ifapi_eventlog_get_finish(&context->eventlog, NULL, &context->io, pcrLog);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Error getting event log", cleanup);
 
         if (pcrValue)
@@ -268,7 +268,7 @@ Fapi_PcrRead_Finish(FAPI_CONTEXT *context,
             *pcrValueSize = command->pcrValueSize;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:

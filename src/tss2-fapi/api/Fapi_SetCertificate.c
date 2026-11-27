@@ -12,15 +12,15 @@
 #include <string.h> // for memset
 
 #include "fapi_int.h"       // for IFAPI_Key_SetCertificate, FAPI_CONTEXT
-#include "fapi_util.h"      // for ifapi_esys_serialize_object, ifapi_initi...
+#include "fapi_util.h"      // for ifapi_esys_serialize_object, ifapi_initialize_object
 #include "ifapi_io.h"       // for ifapi_io_poll
 #include "ifapi_keystore.h" // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"   // for check_not_null, strdup_check, goto_if_er...
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetCertificate, Fapi_...
+#include "ifapi_macros.h"   // for check_not_null, ifapi_strdup_check, goto_if_error
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetCertificate
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error, bas...
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_SetCertificate
  *
@@ -143,11 +143,11 @@ Fapi_SetCertificate_Async(FAPI_CONTEXT *context, char const *path, char const *x
 
     /* Copy parameters to context for use during _Finish. */
     if (x509certData) {
-        strdup_check(command->pem_cert, x509certData, r, error_cleanup);
+        ifapi_strdup_check(command->pem_cert, x509certData, r, error_cleanup);
     } else {
         command->pem_cert = NULL;
     }
-    strdup_check(command->key_path, path, r, error_cleanup);
+    ifapi_strdup_check(command->key_path, path, r, error_cleanup);
     context->state = KEY_SET_CERTIFICATE_READ;
     memset(&command->key_object, 0, sizeof(IFAPI_OBJECT));
 
@@ -208,14 +208,14 @@ Fapi_SetCertificate_Finish(FAPI_CONTEXT *context) {
     switch (context->state) {
     statecase(context->state, KEY_SET_CERTIFICATE_READ)
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         /* Duplicate and store the certificate in the key object. */
         if (!*pem_cert) {
-            strdup_check(*pem_cert_dup, "", r, error_cleanup);
+            ifapi_strdup_check(*pem_cert_dup, "", r, error_cleanup);
         } else {
-            strdup_check(*pem_cert_dup, *pem_cert, r, error_cleanup);
+            ifapi_strdup_check(*pem_cert_dup, *pem_cert, r, error_cleanup);
         }
         if (key_object->objectType == IFAPI_EXT_PUB_KEY_OBJ) {
             SAFE_FREE(key_object->misc.ext_pub_key.certificate);
@@ -243,13 +243,13 @@ Fapi_SetCertificate_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, KEY_SET_CERTIFICATE_WRITE)
     /* Finish writing the object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "write_finish failed", error_cleanup);
 
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

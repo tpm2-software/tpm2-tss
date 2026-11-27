@@ -1,0 +1,274 @@
+.\" SPDX-FileCopyrightText: 2026, Juergen Repp
+.\" SPDX-License-Identifier: CC-BY-4.0
+.TH TSS2-POLICY-CALLBACKS 7 "NOVEMBER 2026" "TPM2 Software Stack"
+.SH NAME
+tss2-policy-callbacks \- application callbacks for policy calculation and execution
+.SH SYNOPSIS
+.nf
+#include <tss2/tss2_policy.h>
+
+TSS2_RC Tss2_PolicySetCalcCallbacks(
+    TSS2_POLICY_CTX *policy_ctx,
+    TSS2_POLICY_CALC_CALLBACKS *calc_callbacks);
+
+TSS2_RC Tss2_PolicySetExecCallbacks(
+    TSS2_POLICY_CTX *policy_ctx,
+    TSS2_POLICY_EXEC_CALLBACKS *exec_callbacks);
+.fi
+.SH DESCRIPTION
+The Policy library calculates policy digests and executes TPM policy commands.
+Callbacks supply application-specific information and operations, such as
+resolving object paths, selecting a branch, obtaining a signature or executing
+an authorized subpolicy. The library does not require FAPI; an application may
+implement these operations using its own object store and authorization logic.
+.PP
+Create a context with
+.BR Tss2_PolicyInit (),
+then register the callbacks required by the policy. Initialize callback
+structures to zero before assigning individual fields. Each callback has its
+own corresponding
+.B *_userdata
+field, which is passed unchanged to that callback.
+.PP
+Both registration functions copy the callback structure. The structure itself
+may therefore be a local variable. The data referenced by userdata is not
+copied and must remain valid for all calls using it. Passing NULL instead of
+a callback structure clears that group of callbacks.
+Neither callback group can be changed while calculation or execution is pending.
+The hash algorithm and policy authorizations must also remain unchanged until
+the operation succeeds or returns a terminal error.
+.SH CALCULATION CALLBACKS
+Callbacks in
+.B TSS2_POLICY_CALC_CALLBACKS
+resolve information missing from the JSON policy. A callback is not necessarily
+invoked when the policy already contains the required data or a cached digest.
+Output structures are supplied by the library; fill them before returning
+.BR TSS2_RC_SUCCESS .
+.PP
+Paths passed to these callbacks are the paths specified in the JSON policy.
+Their interpretation and resolution are application-defined; they need not be
+filesystem paths or FAPI keystore paths.
+.TP
+.B cbname / cbname_userdata
+Resolve the object path specified in the policy to its TPM object name and
+write the name to the supplied
+.BR TPM2B_NAME .
+.TP
+.B cbpublic / cbpublic_userdata
+Resolve the key path specified in the policy to its TPM public area and
+write the public area to the supplied
+.BR TPMT_PUBLIC .
+.TP
+.B cbnvpublic / cbnvpublic_userdata
+Resolve the NV path or NV index specified in the policy to its NV public area
+and write the public area to the supplied
+.BR TPMS_NV_PUBLIC .
+An NV index of zero means that no explicit index was supplied by the policy.
+.TP
+.B cbpcr / cbpcr_userdata
+Resolve the requested PCR selection into a
+.B TPML_PCR_SELECTION
+and a
+.B TPML_DIGEST
+containing the corresponding PCR values. Inspect the selector's
+.B type
+before reading the appropriate member of its
+.B selections
+union. Fill both output structures consistently.
+.SH EXECUTION CALLBACKS
+Callbacks in
+.B TSS2_POLICY_EXEC_CALLBACKS
+provide the following operations. The exact callback typedefs and parameter
+lists are declared in
+.BR tss2_policy.h .
+.TP
+.B cbauth / cbauth_userdata
+Resolve the object identified by a TPM name and provide its ESYS object handle,
+the authorization entity handle and the session used to authorize that entity.
+Install any required authorization value in the ESYS context before returning.
+These handles must be valid in the ESYS context used for execution.
+.TP
+.B cbload / cbload_userdata
+The public callback type describes loading an object identified by its name and
+returning its ESYS handle. The current Policy executor does not invoke this
+callback. Do not rely on it to load objects during execution.
+.TP
+.B cbpolsel / cbpolsel_userdata
+Select a PolicyOR branch using the policy description, branch names and branch
+count. Write a zero-based index smaller than
+.B branch_count
+to
+.BR branch_idx .
+This callback runs during
+.BR Tss2_PolicyExecute_Async (),
+including for nested branch selections. It does not receive an FAPI authorization
+object; pass application context through userdata when needed.
+.TP
+.B cbsign / cbsign_userdata
+Sign the supplied buffer for PolicySigned using the supplied PEM public key,
+key hint and hash algorithm. Return the signature bytes and length through the
+output parameters, in the representation expected by the TPM signature
+conversion: DER encoding for ECDSA, or the raw RSA signature.
+The library consumes these bytes after the callback returns and does not free
+them. Keep them in application-owned storage, such as userdata, until the
+calling Policy API function returns. Returning a pointer to a local array is
+invalid.
+.TP
+.B cbauthpol / cbauthpol_userdata
+Locate and execute an authorized policy matching the supplied public key,
+hash algorithm and policy reference. Supply the approved policy digest and
+signature through the output parameters. The library then verifies the
+signature and issues PolicyAuthorize. Use userdata to access the active session
+and application policy store. Use a separate Policy context for a subpolicy;
+do not restart the context whose callback is currently running.
+.TP
+.B cbauthnv / cbauthnv_userdata
+Locate and execute the policy identified by the supplied NV public area and
+hash algorithm before the library issues PolicyAuthorizeNV. The active session
+and application state can be supplied through userdata.
+.TP
+.B cbdup / cbdup_userdata
+Provide the object name used by PolicyDuplicationSelect in the supplied
+.BR TPM2B_NAME .
+.TP
+.B cbaction / cbaction_userdata
+Perform the application action named by a PolicyAction element.
+The action string is supplied by the policy.
+.TP
+.B cbflushauth / cbflushauth_userdata
+Optional ownership hook used by PolicySecret after its authorization callback.
+Return true if the engine should flush the transient authorization handle;
+return false if the application retains ownership. This callback returns
+.BR bool ,
+not a response code, and cannot request a retry.
+.TP
+.B cbcphash / cbcphash_userdata
+Optional notification called after successful PolicyCpHash execution.
+This callback returns void and cannot report an error or request a retry.
+.SH MEMORY AND RESOURCE OWNERSHIP
+Input strings, branch-name arrays, buffers and policy structures passed to
+callbacks are borrowed. Do not free them or retain their addresses after the
+callback; copy any data needed by an asynchronous operation into userdata.
+Some callback input parameters lack const qualifiers. Treat these inputs as
+read-only; the absence of const does not transfer ownership. Write only the
+documented output parameters. Userdata remains application-owned state and
+may be updated by the callback.
+.PP
+Callbacks returning names, public areas, PCR values or TPM signatures fill
+caller-supplied structures without transferring an allocated object. The
+.B cbsign
+signature buffer is the exception described above: it remains application-owned.
+.PP
+The application creates the TPM policy session, manages application I/O and
+cleans up its resources. Keep the same ESYS context and session across
+.BR Tss2_PolicyExecute_Finish ()
+retries.
+.BR Tss2_PolicyFinalize ()
+frees the Policy context but does not flush the caller-owned policy session.
+.SH ASYNCHRONOUS OPERATION
+Most callbacks return
+.BR TSS2_RC .
+Return
+.B TSS2_RC_SUCCESS
+when their outputs are ready. To suspend an operation, retain progress in
+userdata and return
+.BR TSS2_POLICY_RC_TRY_AGAIN .
+After servicing the pending application I/O, the application retries the
+appropriate Policy API call. A callback may be invoked more than once; avoid
+repeating completed side effects and supply all required outputs on success.
+.PP
+For calculation, call
+.BR Tss2_PolicyCalculate_Async ()
+once and repeat
+.BR Tss2_PolicyCalculate_Finish ()
+until it succeeds or returns a terminal error.
+For execution, calculate the policy first, then call
+.BR Tss2_PolicyExecute_Async ().
+If branch selection requests a retry, service the pending work and retry
+.BR Tss2_PolicyExecute_Async ();
+preparation may revisit earlier selections. After preparation succeeds, call
+.BR Tss2_PolicyExecute_Finish ()
+and repeat Finish on retries. Do not call Execute_Async again while execution
+is pending. Execute_Async does not require an ESYS context or policy session.
+.PP
+The synchronous
+.BR Tss2_PolicyCalculate ()
+and
+.BR Tss2_PolicyExecute ()
+functions retry internally and cannot service an application event loop between
+retries. Use Async/Finish when callbacks depend on such an event loop.
+.SH RETURN CODES
+Callback failures are propagated without changing their error layer. Library
+errors use the Policy layer; TPM, ESYS and other component errors retain their
+original layer. Compare complete response codes for terminal errors. For retry
+handling, inspect both the base code and the layer; a private callback layer
+must not accidentally be interpreted as a retry just because its low bits match.
+Returning
+.B TSS2_POLICY_RC_TRY_AGAIN
+from callbacks avoids this ambiguity.
+.PP
+A required but missing callback can produce
+.B TSS2_POLICY_RC_NULL_CALLBACK
+or
+.BR TSS2_POLICY_RC_NOT_IMPLEMENTED ,
+depending on the policy element. Unused callback fields may remain NULL.
+.SH EXAMPLE
+The following function registers an application action and executes a policy.
+It expects an initialized ESYS context and a caller-owned SHA-256 policy
+session. The action callback completes synchronously, so the synchronous API
+is appropriate. The caller remains responsible for using or flushing the
+session afterwards.
+.PP
+.nf
+#include <stddef.h>
+#include <string.h>
+#include <tss2/tss2_policy.h>
+
+struct app_state {
+    unsigned int approvals;
+};
+
+static TSS2_RC
+approve(const char *action, void *userdata)
+{
+    struct app_state *app = userdata;
+
+    if (strcmp(action, "approve") != 0)
+        return TSS2_POLICY_RC_BAD_VALUE;
+    app->approvals++;
+    return TSS2_RC_SUCCESS;
+}
+
+TSS2_RC
+run_policy(ESYS_CONTEXT *esys, ESYS_TR session)
+{
+    const char *json =
+        "{\e"description\e":\e"approval\e",\e"policy\e":["
+        "{\e"type\e":\e"POLICYACTION\e",\e"action\e":\e"approve\e"}]}";
+    TSS2_POLICY_CTX *policy = NULL;
+    struct app_state app = { 0 };
+    TSS2_POLICY_EXEC_CALLBACKS callbacks = { 0 };
+    TSS2_RC rc;
+
+    callbacks.cbaction = approve;
+    callbacks.cbaction_userdata = &app;
+
+    rc = Tss2_PolicyInit(json, TPM2_ALG_SHA256, &policy);
+    if (rc != TSS2_RC_SUCCESS)
+        return rc;
+    rc = Tss2_PolicySetExecCallbacks(policy, &callbacks);
+    if (rc == TSS2_RC_SUCCESS)
+        rc = Tss2_PolicyCalculate(policy);
+    if (rc == TSS2_RC_SUCCESS)
+        rc = Tss2_PolicyExecute(policy, esys, session);
+    Tss2_PolicyFinalize(&policy);
+    return rc;
+}
+.fi
+.PP
+PolicyAction invokes application code; it does not itself enforce a TPM policy
+restriction. A real authorization policy should include the TPM policy elements
+required by the application.
+.SH "LINKING"
+Use the compiler and linker flags from
+.BR "pkg-config --cflags --libs tss2-policy" .

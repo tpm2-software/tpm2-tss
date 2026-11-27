@@ -14,20 +14,20 @@
 #include <string.h>  // for memset
 #include <strings.h> // for strcasecmp
 
-#include "fapi_int.h"        // for IFAPI_Key_Sign, FAPI_CONTEXT, KEY_SIGN_...
+#include "fapi_int.h"        // for IFAPI_Key_Sign, FAPI_CONTEXT
 #include "fapi_util.h"       // for ifapi_cleanup_session, ifapi_key_sign
 #include "ifapi_helpers.h"   // for ifapi_tpm_to_fapi_signature
 #include "ifapi_io.h"        // for ifapi_io_poll
 #include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_s...
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_BA...
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
 #include "tss2_esys.h"       // for Esys_SetTimeout
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Sign, Fapi_Sign_Async
+#include "tss2_fapi.h"       // for FAPI_CONTEXT
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
 #include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_DigestAndSign
  *
@@ -212,8 +212,8 @@ Fapi_DigestAndSign_Async(FAPI_CONTEXT  *context,
 
     memcpy(command->data, data, dataSize);
 
-    strdup_check(command->keyPath, keyPath, r, error_cleanup);
-    strdup_check(command->padding, padding, r, error_cleanup);
+    ifapi_strdup_check(command->keyPath, keyPath, r, error_cleanup);
+    ifapi_strdup_check(command->padding, padding, r, error_cleanup);
 
     /* Initialize the context state for this operation. */
     context->state = KEY_DIGEST_AND_SIGN_WAIT_FOR_KEY;
@@ -291,7 +291,7 @@ Fapi_DigestAndSign_Finish(FAPI_CONTEXT *context,
     statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_KEY);
         /* Load the key used for signing with a helper. */
         r = ifapi_load_key(context, command->keyPath, &command->key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi load key.", cleanup);
 
         fallthrough;
@@ -308,7 +308,7 @@ Fapi_DigestAndSign_Finish(FAPI_CONTEXT *context,
 
     statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_SEQUENCE_INIT);
         r = Esys_HashSequenceStart_Finish(context->esys, &command->sequence_handle);
-        try_again_or_error_goto(r, "Esys_HashSequenceStart_Finish", cleanup);
+        ifapi_try_again_or_error_goto(r, "Esys_HashSequenceStart_Finish", cleanup);
 
         command->offset = 0;
         fallthrough;
@@ -330,7 +330,7 @@ Fapi_DigestAndSign_Finish(FAPI_CONTEXT *context,
 
     statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_UPDTATE);
         r = Esys_SequenceUpdate_Finish(context->esys);
-        try_again_or_error_goto(r, "Esys_SequenceUpdate_Finish", cleanup);
+        ifapi_try_again_or_error_goto(r, "Esys_SequenceUpdate_Finish", cleanup);
 
         command->offset += command->chunk;
         TPM2B_MAX_BUFFER no_more_data = { .size = 0 };
@@ -352,7 +352,7 @@ Fapi_DigestAndSign_Finish(FAPI_CONTEXT *context,
     statecase(context->state, KEY_DIGEST_AND_SIGN_WAIT_FOR_HASH_COMPLETE);
         /* The update is completed and the digest and the ticket will be computed. */
         r = Esys_SequenceComplete_Finish(context->esys, &digest, &command->validation);
-        try_again_or_error_goto(r, "Esys_SequenceComplete_Finish", cleanup);
+        ifapi_try_again_or_error_goto(r, "Esys_SequenceComplete_Finish", cleanup);
 
         command->sequence_handle = 0;
         command->digest = *digest;
@@ -365,7 +365,7 @@ Fapi_DigestAndSign_Finish(FAPI_CONTEXT *context,
                            command->validation, &command->tpm_signature,
                            publicKey ? &command->publicKey : NULL,
                            (certificate) ? &command->certificate : NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         SAFE_FREE(command->validation);
         goto_if_error(r, "Fapi sign.", cleanup);
 
@@ -381,7 +381,7 @@ Fapi_DigestAndSign_Finish(FAPI_CONTEXT *context,
     statecase(context->state, KEY_DIGEST_AND_SIGN_CLEANUP);
         /* Cleanup the session used for authorization. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", cleanup);
 
         if (certificate)
             *certificate = command->certificate;
@@ -393,7 +393,7 @@ Fapi_DigestAndSign_Finish(FAPI_CONTEXT *context,
         context->state = FAPI_STATE_INIT;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:

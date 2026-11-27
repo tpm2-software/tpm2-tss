@@ -1,0 +1,42 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+/*******************************************************************************
+ * Copyright 2018-2019, Fraunhofer SIT sponsored by Infineon Technologies AG
+ * All rights reserved.
+ *******************************************************************************/
+#ifndef IPOLICY_INSTANTIATE_H
+#define IPOLICY_INSTANTIATE_H
+
+#include "tss2_common.h" // for TSS2_RC
+#include "tss2_policy.h" // for TSS2_POLICY_CALC_CALLBACKS
+#include "tss2_types.h"  // for NODE_OBJECT_T
+// #include "fapi_int.h"
+// #include "fapi_policy.h"
+// #include "ifapi_keystore.h"
+
+/** The states for policy instantiation */
+enum TSS2_STATE_POLICY_INSTANTIATION {
+    IPOLICY_INSTANTIATE_PREPARE = 0,
+    IPOLICY_INSTANTIATE,
+    IPOLICY_EXECUTE_PREPARE,
+    IPOLICY_EXECUTE,
+    IPOLICY_FLUSH
+};
+
+/** Type for representing the context for policy instantiation.
+ */
+typedef struct {
+    enum TSS2_STATE_POLICY_INSTANTIATION state;
+    struct TPMS_POLICY                  *policy; /**< The policy to be instantiated */
+    NODE_OBJECT_T             *policy_elements;  /** The policy elements to be instantiated */
+    TSS2_POLICY_CALC_CALLBACKS callbacks;
+} IPOLICY_EVAL_INST_CTX;
+
+TSS2_RC
+ipolicy_eval_instantiate_async(
+    IPOLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
+    struct TPMS_POLICY    *policy);    /* in */
+TSS2_RC
+
+ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context);
+
+#endif /* IPOLICY_INSTANTIATE_H */

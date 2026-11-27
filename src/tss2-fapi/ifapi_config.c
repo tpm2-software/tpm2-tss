@@ -15,13 +15,13 @@
 
 #include "fapi_int.h" // for IFAPI_FILE_DELIM, DEFAULT_LOG_DIR
 #include "ifapi_config.h"
-#include "ifapi_helpers.h"          // for ifapi_asprintf
-#include "ifapi_json_deserialize.h" // for ifapi_json_char_deserialize
-#include "ifapi_macros.h"           // for return_try_again
-#include "tpm_json_deserialize.h"   // for ifapi_get_sub_object, ifapi_json...
+#include "ifapi_json_deserialize.h" // for ifapi_get_sub_object
+#include "ifapi_macros.h"           // for ifapi_return_try_again
+#include "tpm_json_deserialize.h"   // for ifapi_get_sub_object, ifapi_json_TPMI_YES_NO_deserialize
+#include "tss2_helpers.h"           // for ifapi_asprintf
 
 #define LOGMODULE fapi
-#include "util/log.h" // for return_if_error, SAFE_FREE, retu...
+#include "util/log.h" // for LOG_DEBUG, LOG_ERROR, LOG_TRACE
 
 /**
  * The path of the default config file
@@ -52,17 +52,17 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out) {
     LOG_TRACE("call");
 
     if (ifapi_get_sub_object(jso, "profile_dir", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->profile_dir);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->profile_dir));
         return_if_error(r, "Bad value for field \"profile_dir\".");
     }
 
     if (ifapi_get_sub_object(jso, "user_dir", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->user_dir);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->user_dir));
         return_if_error(r, "Bad value for field \"user_dir\".");
     }
 
     if (ifapi_get_sub_object(jso, "system_dir", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->keystore_dir);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->keystore_dir));
         return_if_error(r, "Bad value for field \"keystore_dir\".");
     }
 
@@ -70,7 +70,7 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out) {
         out->log_dir = strdup(DEFAULT_LOG_DIR);
         return_if_null(jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
     } else {
-        r = ifapi_json_char_deserialize(jso2, &out->log_dir);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->log_dir));
         return_if_error(r, "Bad value for field \"log_dir\".");
     }
 
@@ -78,29 +78,29 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out) {
         LOG_ERROR("Field \"profile_name\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_char_deserialize(jso2, &out->profile_name);
+    r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->profile_name));
     return_if_error(r, "Bad value for field \"profile_name\".");
     if (!ifapi_get_sub_object(jso, "tcti", &jso2)) {
         LOG_ERROR("Field \"tcti\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_char_deserialize(jso2, &out->tcti);
+    r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->tcti));
     return_if_error(r, "Bad value for field \"tcti\".");
 
     if (!ifapi_get_sub_object(jso, "system_pcrs", &jso2)) {
         LOG_ERROR("Field \"system_pcrs\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->system_pcrs);
+    r = ifapi_call_base(ifapi_json_TPML_PCR_SELECTION_deserialize(jso2, &out->system_pcrs));
     return_if_error(r, "Bad value for field \"system_pcrs\".");
 
     if (ifapi_get_sub_object(jso, "ek_cert_file", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->ek_cert_file);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->ek_cert_file));
         return_if_error(r, "Bad value for field \"ek_cert_file\".");
     }
 
     if (ifapi_get_sub_object(jso, "ek_cert_less", &jso2)) {
-        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ek_cert_less);
+        r = ifapi_call_base(ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ek_cert_less));
         return_if_error(r, "Bad value for field \"ek_cert_less\".");
 
     } else {
@@ -108,31 +108,31 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out) {
     }
 
     if (ifapi_get_sub_object(jso, "ek_fingerprint", &jso2)) {
-        r = ifapi_json_TPMT_HA_deserialize(jso2, &out->ek_fingerprint);
+        r = ifapi_call_base(ifapi_json_TPMT_HA_deserialize(jso2, &out->ek_fingerprint));
         return_if_error(r, "Bad value for field \"ek_fingerprint\".");
     } else {
         out->ek_fingerprint.hashAlg = 0;
     }
 
     if (ifapi_get_sub_object(jso, "intel_cert_service", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->web_cert_service);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->web_cert_service));
         return_if_error(r, "Bad value for field \"intel_cert_service\".");
     } else if (ifapi_get_sub_object(jso, "web_cert_service", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->web_cert_service);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->web_cert_service));
         return_if_error(r, "Bad value for field \"web_cert_service\".");
     }
 
     if (!ifapi_get_sub_object(jso, "firmware_log_file", &jso2)) {
         out->firmware_log_file = NULL;
     } else {
-        r = ifapi_json_char_deserialize(jso2, &out->firmware_log_file);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->firmware_log_file));
         return_if_error(r, "BAD VALUE");
     }
 
     if (!ifapi_get_sub_object(jso, "ima_log_file", &jso2)) {
         out->ima_log_file = NULL;
     } else {
-        r = ifapi_json_char_deserialize(jso2, &out->ima_log_file);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->ima_log_file));
         return_if_error(r, "BAD VALUE");
     }
 
@@ -205,7 +205,8 @@ expand_home(char **path) {
         if (strncmp(&(*path)[startPos], IFAPI_FILE_DELIM, strlen(IFAPI_FILE_DELIM)) == 0) {
             startPos += strlen(IFAPI_FILE_DELIM);
         }
-        r = ifapi_asprintf(&newPath, "%s%s%s", homeDir, IFAPI_FILE_DELIM, &(*path)[startPos]);
+        r = ifapi_call_base(
+            ifapi_asprintf(&newPath, "%s%s%s", homeDir, IFAPI_FILE_DELIM, &(*path)[startPos]));
         return_if_error(r, "Out of memory.");
 
         SAFE_FREE(*path);
@@ -244,7 +245,7 @@ ifapi_config_initialize_finish(IFAPI_IO *io, IFAPI_CONFIG *config) {
     uint8_t *configFileContent = NULL;
     size_t   configFileContentSize = 0;
     TSS2_RC  r = ifapi_io_read_finish(io, &configFileContent, &configFileContentSize);
-    return_try_again(r);
+    ifapi_return_try_again(r);
     goto_if_error(r, "Could not finish read operation", error);
     if (configFileContent == NULL || configFileContentSize == 0) {
         LOG_ERROR("Config file is empty");

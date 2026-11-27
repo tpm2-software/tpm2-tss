@@ -4,7 +4,9 @@
  * All rights reserved.
  *******************************************************************************/
 
+#include "ipolicy_macros.h"
 #include "tss2_common.h"
+#include "tss2_crypto.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h" // IWYU pragma: keep
 #endif
@@ -12,21 +14,64 @@
 #include <stdlib.h> // for size_t, NULL
 #include <string.h> // for strlen
 
-#include "fapi_crypto.h" // for ifapi_get_signature_algorithm_from_pem
-// #include "fapi_policy.h"
-#include "ifapi_helpers.h" // for ifapi_get_name, ifapi_free_node_list
-#include "ifapi_macros.h"  // for return_error2, return_try_again
-#include "ifapi_policy_instantiate.h"
+#include "ipolicy_helpers.h"
+#include "ipolicy_instantiate.h"
+#include "tss2_helpers.h"    // for tss2_free_node_list
 #include "tss2_tpm2_types.h" // for TPMT_PUBLIC, TPMT_RSA_SCHEME, TPM2B_NAME
+#include "util/aux_util.h"   // for return_error2, ipolicy_return_try_again
+
+#include "ipolicy_types.h" // for policy element definitions
 
 #define LOGMODULE fapi
 #include "util/log.h" // for return_if_error, SAFE_FREE, goto_if_error
+
+static TSS2_RC
+ipolicy_pcr_selection_to_pcrvalues(TPML_PCR_SELECTION *pcr_selection,
+                                   TPML_DIGEST        *pcr_digests,
+                                   TPML_PCRVALUES    **out) {
+
+    /* Count pcrs */
+    UINT32 i = 0, pcr = 0, n_pcrs = 0, i_pcr = 0;
+    for (i = 0; i < pcr_selection->count; i++) {
+        for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
+            uint8_t byte_idx = pcr / 8;
+            uint8_t flag = ((uint8_t)1) << (pcr % 8);
+            /* Check whether PCR is used. */
+            if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx])
+                n_pcrs += 1;
+        }
+    }
+
+    TPML_PCRVALUES *pcr_values = calloc(1, sizeof(TPML_PCRVALUES) + n_pcrs * sizeof(TPMS_PCRVALUE));
+    return_if_null(pcr_values, "Out of memory.", TSS2_POLICY_RC_MEMORY);
+    /* Initialize digest list with pcr values from TPM */
+    i_pcr = 0;
+    pcr_values->count = pcr_digests->count;
+    for (i = 0; i < pcr_selection->count; i++) {
+        for (pcr = 0; pcr < TPM2_MAX_PCRS; pcr++) {
+            uint8_t byte_idx = pcr / 8;
+            uint8_t flag = ((uint8_t)1) << (pcr % 8);
+            /* Check whether PCR is used. */
+            if (flag & pcr_selection->pcrSelections[i].pcrSelect[byte_idx]) {
+                pcr_values->pcrs[i_pcr].pcr = pcr;
+                pcr_values->pcrs[i_pcr].hashAlg = pcr_selection->pcrSelections[i].hash;
+                memcpy(&pcr_values->pcrs[i_pcr].digest, &pcr_digests->digests[i_pcr].buffer[0],
+                       pcr_digests->digests[i_pcr].size);
+                i_pcr += 1;
+            }
+        }
+    }
+
+    *out = pcr_values;
+
+    return TSS2_RC_SUCCESS;
+}
 
 static TSS2_RC get_policy_elements(TPML_POLICYELEMENTS *policy,
                                    NODE_OBJECT_T      **policy_element_list);
 
 /** Compute linked list with a list of policy elements which could be instantiated.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 static TSS2_RC
 get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_list) {
@@ -34,7 +79,7 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
     size_t  i, j;
 
     if (!policy) {
-        return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Bad policy pointer");
+        return_error(TSS2_POLICY_RC_GENERAL_FAILURE, "Bad policy pointer");
     }
 
     for (i = 0; i < policy->count; i++) {
@@ -46,7 +91,7 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
                 goto_if_error(r, "Get policy elements.", error_cleanup);
             }
         } else {
-            r = push_object_to_list(&policy->elements[i], policy_element_list);
+            r = ipolicy_call_base(push_object_to_list(&policy->elements[i], policy_element_list));
             goto_if_error(r, "Get policy elements.", error_cleanup);
         }
     }
@@ -54,7 +99,7 @@ get_policy_elements(TPML_POLICYELEMENTS *policy, NODE_OBJECT_T **policy_element_
 
 error_cleanup:
     if (*policy_element_list)
-        ifapi_free_node_list(*policy_element_list);
+        tss2_free_node_list(*policy_element_list);
     *policy_element_list = NULL;
     return r;
 }
@@ -68,19 +113,17 @@ error_cleanup:
  * @param[in] policy The policy to be instantiated.
  * @retval TSS2_RC_SUCCESS on success.
  * @retval FAPI error codes on failure
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_policyeval_instantiate_async(
-    IFAPI_POLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
-    TPMS_POLICY                *policy /* in */) {
+ipolicy_eval_instantiate_async(
+    IPOLICY_EVAL_INST_CTX *context, /* For re-entry after try_again for offsets and such */
+    TPMS_POLICY           *policy /* in */) {
     TSS2_RC r;
 
     /* Compute list of all policy elements which have to be instantiated */
-    if (context->policy_elements) {
-        ifapi_free_object_list(context->policy_elements);
-        context->policy_elements = NULL;
-    }
+    tss2_free_node_list(context->policy_elements);
+    context->policy_elements = NULL;
     r = get_policy_elements(policy->policy, &context->policy_elements);
     return r;
 }
@@ -93,11 +136,11 @@ ifapi_policyeval_instantiate_async(
  * @param[out] name the name computed from the public information.
  * @param[in]  hash_alg The name alg of the key has to passed.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
  */
 static TSS2_RC
 set_pem_key_param(const char      *keyPEM,
@@ -117,7 +160,7 @@ set_pem_key_param(const char      *keyPEM,
     name->size = 0;
 
     TPM2_ALG_ID rsaOrEcc = ifapi_get_signature_algorithm_from_pem(keyPEM);
-    r = ifapi_initialize_sign_public(rsaOrEcc, &public);
+    r = ipolicy_call_base(ifapi_initialize_sign_public(rsaOrEcc, &public));
     return_if_error(r, "Could not initialize public info of key");
 
     if (rsaOrEcc == TPM2_ALG_RSA) {
@@ -129,15 +172,15 @@ set_pem_key_param(const char      *keyPEM,
             public.publicArea.parameters.rsaDetail.scheme.details.rsassa
                 = sigScheme->details.rsassa;
         } else {
-            return_error(TSS2_FAPI_RC_BAD_VALUE, "Invalid signing scheme.");
+            return_error(TSS2_POLICY_RC_BAD_VALUE, "Invalid signing scheme.");
         }
     }
 
-    r = ifapi_get_tpm2b_public_from_pem(keyPEM, &public);
+    r = ipolicy_call_base(ifapi_get_tpm2b_public_from_pem(keyPEM, &public));
     return_if_error(r, "Invalid PEM key.");
     public.publicArea.nameAlg = hash_alg;
     *keyPublic = public.publicArea;
-    r = ifapi_get_name(&public.publicArea, name);
+    r = ipolicy_call_base(ifapi_get_name(&public.publicArea, name));
     return_if_error(r, "Compute key name.");
 
     return TSS2_RC_SUCCESS;
@@ -145,12 +188,12 @@ set_pem_key_param(const char      *keyPEM,
 
 #define CHECK_TEMPLATE_PATH(path, template)                                                        \
     if (!(path)) {                                                                                 \
-        return_error2(TSS2_FAPI_RC_BAD_TEMPLATE, "No path for policy %s", template);               \
+        return_error2(TSS2_POLICY_RC_BAD_TEMPLATE, "No path for policy %s", template);             \
     }
 
 #define CHECK_CALLBACK(callback, name)                                                             \
     if (!(callback)) {                                                                             \
-        return_error2(TSS2_FAPI_RC_NULL_CALLBACK, "Callback %s was NULL", name)                    \
+        return_error2(TSS2_POLICY_RC_NULL_CALLBACK, "Callback %s was NULL", name)                  \
     }
 
 /** Finalize  instantiation a policy template.
@@ -160,21 +203,21 @@ set_pem_key_param(const char      *keyPEM,
  *
  * @param[in] context The context storing information for re-entry after try again.
  * @retval TSS2_RC_SUCCESS on success.
- * @retval TSS2_FAPI_RC_BAD_TEMPLATE If the template is not complete for instantiation.
+ * @retval TSS2_POLICY_RC_BAD_TEMPLATE If the template is not complete for instantiation.
  * @retval FAPI error codes on failure
- * @retval TSS2_FAPI_RC_TRY_AGAIN if an I/O operation is not finished yet and
+ * @retval TSS2_POLICY_RC_TRY_AGAIN if an I/O operation is not finished yet and
  *         this function needs to be called again.
- * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ * @retval TSS2_POLICY_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_POLICY_RC_MEMORY if not enough memory can be allocated.
+ * @retval TSS2_POLICY_RC_BAD_VALUE if an invalid value was passed into
  *         the function.
- * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
- * @retval TSS2_FAPI_RC_BAD_SEQUENCE if the context has an asynchronous
+ * @retval TSS2_POLICY_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_POLICY_RC_BAD_SEQUENCE if the context has an asynchronous
  *         operation already pending.
  * @retval TSS2_FAPI_RC_PATH_NOT_FOUND if a FAPI object path was not found
  *         during authorization.
  * @retval TSS2_FAPI_RC_KEY_NOT_FOUND if a key was not found.
- * @retval TSS2_FAPI_RC_IO_ERROR if an error occurred while accessing the
+ * @retval TSS2_POLICY_RC_IO_ERROR if an error occurred while accessing the
  *         object store.
  * @retval TSS2_ESYS_RC_* possible error codes of ESAPI.
  * @retval TSS2_FAPI_RC_NOT_PROVISIONED FAPI was not provisioned.
@@ -182,7 +225,7 @@ set_pem_key_param(const char      *keyPEM,
  *         or contains illegal characters.
  */
 TSS2_RC
-ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
+ipolicy_eval_instantiate_finish(IPOLICY_EVAL_INST_CTX *context) {
     TSS2_RC        r = TSS2_RC_SUCCESS;
     NODE_OBJECT_T *first_in_pol_list;
     size_t         i_last;
@@ -214,6 +257,7 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
 
                 break;
             }
+            // TODO Chek path needed
             CHECK_TEMPLATE_PATH(pol_element->element.PolicySigned.keyPath, "PolicySigned");
             CHECK_CALLBACK(context->callbacks.cbpublic, "cbpublic");
 
@@ -221,11 +265,11 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
             r = context->callbacks.cbpublic(pol_element->element.PolicySigned.keyPath,
                                             &pol_element->element.PolicySigned.keyPublic,
                                             context->callbacks.cbpublic_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
-            r = ifapi_get_name(&pol_element->element.PolicySigned.keyPublic,
-                               &pol_element->element.PolicySigned.publicKey);
+            r = ipolicy_call_base(ifapi_get_name(&pol_element->element.PolicySigned.keyPublic,
+                                                 &pol_element->element.PolicySigned.publicKey));
             return_if_error(r, "Compute name of key.");
 
             /* Clear keypath, only public data and name will be needed */
@@ -237,10 +281,11 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
             size_t count = pol_element->element.PolicyNameHash.count;
 
             if (count == 0) {
-                return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyNameHash requires at least one name.");
+                return_error(TSS2_POLICY_RC_BAD_VALUE,
+                             "PolicyNameHash requires at least one name.");
             }
             if (count > 3) {
-                return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyNameHash count out of bounds.");
+                return_error(TSS2_POLICY_RC_BAD_VALUE, "PolicyNameHash count out of bounds.");
             }
 
             /* Set index of last name to be computed. */
@@ -253,13 +298,13 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
                 /* Not all object names have been computed or were initialized */
                 size_t i = pol_element->element.PolicyNameHash.i;
                 if (i >= count) {
-                    return_error(TSS2_FAPI_RC_BAD_VALUE, "PolicyNameHash index out of bounds.");
+                    return_error(TSS2_POLICY_RC_BAD_VALUE, "PolicyNameHash index out of bounds.");
                 }
 
                 r = context->callbacks.cbname(pol_element->element.PolicyNameHash.namePaths[i],
                                               &pol_element->element.PolicyNameHash.objectNames[i],
                                               context->callbacks.cbname_userdata);
-                return_try_again(r);
+                ipolicy_return_try_again(r);
                 return_if_error(r, "get object name.");
                 pol_element->element.PolicyNameHash.i++;
                 SAFE_FREE(pol_element->element.PolicyNameHash.namePaths[i]);
@@ -279,7 +324,7 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
             r = context->callbacks.cbname(pol_element->element.PolicySecret.objectPath,
                                           &pol_element->element.PolicySecret.objectName,
                                           context->callbacks.cbname_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
             SAFE_FREE(pol_element->element.PolicySecret.objectPath);
             break;
@@ -291,7 +336,7 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
             }
 
             TSS2_POLICY_PCR_SELECTION s = { 0 };
-            ifapi_helper_init_policy_pcr_selections(&s, pol_element);
+            ipolicy_helper_init_policy_pcr_selections(&s, pol_element);
 
             TPML_PCR_SELECTION out_pcrselect = { 0 };
             TPML_DIGEST        out_digests = { 0 };
@@ -300,12 +345,12 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
             /* Current values of PCRs will be used for policy */
             r = context->callbacks.cbpcr(&s, &out_pcrselect, &out_digests,
                                          context->callbacks.cbpcr_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
-            r = ifapi_pcr_selection_to_pcrvalues(&out_pcrselect, &out_digests,
-                                                 &pol_element->element.PolicyPCR.pcrs);
-            return_if_error(r, "ifapi_pcr_selection_to_pcrvalues failed");
+            r = ipolicy_pcr_selection_to_pcrvalues(&out_pcrselect, &out_digests,
+                                                   &pol_element->element.PolicyPCR.pcrs);
+            return_if_error(r, "ipolicy_pcr_selection_to_pcrvalues failed");
 
             pol_element->element.PolicyPCR.currentPCRs.sizeofSelect = 0;
             pol_element->element.PolicyPCR.currentPCRandBanks.count = 0;
@@ -325,7 +370,7 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
             r = context->callbacks.cbnvpublic(
                 pol_element->element.PolicyNV.nvPath, pol_element->element.PolicyNV.nvIndex,
                 &pol_element->element.PolicyNV.nvPublic, context->callbacks.cbnvpublic_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
             pol_element->element.PolicyNV.nvIndex = pol_element->element.PolicyNV.nvPublic.nvIndex;
@@ -341,8 +386,9 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
             if (pol_element->element.PolicyDuplicationSelect.newParentPublic.type) {
                 /* public data is already set in policy. Path will not be needed. */
                 SAFE_FREE(pol_element->element.PolicyDuplicationSelect.newParentPath);
-                r = ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
-                                   &pol_element->element.PolicyDuplicationSelect.newParentName);
+                r = ipolicy_call_base(
+                    ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
+                                   &pol_element->element.PolicyDuplicationSelect.newParentName));
                 return_if_error(r, "Compute object name");
 
                 pol_element->element.PolicyDuplicationSelect.newParentPublic.type = 0;
@@ -357,11 +403,12 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
                 pol_element->element.PolicyDuplicationSelect.newParentPath,
                 &pol_element->element.PolicyDuplicationSelect.newParentPublic,
                 context->callbacks.cbpublic_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
-            r = ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
-                               &pol_element->element.PolicyDuplicationSelect.newParentName);
+            r = ipolicy_call_base(
+                ifapi_get_name(&pol_element->element.PolicyDuplicationSelect.newParentPublic,
+                               &pol_element->element.PolicyDuplicationSelect.newParentName));
             return_if_error(r, "Compute key name");
 
             /* Clear keypath, and newParentPublic only public data will be needed */
@@ -383,7 +430,7 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
             r = context->callbacks.cbnvpublic(pol_element->element.PolicyAuthorizeNv.nvPath, 0,
                                               &pol_element->element.PolicyAuthorizeNv.nvPublic,
                                               context->callbacks.cbnvpublic_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
             /* Clear NV path, only public data will be needed */
             SAFE_FREE(pol_element->element.PolicyAuthorizeNv.nvPath);
@@ -393,8 +440,9 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
             if (pol_element->element.PolicyAuthorize.keyPublic.type) {
                 /* Public info found in template, key path will not be needed. */
                 SAFE_FREE(pol_element->element.PolicyAuthorize.keyPath);
-                r = ifapi_get_name(&pol_element->element.PolicyAuthorize.keyPublic,
-                                   &pol_element->element.PolicyAuthorize.keyName);
+                r = ipolicy_call_base(
+                    ifapi_get_name(&pol_element->element.PolicyAuthorize.keyPublic,
+                                   &pol_element->element.PolicyAuthorize.keyName));
                 return_if_error(r, "Compute key name");
 
                 break;
@@ -423,12 +471,12 @@ ifapi_policyeval_instantiate_finish(IFAPI_POLICY_EVAL_INST_CTX *context) {
             r = context->callbacks.cbpublic(pol_element->element.PolicyAuthorize.keyPath,
                                             &pol_element->element.PolicyAuthorize.keyPublic,
                                             context->callbacks.cbpublic_userdata);
-            return_try_again(r);
+            ipolicy_return_try_again(r);
             return_if_error(r, "read_finish failed");
 
             /* Compute key name from public info */
-            r = ifapi_get_name(&pol_element->element.PolicyAuthorize.keyPublic,
-                               &pol_element->element.PolicyAuthorize.keyName);
+            r = ipolicy_call_base(ifapi_get_name(&pol_element->element.PolicyAuthorize.keyPublic,
+                                                 &pol_element->element.PolicyAuthorize.keyName));
             return_if_error(r, "Compute key name");
 
             /* Clear key path, only public data will be needed */

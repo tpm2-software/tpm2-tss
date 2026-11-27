@@ -9,17 +9,17 @@
 #endif
 #include <stdlib.h> // for NULL, free
 
-#include "fapi_int.h"           // for FAPI_CONTEXT, IFAPI_CMD_STATE, IFAPI...
-#include "fapi_util.h"          // for ifapi_free_objects
-#include "ifapi_config.h"       // for IFAPI_CONFIG
-#include "ifapi_eventlog.h"     // for IFAPI_EVENTLOG
-#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_keystore
-#include "ifapi_policy_store.h" // for IFAPI_POLICY_STORE
-#include "ifapi_profiles.h"     // for ifapi_profiles_finalize
-#include "tss2_esys.h"          // for Esys_Finalize, Esys_GetTcti
-#include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_Finalize
-#include "tss2_tcti.h"          // for TSS2_TCTI_CONTEXT
-#include "tss2_tctildr.h"       // for Tss2_TctiLdr_Finalize
+#include "fapi_int.h"  // for FAPI_CONTEXT
+#include "fapi_util.h" // for ifapi_free_objects
+#include "ifapi_config.h"
+#include "ifapi_eventlog.h"
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_keystore
+#include "ifapi_policy_store.h"
+#include "ifapi_profiles.h" // for ifapi_profiles_finalize
+#include "tss2_esys.h"      // for Esys_Finalize, Esys_GetTcti
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_Finalize
+#include "tss2_tcti.h"      // for TSS2_TCTI_CONTEXT
+#include "tss2_tctildr.h"   // for Tss2_TctiLdr_Finalize
 
 #define LOGMODULE fapi
 #include "util/aux_util.h" // for SAFE_FREE

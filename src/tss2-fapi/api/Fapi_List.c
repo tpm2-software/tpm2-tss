@@ -12,16 +12,16 @@
 #include <stdlib.h>  // for size_t, malloc, NULL
 #include <string.h>  // for strcat, strcmp, strlen
 
-#include "fapi_int.h"       // for IFAPI_Entities_List, FAPI_CONTEXT, IFAPI...
+#include "fapi_int.h"       // for IFAPI_Entities_List, FAPI_CONTEXT
 #include "fapi_util.h"      // for ifapi_non_tpm_mode_init
 #include "ifapi_io.h"       // for ifapi_io_poll
-#include "ifapi_keystore.h" // for ifapi_check_provisioned, ifapi_keystore_...
+#include "ifapi_keystore.h" // for ifapi_check_provisioned, ifapi_keystore_list_all
 #include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_N...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_NOT_PROVISIONED
 #include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_List, Fapi_List_Async
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, LOG_WARNING, goto_...
+#include "util/log.h" // for LOG_TRACE, LOG_WARNING
 
 /** One-Call function for Fapi_List
  *
@@ -120,7 +120,7 @@ Fapi_List_Async(FAPI_CONTEXT *context, char const *searchPath) {
     return_if_error(r, "Initialize List");
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->searchPath, searchPath, r, error_cleanup);
+    ifapi_strdup_check(command->searchPath, searchPath, r, error_cleanup);
 
     LOG_TRACE("finished");
     return TSS2_RC_SUCCESS;

@@ -8,24 +8,22 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>   // for json_object_put, json_objec...
 #include <stdint.h> // for uint8_t
-#include <stdlib.h> // for malloc, size_t, NULL
+#include <stdlib.h> // for malloc, size_t
 #include <string.h> // for memcpy
 
-#include "fapi_int.h"                    // for FAPI_CONTEXT, ENTITY_GET_TP...
-#include "fapi_types.h"                  // for UINT8_ARY
-#include "ifapi_io.h"                    // for ifapi_io_poll
-#include "ifapi_keystore.h"              // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"                // for check_not_null, return_if_e...
-#include "ifapi_policy_json_serialize.h" // for ifapi_json_TPMS_POLICY_seri...
-#include "tss2_common.h"                 // for TSS2_RC, TSS2_RC_SUCCESS
-#include "tss2_fapi.h"                   // for FAPI_CONTEXT, Fapi_GetTpmBlobs
-#include "tss2_mu.h"                     // for Tss2_MU_TPM2B_PUBLIC_Marshal
-#include "tss2_tpm2_types.h"             // for TPM2B_PUBLIC, TPM2B_PRIVATE
+#include "fapi_int.h"        // for FAPI_CONTEXT, ENTITY_GET_TPM_BLOBS_READ
+#include "ifapi_io.h"        // for ifapi_io_poll
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"    // for check_not_null, return_if_error2
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_GetTpmBlobs
+#include "tss2_mu.h"         // for Tss2_MU_TPM2B_PUBLIC_Marshal
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC, TPM2B_PRIVATE
+#include "tss2_types.h"
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_GetTpmBlobs
  *
@@ -194,7 +192,6 @@ Fapi_GetTpmBlobs_Finish(FAPI_CONTEXT *context,
     IFAPI_OBJECT object;
     UINT16       private_size;
     size_t       offset;
-    json_object *jso = NULL;
 
     /* Check for NULL parameters */
     check_not_null(context);
@@ -203,7 +200,7 @@ Fapi_GetTpmBlobs_Finish(FAPI_CONTEXT *context,
     statecase(context->state, ENTITY_GET_TPM_BLOBS_READ);
         /* Finish readon the metadata from key store. */
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         if (object.objectType != IFAPI_KEY_OBJ) {
@@ -239,15 +236,14 @@ Fapi_GetTpmBlobs_Finish(FAPI_CONTEXT *context,
 
         /* Duplicate the policy to the output parameter. */
         if (object.policy && policy) {
-            r = ifapi_json_TPMS_POLICY_serialize(object.policy, &jso);
+            *policy = strdup(object.policy);
+            r = *policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
+            if (r)
+                r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
             goto_if_error(r, "Serialize policy", error_cleanup);
-
-            strdup_check(*policy, json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY), r,
-                         error_cleanup);
-            json_object_put(jso);
         } else {
             if (policy) {
-                strdup_check(*policy, "", r, error_cleanup);
+                ifapi_strdup_check(*policy, "", r, error_cleanup);
             }
         }
 
@@ -257,12 +253,10 @@ Fapi_GetTpmBlobs_Finish(FAPI_CONTEXT *context,
         LOG_TRACE("finished");
         return TSS2_RC_SUCCESS;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 error_cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
-    if (jso)
-        json_object_put(jso);
     ifapi_cleanup_ifapi_object(&object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);

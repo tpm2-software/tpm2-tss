@@ -11,25 +11,25 @@
 #include <inttypes.h> // for uint8_t, PRIu16
 #include <stddef.h>   // for NULL, size_t
 
-#include "fapi_crypto.h"          // for ifapi_crypto_hash_abort, ifapi_cry...
-#include "fapi_int.h"             // for IFAPI_Fapi_AuthorizePolicy, FAPI_C...
-#include "fapi_util.h"            // for ifapi_cleanup_session, ifapi_key_sign
-#include "ifapi_helpers.h"        // for ifapi_cleanup_policy
-#include "ifapi_io.h"             // for ifapi_io_poll
-#include "ifapi_keystore.h"       // for ifapi_cleanup_ifapi_object, IFAPI_...
-#include "ifapi_macros.h"         // for check_not_null, statecase, fallthr...
-#include "ifapi_policy.h"         // for ifapi_calculate_tree
-#include "ifapi_policy_execute.h" // for ifapi_extend_authorization
-#include "ifapi_policy_store.h"   // for ifapi_policy_store_store_async
-#include "ifapi_policy_types.h"   // for TPMS_POLICYAUTHORIZATION, TPMS_POLICY
-#include "tss2_common.h"          // for TSS2_RC, BYTE, TSS2_RC_SUCCESS
-#include "tss2_esys.h"            // for Esys_SetTimeout
-#include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_AuthorizePolicy
-#include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"      // for TPM2B_DIGEST, TPM2B_PUBLIC, TPMT_HA
+#include "fapi_int.h"  // for IFAPI_Fapi_AuthorizePolicy, FAPI_CONTEXT
+#include "fapi_util.h" // for ifapi_cleanup_session, ifapi_key_sign
+#include "ifapi_helpers.h"
+#include "ifapi_io.h"           // for ifapi_io_poll
+#include "ifapi_keystore.h"     // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
+#include "ifapi_macros.h"       // for check_not_null
+#include "ifapi_policy.h"       // for ifapi_calculate_tree
+#include "ifapi_policy_store.h" // for ifapi_policy_store_store_async
+#include "tss2_common.h"        // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"        // for tss2_crypto_hash_abort
+#include "tss2_esys.h"          // for Esys_SetTimeout
+#include "tss2_fapi.h"          // for FAPI_CONTEXT, Fapi_AuthorizePolicy
+#include "tss2_helpers.h"
+#include "tss2_policy.h"
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_AuthorizePolicy
  *
@@ -197,8 +197,8 @@ Fapi_AuthorizePolicy_Async(FAPI_CONTEXT  *context,
 
     /* Copy parameters to context for use during _Finish. */
     policy = &context->cmd.Policy_AuthorizeNewPolicy;
-    strdup_check(policy->policyPath, policyPath, r, error_cleanup);
-    strdup_check(policy->signingKeyPath, keyPath, r, error_cleanup);
+    ifapi_strdup_check(policy->policyPath, policyPath, r, error_cleanup);
+    ifapi_strdup_check(policy->signingKeyPath, keyPath, r, error_cleanup);
     if (policyRef) {
         FAPI_COPY_DIGEST(&policy->policyRef.buffer[0], policy->policyRef.size, policyRef,
                          policyRefSize);
@@ -259,7 +259,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
     TPMI_ALG_HASH              hashAlg;
     IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext = NULL;
     size_t                     hashSize;
-    size_t                     digestIdx;
+    TPM2B_DIGEST               digest;
     TPM2B_DIGEST               aHash;
     char                      *publicKey = NULL;
 
@@ -268,8 +268,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
 
     /* Helpful alias pointers */
     IFAPI_Fapi_AuthorizePolicy *command = &context->cmd.Policy_AuthorizeNewPolicy;
-    TPMS_POLICYAUTHORIZATION   *authorization = &command->authorization;
-    TPMS_POLICY                *policy = &context->policy.policy;
+    char                      **policy = &command->policy;
     TPMT_SIGNATURE             *signature;
     IFAPI_OBJECT              **keyObject = &context->Key_Sign.key_object;
 
@@ -277,7 +276,7 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, AUTHORIZE_NEW_LOAD_KEY);
         /* Load the key used for signing the policy authorization. */
         r = ifapi_load_key(context, command->signingKeyPath, keyObject);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi sign.", cleanup);
 
         fallthrough;
@@ -291,28 +290,27 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
          */
         hashAlg = (*keyObject)->misc.key.public.publicArea.nameAlg;
 
-        if (!(hashSize = ifapi_hash_get_digest_size(hashAlg))) {
+        if (!(hashSize = tss2_hash_get_digest_size(hashAlg))) {
             goto_error(r, TSS2_ESYS_RC_NOT_IMPLEMENTED, "Unsupported hash algorithm (%" PRIu16 ")",
                        cleanup, hashAlg);
         }
 
         /* Calculate the policy digest of the policy to be authorized. */
-        r = ifapi_calculate_tree(context, command->policyPath, policy, hashAlg, &digestIdx,
-                                 &hashSize);
-        return_try_again(r);
+        r = ifapi_calculate_tree(context, command->policyPath, policy, hashAlg, &digest);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi calculate tree.", cleanup);
 
         /* Compute the aHash from policy digest and policyRef */
-        r = ifapi_crypto_hash_start(&cryptoContext, hashAlg);
+        r = ifapi_call_base(tss2_crypto_hash_start(&cryptoContext, hashAlg));
         goto_if_error(r, "crypto hash start", cleanup);
 
-        HASH_UPDATE_BUFFER(cryptoContext, &policy->policyDigests.digests[digestIdx].digest,
-                           hashSize, r, cleanup);
+        ifapi_hash_update_buffer(cryptoContext, digest.buffer, digest.size, r, cleanup);
         if (command->policyRef.size > 0) {
-            HASH_UPDATE_BUFFER(cryptoContext, &command->policyRef.buffer[0],
-                               command->policyRef.size, r, cleanup);
+            ifapi_hash_update_buffer(cryptoContext, &command->policyRef.buffer[0],
+                                     command->policyRef.size, r, cleanup);
         }
-        r = ifapi_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &hashSize);
+        r = ifapi_call_base(
+            tss2_crypto_hash_finish(&cryptoContext, (uint8_t *)&aHash.buffer[0], &hashSize));
         goto_if_error(r, "crypto hash finish", cleanup);
 
         aHash.size = hashSize;
@@ -324,36 +322,33 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, AUTHORIZE_NEW_KEY_SIGN_POLICY);
         /* Perform the singing operation on the policy's aHash. */
         r = ifapi_key_sign(context, *keyObject, NULL, &aHash, NULL, &signature, &publicKey, NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi sign.", cleanup);
 
         SAFE_FREE(publicKey);
 
-        /* Store the signature results and cleanup remainters. */
-        authorization->signature = *signature;
-        authorization->policyRef = command->policyRef;
-        strdup_check(authorization->type, "tpm", r, cleanup);
-        authorization->key = (*keyObject)->misc.key.public.publicArea;
+        /* Policy owns the authorization representation and copies the signing results. */
+        r = ifapi_policy_add_authorization(policy, signature, &command->policyRef,
+                                           &(*keyObject)->misc.key.public.publicArea);
         SAFE_FREE(signature);
+        if (r)
+            r = TSS2_FEATURE_RC_LAYER | (r & ~TSS2_RC_LAYER_MASK);
+        goto_if_error(r, "Add policy authorization.", cleanup);
         ifapi_cleanup_ifapi_object(*keyObject);
-
-        /* Extend the authorization to the policy stored. */
-        ifapi_extend_authorization(policy, authorization);
-        goto_if_null(policy->policyAuthorizations, "Out of memory", TSS2_FAPI_RC_MEMORY, cleanup);
 
         fallthrough;
 
     statecase(context->state, AUTHORIZE_NEW_WRITE_POLICY_PREPARE);
         /* Store the newly authorized policy in the policy store. */
         r = ifapi_policy_store_store_async(&context->pstore, &context->io, command->policyPath,
-                                           policy);
+                                           *policy);
         goto_if_error_reset_state(r, "Could not open: %s", cleanup, command->policyPath);
 
         fallthrough;
 
     statecase(context->state, AUTHORIZE_NEW_WRITE_POLICY);
         r = ifapi_policy_store_store_finish(&context->pstore, &context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "write_finish failed", cleanup);
 
         fallthrough;
@@ -361,19 +356,19 @@ Fapi_AuthorizePolicy_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, AUTHORIZE_NEW_CLEANUP)
     /* Cleanup and reset the context state. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", cleanup);
 
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:
     /* Cleanup any intermediate results and state stored in the context. */
     if (cryptoContext)
-        ifapi_crypto_hash_abort(&cryptoContext);
+        tss2_crypto_hash_abort(&cryptoContext);
     ifapi_session_clean(context);
-    ifapi_cleanup_policy(policy);
+    SAFE_FREE(*policy);
     ifapi_cleanup_ifapi_object(&context->createPrimary.pkey_object);
     ifapi_cleanup_ifapi_object(context->loadKey.key_object);
     ifapi_cleanup_ifapi_object(&context->loadKey.auth_object);

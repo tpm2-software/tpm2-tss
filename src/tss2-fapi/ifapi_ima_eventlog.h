@@ -11,9 +11,9 @@
 #include <stddef.h>  // for size_t
 #include <stdint.h>  // for uint32_t
 
-#include "fapi_types.h"      // for UINT8_ARY
 #include "tss2_common.h"     // for UINT32, TSS2_RC, UINT8
 #include "tss2_tpm2_types.h" // for TPM2_SHA512_DIGEST_SIZE, TPMI_ALG_HASH
+#include "tss2_types.h"      // for UINT8_ARY
 
 /* Defines from kernel ima.h" */
 #define TCG_EVENT_NAME_LEN_MAX        255

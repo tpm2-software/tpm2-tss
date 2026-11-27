@@ -8,25 +8,26 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>   // for json_object_put, json_obj...
+#include <json.h>   // for json_object_put, json_object
 #include <stdint.h> // for uint8_t
 #include <stdio.h>  // for NULL, remove
-#include <stdlib.h> // for free
+#include <stdlib.h>
 #include <string.h> // for strdup, strlen, memset
 
-#include "fapi_int.h"                      // for IFAPI_FILE_DELIM, IFAPI_P...
-#include "ifapi_helpers.h"                 // for ifapi_asprintf, ifapi_pat...
-#include "ifapi_io.h"                      // for ifapi_io_path_exists, IFA...
-#include "ifapi_keystore.h"                // for ifapi_check_valid_path
-#include "ifapi_macros.h"                  // for goto_if_error2, return_tr...
-#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
-#include "ifapi_policy_json_serialize.h"   // for ifapi_json_TPMS_POLICY_se...
+#include "fapi_int.h"               // for IFAPI_FILE_DELIM, IFAPI_POLICY_PATH
+#include "ifapi_helpers.h"          // for ifapi_path_type_p
+#include "ifapi_io.h"               // for ifapi_io_path_exists, IFAPI_IO
+#include "ifapi_json_deserialize.h" // for ifapi_json_policy_deserialize
+#include "ifapi_json_serialize.h"   // for ifapi_json_policy_serialize
+#include "ifapi_keystore.h"         // for ifapi_check_valid_path
+#include "ifapi_macros.h"           // for ifapi_call_base, ifapi_return_try_again,
+                                    //     ifapi_strdup_check
 #include "ifapi_policy_store.h"
-#include "ifapi_policy_types.h"   // for TPMS_POLICY
 #include "tpm_json_deserialize.h" // for ifapi_parse_json
+#include "tss2_helpers.h"         // for ifapi_asprintf
 
 #define LOGMODULE fapi
-#include "util/log.h" // for SAFE_FREE, return_if_error
+#include "util/log.h" // for LOG_TRACE, LOG_WARNING
 
 /** Compute absolute path of policy for IO.
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
@@ -36,10 +37,12 @@ policy_rel_path_to_abs_path(IFAPI_POLICY_STORE *pstore, const char *rel_path, ch
     TSS2_RC r;
 
     if (ifapi_path_type_p(rel_path, IFAPI_POLICY_PATH)) {
-        r = ifapi_asprintf(abs_path, "%s%s%s.json", pstore->policydir, IFAPI_FILE_DELIM, rel_path);
+        r = ifapi_call_base(
+            ifapi_asprintf(abs_path, "%s%s%s.json", pstore->policydir, IFAPI_FILE_DELIM, rel_path));
     } else {
-        r = ifapi_asprintf(abs_path, "%s%s%s%s%s.json", pstore->policydir, IFAPI_FILE_DELIM,
-                           IFAPI_POLICY_PATH, IFAPI_FILE_DELIM, rel_path);
+        r = ifapi_call_base(ifapi_asprintf(abs_path, "%s%s%s%s%s.json", pstore->policydir,
+                                           IFAPI_FILE_DELIM, IFAPI_POLICY_PATH, IFAPI_FILE_DELIM,
+                                           rel_path));
     }
     return_if_error(r, "Create policy file name.");
     return r;
@@ -97,14 +100,14 @@ ifapi_policy_store_initialize(IFAPI_POLICY_STORE *pstore, const char *config_pol
     memset(pstore, 0, sizeof(IFAPI_POLICY_STORE));
     check_not_null(config_policydir);
 
-    strdup_check(pstore->policydir, config_policydir, r, error);
+    ifapi_strdup_check(pstore->policydir, config_policydir, r, error);
 
-    r = ifapi_asprintf(
+    r = ifapi_call_base(ifapi_asprintf(
         &policy_dir, "%s%s%s", config_policydir,
         (strcmp(&config_policydir[strlen(config_policydir) - 1], IFAPI_FILE_DELIM) == 0)
             ? ""
             : IFAPI_FILE_DELIM,
-        IFAPI_POLICY_PATH);
+        IFAPI_POLICY_PATH));
     goto_if_error(r, "Out of memory.", error);
 
     r = ifapi_io_check_create_dir(policy_dir, FAPI_READ);
@@ -192,7 +195,7 @@ cleanup:
  * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
  */
 TSS2_RC
-ifapi_policy_store_load_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, TPMS_POLICY *policy) {
+ifapi_policy_store_load_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, char **policy) {
     TSS2_RC      r;
     json_object *jso = NULL;
     uint8_t     *buffer = NULL;
@@ -201,7 +204,7 @@ ifapi_policy_store_load_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, TPMS_PO
     UNUSED(pstore);
 
     r = ifapi_io_read_finish(io, &buffer, NULL);
-    return_try_again(r);
+    ifapi_return_try_again(r);
     return_if_error(r, "keystore read_finish failed");
 
     /* If json objects can't be parse the object store is corrupted */
@@ -209,13 +212,45 @@ ifapi_policy_store_load_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, TPMS_PO
     SAFE_FREE(buffer);
     return_if_null(jso, "Policy store is corrupted (Json error).", TSS2_FAPI_RC_GENERAL_FAILURE);
 
-    r = ifapi_json_TPMS_POLICY_deserialize(jso, policy);
+    r = ifapi_json_policy_deserialize(jso, policy);
     goto_if_error(r, "Deserialize policy", cleanup);
 
 cleanup:
     SAFE_FREE(buffer);
     if (jso)
         json_object_put(jso);
+    LOG_TRACE("Return %x", r);
+    return r;
+}
+
+/** Finish loading FAPI policy string from policy store.
+ *
+ *
+ * This function needs to be called repeatedly until it does not return TSS2_FAPI_RC_TRY_AGAIN.
+ *
+ * @param[in] pstore The policy context with the policy directory.
+ * @param[in,out] io The input/output context being used for file I/O.
+ * @param[out] policy The json policy string
+ * @retval TSS2_RC_SUCCESS After successfully loading the object.
+ * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
+ * @retval TSS2_FAPI_RC_TRY_AGAIN: if the asynchronous operation is not yet complete.
+ * @retval TSS2_FAPI_RC_GENERAL_FAILURE if an internal error occurred.
+ * @retval TSS2_FAPI_RC_BAD_REFERENCE a invalid null pointer is passed.
+ * @retval TSS2_FAPI_RC_BAD_VALUE if an invalid value was passed into
+ *         the function.
+ * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
+ */
+TSS2_RC
+ifapi_policy_store_read_json_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io, uint8_t **policy) {
+    TSS2_RC r;
+    /* ptore parameter is used to be prepared if transmission of state information
+       between async and finish will be necessary in future extensions. */
+    UNUSED(pstore);
+
+    r = ifapi_io_read_finish(io, policy, NULL);
+    ifapi_return_try_again(r);
+    return_if_error(r, "keystore read_finish failed");
+
     LOG_TRACE("Return %x", r);
     return r;
 }
@@ -240,11 +275,10 @@ TSS2_RC
 ifapi_policy_store_store_async(IFAPI_POLICY_STORE *pstore,
                                IFAPI_IO           *io,
                                const char         *path,
-                               const TPMS_POLICY  *policy) {
-    TSS2_RC      r;
-    char        *jso_string = NULL;
-    json_object *jso = NULL;
-    char        *abs_path = NULL;
+                               const char         *policy) {
+    TSS2_RC     r;
+    const char *jso_string = policy;
+    char       *abs_path = NULL;
 
     LOG_TRACE("Store policy: %s", path);
 
@@ -256,21 +290,17 @@ ifapi_policy_store_store_async(IFAPI_POLICY_STORE *pstore,
     r = policy_rel_path_to_abs_path(pstore, path, &abs_path);
     goto_if_error2(r, "Path %s could not be created.", cleanup, path);
 
-    /* Generate JSON string to be written to store */
-    r = ifapi_json_TPMS_POLICY_serialize(policy, &jso);
-    goto_if_error2(r, "Policy %s could not be serialized.", cleanup, path);
-
-    jso_string = strdup(json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PRETTY));
-    goto_if_null2(jso_string, "Converting json to string", r, TSS2_FAPI_RC_MEMORY, cleanup);
+    /* Validate the JSON envelope without interpreting policy fields. */
+    json_object *jso = NULL;
+    r = ifapi_json_policy_serialize(policy, &jso);
+    goto_if_error(r, "Invalid policy JSON.", cleanup);
+    json_object_put(jso);
 
     /* Start writing the json string to disk */
     r = ifapi_io_write_async(io, abs_path, (uint8_t *)jso_string, strlen(jso_string));
-    free(jso_string);
     goto_if_error(r, "write_async failed", cleanup);
 
 cleanup:
-    if (jso)
-        json_object_put(jso);
     SAFE_FREE(abs_path);
     return r;
 }
@@ -295,7 +325,7 @@ ifapi_policy_store_store_finish(IFAPI_POLICY_STORE *pstore, IFAPI_IO *io) {
     UNUSED(pstore);
     /* Finish writing the policy */
     r = ifapi_io_write_finish(io);
-    return_try_again(r);
+    ifapi_return_try_again(r);
 
     LOG_TRACE("Return %x", r);
     return_if_error(r, "read_finish failed");

@@ -6,22 +6,29 @@
 #ifndef AUX_UTIL_H
 #define AUX_UTIL_H
 
-#include "util/aux_util.h"
 #include <stdbool.h> // for true, bool, false
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 #include <inttypes.h> // for PRIx32
-#include <string.h>   // for explicit_bzero
 
 #include "tss2_common.h"     // for TSS2_RC_SUCCESS, TSS2_RC_LAYER_MASK
 #include "tss2_tpm2_types.h" // for TPM2_RC_1, TPM2_RC_ASYMMETRIC, TPM2_RC_...
-#if defined(_WIN32)
-#include <windows.h> // for SecureZeroMemory
-#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define OSSL_FREE(S, TYPE)                                                                         \
+    if ((S) != NULL) {                                                                             \
+        TYPE##_free((void *)(S));                                                                  \
+        (S) = NULL;                                                                                \
+    }
+
+#define SAFE_FREE(S)                                                                               \
+    if ((S) != NULL) {                                                                             \
+        free((void *)(S));                                                                         \
+        (S) = NULL;                                                                                \
+    }
 
 /*
  * secure_mem_zero(buf, size)
@@ -112,6 +119,12 @@ extern "C" {
         return r;                                                                                  \
     }
 
+#define return_error2(r, msg, ...)                                                                 \
+    {                                                                                              \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        return (r);                                                                                \
+    }
+
 #define goto_state_if_error(r, s, msg, label)                                                      \
     if ((r) != TSS2_RC_SUCCESS) {                                                                  \
         LOG_ERROR("%s " TPM2_ERROR_FORMAT, msg, TPM2_ERROR_TEXT(r));                               \
@@ -122,6 +135,13 @@ extern "C" {
 #define goto_if_null(p, msg, ec, label)                                                            \
     if ((p) == NULL) {                                                                             \
         LOG_ERROR("%s ", (msg));                                                                   \
+        r = (ec);                                                                                  \
+        goto label;                                                                                \
+    }
+
+#define goto_if_null2(p, msg, r, ec, label, ...)                                                   \
+    if ((p) == NULL) {                                                                             \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(ec), ##__VA_ARGS__);                  \
         r = (ec);                                                                                  \
         goto label;                                                                                \
     }
@@ -157,9 +177,41 @@ extern "C" {
         (r_max) = r;                                                                               \
     }
 
+#define goto_if_error2(r, msg, label, ...)                                                         \
+    if (r != TSS2_RC_SUCCESS) {                                                                    \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        goto label;                                                                                \
+    }
+
+#define return_if_error2(r, msg, ...)                                                              \
+    if (r != TSS2_RC_SUCCESS) {                                                                    \
+        LOG_ERROR(TPM2_ERROR_FORMAT " " msg, TPM2_ERROR_TEXT(r), ##__VA_ARGS__);                   \
+        return r;                                                                                  \
+    }
+
+#define statecase(VAR, STATE)                                                                      \
+    case STATE:                                                                                    \
+        LOG_TRACE("State " str(VAR) " reached " str(STATE));                                       \
+        (VAR) = STATE;
+
+#if defined __GNUC__ && __GNUC__ < 7
+#define fallthrough                                                                                \
+    {}
+#else
+#define fallthrough __attribute__((fallthrough))
+#endif
+
 #define rc_layer(r)  ((r) & TSS2_RC_LAYER_MASK)
 #define base_rc(r)   ((r) & ~TSS2_RC_LAYER_MASK)
 #define number_rc(r) ((r) & ~TPM2_RC_N_MASK)
+
+/* Only for helpers documented to return layerless base errors, never for
+ * arbitrary TPM or callback results: TPM errors also have layer zero.
+ */
+static inline TSS2_RC
+tss2_rc_from_base(TSS2_RC rc, TSS2_RC layer) {
+    return rc != TSS2_RC_SUCCESS && rc_layer(rc) == 0 ? layer | rc : rc;
+}
 
 static inline TSS2_RC
 tss2_fmt_p1_error_to_rc(UINT16 err) {

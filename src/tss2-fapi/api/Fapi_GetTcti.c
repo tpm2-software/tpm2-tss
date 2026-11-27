@@ -16,7 +16,7 @@
 #include "tss2_tcti.h"    // for TSS2_TCTI_CONTEXT
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_DEBUG, LOG_TRACE, return_error, return...
+#include "util/log.h" // for LOG_DEBUG, LOG_TRACE
 
 /** One-Call function for Fapi_GetTcti
  *

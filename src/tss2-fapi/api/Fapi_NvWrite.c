@@ -14,17 +14,17 @@
 #include <string.h> // for memcpy, memset
 
 #include "fapi_int.h"       // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_WRITE_READ
-#include "fapi_util.h"      // for ifapi_cleanup_session, ifapi_esys_serial...
+#include "fapi_util.h"      // for ifapi_cleanup_session
 #include "ifapi_io.h"       // for ifapi_io_poll
-#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object
 #include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
 #include "tss2_esys.h"      // for Esys_SetTimeout
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_NvWrite, Fapi_NvWrite...
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_NvWrite
 #include "tss2_tcti.h"      // for TSS2_TCTI_TIMEOUT_BLOCK
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_NvWrite
  *
@@ -176,7 +176,7 @@ Fapi_NvWrite_Async(FAPI_CONTEXT *context, char const *nvPath, uint8_t const *dat
     command->data = NULL;
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->nvPath, nvPath, r, error_cleanup);
+    ifapi_strdup_check(command->nvPath, nvPath, r, error_cleanup);
 
     commandData = malloc(size);
     goto_if_null2(commandData, "Out of memory", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
@@ -249,7 +249,7 @@ Fapi_NvWrite_Finish(FAPI_CONTEXT *context) {
         r = ifapi_nv_write(context, command->nvPath, command->offset, command->data,
                            command->numBytes);
 
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI NV Write", error_cleanup);
 
         fallthrough;
@@ -257,11 +257,11 @@ Fapi_NvWrite_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, NV_WRITE_CLEANUP)
     /* Cleanup the authorization session. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

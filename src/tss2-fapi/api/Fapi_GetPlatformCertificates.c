@@ -9,22 +9,22 @@
 #endif
 
 #include <stdint.h> // for uint8_t
-#include <stdlib.h> // for NULL, malloc, size_t
-#include <string.h> // for memcpy
+#include <stdlib.h> // for NULL, size_t
+#include <string.h>
 
-#include "fapi_int.h"      // for FAPI_CONTEXT, GET_PLATFORM_CERTIFICATE
-#include "fapi_types.h"    // for NODE_OBJECT_T
-#include "fapi_util.h"     // for ifapi_get_certificates, ifapi_session_init
-#include "ifapi_helpers.h" // for ifapi_free_node_list
-#include "ifapi_io.h"      // for ifapi_io_poll
-#include "ifapi_macros.h"  // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"   // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TR...
-#include "tss2_esys.h"     // for Esys_SetTimeout
-#include "tss2_fapi.h"     // for FAPI_CONTEXT, Fapi_GetPlatformCertificates
-#include "tss2_tcti.h"     // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "fapi_int.h"  // for FAPI_CONTEXT, GET_PLATFORM_CERTIFICATE
+#include "fapi_util.h" // for ifapi_get_certificates, ifapi_session_init
+#include "ifapi_helpers.h"
+#include "ifapi_io.h"     // for ifapi_io_poll
+#include "ifapi_macros.h" // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"  // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_esys.h"    // for Esys_SetTimeout
+#include "tss2_fapi.h"    // for FAPI_CONTEXT, Fapi_GetPlatformCertificates
+#include "tss2_tcti.h"    // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_types.h"
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_GetPlatformCertificates
  *
@@ -219,14 +219,14 @@ Fapi_GetPlatformCertificates_Finish(FAPI_CONTEXT *context,
         /* Retrieve the certificates from the TPM's NV space. */
         r = ifapi_get_certificates(context, MIN_PLATFORM_CERT_HANDLE, MAX_PLATFORM_CERT_HANDLE,
                                    certificates, certificatesSize);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Get certificates.", error);
 
         if (*certificatesSize == 0) {
             goto_error(r, TSS2_FAPI_RC_NO_CERT, "No platform certificates available.", error);
         }
         break;
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
     /* Cleanup any intermediate results and state stored in the context. */

@@ -13,20 +13,20 @@
 #include <stdlib.h> // for NULL, size_t, malloc
 #include <string.h> // for memset, memcmp, memcpy
 
-#include "fapi_crypto.h"     // for ifapi_verify_signature_quote
-#include "fapi_int.h"        // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
-#include "fapi_util.h"       // for ifapi_non_tpm_mode_init
-#include "ifapi_eventlog.h"  // for FAPI_QUOTE_INFO
-#include "ifapi_helpers.h"   // for ifapi_calculate_pcr_digest, ifapi_get_q...
+#include "fapi_crypto.h" // for ifapi_verify_signature_quote
+#include "fapi_int.h"    // for IFAPI_PCR, FAPI_CONTEXT, IFAPI_CMD_STATE
+#include "fapi_util.h"   // for ifapi_non_tpm_mode_init
+#include "ifapi_eventlog.h"
+#include "ifapi_helpers.h"   // for ifapi_calculate_pcr_digest, ifapi_get_quote_info
 #include "ifapi_io.h"        // for ifapi_io_poll
 #include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"    // for check_not_null, strdup_check, return_if...
-#include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_FAPI_RC_BAD_VALUE
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_VerifyQuote, Fapi_Ve...
-#include "tss2_tpm2_types.h" // for TPM2B_DATA, TPM2B_ATTEST, TPMS_ATTEST
+#include "ifapi_macros.h"    // for check_not_null, ifapi_strdup_check, return_if_error_reset_state
+#include "tss2_common.h"     // for TSS2_RC, TSS2_FAPI_RC_BAD_VALUE
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_VerifyQuote
+#include "tss2_tpm2_types.h" // for TPM2B_ATTEST
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_VerifyQuote
  *
@@ -204,9 +204,9 @@ Fapi_VerifyQuote_Async(FAPI_CONTEXT  *context,
     command->signature = signatureBuffer;
     command->signatureSize = signatureSize;
 
-    strdup_check(command->keyPath, publicKeyPath, r, error_cleanup);
-    strdup_check(command->quoteInfo, quoteInfo, r, error_cleanup);
-    strdup_check(command->logData, pcrLog, r, error_cleanup);
+    ifapi_strdup_check(command->keyPath, publicKeyPath, r, error_cleanup);
+    ifapi_strdup_check(command->quoteInfo, quoteInfo, r, error_cleanup);
+    ifapi_strdup_check(command->logData, pcrLog, r, error_cleanup);
     command->event_list = NULL;
 
     if (qualifyingData != NULL) {
@@ -276,7 +276,7 @@ Fapi_VerifyQuote_Finish(FAPI_CONTEXT *context) {
     switch (context->state) {
     statecase(context->state, VERIFY_QUOTE_READ);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "read_finish failed", error_cleanup);
 
         /* Recalculate the quote-info and attest2b buffer. */
@@ -332,7 +332,7 @@ Fapi_VerifyQuote_Finish(FAPI_CONTEXT *context) {
 
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

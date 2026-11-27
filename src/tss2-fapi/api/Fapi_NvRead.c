@@ -12,22 +12,23 @@
 #include <stdlib.h> // for size_t
 #include <string.h> // for memset
 
-#include "fapi_int.h"        // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_READ_READ
-#include "fapi_util.h"       // for ifapi_cleanup_session, ifapi_get_sessio...
-#include "ifapi_helpers.h"   // for ifapi_init_hierarchy_object
-#include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"    // for check_not_null, goto_if_error_reset_state
-#include "ifapi_profiles.h"  // for IFAPI_PROFILES
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_...
-#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_RH_OWNER, ESYS...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_NvRead, Fapi_NvRead_...
-#include "tss2_policy.h"     // for TSS2_OBJECT
+#include "fapi_int.h"       // for IFAPI_NV_Cmds, FAPI_CONTEXT, NV_READ_READ
+#include "fapi_util.h"      // for ifapi_cleanup_session, ifapi_get_sessions_async
+#include "ifapi_helpers.h"  // for ifapi_init_hierarchy_object
+#include "ifapi_io.h"       // for ifapi_io_poll
+#include "ifapi_keystore.h" // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"   // for check_not_null, goto_if_error_reset_state
+#include "ifapi_profiles.h"
+#include "tss2_common.h" // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_esys.h"   // for Esys_SetTimeout, ESYS_TR_RH_OWNER, ESYS_TR
+#include "tss2_fapi.h"   // for FAPI_CONTEXT, Fapi_NvRead, Fapi_NvRead_Async
+#include "tss2_helpers.h"
+#include "tss2_policy.h"
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h" // for TPM2B_NV_PUBLIC, TPMS_NV_PUBLIC, TPMA_N...
+#include "tss2_tpm2_types.h" // for TPMA_NV_OWNERREAD
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, return_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_NvRead
  *
@@ -178,7 +179,7 @@ Fapi_NvRead_Async(FAPI_CONTEXT *context, char const *nvPath) {
     memset(command, 0, sizeof(IFAPI_NV_Cmds));
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->nvPath, nvPath, r, error_cleanup);
+    ifapi_strdup_check(command->nvPath, nvPath, r, error_cleanup);
 
     /* Load the NV index metadata from keystore. */
     r = ifapi_keystore_load_async(&context->keystore, &context->io, command->nvPath);
@@ -251,7 +252,7 @@ Fapi_NvRead_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size, char **l
     switch (context->state) {
     statecase(context->state, NV_READ_READ)
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         if (object->objectType != IFAPI_NV_OBJ)
@@ -293,7 +294,7 @@ Fapi_NvRead_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size, char **l
     statecase(context->state, NV_READ_WAIT_FOR_SESSION)
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       object->misc.nv.public.nvPublic.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         command->nv_read_state = NV_READ_INIT;
@@ -304,7 +305,7 @@ Fapi_NvRead_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size, char **l
         if (data) {
             /* Read the data from the TPM. */
             r = ifapi_nv_read(context, &command->rdata, &readSize);
-            return_try_again(r);
+            ifapi_return_try_again(r);
 
             goto_if_error_reset_state(r, " FAPI NV_Read", error_cleanup);
         }
@@ -313,9 +314,9 @@ Fapi_NvRead_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size, char **l
             /* Duplicate the logdata that may have been stored during a
                NvExtend command. */
             if (object->misc.nv.event_log) {
-                strdup_check(command->logData, object->misc.nv.event_log, r, error_cleanup);
+                ifapi_strdup_check(command->logData, object->misc.nv.event_log, r, error_cleanup);
             } else {
-                strdup_check(command->logData, "", r, error_cleanup);
+                ifapi_strdup_check(command->logData, "", r, error_cleanup);
             }
         }
         fallthrough;
@@ -323,7 +324,7 @@ Fapi_NvRead_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size, char **l
     statecase(context->state, NV_READ_CLEANUP)
     /* Cleanup the session used for authorization. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         if (logData)
             *logData = command->logData;
@@ -332,7 +333,7 @@ Fapi_NvRead_Finish(FAPI_CONTEXT *context, uint8_t **data, size_t *size, char **l
             *size = command->size;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

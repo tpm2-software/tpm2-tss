@@ -13,20 +13,20 @@
 #include <string.h>   // for strncmp, memcpy, memset
 
 #include "fapi_int.h"        // for IFAPI_Data_EncryptDecrypt, FAPI_CONTEXT
-#include "fapi_util.h"       // for ifapi_allocate_object, ifapi_cleanup_se...
+#include "fapi_util.h"       // for ifapi_allocate_object, ifapi_cleanup_session
 #include "ifapi_io.h"        // for ifapi_io_poll
-#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
-#include "ifapi_macros.h"    // for check_not_null, statecase, goto_if_erro...
-#include "ifapi_profiles.h"  // for IFAPI_PROFILE, ifapi_profiles_get, IFAP...
-#include "tss2_common.h"     // for TSS2_RC, BYTE, TSS2_FAPI_RC_MEMORY, TSS...
-#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_Flu...
-#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Encrypt, Fapi_Encryp...
+#include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"    // for check_not_null, goto_if_error
+#include "ifapi_profiles.h"  // for ifapi_profiles_get
+#include "tss2_common.h"     // for TSS2_RC, TSS2_FAPI_RC_MEMORY, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_esys.h"       // for Esys_SetTimeout, ESYS_TR_NONE, Esys_FlushContext
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Encrypt
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC_KEY_RSA, TPM2B_PUBLIC, TPM...
+#include "tss2_tpm2_types.h" // for TPM2B_PUBLIC_KEY_RSA, TPM2B_PUBLIC, TPM2B_DATA
 
 #define LOGMODULE fapi
 #include "fapi_crypto.h" // for ifapi_rsa_encrypt
-#include "util/log.h"    // for LOG_TRACE, SAFE_FREE, goto_if_error
+#include "util/log.h"    // for LOG_TRACE
 
 #define IV_SIZE 16
 
@@ -205,7 +205,7 @@ Fapi_Encrypt_Async(FAPI_CONTEXT  *context,
     memcpy(inData, plainText, plainTextSize);
     command->in_data = inData;
 
-    strdup_check(command->keyPath, keyPath, r, error_cleanup);
+    ifapi_strdup_check(command->keyPath, keyPath, r, error_cleanup);
 
     command->in_dataSize = plainTextSize;
     command->key_handle = ESYS_TR_NONE;
@@ -277,7 +277,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
         /* Retrieve the profile for the provided key in order to get the
            encryption scheme below. */
         r = ifapi_profiles_get(&context->profiles, command->keyPath, &command->profile);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         if (strncmp(command->keyPath, "/ext", 4) == 0) {
@@ -299,7 +299,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
     statecase(context->state, DATA_ENCRYPT_WAIT_FOR_SESSION);
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Get session.", error_cleanup);
 
         /* Load the reference key by loading all of its parents starting from the SRK. */
@@ -311,7 +311,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
     statecase(context->state, DATA_ENCRYPT_WAIT_FOR_KEY);
         r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT, &command->key_handle,
                                    &command->key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " Load key.", error_cleanup);
 
         public = &command->key_object->misc.key.public;
@@ -351,7 +351,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
 
     statecase(context->state, DATA_ENCRYPT_WAIT_FOR_RSA_ENCRYPTION);
         r = Esys_RSA_Encrypt_Finish(context->esys, &tpmCipherText);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         if (r == 0x00000084) {
             LOG_ERROR("The data to be encrypted might be too large. Common values are "
                       "256 bytes for no OAEP or 190 with OAEP.");
@@ -381,7 +381,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
         if (strncmp(command->keyPath, "/ext", 4) == 0
             || !command->key_object->misc.key.persistent_handle) {
             r = Esys_FlushContext_Finish(context->esys);
-            return_try_again(r);
+            ifapi_return_try_again(r);
 
             goto_if_error(r, "Error: FlushContext", error_cleanup);
         }
@@ -391,7 +391,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
     statecase(context->state, DATA_ENCRYPT_CLEAN)
     /* Cleanup the sessions. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         *cipherText = command->cipherText;
         if (cipherTextSize)
@@ -403,7 +403,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
         goto_if_null2(command->key_object, "Allocating key", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
 
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, command->key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         r = ifapi_rsa_encrypt(command->key_object->misc.ext_pub_key.pem_ext_public,
@@ -417,7 +417,7 @@ Fapi_Encrypt_Finish(FAPI_CONTEXT *context, uint8_t **cipherText, size_t *cipherT
             *cipherTextSize = command->cipherTextSize;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
     context->state = FAPI_STATE_INIT;

@@ -14,20 +14,20 @@
 #include <string.h>  // for memset
 #include <strings.h> // for strcasecmp
 
-#include "fapi_int.h"        // for IFAPI_Key_Sign, FAPI_CONTEXT, KEY_SIGN_...
+#include "fapi_int.h"        // for IFAPI_Key_Sign, FAPI_CONTEXT, KEY_SIGN_CLEANUP
 #include "fapi_util.h"       // for ifapi_cleanup_session, ifapi_key_sign
 #include "ifapi_helpers.h"   // for ifapi_tpm_to_fapi_signature
 #include "ifapi_io.h"        // for ifapi_io_poll
 #include "ifapi_keystore.h"  // for ifapi_cleanup_ifapi_object
-#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_s...
-#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, BYTE, TSS2_BA...
+#include "ifapi_macros.h"    // for check_not_null, return_if_error_reset_state
+#include "tss2_common.h"     // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_BAD_VALUE
 #include "tss2_esys.h"       // for Esys_SetTimeout
 #include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Sign, Fapi_Sign_Async
 #include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h" // for TPM2B_DIGEST
+#include "tss2_tpm2_types.h" // for TPMA_OBJECT_RESTRICTED
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_Sign
  *
@@ -206,8 +206,8 @@ Fapi_Sign_Async(FAPI_CONTEXT  *context,
 
     /* Copy parameters to context for use during _Finish. */
     FAPI_COPY_DIGEST(&command->digest.buffer[0], command->digest.size, digest, digestSize);
-    strdup_check(command->keyPath, keyPath, r, error_cleanup);
-    strdup_check(command->padding, padding, r, error_cleanup);
+    ifapi_strdup_check(command->keyPath, keyPath, r, error_cleanup);
+    ifapi_strdup_check(command->padding, padding, r, error_cleanup);
 
     /* Initialize the context state for this operation. */
     context->state = KEY_SIGN_WAIT_FOR_KEY;
@@ -281,7 +281,7 @@ Fapi_Sign_Finish(FAPI_CONTEXT *context,
     statecase(context->state, KEY_SIGN_WAIT_FOR_KEY);
         /* Load the key used for signing with a helper. */
         r = ifapi_load_key(context, command->keyPath, &command->key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi load key.", cleanup);
 
         if (command->key_object->misc.key.public.publicArea.objectAttributes
@@ -302,7 +302,7 @@ Fapi_Sign_Finish(FAPI_CONTEXT *context,
         r = ifapi_key_sign(context, command->key_object, command->padding, &command->digest, NULL,
                            &command->tpm_signature, publicKey ? &command->publicKey : NULL,
                            (certificate) ? &command->certificate : NULL);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi sign.", cleanup);
 
         /* Convert the TPM datatype signature to something useful for the caller. */
@@ -317,7 +317,7 @@ Fapi_Sign_Finish(FAPI_CONTEXT *context,
     statecase(context->state, KEY_SIGN_CLEANUP);
         /* Cleanup the session used for authorization. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", cleanup);
 
         if (certificate)
             *certificate = command->certificate;
@@ -329,7 +329,7 @@ Fapi_Sign_Finish(FAPI_CONTEXT *context,
         context->state = FAPI_STATE_INIT;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:

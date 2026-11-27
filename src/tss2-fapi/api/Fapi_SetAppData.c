@@ -13,16 +13,16 @@
 #include <string.h> // for memcpy, memset
 
 #include "fapi_int.h"       // for IFAPI_Path_SetDescription, FAPI_CONTEXT
-#include "fapi_types.h"     // for UINT8_ARY
 #include "fapi_util.h"      // for ifapi_initialize_object
 #include "ifapi_io.h"       // for ifapi_io_poll
 #include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, IFAPI_OBJECT
 #include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_B...
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetAppData, Fapi_SetA...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_FAPI_RC_BAD_PATH
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_SetAppData
+#include "tss2_types.h"     // for UINT8_ARY
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, return_error, LOGB...
+#include "util/log.h" // for LOG_TRACE, LOGBLOB_TRACE
 
 #define FAPI_MAX_APP_DATA_SIZE (10 * 1024 * 1024)
 
@@ -160,7 +160,7 @@ Fapi_SetAppData_Async(FAPI_CONTEXT  *context,
     IFAPI_Path_SetDescription *command = &context->cmd.path_set_info;
 
     /* Copy parameters to context for use during _Finish. */
-    strdup_check(command->object_path, path, r, error_cleanup);
+    ifapi_strdup_check(command->object_path, path, r, error_cleanup);
 
     if (appDataSize > 0) {
         command->appData.buffer = malloc(appDataSize);
@@ -230,7 +230,7 @@ Fapi_SetAppData_Finish(FAPI_CONTEXT *context) {
     switch (context->state) {
     statecase(context->state, APP_DATA_SET_READ);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         r = ifapi_initialize_object(context->esys, object);
@@ -265,14 +265,14 @@ Fapi_SetAppData_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, APP_DATA_SET_WRITE);
         /* Finish writing of object */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "write_finish failed", error_cleanup);
         ifapi_cleanup_ifapi_object(object);
 
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 error_cleanup:

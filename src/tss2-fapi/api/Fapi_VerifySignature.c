@@ -16,13 +16,13 @@
 #include "fapi_int.h"       // for IFAPI_Key_VerifySignature, FAPI_CONTEXT
 #include "fapi_util.h"      // for ifapi_non_tpm_mode_init
 #include "ifapi_io.h"       // for ifapi_io_poll
-#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keystore_load_async
 #include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_FAPI_RC_MEMORY, TSS2_RC_SU...
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_VerifySignature, Fapi...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_FAPI_RC_MEMORY, TSS2_RC_SUCCESS
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_VerifySignature
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, SAFE_FREE, LOGBLOB_TRACE, ret...
+#include "util/log.h" // for LOG_TRACE, LOGBLOB_TRACE
 
 /** One-Call function for Fapi_VerifySignature
  *
@@ -234,7 +234,7 @@ Fapi_VerifySignature_Finish(FAPI_CONTEXT *context) {
     IFAPI_Key_VerifySignature *command = &context->cmd.Key_VerifySignature;
 
     r = ifapi_keystore_load_finish(&context->keystore, &context->io, &command->key_object);
-    return_try_again(r);
+    ifapi_return_try_again(r);
     return_if_error_reset_state(r, "read_finish failed");
 
     /* Verify the signature using a helper that tests all known signature schemes. */

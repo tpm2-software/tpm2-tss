@@ -11,13 +11,13 @@
 #include "fapi_int.h"       // for FAPI_CONTEXT, PATH_GET_DESCRIPTION_READ
 #include "fapi_util.h"      // for ifapi_get_description
 #include "ifapi_io.h"       // for ifapi_io_poll
-#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keysto...
+#include "ifapi_keystore.h" // for ifapi_cleanup_ifapi_object, ifapi_keystore_load_async
 #include "ifapi_macros.h"   // for check_not_null, return_if_error_reset_state
-#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_T...
-#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetDescription, Fapi_...
+#include "tss2_common.h"    // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_fapi.h"      // for FAPI_CONTEXT, Fapi_GetDescription
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, base_rc, return_error, return...
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_GetDescription
  *
@@ -163,7 +163,7 @@ Fapi_GetDescription_Finish(FAPI_CONTEXT *context, char **description) {
     switch (context->state) {
     statecase(context->state, PATH_GET_DESCRIPTION_READ);
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         /* Retrieve the description from the metadata object. */
@@ -175,7 +175,7 @@ Fapi_GetDescription_Finish(FAPI_CONTEXT *context, char **description) {
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
     LOG_TRACE("finished");
     /* Cleanup any intermediate results and state stored in the context. */

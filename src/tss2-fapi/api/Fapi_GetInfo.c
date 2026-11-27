@@ -8,29 +8,28 @@
 #include "config.h" // for PACKAGE_STRING
 #endif
 
-#include <json.h>   // for json_object_put, json_object_to_js...
+#include <json.h>   // for json_object_put, json_object_to_json_string_ext
 #include <string.h> // for memset, strdup, NULL, size_t
 
-#include "fapi_int.h"             // for FAPI_CONTEXT, IFAPI_GetInfo, IFAPI...
-#include "fapi_util.h"            // for ifapi_capability_get, ifapi_capabi...
+#include "fapi_int.h"             // for FAPI_CONTEXT, IFAPI_GetInfo, IFAPI_CMD_STATE
+#include "fapi_util.h"            // for ifapi_capability_get
 #include "ifapi_io.h"             // for ifapi_io_poll
 #include "ifapi_json_serialize.h" // for ifapi_json_IFAPI_INFO_serialize
-#include "ifapi_macros.h"         // for check_not_null, return_if_error_re...
-#include "ifapi_policy_types.h"   // for TPMI_POLICYTYPE
+#include "ifapi_macros.h"         // for check_not_null, return_if_error_reset_state
 #include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, UINT32
 #include "tss2_esys.h"            // for Esys_SetTimeout
-#include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_GetInfo, Fapi_G...
+#include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_GetInfo
 #include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"      // for TPM2_CAP_HANDLES, TPM2_MAX_CAP_HAN...
+#include "tss2_tpm2_types.h"      // for TPM2_CAP_HANDLES, TPM2_MAX_CAP_HANDLES
 
 #define LOGMODULE fapi
-#include "util/log.h" // for LOG_TRACE, return_if_error, goto_i...
+#include "util/log.h" // for LOG_TRACE
 
 typedef struct {
-    char           *description;
-    TPMI_POLICYTYPE capability;
-    UINT32          property;
-    UINT32          max;
+    char    *description;
+    TPM2_CAP capability;
+    UINT32   property;
+    UINT32   max;
 } IFAPI_INFO_CAP;
 
 #define CAP_IDX_PT_FIXED 9
@@ -235,7 +234,7 @@ Fapi_GetInfo_Finish(FAPI_CONTEXT *context, char **info) {
         capIdx = command->idx_info_cap;
         r = ifapi_capability_get(context, info_cap_tab[capIdx].capability, info_cap_tab[capIdx].max,
                                  &capabilityData);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Get capability", cleanup);
 
         if (info_cap_tab[capIdx].capability == TPM2_CAP_TPM_PROPERTIES
@@ -280,7 +279,7 @@ Fapi_GetInfo_Finish(FAPI_CONTEXT *context, char **info) {
         r = TSS2_RC_SUCCESS;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:

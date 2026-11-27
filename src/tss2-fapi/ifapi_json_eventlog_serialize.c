@@ -17,19 +17,19 @@
 #include <uuid/uuid.h> // for uuid_unparse_lower, uuid_t
 #include <wchar.h>     // for mbstate_t
 
-#include "efi_event.h"             // for TCG_EVENT2, TCG_SPECID_EVENT, UEF...
-#include "fapi_crypto.h"           // for ifapi_hash_get_digest_size
+#include "efi_event.h"             // for TCG_EVENT2, TCG_SPECID_EVENT, UEFI_IMAGE_LOAD_EVENT
 #include "ifapi_eventlog.h"        // for CONTENT, CONTENT_TYPE
-#include "ifapi_eventlog_system.h" // for parse_eventlog, tpm2_eventlog_con...
+#include "ifapi_eventlog_system.h" // for parse_eventlog, tpm2_eventlog_context
 #include "ifapi_json_eventlog_serialize.h"
-#include "ifapi_macros.h"         // for return_error2
+#include "ifapi_macros.h"         // for ifapi_call_base, ifapi_get_sub_object
 #include "tpm_json_deserialize.h" // for ifapi_get_sub_object
 #include "tpm_json_serialize.h"   // for ifapi_json_TPM2_ALG_ID_serialize
-#include "tss2_common.h"          // for TSS2_RC, TSS2_FAPI_RC_GENERAL_FAI...
+#include "tss2_common.h"          // for TSS2_RC, TSS2_FAPI_RC_GENERAL_FAILURE
+#include "tss2_crypto.h"          // for tss2_hash_get_digest_size
 #include "tss2_tpm2_types.h"      // for TPM2_ALG_SHA1, TPM2_MAX_PCRS
 
 #define LOGMODULE fapifirmware
-#include "util/log.h" // for return_if_null, return_error, LOG...
+#include "util/log.h" // for LOGBLOB_TRACE
 
 #define JSON_CLEAR(jso)                                                                            \
     if (jso) {                                                                                     \
@@ -76,8 +76,11 @@ add_string_to_json(const char *string, json_object *jso, const char *jso_tag) {
     return TSS2_RC_SUCCESS;
 }
 
+#define UNKNOWN_EVENT_TYPE             "Unknown event type "
+#define EVENT_TYPE_UNKNOWN_STRING_SIZE sizeof(UNKNOWN_EVENT_TYPE "0xffffffff")
+
 char const *
-eventtype_to_string(UINT32 event_type) {
+eventtype_to_string(UINT32 event_type, char *buffer, size_t buffer_size) {
     switch (event_type) {
     case EV_PREBOOT_CERT:
         return "EV_PREBOOT_CERT";
@@ -147,7 +150,8 @@ eventtype_to_string(UINT32 event_type) {
         return "EV_EFI_VARIABLE_BOOT2";
 
     default:
-        return "Unknown event type";
+        snprintf(buffer, buffer_size, UNKNOWN_EVENT_TYPE "0x%" PRIx32, event_type);
+        return buffer;
     }
 }
 
@@ -213,7 +217,7 @@ ifapi_json_TCG_DIGEST2_serialize(const TCG_DIGEST2 *in, json_object **jso) {
     }
 
     jso2 = NULL;
-    r = ifapi_json_TPM2_ALG_ID_serialize(in->AlgorithmId, &jso2);
+    r = ifapi_call_base(ifapi_json_TPM2_ALG_ID_serialize(in->AlgorithmId, &jso2));
     return_if_jso_error(r, "Serialize hash algorithm", jso2);
 
     if (json_object_object_add(*jso, "hashAlg", jso2)) {
@@ -221,7 +225,7 @@ ifapi_json_TCG_DIGEST2_serialize(const TCG_DIGEST2 *in, json_object **jso) {
     }
     jso2 = NULL;
 
-    size = ifapi_hash_get_digest_size(in->AlgorithmId);
+    size = tss2_hash_get_digest_size(in->AlgorithmId);
     r = ifapi_json_BYTE_ARY_serialize(&in->Digest[0], size, &jso2);
     return_if_jso_error(r, "Serialize UINT8", jso2);
 
@@ -500,6 +504,7 @@ ifapi_json_TCG_EVENT_HEADER2_serialize(const TCG_EVENT_HEADER2 *in,
                                        size_t                   recnum,
                                        json_object            **jso) {
     (void)size;
+    char event_type_buf[EVENT_TYPE_UNKNOWN_STRING_SIZE];
 
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -521,7 +526,7 @@ ifapi_json_TCG_EVENT_HEADER2_serialize(const TCG_EVENT_HEADER2 *in,
     r = add_string_to_json("pcclient_std", *jso, CONTENT_TYPE);
     return_if_error(r, "Add event type");
 
-    r = ifapi_json_UINT32_serialize(in->PCRIndex, &jso2);
+    r = ifapi_call_base(ifapi_json_UINT32_serialize(in->PCRIndex, &jso2));
     return_if_error(r, "Serialize UINT32");
 
     if (json_object_object_add(*jso, "pcr", jso2)) {
@@ -535,7 +540,8 @@ ifapi_json_TCG_EVENT_HEADER2_serialize(const TCG_EVENT_HEADER2 *in,
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
-    jso2 = json_object_new_string(eventtype_to_string(in->EventType));
+    jso2 = json_object_new_string(
+        eventtype_to_string(in->EventType, &event_type_buf[0], sizeof(event_type_buf)));
 
     if (json_object_object_add(jso_sub, "event_type", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -617,6 +623,7 @@ ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_object *
 
     TSS2_RC      r;
     json_object *jso2, *jso_sub, *jso_digest, *jso_ary;
+    char         event_type_buf[EVENT_TYPE_UNKNOWN_STRING_SIZE];
 
     if (*jso == NULL) {
         *jso = json_object_new_object();
@@ -627,7 +634,7 @@ ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_object *
     r = add_string_to_json("pcclient_std", *jso, CONTENT_TYPE);
     return_if_error(r, "Add event type");
 
-    r = ifapi_json_UINT32_serialize(in->pcrIndex, &jso2);
+    r = ifapi_call_base(ifapi_json_UINT32_serialize(in->pcrIndex, &jso2));
     return_if_error(r, "Serialize UINT32");
 
     if (json_object_object_add(*jso, "pcr", jso2)) {
@@ -639,7 +646,8 @@ ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_object *
     if (json_object_object_add(*jso, "recnum", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
-    jso2 = json_object_new_string(eventtype_to_string(in->eventType));
+    jso2 = json_object_new_string(
+        eventtype_to_string(in->eventType, &event_type_buf[0], sizeof(event_type_buf)));
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     jso_sub = json_object_new_object();
@@ -656,7 +664,7 @@ ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_object *
     return_if_null(*jso, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     jso2 = NULL;
-    r = ifapi_json_TPM2_ALG_ID_serialize(TPM2_ALG_SHA1, &jso2);
+    r = ifapi_call_base(ifapi_json_TPM2_ALG_ID_serialize(TPM2_ALG_SHA1, &jso2));
     return_if_error(r, "Serialize hash algorithm");
 
     if (json_object_object_add(jso_digest, "hashAlg", jso2)) {
@@ -746,14 +754,14 @@ ifapi_json_TCG_SPECID_ALG_serialize(const TCG_SPECID_ALG *in, json_object **jso)
     }
 
     jso2 = NULL;
-    r = ifapi_json_TPM2_ALG_ID_serialize(in->algorithmId, &jso2);
+    r = ifapi_call_base(ifapi_json_TPM2_ALG_ID_serialize(in->algorithmId, &jso2));
     return_if_error(r, "Serialize UINT16");
 
     if (json_object_object_add(*jso, "algorithmId", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
     jso2 = NULL;
-    r = ifapi_json_UINT16_serialize(in->digestSize, &jso2);
+    r = ifapi_call_base(ifapi_json_UINT16_serialize(in->digestSize, &jso2));
     return_if_error(r, "Serialize UINT16");
 
     if (json_object_object_add(*jso, "digestSize", jso2)) {

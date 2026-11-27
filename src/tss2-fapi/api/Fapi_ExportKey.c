@@ -8,26 +8,27 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>   // for json_object_put, json_object_to_js...
+#include <json.h>   // for json_object_put, json_object_to_json_string_ext
 #include <stdlib.h> // for NULL
 #include <string.h> // for memset, strdup
 
-#include "fapi_crypto.h"          // for ifapi_pub_pem_key_from_tpm
-#include "fapi_int.h"             // for IFAPI_ExportKey, FAPI_CONTEXT, EXP...
-#include "fapi_util.h"            // for ifapi_flush_object, ifapi_authoriz...
+#include "fapi_crypto.h"
+#include "fapi_int.h"             // for IFAPI_ExportKey, FAPI_CONTEXT, EXPORT_KEY_CLEANUP
+#include "fapi_util.h"            // for ifapi_flush_object, ifapi_authorize_object
 #include "ifapi_io.h"             // for ifapi_io_poll
 #include "ifapi_json_serialize.h" // for ifapi_json_IFAPI_OBJECT_serialize
-#include "ifapi_keystore.h"       // for ifapi_cleanup_ifapi_object, IFAPI_...
-#include "ifapi_macros.h"         // for statecase, check_not_null, fallthr...
-#include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BAS...
-#include "tss2_esys.h"            // for ESYS_TR_NONE, Esys_SetTimeout, Esy...
-#include "tss2_fapi.h"            // for FAPI_CONTEXT, Fapi_ExportKey, Fapi...
-#include "tss2_policy.h"          // for TSS2_OBJECT
-#include "tss2_tcti.h"            // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"      // for TPM2B_DATA, TPMT_SYM_DEF_OBJECT
+#include "ifapi_keystore.h"       // for ifapi_cleanup_ifapi_object, IFAPI_DUPLICATE
+#include "ifapi_macros.h"         // for check_not_null
+#include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS, TSS2_BASE_RC_TRY_AGAIN
+#include "tss2_crypto.h"
+#include "tss2_esys.h" // for ESYS_TR_NONE, Esys_SetTimeout, Esys_Duplicate_Async
+#include "tss2_fapi.h" // for FAPI_CONTEXT, Fapi_ExportKey
+#include "tss2_policy.h"
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_DATA, TPMT_SYM_DEF_OBJECT
 
 #define LOGMODULE fapi
-#include "util/log.h" // for SAFE_FREE, LOG_TRACE, goto_if_error
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_ExportKey
  *
@@ -192,8 +193,9 @@ Fapi_ExportKey_Async(FAPI_CONTEXT *context,
     /* Copy parameters to context for use during _Finish. */
     command->pathOfKeyToDuplicate = NULL;
     command->pathToPublicKeyOfNewParent = NULL;
-    strdup_check(command->pathOfKeyToDuplicate, pathOfKeyToDuplicate, r, error_cleanup);
-    strdup_check(command->pathToPublicKeyOfNewParent, pathToPublicKeyOfNewParent, r, error_cleanup);
+    ifapi_strdup_check(command->pathOfKeyToDuplicate, pathOfKeyToDuplicate, r, error_cleanup);
+    ifapi_strdup_check(command->pathToPublicKeyOfNewParent, pathToPublicKeyOfNewParent, r,
+                       error_cleanup);
     command->exportedData = NULL;
 
     if (!pathToPublicKeyOfNewParent) {
@@ -286,20 +288,21 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
            because no new parent key for encrypting the private portion was
            provided by the caller. */
         r = ifapi_keystore_load_finish(&context->keystore, &context->io, &commandObject);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         if (commandObject.objectType != IFAPI_KEY_OBJ) {
             *pubKey = commandObject;
-            strdup_check(pubKey->misc.ext_pub_key.pem_ext_public,
-                         commandObject.misc.ext_pub_key.pem_ext_public, r, cleanup);
+            ifapi_strdup_check(pubKey->misc.ext_pub_key.pem_ext_public,
+                               commandObject.misc.ext_pub_key.pem_ext_public, r, cleanup);
         } else if (commandObject.objectType == IFAPI_KEY_OBJ) {
             pubKey->objectType = IFAPI_EXT_PUB_KEY_OBJ;
             pubKey->misc.ext_pub_key.public = commandObject.misc.key.public;
 
             /* Convert the TPM key format to PEM. */
-            r = ifapi_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
-                                           &pubKey->misc.ext_pub_key.pem_ext_public, &sizePem);
+            r = ifapi_call_base(tss2_pub_pem_key_from_tpm(&pubKey->misc.ext_pub_key.public,
+                                                          &pubKey->misc.ext_pub_key.pem_ext_public,
+                                                          &sizePem));
             goto_if_error(r, "Convert public TPM key to pem.", cleanup);
         } else {
             /* No key object was loaded */
@@ -326,7 +329,7 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
         if (r != TSS2_RC_SUCCESS) {
             ifapi_cleanup_ifapi_object(&parentKeyObject);
         }
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "read_finish failed");
 
         if (parentKeyObject.objectType != IFAPI_EXT_PUB_KEY_OBJ) {
@@ -344,7 +347,7 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
     statecase(context->state, EXPORT_KEY_WAIT_FOR_KEY);
         /* Load the key to be duplicated. */
         r = ifapi_load_key(context, command->pathOfKeyToDuplicate, &command->key_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi load key.", cleanup);
 
         context->duplicate_key = command->key_object;
@@ -358,14 +361,14 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
 
     statecase(context->state, EXPORT_KEY_WAIT_FOR_EXT_KEY);
         r = Esys_LoadExternal_Finish(context->esys, &command->handle_ext_key);
-        try_again_or_error_goto(r, "Load external key.", cleanup);
+        ifapi_try_again_or_error_goto(r, "Load external key.", cleanup);
 
         fallthrough;
 
     statecase(context->state, EXPORT_KEY_WAIT_FOR_AUTHORIZATON);
         /* Authorize against the key to be exported. */
         r = ifapi_authorize_object(context, command->key_object, &auth_session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Authorize key.", cleanup);
 
         TPM2B_DATA          encryptionKey;
@@ -387,7 +390,7 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
     statecase(context->state, EXPORT_KEY_WAIT_FOR_DUPLICATE);
         exportTree->objectType = IFAPI_DUPLICATE_OBJ;
         r = Esys_Duplicate_Finish(context->esys, NULL, &duplicate, &encryptedSeed);
-        try_again_or_error_goto(r, "Duplicate", cleanup);
+        ifapi_try_again_or_error_goto(r, "Duplicate", cleanup);
 
         /* Store and JSON encode the data to be returned. */
         /* Note: keyTree = &exportTree->misc.key_tree */
@@ -398,10 +401,10 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
         keyTree->public = command->key_object->misc.key.public;
         keyTree->public_parent = command->public_parent;
 
-        /* For the policy added no cleanup is needed. The cleanup will
-           be done with the object cleanup. */
+        /* Borrow the object's policy JSON only while serializing the export. */
         keyTree->policy = command->key_object->policy;
         r = ifapi_get_json(context, exportTree, &command->exportedData);
+        keyTree->policy = NULL;
         goto_if_error2(r, "get JSON for exported data.", cleanup);
 
         fallthrough;
@@ -409,7 +412,7 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
     statecase(context->state, EXPORT_KEY_WAIT_FOR_FLUSH1);
         /* Flush the key to be exported from the TPM. */
         r = ifapi_flush_object(context, command->key_object->public.handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Flush key", cleanup);
 
         command->key_object->public.handle = ESYS_TR_NONE;
@@ -419,7 +422,7 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
     statecase(context->state, EXPORT_KEY_WAIT_FOR_FLUSH2);
         /* Flush the new parent key from the TPM. */
         r = ifapi_flush_object(context, command->handle_ext_key);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Flush key", cleanup);
 
         command->handle_ext_key = ESYS_TR_NONE;
@@ -429,12 +432,12 @@ Fapi_ExportKey_Finish(FAPI_CONTEXT *context, char **exportedData) {
     statecase(context->state, EXPORT_KEY_CLEANUP)
     /* Cleanup the sessions used for authorization. */
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", cleanup);
 
         *exportedData = command->exportedData;
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
 cleanup:

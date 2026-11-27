@@ -9,28 +9,29 @@
 #endif
 
 #include <errno.h>    // for errno
-#include <inttypes.h> // for int64_t, uint8_t, PRId64
-#include <stdio.h>    // for NULL, size_t, sscanf
-#include <stdlib.h>   // for calloc, malloc
+#include <inttypes.h> // for int64_t, uint8_t
+#include <stdio.h>    // for NULL, size_t
+#include <stdlib.h>   // for malloc
 #include <string.h>   // for memset, strlen, strdup
 #include <strings.h>  // for strncasecmp, strcasecmp
 
-#include "fapi_crypto.h"           // for ifapi_crypto_hash_abort
-#include "fapi_int.h"              // for HASH_UPDATE_BUFFER
-#include "fapi_types.h"            // for UINT8_ARY
-#include "ifapi_eventlog_system.h" // for IFAPI_FIRMWARE_EVENT, ifa...
-#include "ifapi_helpers.h"         // for ifapi_check_json_object_f...
-#include "ifapi_ima_eventlog.h"    // for IFAPI_IMA_EVENT, ifapi_ge...
+#include "fapi_int.h"
+#include "ifapi_eventlog_system.h" // for ifapi_json_IFAPI_FIRMWARE_EVENT_deserialize
+#include "ifapi_helpers.h"         // for ifapi_set_name_hierarchy_object
+#include "ifapi_ima_eventlog.h"    // for ifapi_get_ima_eventname
 #include "ifapi_json_deserialize.h"
-#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
-#include "ifapi_policy_types.h"            // for TPMS_POLICY
-#include "tpm_json_deserialize.h"          // for ifapi_get_sub_object, ifa...
-#include "tss2_esys.h"                     // for ESYS_TR_RH_OWNER
-#include "tss2_mu.h"                       // for Tss2_MU_TPM2B_PRIVATE_Unm...
-#include "tss2_tpm2_types.h"               // for TPMT_HA, TPM2_NO, TPML_DI...
+#include "ifapi_macros.h"
+#include "json_helpers.h"
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object
+#include "tss2_crypto.h"          // for tss2_crypto_hash_abort
+#include "tss2_esys.h"            // for ESYS_TR_RH_OWNER
+#include "tss2_helpers.h"
+#include "tss2_mu.h"         // for Tss2_MU_TPM2B_PRIVATE_Unmarshal
+#include "tss2_tpm2_types.h" // for TPM2_NO
+#include "tss2_types.h"      // for UINT8_ARY
 
 #define LOGMODULE fapijson
-#include "util/log.h" // for return_if_error, LOG_ERROR
+#include "util/log.h" // for LOG_ERROR
 
 static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "POLICY", NULL };
 
@@ -40,7 +41,7 @@ static char *tss_const_prefixes[] = { "TPM2_ALG_", "TPM2_", "TPM_", "TPMA_", "PO
     TSS2_RC r;                                                                                     \
     type    tab[] = { __VA_ARGS__ };                                                               \
     type    v;                                                                                     \
-    r = ifapi_json_##parenttype##_deserialize(jso, &v);                                            \
+    r = ifapi_call_base(ifapi_json_##parenttype##_deserialize(jso, &v));                           \
     return_if_error(r, "Bad value");                                                               \
     for (size_t i = 0; i < sizeof(tab) / sizeof(tab[0]); i++) {                                    \
         if (v == tab[i]) {                                                                         \
@@ -110,20 +111,6 @@ get_number(const char *token, int64_t *num) {
     return true;
 }
 
-/** Deserialize a character string.
- *
- * @param[in] jso json string object.
- * @param[out] out the pointer to the created string.
- * @retval TSS2_RC_SUCCESS if the function call was a success.
- * @retval TSS2_FAPI_RC_MEMORY if not enough memory can be allocated.
- */
-TSS2_RC
-ifapi_json_char_deserialize(json_object *jso, char **out) {
-    *out = strdup(json_object_get_string(jso));
-    return_if_null(*out, "Out of memory.", TSS2_FAPI_RC_MEMORY);
-    return TSS2_RC_SUCCESS;
-}
-
 /** Deserialize a IFAPI_KEY json object.
  *
  * @param[in]  jso the json object to be deserialized.
@@ -144,11 +131,11 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
         LOG_ERROR("Field \"persistent_handle\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_UINT32_deserialize(jso2, &out->persistent_handle);
+    r = ifapi_call_base(ifapi_json_UINT32_deserialize(jso2, &out->persistent_handle));
     return_if_error(r, "Bad value for field \"persistent_handle\".");
 
     if (ifapi_get_sub_object(jso, "with_auth", &jso2)) {
-        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->with_auth);
+        r = ifapi_call_base(ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->with_auth));
         return_if_error(r, "Bad value for field \"with_auth\".");
 
     } else {
@@ -159,27 +146,27 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
         LOG_ERROR("Field \"public\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPM2B_PUBLIC_deserialize(jso2, &out->public);
+    r = ifapi_call_base(ifapi_json_TPM2B_PUBLIC_deserialize(jso2, &out->public));
     return_if_error(r, "Bad value for field \"public\".");
 
     if (!ifapi_get_sub_object(jso, "serialization", &jso2)) {
         LOG_ERROR("Field \"serialization\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_UINT8_ARY_deserialize(jso2, &out->serialization);
+    r = ifapi_call_base(ifapi_json_UINT8_ARY_deserialize(jso2, &out->serialization));
     return_if_error(r, "Bad value for field \"serialization\".");
 
     if (!ifapi_get_sub_object(jso, "private", &jso2)) {
         memset(&out->private, 0, sizeof(UINT8_ARY));
     } else {
-        r = ifapi_json_UINT8_ARY_deserialize(jso2, &out->private);
+        r = ifapi_call_base(ifapi_json_UINT8_ARY_deserialize(jso2, &out->private));
         return_if_error(r, "Bad value for field \"private\".");
     }
 
     if (!ifapi_get_sub_object(jso, "appData", &jso2)) {
         memset(&out->appData, 0, sizeof(UINT8_ARY));
     } else {
-        r = ifapi_json_UINT8_ARY_deserialize(jso2, &out->appData);
+        r = ifapi_call_base(ifapi_json_UINT8_ARY_deserialize(jso2, &out->appData));
         return_if_error(r, "Bad value for field \"appData\".");
     }
 
@@ -187,11 +174,11 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
         LOG_ERROR("Field \"policyInstance\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_char_deserialize(jso2, &out->policyInstance);
+    r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->policyInstance));
     return_if_error(r, "Bad value for field \"policyInstance\".");
 
     if (ifapi_get_sub_object(jso, "creationData", &jso2)) {
-        r = ifapi_json_TPM2B_CREATION_DATA_deserialize(jso2, &out->creationData);
+        r = ifapi_call_base(ifapi_json_TPM2B_CREATION_DATA_deserialize(jso2, &out->creationData));
         return_if_error(r, "Bad value for field \"creationData\".");
 
     } else {
@@ -199,7 +186,7 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
     }
 
     if (ifapi_get_sub_object(jso, "creationHash", &jso2)) {
-        r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->creationHash);
+        r = ifapi_call_base(ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->creationHash));
         return_if_error(r, "Bad value for field \"creationHash\".");
 
     } else {
@@ -207,7 +194,7 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
     }
 
     if (ifapi_get_sub_object(jso, "creationTicket", &jso2)) {
-        r = ifapi_json_TPMT_TK_CREATION_deserialize(jso2, &out->creationTicket);
+        r = ifapi_call_base(ifapi_json_TPMT_TK_CREATION_deserialize(jso2, &out->creationTicket));
         return_if_error(r, "Bad value for field \"creationTicket\".");
 
     } else {
@@ -217,14 +204,14 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
         LOG_ERROR("Field \"description\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_char_deserialize(jso2, &out->description);
+    r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->description));
     return_if_error(r, "Bad value for field \"description\".");
 
     if (!ifapi_get_sub_object(jso, "certificate", &jso2)) {
         LOG_ERROR("Field \"certificate\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_char_deserialize(jso2, &out->certificate);
+    r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->certificate));
     return_if_error(r, "Bad value for field \"certificate\".");
 
     if (out->public.publicArea.type != TPM2_ALG_KEYEDHASH) {
@@ -233,7 +220,7 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
             LOG_ERROR("Field \"signing_scheme\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
-        r = ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->signing_scheme);
+        r = ifapi_call_base(ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->signing_scheme));
         return_if_error(r, "Bad value for field \"signing_scheme\".");
     }
 
@@ -241,18 +228,18 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
         LOG_ERROR("Field \"name\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPM2B_NAME_deserialize(jso2, &out->name);
+    r = ifapi_call_base(ifapi_json_TPM2B_NAME_deserialize(jso2, &out->name));
     return_if_error(r, "Bad value for field \"name\".");
 
     if (ifapi_get_sub_object(jso, "reset_count", &jso2)) {
-        r = ifapi_json_UINT32_deserialize(jso2, &out->reset_count);
+        r = ifapi_call_base(ifapi_json_UINT32_deserialize(jso2, &out->reset_count));
         return_if_error(r, "Bad value for field \"reset_count\".");
     } else {
         out->reset_count = 0;
     }
 
     if (ifapi_get_sub_object(jso, "delete_prohibited", &jso2)) {
-        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->delete_prohibited);
+        r = ifapi_call_base(ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->delete_prohibited));
         return_if_error(r, "Bad value for field \"delete_prohibited\".");
 
     } else {
@@ -260,7 +247,7 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
     }
 
     if (ifapi_get_sub_object(jso, "ek_profile", &jso2)) {
-        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ek_profile);
+        r = ifapi_call_base(ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->ek_profile));
         return_if_error(r, "Bad value for field \"ek_profile\".");
 
     } else {
@@ -268,7 +255,7 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
     }
 
     if (ifapi_get_sub_object(jso, "nonce", &jso2)) {
-        r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->nonce);
+        r = ifapi_call_base(ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->nonce));
         return_if_error(r, "Bad value for field \"nonce\".");
 
     } else {
@@ -276,7 +263,7 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
     }
 
     if (ifapi_get_sub_object(jso, "unique_init_set", &jso2)) {
-        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->unique_init_set);
+        r = ifapi_call_base(ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->unique_init_set));
         return_if_error(r, "Bad value for field \"delete_prohibited\".");
 
     } else {
@@ -286,8 +273,8 @@ ifapi_json_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
     if (!ifapi_get_sub_object(jso, "unique_init", &jso2)) {
         memset(&out->unique_init, 0, sizeof(TPMU_PUBLIC_ID));
     } else {
-        r = ifapi_json_TPMU_PUBLIC_ID_deserialize(out->public.publicArea.type, jso2,
-                                                  &out->unique_init);
+        r = ifapi_call_base(ifapi_json_TPMU_PUBLIC_ID_deserialize(out->public.publicArea.type, jso2,
+                                                                  &out->unique_init));
         return_if_error(r, "Bad value for field \"unique_init\".");
     }
 
@@ -324,7 +311,7 @@ ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
     ifapi_check_json_object_fields(jso, &field_import_IFAPI_KEY_tab[0],
                                    SIZE_OF_ARY(field_import_IFAPI_KEY_tab));
     if (ifapi_get_sub_object(jso, "noauth", &jso2)) {
-        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &noauth);
+        r = ifapi_call_base(ifapi_json_TPMI_YES_NO_deserialize(jso2, &noauth));
         return_if_error(r, "BAD VALUE");
 
         if (noauth == TPM2_YES)
@@ -340,7 +327,7 @@ ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
         LOG_ERROR("Field \"public\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_UINT8_ARY_deserialize(jso2, &public_blob);
+    r = ifapi_call_base(ifapi_json_UINT8_ARY_deserialize(jso2, &public_blob));
     return_if_error(r, "BAD VALUE");
 
     /* Get structure with public data from binary blob. */
@@ -352,7 +339,7 @@ ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
         memset(&out->private, 0, sizeof(UINT8_ARY));
     } else {
         /* Deserialize complete binary blob. */
-        r = ifapi_json_UINT8_ARY_deserialize(jso2, &private_blob);
+        r = ifapi_call_base(ifapi_json_UINT8_ARY_deserialize(jso2, &private_blob));
         goto_if_error(r, "BAD VALUE", error_cleanup);
         offset = 0;
 
@@ -371,9 +358,9 @@ ifapi_json_import_IFAPI_KEY_deserialize(json_object *jso, IFAPI_KEY *out) {
         memcpy(out->private.buffer, &private.buffer[0], private.size);
     }
 
-    strdup_check(out->policyInstance, "", r, error_cleanup);
-    strdup_check(out->description, "", r, error_cleanup);
-    strdup_check(out->certificate, "", r, error_cleanup);
+    ifapi_strdup_check(out->policyInstance, "", r, error_cleanup);
+    ifapi_strdup_check(out->description, "", r, error_cleanup);
+    ifapi_strdup_check(out->certificate, "", r, error_cleanup);
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
@@ -404,18 +391,18 @@ ifapi_json_IFAPI_EXT_PUB_KEY_deserialize(json_object *jso, IFAPI_EXT_PUB_KEY *ou
         LOG_ERROR("Field \"pem_ext_public\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_char_deserialize(jso2, &out->pem_ext_public);
+    r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->pem_ext_public));
     return_if_error(r, "Bad value for field \"pem_ext_public\".");
 
     if (ifapi_get_sub_object(jso, "certificate", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->certificate);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->certificate));
         return_if_error(r, "Bad value for field \"certificate\".");
     } else {
         out->certificate = NULL;
     }
 
     if (ifapi_get_sub_object(jso, "public", &jso2)) {
-        r = ifapi_json_TPM2B_PUBLIC_deserialize(jso2, &out->public);
+        r = ifapi_call_base(ifapi_json_TPM2B_PUBLIC_deserialize(jso2, &out->public));
         return_if_error(r, "Bad value for field \"public\".");
 
     } else {
@@ -444,12 +431,12 @@ ifapi_json_IFAPI_NV_deserialize(json_object *jso, IFAPI_NV *out) {
     if (!ifapi_get_sub_object(jso, "appData", &jso2)) {
         memset(&out->appData, 0, sizeof(UINT8_ARY));
     } else {
-        r = ifapi_json_UINT8_ARY_deserialize(jso2, &out->appData);
+        r = ifapi_call_base(ifapi_json_UINT8_ARY_deserialize(jso2, &out->appData));
         return_if_error(r, "Bad value for field \"appData\".");
     }
 
     if (ifapi_get_sub_object(jso, "with_auth", &jso2)) {
-        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->with_auth);
+        r = ifapi_call_base(ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->with_auth));
         return_if_error(r, "Bad value for field \"with_auth\".");
 
     } else {
@@ -460,40 +447,40 @@ ifapi_json_IFAPI_NV_deserialize(json_object *jso, IFAPI_NV *out) {
         LOG_ERROR("Field \"public\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPM2B_NV_PUBLIC_deserialize(jso2, &out->public);
+    r = ifapi_call_base(ifapi_json_TPM2B_NV_PUBLIC_deserialize(jso2, &out->public));
     return_if_error(r, "Bad value for field \"public\".");
 
     if (!ifapi_get_sub_object(jso, "serialization", &jso2)) {
         LOG_ERROR("Field \"serialization\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_UINT8_ARY_deserialize(jso2, &out->serialization);
+    r = ifapi_call_base(ifapi_json_UINT8_ARY_deserialize(jso2, &out->serialization));
     return_if_error(r, "Bad value for field \"serialization\".");
 
     if (!ifapi_get_sub_object(jso, "hierarchy", &jso2)) {
         LOG_ERROR("Field \"hierarchy\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_UINT32_deserialize(jso2, &out->hierarchy);
+    r = ifapi_call_base(ifapi_json_UINT32_deserialize(jso2, &out->hierarchy));
     return_if_error(r, "Bad value for field \"hierarchy\".");
 
     if (!ifapi_get_sub_object(jso, "policyInstance", &jso2)) {
         LOG_ERROR("Field \"policyInstance\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_char_deserialize(jso2, &out->policyInstance);
+    r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->policyInstance));
     return_if_error(r, "Bad value for field \"policyInstance\".");
 
     if (!ifapi_get_sub_object(jso, "description", &jso2)) {
         LOG_ERROR("Field \"description\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_char_deserialize(jso2, &out->description);
+    r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->description));
     return_if_error(r, "Bad value for field \"description\".");
 
     return_if_error(r, "BAD VALUE");
     if (ifapi_get_sub_object(jso, "event_log", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->event_log);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->event_log));
         return_if_error(r, "Bad value for field \"event_log\".");
 
     } else {
@@ -520,7 +507,7 @@ ifapi_json_IFAPI_HIERARCHY_deserialize(json_object *jso, IFAPI_HIERARCHY *out) {
     return_if_null(out, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
     if (ifapi_get_sub_object(jso, "with_auth", &jso2)) {
-        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->with_auth);
+        r = ifapi_call_base(ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->with_auth));
         return_if_error(r, "Bad value for field \"with_auth\".");
 
     } else {
@@ -531,18 +518,18 @@ ifapi_json_IFAPI_HIERARCHY_deserialize(json_object *jso, IFAPI_HIERARCHY *out) {
         LOG_ERROR("Field \"authPolicy\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->authPolicy);
+    r = ifapi_call_base(ifapi_json_TPM2B_DIGEST_deserialize(jso2, &out->authPolicy));
     return_if_error(r, "Bad value for field \"authPolicy\".");
 
     if (!ifapi_get_sub_object(jso, "description", &jso2)) {
         LOG_ERROR("Field \"description\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_char_deserialize(jso2, &out->description);
+    r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->description));
     return_if_error(r, "Bad value for field \"description\".");
 
     if (ifapi_get_sub_object(jso, "esysHandle", &jso2)) {
-        r = ifapi_json_UINT32_deserialize(jso2, &out->esysHandle);
+        r = ifapi_call_base(ifapi_json_UINT32_deserialize(jso2, &out->esysHandle));
         return_if_error(r, "Bad value for field \"esysHandle\".");
     } else {
         out->esysHandle = ESYS_TR_RH_OWNER;
@@ -575,14 +562,14 @@ ifapi_json_FAPI_QUOTE_INFO_deserialize(json_object *jso, FAPI_QUOTE_INFO *out) {
         LOG_ERROR("Field \"sig_scheme\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->sig_scheme);
+    r = ifapi_call_base(ifapi_json_TPMT_SIG_SCHEME_deserialize(jso2, &out->sig_scheme));
     return_if_error(r, "Bad value for field \"sig_scheme\".");
 
     if (!ifapi_get_sub_object(jso, "attest", &jso2)) {
         LOG_ERROR("Field \"attest\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPMS_ATTEST_deserialize(jso2, &out->attest);
+    r = ifapi_call_base(ifapi_json_TPMS_ATTEST_deserialize(jso2, &out->attest));
     return_if_error(r, "Bad value for field \"attest\".");
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
@@ -609,18 +596,18 @@ ifapi_json_IFAPI_DUPLICATE_deserialize(json_object *jso, IFAPI_DUPLICATE *out) {
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 
-    r = ifapi_json_TPM2B_PRIVATE_deserialize(jso2, &out->duplicate);
+    r = ifapi_call_base(ifapi_json_TPM2B_PRIVATE_deserialize(jso2, &out->duplicate));
     return_if_error(r, "Bad value for field \"duplicate\".");
 
     if (!ifapi_get_sub_object(jso, "encrypted_seed", &jso2)) {
         LOG_ERROR("Field \"encrypted_seed\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPM2B_ENCRYPTED_SECRET_deserialize(jso2, &out->encrypted_seed);
+    r = ifapi_call_base(ifapi_json_TPM2B_ENCRYPTED_SECRET_deserialize(jso2, &out->encrypted_seed));
     return_if_error(r, "Bad value for field \"encrypted_seed\".");
 
     if (ifapi_get_sub_object(jso, "certificate", &jso2)) {
-        r = ifapi_json_char_deserialize(jso2, &out->certificate);
+        r = ifapi_call_base(ifapi_json_char_deserialize(jso2, &out->certificate));
         return_if_error(r, "Bad value for field \"certificate\".");
 
     } else {
@@ -632,21 +619,18 @@ ifapi_json_IFAPI_DUPLICATE_deserialize(json_object *jso, IFAPI_DUPLICATE *out) {
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 
-    r = ifapi_json_TPM2B_PUBLIC_deserialize(jso2, &out->public);
+    r = ifapi_call_base(ifapi_json_TPM2B_PUBLIC_deserialize(jso2, &out->public));
     return_if_error(r, "Bad value for field \"public\".");
     if (!ifapi_get_sub_object(jso, "public_parent", &jso2)) {
         LOG_ERROR("Field \"public_parent\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
 
-    r = ifapi_json_TPM2B_PUBLIC_deserialize(jso2, &out->public_parent);
+    r = ifapi_call_base(ifapi_json_TPM2B_PUBLIC_deserialize(jso2, &out->public_parent));
     return_if_error(r, "Bad value for field \"public_parent\".");
 
     if (ifapi_get_sub_object(jso, "policy", &jso2)) {
-        out->policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, error_cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->policy);
+        r = ifapi_json_policy_deserialize(jso2, &out->policy);
         goto_if_error(r, "Deserialize policy.", error_cleanup);
     } else {
         out->policy = NULL;
@@ -748,7 +732,7 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out) {
     }
 
     if (ifapi_get_sub_object(jso, "system", &jso2)) {
-        r = ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->system);
+        r = ifapi_call_base(ifapi_json_TPMI_YES_NO_deserialize(jso2, &out->system));
         return_if_error(r, "Bad value for field \"system\".");
 
     } else {
@@ -756,10 +740,7 @@ ifapi_json_IFAPI_OBJECT_deserialize(json_object *jso, IFAPI_OBJECT *out) {
     }
 
     if (ifapi_get_sub_object(jso, "policy", &jso2)) {
-        out->policy = calloc(1, sizeof(TPMS_POLICY));
-        goto_if_null2(out->policy, "Out of memory.", r, TSS2_FAPI_RC_MEMORY, cleanup);
-
-        r = ifapi_json_TPMS_POLICY_deserialize(jso2, out->policy);
+        r = ifapi_json_policy_deserialize(jso2, &out->policy);
         goto_if_error(r, "Deserialize policy.", cleanup);
     } else {
         out->policy = NULL;
@@ -857,7 +838,7 @@ ifapi_json_IFAPI_TSS_EVENT_deserialize(json_object *jso, IFAPI_TSS_EVENT *out) {
         LOG_ERROR("Field \"data\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPM2B_EVENT_deserialize(jso2, &out->data);
+    r = ifapi_call_base(ifapi_json_TPM2B_EVENT_deserialize(jso2, &out->data));
     return_if_error(r, "Bad value for field \"data\".");
 
     if (!ifapi_get_sub_object(jso, "event", &jso2)) {
@@ -930,16 +911,16 @@ get_event_hash(IFAPI_CRYPTO_CONTEXT_BLOB *cryptoContext, IFAPI_EVENT *event) {
     LOG_TRACE("call");
     switch (event->content_type) {
     case IFAPI_TSS_EVENT_TAG:
-        HASH_UPDATE_BUFFER(cryptoContext, &event->content.tss_event.data.buffer[0],
-                           event->content.tss_event.data.size, r, error_cleanup);
+        ifapi_hash_update_buffer(cryptoContext, &event->content.tss_event.data.buffer[0],
+                                 event->content.tss_event.data.size, r, error_cleanup);
         return TSS2_RC_SUCCESS;
     case IFAPI_IMA_EVENT_TAG:
-        HASH_UPDATE_BUFFER(cryptoContext, &event->content.ima_event.template_value.buffer[0],
-                           event->content.ima_event.template_value.size, r, error_cleanup);
+        ifapi_hash_update_buffer(cryptoContext, &event->content.ima_event.template_value.buffer[0],
+                                 event->content.ima_event.template_value.size, r, error_cleanup);
         return TSS2_RC_SUCCESS;
     case IFAPI_PC_CLIENT:
-        HASH_UPDATE_BUFFER(cryptoContext, &event->content.firmware_event.data.buffer[0],
-                           event->content.firmware_event.data.size, r, error_cleanup);
+        ifapi_hash_update_buffer(cryptoContext, &event->content.firmware_event.data.buffer[0],
+                                 event->content.firmware_event.data.size, r, error_cleanup);
         return TSS2_RC_SUCCESS;
     default:
         LOG_TRACE("false");
@@ -996,17 +977,18 @@ check_event_digest(IFAPI_EVENT *event, enum IFAPI_EVENT_ERROR_HANDLING error_han
     }
 
     for (i = 0; i < event->digests.count; i++) {
-        if (!(hash_size = ifapi_hash_get_digest_size(event->digests.digests[i].hashAlg))) {
+        if (!(hash_size = tss2_hash_get_digest_size(event->digests.digests[i].hashAlg))) {
             goto_error(r, TSS2_FAPI_RC_BAD_VALUE, "Unsupported hash algorithm (%" PRIu16 ")",
                        error_cleanup, event->digests.digests[i].hashAlg);
         }
-        r = ifapi_crypto_hash_start(&cryptoContext, event->digests.digests[i].hashAlg);
+        r = ifapi_call_base(
+            tss2_crypto_hash_start(&cryptoContext, event->digests.digests[i].hashAlg));
         return_if_error(r, "crypto hash start");
 
         r = get_event_hash(cryptoContext, event);
         goto_if_error(r, "Get digest event hash.", error_cleanup);
 
-        r = ifapi_crypto_hash_finish(&cryptoContext, &data_hash[0], &hash_size);
+        r = ifapi_call_base(tss2_crypto_hash_finish(&cryptoContext, &data_hash[0], &hash_size));
         return_if_error(r, "crypto hash finish");
 
         if (memcmp(&event->digests.digests[i].digest.sha512[0], &data_hash[0], hash_size) != 0) {
@@ -1020,7 +1002,7 @@ check_event_digest(IFAPI_EVENT *event, enum IFAPI_EVENT_ERROR_HANDLING error_han
     return TSS2_RC_SUCCESS;
 
 error_cleanup:
-    ifapi_crypto_hash_abort(&cryptoContext);
+    tss2_crypto_hash_abort(&cryptoContext);
     return r;
 }
 
@@ -1055,7 +1037,7 @@ ifapi_json_IFAPI_EVENT_deserialize(json_object                    *jso,
     ifapi_check_json_object_fields(jso, &field_IFAPI_EVENT_tab[0],
                                    SIZE_OF_ARY(field_IFAPI_EVENT_tab));
     if (ifapi_get_sub_object(jso, "recnum", &jso2)) {
-        r = ifapi_json_UINT32_deserialize(jso2, &out->recnum);
+        r = ifapi_call_base(ifapi_json_UINT32_deserialize(jso2, &out->recnum));
         return_if_error(r, "BAD VALUE");
     } else {
         out->recnum = 0;
@@ -1066,14 +1048,14 @@ ifapi_json_IFAPI_EVENT_deserialize(json_object                    *jso,
         LOG_ERROR("Field \"pcr\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPM2_HANDLE_deserialize(jso2, &out->pcr);
+    r = ifapi_call_base(ifapi_json_TPM2_HANDLE_deserialize(jso2, &out->pcr));
     return_if_error(r, "Bad value for field \"pcr\".");
 
     if (!ifapi_get_sub_object(jso, "digests", &jso2)) {
         LOG_ERROR("Field \"digests\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_TPML_DIGEST_VALUES_deserialize(jso2, &out->digests);
+    r = ifapi_call_base(ifapi_json_TPML_DIGEST_VALUES_deserialize(jso2, &out->digests));
     return_if_error(r, "Bad value for field \"digests\".");
 
     if (!ifapi_get_sub_object(jso, CONTENT_TYPE, &jso2)) {
@@ -1127,14 +1109,14 @@ ifapi_json_TPMS_CEL_VERSION_deserialize(json_object *jso, TPMS_CEL_VERSION *out)
         LOG_ERROR("Field \"major\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    r = ifapi_json_UINT16_deserialize(jso2, &out->major);
+    r = ifapi_call_base(ifapi_json_UINT16_deserialize(jso2, &out->major));
     return_if_error(r, "Bad value for field \"major\".");
 
     if (!ifapi_get_sub_object(jso, "minor", &jso2)) {
         LOG_ERROR("Field \"minor\" not found.");
         return TSS2_FAPI_RC_BAD_VALUE;
     }
-    return ifapi_json_UINT16_deserialize(jso2, &out->minor);
+    return ifapi_call_base(ifapi_json_UINT16_deserialize(jso2, &out->minor));
 }
 
 /** Deserialize a TPMU_CELMGT json object.
@@ -1155,13 +1137,13 @@ ifapi_json_TPMU_CELMGT_deserialize(UINT32 selector, json_object *jso, TPMU_CELMG
     case CEL_VERSION:
         return ifapi_json_TPMS_CEL_VERSION_deserialize(jso, &out->cel_version);
     case FIRMWARE_END:
-        return ifapi_json_TPMS_EMPTY_deserialize(jso, &out->firmware_end);
+        return ifapi_call_base(ifapi_json_TPMS_EMPTY_deserialize(jso, &out->firmware_end));
     case CEL_TIMESTAMP:
         if (!ifapi_get_sub_object(jso, "cel_timestamp", &jso2)) {
             LOG_ERROR("Field \"cel_timestamp\" not found.");
             return TSS2_FAPI_RC_BAD_VALUE;
         }
-        return ifapi_json_UINT64_deserialize(jso2, &out->cel_timestamp);
+        return ifapi_call_base(ifapi_json_UINT64_deserialize(jso2, &out->cel_timestamp));
 
     default:
         LOG_TRACE("false");
@@ -1235,4 +1217,21 @@ ifapi_json_TPMS_EVENT_CELMGT_deserialize(json_object *jso, TPMS_EVENT_CELMGT *ou
 
     LOG_TRACE("true");
     return TSS2_RC_SUCCESS;
+}
+
+/* Keep policy JSON opaque to the FAPI. Semantic validation happens in the Policy lib. */
+TSS2_RC
+ifapi_json_policy_deserialize(json_object *jso, char **policy) {
+    if (!policy)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    *policy = NULL;
+    if (!jso)
+        return TSS2_FAPI_RC_BAD_REFERENCE;
+    if (json_object_get_type(jso) != json_type_object)
+        return TSS2_FAPI_RC_BAD_VALUE;
+    const char *json = json_object_to_json_string_ext(jso, JSON_C_TO_STRING_PLAIN);
+    if (!json)
+        return TSS2_FAPI_RC_MEMORY;
+    *policy = strdup(json);
+    return *policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
 }

@@ -14,7 +14,7 @@
 #include "ifapi_ima_eventlog.h"    // for IFAPI_IMA_EVENT
 #include "ifapi_io.h"              // for IFAPI_IO
 #include "tss2_common.h"           // for TSS2_RC, UINT32, UINT16, UINT64
-#include "tss2_tpm2_types.h"       // for TPM2_HANDLE, TPM2B_EVENT, TPM2_MA...
+#include "tss2_tpm2_types.h"       // for TPM2_HANDLE, TPM2B_EVENT, TPM2_MAX_PCRS
 
 #define CONTENT_TYPE "content_type"
 #define CONTENT      "content"

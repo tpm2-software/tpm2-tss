@@ -8,35 +8,36 @@
 #include "config.h" // IWYU pragma: keep
 #endif
 
-#include <json.h>   // for json_object_put, json_tok...
+#include <json.h>   // for json_object_put, json_tokener_parse
 #include <stdint.h> // for uint16_t
 #include <stdlib.h> // for NULL, size_t
 #include <string.h> // for strncmp, memset, memcpy
 
-#include "fapi_crypto.h"                   // for ifapi_get_profile_sig_scheme
-#include "fapi_int.h"                      // for FAPI_CONTEXT, IFAPI_Impor...
-#include "fapi_types.h"                    // for UINT8_ARY, NODE_STR_T
-#include "fapi_util.h"                     // for ifapi_non_tpm_mode_init
-#include "ifapi_helpers.h"                 // for ifapi_cleanup_policy, ifa...
-#include "ifapi_io.h"                      // for ifapi_io_poll
-#include "ifapi_json_deserialize.h"        // for ifapi_json_IFAPI_OBJECT_d...
-#include "ifapi_keystore.h"                // for IFAPI_OBJECT, ifapi_clean...
-#include "ifapi_macros.h"                  // for goto_if_error_reset_state
-#include "ifapi_policy_json_deserialize.h" // for ifapi_json_TPMS_POLICY_de...
-#include "ifapi_policy_store.h"            // for ifapi_policy_store_store_...
-#include "ifapi_policy_types.h"            // for TPMS_POLICY
-#include "ifapi_profiles.h"                // for ifapi_profiles_get, IFAPI...
-#include "tpm_json_deserialize.h"          // for ifapi_get_sub_object
-#include "tss2_common.h"                   // for TSS2_RC, BYTE, TSS2_RC_SU...
-#include "tss2_esys.h"                     // for Esys_SetTimeout, Esys_Flu...
-#include "tss2_fapi.h"                     // for FAPI_CONTEXT, Fapi_Import
-#include "tss2_mu.h"                       // for Tss2_MU_TPMT_SENSITIVE_Ma...
-#include "tss2_policy.h"                   // for TSS2_OBJECT
-#include "tss2_tcti.h"                     // for TSS2_TCTI_TIMEOUT_BLOCK
-#include "tss2_tpm2_types.h"               // for TPM2B_PRIVATE, TPM2B_PUBLIC
+#include "fapi_crypto.h" // for ifapi_get_profile_sig_scheme
+#include "fapi_int.h"    // for FAPI_CONTEXT, IFAPI_ImportKey
+#include "fapi_util.h"   // for ifapi_non_tpm_mode_init
+#include "ifapi_helpers.h"
+#include "ifapi_io.h"               // for ifapi_io_poll
+#include "ifapi_json_deserialize.h" // for ifapi_json_IFAPI_OBJECT_deserialize
+#include "ifapi_keystore.h"         // for IFAPI_OBJECT, ifapi_cleanup_ifapi_object
+#include "ifapi_macros.h"           // for goto_if_error_reset_state
+#include "ifapi_policy.h"
+#include "ifapi_policy_store.h"   // for ifapi_policy_store_store_async
+#include "ifapi_profiles.h"       // for ifapi_profiles_get
+#include "tpm_json_deserialize.h" // for ifapi_get_sub_object
+#include "tss2_common.h"          // for TSS2_RC, TSS2_RC_SUCCESS
+#include "tss2_crypto.h"
+#include "tss2_esys.h"       // for Esys_SetTimeout, Esys_FlushContext_Async
+#include "tss2_fapi.h"       // for FAPI_CONTEXT, Fapi_Import
+#include "tss2_helpers.h"    // for ifapi_asprintf, ifapi_get_name
+#include "tss2_mu.h"         // for Tss2_MU_TPMT_SENSITIVE_Marshal
+#include "tss2_policy.h"     // for Tss2_PolicyFinalize, Tss2_PolicyInit
+#include "tss2_tcti.h"       // for TSS2_TCTI_TIMEOUT_BLOCK
+#include "tss2_tpm2_types.h" // for TPM2B_PRIVATE
+#include "tss2_types.h"
 
 #define LOGMODULE fapi
-#include "util/log.h" // for goto_if_error, SAFE_FREE
+#include "util/log.h" // for LOG_TRACE
 
 /** One-Call function for Fapi_Import
  *
@@ -150,7 +151,7 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
     json_object *jso = NULL;
     json_object *jso2;
     size_t       pos = 0;
-    TPMS_POLICY  policy = { 0 };
+    char        *policy = NULL;
     TPMA_OBJECT *attributes;
 
     /* Check for NULL parameters */
@@ -174,7 +175,7 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
     }
 
     command->jso_string = NULL;
-    strdup_check(command->out_path, path, r, cleanup_error);
+    ifapi_strdup_check(command->out_path, path, r, cleanup_error);
     memset(&command->object, 0, sizeof(IFAPI_OBJECT));
     memset(&command->public_templ, 0, sizeof(IFAPI_KEY_TEMPLATE));
     command->ossl_priv = NULL;
@@ -183,14 +184,15 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
 
     if (strncmp(importData, IFAPI_PEM_PUBLIC_STRING, sizeof(IFAPI_PEM_PUBLIC_STRING) - 1) == 0) {
         object->objectType = IFAPI_EXT_PUB_KEY_OBJ;
-        strdup_check(extPubKey->pem_ext_public, importData, r, cleanup_error);
+        ifapi_strdup_check(extPubKey->pem_ext_public, importData, r, cleanup_error);
         extPubKey->certificate = NULL;
 
         TPM2_ALG_ID rsaOrEcc = ifapi_get_signature_algorithm_from_pem(extPubKey->pem_ext_public);
-        r = ifapi_initialize_sign_public(rsaOrEcc, &extPubKey->public);
+        r = ifapi_call_base(ifapi_initialize_sign_public(rsaOrEcc, &extPubKey->public));
         goto_if_error(r, "Could not initialize key template", cleanup_error);
 
-        r = ifapi_get_tpm2b_public_from_pem(extPubKey->pem_ext_public, &extPubKey->public);
+        r = ifapi_call_base(
+            ifapi_get_tpm2b_public_from_pem(extPubKey->pem_ext_public, &extPubKey->public));
         goto_if_error(r, "Convert PEM public key into TPM public key.", cleanup_error);
 
         extPubKey->public.publicArea.nameAlg = context->profiles.default_profile.nameAlg;
@@ -200,8 +202,8 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
             pos = 1;
         if (strncmp(&path[pos], IFAPI_PUB_KEY_DIR, strlen(IFAPI_PUB_KEY_DIR)) != 0) {
             SAFE_FREE(command->out_path);
-            r = ifapi_asprintf(&command->out_path, "%s%s%s", IFAPI_PUB_KEY_DIR, IFAPI_FILE_DELIM,
-                               &path[pos]);
+            r = ifapi_call_base(ifapi_asprintf(&command->out_path, "%s%s%s", IFAPI_PUB_KEY_DIR,
+                                               IFAPI_FILE_DELIM, &path[pos]));
             goto_if_error(r, "Allocate path name", cleanup_error);
         }
         r = ifapi_non_tpm_mode_init(context);
@@ -278,18 +280,24 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
         if (ifapi_get_sub_object(jso, IFAPI_JSON_TAG_POLICY, &jso2)
             && !(ifapi_get_sub_object(jso, IFAPI_JSON_TAG_DUPLICATE, &jso2))) {
             /* Create policy object */
-            r = ifapi_json_TPMS_POLICY_deserialize(jso, &policy);
+            r = ifapi_json_policy_deserialize(jso, &policy);
             goto_if_error(r, "Serialize policy", cleanup_error);
+
+            /* Validate policy semantics in the Policy lib before storing an import. */
+            TSS2_POLICY_CTX *validation_ctx = NULL;
+            r = policy_to_fapi_rc(Tss2_PolicyInit(policy, TPM2_ALG_SHA256, &validation_ctx));
+            Tss2_PolicyFinalize(&validation_ctx);
+            goto_if_error(r, "Invalid policy.", cleanup_error);
 
             /* Check whether an existing object would be overwritten */
             r = ifapi_policystore_check_overwrite(&context->pstore, command->out_path);
             goto_if_error_reset_state(r, "Check overwrite %s", cleanup_error, command->out_path);
 
             r = ifapi_policy_store_store_async(&context->pstore, &context->io, command->out_path,
-                                               &policy);
+                                               policy);
             goto_if_error_reset_state(r, "Could not open: %s", cleanup_error, command->out_path);
 
-            ifapi_cleanup_policy(&policy);
+            SAFE_FREE(policy);
 
             context->state = IMPORT_KEY_WRITE_POLICY;
 
@@ -317,7 +325,8 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
                 break;
 
             case IFAPI_DUPLICATE_OBJ:
-                r = ifapi_get_name(&keyTree->public_parent.publicArea, &command->parent_name);
+                r = ifapi_call_base(
+                    ifapi_get_name(&keyTree->public_parent.publicArea, &command->parent_name));
                 goto_if_error2(r, "Get parent name", cleanup_error);
 
                 context->state = IMPORT_KEY_SEARCH;
@@ -336,7 +345,8 @@ Fapi_Import_Async(FAPI_CONTEXT *context, char const *path, char const *importDat
             goto_if_error(r, "Invalid import data for key.", cleanup_error);
 
             /* Compute key name from public data. */
-            r = ifapi_get_name(&object->misc.key.public.publicArea, &object->misc.key.name);
+            r = ifapi_call_base(
+                ifapi_get_name(&object->misc.key.public.publicArea, &object->misc.key.name));
             goto_if_error2(r, "Get parent name", cleanup_error);
 
             /* Create session for key loading. */
@@ -355,7 +365,7 @@ cleanup_error:
     if (jso)
         json_object_put(jso);
     context->state = FAPI_STATE_INIT;
-    ifapi_cleanup_policy(&policy);
+    SAFE_FREE(policy);
     ifapi_cleanup_ifapi_object(object);
     SAFE_FREE(command->jso_string);
     SAFE_FREE(extPubKey->pem_ext_public);
@@ -420,7 +430,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_WAIT_FOR_SESSION);
         r = ifapi_get_sessions_finish(context, &context->profiles.default_profile,
                                       context->profiles.default_profile.nameAlg);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, " FAPI create session", error_cleanup);
 
         r = ifapi_load_parent_keys_async(context, command->out_path);
@@ -443,7 +453,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
         IFAPI_OBJECT *auth_object;
         r = ifapi_load_keys_finish(context, IFAPI_FLUSH_PARENT, &context->loadKey.handle,
                                    &auth_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "LoadKey finish", error_cleanup);
 
         context->loadKey.auth_object = *auth_object;
@@ -453,9 +463,9 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
             command->parent_object = &context->loadKey.auth_object;
             command->public_templ.public.publicArea.nameAlg
                 = command->parent_object->misc.key.public.publicArea.nameAlg;
-            r = ifapi_openssl_load_private(command->ossl_priv, NULL, NULL,
-                                           &context->cmd.ImportKey.public_templ.public,
-                                           &keyTree->public, &command->sensitive);
+            r = ifapi_call_base(ifapi_openssl_load_private(
+                command->ossl_priv, NULL, NULL, &context->cmd.ImportKey.public_templ.public,
+                &keyTree->public, &command->sensitive));
 
             goto_if_error_reset_state(r, "Fapi load OSSL Key.", error_cleanup);
 
@@ -494,7 +504,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_WAIT_FOR_KEY);
         r = Esys_Load_Finish(context->esys, &context->loadKey.handle);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error_reset_state(r, "Load", error_cleanup);
 
         /* Check whether object already exists in key store. */
@@ -510,7 +520,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_WRITE);
         /* Finish writing the key to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         if (!context->loadKey.auth_object.misc.key.persistent_handle) {
@@ -523,7 +533,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_FLUSH_PARENT);
         if (!context->loadKey.auth_object.misc.key.persistent_handle) {
             r = Esys_FlushContext_Finish(context->esys);
-            try_again_or_error_goto(r, "Flush context", error_cleanup);
+            ifapi_try_again_or_error_goto(r, "Flush context", error_cleanup);
         }
 
         /* Prepare Flushing of the loaded key */
@@ -534,20 +544,20 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_FLUSH_KEY);
         r = Esys_FlushContext_Finish(context->esys);
-        try_again_or_error_goto(r, "Flush context", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Flush context", error_cleanup);
 
         fallthrough;
 
     statecase(context->state, IMPORT_CLEANUP);
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         context->state = FAPI_STATE_INIT;
         break;
 
     statecase(context->state, IMPORT_KEY_WRITE_POLICY);
         r = ifapi_policy_store_store_finish(&context->pstore, &context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         context->state = FAPI_STATE_INIT;
@@ -555,7 +565,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_KEY_WRITE);
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         context->state = FAPI_STATE_INIT;
@@ -564,7 +574,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_KEY_SEARCH);
         r = ifapi_keystore_search_obj(&context->keystore, &context->io, &command->parent_name,
                                       &command->parent_path);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Search Key", error_cleanup);
 
         size_t dir_len, parent_len;
@@ -589,7 +599,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_KEY_LOAD_PARENT);
         r = ifapi_load_key(context, command->parent_path, &command->parent_object);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Fapi load key.", error_cleanup);
 
         context->state = IMPORT_KEY_AUTHORIZE_PARENT;
@@ -597,7 +607,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_KEY_AUTHORIZE_PARENT);
         r = ifapi_authorize_object(context, command->parent_object, &session);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         goto_if_error(r, "Authorize key.", error_cleanup);
 
         TPMT_SYM_DEF_OBJECT symmetric;
@@ -612,7 +622,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
     statecase(context->state, IMPORT_KEY_IMPORT);
         r = Esys_Import_Finish(context->esys, &command->private);
-        try_again_or_error_goto(r, "Import", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Import", error_cleanup);
 
         if (!command->ossl_priv) {
             char *base_name;
@@ -626,7 +636,8 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
 
             /* Concatenate keyname and parent path */
             char *ipath = NULL;
-            r = ifapi_asprintf(&ipath, "%s%s%s", command->parent_path, IFAPI_FILE_DELIM, base_name);
+            r = ifapi_call_base(ifapi_asprintf(&ipath, "%s%s%s", command->parent_path,
+                                               IFAPI_FILE_DELIM, base_name));
             goto_if_error(r, "Out of memory.", error_cleanup);
 
             SAFE_FREE(command->out_path);
@@ -639,7 +650,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_KEY_WAIT_FOR_FLUSH);
         if (!command->parent_object->misc.key.persistent_handle) {
             r = ifapi_flush_object(context, command->parent_object->public.handle);
-            return_try_again(r);
+            ifapi_return_try_again(r);
 
             command->parent_object->public.handle = ESYS_TR_NONE;
             ifapi_cleanup_ifapi_object(command->parent_object);
@@ -651,8 +662,9 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
         newObject->objectType = IFAPI_KEY_OBJ;
         newObject->misc.key.public = keyTree->public;
         if (keyTree->policy) {
-            newObject->policy = ifapi_copy_policy(keyTree->policy);
-            goto_if_null(keyTree->policy, "Out of memory", TSS2_FAPI_RC_MEMORY, error_cleanup);
+            newObject->policy = strdup(keyTree->policy);
+            r = newObject->policy ? TSS2_RC_SUCCESS : TSS2_FAPI_RC_MEMORY;
+            goto_if_error(r, "Copy policy.", error_cleanup);
         } else {
             newObject->policy = NULL;
         }
@@ -688,18 +700,18 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     statecase(context->state, IMPORT_KEY_WRITE_OBJECT);
         /* Finish writing the object to the key store */
         r = ifapi_keystore_store_finish(&context->io);
-        return_try_again(r);
+        ifapi_return_try_again(r);
         return_if_error_reset_state(r, "write_finish failed");
 
         fallthrough;
 
     statecase(context->state, IMPORT_KEY_CLEANUP)
         r = ifapi_cleanup_session(context);
-        try_again_or_error_goto(r, "Cleanup", error_cleanup);
+        ifapi_try_again_or_error_goto(r, "Cleanup", error_cleanup);
 
         break;
 
-    statecasedefault(context->state);
+    ifapi_statecasedefault(context->state);
     }
 
     /* Reset the ESYS timeout to non-blocking, immediate response. */
@@ -714,8 +726,7 @@ Fapi_Import_Finish(FAPI_CONTEXT *context) {
     /* Cleanup policy for key objects.*/
     if (newObject->objectType == IFAPI_KEY_OBJ) {
         if (newObject->policy)
-            ifapi_cleanup_policy(newObject->policy);
-        SAFE_FREE(newObject->policy);
+            SAFE_FREE(newObject->policy);
     }
     SAFE_FREE(command->parent_path);
     ifapi_cleanup_ifapi_object(&command->object);
