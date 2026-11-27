@@ -5,19 +5,24 @@
  *******************************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h" // for SYSCONFDIR
+#include "config.h" // for SYSCONFDIR, LOCALSTATEDIR
 #endif
 
-#include <json.h>   // for json_object_put, json_object
-#include <stdint.h> // for uint8_t
-#include <stdlib.h> // for NULL, getenv, size_t
-#include <string.h> // for strncmp, strlen, memset, strdup
+#include <errno.h>    // for errno
+#include <fcntl.h>    // for fcntl, flock, F_GETFL, F_RDLCK
+#include <stdint.h>   // for uint8_t
+#include <stdio.h>    // for fclose, fileno, fopen, SEEK_SET
+#include <stdlib.h>   // for NULL, getenv, malloc, size_t
+#include <string.h>   // for strerror, strncmp, strlen, memset
+#include <sys/stat.h> // for stat, fstat, S_ISDIR
 
 #include "fapi_int.h" // for IFAPI_FILE_DELIM, DEFAULT_LOG_DIR
 #include "ifapi_config.h"
 #include "ifapi_helpers.h"          // for ifapi_asprintf
 #include "ifapi_json_deserialize.h" // for ifapi_json_char_deserialize
 #include "ifapi_macros.h"           // for return_try_again
+#include "json_object.h"            // for json_object_put
+#include "json_types.h"             // for json_object
 #include "tpm_json_deserialize.h"   // for ifapi_get_sub_object, ifapi_json...
 
 #define LOGMODULE fapi
@@ -26,7 +31,8 @@
 /**
  * The path of the default config file
  */
-#define DEFAULT_CONFIG_FILE (SYSCONFDIR "/tpm2-tss/fapi-config.json")
+#define DEFAULT_SYSCONF_CONFIG_FILE    (SYSCONFDIR "/tpm2-tss/fapi-config.json")
+#define DEFAULT_LOCALSTATE_CONFIG_FILE (LOCALSTATEDIR "/tpm2-tss/fapi-config.json")
 
 /** Deserializes a configuration JSON object.
  *
@@ -140,6 +146,83 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out) {
     return TSS2_RC_SUCCESS;
 }
 
+/** Start reading a fd's complete content into memory in an asynchronous way.
+ *
+ * @param[in,out] io The input/output context being used for file I/O, stream already opened.
+ * @retval TSS2_RC_SUCCESS: if the function call was a success.
+ * @retval TSS2_FAPI_RC_IO_ERROR: if an I/O error was encountered; such as the file was not found.
+ * @retval TSS2_FAPI_RC_MEMORY: if memory could not be allocated to hold the read data.
+ */
+static TSS2_RC
+ifapi_config_read_async(struct IFAPI_IO *io) {
+    struct stat  statbuf;
+    struct flock flock = { 0 };
+    int          fd = fileno(io->stream);
+
+    if (io->char_rbuffer) {
+        LOG_ERROR("rbuffer still in use; maybe use of old API.");
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+
+    if (fstat(fd, &statbuf) == -1) {
+        fclose(io->stream);
+        io->stream = NULL;
+        LOG_ERROR("Execute fstat for file descriptor %d.", fd);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+
+    /* Check whether file is a directory. */
+    if (S_ISDIR(statbuf.st_mode)) {
+        fclose(io->stream);
+        io->stream = NULL;
+        LOG_ERROR("File descriptor %d is a directory.", fd);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+
+    /* Locking the file. Lock will be released upon close */
+    flock.l_type = F_RDLCK;
+    flock.l_whence = SEEK_SET;
+
+    if (fcntl(fileno(io->stream), F_SETLK, &flock) == -1) {
+        LOG_ERROR("File descriptor %d could not be locked: %s", fd, strerror(errno));
+        fclose(io->stream);
+        io->stream = NULL;
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+
+    long length = statbuf.st_size;
+
+    io->char_rbuffer = malloc(length + 1);
+    if (io->char_rbuffer == NULL) {
+        fclose(io->stream);
+        io->stream = NULL;
+        LOG_ERROR("Memory could not be allocated. %li bytes requested", length + 1);
+        return TSS2_FAPI_RC_MEMORY;
+    }
+
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1) {
+        SAFE_FREE(io->char_rbuffer);
+        fclose(io->stream);
+        io->stream = NULL;
+        LOG_ERROR("fcntl failed with %d", errno);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+    if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+        SAFE_FREE(io->char_rbuffer);
+        fclose(io->stream);
+        io->stream = NULL;
+        LOG_ERROR("fcntl failed with %d", errno);
+        return TSS2_FAPI_RC_IO_ERROR;
+    }
+
+    io->buffer_length = length;
+    io->buffer_idx = 0;
+    io->char_rbuffer[length] = '\0';
+
+    return TSS2_RC_SUCCESS;
+}
+
 /**
  * Starts the initialization of the FAPI configuration.
  *
@@ -153,19 +236,33 @@ ifapi_json_IFAPI_CONFIG_deserialize(json_object *jso, IFAPI_CONFIG *out) {
  */
 TSS2_RC
 ifapi_config_initialize_async(IFAPI_IO *io) {
+    TSS2_RC r;
+
     /* Check for NULL parameters */
     return_if_null(io, "io is NULL", TSS2_FAPI_RC_BAD_REFERENCE);
 
-    /* Determine the location of the configuration file */
+    /* Determine the location of the configuration file
+     * if ENV_FAPI_CONFIG is set do not fallback to the default locations */
     const char *configFile = getenv(ENV_FAPI_CONFIG);
-    if (!configFile) {
-        /* No config file given, falling back to the default */
-        configFile = DEFAULT_CONFIG_FILE;
+    if (configFile) {
+        r = ifapi_io_read_async(io, configFile);
+        return_if_error(r, "Could not read config file");
+        return TSS2_RC_SUCCESS;
     }
 
-    /* Start reading the config file */
-    TSS2_RC r = ifapi_io_read_async(io, configFile);
-    return_if_error(r, "Could not read config file ");
+    /* Test SYSCONF_DIR and then LOCALSTATE_DIR */
+    io->stream = fopen(DEFAULT_SYSCONF_CONFIG_FILE, "rt");
+    if (io->stream == NULL) {
+        LOG_INFO("Open file \"%s\": %s", DEFAULT_SYSCONF_CONFIG_FILE, strerror(errno));
+        io->stream = fopen(DEFAULT_LOCALSTATE_CONFIG_FILE, "rt");
+        if (io->stream == NULL) {
+            LOG_INFO("Open file \"%s\": %s", DEFAULT_LOCALSTATE_CONFIG_FILE, strerror(errno));
+            return_error(TSS2_FAPI_RC_IO_ERROR, "could not open default config files.");
+        }
+    }
+    r = ifapi_config_read_async(io);
+    return_if_error(r, "Could not read default config file");
+
     return TSS2_RC_SUCCESS;
 }
 
