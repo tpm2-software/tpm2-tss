@@ -632,6 +632,32 @@ AS_IF([test "x$enable_defaultflags" = "xyes"],
       ADD_LINK_FLAG([-Wl,-z,relro])
       ])
 
+AS_IF([test "x$enable_debug" = "xyes" ], [
+
+    AC_MSG_CHECKING([whether the compiler enables _FORTIFY_SOURCE])
+
+    AC_PREPROC_IFELSE(
+        [AC_LANG_SOURCE([[
+            #include <features.h>
+
+            #ifndef _FORTIFY_SOURCE
+            # error "_FORTIFY_SOURCE is not enabled"
+            #endif
+        ]])],
+        [fortify_enabled=yes],
+        [fortify_enabled=no])
+
+    AC_MSG_RESULT([$fortify_enabled])
+
+    AS_IF([test "x$fortify_enabled" = "xyes"], [
+        CFLAGS=`echo "$CFLAGS" | sed 's/-O0/-Og/g'`
+        CXXFLAGS=`echo "$CXXFLAGS" | sed 's/-O0/-Og/g'`
+
+        AC_MSG_NOTICE(
+            [_FORTIFY_SOURCE is enabled externally; using -Og instead of -O0])
+    ])
+])
+
 AC_ARG_ENABLE([weakcrypto],
     [AS_HELP_STRING([--disable-weakcrypto],
 	           [Disable crypto algorithms considered weak])],,
