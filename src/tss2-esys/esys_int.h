@@ -91,6 +91,8 @@ typedef struct {
 } HMAC_Start_IN;
 
 typedef HMAC_Start_IN MAC_Start_IN;
+typedef HMAC_Start_IN SignSequenceStart_IN;
+typedef HMAC_Start_IN VerifySequenceStart_IN;
 
 typedef struct {
     ESYS_TR    authHandle;
@@ -138,6 +140,8 @@ typedef union {
     EvictControl_IN        EvictControl;
     HMAC_Start_IN          HMAC_Start;
     MAC_Start_IN           MAC_Start;
+    SignSequenceStart_IN   SignSequenceStart;
+    VerifySequenceStart_IN VerifySequenceStart;
     HierarchyChangeAuth_IN HierarchyChangeAuth;
     SequenceComplete_IN    SequenceComplete;
     Policy_IN              Policy;

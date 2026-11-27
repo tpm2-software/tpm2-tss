@@ -110,4 +110,20 @@ ifapi_openssl_load_private(const char *pem_key,
                            TPM2B_PUBLIC    *pub,
                            TPM2B_SENSITIVE *priv);
 
+TSS2_RC
+ifapi_kem_hybrid_encrypt(const uint8_t *shared_secret,
+                         size_t         shared_secret_size,
+                         const uint8_t *plainText,
+                         size_t         plainTextSize,
+                         uint8_t      **cipherText,
+                         size_t        *cipherTextSize);
+
+TSS2_RC
+ifapi_kem_hybrid_decrypt(const uint8_t *shared_secret,
+                         size_t         shared_secret_size,
+                         const uint8_t *cipherText,
+                         size_t         cipherTextSize,
+                         uint8_t      **plainText,
+                         size_t        *plainTextSize);
+
 #endif /* FAPI_CRYPTO_H */
