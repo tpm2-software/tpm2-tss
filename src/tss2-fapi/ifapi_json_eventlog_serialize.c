@@ -76,8 +76,11 @@ add_string_to_json(const char *string, json_object *jso, const char *jso_tag) {
     return TSS2_RC_SUCCESS;
 }
 
+#define UNKNOWN_EVENT_TYPE             "Unknown event type "
+#define EVENT_TYPE_UNKNOWN_STRING_SIZE sizeof(UNKNOWN_EVENT_TYPE "0xffffffff")
+
 char const *
-eventtype_to_string(UINT32 event_type) {
+eventtype_to_string(UINT32 event_type, char *buffer, size_t buffer_size) {
     switch (event_type) {
     case EV_PREBOOT_CERT:
         return "EV_PREBOOT_CERT";
@@ -147,7 +150,8 @@ eventtype_to_string(UINT32 event_type) {
         return "EV_EFI_VARIABLE_BOOT2";
 
     default:
-        return "Unknown event type";
+        snprintf(buffer, buffer_size, UNKNOWN_EVENT_TYPE "0x%" PRIx32, event_type);
+        return buffer;
     }
 }
 
@@ -500,6 +504,7 @@ ifapi_json_TCG_EVENT_HEADER2_serialize(const TCG_EVENT_HEADER2 *in,
                                        size_t                   recnum,
                                        json_object            **jso) {
     (void)size;
+    char event_type_buf[EVENT_TYPE_UNKNOWN_STRING_SIZE];
 
     return_if_null(in, "Bad reference.", TSS2_FAPI_RC_BAD_REFERENCE);
 
@@ -535,7 +540,8 @@ ifapi_json_TCG_EVENT_HEADER2_serialize(const TCG_EVENT_HEADER2 *in,
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
 
-    jso2 = json_object_new_string(eventtype_to_string(in->EventType));
+    jso2 = json_object_new_string(
+        eventtype_to_string(in->EventType, &event_type_buf[0], sizeof(event_type_buf)));
 
     if (json_object_object_add(jso_sub, "event_type", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
@@ -617,6 +623,7 @@ ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_object *
 
     TSS2_RC      r;
     json_object *jso2, *jso_sub, *jso_digest, *jso_ary;
+    char         event_type_buf[EVENT_TYPE_UNKNOWN_STRING_SIZE];
 
     if (*jso == NULL) {
         *jso = json_object_new_object();
@@ -639,7 +646,8 @@ ifapi_json_TCG_EVENT_serialize(const TCG_EVENT *in, size_t recnum, json_object *
     if (json_object_object_add(*jso, "recnum", jso2)) {
         return_error(TSS2_FAPI_RC_GENERAL_FAILURE, "Could not add json object.");
     }
-    jso2 = json_object_new_string(eventtype_to_string(in->eventType));
+    jso2 = json_object_new_string(
+        eventtype_to_string(in->eventType, &event_type_buf[0], sizeof(event_type_buf)));
     return_if_null(jso2, "Out of memory.", TSS2_FAPI_RC_MEMORY);
 
     jso_sub = json_object_new_object();
