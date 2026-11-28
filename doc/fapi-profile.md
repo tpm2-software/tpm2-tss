@@ -181,10 +181,12 @@ The table below illustrates the key differences:
 * legacy: noDa: 0, unique key size set to zero.
 
 # Check existing SRK
-In some cases, an SRK may already exist on the platform and can be reused by FAPI.
-This includes dual-boot setups and SRK initialization performed by systemd.
-The follwing script determines which FAPI profiles are appropriate for an existing SRK key.
-
+In some cases, a persistent SRK may already exist on the platform and
+can be reused by FAPI.  This includes dual-boot setups and SRK
+initialization performed by systemd.  Alternatively, FAPI can use a
+transient SRK, although this is not recommended.  The following script
+determines which FAPI profiles are compatible with an existing
+persistent SRK.
 ```bash
 #!/bin/bash
 
@@ -245,6 +247,8 @@ for PROFILE in "${PROFILES[@]}"; do
     "profile_dir": "${PROFILE_DIR}",
     "user_dir": "${USER_DIR}",
     "system_dir": "${SYSTEM_DIR}",
+    "ek_cert_less": "yes",
+    "ignore_lockout": "yes",
     "tcti": "",
     "system_pcrs": [],
     "log_dir": "${LOG_DIR}",
